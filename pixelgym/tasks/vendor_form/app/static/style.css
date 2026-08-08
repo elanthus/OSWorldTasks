@@ -1,0 +1,117 @@
+/* Fixed layout, no animation/transition rules: pixel frames must be stable. */
+
+/* Bundled locally (static/fonts/, DejaVu Fonts license) so glyph shapes don't
+   depend on which fonts happen to be installed on the host OS. */
+@font-face {
+  font-family: "PixelGym Sans";
+  src: url("/static/fonts/DejaVuSans.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "PixelGym Sans";
+  src: url("/static/fonts/DejaVuSans-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 1024px;
+  height: 768px;
+  overflow: hidden;
+  background: #f4f5f7;
+  font-family: "PixelGym Sans";
+  font-size: 14px;
+  color: #1c1e21;
+}
+
+#layout {
+  display: flex;
+  width: 1024px;
+  height: 768px;
+}
+
+#request-card,
+#form-panel {
+  width: 512px;
+  height: 768px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+#request-card {
+  background: #eef1f6;
+  border-right: 1px solid #c7cdd6;
+}
+
+#form-panel {
+  background: #ffffff;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+.field-row {
+  margin-bottom: 12px;
+}
+
+.field-row label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.request-value {
+  border: 1px solid #c7cdd6;
+  background: #ffffff;
+  padding: 6px 8px;
+  min-height: 16px;
+}
+
+input[type="text"],
+input[type="email"],
+select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #94a0b3;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: inherit;
+  /* Native text carets blink on an OS/browser timer that CSS cannot pin down;
+     hiding the caret removes it as a source of nondeterministic frames. */
+  caret-color: transparent;
+}
+
+.radio-group label,
+.checkbox-row label {
+  display: inline-block;
+  font-weight: normal;
+  margin-right: 12px;
+}
+
+#submit-button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 1px solid #2f6f4f;
+  background: #3c8c5f;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+#submit-status {
+  margin-top: 12px;
+  min-height: 16px;
+}

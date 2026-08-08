@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vendor Onboarding</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div id="layout">
+      <section id="request-card" aria-label="Vendor onboarding request">
+        <h1>New Vendor Request</h1>
+        <div class="field-row">
+          <label for="rc-company_name">Company name</label>
+          <div class="request-value" id="rc-company_name"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-contact_email">Contact email</label>
+          <div class="request-value" id="rc-contact_email"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-contact_phone">Contact phone</label>
+          <div class="request-value" id="rc-contact_phone"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-tax_id">Tax ID</label>
+          <div class="request-value" id="rc-tax_id"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-country">Country</label>
+          <div class="request-value" id="rc-country"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-payment_terms">Payment terms</label>
+          <div class="request-value" id="rc-payment_terms"></div>
+        </div>
+        <div class="field-row">
+          <label for="rc-expedited_onboarding">Expedited onboarding</label>
+          <div class="request-value" id="rc-expedited_onboarding"></div>
+        </div>
+      </section>
+
+      <section id="form-panel" aria-label="Vendor onboarding form">
+        <h1>Enter Vendor Details</h1>
+        <form id="vendor-form" autocomplete="off">
+          <input type="hidden" id="task_id" name="task_id" />
+          <div class="field-row">
+            <label for="company_name">Company name</label>
+            <input type="text" id="company_name" name="company_name" />
+          </div>
+          <div class="field-row">
+            <label for="contact_email">Contact email</label>
+            <input type="text" id="contact_email" name="contact_email" />
+          </div>
+          <div class="field-row">
+            <label for="contact_phone">Contact phone</label>
+            <input type="text" id="contact_phone" name="contact_phone" />
+          </div>
+          <div class="field-row">
+            <label for="tax_id">Tax ID</label>
+            <input type="text" id="tax_id" name="tax_id" />
+          </div>
+          <div class="field-row">
+            <label for="country">Country</label>
+            <select id="country" name="country">
+              <option value="" selected disabled>Select a country</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label>Payment terms</label>
+            <div class="radio-group" id="payment_terms"></div>
+          </div>
+          <div class="field-row checkbox-row">
+            <label>
+              <input type="checkbox" id="expedited_onboarding" name="expedited_onboarding" />
+              Expedited onboarding
+            </label>
+          </div>
+          <button type="submit" id="submit-button">Submit</button>
+          <div id="submit-status"></div>
+        </form>
+      </section>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

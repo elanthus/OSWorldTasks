@@ -90,6 +90,7 @@ Stretch work (file upload, extra VLM, LibreOffice, multi-resolution) is **blocke
 - Prefer explicit fixtures over mocks that restate implementation details.
 - Fast tests must not touch network, browser, OSWorld, or wall-clock sleeps, and must finish well under a minute.
 - Integration work goes behind the optional extra; it never changes the core environment contract to accommodate a provider quirk.
+- **Dev setup must be self-contained.** `python3.12 -m venv .venv && pip install -e ".[dev]"` is the only setup step anyone (human or agent) should ever need to run the fast suite and lint. If a test needs a build tool (e.g. `setuptools` for `tests/integration/test_wheel_packaging.py`), add it to the `dev` extra in `pyproject.toml` — never document a manual `pip install <tool>` workaround instead.
 
 ## 6. Secrets and safety
 

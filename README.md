@@ -36,6 +36,9 @@ pip install -e ".[dev]"
 # Fast unit tests (no VM, no network)
 pytest tests/unit
 
+# Full fast suite, including the wheel-packaging integration test
+pytest tests/
+
 # Format and lint
 ruff format .
 ruff check .
@@ -43,5 +46,7 @@ ruff check .
 # Fake-backend demo (available once D1.5/D1.6 land)
 python scripts/demo_fake_backend.py
 ```
+
+`pip install -e ".[dev]"` is self-contained: a bare `python3.12 -m venv .venv` has no `setuptools`, and the `dev` extra pins `setuptools>=68` so `tests/integration/test_wheel_packaging.py` (which builds a real wheel with `pip wheel --no-build-isolation`) works without any extra manual install.
 
 Install the `osworld` extra (`pip install -e ".[osworld]"`) only for Day 2 integration work.

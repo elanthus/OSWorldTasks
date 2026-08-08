@@ -21,6 +21,9 @@ osworld = [
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",
+    "build>=1.0",
+    "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
+    "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
 ]
 
 [build-system]
@@ -29,6 +32,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["pixelgym*"]
+
+[tool.setuptools.package-data]
+"pixelgym.tasks.vendor_form.app" = ["static/*", "static/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
