@@ -23,3 +23,25 @@ These are roles, not five agents that must run simultaneously. Reuse a role sequ
 | Experiment analyst | High | Leakage review, paired statistics, error taxonomy, cautious interpretation |
 
 Use medium thinking for bounded tasks with explicit tests and high thinking where a subtle error could invalidate the project claim. Each day document contains copy-ready handoff prompts and a human acceptance gate.
+
+## Development
+
+Requires Python 3.12. The core package and fast test suite never require OSWorld.
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# Fast unit tests (no VM, no network)
+pytest tests/unit
+
+# Format and lint
+ruff format .
+ruff check .
+
+# Fake-backend demo (available once D1.5/D1.6 land)
+python scripts/demo_fake_backend.py
+```
+
+Install the `osworld` extra (`pip install -e ".[osworld]"`) only for Day 2 integration work.
