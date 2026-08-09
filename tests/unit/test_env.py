@@ -23,6 +23,7 @@ from pixelgym.backends.base import Backend
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import BackendContractError, PixelGuiEnv
 from pixelgym.tasks.vendor_form import generator
+from pixelgym.tasks.vendor_form.ui import WidgetId
 
 
 class _StatefulMapping(Mapping):
@@ -203,6 +204,17 @@ def test_different_seed_produces_a_different_task_id():
     _obs2, info2 = env.reset(seed=2)
 
     assert info1["task_id"] != info2["task_id"]
+
+
+def test_different_seed_produces_a_different_initial_observation():
+    """The task varies in pixels, not just in the privileged record -- the
+    screenshot is the only channel an agent has to learn what to type."""
+    env = PixelGuiEnv(FakeBackend())
+
+    obs1, _info1 = env.reset(seed=1)
+    obs2, _info2 = env.reset(seed=2)
+
+    assert not np.array_equal(obs1, obs2)
 
 
 def test_reset_without_a_seed_does_not_raise():
@@ -461,9 +473,7 @@ def test_stateful_mapping_second_read_never_reaches_the_backend():
     backend = FakeBackend(width=64, height=48)
     env = PixelGuiEnv(backend)
     env.reset(seed=7)
-    action = _StatefulMapping(
-        _click(0, 0), sneaky_key="x", safe_value=5, evil_value=999
-    )
+    action = _StatefulMapping(_click(0, 0), sneaky_key="x", safe_value=5, evil_value=999)
 
     env.step(action)  # 5 is in range; must not raise
 
@@ -478,9 +488,7 @@ def test_stateful_mapping_out_of_range_on_first_read_is_rejected():
     backend = FakeBackend(width=64, height=48)
     env = PixelGuiEnv(backend)
     env.reset(seed=7)
-    action = _StatefulMapping(
-        _click(0, 0), sneaky_key="x", safe_value=999, evil_value=5
-    )
+    action = _StatefulMapping(_click(0, 0), sneaky_key="x", safe_value=999, evil_value=5)
 
     with pytest.raises(ValueError):
         env.step(action)
@@ -635,6 +643,75 @@ def test_step_info_does_not_expose_expected_field_values_on_success():
 
     for value in fields.values():
         assert value not in info.values()
+
+
+# -- Reward through the action space only ----------------------------------
+# The tests above install submissions through a privileged hook, which proves
+# the reward *plumbing* but not that reward is reachable by an agent. These
+# solve the form with nothing but CLICK and KEY.
+#
+# The authority on reward *timing* is the frozen golden trajectory replayed in
+# `test_golden_trajectory.py`, which never consults privileged state. What the
+# runtime-derived solver adds here is the two things a frozen recording cannot
+# express: a form proven correct at the moment reward is withheld, and a
+# deliberate near miss.
+
+
+def test_reward_cannot_fire_a_second_time_for_a_standing_success():
+    """The evaluator is a pure function of the submission history, so it keeps
+    reporting success after the winning step. Termination is what stops that
+    from paying out again."""
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+    backend.install_submission(backend.current_fields())
+
+    _obs, reward, terminated, _truncated, _info = env.step(_noop())
+
+    assert (reward, terminated) == (1.0, True)
+    # The winning submission is still on the privileged record: nothing was
+    # consumed or cleared to make the one-shot reward work, so a second payout
+    # is prevented by termination alone.
+    assert len(backend.read_submissions()) == 1
+    with pytest.raises(RuntimeError):
+        env.step(_noop())
+
+
+def test_correct_values_typed_but_never_submitted_receive_zero(dynamic_solve_actions):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+
+    rewards = [
+        env.step(action)[1] for action in dynamic_solve_actions(backend, include_submit=False)
+    ]
+
+    assert set(rewards) == {0.0}
+    assert backend.form.values() == backend.current_fields()  # the form *is* correct
+
+
+def test_a_single_wrong_character_submitted_receives_zero(dynamic_solve_actions):
+    """A near miss, not a malformed action: every keystroke is legal and the
+    form is submitted for the right task -- one field is just off by one
+    character."""
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+    actions = dynamic_solve_actions(backend, include_submit=False)
+    company_name = backend.layout.controls[WidgetId.COMPANY_NAME].center
+    actions += [
+        _click(*company_name),
+        _key(KEY_ALLOWLIST.index("x")),  # one character too many
+        _click(*backend.layout.controls[WidgetId.SUBMIT].center),
+    ]
+
+    rewards = [env.step(action)[1] for action in actions]
+
+    assert set(rewards) == {0.0}
+    submitted = backend.read_submissions()[0].values
+    expected = backend.current_fields()
+    assert submitted["company_name"] == expected["company_name"] + "x"
+    assert {name for name in expected if submitted[name] != expected[name]} == {"company_name"}
 
 
 def test_stepping_after_termination_raises():

@@ -1,0 +1,14 @@
+[diff]
+max_bytes = 200000
+exclude = [
+    "*.lock",
+    "*-lock.json",
+    "vendor/**",
+    "**/*.min.js",
+    "**/*.min.css",
+    "**/__snapshots__/**",
+    "**/*.pb.go",
+    "**/*_pb2.py",
+    "artifacts/day-1/**",
+    "tests/unit/fixtures/*.json",
+]

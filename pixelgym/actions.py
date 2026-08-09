@@ -183,8 +183,7 @@ def validate_action(action_space: spaces.Dict, action: Any) -> ValidatedAction:
         )
     if set(action) != _REQUIRED_KEYS:
         raise InvalidActionError(
-            f"action must have exactly the keys {sorted(_REQUIRED_KEYS)}, got "
-            f"{sorted(action)}"
+            f"action must have exactly the keys {sorted(_REQUIRED_KEYS)}, got {sorted(action)}"
         )
 
     normalized = {

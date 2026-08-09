@@ -38,6 +38,9 @@ include = ["pixelgym*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# So `tests.support` (the privileged golden-trajectory solver, shared with
+# scripts/golden_trajectory.py) is importable from the repository root.
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100

@@ -1,0 +1,1434 @@
+{
+  "note": "Golden trajectory (D1.7): a frozen list of public actions that solves the seed-7 vendor-onboarding task, and the reward timeline it must produce. Replayed verbatim by tests/unit/test_golden_trajectory.py, which never consults the task generator or any privileged backend state. Coordinates are absolute pixels for the screen size below, and 'key' indexes KEY_ALLOWLIST at the version below -- both must match or the replay is meaningless. Verify with 'python scripts/golden_trajectory.py check'; that command also prints the regeneration recipe when this file has drifted.",
+  "schema_version": 1,
+  "seed": 7,
+  "task_id": "vf-6bed55ed612d3c5a",
+  "task_spec_sha256": "6bed55ed612d3c5a348c3db7c74dca938e771ac1f32681565e7d0d7096a679e9",
+  "key_allowlist_version": 1,
+  "screen": {
+    "width": 1024,
+    "height": 768
+  },
+  "action_count": 109,
+  "actions": [
+    {
+      "action_type": 0,
+      "x": 0,
+      "y": 0,
+      "key": 0
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 93,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 42
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 27
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 23
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 29
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 14
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 94
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 37
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 34
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 94
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 47
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 16
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 28
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 29
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 12
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 28
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 94
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 42
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 27
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 30
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 25
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 157,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 23
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 11
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 27
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 13
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 23
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 16
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 83
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 16
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 27
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 23
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 29
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 14
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 11
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 34
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 21
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 16
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 28
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 29
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 18
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 12
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 28
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 16
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 27
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 24
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 30
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 25
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 75
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 14
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 33
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 22
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 25
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 21
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 14
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 221,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 72
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 1
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 5
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 5
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 5
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 4
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 4
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 7
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 9
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 1
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 285,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 55
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 36
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 59
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 74
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 2
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 45
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 38
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 1
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 43
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 1
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 40
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 2
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 349,
+      "key": 0
+    },
+    {
+      "action_type": 1,
+      "x": 768,
+      "y": 377,
+      "key": 0
+    },
+    {
+      "action_type": 1,
+      "x": 919,
+      "y": 410,
+      "key": 0
+    },
+    {
+      "action_type": 1,
+      "x": 586,
+      "y": 483,
+      "key": 0
+    }
+  ],
+  "timeline": [
+    {
+      "step": 1,
+      "action_type": "NOOP",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 2,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 3,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 4,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 5,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 6,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 7,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 8,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 9,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 10,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 11,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 12,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 13,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 14,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 15,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 16,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 17,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 18,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 19,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 20,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 21,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 22,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 23,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 24,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 25,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 26,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 27,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 28,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 29,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 30,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 31,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 32,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 33,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 34,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 35,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 36,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 37,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 38,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 39,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 40,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 41,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 42,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 43,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 44,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 45,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 46,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 47,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 48,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 49,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 50,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 51,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 52,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 53,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 54,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 55,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 56,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 57,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 58,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 59,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 60,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 61,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 62,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 63,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 64,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 65,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 66,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 67,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 68,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 69,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 70,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 71,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 72,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 73,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 74,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 75,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 76,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 77,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 78,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 79,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 80,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 81,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 82,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 83,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 84,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 85,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 86,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 87,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 88,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 89,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 90,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 91,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 92,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 93,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 94,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 95,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 96,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 97,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 98,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 99,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 100,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 101,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 102,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 103,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 104,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 105,
+      "action_type": "KEY",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 106,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 107,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 108,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 109,
+      "action_type": "CLICK",
+      "reward": 1.0,
+      "terminated": true,
+      "truncated": false
+    }
+  ]
+}
