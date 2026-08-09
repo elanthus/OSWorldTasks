@@ -28,6 +28,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from pixelgym.tasks.vendor_form import generator
+from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -47,12 +48,6 @@ class SubmitRequest(BaseModel):
     country: str
     payment_terms: str
     expedited_onboarding: bool
-
-
-def _normalize_submission(values: dict[str, Any]) -> dict[str, Any]:
-    return {
-        key: value.strip() if isinstance(value, str) else value for key, value in values.items()
-    }
 
 
 @dataclasses.dataclass(frozen=True)
@@ -108,7 +103,7 @@ class VendorFormState:
         record = SubmissionRecord(
             task_id=task_id,
             seed=task["seed"],
-            values=MappingProxyType(_normalize_submission(values)),
+            values=MappingProxyType(normalize_submitted_values(values)),
             submitted_at_step=len(self.submissions) + 1,
         )
         self.submissions.append(record)

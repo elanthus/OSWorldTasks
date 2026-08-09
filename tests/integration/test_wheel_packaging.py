@@ -82,9 +82,7 @@ def installed_wheel_site_dir():
 
 
 def test_static_assets_are_packaged_in_the_wheel(installed_wheel_site_dir):
-    app_static = (
-        installed_wheel_site_dir / "pixelgym" / "tasks" / "vendor_form" / "app" / "static"
-    )
+    app_static = installed_wheel_site_dir / "pixelgym" / "tasks" / "vendor_form" / "app" / "static"
 
     for relative_path in _STATIC_ASSETS:
         assert (app_static / relative_path).is_file(), relative_path
