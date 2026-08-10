@@ -59,6 +59,55 @@ python scripts/golden_trajectory.py check
 
 Install the `osworld` extra (`pip install -e ".[osworld]"`) only for Day 2 integration work.
 
+## Day 3 grounding workflow and providers
+
+The browser-capture command needs the Chromium build pinned by Playwright. This is needed
+only to regenerate the checked-in grounding images, not to run the fast suite or analyze
+stored predictions.
+
+```bash
+python -m playwright install chromium
+python scripts/capture_grounding_dataset.py
+python scripts/generate_grounding_overlays.py
+```
+
+The frozen experiment uses the Codex CLI provider with `gpt-5.4-mini`. It uses the current
+Codex login, runs non-interactively in a read-only sandbox, and requires an explicit cap on
+new condition calls. Plan-only mode does not invoke a model:
+
+```bash
+python scripts/run_grounding_evaluation.py \
+  --provider codex --pilot --max-new-calls 20 --plan-only
+```
+
+An OpenRouter alternative is available but is not used for the frozen Codex run. Store its
+configuration only in the process environment; never put a real key or model setting in a
+source file or checked-in `.env` file:
+
+```bash
+export OPENROUTER_API_KEY="..."
+export OPENROUTER_MODEL="provider/model-id"
+
+python scripts/run_grounding_evaluation.py \
+  --provider openrouter --pilot --max-new-calls 20 --plan-only
+```
+
+`OPENROUTER_MODEL` must name an image-capable route with structured-output support. The
+adapter sends the local PNG as base64, requires strict JSON Schema support from the routed
+provider, and does not enable response healing or hidden retries. See OpenRouter's official
+[image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
+[structured-output](https://openrouter.ai/docs/guides/features/structured-outputs)
+documentation.
+
+The deterministic mock exercises the identical parsing, caching, scoring, and immutable
+prediction-file path without network or model calls:
+
+```bash
+python scripts/run_grounding_evaluation.py \
+  --provider mock --full --max-new-calls 200 \
+  --output /tmp/pixelgym-mock-predictions.jsonl
+```
+
 ## Day 2 local Docker host
 
 The integration is pinned to OSWorld-V2 `v2026.06.24` (commit
