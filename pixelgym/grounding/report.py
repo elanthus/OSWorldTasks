@@ -126,7 +126,8 @@ def render_error_review_images(
             marks_record=records[(example_id, "marks")],
             output_path=repository_root / review["review_image_path"],
             subtitle=(
-                f"Review {review['condition']} error | suggested: {review['category']} | "
+                f"Review {review['condition']} error | suggested: "
+                f"{', '.join(review['categories'])} | "
                 f"status: {review['review_status']}"
             ),
         )
@@ -467,6 +468,7 @@ def generate_results_package(
     bootstrap_samples: int = 10_000,
     bootstrap_seed: int = 20_260_809,
 ) -> dict[str, Any]:
+    protocol_path = repository_root / "artifacts" / "grounding-protocol.md"
     dataset_path = repository_root / "artifacts" / "grounding-dataset.jsonl"
     overlays_path = repository_root / "artifacts" / "grounding-overlays.jsonl"
     examples = load_jsonl(dataset_path)
@@ -482,7 +484,13 @@ def generate_results_package(
     results["report_version"] = REPORT_VERSION
     results["inputs"] = {
         path.relative_to(repository_root).as_posix(): _sha256(path)
-        for path in (dataset_path, overlays_path, predictions_path, error_review_path)
+        for path in (
+            protocol_path,
+            dataset_path,
+            overlays_path,
+            predictions_path,
+            error_review_path,
+        )
     }
     figures = repository_root / "artifacts" / "grounding" / "figures"
     accuracy_path = figures / "raw-vs-marks-accuracy.png"

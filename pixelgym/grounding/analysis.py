@@ -13,7 +13,7 @@ from pixelgym.grounding.evaluation import PREDICTION_SCHEMA_VERSION, PROMPT_VERS
 from pixelgym.grounding.schema import PROTOCOL_VERSION, target_area_slice
 
 ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v1"
-ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v1"
+ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v2"
 DEFAULT_BOOTSTRAP_SAMPLES = 10_000
 DEFAULT_BOOTSTRAP_SEED = 20_260_809
 
@@ -271,7 +271,7 @@ def build_error_review_template(
                     "schema_version": ERROR_REVIEW_SCHEMA_VERSION,
                     "example_id": pair["example_id"],
                     "condition": condition,
-                    "category": category,
+                    "categories": [category],
                     "review_status": "pending_visual_review",
                     "observation": observation,
                     "inference": inference,
@@ -297,7 +297,7 @@ def _validate_error_reviews(
         "schema_version",
         "example_id",
         "condition",
-        "category",
+        "categories",
         "review_status",
         "observation",
         "inference",
@@ -312,11 +312,21 @@ def _validate_error_reviews(
         if key in actual:
             raise ValueError(f"duplicate error review for {key}")
         actual.add(key)
-        if review["category"] not in ERROR_CATEGORIES:
-            raise ValueError(f"unknown error category {review['category']!r}")
+        categories = review["categories"]
+        if (
+            not isinstance(categories, list)
+            or not categories
+            or any(not isinstance(category, str) for category in categories)
+            or len(categories) != len(set(categories))
+        ):
+            raise ValueError("error review categories must be a nonempty unique string list")
+        unknown_categories = sorted(set(categories) - set(ERROR_CATEGORIES))
+        if unknown_categories:
+            raise ValueError(f"unknown error categories {unknown_categories!r}")
         if review["review_status"] not in REVIEW_STATUSES:
             raise ValueError(f"unknown review status {review['review_status']!r}")
-        if not all(isinstance(review[field], str) for field in required - {"schema_version"}):
+        textual_fields = required - {"schema_version", "categories"}
+        if not all(isinstance(review[field], str) for field in textual_fields):
             raise ValueError("error review textual fields must be strings")
     if actual != expected:
         missing = sorted(expected - actual)
@@ -405,7 +415,7 @@ def analyze_predictions(
         )
 
     review_status_counts = Counter(review["review_status"] for review in reviews)
-    category_counts = Counter(review["category"] for review in reviews)
+    category_counts = Counter(category for review in reviews for category in review["categories"])
     return {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "protocol_version": PROTOCOL_VERSION,

@@ -144,6 +144,23 @@ def test_analysis_keeps_paired_outcomes_and_separates_proposal_coverage() -> Non
     assert result["usage_totals"] == {"input_tokens": 80, "output_tokens": 16}
 
 
+def test_error_review_allows_multiple_nonexclusive_categories() -> None:
+    examples, predictions = _fixture()
+    reviews = _manual_reviews(examples, predictions)
+    reviews[0]["categories"] = ["small target", "crowded or overlapping controls"]
+
+    result = analyze_predictions(
+        examples=examples,
+        predictions=predictions,
+        error_reviews=reviews,
+        bootstrap_samples=10,
+    )
+
+    assert result["error_taxonomy"]["error_record_count"] == 4
+    assert result["error_taxonomy"]["category_counts"]["small target"] == 1
+    assert result["error_taxonomy"]["category_counts"]["crowded or overlapping controls"] == 1
+
+
 def test_analysis_rejects_missing_pair_and_taxonomy_record() -> None:
     examples, predictions = _fixture()
     with pytest.raises(ValueError, match="raw and one marks"):
@@ -177,10 +194,12 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
         path.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGB", (100, 80), "white").save(path)
         record["image_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    protocol_path = artifact_dir / "grounding-protocol.md"
     dataset_path = artifact_dir / "grounding-dataset.jsonl"
     overlay_path = artifact_dir / "grounding-overlays.jsonl"
     predictions_path = artifact_dir / "grounding-predictions.jsonl"
     reviews_path = artifact_dir / "grounding-error-review.jsonl"
+    protocol_path.write_text("# Frozen protocol\n")
     _write_jsonl(dataset_path, examples)
     _write_jsonl(overlay_path, [{"example_id": row["example_id"]} for row in examples])
     _write_jsonl(predictions_path, predictions)
@@ -219,5 +238,9 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert (
         stored["inputs"]["artifacts/grounding-predictions.jsonl"]
         == hashlib.sha256(predictions_path.read_bytes()).hexdigest()
+    )
+    assert (
+        stored["inputs"]["artifacts/grounding-protocol.md"]
+        == hashlib.sha256(protocol_path.read_bytes()).hexdigest()
     )
     assert all(row["schema_version"] == ERROR_REVIEW_SCHEMA_VERSION for row in reviews)
