@@ -417,6 +417,7 @@ def test_noop_does_not_call_backend_click_or_key():
 
     assert backend.click_calls == []
     assert backend.key_calls == []
+    assert backend.noop_calls == 1
 
 
 def test_click_action_dispatches_its_coordinates_to_the_backend():

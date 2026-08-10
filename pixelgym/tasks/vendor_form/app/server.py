@@ -50,6 +50,10 @@ class SubmitRequest(BaseModel):
     expedited_onboarding: bool
 
 
+class PageReadyRequest(BaseModel):
+    task_id: str
+
+
 @dataclasses.dataclass(frozen=True)
 class SubmissionRecord:
     """An immutable submission event. Neither the record nor its ``values``
@@ -78,10 +82,12 @@ class VendorFormState:
     def __init__(self) -> None:
         self.task: dict[str, Any] | None = None
         self.submissions: list[SubmissionRecord] = []
+        self.page_ready = False
 
     def reset(self, seed: int) -> dict[str, Any]:
         self.task = generator.generate_task(seed)
         self.submissions = []
+        self.page_ready = False
         return self.task
 
     def require_task(self) -> dict[str, Any]:
@@ -109,6 +115,12 @@ class VendorFormState:
         self.submissions.append(record)
         return record
 
+    def mark_page_ready(self, task_id: str) -> None:
+        task = self.require_task()
+        if task_id != task["task_id"]:
+            raise HTTPException(status_code=409, detail="page-ready task_id is stale")
+        self.page_ready = True
+
 
 def create_app() -> FastAPI:
     app = FastAPI(title="PixelGym Vendor Onboarding Task")
@@ -135,6 +147,16 @@ def create_app() -> FastAPI:
         task_id = body.pop("task_id")
         record = state.submit(task_id, body)
         return {"submission_number": record.submitted_at_step}
+
+    @app.post("/api/page-ready")
+    def mark_page_ready(payload: PageReadyRequest) -> dict[str, bool]:
+        state.mark_page_ready(payload.task_id)
+        return {"ready": True}
+
+    @app.get("/api/page-ready")
+    def get_page_ready() -> dict[str, bool]:
+        state.require_task()
+        return {"ready": state.page_ready}
 
     @app.get("/api/state")
     def get_state() -> dict[str, Any]:

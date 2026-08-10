@@ -10,5 +10,7 @@ exclude = [
     "**/*.pb.go",
     "**/*_pb2.py",
     "artifacts/day-1/**",
+    "artifacts/day-2/**",
+    "artifacts/validation-report.json",
     "tests/unit/fixtures/*.json",
 ]

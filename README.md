@@ -5,10 +5,14 @@ A three-day implementation plan for a validated, pixel-only GUI reinforcement-le
 ## Three-day plan
 
 - [Day 1 — Environment core](plans/day-1-environment-core.md)
-- [Day 2 — OSWorld integration and validation](plans/day-2-osworld-integration-and-validation.md)
+- [Day 2 — OSWorld integration and validation](plans/day-2-osworld-integration-and-validation.md) — **COMPLETE (PASS)**
 - [Day 3 — Grounding experiment and portfolio package](plans/day-3-grounding-and-portfolio.md)
 
 The plan assumes one constrained synthetic vendor-onboarding form as the core task. A file-upload variant is optional only after the core quality gates pass; a spreadsheet task is explicitly out of scope for this three-day sprint.
+
+The project owner declared the Day 2 acceptance gate **PASS** and authorized
+Day 3 on 2026-08-09 after reviewing the real golden trajectory, reset metrics,
+reward timing, space integrity, reward-hacking audit, and residual risks.
 
 ## Recommended agent roster
 
@@ -54,6 +58,158 @@ python scripts/golden_trajectory.py check
 `pip install -e ".[dev]"` is self-contained: a bare `python3.12 -m venv .venv` has no `setuptools`, and the `dev` extra pins `setuptools>=68` so `tests/integration/test_wheel_packaging.py` (which builds a real wheel with `pip wheel --no-build-isolation`) works without any extra manual install.
 
 Install the `osworld` extra (`pip install -e ".[osworld]"`) only for Day 2 integration work.
+
+## Day 2 local Docker host
+
+The integration is pinned to OSWorld-V2 `v2026.06.24` (commit
+`2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6`). It uses the Docker runtime
+named by that release manifest, but resolves it by immutable digest rather
+than the upstream provider's mutable `latest` reference. The matching Ubuntu
+QCOW2 is downloaded from the release tag and checked against the release
+manifest's size and SHA-256 before extraction.
+
+The trust basis for x86-64 Linux is the [pinned upstream release manifest](https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json),
+which names `happysixd/osworld-docker`; there is no separately published
+OSWorld-organization runtime image in that release. On Apple Silicon that
+amd64-only host creates two emulation layers. Preparation instead builds the
+small [`docker/osworld-arm64/Dockerfile`](docker/osworld-arm64/Dockerfile)
+derivative from the MIT-licensed `qemux/qemu` ARM64 image pinned to digest
+`sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be`
+(source revision `c698406b5a447234379b3fdede03d7f6e4e3fa6c`). The derivative only teaches
+the host OSWorld's fixed `/System.qcow2` mount path and enables ephemeral QEMU
+snapshot mode so the verified guest base remains read-only. The script records
+the resolved local image ID and installs the compatibility tag hardcoded by
+the pinned OSWorld provider.
+
+```bash
+source .venv/bin/activate
+pip install -e ".[osworld]"
+python scripts/prepare_osworld_docker.py
+python scripts/validate_day2.py fake
+python scripts/smoke_osworld_reset.py
+python scripts/osworld_space_smoke.py
+python scripts/osworld_golden_trajectory.py check
+python scripts/osworld_golden_trajectory.py record
+python scripts/validate_day2.py real-resets
+python scripts/validate_day2.py assemble
+python scripts/generate_validation_report.py
+```
+
+Preparation downloads a 14.2 GB compressed guest artifact into the ignored
+`.cache/osworld/` directory. The extracted guest is larger. The runtime image
+is `docker.io/happysixd/osworld-docker` pinned to digest
+`sha256:0e6497a9295647cf05bf2b2af522fdd79bdeba2737595259cab310a3bcf6baa9`.
+The guest archive must match
+`sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa`.
+
+On Apple Silicon, the released guest remains x86-64 and Docker Desktop does
+not expose KVM, so the VM still uses software emulation. The native ARM64 host
+removes the unnecessary emulation of the outer Docker container; it does not
+claim hardware acceleration. PixelGym requests a 50 GB guest volume; OSWorld
+expands the root partition in its ephemeral snapshot while leaving the pinned
+base image unchanged. The recorded expanded root was 48.5 GiB with 20.4 GiB
+free, and the first measured expanded public reset returned stable 1920×1080
+pixels in 183.23 seconds. Retain the 90-minute first-screenshot stop-loss on
+other machines. `OSWorldBackend.close()` removes only the container it created
+and leaves unrelated Docker workloads alone.
+
+An Ubuntu VM in UTM is useful only if it materially improves the available
+virtualization path. Before choosing it, check `uname -m`, `/dev/kvm`, memory,
+disk, and Docker from inside the VM. An ARM64 Ubuntu guest without usable
+nested acceleration still has to run the x86-64 OSWorld runtime and guest by
+emulation, so it is not automatically faster than Docker Desktop.
+
+The available running UTM VM was inspected through UTM's read-only
+automation interface: UTM 4.7.5 reports QEMU `aarch64`, machine `virt`, 6144
+MiB RAM, host hypervisor enabled. It does **not** qualify as the fallback for
+this pinned x86-64 OSWorld release, and its QEMU guest agent is not installed,
+so no Docker installation is needed in that VM for this project. The working
+local provider is the native ARM64 Docker host above. Stored UTM evidence is
+[`artifacts/day-2/raw/utm-provider-diagnostic.json`](artifacts/day-2/raw/utm-provider-diagnostic.json).
+
+For any different candidate UTM VM or Linux host, collect this diagnostic
+before changing providers:
+
+```bash
+uname -m
+test -c /dev/kvm && ls -l /dev/kvm || echo "no /dev/kvm"
+free -h
+df -h /
+docker version
+docker info --format '{{.OSType}}/{{.Architecture}}'
+```
+
+Proceed with UTM only when the first command prints `x86_64` and `/dev/kvm`
+exists. Otherwise the UTM guest would repeat the same x86-on-ARM software
+emulation that blocked local Docker; use a remote x86-64 Linux host with KVM
+instead. The recorded local diagnosis is
+[`artifacts/day-2/raw/provider-stop-loss.json`](artifacts/day-2/raw/provider-stop-loss.json).
+
+For a qualifying Ubuntu UTM guest, allocate at least 8 GB RAM, 4 vCPUs, and
+60 GB of free disk, then install the host prerequisites. Docker's current
+[official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/)
+use its signed apt repository:
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl git python3.12 python3.12-venv
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io \
+  docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker "$USER"
+```
+
+Log out of Ubuntu and back in so the Docker group membership takes effect,
+then verify `docker run --rm hello-world` and rerun the diagnostic block above.
+Copy this working tree—including its uncommitted Day 2 files—from the Mac so
+the UTM run uses the exact adapter under review. From a Mac terminal, replace
+`UTM_USER` and `UTM_IP`:
+
+```bash
+rsync -a --exclude .venv --exclude .cache/osworld \
+  ./ UTM_USER@UTM_IP:~/OSWorldTasks/
+```
+
+Inside Ubuntu, prepare and run the validation in the copied repository:
+
+```bash
+cd ~/OSWorldTasks
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,osworld]"
+python scripts/prepare_osworld_docker.py
+python scripts/smoke_osworld_reset.py
+```
+
+Stop at the smoke command if it does not write
+`artifacts/day-2/first-real-reset.png`. If it succeeds, continue with the
+remaining Day 2 commands listed above. Preparation must run inside Ubuntu so
+the stored engine architecture and provider metadata describe the actual host.
+
+The useful fallback is an x86-64 Ubuntu host with working `/dev/kvm`, at
+least 8 GB RAM, and at least 60 GB free disk. On that host, install Docker
+Engine from Docker's Ubuntu repository, add the login user to the `docker`
+group, log out and back in, clone this repository, then run the same commands
+above. Do not copy `.cache/osworld/preparation.json` from macOS: preparation
+must run on the selected host so its engine and image metadata are truthful.
+
+The generated automated-validation status is not the human Day 2 acceptance
+verdict. D2.5 still requires visual review of the recorded real episode, and
+D2.11 remains a human PASS/FAIL decision.
 
 ## The golden trajectory
 

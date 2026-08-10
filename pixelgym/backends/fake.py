@@ -67,6 +67,7 @@ class FakeBackend:
         self._frame: np.ndarray | None = None
         self.click_calls: list[tuple[int, int]] = []
         self.key_calls: list[str] = []
+        self.noop_calls = 0
         self.closed = False
 
     # -- Backend protocol ---------------------------------------------------
@@ -95,6 +96,7 @@ class FakeBackend:
         self._submissions = []
         self.click_calls = []
         self.key_calls = []
+        self.noop_calls = 0
         self._frame = None
         return record
 
@@ -109,6 +111,10 @@ class FakeBackend:
         if self._frame is None:
             self._frame = render.render(record, form, layout)
         return self._frame.copy()
+
+    def noop(self) -> None:
+        self._require_task()
+        self.noop_calls += 1
 
     def click(self, x: int, y: int) -> None:
         _record, _layout, form = self._require_task()
@@ -126,6 +132,28 @@ class FakeBackend:
 
     def read_submissions(self) -> Sequence[Submission]:
         return list(self._submissions)
+
+    def read_privileged_state(self) -> dict[str, Any]:
+        """Validation-only copy of the host-side task/submission state.
+
+        This method is not part of the agent-facing environment observation
+        or ``info`` mapping.  It mirrors the real backend's privileged probe
+        so reset determinism can hash equivalent state on both providers.
+        """
+        record, _layout, _form = self._require_task()
+        return {
+            "task": dict(record),
+            "submissions": [
+                {
+                    "task_id": submission.task_id,
+                    "seed": submission.seed,
+                    "values": dict(submission.values),
+                    "submitted_at_step": submission.submitted_at_step,
+                    "final": submission.final,
+                }
+                for submission in self._submissions
+            ],
+        }
 
     def close(self) -> None:
         self.closed = True

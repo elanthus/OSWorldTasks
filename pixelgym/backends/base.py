@@ -75,6 +75,14 @@ class Backend(Protocol):
         """
         ...
 
+    def noop(self) -> None:
+        """Advance by one bounded no-op/wait action.
+
+        A fake backend performs no work. A real desktop backend uses its
+        provider's structured wait path, which cannot declare completion.
+        """
+        ...
+
     def click(self, x: int, y: int) -> None:
         """Click at pixel `(x, y)`. `x` is in `[0, width)`, `y` in
         `[0, height)` -- already validated by `PixelGuiEnv` against the
