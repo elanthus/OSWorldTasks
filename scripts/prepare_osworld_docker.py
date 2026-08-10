@@ -10,6 +10,7 @@ recorded before ``DesktopEnv`` is allowed to start.
 from __future__ import annotations
 
 import argparse
+import binascii
 import hashlib
 import json
 import platform
@@ -73,6 +74,14 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(_COPY_CHUNK), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _crc32(path: Path) -> int:
+    checksum = 0
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(_COPY_CHUNK), b""):
+            checksum = binascii.crc32(chunk, checksum)
+    return checksum & 0xFFFFFFFF
 
 
 def prepare_runtime_image() -> dict[str, Any]:
@@ -250,12 +259,6 @@ def download_guest_artifact(cache_dir: Path) -> Path:
 def extract_guest_image(archive: Path, cache_dir: Path) -> Path:
     expected_name = GUEST_ARTIFACT_NAME.removesuffix(".zip")
     destination = cache_dir / expected_name
-    if destination.is_file():
-        return destination
-    partial = destination.with_suffix(destination.suffix + ".partial")
-    if partial.exists():
-        partial.unlink()
-
     with zipfile.ZipFile(archive) as zf:
         files = [member for member in zf.infolist() if not member.is_dir()]
         matching = [member for member in files if Path(member.filename).name == expected_name]
@@ -267,6 +270,16 @@ def extract_guest_image(archive: Path, cache_dir: Path) -> Path:
         member = matching[0]
         if Path(member.filename).is_absolute() or ".." in Path(member.filename).parts:
             raise PreparationError(f"unsafe archive member: {member.filename}")
+        if destination.is_file():
+            if destination.stat().st_size != member.file_size or _crc32(destination) != member.CRC:
+                raise PreparationError(
+                    "existing guest image failed verified archive-member size/CRC validation: "
+                    f"{destination}"
+                )
+            return destination
+        partial = destination.with_suffix(destination.suffix + ".partial")
+        if partial.exists():
+            partial.unlink()
         with zf.open(member) as source, partial.open("wb") as output:
             shutil.copyfileobj(source, output, length=_COPY_CHUNK)
     partial.replace(destination)

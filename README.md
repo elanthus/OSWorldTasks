@@ -175,8 +175,8 @@ sudo usermod -aG docker "$USER"
 
 Log out of Ubuntu and back in so the Docker group membership takes effect,
 then verify `docker run --rm hello-world` and rerun the diagnostic block above.
-Copy this working tree—including its uncommitted Day 2 files—from the Mac so
-the UTM run uses the exact adapter under review. From a Mac terminal, replace
+Copy the committed Day 2 checkout and evidence from the Mac so the UTM run
+uses the exact adapter under review. From a Mac terminal, replace
 `UTM_USER` and `UTM_IP`:
 
 ```bash
@@ -207,9 +207,10 @@ group, log out and back in, clone this repository, then run the same commands
 above. Do not copy `.cache/osworld/preparation.json` from macOS: preparation
 must run on the selected host so its engine and image metadata are truthful.
 
-The generated automated-validation status is not the human Day 2 acceptance
-verdict. D2.5 still requires visual review of the recorded real episode, and
-D2.11 remains a human PASS/FAIL decision.
+The generated automated-validation status alone is not the human Day 2
+acceptance verdict. For the stored run, the project owner completed the D2.5
+visual review and declared D2.11 PASS; the declaration is stored in
+[`artifacts/day-2/raw/human-gate.json`](artifacts/day-2/raw/human-gate.json).
 
 ## The golden trajectory
 
