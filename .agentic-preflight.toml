@@ -12,5 +12,6 @@ exclude = [
     "artifacts/day-1/**",
     "artifacts/day-2/**",
     "artifacts/validation-report.json",
+    "tests/integration/fixtures/*.json",
     "tests/unit/fixtures/*.json",
 ]
