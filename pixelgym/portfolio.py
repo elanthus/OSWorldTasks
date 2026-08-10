@@ -41,6 +41,10 @@ def _frame(
     draw = ImageDraw.Draw(canvas)
     status = "success / terminated" if terminated else "continuing"
     reward_color = (91, 214, 138) if reward > 0 else (218, 222, 229)
+    status_text = f"reward {reward:.1f} | {status}"
+    status_font = _font(15, bold=True)
+    status_box = draw.textbbox((0, 0), status_text, font=status_font)
+    status_width = status_box[2] - status_box[0]
     draw.text(
         (18, screenshot_height + 9),
         f"Real OSWorld episode | step {step:03d}/{total_steps:03d} | {action_name}",
@@ -48,9 +52,9 @@ def _frame(
         fill=(245, 247, 250),
     )
     draw.text(
-        (690, screenshot_height + 9),
-        f"reward {reward:.1f} | {status}",
-        font=_font(16, bold=True),
+        (width - status_width - 18, screenshot_height + 10),
+        status_text,
+        font=status_font,
         fill=reward_color,
     )
     return canvas.quantize(colors=128, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
