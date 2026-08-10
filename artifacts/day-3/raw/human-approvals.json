@@ -1,0 +1,23 @@
+{
+  "schema_version": "pixelgym-day3-human-approvals-v1",
+  "recorded_date": "2026-08-10",
+  "pilot": {
+    "approved": true,
+    "approved_example_count": 10,
+    "approved_condition_call_count": 20,
+    "scope": "Pilot images, coordinate mapping, prompts, parser, and ambiguity assessment."
+  },
+  "full_run": {
+    "approved": true,
+    "provider": "codex-cli",
+    "model": "gpt-5.4-mini",
+    "authorized_new_condition_calls": 180,
+    "cached_pilot_condition_calls": 20,
+    "total_condition_call_cap": 200
+  },
+  "demo_publication": {
+    "approved": null,
+    "reason": "The user wrote 'Demo approved/rejected' without selecting one; no publication decision is inferred."
+  },
+  "source_user_message": "Pilot approved. Authorize 180 Codex CLI calls using gpt-5.4-mini. Demo approved/rejected."
+}

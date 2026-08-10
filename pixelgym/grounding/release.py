@@ -246,6 +246,10 @@ def collect_release_observations(repository_root: Path) -> dict[str, Any]:
         "day2": _day2_observations(repository_root),
         "portfolio_copy": _copy_observations(repository_root),
         "demo": _demo_observations(repository_root),
+        "human_approvals": _load_json(repository_root / "artifacts/day-3/raw/human-approvals.json"),
+        "protocol_provenance": _load_json(
+            repository_root / "artifacts/day-3/raw/protocol-provenance.json"
+        ),
         "clean_install_command_evidence": _load_json(
             repository_root / "artifacts/day-3/release/clean-install.json"
         ),

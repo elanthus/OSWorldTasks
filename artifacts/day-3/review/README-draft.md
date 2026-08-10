@@ -1,7 +1,7 @@
 # PixelGym-OSWorld
 
 > **REVIEW DRAFT — not approved for publication.** Link paths below are written for the
-> repository-root `README.md`. The grounding result and demo approval remain explicit gates.
+> repository-root `README.md`. Quantitative claims and demo publication remain explicit gates.
 
 PixelGym-OSWorld is a Gymnasium-compliant, pixel-only GUI environment on OSWorld-V2 with
 bounded clicks and keystrokes, exact host-side sparse rewards, deterministic seeded task
@@ -19,12 +19,60 @@ generation, and stored validation evidence for a synthetic vendor-onboarding wor
 | Reward timing | 122/122 stored trajectories met their expected reward/termination outcome | [`reward-timing.json`](artifacts/day-2/raw/reward-timing.json) |
 | Space integrity | Gymnasium checker; 500 sampled actions; 14 invalid and 4 boundary probes | [`space-integrity.json`](artifacts/day-2/raw/space-integrity.json) |
 | Reward-hacking audit | 14/14 surfaces have evidence and a classified disposition | [`reward-hacking.json`](artifacts/day-2/raw/reward-hacking.json) |
-| Grounding experiment | **[PENDING FULL PAIRED RUN: raw accuracy, marks accuracy, delta, CI, p-value]** | `artifacts/grounding-results.json` |
+| Grounding experiment | Raw 56/100; marks 100/100; +44.0 points, paired bootstrap 95% CI [+35.0, +54.0] | [`grounding-results.json`](artifacts/grounding-results.json) |
 
 The project owner reviewed the stored Day 2 evidence and declared that gate `PASS`. Automated
 status is not substituted for the human verdict. The real resets are **not bitwise visually
 deterministic**: the live guest clock changed a small localized pixel region. Semantic task state
-was exact across resets, and the unmasked full-frame minimum SSIM was 0.999863.
+was exact across resets, and the unmasked full-frame minimum SSIM was 0.999863
+([validation evidence](artifacts/validation-report.json)).
+
+## Grounding benchmark
+
+The frozen benchmark contains 100 examples: 20 task seeds across five screen states and ten control
+targets. Raw-coordinate and set-of-marks conditions use the same target instruction. Candidate
+generation is target-agnostic, overlays are deterministic, and proposal coverage is reported
+separately from conditional mark-selection accuracy
+([frozen dataset](artifacts/grounding-dataset.jsonl)).
+
+Using Codex CLI with `gpt-5.4-mini` on 2026-08-10, raw-coordinate accuracy was **56/100
+(56.0%)** and set-of-marks accuracy was **100/100 (100.0%)**. The paired difference was **+44.0
+percentage points**, with a fixed-seed paired-bootstrap 95% CI of **[+35.0, +54.0]** and a
+two-sided exact McNemar p-value of **1.137×10⁻¹³**. Proposal coverage was **100/100**; conditional
+mark-selection accuracy was also **100/100**
+([grounding results](artifacts/grounding-results.json)).
+
+![Raw-coordinate versus set-of-marks accuracy](artifacts/grounding/figures/raw-vs-marks-accuracy.png)
+
+This is a measured result for one model alias, synthetic task family, prompt, layout, and screen
+size. It supports the paired effect of adding these frozen overlays in this setup; it does not
+establish why predictions changed or generalize to other GUI tasks. The manually reviewed 44 raw
+errors included 31 wrong-semantic-element labels, 6 just-outside labels, and 7 coordinate-scaling
+labels treated explicitly as reviewer inference. Labels are non-exclusive
+([review decisions](artifacts/grounding-error-review-decisions.json)).
+
+Offline reproduction makes no model or network calls:
+
+```bash
+python scripts/generate_grounding_report.py
+```
+
+The recorded run used the Codex CLI provider and current Codex login. An implemented but unused
+OpenRouter alternative reads configuration only from the process environment:
+
+```bash
+export OPENROUTER_API_KEY="..."
+export OPENROUTER_MODEL="provider/model-id"
+
+python scripts/run_grounding_evaluation.py \
+  --provider openrouter --full --max-new-calls 0 --plan-only
+```
+
+`OPENROUTER_MODEL` must select an image-capable route with structured-output support. The adapter
+uses strict JSON Schema, requires routed parameter support, and enables neither response healing nor
+hidden retries. See OpenRouter's official
+[image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
+[structured-output](https://openrouter.ai/docs/guides/features/structured-outputs) documentation.
 
 ## Architecture
 
@@ -72,7 +120,8 @@ terminates rather than truncates.
 The integration is pinned to OSWorld-V2 tag `v2026.06.24` at commit
 `2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6`. The stored run used Python 3.12.13,
 1920×1080 screenshots, and a digest-pinned native ARM64 QEMU host around the release's unchanged
-x86-64 guest. Full provider and image metadata are recorded in the validation artifact.
+x86-64 guest. Full provider and image metadata are recorded in the
+[validation artifact](artifacts/validation-report.json).
 
 ```bash
 source .venv/bin/activate
@@ -87,8 +136,8 @@ python scripts/generate_validation_report.py
 ```
 
 Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
-the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds. See the full
-root README provider section before attempting this path.
+the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds
+([validation evidence](artifacts/validation-report.json)).
 
 ## Environment contract
 
@@ -101,21 +150,8 @@ root README provider section before attempting this path.
 - Reset: same seed produces the same canonical task, task hash, and initial application state and
   clears prior submissions.
 
-## Grounding benchmark
-
-The frozen benchmark contains 100 examples: 20 task seeds across five screen states and ten control
-targets. Raw-coordinate and set-of-marks conditions use the same target instruction. Candidate
-generation is target-agnostic, overlays are deterministic, and proposal coverage is reported
-separately from conditional mark-selection accuracy.
-
-**[PENDING FULL PAIRED RESULT AND HUMAN CLAIM APPROVAL.]** The final paragraph and accuracy figure
-must be copied only from `artifacts/grounding-results.json` and `artifacts/grounding-report.md`.
-
-Offline report reproduction after the immutable paired predictions and manual error review exist:
-
-```bash
-python scripts/generate_grounding_report.py
-```
+These behaviors are exercised by the stored
+[validation report](artifacts/validation-report.json) and fast test suite.
 
 ## Reward-hacking audit
 
@@ -123,7 +159,8 @@ The stored audit covers 14 surfaces, including self-declared completion, incompl
 visible fake success text, stale task identity, repeated submission, coordinate violations,
 post-episode calls, modifier/devtools access, direct navigation, action mutation after validation,
 and termination/truncation confusion. Each is classified as `blocked`, `tested`, `mitigated`, or a
-known limitation, with the underlying evidence retained.
+known limitation, with the underlying evidence retained
+([reward-hacking evidence](artifacts/day-2/raw/reward-hacking.json)).
 
 ## Limitations
 
@@ -135,7 +172,8 @@ known limitation, with the underlying evidence retained.
 - The privileged state endpoint exists inside the guest. The bounded action interface cannot
   navigate to it, but browser/guest exploitation is outside the threat model.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
-- **[PENDING FINAL GROUNDING LIMITATIONS FROM THE GENERATED REPORT.]**
+- The grounding experiment covers one model, prompt, resolution, synthetic application layout, and
+  target-agnostic candidate generator; its result should not be generalized beyond that scope.
 
 ## Project evidence
 
@@ -143,5 +181,4 @@ known limitation, with the underlying evidence retained.
 - [`artifacts/day-2/real-golden/contact-sheet.png`](artifacts/day-2/real-golden/contact-sheet.png) — real episode frames
 - [`artifacts/grounding-protocol.md`](artifacts/grounding-protocol.md) — frozen experiment protocol
 - [`artifacts/grounding-dataset.jsonl`](artifacts/grounding-dataset.jsonl) — frozen 100-example dataset
-- `artifacts/grounding-report.md` — **pending full experiment**
-
+- [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
