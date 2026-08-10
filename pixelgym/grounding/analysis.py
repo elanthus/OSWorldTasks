@@ -29,6 +29,7 @@ ERROR_CATEGORIES = (
     "invalid response format",
 )
 REVIEW_STATUSES = ("pending_visual_review", "manual_visual_review")
+ERROR_REVIEW_DECISIONS_SCHEMA_VERSION = "pixelgym-grounding-error-review-decisions-v1"
 
 
 def _percentile(sorted_values: list[float], percentile: float) -> float:
@@ -283,6 +284,53 @@ def build_error_review_template(
     return reviews
 
 
+def apply_manual_error_review_decisions(
+    reviews: list[dict[str, Any]], decisions: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Apply checked visual-review decisions to the generated error template."""
+    if decisions.get("schema_version") != ERROR_REVIEW_DECISIONS_SCHEMA_VERSION:
+        raise ValueError("error review decisions schema version does not match")
+    if decisions.get("protocol_version") != PROTOCOL_VERSION:
+        raise ValueError("error review decisions protocol version does not match")
+    assignments = decisions.get("category_assignments")
+    interpretations = decisions.get("category_interpretation")
+    if not isinstance(assignments, dict) or not isinstance(interpretations, dict):
+        raise TypeError("error review decisions must contain assignments and interpretations")
+    if set(assignments) - set(ERROR_CATEGORIES):
+        raise ValueError("error review decisions contain an unknown category")
+    if set(assignments) != set(interpretations):
+        raise ValueError("every assigned category must have an interpretation")
+    expected_keys = {f"{row['example_id']}/{row['condition']}" for row in reviews}
+    assigned_categories: defaultdict[str, list[str]] = defaultdict(list)
+    for category in ERROR_CATEGORIES:
+        keys = assignments.get(category, [])
+        if not isinstance(keys, list) or any(not isinstance(key, str) for key in keys):
+            raise ValueError("category assignments must be string lists")
+        if len(keys) != len(set(keys)):
+            raise ValueError(f"category {category!r} contains duplicate review keys")
+        for key in keys:
+            if key not in expected_keys:
+                raise ValueError(f"category assignment references unknown error {key!r}")
+            assigned_categories[key].append(category)
+    if set(assigned_categories) != expected_keys:
+        missing = sorted(expected_keys - set(assigned_categories))
+        raise ValueError(f"manual decisions do not cover every error; missing={missing}")
+
+    finalized = []
+    for review in reviews:
+        key = f"{review['example_id']}/{review['condition']}"
+        categories = assigned_categories[key]
+        finalized.append(
+            {
+                **review,
+                "categories": categories,
+                "review_status": "manual_visual_review",
+                "inference": " ".join(interpretations[category] for category in categories),
+            }
+        )
+    return finalized
+
+
 def _validate_error_reviews(
     pairs: list[dict[str, Any]], reviews: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -382,7 +430,11 @@ def analyze_predictions(
         "raw": _condition_summary(raw_records),
         "marks": _condition_summary(marks_records),
     }
-    delta = condition_metrics["marks"]["accuracy"] - condition_metrics["raw"]["accuracy"]
+    delta_percentage_points = (
+        100
+        * (condition_metrics["marks"]["correct_count"] - condition_metrics["raw"]["correct_count"])
+        / len(pairs)
+    )
     per_example = []
     for pair in pairs:
         per_example.append(
@@ -443,7 +495,7 @@ def analyze_predictions(
         },
         "conditions": condition_metrics,
         "paired": {
-            "delta_percentage_points": 100 * delta,
+            "delta_percentage_points": delta_percentage_points,
             "bootstrap_95_ci_percentage_points": [100 * ci_low, 100 * ci_high],
             "both_correct_count": both_correct,
             "raw_only_correct_count": raw_only,

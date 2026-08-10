@@ -162,7 +162,12 @@ def write_accuracy_figure(results: dict[str, Any], output_path: Path) -> None:
     delta = results["paired"]["delta_percentage_points"]
     low, high = results["paired"]["bootstrap_95_ci_percentage_points"]
     draw.text((700, 152), "Paired difference", font=_font(19, bold=True), fill=_INK)
-    draw.text((700, 188), f"{delta:+.1f} percentage points", font=_font(24, bold=True), fill=_MARKS)
+    draw.text(
+        (680, 190),
+        f"{delta:+.1f} percentage points",
+        font=_font(19, bold=True),
+        fill=_MARKS,
+    )
     draw.text((700, 229), f"95% bootstrap CI [{low:+.1f}, {high:+.1f}]", font=_font(15), fill=_INK)
     draw.text(
         (700, 263),
@@ -243,6 +248,7 @@ def write_gallery(
     predictions: list[dict[str, Any]],
     output_directory: Path,
 ) -> list[dict[str, Any]]:
+    output_directory.mkdir(parents=True, exist_ok=True)
     example_by_id = {row["example_id"]: row for row in examples}
     records: dict[str, dict[str, dict[str, Any]]] = {}
     for record in predictions:
@@ -267,7 +273,18 @@ def write_gallery(
         buckets[bucket].append(example["example_id"])
     manifest = []
     for bucket, ids in buckets.items():
-        for example_id in ids[:2]:
+        limit = 3 if bucket == "marks_win" else 2
+        selected_ids = []
+        selected_types: set[str] = set()
+        for example_id in ids:
+            element_type = example_by_id[example_id]["element_type"]
+            if element_type in selected_types:
+                continue
+            selected_ids.append(example_id)
+            selected_types.add(element_type)
+            if len(selected_ids) == limit:
+                break
+        for example_id in selected_ids:
             pair = records[example_id]
             relative = Path("artifacts/grounding/gallery") / f"{bucket}-{example_id}.png"
             render_pair_image(
@@ -287,7 +304,11 @@ def write_gallery(
                     "marks_correct": pair["marks"]["correct"],
                 }
             )
-    output_directory.mkdir(parents=True, exist_ok=True)
+    expected_images = {repository_root / item["image_path"] for item in manifest}
+    generated_prefixes = tuple(f"{bucket}-" for bucket in buckets)
+    for existing in output_directory.glob("*.png"):
+        if existing.name.startswith(generated_prefixes) and existing not in expected_images:
+            existing.unlink()
     (output_directory / "manifest.json").write_text(_json_text(manifest))
     return manifest
 
@@ -299,6 +320,8 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
     som = results["set_of_marks"]
     low, high = paired["bootstrap_95_ci_percentage_points"]
     review = results["error_taxonomy"]
+    raw_distance = raw["normalized_center_distance"]
+    marks_distance = marks["normalized_center_distance"]
     review_warning = (
         "All error labels were manually inspected."
         if review["all_manually_reviewed"]
@@ -389,6 +412,17 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
     lines.extend(
         [
             "",
+            "## Normalized center distance",
+            "",
+            (
+                f"For parsed raw points, screenshot-diagonal-normalized center distance had mean "
+                f"{raw_distance['mean']:.4f}, median {raw_distance['median']:.4f}, and p90 "
+                f"{raw_distance['p90']:.4f}. The marked condition had mean "
+                f"{marks_distance['mean']:.4f}; valid selected marks are converted to their "
+                "candidate centers by the frozen scoring rule, so a correct marked selection has "
+                "distance zero by construction."
+            ),
+            "",
             "## Error review",
             "",
             review_warning,
@@ -399,7 +433,19 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
     )
     for category, count in review["category_counts"].items():
         lines.append(f"| {category} | {count} |")
-    lines.extend(["", "## Representative examples", ""])
+    lines.extend(
+        [
+            "",
+            (
+                "Categories are non-exclusive, so their counts can sum above the 44 error records. "
+                "The seven coordinate-scaling labels are reviewer inferences from horizontal "
+                "alignment and displacement, not proof of the causal mechanism."
+            ),
+            "",
+            "## Representative examples",
+            "",
+        ]
+    )
     if gallery:
         for item in gallery:
             lines.append(
@@ -408,6 +454,10 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
             )
     else:
         lines.append("No gallery examples were available.")
+    if paired["raw_only_correct_count"] == 0:
+        lines.append("- `raw_win` — none observed (raw correct, marks incorrect).")
+    if paired["both_incorrect_count"] == 0:
+        lines.append("- `unchanged_incorrect` — none observed (both conditions incorrect).")
     lines.extend(
         [
             "",
@@ -482,15 +532,18 @@ def generate_results_package(
         bootstrap_seed=bootstrap_seed,
     )
     results["report_version"] = REPORT_VERSION
+    input_paths = [
+        protocol_path,
+        dataset_path,
+        overlays_path,
+        predictions_path,
+        error_review_path,
+    ]
+    decisions_path = repository_root / "artifacts" / "grounding-error-review-decisions.json"
+    if decisions_path.is_file():
+        input_paths.append(decisions_path)
     results["inputs"] = {
-        path.relative_to(repository_root).as_posix(): _sha256(path)
-        for path in (
-            protocol_path,
-            dataset_path,
-            overlays_path,
-            predictions_path,
-            error_review_path,
-        )
+        path.relative_to(repository_root).as_posix(): _sha256(path) for path in input_paths
     }
     figures = repository_root / "artifacts" / "grounding" / "figures"
     accuracy_path = figures / "raw-vs-marks-accuracy.png"
@@ -512,7 +565,10 @@ def generate_results_package(
             "path": control_path.relative_to(repository_root).as_posix(),
             "sha256": _sha256(control_path),
         },
-        "gallery_manifest": "artifacts/grounding/gallery/manifest.json",
+        "gallery_manifest": {
+            "path": "artifacts/grounding/gallery/manifest.json",
+            "sha256": _sha256(repository_root / "artifacts/grounding/gallery/manifest.json"),
+        },
     }
     results_path.parent.mkdir(parents=True, exist_ok=True)
     results_path.write_text(_json_text(results))

@@ -10,6 +10,7 @@ from PIL import Image
 from pixelgym.grounding.analysis import (
     ERROR_REVIEW_SCHEMA_VERSION,
     analyze_predictions,
+    apply_manual_error_review_decisions,
     build_error_review_template,
     mcnemar_exact,
     paired_bootstrap_interval,
@@ -161,6 +162,26 @@ def test_error_review_allows_multiple_nonexclusive_categories() -> None:
     assert result["error_taxonomy"]["category_counts"]["crowded or overlapping controls"] == 1
 
 
+def test_manual_error_decisions_must_cover_every_error() -> None:
+    examples, predictions = _fixture()
+    reviews = build_error_review_template(examples, predictions)
+    keys = [f"{row['example_id']}/{row['condition']}" for row in reviews]
+    decisions = {
+        "schema_version": "pixelgym-grounding-error-review-decisions-v1",
+        "protocol_version": PROTOCOL_VERSION,
+        "category_assignments": {"wrong semantic element": keys},
+        "category_interpretation": {"wrong semantic element": "Reviewed observation."},
+    }
+
+    finalized = apply_manual_error_review_decisions(reviews, decisions)
+    assert all(row["review_status"] == "manual_visual_review" for row in finalized)
+    assert all(row["categories"] == ["wrong semantic element"] for row in finalized)
+
+    decisions["category_assignments"]["wrong semantic element"] = keys[:-1]
+    with pytest.raises(ValueError, match="do not cover every error"):
+        apply_manual_error_review_decisions(reviews, decisions)
+
+
 def test_analysis_rejects_missing_pair_and_taxonomy_record() -> None:
     examples, predictions = _fixture()
     with pytest.raises(ValueError, match="raw and one marks"):
@@ -206,6 +227,9 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     _write_jsonl(reviews_path, reviews)
     results_path = artifact_dir / "grounding-results.json"
     report_path = artifact_dir / "grounding-report.md"
+    stale_gallery = artifact_dir / "grounding/gallery/raw_win-stale.png"
+    stale_gallery.parent.mkdir(parents=True)
+    stale_gallery.write_bytes(b"stale")
 
     first = generate_results_package(
         repository_root=tmp_path,
@@ -234,6 +258,7 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert "No model or network calls" in report_path.read_text()
     assert (artifact_dir / "grounding/figures/raw-vs-marks-accuracy.png").is_file()
     assert (artifact_dir / "grounding/figures/control-type-accuracy.png").is_file()
+    assert not stale_gallery.exists()
     stored = json.loads(results_path.read_text())
     assert (
         stored["inputs"]["artifacts/grounding-predictions.jsonl"]
