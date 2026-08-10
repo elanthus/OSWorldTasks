@@ -16,3 +16,7 @@ exclude = [
     "tests/integration/fixtures/*.json",
     "tests/unit/fixtures/*.json",
 ]
+
+[commands]
+test = ".venv/bin/pytest"
+lint = ".venv/bin/ruff check ."
