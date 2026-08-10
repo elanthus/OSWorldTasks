@@ -1,0 +1,12 @@
+{
+  "automatic_checks_passed": true,
+  "contact_sheet_path": "artifacts/grounding/marks-contact-sheet.png",
+  "example_count": 100,
+  "mapping_path": "artifacts/grounding-overlays.jsonl",
+  "marked_image_count": 100,
+  "marked_image_directory": "artifacts/grounding/images/marks",
+  "overlay_version": "pixelgym-set-of-marks-v1",
+  "proposal_coverage": 1.0,
+  "proposal_covered_count": 100,
+  "protocol_version": "pixelgym-grounding-v1"
+}

@@ -1,0 +1,16 @@
+{
+  "byte_identical_file_count": 100,
+  "candidate_aggregate_sha256": "e715c7db4c5fc97e5ba0cfa7e56422d3a30086ad5ced6a3ad30799a77edba5da",
+  "candidate_label": "overlay-run-2",
+  "comparison": "bitwise PNG bytes and decoded RGB pixels",
+  "differing_file_count": 0,
+  "differing_pixel_bbox_xyxy": null,
+  "differing_pixel_count": 0,
+  "file_count": 100,
+  "mask_applied": false,
+  "max_channel_delta": 0,
+  "reference_aggregate_sha256": "e715c7db4c5fc97e5ba0cfa7e56422d3a30086ad5ced6a3ad30799a77edba5da",
+  "reference_label": "overlay-run-1",
+  "schema_version": "pixelgym-grounding-repeatability-v1",
+  "tolerance_applied": false
+}

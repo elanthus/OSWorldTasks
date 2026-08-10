@@ -23,6 +23,7 @@ dev = [
     "ruff>=0.4",
     "build>=1.0",
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
+    "playwright>=1.52",  # deterministic Day 3 browser capture tooling
     "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
 ]
 
