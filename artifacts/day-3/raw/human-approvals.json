@@ -16,8 +16,17 @@
     "total_condition_call_cap": 200
   },
   "demo_publication": {
-    "approved": null,
-    "reason": "The user wrote 'Demo approved/rejected' without selecting one; no publication decision is inferred."
+    "approved": true,
+    "approved_at": "2026-08-10T08:40:16Z",
+    "scope": "Publication of artifacts/day-3/review/real-osworld-episode.gif in the project README."
   },
-  "source_user_message": "Pilot approved. Authorize 180 Codex CLI calls using gpt-5.4-mini. Demo approved/rejected."
+  "public_claims": {
+    "readme_approved": true,
+    "resume_claims_approved": true,
+    "approved_at": "2026-08-10T08:40:16Z"
+  },
+  "source_user_messages": [
+    "Pilot approved. Authorize 180 Codex CLI calls using gpt-5.4-mini. Demo approved/rejected.",
+    "Demo approved, README and resume claims approved"
+  ]
 }

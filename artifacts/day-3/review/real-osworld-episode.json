@@ -1,7 +1,8 @@
 {
   "action_count": 112,
-  "approved_for_public_readme": false,
-  "credential_or_private_ui_review": "pending_human_review",
+  "approved_for_public_readme": true,
+  "credential_or_private_ui_review": "approved_by_project_owner",
+  "human_approval_timestamp_utc": "2026-08-10T08:40:16Z",
   "duration_seconds": 34.08,
   "output_height": 594,
   "output_path": "artifacts/day-3/review/real-osworld-episode.gif",
