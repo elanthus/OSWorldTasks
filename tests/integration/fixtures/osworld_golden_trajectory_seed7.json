@@ -1,0 +1,1470 @@
+{
+  "action_count": 112,
+  "actions": [
+    {
+      "action_type": 0,
+      "key": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 42,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 27,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 23,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 29,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 14,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 94,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 37,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 34,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 94,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 47,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 28,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 29,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 12,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 28,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 94,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 42,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 27,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 30,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 25,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 23,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 11,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 27,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 13,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 23,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 83,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 27,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 23,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 29,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 14,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 11,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 34,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 21,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 28,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 29,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 18,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 12,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 28,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 16,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 27,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 24,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 30,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 25,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 75,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 14,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 33,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 10,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 22,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 25,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 21,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 14,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 72,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 1,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 5,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 5,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 5,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 4,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 4,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 7,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 9,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 1,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 55,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 36,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 59,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 74,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 2,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 45,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 38,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 1,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 43,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 1,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 40,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 2,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 101,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 98,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 95,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "action_type": 2,
+      "key": 96,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "fake_backend_timeline": [
+    {
+      "action_type": 0,
+      "reward": 0.0,
+      "step": 1,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 2,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 3,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 4,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 5,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 6,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 7,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 8,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 9,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 10,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 11,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 12,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 13,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 14,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 15,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 16,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 17,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 18,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 19,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 20,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 21,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 22,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 23,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 24,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 25,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 26,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 27,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 28,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 29,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 30,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 31,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 32,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 33,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 34,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 35,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 36,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 37,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 38,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 39,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 40,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 41,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 42,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 43,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 44,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 45,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 46,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 47,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 48,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 49,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 50,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 51,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 52,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 53,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 54,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 55,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 56,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 57,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 58,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 59,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 60,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 61,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 62,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 63,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 64,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 65,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 66,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 67,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 68,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 69,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 70,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 71,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 72,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 73,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 74,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 75,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 76,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 77,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 78,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 79,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 80,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 81,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 82,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 83,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 84,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 85,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 86,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 87,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 88,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 89,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 90,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 91,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 92,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 93,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 94,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 95,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 96,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 97,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 98,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 99,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 100,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 101,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 102,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 103,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 104,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 105,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 106,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 107,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 108,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 109,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 110,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 0.0,
+      "step": 111,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action_type": 2,
+      "reward": 1.0,
+      "step": 112,
+      "terminated": true,
+      "truncated": false
+    }
+  ],
+  "key_allowlist_version": 1,
+  "navigation": "page-focused Tab order; no integration coordinates",
+  "note": "Integration-only frozen public-action trajectory. It contains no expected values or bounding boxes and is replayed without consulting the generator.",
+  "schema_version": 1,
+  "seed": 7,
+  "task_id": "vf-6bed55ed612d3c5a",
+  "task_spec_sha256": "6bed55ed612d3c5a348c3db7c74dca938e771ac1f32681565e7d0d7096a679e9"
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "provider": "docker-local-native-arm64-host",
+  "outcome": "viable",
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "docker_engine_architecture": "arm64",
+    "docker_engine_memory_bytes": 8320954368,
+    "kvm_available_to_runtime": false
+  },
+  "runtime": {
+    "strategy": "local-arm64-compatibility-build",
+    "image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+    "local_image_id": "sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3",
+    "base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+    "source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+    "source_license": "MIT",
+    "dockerfile": "docker/osworld-arm64/Dockerfile",
+    "guest_write_mode": "ephemeral-qemu-snapshot",
+    "guest_base_read_only": true,
+    "declared_persistent_volumes": [],
+    "observed_container_mounts": [
+      {
+        "type": "bind",
+        "destination": "/System.qcow2",
+        "read_only": true
+      }
+    ],
+    "repeat_build_image_id": "sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3",
+    "repeat_build_matched": true
+  },
+  "guest": {
+    "release": "v2026.06.24",
+    "architecture": "x86_64",
+    "archive_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+    "requested_volume_size_gb": 50,
+    "expanded_root_size_bytes": 52124327936,
+    "expanded_root_available_bytes": 21934698496,
+    "expanded_root_used_percent": 56
+  },
+  "probe": {
+    "desktop_visible": true,
+    "guest_screenshot_endpoint_status": 200,
+    "guest_screenshot_bytes": 1563666,
+    "public_adapter_reset_returned_pixels": true,
+    "public_adapter_screenshot_shape": [
+      1080,
+      1920,
+      3
+    ],
+    "public_adapter_reset_to_stable_frame_seconds": 183.2311019160552,
+    "public_adapter_evidence": "artifacts/day-2/raw/first-real-reset.json",
+    "provider_closed": true
+  },
+  "cleanup": {
+    "docker_volume_count_before_scratch_image_validation": 51,
+    "docker_volume_count_after_scratch_image_validation": 51,
+    "new_anonymous_volumes_created": 0,
+    "preexisting_volumes_removed": 0
+  },
+  "interpretation": "The native ARM64 Docker host removes emulation of the outer amd64 container while leaving the pinned x86_64 OSWorld guest under QEMU software emulation. OSWorld expanded the guest root in an ephemeral snapshot to provide 20.4 GiB free without modifying the pinned base disk. It produced the required real public screenshot without changing the PixelGym observation, action, reward, or evaluator contracts."
+}

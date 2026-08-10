@@ -1,5 +1,9 @@
 # Day 2 — Integrate OSWorld-V2 and Validate the Environment
 
+**Status: COMPLETE — PASS.** The project owner declared the D2.11 gate PASS
+and authorized Day 3 on 2026-08-09. The stored human-gate record is
+[`artifacts/day-2/raw/human-gate.json`](../artifacts/day-2/raw/human-gate.json).
+
 ## Outcome
 
 By the end of Day 2, the same environment contract from Day 1 should run through a real OSWorld-V2 desktop backend, and the repository should generate a validation report covering reset reproducibility, reward timing, action/observation integrity, and reward-hacking surfaces.
@@ -288,16 +292,16 @@ Suggested agent handoff:
 
 Mark Day 2 **PASS** only if:
 
-- [ ] OSWorld-V2 is pinned to `v2026.06.24`.
-- [ ] Core tests still run without OSWorld.
-- [ ] A real OSWorld reset returns screenshot pixels through `PixelGuiEnv`.
-- [ ] A real public-action trajectory earns exactly one terminal reward.
-- [ ] Same-seed task and application state are exact across resets.
-- [ ] Screenshot variability is measured and honestly classified.
-- [ ] Reward-timing tests include golden prefixes and near misses.
-- [ ] Space-integrity checks pass.
-- [ ] The reward-hacking matrix has evidence and residual risks.
-- [ ] The provider was closed or stopped after validation.
+- [x] OSWorld-V2 is pinned to `v2026.06.24`.
+- [x] Core tests still run without OSWorld.
+- [x] A real OSWorld reset returns screenshot pixels through `PixelGuiEnv`.
+- [x] A real public-action trajectory earns exactly one terminal reward.
+- [x] Same-seed task and application state are exact across resets.
+- [x] Screenshot variability is measured and honestly classified.
+- [x] Reward-timing tests include golden prefixes and near misses.
+- [x] Space-integrity checks pass.
+- [x] The reward-hacking matrix has evidence and residual risks.
+- [x] The provider was closed or stopped after validation.
 
 If no real OSWorld run succeeded, Day 3 may still build the grounding pipeline from the local app, but the README must label OSWorld integration as incomplete. Do not claim a completed OSWorld environment on a resume until the integration gate passes.
 

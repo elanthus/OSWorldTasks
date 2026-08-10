@@ -53,6 +53,21 @@ def test_reset_with_different_seed_changes_the_task():
     assert first["task_id"] != second["task_id"]
 
 
+def test_page_ready_marker_is_task_bound_and_reset_to_false():
+    client = _client()
+    active = client.post("/api/reset", json={"seed": 7}).json()
+    assert client.get("/api/page-ready").json() == {"ready": False}
+
+    stale = client.post("/api/page-ready", json={"task_id": "vf-stale"})
+    marked = client.post("/api/page-ready", json={"task_id": active["task_id"]})
+
+    assert stale.status_code == 409
+    assert marked.json() == {"ready": True}
+    assert client.get("/api/page-ready").json() == {"ready": True}
+    client.post("/api/reset", json={"seed": 7})
+    assert client.get("/api/page-ready").json() == {"ready": False}
+
+
 def test_request_card_endpoint_exposes_desired_values_without_secrecy():
     client = _client()
     reset_resp = client.post("/api/reset", json={"seed": 11}).json()

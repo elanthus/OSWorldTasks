@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "provider": "docker-local",
+  "first_attempt_started_at": "2026-08-09T19:26:16.579587+00:00",
+  "stopped_at": "2026-08-09T20:47:21+00:00",
+  "elapsed_seconds": 4864.420413,
+  "stop_loss_seconds": 5400,
+  "outcome": "stopped_before_ceiling_after_focused_diagnosis_converged",
+  "post_stop_loss_continuation": {
+    "reason": "The active goal resumed automatically, allowing narrowly scoped checks of the pinned release's native browser path and the localized portal failure.",
+    "checked_until": "2026-08-09T21:20:11+00:00",
+    "result": "No screenshot; the additional paths converged on the same unaccelerated guest-browser blocker."
+  },
+  "resolution": {
+    "resolved_at": "2026-08-09T23:28:06.328047+00:00",
+    "strategy": "Replace only the redundant amd64 outer host with a digest-pinned native ARM64 QEMU-Docker derivative; retain the pinned x86_64 OSWorld guest unchanged.",
+    "result": "The public PixelGym reset returned a stable 1920x1080 uint8 screenshot after expanding the ephemeral guest root to 48.5 GiB (20.4 GiB free) and closed its provider cleanly. The measured expanded reset took 183.2311019160552 seconds.",
+    "evidence": "artifacts/day-2/raw/native-arm64-provider-diagnostic.json"
+  },
+  "screenshot_captured": false,
+  "public_reset_returned_pixels": false,
+  "provider_closed": true,
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "docker_engine_architecture": "arm64",
+    "docker_engine_memory_bytes": 8320954368,
+    "kvm_available_to_runtime": false
+  },
+  "pinned_inputs": {
+    "osworld_tag": "v2026.06.24",
+    "runtime_image": "docker.io/happysixd/osworld-docker@sha256:0e6497a9295647cf05bf2b2af522fdd79bdeba2737595259cab310a3bcf6baa9",
+    "guest_archive_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa"
+  },
+  "resolved_diagnostics": [
+    {
+      "surface": "Darwin port allocation",
+      "observation": "The upstream provider called psutil.net_connections(), which raised AccessDenied on macOS.",
+      "resolution": "The adapter now uses a Darwin-only socket bind plus Docker port-map check before provider startup."
+    },
+    {
+      "surface": "guest task service",
+      "observation": "The guest service initially killed its own cleanup shell because the pkill pattern matched the shell command.",
+      "resolution": "Cleanup uses self-excluding process patterns; the guest service starts, answers readiness, resets atomically, and returns the expected task identity."
+    },
+    {
+      "surface": "guest graphical session",
+      "observation": "The screenshot endpoint and wmctrl window-manager probe become ready under software emulation.",
+      "resolution": "Task setup now waits explicitly for the window manager before browser launch."
+    },
+    {
+      "surface": "guest bundle cache invalidation",
+      "observation": "OSWorld's SetupController caches transfers by source URL, so a stable task-ID filename reused an older bundle after task-app code changed.",
+      "resolution": "Guest bundle filenames now include the first 16 hexadecimal characters of the exact bundle SHA-256; the task ID and bundle content remain independently deterministic."
+    },
+    {
+      "surface": "guest root capacity",
+      "observation": "The pinned QCOW2 advertised a 50 GiB virtual disk, but its root partition had not consumed the available virtual capacity and Ubuntu displayed a low-disk notification during the first long trajectory.",
+      "resolution": "The adapter now requests OSWorld's 50 GB volume expansion for each ephemeral snapshot. The verified root is 48.5 GiB with 20.4 GiB free; the replacement 112-step trajectory had no low-disk notification."
+    }
+  ],
+  "final_blocker": {
+    "phase": "Chromium task-page launch",
+    "chrome_version": "130.0.6723.58",
+    "observation": "Chrome never created a visible client window or posted the task-bound /api/page-ready marker. Direct launches showed D-Bus StartServiceByName NoReply, xdg-desktop-portal activation timeouts, FUSE permission errors for /run/user/1000 portal mounts, and libva/DRI authentication failures. The release-native CDP path returned ECONNRESET for all 15 retries even after the window manager was ready. The release-native recovery command kept Chrome, zygote, and GPU processes alive but still created no X11 client window. A private bus without service activation instead drove the guest to a one-core CPU spin and made its control endpoint unresponsive.",
+    "focused_variants_tested": [
+      "normal desktop session bus",
+      "Chromium historical disabled: bus sentinel",
+      "valid immediately unavailable unix:path=/dev/null bus",
+      "private dbus-run-session bus",
+      "private bus with GTK/GIO portal opt-out and basic password store",
+      "release-native chrome_open_tabs after explicit desktop readiness",
+      "release-native google-chrome --remote-debugging-port=1337 recovery command",
+      "private session bus with no service-activation directories"
+    ],
+    "interpretation": "The pinned x86-64 guest boots on the arm64 Docker engine without KVM, but its desktop portal/browser startup is not viable enough to produce the required real screenshot within the bounded local investigation. The core Gym contract was not changed to accommodate this provider behavior."
+  },
+  "cleanup": {
+    "temporary_osworld_containers_running": 0,
+    "unrelated_containers_touched": 0
+  },
+  "next_provider_gate": "Resolved locally by the recorded native ARM64 compatibility host; the inspected ARM64 UTM VM is not needed."
+}

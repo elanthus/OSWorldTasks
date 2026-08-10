@@ -161,6 +161,7 @@ class PixelGuiEnv(gym.Env):
         # second read/conversion after validation already passed.
         action_type = ActionType(action.action_type)
         if action_type is ActionType.NOOP:
+            self.backend.noop()
             return
         if action_type is ActionType.CLICK:
             self.backend.click(action.x, action.y)

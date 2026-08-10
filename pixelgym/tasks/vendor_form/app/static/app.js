@@ -71,6 +71,12 @@
         renderRequestCard(task.fields);
         populateCountryOptions(task.options.country);
         populatePaymentTermsOptions(task.options.payment_terms);
+        document.body.dataset.pixelgymReady = "true";
+        return fetch("/api/page-ready", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task_id: task.task_id }),
+        });
       })
       .catch(function () {
         showStatus("No active task. Reset the environment to load a request.");

@@ -1,0 +1,52 @@
+{
+  "application_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+  "backend_metadata": {
+    "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+    "guest_artifact_repository": "xlangai/v2-image",
+    "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+    "guest_artifact_tag": "v2026.06.24",
+    "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "guest_volume_size_gb": 50,
+    "host_port_allocator": "socket-bind-plus-docker-port-map",
+    "provider": "docker-local",
+    "python_version": "3.12.13",
+    "release": "osworld-v2-2026.06.24",
+    "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+    "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+    "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+    "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+    "screen_size": [
+      1920,
+      1080
+    ],
+    "task_bundle_sha256": "3ec2ac4860ab3a37e639cfe27c473e751b566e95a5ffe43d803d1fc69383f041",
+    "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+    "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+    "upstream_tag": "v2026.06.24"
+  },
+  "captured_at": "2026-08-10T00:06:56.235599+00:00",
+  "guest_root_disk": {
+    "available_bytes": 21934698496,
+    "size_bytes": 52124327936,
+    "used_percent": 56
+  },
+  "reset_to_stable_frame_seconds": 183.2311019160552,
+  "schema_version": 1,
+  "screenshot_dtype": "uint8",
+  "screenshot_path": "artifacts/day-2/first-real-reset.png",
+  "screenshot_shape": [
+    1080,
+    1920,
+    3
+  ],
+  "seed": 7,
+  "summary": {
+    "guest_root_has_at_least_5_gib_free": true,
+    "passed": true,
+    "provider_closed": true,
+    "public_reset_returned_pixels": true,
+    "task_identity_verified": true
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "task_spec_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+}

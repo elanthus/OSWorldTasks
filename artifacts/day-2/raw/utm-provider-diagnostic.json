@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-09T23:15:10+00:00",
+  "source": "UTM read-only AppleScript automation interface",
+  "official_reference": "https://docs.getutm.app/scripting/reference/",
+  "utm": {
+    "version": "4.7.5",
+    "vm_name": "Linux",
+    "status": "started",
+    "backend": "qemu",
+    "architecture": "aarch64",
+    "machine": "virt",
+    "memory_mib": 6144,
+    "cpu_cores": 0,
+    "cpu_cores_interpretation": "UTM host default",
+    "hypervisor_enabled": true
+  },
+  "guest_agent": {
+    "available": false,
+    "probe_error": "UTM got an error: The QEMU guest agent is not running or not installed on the guest. (-2700)"
+  },
+  "pinned_osworld_requirements": {
+    "runtime_architecture": "amd64",
+    "guest_architecture": "x86_64",
+    "minimum_recommended_host_memory_gib": 8
+  },
+  "summary": {
+    "configuration_inspected_without_vm_mutation": true,
+    "architecture_compatible": false,
+    "memory_recommendation_met": false,
+    "guest_commands_executed": false,
+    "viable_osworld_fallback": false
+  },
+  "interpretation": "The running UTM VM accelerates an aarch64 guest, while the pinned OSWorld Docker runtime and QCOW2 guest are x86-64. Architecture-specific ARM virtualization cannot supply x86 KVM acceleration to the nested OSWorld guest, so this VM would retain an emulated x86 path. Its configured 6 GiB RAM is also below the documented 8 GiB fallback recommendation."
+}
