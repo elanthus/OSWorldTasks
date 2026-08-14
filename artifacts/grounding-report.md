@@ -24,7 +24,9 @@ Invalid output rates were raw=0.0% and marks=0.0%. Request-failure rates were ra
 
 ## Slices
 
-![Accuracy by control type](grounding/figures/control-type-accuracy.png)
+![Descriptive accuracy by control type](grounding/figures/control-type-accuracy.png)
+
+**Design limitation:** target identity and screen state are perfectly aliased in the frozen capture grid: each target appears in exactly one of the five screen states. The control-type rows below are descriptive compositions only; differences cannot be attributed independently to control type rather than screen state.
 
 | Element type | n | Raw | Marks | Delta (pp) |
 |---|---:|---:|---:|---:|
@@ -55,7 +57,7 @@ All error labels were manually inspected.
 | small target | 14 |
 | wrong semantic element | 31 |
 
-Categories are non-exclusive, so their counts can sum above the 44 error records. The seven coordinate-scaling labels are reviewer inferences from horizontal alignment and displacement, not proof of the causal mechanism.
+Categories are non-exclusive, so their counts can sum above the 44 error records. The 7 coordinate-scaling labels are a reviewer inference from horizontal alignment and displacement, not proof of the causal mechanism.
 
 ## Representative examples
 
@@ -69,11 +71,12 @@ Categories are non-exclusive, so their counts can sum above the 44 error records
 
 ## Latency and usage
 
-The 200 stored calls took 1585.7 seconds in aggregate provider latency (median 5402.2 ms). Usage fields are summed exactly as returned by the provider in `grounding-results.json`; they are not converted into a monetary estimate.
+The 200 of 200 stored calls with latency evidence took 1585.7 seconds in aggregate provider latency (median 5402.2 ms). Usage fields are summed exactly as returned by the provider in `grounding-results.json`; they are not converted into a monetary estimate.
 
 ## Limitations
 
 - One synthetic vendor-onboarding task family, one resolution, and one model were used.
+- Target identity is perfectly aliased with screen state in the frozen dataset, so control-type slices are descriptive and do not identify a control-type effect.
 - The model name may be a moving provider alias rather than an immutable snapshot.
 - Candidate generation is deterministic and target-agnostic, but the resulting overlays are specific to this fixed application layout.
 - A paired observational result supports the effect of the overlay intervention in this setup; it does not prove why an error changed.

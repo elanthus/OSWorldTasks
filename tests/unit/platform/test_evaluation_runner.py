@@ -123,6 +123,8 @@ def test_invalid_answers_are_final_and_raw_is_stored_before_parser(
     first_envelope = json.loads(LocalImmutableStore(tmp_path / "immutable").get_verified(references[0]))
     assert first_envelope["raw_response"] == "not-json"
     assert first_envelope["request_status"] == "responded"
+    assert first_envelope["started_at_utc"] is None
+    assert "does not expose" in first_envelope["started_at_missing_reason"]
 
 
 def test_failure_after_receipt_resumes_from_raw_without_duplicate_first_call(

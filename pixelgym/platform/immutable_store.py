@@ -78,13 +78,27 @@ class LocalImmutableStore:
                 return reference
             temporary_data = data_path.with_name(f".{data_path.name}.{os.getpid()}.tmp")
             temporary_meta = metadata_path.with_name(f".{metadata_path.name}.{os.getpid()}.tmp")
+            linked_data = False
+            linked_metadata = False
             try:
                 temporary_data.write_bytes(data)
                 temporary_meta.write_bytes(canonical_json_bytes(reference.to_dict()) + b"\n")
-                os.link(temporary_data, data_path)
                 os.link(temporary_meta, metadata_path)
+                linked_metadata = True
+                os.link(temporary_data, data_path)
+                linked_data = True
             except FileExistsError as exc:
+                if linked_data:
+                    data_path.unlink(missing_ok=True)
+                if linked_metadata:
+                    metadata_path.unlink(missing_ok=True)
                 raise ImmutableStoreError("concurrent immutable put conflict") from exc
+            except BaseException:
+                if linked_data:
+                    data_path.unlink(missing_ok=True)
+                if linked_metadata:
+                    metadata_path.unlink(missing_ok=True)
+                raise
             finally:
                 temporary_data.unlink(missing_ok=True)
                 temporary_meta.unlink(missing_ok=True)

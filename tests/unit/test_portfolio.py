@@ -11,6 +11,11 @@ from pixelgym.portfolio import generate_episode_gif
 
 def _evidence(rewards: list[float]) -> dict:
     return {
+        "backend_metadata": {
+            "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+            "upstream_tag": "v2026.06.24",
+            "release": "osworld-v2-2026.06.24",
+        },
         "trace": [
             {
                 "step": index,
@@ -71,6 +76,21 @@ def test_demo_gif_is_reproducible_and_records_pending_human_review(tmp_path: Pat
 def test_demo_rejects_nonterminal_or_repeated_positive_reward(tmp_path: Path) -> None:
     evidence_path, frames = _write_inputs(tmp_path, _evidence([1.0, 0.0, 1.0]))
     with pytest.raises(ValueError, match="exactly one positive reward"):
+        generate_episode_gif(
+            repository_root=tmp_path,
+            evidence_path=evidence_path,
+            frames_directory=frames,
+            output_path=tmp_path / "demo.gif",
+            metadata_path=tmp_path / "demo.json",
+        )
+
+
+def test_demo_rejects_trace_without_pinned_osworld_provenance(tmp_path: Path) -> None:
+    evidence = _evidence([0.0, 1.0])
+    evidence["backend_metadata"] = {"provider": "fake"}
+    evidence_path, frames = _write_inputs(tmp_path, evidence)
+
+    with pytest.raises(ValueError, match="not attributable.*OSWorld"):
         generate_episode_gif(
             repository_root=tmp_path,
             evidence_path=evidence_path,

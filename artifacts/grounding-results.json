@@ -18,7 +18,9 @@
     "example_count": 100,
     "excluded_example_count": 0,
     "first_timestamp_utc": "2026-08-10T07:06:26.396148+00:00",
-    "last_timestamp_utc": "2026-08-10T08:05:49.250812+00:00"
+    "last_timestamp_utc": "2026-08-10T08:05:49.250812+00:00",
+    "timestamp_missing_count": 0,
+    "timestamp_observed_count": 200
   },
   "conditions": {
     "marks": {
@@ -640,7 +642,7 @@
     "artifacts/grounding-error-review.jsonl": "e821e21aa7224f19ed9874c3b1d75d1540e9e3e40f50fff24c2d2822e67c495e",
     "artifacts/grounding-overlays.jsonl": "d083cff182ffa438ddaeed3ec045a3936f33c08e6cf4ead059181a808cfdd527",
     "artifacts/grounding-predictions.jsonl": "51e5b07bd9d9172b6454ca5b0c6759af4f36d7f6c48b460fc6aa8f15a659073c",
-    "artifacts/grounding-protocol.md": "a6ccc901ac0224868d3777fc4bdaa433793a865c1a6b548e47ef0e61e8496b27"
+    "artifacts/grounding-protocol.md": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140"
   },
   "latency": {
     "all": {
@@ -648,6 +650,8 @@
       "mean_ms": 7928.447241082904,
       "median_ms": 5402.170479530469,
       "minimum_ms": 3757.252209004946,
+      "missing_count": 0,
+      "observed_count": 200,
       "record_count": 200,
       "total_ms": 1585689.4482165808
     },
@@ -656,6 +660,8 @@
       "mean_ms": 8214.295040441211,
       "median_ms": 5402.170479530469,
       "minimum_ms": 3757.252209004946,
+      "missing_count": 0,
+      "observed_count": 100,
       "record_count": 100,
       "total_ms": 821429.5040441211
     },
@@ -664,6 +670,8 @@
       "mean_ms": 7642.5994417245965,
       "median_ms": 5400.00979200704,
       "minimum_ms": 3986.1013339832425,
+      "missing_count": 0,
+      "observed_count": 100,
       "record_count": 100,
       "total_ms": 764259.9441724597
     }
@@ -676,7 +684,7 @@
     },
     "control_type_figure": {
       "path": "artifacts/grounding/figures/control-type-accuracy.png",
-      "sha256": "a3356655628839cc52d2b227671c5af8ef62f57801d07481a88518f5040ee7b1"
+      "sha256": "1f2080858b542fa77130dacb1af959d6cbc221d5023cc8fc6e694e4764ba3d07"
     },
     "gallery_manifest": {
       "path": "artifacts/grounding/gallery/manifest.json",

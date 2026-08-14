@@ -70,6 +70,15 @@ def generate_episode_gif(
     screenshot_size: tuple[int, int] = (960, 540),
 ) -> dict[str, Any]:
     evidence = json.loads(evidence_path.read_text())
+    backend_metadata = evidence.get("backend_metadata")
+    if (
+        not isinstance(backend_metadata, dict)
+        or backend_metadata.get("upstream_repository")
+        != "https://github.com/xlang-ai/OSWorld-V2"
+        or not str(backend_metadata.get("release", "")).startswith("osworld-v2-")
+        or not str(backend_metadata.get("upstream_tag", "")).startswith("v")
+    ):
+        raise ValueError("demo evidence is not attributable to the pinned OSWorld backend")
     trace = evidence["trace"]
     if not trace:
         raise ValueError("real episode trace is empty")

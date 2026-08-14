@@ -32,6 +32,10 @@ generation is target-agnostic, overlays are deterministic, and proposal coverage
 separately from conditional mark-selection accuracy
 ([frozen dataset](artifacts/grounding-dataset.jsonl)).
 
+The frozen allocation perfectly aliases target identity with screen state: every target appears in
+only one state. Control-type breakdowns are therefore descriptive compositions, not independently
+identified control-type effects; the protocol and generated report disclose this design limitation.
+
 Using Codex CLI with `gpt-5.4-mini` on 2026-08-10, raw-coordinate accuracy was **56/100
 (56.0%)** and set-of-marks accuracy was **100/100 (100.0%)**. The paired difference was **+44.0
 percentage points**, with a fixed-seed paired-bootstrap 95% CI of **[+35.0, +54.0]** and a
@@ -169,6 +173,8 @@ known limitation, with the underlying evidence retained
 - The privileged state endpoint exists inside the guest. The bounded action interface cannot
   navigate to it, but browser/guest exploitation is outside the threat model.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
+- Target identity is perfectly aliased with screen state in the frozen grounding dataset, so
+  control-type slices cannot separate control-type and screen-state effects.
 - The grounding experiment covers one model, prompt, resolution, synthetic application layout, and
   target-agnostic candidate generator; its result should not be generalized beyond that scope.
 

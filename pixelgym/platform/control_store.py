@@ -171,12 +171,16 @@ class ControlStore:
         subject_id: str,
         details: dict[str, Any],
     ) -> None:
+        sequence = int(
+            connection.execute("SELECT COALESCE(MAX(rowid), 0) + 1 FROM audit_events").fetchone()[0]
+        )
         material = {
             "event_type": event_type,
             "actor": actor,
             "subject_id": subject_id,
             "details": details,
             "created_at_utc": self._now(),
+            "sequence": sequence,
         }
         event_id = "audit-" + sha256_bytes(canonical_json_bytes(material))[:24]
         connection.execute(
@@ -229,12 +233,13 @@ class ControlStore:
             )
 
     def list_submissions(self) -> list[dict[str, Any]]:
-        return [
-            {**dict(row), "request": json.loads(row["request_json"])}
-            for row in self.connection.execute(
-                "SELECT * FROM submissions ORDER BY created_at_utc DESC"
-            )
-        ]
+        with self._lock:
+            return [
+                {**dict(row), "request": json.loads(row["request_json"])}
+                for row in self.connection.execute(
+                    "SELECT * FROM submissions ORDER BY created_at_utc DESC"
+                )
+            ]
 
     def mark_submission(self, submission_id: str, status: str) -> None:
         allowed = {"Submitted", "Running", "Complete", "Failed", "Cancelled"}
@@ -317,25 +322,34 @@ class ControlStore:
         return self.get_candidate(candidate_id)
 
     def get_candidate(self, candidate_id: str) -> CandidateRecord:
-        row = self.connection.execute(
-            "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
-        ).fetchone()
-        if row is None:
-            raise KeyError(candidate_id)
-        return CandidateRecord(
-            candidate_id=row["candidate_id"],
-            source_run_id=row["source_run_id"],
-            policy=PolicyManifest(**json.loads(row["policy_json"])),
-            gate_report=json.loads(row["gate_report_json"]),
-            gate_report_sha256=row["gate_report_sha256"],
-            artifacts=tuple(ArtifactRef(**value) for value in json.loads(row["artifacts_json"])),
-            state=CandidateState(row["state"]),
-            version=row["version"],
-        )
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(candidate_id)
+            return CandidateRecord(
+                candidate_id=row["candidate_id"],
+                source_run_id=row["source_run_id"],
+                policy=PolicyManifest(**json.loads(row["policy_json"])),
+                gate_report=json.loads(row["gate_report_json"]),
+                gate_report_sha256=row["gate_report_sha256"],
+                artifacts=tuple(
+                    ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
+                ),
+                state=CandidateState(row["state"]),
+                version=row["version"],
+            )
 
     def list_candidates(self) -> list[CandidateRecord]:
-        ids = [row[0] for row in self.connection.execute("SELECT candidate_id FROM candidates ORDER BY rowid DESC")]
-        return [self.get_candidate(candidate_id) for candidate_id in ids]
+        with self._lock:
+            ids = [
+                row[0]
+                for row in self.connection.execute(
+                    "SELECT candidate_id FROM candidates ORDER BY rowid DESC"
+                )
+            ]
+            return [self.get_candidate(candidate_id) for candidate_id in ids]
 
     def approve(
         self,
@@ -402,20 +416,22 @@ class ControlStore:
             )
 
     def active(self) -> tuple[DeploymentRecord | None, int]:
-        pointer = self.connection.execute(
-            "SELECT deployment_id, generation FROM active_pointer WHERE singleton = 1"
-        ).fetchone()
-        if pointer["deployment_id"] is None:
-            return None, int(pointer["generation"])
-        return self.get_deployment(pointer["deployment_id"]), int(pointer["generation"])
+        with self._lock:
+            pointer = self.connection.execute(
+                "SELECT deployment_id, generation FROM active_pointer WHERE singleton = 1"
+            ).fetchone()
+            if pointer["deployment_id"] is None:
+                return None, int(pointer["generation"])
+            return self.get_deployment(pointer["deployment_id"]), int(pointer["generation"])
 
     def get_deployment(self, deployment_id: str) -> DeploymentRecord:
-        row = self.connection.execute(
-            "SELECT * FROM deployments WHERE deployment_id = ?", (deployment_id,)
-        ).fetchone()
-        if row is None:
-            raise KeyError(deployment_id)
-        return DeploymentRecord(**dict(row))
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM deployments WHERE deployment_id = ?", (deployment_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(deployment_id)
+            return DeploymentRecord(**dict(row))
 
     def activate(
         self,
@@ -449,11 +465,28 @@ class ControlStore:
                 raise TransitionError("approved gate report no longer verifies")
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
+            previous_deployment_id = expected_deployment_id
+            if action == "rollback":
+                if expected_deployment_id is None:
+                    raise TransitionError("there is no active deployment to roll back")
+                current = connection.execute(
+                    "SELECT * FROM deployments WHERE deployment_id = ?",
+                    (expected_deployment_id,),
+                ).fetchone()
+                if current is None or current["previous_deployment_id"] is None:
+                    raise TransitionError("there is no previous deployment to roll back to")
+                target = connection.execute(
+                    "SELECT * FROM deployments WHERE deployment_id = ?",
+                    (current["previous_deployment_id"],),
+                ).fetchone()
+                if target is None or target["candidate_id"] != candidate_id:
+                    raise TransitionError("rollback target is not the active deployment's predecessor")
+                previous_deployment_id = target["previous_deployment_id"]
             generation = expected_generation + 1
             material = {
                 "candidate_id": candidate_id,
                 "policy_id": candidate["policy_id"],
-                "previous": expected_deployment_id,
+                "previous": previous_deployment_id,
                 "action": action,
                 "generation": generation,
             }
@@ -465,7 +498,7 @@ class ControlStore:
                     deployment_id,
                     candidate_id,
                     candidate["policy_id"],
-                    expected_deployment_id,
+                    previous_deployment_id,
                     action,
                     actor,
                     reason.strip(),
@@ -494,13 +527,24 @@ class ControlStore:
         return self.get_deployment(current.previous_deployment_id)
 
     def audit_events(self) -> list[dict[str, Any]]:
-        return [
-            {**dict(row), "details": json.loads(row["details_json"])}
-            for row in self.connection.execute("SELECT * FROM audit_events ORDER BY rowid")
-        ]
+        with self._lock:
+            return [
+                {**dict(row), "details": json.loads(row["details_json"])}
+                for row in self.connection.execute("SELECT * FROM audit_events ORDER BY rowid")
+            ]
 
     def approval_events(self) -> list[dict[str, Any]]:
-        return [dict(row) for row in self.connection.execute("SELECT * FROM approvals ORDER BY rowid")]
+        with self._lock:
+            return [
+                dict(row)
+                for row in self.connection.execute("SELECT * FROM approvals ORDER BY rowid")
+            ]
 
     def deployment_history(self) -> list[dict[str, Any]]:
-        return [dict(row) for row in self.connection.execute("SELECT * FROM deployments ORDER BY generation")]
+        with self._lock:
+            return [
+                dict(row)
+                for row in self.connection.execute(
+                    "SELECT * FROM deployments ORDER BY generation"
+                )
+            ]

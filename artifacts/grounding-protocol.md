@@ -69,6 +69,13 @@ each actionable semantic target:
 9. Expedited-onboarding checkbox.
 10. Submit button.
 
+**Frozen-design limitation:** because the target cycle advances inside the five-state loop,
+each target appears in exactly one screen state. Target identity and screen state are therefore
+perfectly aliased. Any accuracy breakdown by element/control type is descriptive only and cannot
+separate a control-type effect from the screen-state composition. This aliasing was discovered
+after the paid paired run; changing allocation would invalidate those stored responses, so it is
+disclosed rather than retroactively repaired under protocol v1.
+
 Instructions use the fixed natural form `Click the <visible control description>`. Radio
 instructions include their visible option text. Each instruction uniquely identifies one
 intended actionable element.
@@ -179,7 +186,8 @@ Secondary metrics are:
 - normalized Euclidean distance from predicted point to target-box center, divided by the
   screenshot diagonal;
 - invalid or unparseable output rate by condition;
-- accuracy by `element_type`;
+- descriptive accuracy by `element_type`, with the target/screen-state aliasing disclosed and no
+  independent control-type-effect interpretation;
 - accuracy by target-area slice, where target area divided by screen area is `small` below
   0.005, `medium` from 0.005 up to 0.02, and `large` at or above 0.02;
 - request latency and provider-reported usage when available;
@@ -221,4 +229,3 @@ record per example and condition, including explicit request-failure records.
    remaining cached-or-new calls up to the 200-call total cap.
 3. README claims, demo media, and resume bullets remain drafts until the owner approves the
    public-claims gate.
-

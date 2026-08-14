@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sqlite3
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -153,10 +155,37 @@ def test_deploy_failure_preserves_active_and_rollback_restores_previous(
     with pytest.raises(TransitionError, match="smoke"):
         failing.deploy(second.candidate_id, actor="local-reviewer", reason="bad")
     assert control.active()[0] == deployed_first
-    deployed_second = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
     rolled_back = coordinator.rollback(actor="local-reviewer", reason="rehearsal")
     assert rolled_back.candidate_id == first.candidate_id
-    assert rolled_back.previous_deployment_id == deployed_second.deployment_id
+    assert rolled_back.previous_deployment_id is None
+    with pytest.raises(TransitionError, match="no previous"):
+        coordinator.rollback(actor="local-reviewer", reason="must not ping-pong")
+
+
+def test_store_rejects_rollback_to_any_candidate_except_active_predecessor(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
+    coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+    current = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    _, generation = control.active()
+
+    with pytest.raises(TransitionError, match="predecessor"):
+        control.activate(
+            second.candidate_id,
+            actor="local-reviewer",
+            reason="invalid rollback target",
+            action="rollback",
+            expected_deployment_id=current.deployment_id,
+            expected_generation=generation,
+        )
 
 
 def test_corrupt_artifact_blocks_activation(tmp_path: Path, passing_evidence) -> None:
@@ -188,3 +217,36 @@ def test_stale_compare_and_swap_loses_cleanly(tmp_path: Path, passing_evidence) 
     control.activate(candidate.candidate_id, actor="local-reviewer", reason="winner", action="deploy", expected_deployment_id=None, expected_generation=0)
     with pytest.raises(ConflictError, match="concurrently"):
         control.activate(candidate.candidate_id, actor="local-reviewer", reason="loser", action="deploy", expected_deployment_id=None, expected_generation=0)
+
+
+def test_identical_audit_events_with_fixed_clock_have_distinct_ids(tmp_path: Path) -> None:
+    control = ControlStore(
+        tmp_path / "control.db",
+        reviewer_identity="local-reviewer",
+        now=lambda: "2000-01-01T00:00:00Z",
+    )
+    control.migrate()
+    with control.transaction() as connection:
+        control._audit(connection, "same", "actor", "subject", {"value": 1})
+        control._audit(connection, "same", "actor", "subject", {"value": 1})
+
+    events = control.audit_events()
+    assert len(events) == 2
+    assert events[0]["event_id"] != events[1]["event_id"]
+
+
+def test_reads_wait_for_the_shared_connection_lock(tmp_path: Path) -> None:
+    control = _control(tmp_path)
+    control.submit({"model": "a"})
+    started = threading.Event()
+
+    def read() -> list[dict]:
+        started.set()
+        return control.list_submissions()
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        with control._lock:
+            future = executor.submit(read)
+            assert started.wait(timeout=1)
+            assert not future.done()
+        assert future.result(timeout=1)[0]["submission_id"].startswith("submission-")

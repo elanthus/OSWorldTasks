@@ -43,6 +43,10 @@ def _percent(value: float | None, digits: int = 1) -> str:
     return "n/a" if value is None else f"{100 * value:.{digits}f}%"
 
 
+def _decimal(value: float | None, digits: int = 4) -> str:
+    return "n/a" if value is None else f"{value:.{digits}f}"
+
+
 def _annotate(
     image: Image.Image, bbox: list[int], point: list[float] | None, correct: bool
 ) -> Image.Image:
@@ -207,10 +211,10 @@ def write_control_type_figure(results: dict[str, Any], output_path: Path) -> Non
     height = 150 + row_height * len(labels)
     image = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(image)
-    draw.text((42, 24), "Accuracy by control type", font=_font(28, bold=True), fill=_INK)
+    draw.text((42, 24), "Descriptive accuracy by control type", font=_font(28, bold=True), fill=_INK)
     draw.text(
         (42, 67),
-        "Raw and marked conditions use the same frozen examples.",
+        "Target identity is aliased with screen state; these are not independent effects.",
         font=_font(15),
         fill=_MUTED,
     )
@@ -322,6 +326,8 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
     review = results["error_taxonomy"]
     raw_distance = raw["normalized_center_distance"]
     marks_distance = marks["normalized_center_distance"]
+    coordinate_scaling_count = review["category_counts"].get("coordinate scaling error", 0)
+    coordinate_scaling_noun = "label is" if coordinate_scaling_count == 1 else "labels are"
     review_warning = (
         "All error labels were manually inspected."
         if review["all_manually_reviewed"]
@@ -334,8 +340,8 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
         f"- Prompt: `{PROMPT_VERSION}`",
         f"- Provider/model: `{results['provider']}` / `{results['model']}`",
         (
-            f"- Collection window: {results['collection']['first_timestamp_utc']} to "
-            f"{results['collection']['last_timestamp_utc']}"
+            f"- Collection window: {results['collection']['first_timestamp_utc'] or 'missing'} "
+            f"to {results['collection']['last_timestamp_utc'] or 'missing'}"
         ),
         (
             f"- Sample: {results['collection']['example_count']} examples, "
@@ -387,7 +393,14 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
         "",
         "## Slices",
         "",
-        "![Accuracy by control type](grounding/figures/control-type-accuracy.png)",
+        "![Descriptive accuracy by control type](grounding/figures/control-type-accuracy.png)",
+        "",
+        (
+            "**Design limitation:** target identity and screen state are perfectly aliased in the "
+            "frozen capture grid: each target appears in exactly one of the five screen states. "
+            "The control-type rows below are descriptive compositions only; differences cannot be "
+            "attributed independently to control type rather than screen state."
+        ),
         "",
         "| Element type | n | Raw | Marks | Delta (pp) |",
         "|---|---:|---:|---:|---:|",
@@ -416,9 +429,9 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
             "",
             (
                 f"For parsed raw points, screenshot-diagonal-normalized center distance had mean "
-                f"{raw_distance['mean']:.4f}, median {raw_distance['median']:.4f}, and p90 "
-                f"{raw_distance['p90']:.4f}. The marked condition had mean "
-                f"{marks_distance['mean']:.4f}; valid selected marks are converted to their "
+                f"{_decimal(raw_distance['mean'])}, median {_decimal(raw_distance['median'])}, "
+                f"and p90 {_decimal(raw_distance['p90'])}. The marked condition had mean "
+                f"{_decimal(marks_distance['mean'])}; valid selected marks are converted to their "
                 "candidate centers by the frozen scoring rule, so a correct marked selection has "
                 "distance zero by construction."
             ),
@@ -437,8 +450,10 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
         [
             "",
             (
-                "Categories are non-exclusive, so their counts can sum above the 44 error records. "
-                "The seven coordinate-scaling labels are reviewer inferences from horizontal "
+                f"Categories are non-exclusive, so their counts can sum above the "
+                f"{review['error_record_count']} error records. The "
+                f"{coordinate_scaling_count} coordinate-scaling {coordinate_scaling_noun} "
+                "a reviewer inference from horizontal "
                 "alignment and displacement, not proof of the causal mechanism."
             ),
             "",
@@ -464,9 +479,11 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
             "## Latency and usage",
             "",
             (
-                f"The {results['collection']['condition_record_count']} stored calls took "
-                f"{results['latency']['all']['total_ms'] / 1000:.1f} seconds in aggregate provider "
-                f"latency (median {results['latency']['all']['median_ms']:.1f} ms). Usage fields are "
+                f"The {results['latency']['all']['observed_count']} of "
+                f"{results['collection']['condition_record_count']} stored calls with latency "
+                f"evidence took {results['latency']['all']['total_ms'] / 1000:.1f} seconds in "
+                f"aggregate provider latency (median "
+                f"{_decimal(results['latency']['all']['median_ms'], 1)} ms). Usage fields are "
                 "summed exactly as returned by the provider in `grounding-results.json`; they are "
                 "not converted into a monetary estimate."
             ),
@@ -474,6 +491,10 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
             "## Limitations",
             "",
             "- One synthetic vendor-onboarding task family, one resolution, and one model were used.",
+            (
+                "- Target identity is perfectly aliased with screen state in the frozen dataset, "
+                "so control-type slices are descriptive and do not identify a control-type effect."
+            ),
             "- The model name may be a moving provider alias rather than an immutable snapshot.",
             (
                 "- Candidate generation is deterministic and target-agnostic, but the resulting "

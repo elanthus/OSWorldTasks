@@ -128,13 +128,24 @@ def create_control_app(
         if not supplied or not hmac.compare_digest(request.state.csrf, supplied):
             raise HTTPException(403, "CSRF validation failed")
 
+    def candidate_or_404(candidate_id: str) -> Any:
+        try:
+            return control.get_candidate(candidate_id)
+        except KeyError as exc:
+            raise HTTPException(404, "candidate does not exist") from exc
+
     async def form_fields(request: Request) -> dict[str, str]:
         if request.headers.get("content-type", "").split(";", 1)[0] != "application/x-www-form-urlencoded":
             raise HTTPException(415, "forms must use application/x-www-form-urlencoded")
         body = await request.body()
         if len(body) > 32_768:
             raise HTTPException(413, "form body is too large")
-        values = parse_qs(body.decode("utf-8"), keep_blank_values=True, strict_parsing=True)
+        if not body:
+            raise HTTPException(422, "form body is empty")
+        try:
+            values = parse_qs(body.decode("utf-8"), keep_blank_values=True, strict_parsing=True)
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise HTTPException(422, "form body is malformed") from exc
         if any(len(items) != 1 for items in values.values()):
             raise HTTPException(422, "duplicate form fields are not allowed")
         return {key: items[0] for key, items in values.items()}
@@ -193,7 +204,7 @@ def create_control_app(
             f'<label class="check"><input type="checkbox" name="candidate" value="{_escape(item.candidate_id)}" {'checked' if item.candidate_id in selected_ids else ''}>{_escape(item.candidate_id)} · prompt v{item.policy.prompt_version}</label>'
             for item in all_candidates
         ) or '<p class="muted">Evaluate candidates to enable comparison.</p>'
-        selected = [control.get_candidate(item) for item in selected_ids]
+        selected = [candidate_or_404(item) for item in selected_ids]
         compatible = len(selected) >= 2 and len({(
             item.gate_report["dataset_fingerprint"], item.policy.scorer_version, item.policy.target_semantics
         ) for item in selected}) == 1
@@ -211,7 +222,7 @@ def create_control_app(
 
     @app.get("/candidates/{candidate_id}", response_class=HTMLResponse)
     def candidate_view(candidate_id: str, request: Request) -> str:
-        item = control.get_candidate(candidate_id)
+        item = candidate_or_404(candidate_id)
         report = item.gate_report
         reasons = "".join(f"<li>{_escape(reason)}</li>" for reason in report["reasons"]) or "<li>All automated gates passed.</li>"
         controls = ""
@@ -225,7 +236,7 @@ def create_control_app(
         return _layout("Candidate", body, csrf=request.state.csrf)
 
     def _approve(candidate_id: str, reason: str) -> None:
-        item = control.get_candidate(candidate_id)
+        item = candidate_or_404(candidate_id)
         control.approve(
             candidate_id,
             actor=control.reviewer_identity,
@@ -256,6 +267,7 @@ def create_control_app(
             raise HTTPException(422, "deployment fields do not match the fixed contract")
         if coordinator is None:
             raise HTTPException(503, "deployment coordinator is unavailable")
+        candidate_or_404(candidate_id)
         coordinator.deploy(candidate_id, actor=control.reviewer_identity, reason=fields["reason"])
         return RedirectResponse("/deployment", status_code=303)
 

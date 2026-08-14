@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 from pathlib import Path
 from typing import ClassVar
 
@@ -91,6 +92,32 @@ def test_corrupt_or_missing_bytes_fail_verification(tmp_path: Path) -> None:
     data_path.unlink()
     with pytest.raises(ImmutableStoreError, match="missing"):
         store.get_verified(reference)
+
+
+def test_failed_second_link_does_not_wedge_local_immutable_key(
+    tmp_path: Path, monkeypatch
+) -> None:
+    store = LocalImmutableStore(tmp_path)
+    original_link = os.link
+    failed = False
+
+    def fail_data_link_once(source, destination):
+        nonlocal failed
+        if not failed and "objects" in Path(destination).parts:
+            failed = True
+            raise OSError("simulated data-link failure")
+        return original_link(source, destination)
+
+    monkeypatch.setattr(os, "link", fail_data_link_once)
+    with pytest.raises(OSError, match="data-link"):
+        store.put_once("raw/retry.json", b"evidence", media_type="application/json")
+    assert not (tmp_path / "objects/raw/retry.json").exists()
+    assert not (tmp_path / "metadata/raw/retry.json.metadata.json").exists()
+
+    reference = store.put_once(
+        "raw/retry.json", b"evidence", media_type="application/json"
+    )
+    assert store.get_verified(reference) == b"evidence"
 
 
 def test_canonical_json_rejects_nonfinite_numbers() -> None:

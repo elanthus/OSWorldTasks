@@ -209,6 +209,12 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
 def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -> None:
     examples, predictions = _fixture()
     reviews = _manual_reviews(examples, predictions)
+    reviews[0]["categories"] = ["coordinate scaling error"]
+    predictions[0]["latency_ms"] = None
+    predictions[0]["timestamp_utc"] = None
+    for record in predictions:
+        if record["condition"] == "raw":
+            record["normalized_center_distance"] = None
     artifact_dir = tmp_path / "artifacts"
     for record in predictions:
         path = tmp_path / record["image_path"]
@@ -256,6 +262,12 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert results_path.read_bytes() == first_results
     assert report_path.read_bytes() == first_report
     assert "No model or network calls" in report_path.read_text()
+    assert "4 error records" in report_path.read_text()
+    assert "1 coordinate-scaling label is" in report_path.read_text()
+    assert "perfectly aliased" in report_path.read_text()
+    assert "n/a" in report_path.read_text()
+    assert first["latency"]["all"]["missing_count"] == 1
+    assert first["collection"]["timestamp_missing_count"] == 1
     assert (artifact_dir / "grounding/figures/raw-vs-marks-accuracy.png").is_file()
     assert (artifact_dir / "grounding/figures/control-type-accuracy.png").is_file()
     assert not stale_gallery.exists()

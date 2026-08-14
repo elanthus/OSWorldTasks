@@ -76,18 +76,32 @@ def _badge_position(
     text_box = draw.textbbox((0, 0), text, font=font)
     badge_width = text_box[2] - text_box[0] + 6
     badge_height = text_box[3] - text_box[1] + 4
+    if badge_width > width or badge_height > height:
+        raise ValueError("mark badge cannot fit inside the image")
     x0, y0, x1, y1 = bbox
-    if element_type == "radio" and y1 + 2 + badge_height <= height:
-        badge_x, badge_y = x0, y1 + 2
-    elif x1 + 2 + badge_width <= width:
-        badge_x, badge_y = x1 + 2, y0
-    elif x0 - 2 - badge_width >= 0:
-        badge_x, badge_y = x0 - 2 - badge_width, y0
-    elif y0 - 2 - badge_height >= 0:
-        badge_x, badge_y = x0, y0 - 2 - badge_height
-    else:
-        badge_x, badge_y = x0 + 2, y0 + 2
-    return [badge_x, badge_y, badge_x + badge_width, badge_y + badge_height]
+    positions = []
+    if element_type == "radio":
+        positions.append((x0, y1 + 2))
+    positions.extend(
+        (
+            (x1 + 2, y0),
+            (x0 - 2 - badge_width, y0),
+            (x0, y0 - 2 - badge_height),
+            (
+                min(max(x0 + 2, 0), width - badge_width),
+                min(max(y0 + 2, 0), height - badge_height),
+            ),
+        )
+    )
+    for badge_x, badge_y in positions:
+        if (
+            0 <= badge_x
+            and 0 <= badge_y
+            and badge_x + badge_width <= width
+            and badge_y + badge_height <= height
+        ):
+            return [badge_x, badge_y, badge_x + badge_width, badge_y + badge_height]
+    raise ValueError("mark badge cannot be placed inside the image")
 
 
 def render_overlay(

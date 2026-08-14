@@ -128,13 +128,15 @@ def _slice_summary(pairs: Iterable[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _latency_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
-    values = [float(row["latency_ms"]) for row in records]
+    values = [float(row["latency_ms"]) for row in records if row.get("latency_ms") is not None]
     return {
-        "record_count": len(values),
-        "mean_ms": statistics.fmean(values),
-        "median_ms": statistics.median(values),
-        "minimum_ms": min(values),
-        "maximum_ms": max(values),
+        "record_count": len(records),
+        "observed_count": len(values),
+        "missing_count": len(records) - len(values),
+        "mean_ms": statistics.fmean(values) if values else None,
+        "median_ms": statistics.median(values) if values else None,
+        "minimum_ms": min(values) if values else None,
+        "maximum_ms": max(values) if values else None,
         "total_ms": sum(values),
     }
 
@@ -417,7 +419,8 @@ def analyze_predictions(
     conditional_correct = sum(
         record["target_proposed"] is True and record["correct"] for record in marks_records
     )
-    timestamps = [record["timestamp_utc"] for record in predictions]
+    timestamps = [record.get("timestamp_utc") for record in predictions]
+    observed_timestamps = [value for value in timestamps if isinstance(value, str) and value]
     providers = sorted({record["provider"] for record in predictions})
     models = sorted({record["model"] for record in predictions})
     parameter_encodings = {repr(sorted(record["parameters"].items())) for record in predictions}
@@ -487,8 +490,10 @@ def analyze_predictions(
         "model": models[0],
         "parameters": predictions[0]["parameters"],
         "collection": {
-            "first_timestamp_utc": min(timestamps),
-            "last_timestamp_utc": max(timestamps),
+            "first_timestamp_utc": min(observed_timestamps) if observed_timestamps else None,
+            "last_timestamp_utc": max(observed_timestamps) if observed_timestamps else None,
+            "timestamp_observed_count": len(observed_timestamps),
+            "timestamp_missing_count": len(predictions) - len(observed_timestamps),
             "example_count": len(pairs),
             "condition_record_count": len(predictions),
             "excluded_example_count": 0,

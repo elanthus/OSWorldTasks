@@ -152,6 +152,23 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
     assert "DEMO PROVIDER" in page.text
 
 
+def test_empty_form_body_and_unknown_candidates_are_client_errors(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    )
+
+    empty = client.post(
+        "/experiments",
+        content=b"",
+        headers={"content-type": "application/x-www-form-urlencoded"},
+    )
+    assert empty.status_code == 422
+    assert client.get("/candidates/nope").status_code == 404
+    assert client.get("/compare?candidate=nope").status_code == 404
+
+
 def test_failed_candidate_has_visible_reasons_and_no_approval_control(
     tmp_path: Path, passing_evidence, gate_policy
 ) -> None:

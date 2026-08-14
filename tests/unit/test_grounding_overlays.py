@@ -84,3 +84,24 @@ def test_mark_validation_rejects_duplicate_or_unparseable_ids() -> None:
         validate_marks([mark, dict(mark)], width=100, height=100)
     with pytest.raises(ValueError, match="unique sequential"):
         validate_marks([{**mark, "mark_id": "1"}], width=100, height=100)
+
+
+@pytest.mark.parametrize(
+    ("bbox", "element_type"),
+    [
+        ([85, 85, 99, 99], "radio"),
+        ([85, 1, 99, 12], "button"),
+        ([1, 85, 12, 99], "button"),
+    ],
+)
+def test_badges_near_image_edges_always_remain_in_bounds(
+    bbox: list[int], element_type: str
+) -> None:
+    _, marks = render_overlay(
+        Image.new("RGB", (100, 100), "white"),
+        [_candidate("edge", bbox, element_type)],
+    )
+
+    x0, y0, x1, y1 = marks[0]["badge_bbox"]
+    assert 0 <= x0 < x1 <= 100
+    assert 0 <= y0 < y1 <= 100

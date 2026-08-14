@@ -83,6 +83,8 @@ def test_dataset_validation_checks_balancing_hashes_and_target_join(tmp_path: Pa
     assert summary["example_count"] == 100
     assert set(summary["target_counts"].values()) == {10}
     assert set(summary["screen_state_counts"].values()) == {20}
+    assert summary["target_screen_state_perfect_aliasing"] is True
+    assert all(len(states) == 1 for states in summary["target_screen_states"].values())
 
     candidates[0]["candidates"][0]["semantic_id"] = "wrong"
     with pytest.raises(ValueError, match="target"):

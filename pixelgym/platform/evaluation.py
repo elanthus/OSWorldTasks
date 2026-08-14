@@ -248,7 +248,10 @@ class EvaluationRunner:
                     "dataset_fingerprint": self.dataset_fingerprint,
                     "policy_id": self.policy.policy_id,
                     "request_sha256": request_sha256,
-                    "started_at_utc": "2000-01-01T00:00:00+00:00",
+                    "started_at_utc": None,
+                    "started_at_missing_reason": (
+                        "provider adapter does not expose an attributable request-start timestamp"
+                    ),
                     "latency_ms": response.latency_ms,
                     "usage": response.usage,
                     "usage_missing_reason": None if response.usage is not None else "provider omitted usage",

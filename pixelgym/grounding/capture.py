@@ -244,6 +244,7 @@ def validate_dataset(
     triples: set[tuple[str, str, tuple[int, ...]]] = set()
     target_counts: Counter[str] = Counter()
     state_counts: Counter[str] = Counter()
+    target_state_counts: Counter[tuple[str, str]] = Counter()
     candidates_by_example: dict[str, dict[str, Any]] = {}
     for record in candidate_records:
         if set(record) != {"schema_version", "protocol_version", "example_id", "candidates"}:
@@ -272,6 +273,7 @@ def validate_dataset(
         triples.add(triple)
         target_counts[example["target_id"]] += 1
         state_counts[example["screen_state"]] += 1
+        target_state_counts[(example["target_id"], example["screen_state"])] += 1
         candidates = candidates_by_example[example["example_id"]]["candidates"]
         validate_candidate_set(
             candidates, width=example["screen_width"], height=example["screen_height"]
@@ -285,11 +287,21 @@ def validate_dataset(
         raise ValueError("target allocation is not balanced at ten examples each")
     if set(state_counts.values()) != {20} or set(state_counts) != set(SCREEN_STATES):
         raise ValueError("screen-state allocation is not balanced at twenty examples each")
+    target_screen_states = {
+        target_id: sorted(
+            state for state in SCREEN_STATES if target_state_counts[(target_id, state)]
+        )
+        for target_id in sorted(target_counts)
+    }
     return {
         "example_count": len(examples),
         "candidate_record_count": len(candidate_records),
         "target_counts": dict(sorted(target_counts.items())),
         "screen_state_counts": dict(sorted(state_counts.items())),
+        "target_screen_states": target_screen_states,
+        "target_screen_state_perfect_aliasing": all(
+            len(states) == 1 for states in target_screen_states.values()
+        ),
         "automatic_checks_passed": True,
     }
 
