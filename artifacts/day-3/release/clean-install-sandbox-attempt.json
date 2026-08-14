@@ -1,0 +1,40 @@
+{
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/bin/python3.12",
+        "-m",
+        "venv",
+        "/var/folders/hw/cy_6r2dx5ylbv9qby48c9fqr0000gn/T/pixelgym-day3-release-z3rrcswt/.venv"
+      ],
+      "duration_seconds": 1.2784012499032542,
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "/var/folders/hw/cy_6r2dx5ylbv9qby48c9fqr0000gn/T/pixelgym-day3-release-z3rrcswt/.venv/bin/python",
+        "-m",
+        "pip",
+        "install",
+        "-e",
+        ".[dev]"
+      ],
+      "duration_seconds": 8.009227917063981,
+      "exit_code": 1,
+      "output": "WARNING: The directory '/Users/mswailes/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.\nObtaining file:///Users/mswailes/dev/OSWorldTasks\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'error'\n  error: subprocess-exited-with-error\n  \n  \u00d7 installing build dependencies did not run successfully.\n  \u2502 exit code: 1\n  \u2570\u2500> [8 lines of output]\n      WARNING: The directory '/Users/mswailes/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.\n      WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      ERROR: Could not find a version that satisfies the requirement setuptools>=68 (from versions: none)\n      ERROR: No matching distribution found for setuptools>=68\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///Users/mswailes/dev/OSWorldTasks' when installing build dependencies\n"
+    }
+  ],
+  "gate": "D3.11",
+  "host": {
+    "machine": "arm64",
+    "python3_12_executable": "/opt/homebrew/bin/python3.12",
+    "python3_12_version": "Python 3.12.13",
+    "system": "Darwin"
+  },
+  "repository_commit": "52fdfe7176ddccaf1e2f439209192c6b177f72a9",
+  "schema_version": "pixelgym-day3-clean-install-evidence-v1",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "worktree_status_before": ""
+}

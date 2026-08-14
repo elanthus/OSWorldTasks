@@ -18,11 +18,18 @@ dependencies = [
 osworld = [
     "osworld @ git+https://github.com/xlang-ai/OSWorld-V2.git@v2026.06.24",
 ]
+platform = [
+    "mlflow==3.14.0",
+    "metaflow==2.19.35",
+    "boto3==1.40.1",
+    "psycopg2-binary==2.9.10",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "build>=1.0",
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
+    "playwright>=1.52",  # deterministic Day 3 browser capture tooling
     "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
 ]
 
@@ -35,12 +42,16 @@ include = ["pixelgym*"]
 
 [tool.setuptools.package-data]
 "pixelgym.tasks.vendor_form.app" = ["static/*", "static/fonts/*"]
+"pixelgym.platform.web" = ["static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # So `tests.support` (the privileged golden-trajectory solver, shared with
 # scripts/golden_trajectory.py) is importable from the repository root.
 pythonpath = ["."]
+markers = [
+    "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
+]
 
 [tool.ruff]
 line-length = 100

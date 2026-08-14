@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local platform state and Metaflow artifacts
+.metaflow/
+.cache/platform/
+mlruns/

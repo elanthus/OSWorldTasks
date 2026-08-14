@@ -1,0 +1,4495 @@
+{
+  "analysis_config": {
+    "bootstrap_interval": "percentile",
+    "confidence_level": 0.95,
+    "distance_normalization": "screenshot diagonal",
+    "invalid_outputs_scored_incorrect": true,
+    "mcnemar_test": "two-sided exact binomial",
+    "paired_bootstrap_samples": 10000,
+    "paired_bootstrap_seed": 20260809,
+    "request_failures_scored_incorrect": true,
+    "target_size_thresholds_screen_area": {
+      "medium_below": 0.02,
+      "small_below": 0.005
+    }
+  },
+  "collection": {
+    "condition_record_count": 200,
+    "example_count": 100,
+    "excluded_example_count": 0,
+    "first_timestamp_utc": "2026-08-10T07:06:26.396148+00:00",
+    "last_timestamp_utc": "2026-08-10T08:05:49.250812+00:00",
+    "timestamp_missing_count": 0,
+    "timestamp_observed_count": 200
+  },
+  "conditions": {
+    "marks": {
+      "accuracy": 1.0,
+      "correct_count": 100,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.0,
+        "measured_count": 100,
+        "median": 0.0,
+        "missing_count": 0,
+        "p90": 0.0,
+        "record_count": 100
+      },
+      "parse_status_counts": {
+        "parsed": 100
+      },
+      "record_count": 100,
+      "request_failure_count": 0,
+      "request_failure_rate": 0.0
+    },
+    "raw": {
+      "accuracy": 0.56,
+      "correct_count": 56,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.12477876039386594,
+        "measured_count": 100,
+        "median": 0.031968120440306634,
+        "missing_count": 0,
+        "p90": 0.4300781942596974,
+        "record_count": 100
+      },
+      "parse_status_counts": {
+        "parsed": 100
+      },
+      "record_count": 100,
+      "request_failure_count": 0,
+      "request_failure_rate": 0.0
+    }
+  },
+  "error_taxonomy": {
+    "all_manually_reviewed": true,
+    "category_counts": {
+      "coordinate scaling error": 7,
+      "correct region but point just outside the box": 6,
+      "crowded or overlapping controls": 14,
+      "small target": 14,
+      "wrong semantic element": 31
+    },
+    "error_record_count": 44,
+    "records": [
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0001-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[148.0, 92.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0001-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0003-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[117.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0003-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0004-tax-id",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box.",
+        "observation": "parse_status=parsed; point=[758.0, 250.0]; target_bbox=[536, 265, 1000, 295]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0004-tax-id-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0005-country",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[905.0, 157.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0005-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0007-payment-terms-net-30",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[833.0, 404.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0007-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0008-payment-terms-net-45",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[845.0, 402.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0008-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0011-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[219.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0011-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0012-contact-email",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[253.0, 156.0]; target_bbox=[536, 141, 1000, 171]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0012-contact-email-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0013-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[255.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0013-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0015-country",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[782.0, 280.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0015-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0017-payment-terms-net-30",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[851.0, 404.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0017-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0018-payment-terms-net-45",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[859.0, 401.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0018-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0021-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[195.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0021-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0022-contact-email",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[204.0, 157.0]; target_bbox=[536, 141, 1000, 171]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0022-contact-email-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0023-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[256.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0023-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0028-payment-terms-net-45",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[772.0, 403.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0028-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0031-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[131.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0031-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0033-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[263.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0033-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0035-country",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[777.0, 253.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0035-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0037-payment-terms-net-30",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[611.0, 406.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0037-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0041-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[120.0, 92.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0041-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0043-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[259.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0043-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0045-country",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[774.0, 159.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0045-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0047-payment-terms-net-30",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[719.0, 404.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0047-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0048-payment-terms-net-45",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[609.0, 399.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0048-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0053-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[250.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0053-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0057-payment-terms-net-30",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[725.0, 402.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0057-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0058-payment-terms-net-45",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[936.0, 404.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0058-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0061-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[118.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0061-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0062-contact-email",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[245.0, 157.0]; target_bbox=[536, 141, 1000, 171]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0062-contact-email-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0063-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[244.0, 217.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0063-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0064-tax-id",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box.",
+        "observation": "parse_status=parsed; point=[731.0, 264.0]; target_bbox=[536, 265, 1000, 295]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0064-tax-id-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0065-country",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box.",
+        "observation": "parse_status=parsed; point=[769.0, 365.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0065-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0071-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[173.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0071-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0073-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[253.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0073-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "correct region but point just outside the box",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0077-payment-terms-net-30",
+        "inference": "Observation: the point is visually aligned with the intended control but falls outside its frozen half-open target box. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[608.0, 402.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0077-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0078-payment-terms-net-45",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[610.0, 403.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0078-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0081-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[259.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0081-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0083-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[115.0, 218.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0083-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0085-country",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[747.0, 236.0]; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0085-country-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0087-payment-terms-net-30",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[785.0, 401.0]; target_bbox=[615, 391, 684, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0087-payment-terms-net-30-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0091-company-name",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[255.0, 94.0]; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0091-company-name-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "wrong semantic element"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0093-contact-phone",
+        "inference": "Observation: the point lands on the matching read-only request-card row, another actionable control, or the vicinity of a different semantic field rather than the requested editable control.",
+        "observation": "parse_status=parsed; point=[122.0, 217.0]; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0093-contact-phone-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "coordinate scaling error",
+          "small target",
+          "crowded or overlapping controls"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0098-payment-terms-net-45",
+        "inference": "Inference: horizontal alignment with the radio group plus substantial horizontal displacement is consistent with a coordinate-scaling error; the stored evidence does not establish the causal mechanism. Observation: the frozen target-area rule assigns these radio controls to the small slice. Observation: the target is one of three closely adjacent radio controls; no controls geometrically overlap.",
+        "observation": "parse_status=parsed; point=[860.0, 404.0]; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0098-payment-terms-net-45-raw.png",
+        "review_status": "manual_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      }
+    ],
+    "review_status_counts": {
+      "manual_visual_review": 44
+    }
+  },
+  "inputs": {
+    "artifacts/grounding-dataset.jsonl": "683626579161e93cd631e30fc8212823be789fcf8046ab28c373564958409075",
+    "artifacts/grounding-error-review-decisions.json": "aa6de77ca2ae7ddc7be0276c75b0838d99cc1379aa2f502bfa6c5134807753af",
+    "artifacts/grounding-error-review.jsonl": "e821e21aa7224f19ed9874c3b1d75d1540e9e3e40f50fff24c2d2822e67c495e",
+    "artifacts/grounding-overlays.jsonl": "d083cff182ffa438ddaeed3ec045a3936f33c08e6cf4ead059181a808cfdd527",
+    "artifacts/grounding-predictions.jsonl": "51e5b07bd9d9172b6454ca5b0c6759af4f36d7f6c48b460fc6aa8f15a659073c",
+    "artifacts/grounding-protocol.md": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140"
+  },
+  "latency": {
+    "all": {
+      "maximum_ms": 65691.24295806978,
+      "mean_ms": 7928.447241082904,
+      "median_ms": 5402.170479530469,
+      "minimum_ms": 3757.252209004946,
+      "missing_count": 0,
+      "observed_count": 200,
+      "record_count": 200,
+      "total_ms": 1585689.4482165808
+    },
+    "marks": {
+      "maximum_ms": 35656.93158295471,
+      "mean_ms": 8214.295040441211,
+      "median_ms": 5402.170479530469,
+      "minimum_ms": 3757.252209004946,
+      "missing_count": 0,
+      "observed_count": 100,
+      "record_count": 100,
+      "total_ms": 821429.5040441211
+    },
+    "raw": {
+      "maximum_ms": 65691.24295806978,
+      "mean_ms": 7642.5994417245965,
+      "median_ms": 5400.00979200704,
+      "minimum_ms": 3986.1013339832425,
+      "missing_count": 0,
+      "observed_count": 100,
+      "record_count": 100,
+      "total_ms": 764259.9441724597
+    }
+  },
+  "model": "gpt-5.4-mini",
+  "outputs": {
+    "accuracy_figure": {
+      "path": "artifacts/grounding/figures/raw-vs-marks-accuracy.png",
+      "sha256": "ad9ea82c10b6642ff31168cc5941722484d9a8ac857eecbcc3d01f3e0d545a3f"
+    },
+    "control_type_figure": {
+      "path": "artifacts/grounding/figures/control-type-accuracy.png",
+      "sha256": "1f2080858b542fa77130dacb1af959d6cbc221d5023cc8fc6e694e4764ba3d07"
+    },
+    "gallery_manifest": {
+      "path": "artifacts/grounding/gallery/manifest.json",
+      "sha256": "5d3de1d0b8933cc0abcbc858539be93b56adfa1e5fb7576acf83cac7ab530379"
+    }
+  },
+  "paired": {
+    "bootstrap_95_ci_percentage_points": [
+      35.0,
+      54.0
+    ],
+    "both_correct_count": 56,
+    "both_incorrect_count": 0,
+    "delta_percentage_points": 44.0,
+    "discordant_pair_count": 44,
+    "marks_only_correct_count": 44,
+    "mcnemar_exact_p_value": 1.1368683772161603e-13,
+    "raw_only_correct_count": 0
+  },
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "per_example": [
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0001-company-name",
+      "marks": {
+        "cache_key": "2ed89b34d6ca0e7cae6b93ca53a12440db73b8f19be3b449240ba56eaaa7af02",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "fb77d78fb5de66e42f45240047500064fcafa6d1b46986f7790ea86c2d0991d3",
+        "correct": false,
+        "normalized_center_distance": 0.48437752015473423,
+        "parse_status": "parsed",
+        "point": [
+          148.0,
+          92.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0002-contact-email",
+      "marks": {
+        "cache_key": "0f0ad4837aff0ca04f7067ddc9bc6a4b4d580688b4b21f1f2b886d077df62746",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1e08cc3a09fa27dbf3a698712ffcb530be579171b92affd0df3617d205d87c06",
+        "correct": true,
+        "normalized_center_distance": 0.0017469281074217109,
+        "parse_status": "parsed",
+        "point": [
+          770.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0003-contact-phone",
+      "marks": {
+        "cache_key": "7815fea9a7bbcfe1496b86fed341e5489326f63b2edf6f36caa4799f73db9bbe",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "2d4597556574c3c591f0c720e9fd63b0dc10995a6f45510fb8529b8221e44d5a",
+        "correct": false,
+        "normalized_center_distance": 0.50859375,
+        "parse_status": "parsed",
+        "point": [
+          117.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0004-tax-id",
+      "marks": {
+        "cache_key": "e0fec573c3f77f8ef9c9355578079f76ba3b4e42d9d019fcc82a015edda2e1d9",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "d5444bfcfcef8b3230c30a9ad5606b5329ecf1bd3b8ec25e237129b7cd1fc457",
+        "correct": false,
+        "normalized_center_distance": 0.02470529422006546,
+        "parse_status": "parsed",
+        "point": [
+          758.0,
+          250.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0005-country",
+      "marks": {
+        "cache_key": "6df14b6bc430b3200f01f24a849aba360c952a6e34421a2bba593af0dae73b25",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "9d08e34e04495c98f7c9104801e46e4a13f63467deb75165db7ec8941abc7cb9",
+        "correct": false,
+        "normalized_center_distance": 0.18047551394250827,
+        "parse_status": "parsed",
+        "point": [
+          905.0,
+          157.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0006-payment-terms-net-15",
+      "marks": {
+        "cache_key": "ddd2862044f442463b0c679d06f684b82f12e804a6e2b614096d7ece111e5148",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "86f7f8bf5395c1aba89e8827a1f79de9c99a22af9ba93aea4318a06cb065bb37",
+        "correct": true,
+        "normalized_center_distance": 0.013332850129590634,
+        "parse_status": "parsed",
+        "point": [
+          553.0,
+          402.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0007-payment-terms-net-30",
+      "marks": {
+        "cache_key": "e9d8f8ed850e62756d9aa8f03a892d6b9c9fbfe03dd7e8dd883a613c78b382aa",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "0d24c320c605137e5a9fedb663306ec532362eb95074a40d398be518a55cc7ef",
+        "correct": false,
+        "normalized_center_distance": 0.1433854497744846,
+        "parse_status": "parsed",
+        "point": [
+          833.0,
+          404.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0008-payment-terms-net-45",
+      "marks": {
+        "cache_key": "9bb9fcd0974ae69b57071ebec4f09f1c4cc42dbe2807eed3b0d7b9537d6d498c",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "6bdcb6b2520fd758a4ed80bf359c9ef22007abd19259cdc1c142ef573d45645a",
+        "correct": false,
+        "normalized_center_distance": 0.09024198425708652,
+        "parse_status": "parsed",
+        "point": [
+          845.0,
+          402.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0009-expedited-onboarding",
+      "marks": {
+        "cache_key": "ca7611fab716e251846ca2ee0992931d5014978e54ef8e527ab1f25d00057b3a",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bde8ddb56f2abe3765f4da09aff04f1f661b4c9ebef33693d432ebb2cac3991f",
+        "correct": true,
+        "normalized_center_distance": 0.055090590344733556,
+        "parse_status": "parsed",
+        "point": [
+          555.0,
+          437.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0010-submit",
+      "marks": {
+        "cache_key": "c1aae79e8852afd455f3bad0efd3b773101c5ce0d98c65cf1e571de632ac6928",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "05f18ec0c17e67c8771b24d2501cddf74ad6122464f94e5e3e6017d884f49fa5",
+        "correct": true,
+        "normalized_center_distance": 0.0125,
+        "parse_status": "parsed",
+        "point": [
+          594.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0011-company-name",
+      "marks": {
+        "cache_key": "5182df4442e366e8694960a326d0c2ab7f6438dea9fbc5ab94ce07ef52455a2d",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "de7d023d44f4359d7133871862ddee67e5f38a1ec7bc453fae5d704bd15ab501",
+        "correct": false,
+        "normalized_center_distance": 0.42890625,
+        "parse_status": "parsed",
+        "point": [
+          219.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0012-contact-email",
+      "marks": {
+        "cache_key": "ae880071c1c54e2d9f226f39a1fc8003866e635fa46bc44c635d15aa6ac353fc",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "437c93b1bff169b7c83ad8b1cb06328c4d27a2b758e18e3d5092ec470e288d05",
+        "correct": false,
+        "normalized_center_distance": 0.40234375,
+        "parse_status": "parsed",
+        "point": [
+          253.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0013-contact-phone",
+      "marks": {
+        "cache_key": "2742248e4fb7346e63ac60b1d75d8c9e79c8d8040f5eb71092590a5aaca3e3c3",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "37641d29ec59bcce791a38fafe07ecc23d04bdfbe8227042bb80a292bb73e4f6",
+        "correct": false,
+        "normalized_center_distance": 0.40078125,
+        "parse_status": "parsed",
+        "point": [
+          255.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0014-tax-id",
+      "marks": {
+        "cache_key": "94a15d998a0b024ef1d4ad03124e6ee50b9906beec998019aa93418fb34bbb6a",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "3a52b7c3b8bd69dafb80025acc70e029b49a4c19c33c44efd10320a813e2b257",
+        "correct": true,
+        "normalized_center_distance": 0.003125,
+        "parse_status": "parsed",
+        "point": [
+          772.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0015-country",
+      "marks": {
+        "cache_key": "45a19cd627f37b8e769d44cacfec51d4e8d103f86824800ad00b2b77843130b9",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "1816a687e339d16dd8dc26f2ea0d505e528295e4d97a9a31a78c0618d7c08ab9",
+        "correct": false,
+        "normalized_center_distance": 0.05041938375082048,
+        "parse_status": "parsed",
+        "point": [
+          782.0,
+          280.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0016-payment-terms-net-15",
+      "marks": {
+        "cache_key": "07df4528cd19352616a62b17a539cce8a5b1f890d3ce4b805358be11fefeed9f",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "aa4915e538ce93bd9614c52ebea8e3af67dd622ff880c0836b9b5e12c14a04e4",
+        "correct": true,
+        "normalized_center_distance": 0.012984976670777078,
+        "parse_status": "parsed",
+        "point": [
+          554.0,
+          405.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0017-payment-terms-net-30",
+      "marks": {
+        "cache_key": "e4d1e5822f4b3a3345b7dac35eb71439ca8516daf7fd58839caaffe10bbb2472",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "78223d4ac8bf1b24822ec68b1685b1766ea4566b59e677a997b9dd3dd469dc19",
+        "correct": false,
+        "normalized_center_distance": 0.1574456208827551,
+        "parse_status": "parsed",
+        "point": [
+          851.0,
+          404.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0018-payment-terms-net-45",
+      "marks": {
+        "cache_key": "b1355a6d4464c8e4591e6e995c215f3668cbd536d3b15c968ed59a546678bc1c",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "2a57af71953efe207beb355d53236fcf2d4d15ca43110da25d6ed5e901f5e686",
+        "correct": false,
+        "normalized_center_distance": 0.10117262909950622,
+        "parse_status": "parsed",
+        "point": [
+          859.0,
+          401.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0019-expedited-onboarding",
+      "marks": {
+        "cache_key": "88bcd2077c0e59a1beb33812c2491ae89ae88c1c282b4af442f4ee168bfb6319",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c29d7b68d3b30c2551c4ab404b6dec5e4c8b9a0365098eb1fc5e60c4d652d56b",
+        "correct": true,
+        "normalized_center_distance": 0.054309519660748706,
+        "parse_status": "parsed",
+        "point": [
+          556.0,
+          437.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0020-submit",
+      "marks": {
+        "cache_key": "c9bd162d74c945bb89e84618785349bfc35e84f441df4d031de3b45840e983c3",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "669bc1ee170211dc018cb6eb3a98f32ef7dc428f42a75abd4c8bd201c988a189",
+        "correct": true,
+        "normalized_center_distance": 0.0011048543456039805,
+        "parse_status": "parsed",
+        "point": [
+          577.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0021-company-name",
+      "marks": {
+        "cache_key": "ed1e37d219f54732ad4b7336a17ae1bcf82da0af27c779ce7dda76ae98945bf3",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "a15b718a65bc479e3412188b04bede1bf6a58393a76c1179424e08ab6219ef67",
+        "correct": false,
+        "normalized_center_distance": 0.44765625,
+        "parse_status": "parsed",
+        "point": [
+          195.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0022-contact-email",
+      "marks": {
+        "cache_key": "e1bd137a2076cfde4d92eec049cb9f7396f445c10ba0236857d98553f0a92ab3",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "5fa34ccfacd34dc259fc935becf0b2ed41b14663a9f55633af119dcd70f81de4",
+        "correct": false,
+        "normalized_center_distance": 0.4406256925969734,
+        "parse_status": "parsed",
+        "point": [
+          204.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0023-contact-phone",
+      "marks": {
+        "cache_key": "273141970123b3c0825eef3975785d28d226193ede03326891cbf40bd1a78496",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "b977d3497d405fe0e7a37b911e6f62e20e10a5b7554b58d6ae5f2b0c97754a67",
+        "correct": false,
+        "normalized_center_distance": 0.4,
+        "parse_status": "parsed",
+        "point": [
+          256.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0024-tax-id",
+      "marks": {
+        "cache_key": "b417eb85d9361576187ed72d2424218ae98a9896c2bd1aebdc015ced34731b91",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "407893c80a5768efe13e1138388fd92d6174e45193e31524de8fc03e8a565e22",
+        "correct": true,
+        "normalized_center_distance": 0.004752158226795484,
+        "parse_status": "parsed",
+        "point": [
+          774.0,
+          279.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0025-country",
+      "marks": {
+        "cache_key": "fa2a7090736788404851a0c241c9fd6ea2ff72915e1379bf76da4f26074e210f",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b1ea9d831beb09e395e60cf89ce96b2929003229bf4293048bdd3daa05114eda",
+        "correct": true,
+        "normalized_center_distance": 0.004752158226795484,
+        "parse_status": "parsed",
+        "point": [
+          774.0,
+          342.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0026-payment-terms-net-15",
+      "marks": {
+        "cache_key": "5ac34fc347d9887456c213d431058090d8498d88fb967e7fddf4ac0c7bd1261d",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "2f2ebef7f1f2fee302db4b92e4b9a093f1f24c4b093fa08631fc7e680bb6f793",
+        "correct": true,
+        "normalized_center_distance": 0.016448049430802577,
+        "parse_status": "parsed",
+        "point": [
+          549.0,
+          399.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0027-payment-terms-net-30",
+      "marks": {
+        "cache_key": "a57a0c9051084457afefc9ef4a2b3e98d186d33e68db2fc9e78122fb983d0504",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "29e579243a1a14200d425e00f4915a3cc0d49f238b51dfca51a7b909b528f93a",
+        "correct": true,
+        "normalized_center_distance": 0.009773434377497503,
+        "parse_status": "parsed",
+        "point": [
+          637.0,
+          401.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0028-payment-terms-net-45",
+      "marks": {
+        "cache_key": "70f315421c01dc4d0fa4def6476d15fe802dd5f0068af7115671a99c1c1a46a4",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "4563e83d0b7dd9f2e8a12571af631e548c050fe7d664723c09f90d943f86bbb9",
+        "correct": false,
+        "normalized_center_distance": 0.033260520245950005,
+        "parse_status": "parsed",
+        "point": [
+          772.0,
+          403.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0029-expedited-onboarding",
+      "marks": {
+        "cache_key": "ffd97751ef74f8dbcc44681021a991b7f13b9e3fc2fcb3d03668fff4e7160f8e",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "95b7adce440f20be8b82f3b6f4d4567efe4079b89cb5ecf98f43f7596923ddbb",
+        "correct": true,
+        "normalized_center_distance": 0.05743383166332584,
+        "parse_status": "parsed",
+        "point": [
+          552.0,
+          437.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0030-submit",
+      "marks": {
+        "cache_key": "a9ee0adff1080b6e5956fc8e651e5090b070e7bee14b728be1b36f1336fd76dd",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6bcd47cdcceb9de380b34c670a6e5ed4b1f953534ff92dc161ce6b182acffd51",
+        "correct": true,
+        "normalized_center_distance": 0.0015625,
+        "parse_status": "parsed",
+        "point": [
+          580.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0031-company-name",
+      "marks": {
+        "cache_key": "1a11b6609b33dfcd12b52a7927aed26a0004e8676047860599387a2c17132392",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "12efa5e08240ff7a501fa6b8dea775bb14ba4106379e3e6b5f4fb4f6cee644a3",
+        "correct": false,
+        "normalized_center_distance": 0.49765625,
+        "parse_status": "parsed",
+        "point": [
+          131.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0032-contact-email",
+      "marks": {
+        "cache_key": "de0b4cc4747862621ca36172683468327297a76126080a35c98ad05782299c43",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f0a39c72246b6c1c8717ae7fd678ac6641e59a78009c185ef84c8ad7d618747b",
+        "correct": true,
+        "normalized_center_distance": 0.0017469281074217109,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          158.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0033-contact-phone",
+      "marks": {
+        "cache_key": "338ad29d0dfcc310bf204b1b49dff0c88398b93137ed94852762eb3d9d2e489f",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "91aadcc457c45d7de84809521a6d5dbcc664abcd0343d2450d299a47dd846bc1",
+        "correct": false,
+        "normalized_center_distance": 0.39453125,
+        "parse_status": "parsed",
+        "point": [
+          263.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0034-tax-id",
+      "marks": {
+        "cache_key": "9e9525d822ec158dc44b82fca4cc34d687dcc099628ca238eb76178cd243a989",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "21a20ef48fa0353129b5808a026980552519b58888d2d45b35f62d3975398fa4",
+        "correct": true,
+        "normalized_center_distance": 0.0011048543456039805,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          279.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0035-country",
+      "marks": {
+        "cache_key": "c11ec0dc1414906d9dc655662ab5b3ff79806b15e8b86b872e7bb16f0c7b815e",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "aa6c31f2b8a82e9d1fbfa386c2133b319c9c50037cbc2fbee363102062bbeec1",
+        "correct": false,
+        "normalized_center_distance": 0.07066318796100626,
+        "parse_status": "parsed",
+        "point": [
+          777.0,
+          253.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0036-payment-terms-net-15",
+      "marks": {
+        "cache_key": "477c07d223fcbb97f9cc4acbf36ddc651346561c10092c095d0abde4ba4aba0c",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b1d26657f8a3fddc9c0677462c511b53947c186a32911101be7d26fa40f992a5",
+        "correct": true,
+        "normalized_center_distance": 0.019566374666200304,
+        "parse_status": "parsed",
+        "point": [
+          545.0,
+          402.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0037-payment-terms-net-30",
+      "marks": {
+        "cache_key": "bc7c940917e87c1ed1c0e0ffea04abab035b8dcde33a92e7964199e602c4bdb9",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "a1d046e330dc8648342fe03bdcc872a904ef303a519fcb5a1a98792606483db6",
+        "correct": false,
+        "normalized_center_distance": 0.030383494504109466,
+        "parse_status": "parsed",
+        "point": [
+          611.0,
+          406.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0038-payment-terms-net-45",
+      "marks": {
+        "cache_key": "327ecea4c89dc82d13141a355eda641cdac9ac6fa508b7c66827ae42e13a1685",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0549d2eb16386584d3139f4df03d55ead582385e9cc7d94dc0ddbed185181e4f",
+        "correct": true,
+        "normalized_center_distance": 0.010554106317270544,
+        "parse_status": "parsed",
+        "point": [
+          716.0,
+          401.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0039-expedited-onboarding",
+      "marks": {
+        "cache_key": "783a138d9da95bbfc39caae4233734d9157f23e0987e5e238658bde1b73607c3",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "543492c80126e86f854b7b88817a9dab0afea8aefb391d9d7ec5728393f6c7f2",
+        "correct": true,
+        "normalized_center_distance": 0.055860740804980824,
+        "parse_status": "parsed",
+        "point": [
+          554.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0040-submit",
+      "marks": {
+        "cache_key": "9de53521834f14449890f82e1efe28b16f0278998a586d74eabd1b900394cdda",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1391c464019138531824c75977e93b1146e558b5c74b7b883a4d3f92f0b6eca8",
+        "correct": true,
+        "normalized_center_distance": 0.00234375,
+        "parse_status": "parsed",
+        "point": [
+          581.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0041-company-name",
+      "marks": {
+        "cache_key": "1d64b7d19ab93086ea01eea4755ff707fcb1f7530325778e6347c15edbe98d23",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "0bd44061e9e80d1a1a90a938f8ee8ca92876996f03a1a31ff9151c2c6858558f",
+        "correct": false,
+        "normalized_center_distance": 0.5062524112596897,
+        "parse_status": "parsed",
+        "point": [
+          120.0,
+          92.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0042-contact-email",
+      "marks": {
+        "cache_key": "ee60147bcf3a8a053b84b7a3e72fd8bdfe8226aa3f1f149d452c42f55b55a12c",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b07185940fbd79dee4a3856af8c4da323d05256c5ff9bbe7eeb702af91f94f60",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0043-contact-phone",
+      "marks": {
+        "cache_key": "afc6680ad31447a6f3b1a4a417c080d00961e84891438219c792c9bdffe4bc67",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "3d34df717d03ac0f36d75bfa9c5f102e88dbd343b4544671a16d2409af5d0d6d",
+        "correct": false,
+        "normalized_center_distance": 0.39765625,
+        "parse_status": "parsed",
+        "point": [
+          259.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0044-tax-id",
+      "marks": {
+        "cache_key": "4941617b774f97c1aca63881342460c90292a8fa998c787f8a7712790e320732",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1ac727b6d6ecd37e8c5a818dd20e225d14ec15dd26dda8924426660aa6c7e0d4",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0045-country",
+      "marks": {
+        "cache_key": "d2f87d747884755e1432b8b14a9f81a094b4580d6d809ff95c11e7a8707ca3a7",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "cab8fa6feca794894056100a791471ce86cfff69d4c54e3ec37a58833f7138ba",
+        "correct": false,
+        "normalized_center_distance": 0.1438264063246037,
+        "parse_status": "parsed",
+        "point": [
+          774.0,
+          159.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0046-payment-terms-net-15",
+      "marks": {
+        "cache_key": "0a1ede31ffe3bc6bc1e6b7d02e518aebdf3dd8c6015d7390e2454dadbc96aba2",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "34b75387e9805c3b9640f04f771bfb36e86671991a27501c6a3c66d91b16277f",
+        "correct": true,
+        "normalized_center_distance": 0.020346276004852216,
+        "parse_status": "parsed",
+        "point": [
+          544.0,
+          402.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0047-payment-terms-net-30",
+      "marks": {
+        "cache_key": "bbdbd27a6f2b60dc27f1161566b7bc12d51eb7f0530b5a534b39bbbc3109ce1b",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "8beafa1f806a1c76fc41292d544aee49a77ce9fad74248656abc4075777d8d69",
+        "correct": false,
+        "normalized_center_distance": 0.05436568257095877,
+        "parse_status": "parsed",
+        "point": [
+          719.0,
+          404.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0048-payment-terms-net-45",
+      "marks": {
+        "cache_key": "821acdac95371485cb92e29a4d6441f87eb02ea09a6ad79f6b15fe8f339e9c1e",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "2d71b803bdbe3a2fb3895ba22a29a0797aa2c5b9ac8342a27efe9bea4044f254",
+        "correct": false,
+        "normalized_center_distance": 0.0941479185452671,
+        "parse_status": "parsed",
+        "point": [
+          609.0,
+          399.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0049-expedited-onboarding",
+      "marks": {
+        "cache_key": "0afba237df31d76725b0c1972fc7389281a65db4c259ce2a714719c406e7c2e5",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "d5fbffbda9e5f41a8e6aaadb79174a8c4a889880dd69b267a7fd861bad8b9341",
+        "correct": true,
+        "normalized_center_distance": 0.05667428956463636,
+        "parse_status": "parsed",
+        "point": [
+          553.0,
+          438.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0050-submit",
+      "marks": {
+        "cache_key": "fedbd5e4af0995522c69009c6efa3f6dc6ee1d646438864340644b345b2cb389",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "d781c7279c1a9fe1b3eb979f9e2bdee0be58b402ecabead1ea3c97d00ce293e4",
+        "correct": true,
+        "normalized_center_distance": 0.00625,
+        "parse_status": "parsed",
+        "point": [
+          586.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0051-company-name",
+      "marks": {
+        "cache_key": "186eb1fbf591131d2dc074c38101738b58fb5441bd7170c41bf702eb395392ae",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4d40482a62379b5badcf0db9dbab9b9653d7a5b2e5fb9a6dd721a4cbb97f030b",
+        "correct": true,
+        "normalized_center_distance": 0.00625,
+        "parse_status": "parsed",
+        "point": [
+          760.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0052-contact-email",
+      "marks": {
+        "cache_key": "bac4100eb82b1a88ea5bceb277b4f58ccbc7e120c2204d659603e5b0ab44957a",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "9f6d6bd7539c553cbdb936dcfcb3b1423f41af51627285b1ea48fec5c25f686a",
+        "correct": true,
+        "normalized_center_distance": 0.0039836089949943625,
+        "parse_status": "parsed",
+        "point": [
+          773.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0053-contact-phone",
+      "marks": {
+        "cache_key": "782cbe5eea355a9b80556f932575c514e741eea1784bfb1588ced41c23f4a4d0",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "65545fd32eb99132b13a5088c215408dd9dcefa566421aa194a0bf856e1e5e49",
+        "correct": false,
+        "normalized_center_distance": 0.4046875,
+        "parse_status": "parsed",
+        "point": [
+          250.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0054-tax-id",
+      "marks": {
+        "cache_key": "37a04e3ef61f5da20feb3c484692f8ec2e87f69e70e642415df2d20508073787",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "753916695ef62db7b8845b9abf1b5cd7fa811e2fbadb3d8fbac3d112c74df7a5",
+        "correct": true,
+        "normalized_center_distance": 0.00625,
+        "parse_status": "parsed",
+        "point": [
+          760.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0055-country",
+      "marks": {
+        "cache_key": "eac38a00aab00e9e225d8a09cd70cbc0ca9104eca037bbde6b350b6c7e69200c",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "955c50d1ea1be659a8c91f5d45c883a56463bf7bab95658c69e180c2d2b4c27d",
+        "correct": true,
+        "normalized_center_distance": 0.0024705294220065464,
+        "parse_status": "parsed",
+        "point": [
+          765.0,
+          344.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0056-payment-terms-net-15",
+      "marks": {
+        "cache_key": "fcbf7ffababbbedea2424b07de622b1f09e0ce39eccb605757eae0ff2960a73c",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0a1dc811bce24c554a30b045910c94dc4cb2eb4db574b89410cd6995f433d314",
+        "correct": true,
+        "normalized_center_distance": 0.012506102026236032,
+        "parse_status": "parsed",
+        "point": [
+          554.0,
+          401.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0057-payment-terms-net-30",
+      "marks": {
+        "cache_key": "c080e0731eeab37819df5102ee60c2bb3aab55f30bc5df5f5bc8144e9b04dea5",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "c7a081ef79ba48818b4deb1e0f455ed7b22f3161dce8fb54541e226ad199656d",
+        "correct": false,
+        "normalized_center_distance": 0.0589960149938642,
+        "parse_status": "parsed",
+        "point": [
+          725.0,
+          402.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0058-payment-terms-net-45",
+      "marks": {
+        "cache_key": "0483523747abebabe64ed0f0395df8d48f4bfb16c5ea3a3908f935c1a33be63c",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "02e0c6aabcd9dd2642a2dc2eab8fa7a6e8ec057dfef6e5684f280e109d219b8d",
+        "correct": false,
+        "normalized_center_distance": 0.1613512960055055,
+        "parse_status": "parsed",
+        "point": [
+          936.0,
+          404.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0059-expedited-onboarding",
+      "marks": {
+        "cache_key": "6095de88e916a6304edfc60cdd254ef357bce7c167c9338572f3bf1122ea459d",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "ad03f7d68c70bd6f6eebd3f0ef836032fcacc76527e40c489729af4032568648",
+        "correct": true,
+        "normalized_center_distance": 0.05507951017761732,
+        "parse_status": "parsed",
+        "point": [
+          555.0,
+          436.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0060-submit",
+      "marks": {
+        "cache_key": "0c72979b0e6b0049375396e8bd21a1a7675522fa8f31e2469bafb6e2e7a134a7",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "397d769bfcc867722112b9d2c516816542e3253966945b7a6b18f904171bdc55",
+        "correct": true,
+        "normalized_center_distance": 0.00234375,
+        "parse_status": "parsed",
+        "point": [
+          575.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0061-company-name",
+      "marks": {
+        "cache_key": "b49040051e498f9ce613648c75f68ccf99aabcf1dd815a79c6d65ee526066e4c",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "057a913f33e0a0fa49c481712beefab11d1a683c817d956aee6ca69e9e9cd869",
+        "correct": false,
+        "normalized_center_distance": 0.5078125,
+        "parse_status": "parsed",
+        "point": [
+          118.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0062-contact-email",
+      "marks": {
+        "cache_key": "14323112459b1dd95a7b2314c48b25f36f245a067aa54b91cfa6979c75606651",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "e300abe584e0c5c8710d51b412a99f15949c3dfbb9b5cc3f8e7a07e23b8a5b99",
+        "correct": false,
+        "normalized_center_distance": 0.4085944968922428,
+        "parse_status": "parsed",
+        "point": [
+          245.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0063-contact-phone",
+      "marks": {
+        "cache_key": "5e297e589c56a96bd7990a1e98cc1b1a53969d2307fc61b7de6ec8b2b16b507f",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "585e64400989671c6e9eddb5ed58bee1c00829a7556af08598149f2c74543ed3",
+        "correct": false,
+        "normalized_center_distance": 0.40937574546687855,
+        "parse_status": "parsed",
+        "point": [
+          244.0,
+          217.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0064-tax-id",
+      "marks": {
+        "cache_key": "f210b74f463c3ed5f5cab66c4c66dd46da1cec39f1b42071185d669e956a252d",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "1b2c595cfe518f43bfef44c1129180202a2218cea54bd7a9de5fbc40d389762d",
+        "correct": false,
+        "normalized_center_distance": 0.03149319432929121,
+        "parse_status": "parsed",
+        "point": [
+          731.0,
+          264.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0065-country",
+      "marks": {
+        "cache_key": "fba57b2e5d02d9e286939a0e5467c571047097e2d7a56eb91c05436d7832a8b9",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "0c6846315c5c7b19d5faa4ed71c390a2bf017203af382e470aa153b4adf0fca4",
+        "correct": false,
+        "normalized_center_distance": 0.017205246519957217,
+        "parse_status": "parsed",
+        "point": [
+          769.0,
+          365.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0066-payment-terms-net-15",
+      "marks": {
+        "cache_key": "70f2ebb2c9ee9f6eb17ebe4ad861f3071adc47079165a6d35516be002ec7fe25",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4cdeb6beb73b21cb1f059697e1f7f68b84a2fbb82fb482395b800943ffeaca7c",
+        "correct": true,
+        "normalized_center_distance": 0.014197485816708006,
+        "parse_status": "parsed",
+        "point": [
+          552.0,
+          403.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0067-payment-terms-net-30",
+      "marks": {
+        "cache_key": "10dd521ef2b7599c4b77725695809fa93538e97893cf52c2821289506a51f041",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c9c4df4185a8399db2ee4059e38be81442960c1197d9afba68493471ea3bcfec",
+        "correct": true,
+        "normalized_center_distance": 0.019240016181288674,
+        "parse_status": "parsed",
+        "point": [
+          625.0,
+          403.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0068-payment-terms-net-45",
+      "marks": {
+        "cache_key": "639f373e61b0417ebbf8e91d22f4dfad96a56b4c0fc437469481e7b693a219a3",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1b81c92250e5f69fac65e18acc22f94063abce4c981cfa4acec3d93b21de6b90",
+        "correct": true,
+        "normalized_center_distance": 0.0029749113694780894,
+        "parse_status": "parsed",
+        "point": [
+          726.0,
+          402.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0069-expedited-onboarding",
+      "marks": {
+        "cache_key": "307ba77721235f2a26f93b753377ed29af70e6562d1565fb805728d720f01369",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5b6fa872d9cfb7dedf1e09263a4d05f2fcd799a0480b9ee3b158f22680344f72",
+        "correct": true,
+        "normalized_center_distance": 0.06289183810941806,
+        "parse_status": "parsed",
+        "point": [
+          545.0,
+          436.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0070-submit",
+      "marks": {
+        "cache_key": "20e5a66a8ede9b4506c6f6fb6ba5f610e7a075b07c288dfb69d344a9ebe6cc4d",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c797b685a5aab4efeb69f7acd9e2e5459af4d5af16f2a3a8e83ff76b20f6aa9c",
+        "correct": true,
+        "normalized_center_distance": 0.0015625,
+        "parse_status": "parsed",
+        "point": [
+          580.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0071-company-name",
+      "marks": {
+        "cache_key": "47dc72705041a3fe283e87f20c0b26e120d481b44a71a2dff4e1782bb7787389",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "e1e4b32dadf48c63021b73fc1effbdb0237620d23c75e8597c0da0a2dd598b35",
+        "correct": false,
+        "normalized_center_distance": 0.46484375,
+        "parse_status": "parsed",
+        "point": [
+          173.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0072-contact-email",
+      "marks": {
+        "cache_key": "521d604a07a8b18bbff80fca90c43497fd4908ec61267b55a59fb2ad0e46c30a",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "59852b38af3ec00cf13f0aa0f2086664e7e4dce3a33ce93f18346d3530120314",
+        "correct": true,
+        "normalized_center_distance": 0.016424840657522373,
+        "parse_status": "parsed",
+        "point": [
+          747.0,
+          155.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0073-contact-phone",
+      "marks": {
+        "cache_key": "55cf5a12e2ded0f8b9fd65d30beb942715a4e1eb447a96210c7cc99b81eeb7ba",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "aba66d3f30a941736c81d2ca1a6bdda59b8e74fc805ba5da49c3b02c62b2c254",
+        "correct": false,
+        "normalized_center_distance": 0.40234375,
+        "parse_status": "parsed",
+        "point": [
+          253.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0074-tax-id",
+      "marks": {
+        "cache_key": "6e628205705ae9e504f67e9362dcbedaa612f0877dcdd9e7d4596c6d2d738159",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "8c5069aadb38bf6c21c10e9fa270cc2e93da5afe0b1fb8b17643888f8ed19b73",
+        "correct": true,
+        "normalized_center_distance": 0.0024705294220065464,
+        "parse_status": "parsed",
+        "point": [
+          771.0,
+          281.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0075-country",
+      "marks": {
+        "cache_key": "3d20d927a1001ffb588a976a0ac392728802222cc3b4012f0defa82d6fb6430e",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "449eb5119aaa942cde346e1148a7374a8a173d0f88c2d234ba6bbbddbd1d7ef7",
+        "correct": true,
+        "normalized_center_distance": 0.010965366287201718,
+        "parse_status": "parsed",
+        "point": [
+          782.0,
+          342.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0076-payment-terms-net-15",
+      "marks": {
+        "cache_key": "5df568d92d0720d95282fa7a43d934f82a6419f0ecae48d0ddbdfeb10ff0bd90",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1083eedf569688ad62cce98e88aa21dcf67404cf2486c7323a1552b310e9a1b0",
+        "correct": true,
+        "normalized_center_distance": 0.01411124364702222,
+        "parse_status": "parsed",
+        "point": [
+          552.0,
+          399.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0077-payment-terms-net-30",
+      "marks": {
+        "cache_key": "4c0188e6c76141b85cf1bb6bc70c7ce0361b94b2c3f71b2a9f4219c2e23a0bf7",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "69a1e7c2f6cde457165544d7145cfe7117c58fe5040596980a4f8c26e807a43d",
+        "correct": false,
+        "normalized_center_distance": 0.03244304655132206,
+        "parse_status": "parsed",
+        "point": [
+          608.0,
+          402.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0078-payment-terms-net-45",
+      "marks": {
+        "cache_key": "0e2c51804b25be9ce769b6477bf698ae35c98efe954405d72d429325e92c6372",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "bd14ee703f7ded6aa1a931d07a1679d9a1b9c3c9800d8ee29bb969b3c8174135",
+        "correct": false,
+        "normalized_center_distance": 0.09337980294290757,
+        "parse_status": "parsed",
+        "point": [
+          610.0,
+          403.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0079-expedited-onboarding",
+      "marks": {
+        "cache_key": "57d17655577b57ac3a1404d4368c8d067826ea247e89c5e268334a71df7c068a",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1969f1fa0f52091ccc9dbf442069dc06156beb0481578620dcd30072e62f449b",
+        "correct": true,
+        "normalized_center_distance": 0.058204435807387135,
+        "parse_status": "parsed",
+        "point": [
+          551.0,
+          436.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0080-submit",
+      "marks": {
+        "cache_key": "18e09d075b375c3eb349469ad95a0c60b18180588c36a5e5b956b6876c3d723b",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "df26db1dc63ba42d3d23448dc45e1b5f6041549b3d9a717023eabd7492b927b9",
+        "correct": true,
+        "normalized_center_distance": 0.0024705294220065464,
+        "parse_status": "parsed",
+        "point": [
+          581.0,
+          487.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0081-company-name",
+      "marks": {
+        "cache_key": "57d6394912c256525e8759b6cbd9515e3a4a8473109c040ba3b4859dc0d1697e",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "e17dd58db9a892cfcae311a2c389fd20af0a5052b2ce37ef507506f1cbbb61b7",
+        "correct": false,
+        "normalized_center_distance": 0.39765625,
+        "parse_status": "parsed",
+        "point": [
+          259.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0082-contact-email",
+      "marks": {
+        "cache_key": "bd0385d97be2eae4592387591c13d994f20b57f6dee9396be3b0b044dec6bd1c",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fce71dc501196bb30cfd220b1fbf583048971cd9b747f0497903fe97f3a3f626",
+        "correct": true,
+        "normalized_center_distance": 0.0024705294220065464,
+        "parse_status": "parsed",
+        "point": [
+          771.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0083-contact-phone",
+      "marks": {
+        "cache_key": "df1b617b3ffd644164fd7ea7949e8d6b4999582b358ad600a5c4c2c6a6f579d7",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "fcc69be5646b25d743d175dedd266975019b942f5521c43e6971cb90016559ca",
+        "correct": false,
+        "normalized_center_distance": 0.51015625,
+        "parse_status": "parsed",
+        "point": [
+          115.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0084-tax-id",
+      "marks": {
+        "cache_key": "a0627d5a823fab735e6df083e57d63b5425659780d9ac09a5646c4bf4c75a5ff",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "2b4ae3aa29e35c2f522ac612e2620dcb722c920ef953a24a205a51ae720c4bbb",
+        "correct": true,
+        "normalized_center_distance": 0.006442352540027595,
+        "parse_status": "parsed",
+        "point": [
+          776.0,
+          278.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0085-country",
+      "marks": {
+        "cache_key": "df54c7edecb576bdd858c912a4863aec3f35301350b201717075056c9760fcae",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "85a0ea90dc610a7e015d0cefd1c7e42ecc49defe988e0b83496611c2269cc327",
+        "correct": false,
+        "normalized_center_distance": 0.08518849733458737,
+        "parse_status": "parsed",
+        "point": [
+          747.0,
+          236.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0086-payment-terms-net-15",
+      "marks": {
+        "cache_key": "0f742bec0bcd6e8522f43ffae711cd292a2d0905e4c223b4ae5e86bc4bf6638d",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0248ece7c4affdd33c479457627d9c2a3e49febc4d78b51840c07b5c1fa65f8c",
+        "correct": true,
+        "normalized_center_distance": 0.011110517697912416,
+        "parse_status": "parsed",
+        "point": [
+          556.0,
+          403.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0087-payment-terms-net-30",
+      "marks": {
+        "cache_key": "960a0b7a3472021668fd881d25e1220e900b7b1d57bf94d50f0066efbc5694b7",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "26b4f615eecee87d95e06204c835d392faf740bdb11a5830cb471562a7d08eed",
+        "correct": false,
+        "normalized_center_distance": 0.10586009570787876,
+        "parse_status": "parsed",
+        "point": [
+          785.0,
+          401.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0088-payment-terms-net-45",
+      "marks": {
+        "cache_key": "fc7ce9b0b5a533bf3290a71710be46eec0218ade43e41eafed1025de612ae876",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "ef96bc08694f1c9d77231161183f5d0d1809ad9147b40a96249ae2534c871a2e",
+        "correct": true,
+        "normalized_center_distance": 0.0027621358640099515,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          404.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0089-expedited-onboarding",
+      "marks": {
+        "cache_key": "a20aad889b9c6b928f5039bbc95fb0836347871bd71e204c790421cd55ee8628",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f5bbdad5d4904c562a9c73eb386061adf8845d28ff7d951e7b2b497c198cf6bc",
+        "correct": true,
+        "normalized_center_distance": 0.06055821466391863,
+        "parse_status": "parsed",
+        "point": [
+          548.0,
+          437.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0090-submit",
+      "marks": {
+        "cache_key": "0a11af5e278410acef5c05e092395f7f535c0a887dd22e91e947c9f3c80ae3e9",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "a817a09b2a3c5aa7c9b0c8514026db9775e11ae63a50b589d629212645b63fd4",
+        "correct": true,
+        "normalized_center_distance": 0.0015625,
+        "parse_status": "parsed",
+        "point": [
+          580.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0091-company-name",
+      "marks": {
+        "cache_key": "14e0d155b487dc37597ebba1663ecf540abe8ac3d7e8fe8f155a3d3fdf435d74",
+        "correct": true,
+        "mark_id": 1,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "1b28ad88e221f585a85c57936661e9e9b3247adf81239931aa50f47292320b2f",
+        "correct": false,
+        "normalized_center_distance": 0.40078125,
+        "parse_status": "parsed",
+        "point": [
+          255.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0092-contact-email",
+      "marks": {
+        "cache_key": "900f6246290279769dbf14374ed15766b304855803a7d31861782a36bc60ccc4",
+        "correct": true,
+        "mark_id": 2,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "cf4b2915ce833f069787dfc6867efee5c75246d71f43cd0b845e527cc6714239",
+        "correct": true,
+        "normalized_center_distance": 0.007851465329000695,
+        "parse_status": "parsed",
+        "point": [
+          758.0,
+          157.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0093-contact-phone",
+      "marks": {
+        "cache_key": "85600b0e4006b0c2a8dd860ea64d24b0689328b8eb060a05c17d724c93d51659",
+        "correct": true,
+        "mark_id": 3,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "c2229f76d6a92a2f581493835c2dacc36c7885de66bcdb5df58cd7d41713f629",
+        "correct": false,
+        "normalized_center_distance": 0.5046881046823003,
+        "parse_status": "parsed",
+        "point": [
+          122.0,
+          217.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0094-tax-id",
+      "marks": {
+        "cache_key": "0f4147b148df876b8c882cdc4889e09c956b10e27f0465edeb8d5c58252a4519",
+        "correct": true,
+        "mark_id": 4,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "898eb65e2556e8830faaa6eb400ab205136fd08a4d1c369e47a3d8b1d99f9a43",
+        "correct": true,
+        "normalized_center_distance": 0.003314563036811941,
+        "parse_status": "parsed",
+        "point": [
+          771.0,
+          277.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0095-country",
+      "marks": {
+        "cache_key": "9aab0cae39c77001baa8b28e0bc5b13384960c2ba4c07c453616839bb32f12b2",
+        "correct": true,
+        "mark_id": 5,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0c48fbdbed79d923b43c613ea55585ba284e4723b7dc4fbe21edaf3996767e3a",
+        "correct": true,
+        "normalized_center_distance": 0.008414320011147662,
+        "parse_status": "parsed",
+        "point": [
+          772.0,
+          353.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0096-payment-terms-net-15",
+      "marks": {
+        "cache_key": "82642039cfcef9efba6effef289feeb18e8a31a7664f68b63341068ce8d6abe4",
+        "correct": true,
+        "mark_id": 6,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          570.0,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0617dbefa5b1c07f840e7605fdfc3db9f0290516c2d6ebe512a72570bc78cfbd",
+        "correct": true,
+        "normalized_center_distance": 0.00782225952910187,
+        "parse_status": "parsed",
+        "point": [
+          560.0,
+          401.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0097-payment-terms-net-30",
+      "marks": {
+        "cache_key": "d80a05ccb019743428d416530ef0cf90ef30fe628c582cf95523e465c92d80b5",
+        "correct": true,
+        "mark_id": 7,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          649.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "079344975344c1cbe0dc539f5d79501e642a80f82227c2066ed25eedbf3b2777",
+        "correct": true,
+        "normalized_center_distance": 0.008432434822235508,
+        "parse_status": "parsed",
+        "point": [
+          660.0,
+          403.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0098-payment-terms-net-45",
+      "marks": {
+        "cache_key": "dc6b749cd336fec2764e03b5ab564ed10894fdb99e345f9e9a2442979f60f137",
+        "correct": true,
+        "mark_id": 8,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          729.5,
+          400.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "fe2eeef947145c6b0add099998c6e5cbd5a2e3bf9029c42a97ab4ca9bd330424",
+        "correct": false,
+        "normalized_center_distance": 0.1019897862724805,
+        "parse_status": "parsed",
+        "point": [
+          860.0,
+          404.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0099-expedited-onboarding",
+      "marks": {
+        "cache_key": "2ea15cf204c46c34a3fe431fd1c5897666d7b2f25ede974afbc7723ee9dc58ee",
+        "correct": true,
+        "mark_id": 9,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          625.5,
+          435.5
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0f288aea42f5905817c798b0ee1670f076429c1bcbf13d77aaa57c032bb3f5ab",
+        "correct": true,
+        "normalized_center_distance": 0.055090590344733556,
+        "parse_status": "parsed",
+        "point": [
+          555.0,
+          437.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0100-submit",
+      "marks": {
+        "cache_key": "dd4f0ffceba23e99417f4512240ec006664c97e6ea61e18bc4794b5f1508318c",
+        "correct": true,
+        "mark_id": 10,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "d8bb3372e6c59787905e7315c81f0677b1be61ac9ee7888d6021b6db0a304009",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          579.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 19
+    }
+  ],
+  "prompt_version": "pixelgym-grounding-prompt-v1",
+  "protocol_version": "pixelgym-grounding-v1",
+  "provider": "codex-cli",
+  "report_version": "pixelgym-grounding-report-v1",
+  "schema_version": "pixelgym-grounding-results-v2",
+  "set_of_marks": {
+    "conditional_selection_accuracy": 1.0,
+    "conditional_selection_correct_count": 100,
+    "conditional_selection_total_count": 100,
+    "proposal_coverage": 1.0,
+    "proposal_covered_count": 100,
+    "proposal_total_count": 100
+  },
+  "slices": {
+    "element_type": {
+      "button": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 10
+      },
+      "checkbox": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 10
+      },
+      "radio": {
+        "example_count": 30,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 30,
+        "paired_delta_percentage_points": 46.666666666666664,
+        "raw_accuracy": 0.5333333333333333,
+        "raw_correct_count": 16
+      },
+      "select": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 60.0,
+        "raw_accuracy": 0.4,
+        "raw_correct_count": 4
+      },
+      "text_input": {
+        "example_count": 40,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 40,
+        "paired_delta_percentage_points": 60.0,
+        "raw_accuracy": 0.4,
+        "raw_correct_count": 16
+      }
+    },
+    "target_size": {
+      "medium": {
+        "example_count": 50,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 50,
+        "paired_delta_percentage_points": 60.0,
+        "raw_accuracy": 0.4,
+        "raw_correct_count": 20
+      },
+      "small": {
+        "example_count": 50,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 50,
+        "paired_delta_percentage_points": 28.0,
+        "raw_accuracy": 0.72,
+        "raw_correct_count": 36
+      }
+    }
+  },
+  "usage_totals": {
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 1889280,
+    "input_tokens": 2382457,
+    "output_tokens": 14367,
+    "reasoning_output_tokens": 10467
+  }
+}

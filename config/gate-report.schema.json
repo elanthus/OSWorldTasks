@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/gate-report-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "gate_policy_version", "run_id", "dataset_fingerprint", "policy_id", "accuracy", "cost_usd_per_100", "provider_latency_p95_ms", "completeness", "compatibility_passed", "code_revision_passed", "overall_passed", "reasons"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-promotion-gate-report-v1"},
+    "gate_policy_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "dataset_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "accuracy": {"$ref": "#/$defs/observation"},
+    "cost_usd_per_100": {"$ref": "#/$defs/observation"},
+    "provider_latency_p95_ms": {"$ref": "#/$defs/observation"},
+    "completeness": {"type": "object", "required": ["expected", "scored", "unique", "passed"], "properties": {"expected": {"type": "integer"}, "scored": {"type": "integer"}, "unique": {"type": "integer"}, "passed": {"type": "boolean"}}},
+    "compatibility_passed": {"type": "boolean"},
+    "code_revision_passed": {"type": "boolean"},
+    "overall_passed": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {"observation": {"type": "object", "required": ["observed", "threshold", "passed"], "properties": {"observed": {"type": ["number", "null"]}, "threshold": {"type": "number"}, "passed": {"type": "boolean"}}}}
+}

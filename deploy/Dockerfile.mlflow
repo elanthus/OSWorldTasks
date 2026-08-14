@@ -1,0 +1,3 @@
+FROM python:3.12.11-slim-bookworm
+RUN pip install --no-cache-dir mlflow==3.14.0 boto3==1.40.1 psycopg2-binary==2.9.10
+CMD ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000"]

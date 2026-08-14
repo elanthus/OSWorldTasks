@@ -1,5 +1,5 @@
 [diff]
-max_bytes = 220000
+max_bytes = 600000
 exclude = [
     "*.lock",
     "*-lock.json",
@@ -11,6 +11,12 @@ exclude = [
     "**/*_pb2.py",
     "artifacts/day-1/**",
     "artifacts/day-2/**",
+    "artifacts/day-3/**",
+    "artifacts/grounding/**",
+    "artifacts/grounding-*.json",
+    "artifacts/grounding-*.jsonl",
+    "artifacts/grounding-*.md",
+    "artifacts/resume-bullets.md",
     "artifacts/validation-report.json",
     "artifacts/validation-report.md",
     "tests/integration/fixtures/*.json",

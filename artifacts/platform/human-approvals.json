@@ -1,0 +1,55 @@
+{
+  "schema_version": "pixelgym-platform-human-approvals-v1",
+  "recorded_date": "2026-08-14",
+  "gate": "D4.1",
+  "demo_gate_policy": {
+    "approved": true,
+    "path": "config/promotion-gates.demo-v1.json",
+    "policy_version": "pixelgym-demo-gates-v1",
+    "primary_metric": "point-inside-box accuracy over the complete frozen 100-example dataset",
+    "invalid_and_request_failure_scoring": "incorrect",
+    "minimum_accuracy": 0.8,
+    "maximum_cost_usd_per_100": 0.0,
+    "maximum_provider_latency_p95_ms": 100.0,
+    "latency_quantile_method": "Hyndman-Fan type 7",
+    "minimum_measured_count": 100,
+    "threshold_equality_passes": true,
+    "required_dataset_fingerprint": "sha256:01d7218c3657aa8d186a038b4c34c00cc227ebda91ee5af9ca238a8e1ed506a8",
+    "required_scorer_version": "pixelgym-point-inside-half-open-box-v1",
+    "required_target_semantics": "requested-control-center-point-v1",
+    "dirty_code_allowed": false,
+    "confidence_bound_required": false,
+    "provider_class": "scripted-demo",
+    "synthetic_only": true
+  },
+  "retention": {
+    "local_demo_retention_days": 30,
+    "local_demo_mode": "MinIO governance retention",
+    "local_demo_claim": "demonstration-only; not production WORM",
+    "production_worm_approved": false,
+    "production_retention_days": null,
+    "production_decision": "deferred to a separate human approval before hosted deployment"
+  },
+  "reviewer_controls": {
+    "local_reviewer_identity": "local-reviewer",
+    "approval_reason_required": true,
+    "deployment_reason_required": true,
+    "rollback_reason_required": true,
+    "passing_gates_auto_approve": false
+  },
+  "real_provider_spend": {
+    "approved": false,
+    "provider": null,
+    "model": null,
+    "condition_call_cap": null,
+    "maximum_spend_usd": null,
+    "decision": "deferred; requires an exact provider/model, a bounded pilot call and dollar cap, pilot review, and a second approval before a larger run"
+  },
+  "scope_exclusions": [
+    "paid provider calls",
+    "production or external deployment",
+    "production WORM retention",
+    "new public claims"
+  ],
+  "source_user_message": "ok, approved"
+}

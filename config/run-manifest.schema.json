@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/run-manifest-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "submission_id", "mlflow_run_id", "metaflow_pathspec", "dataset_fingerprint", "policy_id", "status", "artifact_index"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-platform-run-manifest-v1"},
+    "submission_id": {"type": "string"},
+    "mlflow_run_id": {"type": ["string", "null"]},
+    "metaflow_pathspec": {"type": ["string", "null"]},
+    "dataset_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_id": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["Submitted", "Running", "Complete", "Failed", "Cancelled"]},
+    "request": {"type": "object"},
+    "artifact_index": {"type": "array", "items": {"type": "object"}}
+  }
+}

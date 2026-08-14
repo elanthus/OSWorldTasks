@@ -58,6 +58,17 @@
     document.getElementById("submit-status").textContent = message;
   }
 
+  function isComplete(values) {
+    return Boolean(
+      values.company_name &&
+        values.contact_email &&
+        values.contact_phone &&
+        values.tax_id &&
+        values.country &&
+        values.payment_terms,
+    );
+  }
+
   function init() {
     fetch("/api/task")
       .then(function (response) {
@@ -84,10 +95,17 @@
 
     document.getElementById("vendor-form").addEventListener("submit", function (event) {
       event.preventDefault();
+      var values = readForm();
+      if (!isComplete(values)) {
+        // Keep this text synchronized with capture.py. The capture assertion intentionally fails
+        // loudly if a copy edit changes the rendered validation state.
+        showStatus("Complete all required fields before submitting.");
+        return;
+      }
       fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(readForm()),
+        body: JSON.stringify(values),
       })
         .then(function (response) {
           if (!response.ok) {

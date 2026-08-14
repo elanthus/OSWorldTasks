@@ -1,0 +1,37 @@
+[
+  {
+    "case": "marks_win",
+    "example_id": "vendor-form-0001-company-name",
+    "image_path": "artifacts/grounding/gallery/marks_win-vendor-form-0001-company-name.png",
+    "marks_correct": true,
+    "raw_correct": false
+  },
+  {
+    "case": "marks_win",
+    "example_id": "vendor-form-0005-country",
+    "image_path": "artifacts/grounding/gallery/marks_win-vendor-form-0005-country.png",
+    "marks_correct": true,
+    "raw_correct": false
+  },
+  {
+    "case": "marks_win",
+    "example_id": "vendor-form-0007-payment-terms-net-30",
+    "image_path": "artifacts/grounding/gallery/marks_win-vendor-form-0007-payment-terms-net-30.png",
+    "marks_correct": true,
+    "raw_correct": false
+  },
+  {
+    "case": "unchanged_correct",
+    "example_id": "vendor-form-0002-contact-email",
+    "image_path": "artifacts/grounding/gallery/unchanged_correct-vendor-form-0002-contact-email.png",
+    "marks_correct": true,
+    "raw_correct": true
+  },
+  {
+    "case": "unchanged_correct",
+    "example_id": "vendor-form-0006-payment-terms-net-15",
+    "image_path": "artifacts/grounding/gallery/unchanged_correct-vendor-form-0006-payment-terms-net-15.png",
+    "marks_correct": true,
+    "raw_correct": true
+  }
+]

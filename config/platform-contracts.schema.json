@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/platform-contracts-v1.json",
+  "title": "PixelGym platform schema registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contracts"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-platform-schema-registry-v1"},
+    "contracts": {
+      "const": {
+        "run_manifest": "pixelgym-platform-run-manifest-v1",
+        "gate_policy": "pixelgym-promotion-gate-policy-v1",
+        "gate_report": "pixelgym-promotion-gate-report-v1",
+        "policy_package": "pixelgym-grounding-policy-v1",
+        "raw_response": "pixelgym-raw-response-v1",
+        "approval": "pixelgym-policy-approval-v1",
+        "deployment": "pixelgym-policy-deployment-v1",
+        "audit_event": "pixelgym-platform-audit-event-v1"
+      }
+    }
+  }
+}
