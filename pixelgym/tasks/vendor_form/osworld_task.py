@@ -66,7 +66,7 @@ def build_guest_bundle(task_record: dict[str, Any], destination: Path) -> str:
     members.append(
         (
             "task.json",
-            generator.canonical_json(task_record).encode("ascii"),
+            generator.canonical_json(task_record).encode("utf-8"),
         )
     )
 

@@ -142,3 +142,5 @@ def test_tracking_contract_is_idempotent_and_params_are_immutable(
     }
     with pytest.raises(ValueError, match="changed"):
         tracking.create_or_recover_run("submission-1", {**params, "model": "different"})
+    with pytest.raises(ValueError, match="unsafe"):
+        tracking.create_or_recover_run("submission-' OR 1=1", params)

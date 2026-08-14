@@ -154,9 +154,17 @@ class CodexCLIProvider:
                     usage=None,
                     provider_metadata={"cli_version": self._version(), "exit_code": None},
                     provider_trace=[],
-                    request_failure=f"{type(exc).__name__}: {exc}",
+                    request_failure=f"{type(exc).__name__}: provider process failed",
                 )
             trace = _parse_jsonl_trace(completed.stdout)
+            usage = _find_usage(trace)
+            trace_event_types = sorted(
+                {
+                    event_type
+                    for event in trace
+                    if isinstance((event_type := event.get("type")), str)
+                }
+            )
             raw_response = output_path.read_text() if output_path.is_file() else None
             failure = None
             if completed.returncode != 0:
@@ -169,12 +177,16 @@ class CodexCLIProvider:
                 timestamp_utc=started_at,
                 latency_ms=(time.monotonic() - start) * 1000,
                 raw_response=raw_response,
-                usage=_find_usage(trace),
+                usage=usage,
                 provider_metadata={
                     "cli_version": self._version(),
                     "exit_code": completed.returncode,
+                    "trace_event_count": len(trace),
+                    "trace_event_types": trace_event_types,
                 },
-                provider_trace=trace,
+                # Full CLI JSON events may contain local paths or account metadata.
+                # Retain only aggregate event metadata and separately extracted usage.
+                provider_trace=[],
                 request_failure=failure,
             )
 

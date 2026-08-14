@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,6 +14,7 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 
 EXPERIMENT_NAME = "pixelgym-grounding"
 REGISTERED_POLICY_NAME = "pixelgym-grounding-policy"
+_SUBMISSION_ID_RE = re.compile(r"^submission-[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
 RUN_PARAM_KEYS = (
     "dataset_fingerprint",
@@ -90,6 +92,7 @@ class InMemoryTracking:
         self.runs[run_id].tags["prompt.uri"] = f"prompts:/{name}/{version}"
 
     def create_or_recover_run(self, submission_id: str, params: dict[str, Any]) -> str:
+        _validate_submission_id(submission_id)
         missing = sorted(set(RUN_PARAM_KEYS) - set(params))
         if missing:
             raise ValueError(f"run contract is missing required params: {missing}")
@@ -151,6 +154,11 @@ def _param(value: Any) -> str:
     if isinstance(value, str):
         return value
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def _validate_submission_id(submission_id: str) -> None:
+    if not _SUBMISSION_ID_RE.fullmatch(submission_id):
+        raise ValueError("submission ID contains characters unsafe for tracking queries")
 
 
 def _summary_metrics(summary: RunSummary, report: GateReport) -> dict[str, float]:
@@ -232,6 +240,7 @@ class MlflowTracking:
         self.client.set_prompt_version_tag(name, version, f"pixelgym.run.{run_id}", "linked")
 
     def create_or_recover_run(self, submission_id: str, params: dict[str, Any]) -> str:
+        _validate_submission_id(submission_id)
         missing = sorted(set(RUN_PARAM_KEYS) - set(params))
         if missing:
             raise ValueError(f"run contract is missing required params: {missing}")

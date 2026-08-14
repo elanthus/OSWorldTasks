@@ -11,8 +11,8 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.evaluation import PROMPT_VERSION, prompt_for
-from pixelgym.grounding.overlays import load_jsonl
 from pixelgym.grounding.schema import PROTOCOL_VERSION
+from pixelgym.serialization import load_jsonl
 from pixelgym.tasks.vendor_form.render import BOLD_FONT, REGULAR_FONT
 
 PILOT_AUDIT_VERSION = "pixelgym-grounding-pilot-audit-v1"

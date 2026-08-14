@@ -10,6 +10,7 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.schema import PROTOCOL_VERSION, validate_bbox, validate_candidate_set
+from pixelgym.serialization import canonical_json_text, load_jsonl
 from pixelgym.tasks.vendor_form.render import BOLD_FONT
 
 OVERLAY_VERSION = "pixelgym-set-of-marks-v1"
@@ -20,25 +21,8 @@ _BADGE_COLOR = (145, 18, 38)
 _BADGE_TEXT = (255, 255, 255)
 
 
-def _canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-
-
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
-
-
-def load_jsonl(path: Path) -> list[dict[str, Any]]:
-    rows = []
-    for line_number, line in enumerate(path.read_text().splitlines(), start=1):
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"invalid JSON on {path}:{line_number}") from exc
-        if not isinstance(row, dict):
-            raise TypeError(f"JSONL row on {path}:{line_number} is not an object")
-        rows.append(row)
-    return rows
 
 
 def ordered_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -71,7 +55,7 @@ def _badge_position(
     font: ImageFont.FreeTypeFont,
     width: int,
     height: int,
-) -> tuple[int, int, int, int]:
+) -> list[int]:
     text = str(mark_id)
     text_box = draw.textbbox((0, 0), text, font=font)
     badge_width = text_box[2] - text_box[0] + 6
@@ -279,7 +263,9 @@ def generate_overlays(repository_root: Path) -> dict[str, Any]:
         validate_overlay_record(record)
         records.append(record)
     mapping_path = artifact_root / "grounding-overlays.jsonl"
-    mapping_path.write_text("".join(_canonical_json(row) + "\n" for row in records))
+    mapping_path.write_text(
+        "".join(canonical_json_text(row) + "\n" for row in records), encoding="utf-8"
+    )
     contact_sheet_path = artifact_root / "grounding" / "marks-contact-sheet.png"
     build_overlay_contact_sheet(
         records, repository_root=repository_root, output_path=contact_sheet_path

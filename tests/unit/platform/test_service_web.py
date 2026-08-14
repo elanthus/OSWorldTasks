@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import base64
+import importlib
 import io
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -115,6 +117,65 @@ def test_unapproved_policy_cannot_become_ready(policy_factory) -> None:
     client = TestClient(create_serving_app(PolicyRuntime()))
     assert client.get("/health/live").status_code == 200
     assert client.get("/health/ready").status_code == 503
+
+
+def test_bootstrap_import_is_side_effect_free_and_factory_uses_explicit_migration(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    for name in (
+        "PIXELGYM_REPOSITORY_ROOT",
+        "PIXELGYM_CONTROL_DB",
+        "PIXELGYM_IMMUTABLE_ROOT",
+        "PIXELGYM_IMMUTABLE_BUCKET",
+        "PIXELGYM_CSRF_SECRET",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    sys.modules.pop("pixelgym.platform.bootstrap", None)
+    module = importlib.import_module("pixelgym.platform.bootstrap")
+    assert not (tmp_path / ".cache").exists()
+
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(tmp_path / "state/control.db"))
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
+    monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    (tmp_path / "state").mkdir()
+    migrated = ControlStore(
+        tmp_path / "state/control.db", reviewer_identity="local-reviewer"
+    )
+    migrated.migrate()
+    client = TestClient(module.create_app())
+
+    assert client.get("/").status_code == 200
+    assert client.get("/health/live").status_code == 200
+    assert (tmp_path / "state/control.db").is_file()
+
+
+def test_bootstrap_factory_fails_clearly_before_explicit_migration(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(tmp_path / "state/control.db"))
+    monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    monkeypatch.delenv("PIXELGYM_IMMUTABLE_BUCKET", raising=False)
+
+    with pytest.raises(RuntimeError, match="not migrated"):
+        bootstrap.create_app()
+
+
+def test_bootstrap_factory_requires_explicit_csrf_secret(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(tmp_path / "control.db"))
+    monkeypatch.delenv("PIXELGYM_CSRF_SECRET", raising=False)
+
+    with pytest.raises(RuntimeError, match="CSRF_SECRET"):
+        bootstrap.create_app()
 
 
 def _csrf(text: str) -> str:
@@ -241,3 +302,4 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     assert "Cost / 100" in response.text
     assert "Provider p95" in response.text
     assert "Accuracy" in response.text
+    assert "80.0%" in response.text

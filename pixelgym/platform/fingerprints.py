@@ -3,21 +3,15 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.schema import validate_example
+from pixelgym.serialization import canonical_json_bytes, load_jsonl
 
 DATASET_MANIFEST_SCHEMA = "pixelgym-grounding-dataset-manifest-v1"
 COORDINATE_CONVENTION = "zero-based screenshot pixels; half-open target boxes [x0,y0,x1,y1)"
-
-
-def canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
-    ).encode("utf-8")
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -30,18 +24,6 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def load_jsonl(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        if not line.strip():
-            continue
-        value = json.loads(line)
-        if not isinstance(value, dict):
-            raise TypeError(f"{path}:{line_number} must contain a JSON object")
-        rows.append(value)
-    return rows
 
 
 def _asset(root: Path, path_value: str, expected_sha256: str, *, role: str) -> dict[str, Any]:

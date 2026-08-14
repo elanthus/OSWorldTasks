@@ -10,7 +10,12 @@ from collections.abc import Iterable
 from typing import Any
 
 from pixelgym.grounding.evaluation import PREDICTION_SCHEMA_VERSION, PROMPT_VERSION
-from pixelgym.grounding.schema import PROTOCOL_VERSION, target_area_slice
+from pixelgym.grounding.schema import (
+    PROTOCOL_VERSION,
+    TARGET_AREA_MEDIUM_BELOW,
+    TARGET_AREA_SMALL_BELOW,
+    target_area_slice,
+)
 
 ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v1"
 ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v2"
@@ -484,7 +489,10 @@ def analyze_predictions(
             "distance_normalization": "screenshot diagonal",
             "invalid_outputs_scored_incorrect": True,
             "request_failures_scored_incorrect": True,
-            "target_size_thresholds_screen_area": {"small_below": 0.005, "medium_below": 0.02},
+            "target_size_thresholds_screen_area": {
+                "small_below": TARGET_AREA_SMALL_BELOW,
+                "medium_below": TARGET_AREA_MEDIUM_BELOW,
+            },
         },
         "provider": providers[0],
         "model": models[0],

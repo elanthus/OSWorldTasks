@@ -16,6 +16,7 @@ from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import Tracking
 from pixelgym.platform.policy import PROMPT_TEMPLATES, is_verified_clean_revision, prompt_template
+from pixelgym.serialization import load_jsonl
 
 RAW_RESPONSE_SCHEMA_VERSION = "pixelgym-raw-response-v1"
 RUN_MANIFEST_SCHEMA_VERSION = "pixelgym-platform-run-manifest-v1"
@@ -59,7 +60,7 @@ class ScriptedReplayProvider:
         self.condition = "raw"
         self.model = f"day3-replay-{variant}-{'v1' if variant == 'baseline' else 'v2'}"
         self.latency_ms = latency_ms
-        rows = [json.loads(line) for line in prediction_path.read_text().splitlines() if line.strip()]
+        rows = load_jsonl(prediction_path)
         if variant == "baseline":
             self.responses = {
                 row["example_id"]: row["raw_response"]
@@ -106,10 +107,6 @@ def percentile_r7(values: list[float], quantile: float) -> float:
     if lower == upper:
         return ordered[lower]
     return ordered[lower] * (upper - position) + ordered[upper] * (position - lower)
-
-
-def _load_rows(path: Path) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
 class EvaluationRunner:
@@ -166,7 +163,7 @@ class EvaluationRunner:
         except BaseException:
             # Recover the same parent run and retain an explicit terminal status. Immutable raw
             # evidence already written before the failure remains available for resume.
-            examples = _load_rows(self.root / "artifacts/grounding-dataset.jsonl")
+            examples = load_jsonl(self.root / "artifacts/grounding-dataset.jsonl")
             run_id = self.tracking.create_or_recover_run(
                 self.submission_id, self._tracking_params(len(examples))
             )
@@ -174,10 +171,10 @@ class EvaluationRunner:
             raise
 
     def _run_once(self, *, max_calls: int) -> tuple[RunSummary, Any, list[ArtifactRef]]:
-        examples = _load_rows(self.root / "artifacts/grounding-dataset.jsonl")
+        examples = load_jsonl(self.root / "artifacts/grounding-dataset.jsonl")
         overlays = {
             row["example_id"]: row
-            for row in _load_rows(self.root / "artifacts/grounding-overlays.jsonl")
+            for row in load_jsonl(self.root / "artifacts/grounding-overlays.jsonl")
         }
         if max_calls < len(examples):
             raise RuntimeError("evaluation call cap is below the frozen example count")

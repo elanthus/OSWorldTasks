@@ -9,9 +9,10 @@ telephone exchange) so nothing here resembles a real vendor.
 from __future__ import annotations
 
 import hashlib
-import json
 import random
 from typing import Any
+
+from pixelgym.serialization import canonical_json_text
 
 FIELD_NAMES: tuple[str, ...] = (
     "company_name",
@@ -89,7 +90,7 @@ def _spec_body(seed: int) -> dict[str, Any]:
 
 def canonical_json(spec_body: dict[str, Any]) -> str:
     """Canonical, order-independent JSON serialization used for hashing and diffing."""
-    return json.dumps(spec_body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return canonical_json_text(spec_body)
 
 
 def task_id_for(spec_body: dict[str, Any]) -> str:

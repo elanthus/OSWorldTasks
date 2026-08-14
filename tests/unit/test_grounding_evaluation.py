@@ -13,6 +13,7 @@ from pixelgym.grounding.evaluation import (
     ResponseCache,
     cache_key,
     parse_prediction,
+    pilot_example_ids,
     prompt_for,
     run_evaluation,
 )
@@ -235,3 +236,12 @@ def test_response_cache_refuses_to_replace_different_content(tmp_path: Path) -> 
     different = provider.invoke(image_path=tmp_path / "unused", prompt="", schema=RAW_SCHEMA)
     with pytest.raises(ValueError, match="replace"):
         cache.put("a" * 64, different)
+
+
+def test_pilot_selection_is_independent_of_jsonl_row_order() -> None:
+    examples = [{"example_id": f"example-{index:04d}"} for index in range(100)]
+
+    assert pilot_example_ids(examples) == pilot_example_ids(list(reversed(examples)))
+    assert pilot_example_ids(examples) == [
+        f"example-{index:04d}" for index in range(0, 100, 11)
+    ]

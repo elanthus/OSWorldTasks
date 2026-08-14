@@ -42,6 +42,50 @@ def test_codex_provider_uses_ephemeral_read_only_image_and_schema_flags(tmp_path
     assert response.provider_metadata["cli_version"] == "codex-cli 0.test"
 
 
+def test_codex_provider_does_not_cache_unredacted_cli_stdout(tmp_path: Path) -> None:
+    image_path = tmp_path / "image.png"
+    Image.new("RGB", (2, 2), "white").save(image_path)
+
+    def runner(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if command[1:] == ["--version"]:
+            return subprocess.CompletedProcess(command, 0, "codex-cli 0.test\n", "")
+        output_index = command.index("--output-last-message") + 1
+        Path(command[output_index]).write_text('{"x":1,"y":1}')
+        stdout = "\n".join(
+            (
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "local_path": "/Users/private/project",
+                        "account": "private@example.test",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "turn.completed",
+                        "usage": {"input_tokens": 3, "output_tokens": 1},
+                    }
+                ),
+            )
+        )
+        return subprocess.CompletedProcess(command, 0, stdout, "")
+
+    response = CodexCLIProvider(
+        executable="codex-test", command_runner=runner
+    ).invoke(image_path=image_path, prompt="prompt", schema=RAW_SCHEMA)
+    cached = json.dumps(response.to_cache_dict())
+
+    assert response.usage == {"input_tokens": 3, "output_tokens": 1}
+    assert response.provider_trace == []
+    assert response.provider_metadata["trace_event_count"] == 2
+    assert response.provider_metadata["trace_event_types"] == [
+        "item.completed",
+        "turn.completed",
+    ]
+    assert "/Users/private" not in cached
+    assert "private@example.test" not in cached
+
+
 def test_openrouter_requires_both_environment_variables() -> None:
     with pytest.raises(RuntimeError, match="OPENROUTER_API_KEY"):
         OpenRouterProvider(environment={})

@@ -97,6 +97,8 @@
       event.preventDefault();
       var values = readForm();
       if (!isComplete(values)) {
+        // Keep this text synchronized with capture.py. The capture assertion intentionally fails
+        // loudly if a copy edit changes the rendered validation state.
         showStatus("Complete all required fields before submitting.");
         return;
       }

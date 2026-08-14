@@ -11,8 +11,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.analysis import analyze_predictions
 from pixelgym.grounding.evaluation import PROMPT_VERSION
-from pixelgym.grounding.overlays import load_jsonl
 from pixelgym.grounding.schema import PROTOCOL_VERSION
+from pixelgym.serialization import load_jsonl, resolve_repository_output
 from pixelgym.tasks.vendor_form.render import BOLD_FONT, REGULAR_FONT
 
 REPORT_VERSION = "pixelgym-grounding-report-v1"
@@ -123,12 +123,15 @@ def render_error_review_images(
     records = {(row["example_id"], row["condition"]): row for row in predictions}
     for review in error_reviews:
         example_id = review["example_id"]
+        output_path = resolve_repository_output(
+            repository_root, review["review_image_path"]
+        )
         render_pair_image(
             repository_root=repository_root,
             example=example_by_id[example_id],
             raw_record=records[(example_id, "raw")],
             marks_record=records[(example_id, "marks")],
-            output_path=repository_root / review["review_image_path"],
+            output_path=output_path,
             subtitle=(
                 f"Review {review['condition']} error | suggested: "
                 f"{', '.join(review['categories'])} | "

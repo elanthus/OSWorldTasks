@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
 
+from pixelgym.serialization import canonical_json_text
+
 
 def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return canonical_json_text(value)
 
 
 def canonical_sha256(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("ascii")).hexdigest()
+    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
 def raw_pixel_difference(

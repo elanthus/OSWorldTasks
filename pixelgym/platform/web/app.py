@@ -60,7 +60,7 @@ def _badge(label: str, tone: str = "neutral") -> str:
 
 
 def _percentage(value: object) -> str:
-    return "missing" if value is None else f"{float(value):.0%}"
+    return "missing" if value is None else f"{float(value):.1%}"
 
 
 def _money(value: object) -> str:

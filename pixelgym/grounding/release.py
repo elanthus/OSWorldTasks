@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from pixelgym.grounding.overlays import load_jsonl
+from pixelgym.serialization import load_jsonl
 
 RELEASE_OBSERVATIONS_SCHEMA_VERSION = "pixelgym-day3-release-observations-v1"
 

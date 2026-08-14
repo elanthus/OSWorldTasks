@@ -16,7 +16,7 @@ from pixelgym.grounding.analysis import (
     paired_bootstrap_interval,
 )
 from pixelgym.grounding.evaluation import PREDICTION_SCHEMA_VERSION, PROMPT_VERSION
-from pixelgym.grounding.report import generate_results_package
+from pixelgym.grounding.report import generate_results_package, render_error_review_images
 from pixelgym.grounding.schema import PROTOCOL_VERSION
 
 
@@ -198,6 +198,27 @@ def test_analysis_rejects_missing_pair_and_taxonomy_record() -> None:
             predictions=predictions,
             error_reviews=reviews[:-1],
             bootstrap_samples=10,
+        )
+
+
+@pytest.mark.parametrize("path", ["../outside.png", "/tmp/outside.png"])
+def test_error_review_image_path_cannot_escape_repository(
+    tmp_path: Path, path: str
+) -> None:
+    review = {
+        "example_id": "example-0",
+        "condition": "raw",
+        "categories": ["wrong semantic element"],
+        "review_status": "manual_visual_review",
+        "review_image_path": path,
+    }
+
+    with pytest.raises(ValueError, match="repository-relative"):
+        render_error_review_images(
+            repository_root=tmp_path,
+            examples=[],
+            predictions=[],
+            error_reviews=[review],
         )
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
 
@@ -12,6 +13,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--database", default=os.environ.get("PIXELGYM_CONTROL_DB", ".cache/platform/control.db"))
     args = parser.parse_args()
+    if args.database != ":memory:" and not args.database.startswith("file:"):
+        Path(args.database).parent.mkdir(parents=True, exist_ok=True)
     store = ControlStore(
         args.database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),

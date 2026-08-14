@@ -10,7 +10,7 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-DETERMINISM_SCHEMA_VERSION = "pixelgym-grounding-repeatability-v1"
+DETERMINISM_SCHEMA_VERSION = "pixelgym-grounding-repeatability-v2"
 
 
 def _aggregate_hash(paths: list[Path], root: Path) -> str:
@@ -49,8 +49,8 @@ def compare_png_directories(
     for reference_path, candidate_path in zip(reference_paths, candidate_paths, strict=True):
         if reference_path.read_bytes() == candidate_path.read_bytes():
             byte_identical_file_count += 1
-        reference = np.asarray(Image.open(reference_path).convert("RGB"), dtype=np.int16)
-        candidate = np.asarray(Image.open(candidate_path).convert("RGB"), dtype=np.int16)
+        reference = np.asarray(Image.open(reference_path).convert("RGBA"), dtype=np.int16)
+        candidate = np.asarray(Image.open(candidate_path).convert("RGBA"), dtype=np.int16)
         if reference.shape != candidate.shape:
             raise ValueError(f"image dimensions differ for {reference_path.name}")
         changed = np.any(reference != candidate, axis=2)
@@ -69,7 +69,7 @@ def compare_png_directories(
     differing_bbox = None if union_x0 is None else [union_x0, union_y0, union_x1, union_y1]
     return {
         "schema_version": DETERMINISM_SCHEMA_VERSION,
-        "comparison": "bitwise PNG bytes and decoded RGB pixels",
+        "comparison": "bitwise PNG bytes and decoded RGBA pixels",
         "tolerance_applied": False,
         "mask_applied": False,
         "reference_label": reference_label,

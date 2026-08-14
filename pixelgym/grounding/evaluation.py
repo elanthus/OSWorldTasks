@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-from pixelgym.grounding.overlays import load_jsonl
 from pixelgym.grounding.providers import GroundingProvider, ProviderResponse
 from pixelgym.grounding.schema import PROTOCOL_VERSION
+from pixelgym.serialization import canonical_json_text, load_jsonl
 
 Condition = Literal["raw", "marks"]
 PROMPT_VERSION = "pixelgym-grounding-prompt-v1"
@@ -29,10 +29,6 @@ MARKS_SCHEMA: dict[str, Any] = {
     "required": ["mark_id"],
     "additionalProperties": False,
 }
-
-
-def _canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
 def _sha256_text(text: str) -> str:
@@ -87,7 +83,7 @@ def cache_key(
         "image_sha256": image_sha256,
         "schema": schema,
     }
-    return _sha256_text(_canonical_json(material))
+    return _sha256_text(canonical_json_text(material))
 
 
 class ResponseCache:
@@ -271,9 +267,12 @@ def evaluate_one(
 
 
 def pilot_example_ids(examples: list[dict[str, Any]]) -> list[str]:
+    ordered = sorted(examples, key=lambda row: row["example_id"])
+    if len(ordered) != 100:
+        raise ValueError("pilot selection requires the frozen 100-example dataset")
     selected = []
     for target_index in range(10):
-        selected.append(examples[target_index * 11]["example_id"])
+        selected.append(ordered[target_index * 11]["example_id"])
     return selected
 
 
@@ -357,7 +356,7 @@ def run_evaluation(
             )
             records.append(record)
             cache_hits += cache_hit
-    encoded = "".join(_canonical_json(row) + "\n" for row in records)
+    encoded = "".join(canonical_json_text(row) + "\n" for row in records)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.is_file() and output_path.read_text() != encoded:
         raise ValueError("refusing to overwrite a different immutable prediction file")

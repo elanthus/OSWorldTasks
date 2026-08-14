@@ -59,3 +59,27 @@ def test_identical_image_sets_report_bitwise_identity(tmp_path: Path) -> None:
     assert result["max_channel_delta"] == 0
     assert result["differing_pixel_bbox_xyxy"] is None
     assert result["reference_aggregate_sha256"] == result["candidate_aggregate_sha256"]
+
+
+def test_alpha_only_pixel_change_is_counted_without_tolerance(tmp_path: Path) -> None:
+    reference = tmp_path / "reference"
+    candidate = tmp_path / "candidate"
+    reference.mkdir()
+    candidate.mkdir()
+    Image.new("RGBA", (2, 2), (10, 20, 30, 255)).save(reference / "alpha.png")
+    changed = Image.new("RGBA", (2, 2), (10, 20, 30, 255))
+    changed.putpixel((1, 0), (10, 20, 30, 240))
+    changed.save(candidate / "alpha.png")
+
+    result = compare_png_directories(
+        reference,
+        candidate,
+        reference_label="opaque",
+        candidate_label="transparent",
+    )
+
+    assert result["comparison"] == "bitwise PNG bytes and decoded RGBA pixels"
+    assert result["schema_version"] == "pixelgym-grounding-repeatability-v2"
+    assert result["differing_pixel_count"] == 1
+    assert result["max_channel_delta"] == 15
+    assert result["differing_pixel_bbox_xyxy"] == [1, 0, 2, 1]

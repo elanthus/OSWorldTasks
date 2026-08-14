@@ -151,6 +151,30 @@ class ControlStore:
         with self._lock:
             self.connection.executescript(SCHEMA)
 
+    def require_migrated(self) -> None:
+        """Fail clearly when the explicit migration step has not completed."""
+        required = {
+            "submissions",
+            "candidates",
+            "approvals",
+            "deployments",
+            "active_pointer",
+            "audit_events",
+        }
+        with self._lock:
+            existing = {
+                str(row[0])
+                for row in self.connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                )
+            }
+        missing = sorted(required - existing)
+        if missing:
+            raise RuntimeError(
+                "control database is not migrated; run scripts/platform_migrate.py "
+                f"before serving (missing: {', '.join(missing)})"
+            )
+
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
         with self._lock:

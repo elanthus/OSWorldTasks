@@ -112,6 +112,14 @@ python scripts/golden_trajectory.py check
 python scripts/demo_fake_backend.py --seed 7
 ```
 
+The editable install is sufficient for the fast suite and lint. Re-capturing the frozen browser
+dataset additionally requires Playwright's Chromium binary, installed once with:
+
+```bash
+python -m playwright install chromium
+python scripts/capture_grounding_dataset.py
+```
+
 The scripted incomplete-submit demo stays at reward `0.0`. The separate golden trajectory checks
 that all preceding rewards are zero, the exact valid submission pays `1.0` once, and the episode
 terminates rather than truncates.

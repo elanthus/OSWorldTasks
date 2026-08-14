@@ -33,9 +33,12 @@ from pixelgym.grounding.schema import (
     validate_candidate_set,
     validate_example,
 )
+from pixelgym.serialization import canonical_json_text
 from pixelgym.tasks.vendor_form.app.server import create_app
 
 _READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
+# Keep this text synchronized with app.js. Capture asserts the rendered message, so drift fails
+# loudly before any dataset record is retained.
 _VALIDATION_MESSAGE = "Complete all required fields before submitting."
 _BROWSER_ARGS = (
     "--disable-font-subpixel-positioning",
@@ -82,10 +85,6 @@ _CANDIDATE_SCRIPT = """
 """
 
 
-def _canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-
-
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -127,7 +126,7 @@ def local_capture_server() -> Iterator[str]:
 
 
 def _post_reset(base_url: str, seed: int) -> dict[str, Any]:
-    body = _canonical_json({"seed": seed}).encode("utf-8")
+    body = canonical_json_text({"seed": seed}).encode("utf-8")
     request = urllib.request.Request(
         f"{base_url}/api/reset",
         data=body,
@@ -309,6 +308,7 @@ def validate_dataset(
 def capture_dataset(repository_root: Path) -> dict[str, Any]:
     """Capture the frozen dataset and return its structured validation summary."""
     try:
+        from playwright.sync_api import Error as PlaywrightError
         from playwright.sync_api import sync_playwright
     except ImportError as exc:  # pragma: no cover - exercised only without dev dependencies
         raise RuntimeError('capture requires `pip install -e ".[dev]"`') from exc
@@ -324,7 +324,13 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
         launch_options: dict[str, Any] = {"headless": True, "args": list(_BROWSER_ARGS)}
         if chromium_executable.is_file():
             launch_options["executable_path"] = str(chromium_executable)
-        browser = playwright.chromium.launch(**launch_options)
+        try:
+            browser = playwright.chromium.launch(**launch_options)
+        except PlaywrightError as exc:
+            raise RuntimeError(
+                "capture requires the Playwright Chromium binary; run "
+                "`python -m playwright install chromium` after installing the dev extra"
+            ) from exc
         browser_version = browser.version
         context = browser.new_context(
             viewport={"width": CSS_WIDTH, "height": CSS_HEIGHT},
@@ -429,8 +435,13 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
     summary = validate_dataset(examples, candidate_records, repository_root=repository_root)
     dataset_path = artifact_root / "grounding-dataset.jsonl"
     candidates_path = artifact_root / "grounding-candidates.jsonl"
-    dataset_path.write_text("".join(_canonical_json(row) + "\n" for row in examples))
-    candidates_path.write_text("".join(_canonical_json(row) + "\n" for row in candidate_records))
+    dataset_path.write_text(
+        "".join(canonical_json_text(row) + "\n" for row in examples), encoding="utf-8"
+    )
+    candidates_path.write_text(
+        "".join(canonical_json_text(row) + "\n" for row in candidate_records),
+        encoding="utf-8",
+    )
     contact_sheet_path = artifact_root / "grounding" / "contact-sheet.png"
     build_contact_sheet(examples, repository_root=repository_root, output_path=contact_sheet_path)
     summary.update(
