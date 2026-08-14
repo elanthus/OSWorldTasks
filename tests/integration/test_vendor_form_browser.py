@@ -9,13 +9,17 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
+from pathlib import Path
 
 import pytest
 
-from pixelgym.evaluator import evaluate
-from pixelgym.grounding.capture import _apply_state, local_capture_server
-from pixelgym.task_spec import Submission, TaskSpec
+from pixelgym.grounding.capture import local_capture_server
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
+from pixelgym.validation.browser_boundary import (
+    browser_boundary_evidence_passed,
+    browser_boundary_source_hashes_match,
+    validate_browser_boundary,
+)
 
 _READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
 _INCOMPLETE_RECORDING_FAILED_MESSAGE = (
@@ -44,53 +48,15 @@ def _json_request(url: str, *, payload: dict | None = None) -> dict:
 
 
 def test_incomplete_browser_submit_is_recorded_and_rejected_by_evaluator() -> None:
-    playwright_api = pytest.importorskip("playwright.sync_api")
+    pytest.importorskip("playwright.sync_api")
+    repository_root = Path(__file__).resolve().parents[2]
 
-    with local_capture_server() as base_url, playwright_api.sync_playwright() as playwright:
-        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
-        browser = playwright.chromium.launch(headless=True)
-        try:
-            page = browser.new_page(viewport={"width": 1024, "height": 768})
-            page.goto(base_url)
-            page.locator(_READY_SELECTOR).wait_for(state="attached")
-            task_record = _json_request(f"{base_url}/api/state")["task"]
+    evidence = validate_browser_boundary(repository_root)
 
-            _apply_state(page, "validation_error", task_record)
-
-            assert page.locator("#submit-status").inner_text() == INCOMPLETE_SUBMISSION_MESSAGE
-        finally:
-            browser.close()
-
-        state = _json_request(f"{base_url}/api/state")
-
-    assert len(state["submissions"]) == 1
-    assert state["submissions"][0]["values"] == {
-        "company_name": "",
-        "contact_email": "",
-        "contact_phone": "",
-        "tax_id": "",
-        "country": "",
-        "payment_terms": "",
-        "expedited_onboarding": False,
-    }
-
-    task = TaskSpec.from_generated(
-        state["task"],
-        instruction="Fill out the form exactly as shown on the request card, then submit.",
-        app_url="browser-integration://vendor-form",
-        max_episode_steps=200,
-    )
-    result = evaluate(task, [Submission.from_record(record) for record in state["submissions"]])
-    assert result.submitted is True
-    assert result.success is False
-    assert 0.0 <= result.score < 1.0
-    submitted_values = state["submissions"][0]["values"]
-    expected_mismatches = {
-        name
-        for name, expected in state["task"]["fields"].items()
-        if type(submitted_values[name]) is not type(expected) or submitted_values[name] != expected
-    }
-    assert set(result.mismatched_fields) == expected_mismatches
+    assert browser_boundary_evidence_passed(evidence) is True
+    assert browser_boundary_source_hashes_match(evidence, repository_root) is True
+    assert evidence["boundary"]["submission_count"] == 1
+    assert evidence["boundary"]["evaluation"]["derived_environment_reward"] == 0.0
 
 
 def test_incomplete_browser_submit_reports_when_attempt_was_not_recorded() -> None:

@@ -1,0 +1,116 @@
+{
+  "boundary": {
+    "evaluation": {
+      "derived_environment_reward": 0.0,
+      "mismatched_fields": [
+        "company_name",
+        "contact_email",
+        "contact_phone",
+        "country",
+        "payment_terms",
+        "tax_id"
+      ],
+      "score": 0.14285714285714285,
+      "submitted": true,
+      "success": false,
+      "task_id_matches": true
+    },
+    "submission": {
+      "final": true,
+      "seed": 7,
+      "submitted_at_step": 1,
+      "task_id": "vf-6bed55ed612d3c5a",
+      "values": {
+        "company_name": "",
+        "contact_email": "",
+        "contact_phone": "",
+        "country": "",
+        "expedited_onboarding": false,
+        "payment_terms": "",
+        "tax_id": ""
+      }
+    },
+    "submission_count": 1,
+    "submit_response_body": {
+      "submission_number": 1
+    },
+    "submit_response_status": 200,
+    "visible_status": "Complete all required fields before submitting."
+  },
+  "browser": {
+    "args": [
+      "--disable-font-subpixel-positioning",
+      "--disable-gpu",
+      "--disable-lcd-text",
+      "--disable-skia-runtime-opts",
+      "--force-color-profile=srgb",
+      "--hide-scrollbars"
+    ],
+    "device_scale_factor": 1.0,
+    "engine": "chromium",
+    "version": "151.0.7922.34",
+    "viewport": [
+      1024,
+      768
+    ]
+  },
+  "checks": [
+    {
+      "name": "submit_response_ok",
+      "passed": true
+    },
+    {
+      "name": "submit_response_body_exact",
+      "passed": true
+    },
+    {
+      "name": "visible_validation_state_settled",
+      "passed": true
+    },
+    {
+      "name": "one_privileged_submission_recorded",
+      "passed": true
+    },
+    {
+      "name": "privileged_submission_exact",
+      "passed": true
+    },
+    {
+      "name": "evaluator_observed_submission",
+      "passed": true
+    },
+    {
+      "name": "evaluator_matched_task_identity",
+      "passed": true
+    },
+    {
+      "name": "evaluator_rejected_incomplete_submission",
+      "passed": true
+    },
+    {
+      "name": "derived_environment_reward_zero",
+      "passed": true
+    },
+    {
+      "name": "evaluator_mismatches_exact",
+      "passed": true
+    }
+  ],
+  "schema_version": "pixelgym-browser-boundary-v1",
+  "seed": 7,
+  "source_sha256": {
+    "pixelgym/env.py": "be23a5718f3bd5cb8dd4cb10713e89c08ef493b82c1716ee0fa416a7433c99da",
+    "pixelgym/evaluator.py": "21a82f69343d37f6df43b9b3e173d8c5c95c742bfdb4c2e508733f1ba71ab271",
+    "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
+    "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+    "pixelgym/validation/browser_boundary.py": "a73018e927ccf49f9e8cb5e334123f3fa43548a6f02428f6852039352429124c"
+  },
+  "summary": {
+    "check_count": 10,
+    "failed_count": 0,
+    "passed": true,
+    "passed_count": 10
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "validator": "vendor-form-browser-boundary"
+}

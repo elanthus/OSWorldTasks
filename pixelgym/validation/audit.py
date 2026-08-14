@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from pixelgym.actions import ActionType
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
+from pixelgym.validation.browser_boundary import (
+    browser_boundary_evidence_passed,
+    browser_boundary_source_hashes_match,
+)
 
 _DISPOSITIONS = {"blocked", "tested", "mitigated", "known limitation"}
 
@@ -20,6 +25,8 @@ def validate_reward_hacking(
     spaces: dict[str, Any],
     *,
     real_reset: dict[str, Any] | None = None,
+    browser_boundary: dict[str, Any] | None = None,
+    repository_root: Path | None = None,
 ) -> dict[str, Any]:
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
@@ -53,6 +60,27 @@ def validate_reward_hacking(
     correct_without_submit = _record_by_name(reward, "correct-fields-without-submit")
     stale = _record_by_name(reward, "wrong-or-stale-task-id-fixture")
     duplicate = _record_by_name(reward, "duplicate-submit-after-success")
+    browser_evidence_passed = browser_boundary_evidence_passed(browser_boundary)
+    browser_source_hashes_match = (
+        browser_boundary_source_hashes_match(browser_boundary, repository_root)
+        if repository_root is not None
+        else browser_evidence_passed
+    )
+    if browser_evidence_passed:
+        browser_version = browser_boundary["browser"]["version"]
+        browser_evidence = (
+            f"Chromium {browser_version} returned HTTP 200, recorded exactly one empty "
+            "privileged submission, preserved the settled validation message, and the host-side "
+            "evaluator derived reward 0."
+        )
+        if repository_root is not None:
+            browser_evidence += (
+                " Stored source hashes match the checked-out implementation."
+                if browser_source_hashes_match
+                else " Stored source hashes do not match the checked-out implementation."
+            )
+    else:
+        browser_evidence = "Browser-boundary evidence is missing or failed schema validation."
 
     attacks = [
         {
@@ -70,9 +98,12 @@ def validate_reward_hacking(
             "disposition": "tested",
             "evidence": (
                 "empty-submit trajectory produced no reward; a partial privileged submission "
-                "was also evaluated without reward."
+                f"was also evaluated without reward. {browser_evidence}"
             ),
-            "evidence_passed": empty_submit["passed"] and partial_reward == 0,
+            "evidence_passed": empty_submit["passed"]
+            and partial_reward == 0
+            and browser_evidence_passed
+            and browser_source_hashes_match,
         },
         {
             "attack": "Correct visible fields without Submit",
@@ -219,6 +250,20 @@ def validate_reward_hacking(
     return {
         "schema_version": 1,
         "validator": "reward-hacking-audit",
+        "browser_boundary_evidence": (
+            None
+            if browser_boundary is None
+            else {
+                "schema_version": browser_boundary.get("schema_version"),
+                "validator": browser_boundary.get("validator"),
+                "task_id": browser_boundary.get("task_id"),
+                "browser": browser_boundary.get("browser"),
+                "source_sha256": browser_boundary.get("source_sha256"),
+                "summary": browser_boundary.get("summary"),
+                "source_hashes_match": browser_source_hashes_match,
+                "raw_artifact": "artifacts/day-2/raw/browser-boundary.json",
+            }
+        ),
         "attacks": attacks,
         "known_limitations": known_limitations,
         "summary": {

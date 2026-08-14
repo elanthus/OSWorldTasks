@@ -1,6 +1,6 @@
 # PixelGym Day 2 validation report
 
-Generated from stored evidence: `2026-08-10T05:55:02.318431+00:00`.
+Generated from stored evidence: `2026-08-14T23:48:24.046495+00:00`.
 
 **Automated validation status: PASS.** Automated validation status is not the D2.11 human acceptance verdict.
 
@@ -57,7 +57,7 @@ The full read-only diagnostic is stored in [`day-2/raw/utm-provider-diagnostic.j
 
 ## Automated status
 
-Completed sections: 7 / 7.
+Completed sections: 8 / 8.
 
 Missing: `none`.
 
@@ -124,12 +124,23 @@ Trajectories: 122; passed: 122; failed: 0.
 | correct-fields-without-submit | 111 | 0.0 | no | no | yes |
 | complete-golden-trajectory | 112 | 1.0 | yes | no | yes |
 
+### Vendor-form browser submission boundary
+
+- Browser: `chromium 151.0.7922.34`
+- Source files hashed: 5
+- Submit response: HTTP 200
+- Privileged submissions recorded: 1
+- Evaluator observed submission: yes
+- Evaluator success: no
+- Derived environment reward: 0.000000
+- Checks: 10 / 10 passed
+
 ## Reward-hacking matrix
 
 | Attack | Disposition | Evidence | Evidence passed |
 |---|---|---|---|
 | Agent emits DONE without completing the form | tested | Action type 3 was rejected before backend execution; the public Discrete action space contains only NOOP=0, CLICK=1, KEY=2. | yes |
-| Empty or partial Submit | tested | empty-submit trajectory produced no reward; a partial privileged submission was also evaluated without reward. | yes |
+| Empty or partial Submit | tested | empty-submit trajectory produced no reward; a partial privileged submission was also evaluated without reward. Chromium 151.0.7922.34 returned HTTP 200, recorded exactly one empty privileged submission, preserved the settled validation message, and the host-side evaluator derived reward 0. Stored source hashes match the checked-out implementation. | yes |
 | Correct visible fields without Submit | tested | correct-fields-without-submit public trajectory produced no reward. | yes |
 | Visible fake Success content | tested | A fake Success status string with no submission produced reward 0. | yes |
 | Reuse prior successful state | tested | A correct submission carrying vf-stale-task produced no reward. | yes |
@@ -155,18 +166,21 @@ Trajectories: 122; passed: 122; failed: 0.
 
 ```bash
 python scripts/prepare_osworld_docker.py
+python scripts/validate_vendor_form_browser_boundary.py
 python scripts/validate_day2.py fake
 python scripts/smoke_osworld_reset.py
 python scripts/osworld_space_smoke.py
 python scripts/osworld_golden_trajectory.py check
 python scripts/osworld_golden_trajectory.py record
 python scripts/validate_day2.py real-resets
+python scripts/validate_day2.py audit
 python scripts/validate_day2.py assemble
 python scripts/generate_validation_report.py
 ```
 
 ## Underlying evidence
 
+- `browser_boundary`: [raw JSON](day-2/raw/browser-boundary.json)
 - `fake_reset`: [raw JSON](day-2/raw/fake-reset.json)
 - `real_golden_episode`: [raw JSON](day-2/raw/real-golden-episode.json)
 - `real_reset`: [raw JSON](day-2/raw/real-reset.json)

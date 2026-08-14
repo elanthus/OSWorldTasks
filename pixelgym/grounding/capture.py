@@ -38,7 +38,7 @@ from pixelgym.tasks.vendor_form.app.server import create_app
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 _READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
-CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v2"
+CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v3"
 # app.js cannot import this shared Python constant, so it carries the same text with a matching
 # synchronization comment. Capture asserts the settled browser message before retaining a record.
 _VALIDATION_MESSAGE = INCOMPLETE_SUBMISSION_MESSAGE
@@ -50,6 +50,14 @@ _BROWSER_ARGS = (
     "--force-color-profile=srgb",
     "--hide-scrollbars",
 )
+
+_CAPTURE_SOURCE_PATHS = (
+    "pixelgym/grounding/capture.py",
+    "pixelgym/grounding/schema.py",
+    "pixelgym/tasks/vendor_form/app/server.py",
+    "pixelgym/tasks/vendor_form/ui.py",
+)
+_CAPTURE_STATIC_ROOT = Path("pixelgym/tasks/vendor_form/app/static")
 
 _CANDIDATE_SCRIPT = """
 () => {
@@ -89,6 +97,19 @@ _CANDIDATE_SCRIPT = """
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def capture_source_hashes(repository_root: Path) -> dict[str, str]:
+    """Hash every application and capture source used to render the frozen images."""
+    relative_paths = list(_CAPTURE_SOURCE_PATHS)
+    relative_paths.extend(
+        path.relative_to(repository_root).as_posix()
+        for path in sorted((repository_root / _CAPTURE_STATIC_ROOT).rglob("*"))
+        if path.is_file()
+    )
+    return {
+        relative: _sha256((repository_root / relative).read_bytes()) for relative in relative_paths
+    }
 
 
 def _free_local_port() -> int:
@@ -336,9 +357,7 @@ def refresh_capture_summary(repository_root: Path) -> dict[str, Any]:
     prior = json.loads(capture_path.read_text(encoding="utf-8"))
     examples = load_jsonl(artifact_root / "grounding-dataset.jsonl")
     candidate_records = load_jsonl(artifact_root / "grounding-candidates.jsonl")
-    summary = validate_dataset(
-        examples, candidate_records, repository_root=repository_root
-    )
+    summary = validate_dataset(examples, candidate_records, repository_root=repository_root)
     summary.update(
         {
             "protocol_version": PROTOCOL_VERSION,
@@ -349,15 +368,14 @@ def refresh_capture_summary(repository_root: Path) -> dict[str, Any]:
             "dataset_path": "artifacts/grounding-dataset.jsonl",
             "candidates_path": "artifacts/grounding-candidates.jsonl",
             "contact_sheet_path": "artifacts/grounding/contact-sheet.png",
+            "source_sha256": prior["source_sha256"],
             "summary_provenance": {
                 "mode": "offline_revalidation_of_frozen_capture",
                 "browser_recapture_performed": False,
             },
         }
     )
-    capture_path.write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    capture_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return summary
 
 
@@ -510,6 +528,7 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
             "dataset_path": dataset_path.relative_to(repository_root).as_posix(),
             "candidates_path": candidates_path.relative_to(repository_root).as_posix(),
             "contact_sheet_path": contact_sheet_path.relative_to(repository_root).as_posix(),
+            "source_sha256": capture_source_hashes(repository_root),
             "summary_provenance": {
                 "mode": "browser_capture",
                 "browser_recapture_performed": True,
