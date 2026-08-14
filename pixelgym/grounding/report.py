@@ -330,7 +330,11 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
     raw_distance = raw["normalized_center_distance"]
     marks_distance = marks["normalized_center_distance"]
     coordinate_scaling_count = review["category_counts"].get("coordinate scaling error", 0)
-    coordinate_scaling_noun = "label is" if coordinate_scaling_count == 1 else "labels are"
+    coordinate_scaling_clause = (
+        "label is a reviewer inference"
+        if coordinate_scaling_count == 1
+        else "labels are reviewer inferences"
+    )
     review_warning = (
         "All error labels were manually inspected."
         if review["all_manually_reviewed"]
@@ -455,8 +459,8 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
             (
                 f"Categories are non-exclusive, so their counts can sum above the "
                 f"{review['error_record_count']} error records. The "
-                f"{coordinate_scaling_count} coordinate-scaling {coordinate_scaling_noun} "
-                "a reviewer inference from horizontal "
+                f"{coordinate_scaling_count} coordinate-scaling {coordinate_scaling_clause} "
+                "from horizontal "
                 "alignment and displacement, not proof of the causal mechanism."
             ),
             "",

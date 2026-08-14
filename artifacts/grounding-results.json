@@ -4414,7 +4414,7 @@
   "protocol_version": "pixelgym-grounding-v1",
   "provider": "codex-cli",
   "report_version": "pixelgym-grounding-report-v1",
-  "schema_version": "pixelgym-grounding-results-v1",
+  "schema_version": "pixelgym-grounding-results-v2",
   "set_of_marks": {
     "conditional_selection_accuracy": 1.0,
     "conditional_selection_correct_count": 100,

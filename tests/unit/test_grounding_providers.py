@@ -134,3 +134,21 @@ def test_openrouter_reads_model_from_environment_and_never_serializes_key(tmp_pa
     assert b"secret-value" not in request.data
     assert request.headers["Authorization"] == "Bearer secret-value"
     assert response.raw_response == '{"x":1,"y":1}'
+
+
+def test_openrouter_does_not_cache_transport_exception_details(tmp_path: Path) -> None:
+    image_path = tmp_path / "image.png"
+    Image.new("RGB", (2, 2), "white").save(image_path)
+
+    def urlopen(request: object, *, timeout: float) -> object:
+        del request, timeout
+        raise OSError("proxy at /Users/private/account.sock failed")
+
+    response = OpenRouterProvider(
+        environment={"OPENROUTER_API_KEY": "secret", "OPENROUTER_MODEL": "vendor/model"},
+        urlopen=urlopen,
+    ).invoke(image_path=image_path, prompt="prompt", schema=RAW_SCHEMA)
+
+    cached = json.dumps(response.to_cache_dict())
+    assert response.request_failure == "OSError: provider request failed"
+    assert "/Users/private" not in cached

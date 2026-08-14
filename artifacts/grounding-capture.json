@@ -1,5 +1,5 @@
 {
-  "automatic_checks_passed": true,
+  "automatic_integrity_checks_passed": true,
   "browser_args": [
     "--disable-font-subpixel-positioning",
     "--disable-gpu",
@@ -16,6 +16,12 @@
   "contact_sheet_path": "artifacts/grounding/contact-sheet.png",
   "dataset_path": "artifacts/grounding-dataset.jsonl",
   "example_count": 100,
+  "known_design_limitations": [
+    {
+      "code": "target_screen_state_perfect_aliasing",
+      "effect": "target identity and screen state effects are not independently identifiable"
+    }
+  ],
   "protocol_version": "pixelgym-grounding-v1",
   "screen_state_counts": {
     "completed_review": 20,
@@ -24,6 +30,11 @@
     "text_field_focused": 20,
     "validation_error": 20
   },
+  "summary_provenance": {
+    "browser_recapture_performed": false,
+    "mode": "offline_revalidation_of_frozen_capture"
+  },
+  "summary_schema_version": "pixelgym-grounding-capture-summary-v2",
   "target_counts": {
     "company_name": 10,
     "contact_email": 10,
@@ -35,5 +46,38 @@
     "payment_terms_net_45": 10,
     "submit": 10,
     "tax_id": 10
+  },
+  "target_screen_state_perfect_aliasing": true,
+  "target_screen_states": {
+    "company_name": [
+      "initial"
+    ],
+    "contact_email": [
+      "text_field_focused"
+    ],
+    "contact_phone": [
+      "validation_error"
+    ],
+    "country": [
+      "completed_review"
+    ],
+    "expedited_onboarding": [
+      "partially_completed"
+    ],
+    "payment_terms_net_15": [
+      "initial"
+    ],
+    "payment_terms_net_30": [
+      "text_field_focused"
+    ],
+    "payment_terms_net_45": [
+      "validation_error"
+    ],
+    "submit": [
+      "completed_review"
+    ],
+    "tax_id": [
+      "partially_completed"
+    ]
   }
 }

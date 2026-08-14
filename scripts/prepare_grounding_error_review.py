@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 
 from pixelgym.grounding.analysis import build_error_review_template
-from pixelgym.grounding.overlays import load_jsonl
 from pixelgym.grounding.report import render_error_review_images
+from pixelgym.serialization import load_jsonl
 
 
 def parse_args() -> argparse.Namespace:

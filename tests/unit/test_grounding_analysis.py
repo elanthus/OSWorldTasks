@@ -8,6 +8,7 @@ import pytest
 from PIL import Image
 
 from pixelgym.grounding.analysis import (
+    ANALYSIS_SCHEMA_VERSION,
     ERROR_REVIEW_SCHEMA_VERSION,
     analyze_predictions,
     apply_manual_error_review_decisions,
@@ -132,6 +133,8 @@ def test_analysis_keeps_paired_outcomes_and_separates_proposal_coverage() -> Non
     )
 
     assert result["conditions"]["raw"]["accuracy"] == 0.5
+    assert result["schema_version"] == "pixelgym-grounding-results-v2"
+    assert result["schema_version"] == ANALYSIS_SCHEMA_VERSION
     assert result["conditions"]["marks"]["accuracy"] == 0.5
     assert result["conditions"]["raw"]["invalid_output_count"] == 1
     assert result["paired"]["raw_only_correct_count"] == 1
@@ -231,6 +234,7 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     examples, predictions = _fixture()
     reviews = _manual_reviews(examples, predictions)
     reviews[0]["categories"] = ["coordinate scaling error"]
+    reviews[1]["categories"] = ["coordinate scaling error"]
     predictions[0]["latency_ms"] = None
     predictions[0]["timestamp_utc"] = None
     for record in predictions:
@@ -284,7 +288,10 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert report_path.read_bytes() == first_report
     assert "No model or network calls" in report_path.read_text()
     assert "4 error records" in report_path.read_text()
-    assert "1 coordinate-scaling label is" in report_path.read_text()
+    assert (
+        "2 coordinate-scaling labels are reviewer inferences"
+        in report_path.read_text()
+    )
     assert "perfectly aliased" in report_path.read_text()
     assert "n/a" in report_path.read_text()
     assert first["latency"]["all"]["missing_count"] == 1

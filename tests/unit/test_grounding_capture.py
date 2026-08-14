@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
-from pixelgym.grounding.capture import build_contact_sheet, validate_dataset
+from pixelgym.grounding.capture import (
+    CAPTURE_SUMMARY_SCHEMA_VERSION,
+    build_contact_sheet,
+    refresh_capture_summary,
+    validate_dataset,
+)
 from pixelgym.grounding.schema import (
     CANDIDATE_SCHEMA_VERSION,
     CAPTURE_VERSION,
@@ -85,10 +91,61 @@ def test_dataset_validation_checks_balancing_hashes_and_target_join(tmp_path: Pa
     assert set(summary["screen_state_counts"].values()) == {20}
     assert summary["target_screen_state_perfect_aliasing"] is True
     assert all(len(states) == 1 for states in summary["target_screen_states"].values())
+    assert summary["summary_schema_version"] == CAPTURE_SUMMARY_SCHEMA_VERSION
+    assert summary["automatic_integrity_checks_passed"] is True
+    assert summary["known_design_limitations"] == [
+        {
+            "code": "target_screen_state_perfect_aliasing",
+            "effect": (
+                "target identity and screen state effects are not independently identifiable"
+            ),
+        }
+    ]
+    assert "automatic_checks_passed" not in summary
 
     candidates[0]["candidates"][0]["semantic_id"] = "wrong"
     with pytest.raises(ValueError, match="target"):
         validate_dataset(examples, candidates, repository_root=tmp_path)
+
+
+def test_capture_summary_can_be_refreshed_without_recapturing_images(tmp_path: Path) -> None:
+    examples, candidates = _synthetic_dataset(tmp_path)
+    artifact_root = tmp_path / "artifacts"
+    (artifact_root / "grounding-dataset.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in examples), encoding="utf-8"
+    )
+    (artifact_root / "grounding-candidates.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in candidates), encoding="utf-8"
+    )
+    capture_path = artifact_root / "grounding-capture.json"
+    capture_path.write_text(
+        json.dumps(
+            {
+                "browser_engine": "chromium",
+                "browser_version": "test-browser",
+                "browser_args": ["--test-flag"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    image_hashes_before = {
+        path: hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (artifact_root / "grounding/images/raw").glob("*.png")
+    }
+
+    summary = refresh_capture_summary(tmp_path)
+
+    image_hashes_after = {
+        path: hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (artifact_root / "grounding/images/raw").glob("*.png")
+    }
+    assert image_hashes_after == image_hashes_before
+    assert summary["target_screen_state_perfect_aliasing"] is True
+    assert summary["summary_provenance"] == {
+        "mode": "offline_revalidation_of_frozen_capture",
+        "browser_recapture_performed": False,
+    }
+    assert json.loads(capture_path.read_text()) == summary
 
 
 def test_contact_sheet_is_deterministic(tmp_path: Path) -> None:

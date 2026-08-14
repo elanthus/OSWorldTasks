@@ -33,10 +33,11 @@ from pixelgym.grounding.schema import (
     validate_candidate_set,
     validate_example,
 )
-from pixelgym.serialization import canonical_json_text
+from pixelgym.serialization import canonical_json_text, load_jsonl
 from pixelgym.tasks.vendor_form.app.server import create_app
 
 _READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
+CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v2"
 # Keep this text synchronized with app.js. Capture asserts the rendered message, so drift fails
 # loudly before any dataset record is retained.
 _VALIDATION_MESSAGE = "Complete all required fields before submitting."
@@ -292,17 +293,62 @@ def validate_dataset(
         )
         for target_id in sorted(target_counts)
     }
+    perfect_aliasing = all(len(states) == 1 for states in target_screen_states.values())
     return {
+        "summary_schema_version": CAPTURE_SUMMARY_SCHEMA_VERSION,
         "example_count": len(examples),
         "candidate_record_count": len(candidate_records),
         "target_counts": dict(sorted(target_counts.items())),
         "screen_state_counts": dict(sorted(state_counts.items())),
         "target_screen_states": target_screen_states,
-        "target_screen_state_perfect_aliasing": all(
-            len(states) == 1 for states in target_screen_states.values()
+        "target_screen_state_perfect_aliasing": perfect_aliasing,
+        "automatic_integrity_checks_passed": True,
+        "known_design_limitations": (
+            [
+                {
+                    "code": "target_screen_state_perfect_aliasing",
+                    "effect": (
+                        "target identity and screen state effects are not independently "
+                        "identifiable"
+                    ),
+                }
+            ]
+            if perfect_aliasing
+            else []
         ),
-        "automatic_checks_passed": True,
     }
+
+
+def refresh_capture_summary(repository_root: Path) -> dict[str, Any]:
+    """Revalidate frozen capture evidence without launching a browser or rewriting assets."""
+    artifact_root = repository_root / "artifacts"
+    capture_path = artifact_root / "grounding-capture.json"
+    prior = json.loads(capture_path.read_text(encoding="utf-8"))
+    examples = load_jsonl(artifact_root / "grounding-dataset.jsonl")
+    candidate_records = load_jsonl(artifact_root / "grounding-candidates.jsonl")
+    summary = validate_dataset(
+        examples, candidate_records, repository_root=repository_root
+    )
+    summary.update(
+        {
+            "protocol_version": PROTOCOL_VERSION,
+            "capture_version": CAPTURE_VERSION,
+            "browser_engine": prior["browser_engine"],
+            "browser_version": prior["browser_version"],
+            "browser_args": prior["browser_args"],
+            "dataset_path": "artifacts/grounding-dataset.jsonl",
+            "candidates_path": "artifacts/grounding-candidates.jsonl",
+            "contact_sheet_path": "artifacts/grounding/contact-sheet.png",
+            "summary_provenance": {
+                "mode": "offline_revalidation_of_frozen_capture",
+                "browser_recapture_performed": False,
+            },
+        }
+    )
+    capture_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return summary
 
 
 def capture_dataset(repository_root: Path) -> dict[str, Any]:
@@ -454,6 +500,10 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
             "dataset_path": dataset_path.relative_to(repository_root).as_posix(),
             "candidates_path": candidates_path.relative_to(repository_root).as_posix(),
             "contact_sheet_path": contact_sheet_path.relative_to(repository_root).as_posix(),
+            "summary_provenance": {
+                "mode": "browser_capture",
+                "browser_recapture_performed": True,
+            },
         }
     )
     (artifact_root / "grounding-capture.json").write_text(

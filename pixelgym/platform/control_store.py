@@ -174,6 +174,15 @@ class ControlStore:
                 "control database is not migrated; run scripts/platform_migrate.py "
                 f"before serving (missing: {', '.join(missing)})"
             )
+        with self._lock:
+            pointer = self.connection.execute(
+                "SELECT deployment_id, generation FROM active_pointer WHERE singleton = 1"
+            ).fetchone()
+        if pointer is None:
+            raise RuntimeError(
+                "control database migration is incomplete; active_pointer singleton row "
+                "is missing; rerun scripts/platform_migrate.py"
+            )
 
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:

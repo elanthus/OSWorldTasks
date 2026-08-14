@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 
 from pixelgym.grounding.analysis import apply_manual_error_review_decisions
-from pixelgym.grounding.overlays import load_jsonl
+from pixelgym.serialization import load_jsonl
 
 
 def parse_args() -> argparse.Namespace:

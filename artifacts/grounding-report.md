@@ -57,7 +57,7 @@ All error labels were manually inspected.
 | small target | 14 |
 | wrong semantic element | 31 |
 
-Categories are non-exclusive, so their counts can sum above the 44 error records. The 7 coordinate-scaling labels are a reviewer inference from horizontal alignment and displacement, not proof of the causal mechanism.
+Categories are non-exclusive, so their counts can sum above the 44 error records. The 7 coordinate-scaling labels are reviewer inferences from horizontal alignment and displacement, not proof of the causal mechanism.
 
 ## Representative examples
 

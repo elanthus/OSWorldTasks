@@ -270,7 +270,7 @@ class OpenRouterProvider:
                 usage=None,
                 provider_metadata={"endpoint": self.endpoint},
                 provider_trace=[],
-                request_failure=f"{type(exc).__name__}: {exc}",
+                request_failure=f"{type(exc).__name__}: provider request failed",
             )
         try:
             raw_response = response_body["choices"][0]["message"]["content"]

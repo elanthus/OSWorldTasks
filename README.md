@@ -120,6 +120,13 @@ python -m playwright install chromium
 python scripts/capture_grounding_dataset.py
 ```
 
+To revalidate the checked-in dataset, candidate records, image hashes, allocation summary, and
+known design limitations without launching a browser or rewriting capture assets, run:
+
+```bash
+python scripts/capture_grounding_dataset.py --summary-only
+```
+
 The scripted incomplete-submit demo stays at reward `0.0`. The separate golden trajectory checks
 that all preceding rewards are zero, the exact valid submission pays `1.0` once, and the episode
 terminates rather than truncates.

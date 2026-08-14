@@ -28,6 +28,17 @@ def _control(tmp_path: Path) -> ControlStore:
     return control
 
 
+def test_require_migrated_rejects_missing_active_pointer_singleton(tmp_path: Path) -> None:
+    control = _control(tmp_path)
+    control.connection.execute("DELETE FROM active_pointer WHERE singleton = 1")
+
+    with pytest.raises(RuntimeError, match="active_pointer singleton row is missing"):
+        control.require_migrated()
+
+    control.migrate()
+    control.require_migrated()
+
+
 def test_duplicate_submission_is_idempotent_and_changed_input_is_new(tmp_path: Path) -> None:
     control = _control(tmp_path)
     first = control.submit({"model": "a"})

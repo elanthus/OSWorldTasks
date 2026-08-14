@@ -17,7 +17,7 @@ from pixelgym.grounding.schema import (
     target_area_slice,
 )
 
-ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v1"
+ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v2"
 ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v2"
 DEFAULT_BOOTSTRAP_SAMPLES = 10_000
 DEFAULT_BOOTSTRAP_SEED = 20_260_809
