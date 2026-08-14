@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/platform-policy-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "dependency_lock_sha256", "policy_id"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-grounding-policy-v1"},
+    "provider": {"type": "string", "minLength": 1},
+    "model": {"type": "string", "minLength": 1},
+    "model_alias_disclosure": {"type": ["string", "null"]},
+    "prompt_name": {"type": "string", "minLength": 1},
+    "prompt_version": {"type": "integer", "minimum": 1},
+    "prompt_sha256": {"$ref": "#/$defs/digest"},
+    "condition": {"enum": ["raw", "marks"]},
+    "parameters": {"type": "object"},
+    "parser_version": {"type": "string", "minLength": 1},
+    "scorer_version": {"type": "string", "minLength": 1},
+    "overlay_version": {"type": "string", "minLength": 1},
+    "target_semantics": {"type": "string", "minLength": 1},
+    "code_revision": {"type": "string", "pattern": "^([0-9a-f]{40}|.+-dirty)$"},
+    "dependency_lock_sha256": {"$ref": "#/$defs/digest"},
+    "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

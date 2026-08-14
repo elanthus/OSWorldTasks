@@ -178,7 +178,7 @@ def parse_prediction(
     raise ValueError(f"unknown condition {condition!r}")
 
 
-def _score_point(
+def score_point(
     point: list[float] | None, bbox: list[int], *, width: int, height: int
 ) -> tuple[bool, float | None]:
     if point is None:
@@ -233,7 +233,7 @@ def evaluate_one(
             height=example["screen_height"],
             marks=overlay["marks"],
         )
-    correct, distance = _score_point(
+    correct, distance = score_point(
         parsed.point,
         example["bbox"],
         width=example["screen_width"],

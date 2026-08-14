@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/raw-response-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "example_id", "dataset_fingerprint", "policy_id", "request_sha256", "started_at_utc", "latency_ms", "usage", "usage_missing_reason", "price_catalog_version", "cost_usd", "cost_missing_reason", "response_media_type", "response_sha256", "raw_response", "request_status", "request_failure"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-raw-response-v1"},
+    "request_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "example_id": {"type": "string", "minLength": 1},
+    "dataset_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "started_at_utc": {"type": "string", "format": "date-time"},
+    "latency_ms": {"type": ["number", "null"], "minimum": 0},
+    "usage": {"type": ["object", "null"]},
+    "usage_missing_reason": {"type": ["string", "null"]},
+    "price_catalog_version": {"type": "string", "minLength": 1},
+    "cost_usd": {"type": ["number", "null"], "minimum": 0},
+    "cost_missing_reason": {"type": ["string", "null"]},
+    "response_media_type": {"type": "string", "minLength": 1},
+    "response_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "raw_response": {"type": ["string", "null"]},
+    "request_status": {"enum": ["responded", "request_failure"]},
+    "request_failure": {"type": ["string", "null"]}
+  }
+}

@@ -1,0 +1,119 @@
+name: pixelgym-platform
+services:
+  postgres:
+    image: postgres:17.5-bookworm
+    environment:
+      POSTGRES_DB: mlflow
+      POSTGRES_USER: ${PIXELGYM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PIXELGYM_POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${PIXELGYM_MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${PIXELGYM_MINIO_PASSWORD}
+    volumes: [minio-data:/data]
+    healthcheck:
+      test: [CMD, mc, ready, local]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    depends_on:
+      minio: {condition: service_healthy}
+    environment:
+      PIXELGYM_MINIO_USER: ${PIXELGYM_MINIO_USER}
+      PIXELGYM_MINIO_PASSWORD: ${PIXELGYM_MINIO_PASSWORD}
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - |
+        mc alias set local http://minio:9000 "$${PIXELGYM_MINIO_USER}" "$${PIXELGYM_MINIO_PASSWORD}"
+        mc mb --ignore-existing local/mlflow-artifacts
+        mc mb --ignore-existing --with-lock local/pixelgym-immutable
+
+  mlflow:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.mlflow
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --allowed-hosts
+      - mlflow:*,localhost:*,127.0.0.1:*
+      - --backend-store-uri
+      - postgresql://${PIXELGYM_POSTGRES_USER}:${PIXELGYM_POSTGRES_PASSWORD}@postgres:5432/mlflow
+      - --artifacts-destination
+      - s3://mlflow-artifacts
+    environment:
+      AWS_ACCESS_KEY_ID: ${PIXELGYM_MINIO_USER}
+      AWS_SECRET_ACCESS_KEY: ${PIXELGYM_MINIO_PASSWORD}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+    ports: ["${PIXELGYM_MLFLOW_PORT:-5500}:5000"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.platform
+    command: [python, scripts/platform_migrate.py, --database, /state/control.db]
+    environment:
+      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
+    volumes: [control-data:/state]
+
+  platform:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.platform
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      mlflow: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+    environment:
+      PIXELGYM_REPOSITORY_ROOT: /app
+      PIXELGYM_CONTROL_DB: /state/control.db
+      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
+      PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}
+      PIXELGYM_CODE_REVISION: ${PIXELGYM_CODE_REVISION}
+      PIXELGYM_IMMUTABLE_BUCKET: pixelgym-immutable
+      PIXELGYM_IMMUTABLE_PREFIX: platform
+      PIXELGYM_OBJECT_LOCK: "true"
+      PIXELGYM_RETENTION_DAYS: "30"
+      PIXELGYM_MLFLOW_PUBLIC_URL: http://localhost:${PIXELGYM_MLFLOW_PORT:-5500}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      AWS_ACCESS_KEY_ID: ${PIXELGYM_MINIO_USER}
+      AWS_SECRET_ACCESS_KEY: ${PIXELGYM_MINIO_PASSWORD}
+      AWS_ENDPOINT_URL: http://minio:9000
+      METAFLOW_DATASTORE_SYSROOT_LOCAL: /state/metaflow
+      METAFLOW_USER: pixelgym
+    volumes: [control-data:/state]
+    ports: ["${PIXELGYM_PLATFORM_PORT:-5800}:8000"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres-data:
+  minio-data:
+  control-data:

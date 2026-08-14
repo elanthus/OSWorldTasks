@@ -1,0 +1,14 @@
+{
+  "schema_version": "pixelgym-promotion-gate-policy-v1",
+  "policy_version": "pixelgym-demo-gates-v1",
+  "minimum_accuracy": 0.8,
+  "maximum_cost_usd_per_100": 0.0,
+  "maximum_provider_latency_p95_ms": 100.0,
+  "minimum_measured_count": 100,
+  "required_dataset_fingerprint": "sha256:01d7218c3657aa8d186a038b4c34c00cc227ebda91ee5af9ca238a8e1ed506a8",
+  "required_scorer_version": "pixelgym-point-inside-half-open-box-v1",
+  "required_target_semantics": "requested-control-center-point-v1",
+  "dirty_code_allowed": false,
+  "confidence_bound_required": false,
+  "synthetic_only": true
+}
