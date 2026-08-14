@@ -96,6 +96,14 @@ COUNTRY_PLACEHOLDER = "Select a country"
 the submitted value while it is showing is the empty string, exactly as the
 real app's ``<option value="" selected disabled>`` produces."""
 
+INCOMPLETE_SUBMISSION_MESSAGE = "Complete all required fields before submitting."
+"""Settled status after the app records a submission missing a required string value.
+
+The browser cannot import this Python constant, so ``app/static/app.js`` carries the same text
+with a synchronization comment. Build-time capture imports this value and asserts the rendered
+browser state; the fake backend uses it directly.
+"""
+
 
 # -- Geometry ---------------------------------------------------------------
 
@@ -354,6 +362,26 @@ class FormState:
             "payment_terms": self.payment_terms_value,
             "expedited_onboarding": self.expedited,
         }
+
+    def is_complete(self) -> bool:
+        """Whether every browser-required string or selection has a non-empty value.
+
+        The checkbox is deliberately excluded: unchecked ``False`` is a complete value. Like the
+        browser's truthiness check, whitespace-only text is considered present here and is only
+        stripped when the submission event is normalized for privileged storage.
+        """
+        values = self.values()
+        return all(
+            values[name]
+            for name in (
+                "company_name",
+                "contact_email",
+                "contact_phone",
+                "tax_id",
+                "country",
+                "payment_terms",
+            )
+        )
 
     # -- Events ------------------------------------------------------------
 

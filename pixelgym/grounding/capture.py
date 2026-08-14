@@ -35,12 +35,13 @@ from pixelgym.grounding.schema import (
 )
 from pixelgym.serialization import canonical_json_text, load_jsonl
 from pixelgym.tasks.vendor_form.app.server import create_app
+from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 _READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
 CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v2"
-# Keep this text synchronized with app.js. Capture asserts the rendered message, so drift fails
-# loudly before any dataset record is retained.
-_VALIDATION_MESSAGE = "Complete all required fields before submitting."
+# app.js cannot import this shared Python constant, so it carries the same text with a matching
+# synchronization comment. Capture asserts the settled browser message before retaining a record.
+_VALIDATION_MESSAGE = INCOMPLETE_SUBMISSION_MESSAGE
 _BROWSER_ARGS = (
     "--disable-font-subpixel-positioning",
     "--disable-gpu",
@@ -146,7 +147,16 @@ def _apply_state(page: Any, state: str, task: dict[str, Any]) -> None:
         page.locator("#company_name").focus()
         return
     if state == "validation_error":
-        page.locator("#submit-button").click()
+        # Deliberately drive the real public submission path in this isolated build-time server.
+        # Each example is reset immediately before this call, so submission number 1 proves the
+        # incomplete attempt reached privileged state without contaminating another example.
+        with page.expect_response(
+            lambda response: response.url.endswith("/api/submit")
+        ) as submission_response:
+            page.locator("#submit-button").click()
+        response = submission_response.value
+        if not response.ok or response.json() != {"submission_number": 1}:
+            raise RuntimeError("validation-error submission attempt was not recorded")
         if page.locator("#submit-status").inner_text() != _VALIDATION_MESSAGE:
             raise RuntimeError("deterministic validation message was not displayed")
         return

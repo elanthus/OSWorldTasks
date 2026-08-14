@@ -387,6 +387,12 @@ class _VendorFormTaskSupport:
         return [Submission.from_record(record) for record in state["submissions"]]
 
     def evaluate(self, env: Any) -> dict[str, Any]:
+        """Evaluate the final privileged history using the core latest-submission rule.
+
+        Native OSWorld calls this at episode end rather than after every action. Therefore a later
+        invalid submission supersedes an earlier valid one here; unlike ``PixelGuiEnv``, the native
+        harness does not terminate immediately when the earlier valid event is recorded.
+        """
         task = TaskSpec.from_generated(
             self._record,
             instruction=self.instruction,

@@ -177,6 +177,7 @@ class FakeBackend:
         ambiguity the evaluator refuses to resolve.
         """
         record, _layout, form = self._require_task()
+        complete = form.is_complete()
         self._submissions.append(
             Submission(
                 task_id=record["task_id"],
@@ -186,7 +187,7 @@ class FakeBackend:
                 final=True,
             )
         )
-        form.status = "Submitted."
+        form.status = "Submitted." if complete else ui.INCOMPLETE_SUBMISSION_MESSAGE
 
     def _next_submission_step(self) -> int:
         return max((s.submitted_at_step for s in self._submissions), default=0) + 1

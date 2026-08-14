@@ -15,7 +15,12 @@ import pytest
 
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.tasks.vendor_form import generator, render
-from pixelgym.tasks.vendor_form.ui import TAB_ORDER, TEXT_WIDGETS, WidgetId
+from pixelgym.tasks.vendor_form.ui import (
+    INCOMPLETE_SUBMISSION_MESSAGE,
+    TAB_ORDER,
+    TEXT_WIDGETS,
+    WidgetId,
+)
 
 
 @pytest.fixture
@@ -347,6 +352,15 @@ def test_an_incomplete_form_still_records_a_submission(backend):
     assert values["country"] == ""
     assert values["payment_terms"] == ""
     assert values["expedited_onboarding"] is False
+    assert backend.form.status == INCOMPLETE_SUBMISSION_MESSAGE
+
+
+def test_a_complete_form_shows_submitted_status(backend):
+    backend.install_form_values(backend.current_fields())
+
+    _click(backend, WidgetId.SUBMIT)
+
+    assert backend.form.status == "Submitted."
 
 
 def test_submitted_values_are_whitespace_normalized_like_the_real_app(backend):

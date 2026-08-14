@@ -1,6 +1,12 @@
 (function () {
   "use strict";
 
+  // Keep this text synchronized with ui.INCOMPLETE_SUBMISSION_MESSAGE. capture.py imports that
+  // Python constant and asserts the settled rendered state before retaining a dataset record.
+  var INCOMPLETE_SUBMISSION_MESSAGE = "Complete all required fields before submitting.";
+  var INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE =
+    INCOMPLETE_SUBMISSION_MESSAGE + " Submission attempt was not recorded.";
+
   function renderRequestCard(fields) {
     document.getElementById("rc-company_name").textContent = fields.company_name;
     document.getElementById("rc-contact_email").textContent = fields.contact_email;
@@ -96,11 +102,9 @@
     document.getElementById("vendor-form").addEventListener("submit", function (event) {
       event.preventDefault();
       var values = readForm();
-      if (!isComplete(values)) {
-        // Keep this text synchronized with capture.py. The capture assertion intentionally fails
-        // loudly if a copy edit changes the rendered validation state.
-        showStatus("Complete all required fields before submitting.");
-        return;
+      var complete = isComplete(values);
+      if (!complete) {
+        showStatus(INCOMPLETE_SUBMISSION_MESSAGE);
       }
       fetch("/api/submit", {
         method: "POST",
@@ -114,10 +118,16 @@
           return response.json();
         })
         .then(function () {
-          showStatus("Submitted.");
+          // Incomplete attempts are still privileged submission events so the evaluator can reject
+          // them. Keep their deterministic validation state visible after the event is recorded.
+          if (complete) {
+            showStatus("Submitted.");
+          }
         })
         .catch(function () {
-          showStatus("Submission failed.");
+          showStatus(
+            complete ? "Submission failed." : INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE,
+          );
         });
     });
   }
