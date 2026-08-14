@@ -100,6 +100,38 @@ def test_custom_task_uses_host_evaluator_and_structured_result(monkeypatch, tmp_
     }
 
 
+def test_custom_task_end_evaluation_uses_the_latest_submission(monkeypatch, tmp_path):
+    """Native OSWorld evaluates once at episode end, so a later invalid event supersedes success."""
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    invalid_values = {**record["fields"], "company_name": ""}
+    submissions = [
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "values": record["fields"],
+            "submitted_at_step": 1,
+            "final": True,
+        },
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "values": invalid_values,
+            "submitted_at_step": 2,
+            "final": True,
+        },
+    ]
+    env = types.SimpleNamespace(
+        controller=_EvaluationController({"task": record, "submissions": submissions})
+    )
+
+    result = task.evaluate(env)
+
+    assert result["success"] is False
+    assert result["score"] < 1.0
+    assert result["mismatched_fields"] == ("company_name",)
+
+
 def test_privileged_state_identity_mismatch_is_rejected(monkeypatch, tmp_path):
     _install_fake_osworld(monkeypatch)
     task, _record = create_osworld_task(7, cache_dir=tmp_path)

@@ -13,8 +13,14 @@ import urllib.request
 import pytest
 
 from pixelgym.evaluator import evaluate
-from pixelgym.grounding.capture import local_capture_server
+from pixelgym.grounding.capture import _apply_state, local_capture_server
 from pixelgym.task_spec import Submission, TaskSpec
+from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
+
+_READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
+_INCOMPLETE_RECORDING_FAILED_MESSAGE = (
+    f"{INCOMPLETE_SUBMISSION_MESSAGE} Submission attempt was not recorded."
+)
 
 pytestmark = [
     pytest.mark.browser_integration,
@@ -45,18 +51,13 @@ def test_incomplete_browser_submit_is_recorded_and_rejected_by_evaluator() -> No
         browser = playwright.chromium.launch(headless=True)
         try:
             page = browser.new_page(viewport={"width": 1024, "height": 768})
-            page.goto(base_url, wait_until="networkidle")
+            page.goto(base_url)
+            page.locator(_READY_SELECTOR).wait_for(state="attached")
+            task_record = _json_request(f"{base_url}/api/state")["task"]
 
-            with page.expect_response(
-                lambda response: response.url.endswith("/api/submit")
-            ) as submission_response:
-                page.locator("#submit-button").click()
+            _apply_state(page, "validation_error", task_record)
 
-            assert submission_response.value.ok
-            assert (
-                page.locator("#submit-status").inner_text()
-                == "Complete all required fields before submitting."
-            )
+            assert page.locator("#submit-status").inner_text() == INCOMPLETE_SUBMISSION_MESSAGE
         finally:
             browser.close()
 
@@ -83,11 +84,39 @@ def test_incomplete_browser_submit_is_recorded_and_rejected_by_evaluator() -> No
     assert result.submitted is True
     assert result.success is False
     assert 0.0 <= result.score < 1.0
-    assert set(result.mismatched_fields) == {
-        "company_name",
-        "contact_email",
-        "contact_phone",
-        "country",
-        "payment_terms",
-        "tax_id",
+    submitted_values = state["submissions"][0]["values"]
+    expected_mismatches = {
+        name
+        for name, expected in state["task"]["fields"].items()
+        if type(submitted_values[name]) is not type(expected) or submitted_values[name] != expected
     }
+    assert set(result.mismatched_fields) == expected_mismatches
+
+
+def test_incomplete_browser_submit_reports_when_attempt_was_not_recorded() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_capture_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True)
+        try:
+            page = browser.new_page(viewport={"width": 1024, "height": 768})
+            page.goto(base_url)
+            page.locator(_READY_SELECTOR).wait_for(state="attached")
+            page.evaluate("() => { document.getElementById('task_id').value = 'vf-stale'; }")
+
+            with page.expect_response(
+                lambda response: response.url.endswith("/api/submit")
+            ) as submission_response:
+                page.locator("#submit-button").click()
+
+            assert submission_response.value.status == 409
+            playwright_api.expect(page.locator("#submit-status")).to_have_text(
+                _INCOMPLETE_RECORDING_FAILED_MESSAGE
+            )
+        finally:
+            browser.close()
+
+        state = _json_request(f"{base_url}/api/state")
+
+    assert state["submissions"] == []

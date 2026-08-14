@@ -1,6 +1,12 @@
 (function () {
   "use strict";
 
+  // Keep this text synchronized with ui.INCOMPLETE_SUBMISSION_MESSAGE. capture.py imports that
+  // Python constant and asserts the settled rendered state before retaining a dataset record.
+  var INCOMPLETE_SUBMISSION_MESSAGE = "Complete all required fields before submitting.";
+  var INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE =
+    INCOMPLETE_SUBMISSION_MESSAGE + " Submission attempt was not recorded.";
+
   function renderRequestCard(fields) {
     document.getElementById("rc-company_name").textContent = fields.company_name;
     document.getElementById("rc-contact_email").textContent = fields.contact_email;
@@ -98,9 +104,7 @@
       var values = readForm();
       var complete = isComplete(values);
       if (!complete) {
-        // Keep this text synchronized with capture.py. The capture assertion intentionally fails
-        // loudly if a copy edit changes the rendered validation state.
-        showStatus("Complete all required fields before submitting.");
+        showStatus(INCOMPLETE_SUBMISSION_MESSAGE);
       }
       fetch("/api/submit", {
         method: "POST",
@@ -121,7 +125,9 @@
           }
         })
         .catch(function () {
-          showStatus("Submission failed.");
+          showStatus(
+            complete ? "Submission failed." : INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE,
+          );
         });
     });
   }
