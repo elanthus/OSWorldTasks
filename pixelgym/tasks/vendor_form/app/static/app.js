@@ -96,11 +96,11 @@
     document.getElementById("vendor-form").addEventListener("submit", function (event) {
       event.preventDefault();
       var values = readForm();
-      if (!isComplete(values)) {
+      var complete = isComplete(values);
+      if (!complete) {
         // Keep this text synchronized with capture.py. The capture assertion intentionally fails
         // loudly if a copy edit changes the rendered validation state.
         showStatus("Complete all required fields before submitting.");
-        return;
       }
       fetch("/api/submit", {
         method: "POST",
@@ -114,7 +114,11 @@
           return response.json();
         })
         .then(function () {
-          showStatus("Submitted.");
+          // Incomplete attempts are still privileged submission events so the evaluator can reject
+          // them. Keep their deterministic validation state visible after the event is recorded.
+          if (complete) {
+            showStatus("Submitted.");
+          }
         })
         .catch(function () {
           showStatus("Submission failed.");

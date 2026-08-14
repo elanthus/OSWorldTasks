@@ -51,6 +51,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
+    "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
 ]
 
 [tool.ruff]
