@@ -5,6 +5,7 @@ description = "PixelGym-OSWorld: a pixel-only GUI reinforcement-learning environ
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency
     "gymnasium~=0.28.1",  # matches the osworld extra's pin (xlang-ai/OSWorld-V2@v2026.06.24)
     "numpy>=1.26",
     "pillow>=10.0",
