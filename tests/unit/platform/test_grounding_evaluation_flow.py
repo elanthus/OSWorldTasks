@@ -11,6 +11,7 @@ import pytest
 from flows import grounding_evaluation_flow as flow_module
 from flows.grounding_evaluation_flow import GroundingEvaluationFlow
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.evaluation import (
     EvaluationRunner,
     PlatformProviderResponse,
@@ -136,6 +137,7 @@ def test_hand_entered_revision_without_packaged_provenance_cannot_claim_clean(
     assert flow.policy["code_revision"] == "unverifiable"
     assert flow.policy["code_state"] == "unverifiable"
     assert not flow.policy["source_provenance_verified"]
+    assert flow.policy["dependency_lock_sha256"] == dependency_lock_sha256(repository_root)
 
 
 def _run_flow(

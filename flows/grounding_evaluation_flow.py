@@ -27,6 +27,7 @@ from pixelgym.platform.contracts import (
     RunSummary,
 )
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.evaluation import EvaluationRunner, ScriptedReplayProvider
 from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_json_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
@@ -195,7 +196,7 @@ class GroundingEvaluationFlow(FlowSpec):
         provenance = load_packaged_source_provenance(
             root, Path(provenance_path) if provenance_path else None
         )
-        lock_digest = __import__("hashlib").sha256((root / "pyproject.toml").read_bytes()).hexdigest()
+        lock_digest = dependency_lock_sha256(root)
         self.policy = asdict(
             build_policy_manifest(
                 provider="scripted-demo",

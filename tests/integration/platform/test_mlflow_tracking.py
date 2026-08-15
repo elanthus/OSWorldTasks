@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
@@ -9,6 +8,7 @@ import pytest
 mlflow = pytest.importorskip("mlflow")
 
 from pixelgym.platform.contracts import GatePolicy, RunSummary
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.fingerprints import sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.mlflow_tracking import MlflowTracking
@@ -43,9 +43,7 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
         source_provenance=SourceProvenance(
             SOURCE_PROVENANCE_SCHEMA_VERSION, "b" * 40, "c" * 64, "clean", "git-build-inputs-v1"
         ),
-        dependency_lock_sha256=hashlib.sha256(
-            (repository_root / "pyproject.toml").read_bytes()
-        ).hexdigest(),
+        dependency_lock_sha256=dependency_lock_sha256(repository_root),
     )
     tracking.ensure_prompt_version(
         policy.prompt_name,
