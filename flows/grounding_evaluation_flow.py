@@ -1,8 +1,9 @@
 """Metaflow graph for a frozen, deterministic grounding evaluation.
 
-Metaflow supplies inspectable boundaries, deterministic shard fan-out, and task resumption. The
-exactly-once billing guarantee remains in EvaluationRunner's content-addressed raw-response store:
-workflow retries are safe only because every provider request is recovered by its verified digest.
+Metaflow supplies inspectable boundaries, deterministic shard fan-out, and task resumption.
+Content-addressed raw-response storage prevents calls from being repeated after durable persistence.
+A stronger receipt-before-persistence billing guarantee additionally requires provider-side
+idempotency for the deterministic request ID; the runtime fixture exercises that distinction.
 """
 
 from __future__ import annotations
@@ -31,6 +32,8 @@ from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_jso
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+
+_TEST_HOOKS_ENV = "PIXELGYM_ENABLE_TEST_HOOKS"
 
 
 def _root() -> Path:
@@ -62,7 +65,41 @@ def _control() -> ControlStore:
     )
 
 
-def _provider(flow: object) -> ScriptedReplayProvider:
+def _test_fail_once(name: str) -> None:
+    """Raise once at a named boundary when explicitly enabled by a runtime test."""
+    if os.environ.get(_TEST_HOOKS_ENV) != "1":
+        return
+    if os.environ.get("PIXELGYM_TEST_FAIL_ONCE") != name:
+        return
+    state_root = os.environ.get("PIXELGYM_TEST_STATE_ROOT")
+    if not state_root:
+        raise RuntimeError("test failure injection requires PIXELGYM_TEST_STATE_ROOT")
+    marker_root = Path(state_root)
+    marker_root.mkdir(parents=True, exist_ok=True)
+    marker = marker_root / f"{name}.triggered"
+    try:
+        descriptor = os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return
+    os.close(descriptor)
+    raise RuntimeError(f"injected one-shot failure after {name}")
+
+
+def _provider(flow: object) -> object:
+    ledger = os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER")
+    if ledger:
+        if os.environ.get(_TEST_HOOKS_ENV) != "1":
+            raise RuntimeError("the ledgered provider is available only with explicit test hooks")
+        from pixelgym.platform.runtime_fixture import LedgeredScriptedReplayProvider
+
+        return LedgeredScriptedReplayProvider(
+            _root() / "artifacts/grounding-predictions.jsonl",
+            variant="baseline" if flow.prompt_version == 1 else "revised",
+            ledger_path=Path(ledger),
+            concurrency_barrier=int(
+                os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")
+            ),
+        )
     return ScriptedReplayProvider(
         _root() / "artifacts/grounding-predictions.jsonl",
         variant="baseline" if flow.prompt_version == 1 else "revised",
@@ -80,6 +117,11 @@ def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
         dataset_fingerprint=flow.dataset_fingerprint,
         submission_id=flow.submission_id,
         metaflow_pathspec=flow.metaflow_pathspec,
+        provider_response_hook=(
+            (lambda request_id: _test_fail_once("provider_response_received"))
+            if os.environ.get(_TEST_HOOKS_ENV) == "1"
+            else None
+        ),
     )
 
 
@@ -167,7 +209,8 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def create_or_recover_mlflow_run(self) -> None:
-        self.metaflow_pathspec = f"{current.flow_name}/{current.run_id}"
+        lineage_run_id = getattr(current, "origin_run_id", None) or current.run_id
+        self.metaflow_pathspec = f"{current.flow_name}/{lineage_run_id}"
         self.mlflow_run_id = _runner(self, with_tracking=True).create_or_recover_run(
             max_calls=self.maximum_calls
         )
@@ -176,6 +219,7 @@ class GroundingEvaluationFlow(FlowSpec):
             metaflow_pathspec=self.metaflow_pathspec,
             mlflow_run_id=self.mlflow_run_id,
         )
+        _test_fail_once("run_linked")
         self.next(self.build_shards)
 
     @step
@@ -194,6 +238,7 @@ class GroundingEvaluationFlow(FlowSpec):
             self.input,
             max_calls=self.maximum_calls,
         )
+        _test_fail_once("raw_responses_persisted")
         self.next(self.join_responses)
 
     @step
@@ -253,6 +298,7 @@ class GroundingEvaluationFlow(FlowSpec):
                 self.raw_responses,
             )
         ]
+        _test_fail_once("evidence_persisted")
         self.next(self.finalize_mlflow_run)
 
     @step
@@ -265,19 +311,27 @@ class GroundingEvaluationFlow(FlowSpec):
             GateReport.from_dict(self.report),
             [ArtifactRef(**value) for value in self.references],
         )
+        _test_fail_once("mlflow_finalized")
         self.next(self.register_candidate)
 
     @step
-    @_finalize_on_error
     def register_candidate(self) -> None:
-        record = _control().register_candidate(
-            source_run_id=self.summary["run_id"],
-            policy=PolicyManifest(**self.policy),
-            gate_report=GateReport.from_dict(self.report),
-            artifacts=[ArtifactRef(**value) for value in self.references],
-            submission_id=self.submission_id,
-        )
+        try:
+            record = _control().register_candidate(
+                source_run_id=self.summary["run_id"],
+                policy=PolicyManifest(**self.policy),
+                gate_report=GateReport.from_dict(self.report),
+                artifacts=[ArtifactRef(**value) for value in self.references],
+                submission_id=self.submission_id,
+            )
+        except BaseException:
+            _record_failure(self)
+            raise
         self.candidate_id = record.candidate_id
+        # Registration and submission completion are one committed control-plane transaction.
+        # A failure after that commit must not rewrite the already-complete run as Failed; resume
+        # simply replays this idempotent terminal step.
+        _test_fail_once("candidate_registered")
         self.next(self.end)
 
     @step

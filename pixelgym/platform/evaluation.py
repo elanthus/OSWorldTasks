@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import platform
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -129,6 +130,7 @@ class EvaluationRunner:
         submission_id: str,
         metaflow_pathspec: str,
         price_catalog_version: str = "pixelgym-demo-prices-v1",
+        provider_response_hook: Callable[[str], None] | None = None,
     ) -> None:
         self.root = repository_root
         self.store = store
@@ -140,6 +142,7 @@ class EvaluationRunner:
         self.submission_id = submission_id
         self.metaflow_pathspec = metaflow_pathspec
         self.price_catalog_version = price_catalog_version
+        self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
 
     def _tracking_params(self, example_count: int) -> dict[str, Any]:
@@ -279,6 +282,8 @@ class EvaluationRunner:
                     prompt=prompt,
                     schema=schema,
                 )
+                if self.provider_response_hook is not None:
+                    self.provider_response_hook(request_id)
                 response_bytes = (
                     response.raw_response.encode("utf-8")
                     if response.raw_response is not None
