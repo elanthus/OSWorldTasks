@@ -330,6 +330,10 @@ class ControlStore:
             gate_report.completeness.passed,
             gate_report.compatibility_passed,
             gate_report.code_revision_passed,
+            (
+                gate_report.confidence_bound is None
+                or gate_report.confidence_bound.passed
+            ),
         )
         if gate_report.overall_passed and (not all(required_passes) or gate_report.reasons):
             raise ValueError("passing gate report has failed components or blocking reasons")

@@ -60,6 +60,7 @@ class GatePolicy:
     required_target_semantics: str
     dirty_code_allowed: bool = False
     confidence_bound_required: bool = False
+    confidence_level: float = 0.95
     synthetic_only: bool = True
 
     def __post_init__(self) -> None:
@@ -76,6 +77,8 @@ class GatePolicy:
             raise ValueError("maximum cost and latency must be nonnegative")
         if self.minimum_measured_count <= 0:
             raise ValueError("minimum_measured_count must be positive")
+        if not math.isfinite(self.confidence_level) or not 0 < self.confidence_level < 1:
+            raise ValueError("confidence level must be strictly between zero and one")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -125,6 +128,19 @@ class CompletenessObservation:
 
 
 @dataclass(frozen=True)
+class ConfidenceBoundObservation:
+    """Auditable one-sided binomial lower confidence bound for accuracy."""
+
+    observed: float | None
+    threshold: float
+    passed: bool
+    method: str
+    confidence_level: float
+    success_count: int
+    sample_count: int
+
+
+@dataclass(frozen=True)
 class GateReport:
     schema_version: str
     gate_policy_version: str
@@ -138,6 +154,7 @@ class GateReport:
     compatibility_passed: bool
     code_revision_passed: bool
     overall_passed: bool
+    confidence_bound: ConfidenceBoundObservation | None = None
     reasons: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
@@ -154,6 +171,11 @@ class GateReport:
                     **value["provider_latency_p95_ms"]
                 ),
                 "completeness": CompletenessObservation(**value["completeness"]),
+                "confidence_bound": (
+                    ConfidenceBoundObservation(**value["confidence_bound"])
+                    if value.get("confidence_bound") is not None
+                    else None
+                ),
                 "reasons": tuple(value["reasons"]),
             }
         )

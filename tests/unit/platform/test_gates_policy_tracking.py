@@ -111,6 +111,130 @@ def test_gate_report_is_byte_stable(passing_evidence, gate_policy) -> None:
     assert first.to_dict() == second.to_dict()
 
 
+def test_confidence_bound_can_pass_with_complete_auditable_evidence(
+    passing_evidence, gate_policy
+) -> None:
+    _, summary, _ = passing_evidence
+    policy = dataclasses.replace(
+        gate_policy, confidence_bound_required=True, minimum_accuracy=0.70
+    )
+
+    report = evaluate_gates(policy, summary)
+
+    assert report.overall_passed
+    assert report.confidence_bound is not None
+    assert report.confidence_bound.passed
+    assert report.confidence_bound.method == "wilson-score-one-sided-v1"
+    assert report.confidence_bound.confidence_level == 0.95
+    assert report.confidence_bound.success_count == 80
+    assert report.confidence_bound.sample_count == 100
+    assert report.confidence_bound.observed == pytest.approx(0.7267, abs=0.0001)
+
+
+def test_confidence_bound_fails_when_point_accuracy_passes_but_bound_does_not(
+    passing_evidence, gate_policy
+) -> None:
+    _, summary, _ = passing_evidence
+    policy = dataclasses.replace(gate_policy, confidence_bound_required=True)
+
+    report = evaluate_gates(policy, summary)
+
+    assert not report.overall_passed
+    assert report.accuracy.passed
+    assert report.confidence_bound is not None
+    assert not report.confidence_bound.passed
+    assert any("Wilson" in reason for reason in report.reasons)
+
+
+def test_confidence_bound_threshold_boundary_is_inclusive(passing_evidence, gate_policy) -> None:
+    _, summary, _ = passing_evidence
+    first = evaluate_gates(
+        dataclasses.replace(gate_policy, confidence_bound_required=True, minimum_accuracy=0.0),
+        summary,
+    )
+    assert first.confidence_bound is not None
+    policy = dataclasses.replace(
+        gate_policy,
+        confidence_bound_required=True,
+        minimum_accuracy=first.confidence_bound.observed,
+    )
+
+    report = evaluate_gates(policy, summary)
+
+    assert report.confidence_bound is not None
+    assert report.confidence_bound.passed
+    assert report.overall_passed
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"scored_count": 0, "correct_count": 0, "accuracy": None},
+        {"expected_count": None, "accuracy": None},
+        {"scored_count": "100", "accuracy": None},
+        {"correct_count": 101},
+        {"invalid_count": -1},
+        {"request_failure_count": 21},
+        {"invalid_count": 20, "request_failure_count": 1, "correct_count": 80},
+        {"invalid_count": 21, "correct_count": 80, "accuracy": 0.8},
+    ],
+)
+def test_confidence_bound_fails_closed_for_missing_or_inconsistent_counts(
+    passing_evidence, gate_policy, changes: dict[str, object]
+) -> None:
+    _, summary, _ = passing_evidence
+    policy = dataclasses.replace(gate_policy, confidence_bound_required=True, minimum_accuracy=0.7)
+
+    report = evaluate_gates(policy, dataclasses.replace(summary, **changes))
+
+    assert not report.overall_passed
+    assert report.confidence_bound is not None
+    assert not report.confidence_bound.passed
+
+
+def test_confidence_bound_retains_invalid_and_failed_requests_as_incorrect(
+    passing_evidence, gate_policy
+) -> None:
+    _, summary, _ = passing_evidence
+    policy = dataclasses.replace(gate_policy, confidence_bound_required=True, minimum_accuracy=0.70)
+    with_invalid = dataclasses.replace(
+        summary,
+        correct_count=80,
+        invalid_count=10,
+        request_failure_count=10,
+        accuracy=0.8,
+    )
+
+    report = evaluate_gates(policy, with_invalid)
+
+    assert report.confidence_bound is not None
+    assert report.confidence_bound.sample_count == 100
+    assert report.confidence_bound.success_count == 80
+    assert report.confidence_bound.observed == pytest.approx(0.7267, abs=0.0001)
+    assert report.overall_passed
+
+
+def test_confidence_bound_report_round_trips_and_old_reports_remain_readable(
+    passing_evidence, gate_policy
+) -> None:
+    _, summary, _ = passing_evidence
+    policy = dataclasses.replace(gate_policy, confidence_bound_required=True, minimum_accuracy=0.70)
+    report = evaluate_gates(policy, summary)
+
+    assert type(report).from_dict(report.to_dict()) == report
+    old_shape = report.to_dict()
+    old_shape.pop("confidence_bound")
+    old_shape["reasons"] = []
+    decoded = type(report).from_dict(old_shape)
+    assert decoded.confidence_bound is None
+
+
+@pytest.mark.parametrize("confidence_level", [0.0, 1.0, math.nan, math.inf])
+def test_confidence_level_must_be_a_finite_open_probability(gate_policy, confidence_level: float) -> None:
+    with pytest.raises(ValueError, match="confidence level"):
+        dataclasses.replace(gate_policy, confidence_level=confidence_level)
+
+
 def test_tracking_contract_is_idempotent_and_params_are_immutable(
     passing_evidence, policy_factory
 ) -> None:
