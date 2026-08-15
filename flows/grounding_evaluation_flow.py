@@ -256,6 +256,8 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def finalize_mlflow_run(self) -> None:
+        # Candidate registration is deliberately downstream: a run that cannot finalize must
+        # never leave an Eligible control-plane record behind.
         _runner(self, with_tracking=True).finalize_success(
             RunSummary(**self.summary),
             GateReport.from_dict(self.report),
