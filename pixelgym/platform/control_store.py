@@ -512,6 +512,9 @@ class ControlStore:
                 raise TransitionError("approved gate report no longer verifies")
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
+            # A deployment record is an activation *event*.  Retain the active event
+            # as this new event's predecessor for both deploys and rollbacks, so the
+            # append-only event sequence cannot be truncated by a rollback.
             previous_deployment_id = expected_deployment_id
             if action == "rollback":
                 if expected_deployment_id is None:
@@ -520,15 +523,16 @@ class ControlStore:
                     "SELECT * FROM deployments WHERE deployment_id = ?",
                     (expected_deployment_id,),
                 ).fetchone()
-                if current is None or current["previous_deployment_id"] is None:
-                    raise TransitionError("there is no previous deployment to roll back to")
+                if current is None:
+                    raise TransitionError("active deployment event does not exist")
                 target = connection.execute(
-                    "SELECT * FROM deployments WHERE deployment_id = ?",
-                    (current["previous_deployment_id"],),
+                    "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
+                    (current["generation"],),
                 ).fetchone()
-                if target is None or target["candidate_id"] != candidate_id:
-                    raise TransitionError("rollback target is not the active deployment's predecessor")
-                previous_deployment_id = target["previous_deployment_id"]
+                if target is None:
+                    raise TransitionError("there is no previous deployment to roll back to")
+                if target["candidate_id"] != candidate_id:
+                    raise TransitionError("rollback target is not the previous deployment event")
             generation = expected_generation + 1
             material = {
                 "candidate_id": candidate_id,
@@ -569,9 +573,21 @@ class ControlStore:
         return self.get_deployment(deployment_id)
 
     def previous_target(self, current: DeploymentRecord) -> DeploymentRecord:
-        if current.previous_deployment_id is None:
-            raise TransitionError("there is no previous deployment to roll back to")
-        return self.get_deployment(current.previous_deployment_id)
+        """Return the immutable event immediately preceding the active event.
+
+        Rollback deliberately follows the ledger's generation order, rather than a
+        mutable-looking per-row link.  A rollback is itself a new event, so this lets
+        repeated rollbacks traverse the recorded activation sequence without losing
+        the event that was just restored.
+        """
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
+                (current.generation,),
+            ).fetchone()
+            if row is None:
+                raise TransitionError("there is no previous deployment to roll back to")
+            return DeploymentRecord(**dict(row))
 
     def audit_events(self) -> list[dict[str, Any]]:
         with self._lock:

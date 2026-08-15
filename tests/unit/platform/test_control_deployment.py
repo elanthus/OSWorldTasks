@@ -156,7 +156,7 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
     return candidate
 
 
-def test_deploy_failure_preserves_active_and_rollback_restores_previous(
+def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order(
     tmp_path: Path, passing_evidence
 ) -> None:
     control = _control(tmp_path)
@@ -169,15 +169,42 @@ def test_deploy_failure_preserves_active_and_rollback_restores_previous(
     with pytest.raises(TransitionError, match="smoke"):
         failing.deploy(second.candidate_id, actor="local-reviewer", reason="bad")
     assert control.active()[0] == deployed_first
-    coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
-    rolled_back = coordinator.rollback(actor="local-reviewer", reason="rehearsal")
-    assert rolled_back.candidate_id == first.candidate_id
-    assert rolled_back.previous_deployment_id is None
+    deployed_second = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    restored_first = coordinator.rollback(actor="local-reviewer", reason="rehearsal")
+    restored_second = coordinator.rollback(actor="local-reviewer", reason="repeat rehearsal")
+
+    assert restored_first.candidate_id == first.candidate_id
+    assert restored_first.previous_deployment_id == deployed_second.deployment_id
+    assert restored_second.candidate_id == second.candidate_id
+    assert restored_second.previous_deployment_id == restored_first.deployment_id
+    assert [event["candidate_id"] for event in control.deployment_history()] == [
+        first.candidate_id,
+        second.candidate_id,
+        first.candidate_id,
+        second.candidate_id,
+    ]
+    assert [event["action"] for event in control.deployment_history()] == [
+        "deploy",
+        "deploy",
+        "rollback",
+        "rollback",
+    ]
+
+
+def test_rollback_fails_when_no_previous_deployment_event_exists(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "")
+    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
+    coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+
     with pytest.raises(TransitionError, match="no previous"):
-        coordinator.rollback(actor="local-reviewer", reason="must not ping-pong")
+        coordinator.rollback(actor="local-reviewer", reason="no prior event")
 
 
-def test_store_rejects_rollback_to_any_candidate_except_active_predecessor(
+def test_store_rejects_rollback_to_any_candidate_except_previous_event(
     tmp_path: Path, passing_evidence
 ) -> None:
     control = _control(tmp_path)
@@ -187,11 +214,15 @@ def test_store_rejects_rollback_to_any_candidate_except_active_predecessor(
     coordinator = DeploymentCoordinator(
         control=control, store=store, load_and_smoke=lambda policy: True
     )
-    coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+    first_event = coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
     current = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
     _, generation = control.active()
 
-    with pytest.raises(TransitionError, match="predecessor"):
+    target = control.previous_target(current)
+    assert target.deployment_id == first_event.deployment_id
+    assert target.candidate_id == first.candidate_id
+
+    with pytest.raises(TransitionError, match="previous deployment event"):
         control.activate(
             second.candidate_id,
             actor="local-reviewer",
