@@ -6,9 +6,11 @@ import asyncio
 import base64
 import binascii
 import io
+import logging
 import math
 import re
 import time
+import traceback
 import uuid
 from contextvars import ContextVar
 from dataclasses import dataclass
@@ -29,6 +31,8 @@ from pixelgym.platform.operational_log import (
     OperationalLog,
     OperationalRecord,
 )
+
+logger = logging.getLogger(__name__)
 
 API_SCHEMA_VERSION = "pixelgym-grounding-api-v1"
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
@@ -215,7 +219,18 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
             # for an operational record; it is never sent because cancellation still propagates.
             _set_terminal_status("cancelled")
             raise
-        except Exception:  # noqa: BLE001 - convert unknown handler errors into a redacted record.
+        except Exception as exc:  # noqa: BLE001 - convert unknown handler errors into a redacted record.
+            # Keep traceback locations for operators without formatting source lines or the
+            # exception value, either of which could contain request/provider-derived text.
+            locations = " <- ".join(
+                f"{frame.filename}:{frame.lineno} in {frame.name}"
+                for frame in traceback.extract_tb(exc.__traceback__)
+            )
+            logger.error(
+                "unexpected serving handler failure type=%s traceback=%s",
+                type(exc).__name__,
+                locations,
+            )
             _set_terminal_status("internal_error")
             response = JSONResponse(status_code=500, content={"detail": "internal server error"})
         finally:
