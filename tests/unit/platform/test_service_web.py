@@ -8,6 +8,7 @@ import io
 import re
 import sys
 import threading
+import time
 from pathlib import Path
 
 import httpx
@@ -315,6 +316,49 @@ def test_cancelled_in_flight_request_completes_audit_through_base_http_middlewar
     record = next(iter(log._records.values()))
     assert record.terminal_status == "cancelled"
     assert record.http_status == 499
+
+
+def test_operational_audit_timeout_fails_closed_and_tracks_late_append(policy_factory, monkeypatch) -> None:
+    class BlockingLog:
+        def __init__(self) -> None:
+            self.started = threading.Event()
+            self.release = threading.Event()
+            self.records = []
+
+        def append(self, record) -> None:
+            self.started.set()
+            assert self.release.wait(timeout=1)
+            self.records.append(record)
+
+        def get(self, request_id):
+            return None
+
+    async def exercise() -> tuple[httpx.Response, BlockingLog, object, float]:
+        log = BlockingLog()
+        app = create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log)
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            started = time.perf_counter()
+            response = await client.post(
+                "/api/v1/ground",
+                json={
+                    "image_base64": base64.b64encode(_image()).decode(),
+                    "media_type": "image/png",
+                    "target": "target",
+                },
+            )
+            assert log.started.is_set()
+            assert len(app.state.pending_operational_appends) == 1
+            log.release.set()
+            await asyncio.gather(*app.state.pending_operational_appends)
+        return response, log, app, time.perf_counter() - started
+
+    monkeypatch.setattr("pixelgym.platform.service.OPERATIONAL_AUDIT_TIMEOUT_SECONDS", 0.01)
+    response, log, app, elapsed = asyncio.run(exercise())
+    assert response.status_code == 503
+    assert elapsed < 0.5
+    assert len(log.records) == 1
+    assert not app.state.pending_operational_appends
 
 
 def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(policy_factory) -> None:
