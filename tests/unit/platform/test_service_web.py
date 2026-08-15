@@ -27,6 +27,7 @@ from pixelgym.platform.operational_log import (
     OperationalLogError,
     OperationalRecord,
 )
+from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
     LoadedPolicy,
@@ -35,6 +36,7 @@ from pixelgym.platform.service import (
     _operational_context,
     create_serving_app,
 )
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 from pixelgym.platform.web import create_control_app
 from scripts.capture_platform_api import _safe_body
 
@@ -830,22 +832,46 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
 
 
-def test_runs_render_safe_source_provenance_diagnostic(tmp_path: Path, passing_evidence) -> None:
-    from dataclasses import replace
-
-    policy, summary, report = passing_evidence
-    policy = replace(
-        policy,
-        source_provenance_failure_reason="manifest_malformed_json",
+def test_runs_render_safe_source_provenance_diagnostic(
+    tmp_path: Path, passing_evidence, gate_policy
+) -> None:
+    _policy, summary, _report = passing_evidence
+    policy = build_policy_manifest(
+        provider="scripted-demo",
+        model="day3-replay-revised-v2",
+        prompt_name="pixelgym-grounding",
+        prompt_version=2,
+        prompt=prompt_template(2),
+        condition="raw",
+        parameters={"deterministic": True, "hidden_retries": 0},
+        parser_version="pixelgym-grounding-parser-v1",
+        scorer_version=gate_policy.required_scorer_version,
+        overlay_version="none-raw-coordinate-policy",
+        target_semantics=gate_policy.required_target_semantics,
+        source_provenance=SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION,
+            None,
+            None,
+            "unverifiable",
+            "none",
+            "manifest_malformed_json",
+        ),
+        dependency_lock_sha256="a" * 64,
+    )
+    summary = dataclasses.replace(
+        summary,
+        policy_id=policy.policy_id,
+        code_state="unverifiable",
+        code_provenance_verified=False,
     )
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
     control.register_candidate(
         source_run_id=summary.run_id,
         policy=policy,
-        gate_report=replace(report, policy_id=policy.policy_id),
+        gate_report=evaluate_gates(gate_policy, summary),
         artifacts=[],
-        summary=replace(summary, policy_id=policy.policy_id),
+        summary=summary,
     )
     client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     page = client.get("/runs")
