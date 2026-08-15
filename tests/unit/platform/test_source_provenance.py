@@ -94,6 +94,20 @@ def test_malformed_json_has_a_distinct_reason(repository_root: Path, tmp_path: P
     assert provenance.failure_reason == "manifest_malformed_json"
 
 
+def test_invalid_utf8_manifest_fails_closed_without_leaking_bytes(
+    repository_root: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    manifest = tmp_path / "source-provenance.json"
+    manifest.write_bytes(b'{"private": "\xff"}')
+    with caplog.at_level("WARNING", logger="pixelgym.platform.source_provenance"):
+        provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.state == "unverifiable"
+    assert provenance.failure_reason == "manifest_invalid_utf8"
+    assert "manifest_invalid_utf8" in caplog.text
+    assert "private" not in caplog.text
+    assert "\\xff" not in caplog.text
+
+
 @pytest.mark.parametrize("state", ["dirty", "unverifiable"])
 def test_dirty_or_missing_provenance_is_not_clean(repository_root: Path, tmp_path: Path, state: str) -> None:
     manifest = tmp_path / "source-provenance.json"

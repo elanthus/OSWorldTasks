@@ -40,6 +40,7 @@ _FAILURE_REASONS = frozenset(
         "manifest_missing",
         "manifest_not_regular_file",
         "manifest_read_failed",
+        "manifest_invalid_utf8",
         "manifest_malformed_json",
         "manifest_schema_invalid",
         "revision_invalid",
@@ -176,6 +177,8 @@ def load_packaged_source_provenance(repository_root: Path, path: Path | None) ->
         value = json.loads(path.read_text())
     except OSError:
         return unverifiable("manifest_read_failed")
+    except UnicodeDecodeError:
+        return unverifiable("manifest_invalid_utf8")
     except json.JSONDecodeError:
         return unverifiable("manifest_malformed_json")
     try:
