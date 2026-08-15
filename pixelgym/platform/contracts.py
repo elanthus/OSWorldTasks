@@ -207,10 +207,10 @@ class PolicyManifest:
     def identity_dict(self) -> dict[str, Any]:
         value = asdict(self)
         value.pop("policy_id")
-        # The reason is operational diagnostic evidence rather than policy behavior;
-        # keeping it out of identity preserves verification of policy rows created
-        # before this diagnostic field was introduced.
-        value.pop("source_provenance_failure_reason")
+        # Preserve verification of policy rows created before this optional field
+        # existed, but bind every newly recorded failure reason to its evidence.
+        if value["source_provenance_failure_reason"] is None:
+            value.pop("source_provenance_failure_reason")
         return value
 
     def to_dict(self) -> dict[str, Any]:
