@@ -17,9 +17,12 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 
 SOURCE_PROVENANCE_SCHEMA_VERSION = "pixelgym-source-provenance-v1"
 _REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
-_PACKAGE_PATHS = (
+# These are the repository inputs copied by deploy/Dockerfile.platform.  Keep this
+# list explicit: provenance must not silently expand to local build by-products.
+SOURCE_INPUT_PATHS = (
     "pyproject.toml",
     "README.md",
+    "requirements/platform-py312.lock",
     "pixelgym",
     "flows",
     "config",
@@ -29,6 +32,19 @@ _PACKAGE_PATHS = (
     "artifacts/grounding-predictions.jsonl",
     "artifacts/grounding",
 )
+_PYTHON_BYTECODE_SUFFIXES = frozenset({".pyc", ".pyo"})
+
+
+def _is_packaged_source_file(item: Path, root: Path) -> bool:
+    """Return whether ``item`` is a source input rather than Python bytecode.
+
+    Docker receives the same source directories, but bytecode and ``__pycache__``
+    are local interpreter output rather than source.  Excluding only those files
+    keeps the digest sensitive to every other copied file and fail-closed for a
+    missing declared input.
+    """
+    relative = item.relative_to(root)
+    return "__pycache__" not in relative.parts and item.suffix not in _PYTHON_BYTECODE_SUFFIXES
 
 
 @dataclass(frozen=True)
@@ -61,19 +77,21 @@ def source_tree_sha256(repository_root: Path) -> str:
     """Digest exactly the files copied into the platform image, by path and bytes."""
     root = repository_root.resolve()
     entries: list[dict[str, str]] = []
-    for relative in _PACKAGE_PATHS:
+    for relative in SOURCE_INPUT_PATHS:
         path = root / relative
         if not path.exists():
             raise ValueError(f"packaged source input is missing: {relative}")
-        paths = [path] if path.is_file() else sorted(item for item in path.rglob("*") if item.is_file())
+        paths = [path] if path.is_file() else (item for item in path.rglob("*") if item.is_file())
         for item in paths:
+            if not _is_packaged_source_file(item, root):
+                continue
             entries.append(
                 {
                     "path": item.relative_to(root).as_posix(),
                     "sha256": sha256_bytes(item.read_bytes()),
                 }
             )
-    return sha256_bytes(canonical_json_bytes(entries))
+    return sha256_bytes(canonical_json_bytes(sorted(entries, key=lambda entry: entry["path"])))
 
 
 def generate_source_provenance(repository_root: Path) -> SourceProvenance:

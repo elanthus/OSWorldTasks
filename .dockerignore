@@ -1,0 +1,12 @@
+# Local interpreter and test output are not source inputs for platform images.
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.cache/
+
+# Repository metadata is not copied by either image build.
+.git/
