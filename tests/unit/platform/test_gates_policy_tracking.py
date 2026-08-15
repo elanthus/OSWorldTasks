@@ -87,7 +87,7 @@ def test_any_policy_component_changes_policy_id(policy_factory) -> None:
     ("revision", "expected"),
     [("a" * 40, True), ("ABCDEF" * 7, False), ("clean-main", False), ("unknown-dirty", False)],
 )
-def test_only_exact_lowercase_git_commit_is_a_verified_clean_revision(
+def test_only_exact_lowercase_git_commit_has_valid_format(
     revision: str, expected: bool
 ) -> None:
     assert is_verified_clean_revision(revision) is expected
@@ -98,7 +98,10 @@ def test_unverifiable_revision_fails_the_clean_code_gate(
 ) -> None:
     policy, summary, _ = passing_evidence
     assert is_verified_clean_revision(policy.code_revision)
-    report = evaluate_gates(gate_policy, dataclasses.replace(summary, dirty_code=True))
+    report = evaluate_gates(
+        gate_policy,
+        dataclasses.replace(summary, dirty_code=False, code_state="clean", code_provenance_verified=False),
+    )
     assert not report.code_revision_passed
 
 
@@ -128,6 +131,9 @@ def test_tracking_contract_is_idempotent_and_params_are_immutable(
         "target_semantics": policy.target_semantics,
         "price_catalog_version": "pixelgym-demo-prices-v1",
         "code_revision": policy.code_revision,
+        "code_state": policy.code_state,
+        "source_tree_sha256": policy.source_tree_sha256,
+        "source_provenance_verified": policy.source_provenance_verified,
         "dependency_lock_sha256": policy.dependency_lock_sha256,
         "python_version": "3.12.0",
         "submission_id": "submission-1",

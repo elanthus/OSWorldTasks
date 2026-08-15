@@ -9,6 +9,7 @@ import pytest
 from pixelgym.platform.contracts import GatePolicy, RunSummary
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
 @pytest.fixture
@@ -38,7 +39,9 @@ def policy_factory(repository_root: Path, gate_policy: GatePolicy):
             scorer_version=gate_policy.required_scorer_version,
             overlay_version="none-raw-coordinate-policy",
             target_semantics=gate_policy.required_target_semantics,
-            code_revision=revision,
+            source_provenance=SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION, revision, "b" * 64, "clean", "git-build-inputs-v1"
+            ),
             dependency_lock_sha256=hashlib.sha256(
                 (repository_root / "pyproject.toml").read_bytes()
             ).hexdigest(),
@@ -66,5 +69,7 @@ def passing_evidence(gate_policy: GatePolicy, policy_factory):
         unpriced_call_count=0,
         provider_latency_p95_ms=100.0,
         latency_measured_count=100,
+        code_state="clean",
+        code_provenance_verified=True,
     )
     return policy, summary, evaluate_gates(gate_policy, summary)

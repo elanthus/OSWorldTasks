@@ -282,7 +282,10 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
         scorer_version=policy.scorer_version,
         overlay_version=policy.overlay_version,
         target_semantics=policy.target_semantics,
-        code_revision=policy.code_revision,
+        source_provenance=__import__("pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]).SourceProvenance(
+            "pixelgym-source-provenance-v1", policy.code_revision, policy.source_tree_sha256,
+            policy.code_state, "git-build-inputs-v1"
+        ),
         dependency_lock_sha256=policy.dependency_lock_sha256,
     )
     second_summary = dataclasses.replace(

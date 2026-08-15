@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +18,11 @@ from pixelgym.platform.evaluation import (
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.source_provenance import (
+    SOURCE_PROVENANCE_SCHEMA_VERSION,
+    SourceProvenance,
+    source_tree_sha256,
+)
 
 
 class FlowHarness:
@@ -74,7 +80,19 @@ def _configure(
         "current",
         SimpleNamespace(flow_name="GroundingEvaluationFlow", run_id="fixture-run"),
     )
-    monkeypatch.setenv("PIXELGYM_CODE_REVISION", "a" * 40)
+    provenance_path = tmp_path / "source-provenance.json"
+    provenance_path.write_text(
+        json.dumps(
+            SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION,
+                "a" * 40,
+                source_tree_sha256(repository_root),
+                "clean",
+                "git-build-inputs-v1",
+            ).to_dict()
+        )
+    )
+    monkeypatch.setenv("PIXELGYM_SOURCE_PROVENANCE_PATH", str(provenance_path))
     return store, tracking, provider, control, submission_id
 
 
@@ -103,6 +121,21 @@ def test_start_allows_only_frozen_scripted_pairings() -> None:
     unknown.model = "unreviewed-model"
     with pytest.raises(ValueError, match="outside the scripted allowlist"):
         GroundingEvaluationFlow.start(unknown)
+
+
+def test_hand_entered_revision_without_packaged_provenance_cannot_claim_clean(
+    monkeypatch: pytest.MonkeyPatch, repository_root: Path, tmp_path: Path
+) -> None:
+    _store, _tracking, _provider, _control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    monkeypatch.delenv("PIXELGYM_SOURCE_PROVENANCE_PATH")
+    monkeypatch.setenv("PIXELGYM_CODE_REVISION", "f" * 40)
+    flow = _new_flow(submission_id)
+    GroundingEvaluationFlow.validate_and_freeze_inputs(flow)
+    assert flow.policy["code_revision"] == "unverifiable"
+    assert flow.policy["code_state"] == "unverifiable"
+    assert not flow.policy["source_provenance_verified"]
 
 
 def _run_flow(

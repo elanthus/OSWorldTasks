@@ -83,9 +83,16 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
     if not compatibility_passed:
         reasons.append("dataset, scorer, target semantics, or provider class is incompatible")
 
-    code_revision_passed = policy.dirty_code_allowed or not summary.dirty_code
+    clean_provenance = (
+        summary.code_state == "clean"
+        and summary.code_provenance_verified
+        and not summary.dirty_code
+    )
+    code_revision_passed = policy.dirty_code_allowed or clean_provenance
     if not code_revision_passed:
-        reasons.append("dirty code revisions are forbidden by this gate policy")
+        reasons.append(
+            "dirty code or clean Git/build source provenance is missing, malformed, or unverifiable"
+        )
 
     if policy.confidence_bound_required:
         reasons.append("confidence-bound evidence is required but absent from run summary v1")

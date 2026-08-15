@@ -22,7 +22,7 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import Tracking
-from pixelgym.platform.policy import PROMPT_TEMPLATES, is_verified_clean_revision, prompt_template
+from pixelgym.platform.policy import PROMPT_TEMPLATES, prompt_template
 from pixelgym.serialization import load_jsonl
 
 RAW_RESPONSE_SCHEMA_VERSION = "pixelgym-raw-response-v1"
@@ -169,6 +169,9 @@ class EvaluationRunner:
             "target_semantics": self.policy.target_semantics,
             "price_catalog_version": self.price_catalog_version,
             "code_revision": self.policy.code_revision,
+            "code_state": self.policy.code_state,
+            "source_tree_sha256": self.policy.source_tree_sha256,
+            "source_provenance_verified": self.policy.source_provenance_verified,
             "dependency_lock_sha256": self.policy.dependency_lock_sha256,
             "python_version": platform.python_version(),
             "submission_id": self.submission_id,
@@ -487,7 +490,9 @@ class EvaluationRunner:
             request_failure_count=sum(
                 row["parse_status"] == "request_failure" for row in records
             ),
-            dirty_code=not is_verified_clean_revision(self.policy.code_revision),
+            dirty_code=self.policy.code_state != "clean",
+            code_state=self.policy.code_state,
+            code_provenance_verified=self.policy.source_provenance_verified,
             synthetic_provider=self.provider.synthetic,
         )
 

@@ -93,7 +93,7 @@ services:
       PIXELGYM_CONTROL_DB: /state/control.db
       PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
       PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}
-      PIXELGYM_CODE_REVISION: ${PIXELGYM_CODE_REVISION}
+      PIXELGYM_SOURCE_PROVENANCE_PATH: /state/source-provenance.json
       PIXELGYM_IMMUTABLE_BUCKET: pixelgym-immutable
       PIXELGYM_IMMUTABLE_PREFIX: platform
       PIXELGYM_OBJECT_LOCK: "true"
@@ -105,7 +105,9 @@ services:
       AWS_ENDPOINT_URL: http://minio:9000
       METAFLOW_DATASTORE_SYSROOT_LOCAL: /state/metaflow
       METAFLOW_USER: pixelgym
-    volumes: [control-data:/state]
+    volumes:
+      - control-data:/state
+      - ../.cache/platform/source-provenance.json:/state/source-provenance.json:ro
     ports: ["${PIXELGYM_PLATFORM_PORT:-5800}:8000"]
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=2)"]

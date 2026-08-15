@@ -1,0 +1,124 @@
+"""Build-bound source provenance for platform evaluation runs.
+
+The manifest is generated in a Git checkout before an image is built.  At runtime
+we verify its source digest against the files packaged into that image; a revision
+string supplied in an environment variable is never evidence by itself.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
+
+SOURCE_PROVENANCE_SCHEMA_VERSION = "pixelgym-source-provenance-v1"
+_REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
+_PACKAGE_PATHS = (
+    "pyproject.toml",
+    "README.md",
+    "pixelgym",
+    "flows",
+    "config",
+    "scripts",
+    "artifacts/grounding-dataset.jsonl",
+    "artifacts/grounding-overlays.jsonl",
+    "artifacts/grounding-predictions.jsonl",
+    "artifacts/grounding",
+)
+
+
+@dataclass(frozen=True)
+class SourceProvenance:
+    schema_version: str
+    revision: str | None
+    source_tree_sha256: str | None
+    state: str
+    verification_method: str
+
+    def __post_init__(self) -> None:
+        if self.state not in {"clean", "dirty", "unverifiable"}:
+            raise ValueError("source provenance state must be clean, dirty, or unverifiable")
+        if self.state == "unverifiable":
+            if self.revision is not None or self.source_tree_sha256 is not None:
+                raise ValueError("unverifiable provenance must not claim a revision or source digest")
+            return
+        if not self.revision or not _REVISION_RE.fullmatch(self.revision):
+            raise ValueError("source provenance revision must be a lowercase 40-character Git commit")
+        if not self.source_tree_sha256 or not re.fullmatch(r"[0-9a-f]{64}", self.source_tree_sha256):
+            raise ValueError("source provenance digest must be a lowercase SHA-256 digest")
+        if self.verification_method != "git-build-inputs-v1":
+            raise ValueError("source provenance verification method is unsupported")
+
+    def to_dict(self) -> dict[str, str | None]:
+        return asdict(self)
+
+
+def source_tree_sha256(repository_root: Path) -> str:
+    """Digest exactly the files copied into the platform image, by path and bytes."""
+    root = repository_root.resolve()
+    entries: list[dict[str, str]] = []
+    for relative in _PACKAGE_PATHS:
+        path = root / relative
+        if not path.exists():
+            raise ValueError(f"packaged source input is missing: {relative}")
+        paths = [path] if path.is_file() else sorted(item for item in path.rglob("*") if item.is_file())
+        for item in paths:
+            entries.append(
+                {
+                    "path": item.relative_to(root).as_posix(),
+                    "sha256": sha256_bytes(item.read_bytes()),
+                }
+            )
+    return sha256_bytes(canonical_json_bytes(entries))
+
+
+def generate_source_provenance(repository_root: Path) -> SourceProvenance:
+    """Derive revision and clean/dirty state from the checked-out Git worktree."""
+    root = repository_root.resolve()
+    try:
+        revision = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        status = subprocess.run(
+            ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise ValueError("Git revision and worktree state could not be verified") from exc
+    return SourceProvenance(
+        schema_version=SOURCE_PROVENANCE_SCHEMA_VERSION,
+        revision=revision,
+        source_tree_sha256=source_tree_sha256(root),
+        state="clean" if not status else "dirty",
+        verification_method="git-build-inputs-v1",
+    )
+
+
+def write_source_provenance(repository_root: Path, output: Path) -> SourceProvenance:
+    provenance = generate_source_provenance(repository_root)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(canonical_json_bytes(provenance.to_dict()) + b"\n")
+    return provenance
+
+
+def load_packaged_source_provenance(repository_root: Path, path: Path | None) -> SourceProvenance:
+    """Return verified packaged provenance, or explicit unverified local fallback."""
+    if path is None or not path.is_file():
+        return SourceProvenance(SOURCE_PROVENANCE_SCHEMA_VERSION, None, None, "unverifiable", "none")
+    try:
+        value = json.loads(path.read_text())
+        provenance = SourceProvenance(**value)
+        if provenance.source_tree_sha256 != source_tree_sha256(repository_root):
+            raise ValueError("source provenance digest does not match packaged source")
+        return provenance
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return SourceProvenance(SOURCE_PROVENANCE_SCHEMA_VERSION, None, None, "unverifiable", "none")
