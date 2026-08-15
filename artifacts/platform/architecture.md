@@ -31,5 +31,5 @@ transactional storage commit protocol; it is not approximated at the expense of 
 
 Packaged source-provenance verification also fails closed. Its persisted policy/run diagnostic and
 operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or
-`revision_invalid`/`source_digest_mismatch`; they never include a provenance file path or its
+`manifest_invalid_utf8`/`revision_invalid`/`source_digest_mismatch`; they never include a provenance file path or its
 contents.

@@ -141,6 +141,21 @@ def test_hand_entered_revision_without_packaged_provenance_cannot_claim_clean(
     assert flow.policy["dependency_lock_sha256"] == dependency_lock_sha256(repository_root)
 
 
+def test_invalid_utf8_packaged_provenance_fails_closed_in_runtime_policy(
+    monkeypatch: pytest.MonkeyPatch, repository_root: Path, tmp_path: Path
+) -> None:
+    _store, _tracking, _provider, _control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    provenance_path = tmp_path / "source-provenance.json"
+    provenance_path.write_bytes(b'{"private": "\xff"}')
+    flow = _new_flow(submission_id)
+    GroundingEvaluationFlow.validate_and_freeze_inputs(flow)
+    assert flow.policy["code_state"] == "unverifiable"
+    assert not flow.policy["source_provenance_verified"]
+    assert flow.policy["source_provenance_failure_reason"] == "manifest_invalid_utf8"
+
+
 def _run_flow(
     submission_id: str,
     *,
