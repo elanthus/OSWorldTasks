@@ -10,5 +10,6 @@
   "required_target_semantics": "requested-control-center-point-v1",
   "dirty_code_allowed": false,
   "confidence_bound_required": false,
+  "confidence_level": 0.95,
   "synthetic_only": true
 }
