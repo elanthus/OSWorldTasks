@@ -386,6 +386,71 @@ def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(po
     assert log.context_request_id == response.headers["x-pixelgym-request-id"]
 
 
+def test_operational_audit_bulkhead_limits_blocking_appends(policy_factory) -> None:
+    class BlockingLog:
+        def __init__(self) -> None:
+            self.entered = threading.Event()
+            self.release = threading.Event()
+            self._lock = threading.Lock()
+            self.active = 0
+            self.maximum_active = 0
+            self.records = []
+
+        def append(self, record) -> None:
+            with self._lock:
+                self.active += 1
+                self.maximum_active = max(self.maximum_active, self.active)
+                self.entered.set()
+            assert self.release.wait(timeout=1)
+            with self._lock:
+                self.records.append(record)
+                self.active -= 1
+
+        def get(self, request_id):
+            return None
+
+    async def exercise() -> tuple[list[httpx.Response], BlockingLog]:
+        log = BlockingLog()
+        app = create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())),
+            operational_log=log,
+            operational_audit_concurrency=1,
+        )
+        transport = httpx.ASGITransport(app=app)
+        payload = {
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        }
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            first = asyncio.create_task(client.post("/api/v1/ground", json=payload))
+            for _ in range(100):
+                if log.entered.is_set():
+                    break
+                await asyncio.sleep(0.001)
+            assert log.entered.is_set()
+            second = asyncio.create_task(client.post("/api/v1/ground", json=payload))
+            await asyncio.sleep(0.02)
+            assert log.maximum_active == 1 and not second.done()
+            log.release.set()
+            return await asyncio.gather(first, second), log
+
+    responses, log = asyncio.run(exercise())
+    assert [response.status_code for response in responses] == [200, 200]
+    assert log.maximum_active == 1
+    assert len(log.records) == 2
+    assert len({record.request_id for record in log.records}) == 2
+
+
+def test_operational_audit_bulkhead_requires_positive_limit(policy_factory) -> None:
+    with pytest.raises(ValueError, match="concurrency"):
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())),
+            operational_log=MemoryOperationalLog(),
+            operational_audit_concurrency=0,
+        )
+
+
 def test_immutable_operational_log_does_not_serialize_distinct_request_writes(tmp_path: Path) -> None:
     class RendezvousStore:
         def __init__(self) -> None:
