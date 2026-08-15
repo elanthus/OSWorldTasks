@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
 from pixelgym.platform.contracts import GatePolicy, RunSummary
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
@@ -42,9 +42,7 @@ def policy_factory(repository_root: Path, gate_policy: GatePolicy):
             source_provenance=SourceProvenance(
                 SOURCE_PROVENANCE_SCHEMA_VERSION, revision, "b" * 64, "clean", "git-build-inputs-v1"
             ),
-            dependency_lock_sha256=hashlib.sha256(
-                (repository_root / "pyproject.toml").read_bytes()
-            ).hexdigest(),
+            dependency_lock_sha256=dependency_lock_sha256(repository_root),
         )
 
     return build

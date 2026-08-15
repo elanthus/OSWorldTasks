@@ -28,6 +28,37 @@ python3.12 scripts/platform_compose.py down
 To remove local demo volumes, the human operator must explicitly add `--volumes`. That operation
 deletes local evidence and is intentionally not part of the normal workflow.
 
+## Platform dependency lock
+
+`requirements/platform-py312.lock` is the complete, hash-verified Python 3.12 runtime graph for
+the platform image. The image verifies that the lock still corresponds to the platform inputs in
+`pyproject.toml`, installs it with `pip --require-hashes`, then installs this repository with
+`--no-deps`; it never resolves `.[platform]` during an ordinary build. The evaluation flow records
+the SHA-256 of this exact consumed lock in its policy and run manifests.
+
+When an intentional platform-runtime dependency change is approved, regenerate the lock with
+Python 3.12 and the `pip-tools` included in the documented editable developer setup:
+
+```bash
+.venv/bin/pip-compile --extra platform --generate-hashes --resolver=backtracking --output-file requirements/platform-py312.lock pyproject.toml
+```
+
+Replace the `pixelgym-platform-input-sha256` header with the value printed by:
+
+```bash
+python3.12 -c 'from pathlib import Path; from pixelgym.platform.dependency_lock import platform_input_sha256; print(platform_input_sha256(Path("pyproject.toml")))'
+```
+
+Then verify locally before review:
+
+```bash
+python3.12 pixelgym/platform/dependency_lock.py --repository-root .
+python3.12 -m pytest tests/unit/platform/test_dependency_lock.py -q
+```
+
+This does not change the documented developer setup: `python3.12 -m venv .venv && pip install -e
+".[dev]"` remains the sole setup step for the fast suite and lint.
+
 ## Production reference
 
 The immutable adapter pins S3 object version IDs and verifies SHA-256 on every boundary. Use a

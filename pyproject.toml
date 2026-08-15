@@ -28,6 +28,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "build>=1.0",
+    "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
     "playwright>=1.52",  # deterministic Day 3 browser capture tooling
