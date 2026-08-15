@@ -86,7 +86,9 @@ def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
 def _record_failure(flow: object) -> None:
     """Best-effort terminal evidence without hiding the step's original exception."""
     with contextlib.suppress(Exception):
-        flow.mlflow_run_id = _runner(flow, with_tracking=True).finalize_failure()
+        flow.mlflow_run_id = _runner(flow, with_tracking=True).finalize_failure(
+            run_id=getattr(flow, "mlflow_run_id", None)
+        )
     with contextlib.suppress(Exception):
         _control().mark_submission(flow.submission_id, "Failed")
 
@@ -218,7 +220,7 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def verify_raw_artifacts(self) -> None:
-        _runner(self).verify_raw_artifacts(self.raw_responses)
+        self.verified_responses = _runner(self).verify_raw_artifacts(self.raw_responses)
         self.raw_artifacts_verified = True
         self.next(self.parse_and_score)
 
@@ -227,7 +229,7 @@ class GroundingEvaluationFlow(FlowSpec):
     def parse_and_score(self) -> None:
         if self.raw_artifacts_verified is not True:
             raise ValueError("raw artifacts must verify before parsing")
-        self.records = _runner(self).parse_and_score(self.raw_responses)
+        self.records = _runner(self).parse_and_score(self.verified_responses)
         self.next(self.aggregate_metrics)
 
     @step
@@ -266,19 +268,22 @@ class GroundingEvaluationFlow(FlowSpec):
         self.next(self.register_candidate)
 
     @step
+    @_finalize_on_error
     def register_candidate(self) -> None:
         record = _control().register_candidate(
             source_run_id=self.summary["run_id"],
             policy=PolicyManifest(**self.policy),
             gate_report=GateReport.from_dict(self.report),
             artifacts=[ArtifactRef(**value) for value in self.references],
+            submission_id=self.submission_id,
         )
         self.candidate_id = record.candidate_id
         self.next(self.end)
 
     @step
+    @_finalize_on_error
     def end(self) -> None:
-        _control().mark_submission(self.submission_id, "Complete")
+        pass
 
 
 if __name__ == "__main__":

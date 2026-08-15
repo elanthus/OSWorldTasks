@@ -199,5 +199,71 @@ def test_duplicate_overlay_example_ids_are_rejected(
         runner.build_shards(shard_size=1, max_calls=1)
 
 
+def test_verified_envelopes_are_not_read_and_hashed_again_during_parse(
+    repository_root: Path,
+    tmp_path: Path,
+    gate_policy,
+    policy_factory,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+    )
+    shard = runner.build_shards(shard_size=1, max_calls=100)[0]
+    raw = runner.evaluate_shard(shard, max_calls=100)
+    original_get_verified = runner.store.get_verified
+    verified_reads = 0
+
+    def count_verified_reads(reference):
+        nonlocal verified_reads
+        verified_reads += 1
+        return original_get_verified(reference)
+
+    monkeypatch.setattr(runner.store, "get_verified", count_verified_reads)
+    verified = runner.verify_raw_artifacts(raw, require_complete=False)
+    records = runner.parse_and_score(verified, require_complete=False)
+
+    assert len(records) == 1
+    assert verified_reads == 1
+
+
+def test_failure_finalization_uses_known_run_when_inputs_later_become_invalid(
+    repository_root: Path,
+    tmp_path: Path,
+    gate_policy,
+    policy_factory,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tracking = InMemoryTracking()
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+        tracking=tracking,
+    )
+    original_inputs = runner._inputs
+    input_reads = 0
+
+    def fail_after_run_creation():
+        nonlocal input_reads
+        input_reads += 1
+        if input_reads > 1:
+            raise ValueError("overlay example IDs must be unique")
+        return original_inputs()
+
+    monkeypatch.setattr(runner, "_inputs", fail_after_run_creation)
+    with pytest.raises(ValueError, match="overlay example IDs must be unique"):
+        runner.run(max_calls=100)
+
+    assert input_reads == 2
+    assert next(iter(tracking.runs.values())).status == "FAILED"
+
+
 def test_frozen_p95_method_has_explicit_boundary() -> None:
     assert percentile_r7([0, 10, 20, 30, 40], 0.95) == pytest.approx(38.0)

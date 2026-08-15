@@ -328,6 +328,8 @@ Key rules:
   make a failed run disappear.
 - Register a promotable candidate only after the parent MLflow run has finalized successfully. A
   failed or incomplete run must never leave an Eligible candidate behind.
+- Commit candidate registration and the submission's `Complete` status in one control-store
+  transaction, so either both become visible or neither does.
 - The MLflow run ID and Metaflow pathspec are written as soon as both exist and reconciled if a
   process stops between those writes.
 

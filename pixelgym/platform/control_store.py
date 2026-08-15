@@ -293,6 +293,7 @@ class ControlStore:
         policy: PolicyManifest,
         gate_report: GateReport,
         artifacts: list[ArtifactRef],
+        submission_id: str | None = None,
     ) -> CandidateRecord:
         verify_policy_manifest(policy)
         if gate_report.schema_version != "pixelgym-promotion-gate-report-v1":
@@ -351,6 +352,19 @@ class ControlStore:
                     "system",
                     candidate_id,
                     {"state": state.value, "gate_report_sha256": report_sha},
+                )
+            if submission_id is not None:
+                submission = connection.execute(
+                    "SELECT mlflow_run_id FROM submissions WHERE submission_id = ?",
+                    (submission_id,),
+                ).fetchone()
+                if submission is None:
+                    raise KeyError(submission_id)
+                if submission["mlflow_run_id"] != source_run_id:
+                    raise ConflictError("candidate run does not match submission lineage")
+                connection.execute(
+                    "UPDATE submissions SET status = 'Complete' WHERE submission_id = ?",
+                    (submission_id,),
                 )
         return self.get_candidate(candidate_id)
 

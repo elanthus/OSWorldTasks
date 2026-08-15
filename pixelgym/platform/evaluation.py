@@ -140,6 +140,7 @@ class EvaluationRunner:
         self.submission_id = submission_id
         self.metaflow_pathspec = metaflow_pathspec
         self.price_catalog_version = price_catalog_version
+        self._tracking_run_id: str | None = None
 
     def _tracking_params(self, example_count: int) -> dict[str, Any]:
         return {
@@ -211,6 +212,7 @@ class EvaluationRunner:
         run_id = self.tracking.create_or_recover_run(
             self.submission_id, self._tracking_params(len(examples))
         )
+        self._tracking_run_id = run_id
         self.tracking.link_prompt_to_run(
             run_id, self.policy.prompt_name, self.policy.prompt_version
         )
@@ -335,8 +337,8 @@ class EvaluationRunner:
 
     def verify_raw_artifacts(
         self, raw: list[dict[str, Any]], *, require_complete: bool = True
-    ) -> None:
-        """Verify pinned bytes and request identity before any response is parsed."""
+    ) -> list[dict[str, Any]]:
+        """Return verified envelopes after checking pinned bytes and request identity."""
         examples, overlays = self._inputs()
         by_id = {row["example_id"]: row for row in examples}
         identifiers = [item.get("example_id") for item in raw]
@@ -344,6 +346,7 @@ class EvaluationRunner:
             raise ValueError("raw artifact set is not the canonical complete dataset")
         if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
             raise ValueError("raw artifact set must be canonical, unique, and known")
+        verified: list[dict[str, Any]] = []
         for item in raw:
             identifier = item["example_id"]
             reference = ArtifactRef(**item["reference"])
@@ -367,20 +370,34 @@ class EvaluationRunner:
             )
             if response_digest != envelope.get("response_sha256"):
                 raise ValueError("stored raw response digest mismatch")
+            verified.append(
+                {
+                    "example_id": identifier,
+                    "reference": reference.to_dict(),
+                    "envelope": envelope,
+                }
+            )
+        return verified
 
     def parse_and_score(
-        self, raw: list[dict[str, Any]], *, require_complete: bool = True
+        self, verified: list[dict[str, Any]], *, require_complete: bool = True
     ) -> list[dict[str, Any]]:
         """Parse verified raw envelopes and score them without provider or tracking side effects."""
-        self.verify_raw_artifacts(raw, require_complete=require_complete)
         examples, overlays = self._inputs()
         by_id = {row["example_id"]: row for row in examples}
+        identifiers = [item.get("example_id") for item in verified]
+        if require_complete and identifiers != list(by_id):
+            raise ValueError("verified response set is not the canonical complete dataset")
+        if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
+            raise ValueError("verified response set must be canonical, unique, and known")
         records: list[dict[str, Any]] = []
-        for item in raw:
+        for item in verified:
             example = by_id[item["example_id"]]
             overlay = overlays[example["example_id"]]
             reference = ArtifactRef(**item["reference"])
-            envelope = json.loads(self.store.get_verified(reference))
+            envelope = item["envelope"]
+            if not isinstance(envelope, dict) or envelope.get("example_id") != example["example_id"]:
+                raise ValueError("verified response envelope does not match its example")
             if envelope["request_failure"]:
                 parse_status, parsed, point, mark_id, parse_error = (
                     "request_failure",
@@ -503,16 +520,19 @@ class EvaluationRunner:
         self.tracking.register_policy(summary.run_id, self.policy)
         self.tracking.finalize(summary.run_id, "FINISHED")
 
-    def finalize_failure(self) -> str:
+    def finalize_failure(self, *, run_id: str | None = None) -> str:
         """Recover the parent run and retain an explicit failed terminal status."""
         if self.tracking is None:
             raise RuntimeError("tracking is required to finalize a failed run")
-        examples, _ = self._inputs()
-        run_id = self.tracking.create_or_recover_run(
-            self.submission_id, self._tracking_params(len(examples))
-        )
-        self.tracking.finalize(run_id, "FAILED")
-        return run_id
+        target_run_id = run_id or self._tracking_run_id
+        if target_run_id is None:
+            examples, _ = self._inputs()
+            target_run_id = self.tracking.create_or_recover_run(
+                self.submission_id, self._tracking_params(len(examples))
+            )
+        self._tracking_run_id = target_run_id
+        self.tracking.finalize(target_run_id, "FAILED")
+        return target_run_id
 
     def run(self, *, max_calls: int) -> tuple[RunSummary, Any, list[ArtifactRef]]:
         try:
@@ -533,11 +553,10 @@ class EvaluationRunner:
         records: list[dict[str, Any]] = []
         for shard in shards:
             part = self.evaluate_shard(shard, max_calls=max_calls)
-            self.verify_raw_artifacts(part, require_complete=False)
-            records.extend(self.parse_and_score(part, require_complete=False))
+            verified = self.verify_raw_artifacts(part, require_complete=False)
+            records.extend(self.parse_and_score(verified, require_complete=False))
             raw_parts.append(part)
         raw = self.canonical_join(raw_parts)
-        self.verify_raw_artifacts(raw)
         summary = self.aggregate_metrics(records, run_id=run_id)
         report = self.evaluate_gates(summary)
         references = self.persist_evidence(records, report, raw)

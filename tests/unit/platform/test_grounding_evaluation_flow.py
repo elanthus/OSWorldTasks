@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -345,6 +346,52 @@ def test_tracking_finalization_failure_cannot_leave_an_eligible_candidate(
 
     monkeypatch.setattr(EvaluationRunner, "finalize_success", fail_finalization)
     with pytest.raises(RuntimeError, match="tracking finalization unavailable"):
+        _run_flow(submission_id)
+
+    assert next(iter(tracking.runs.values())).status == "FAILED"
+    assert control.list_submissions()[0]["status"] == "Failed"
+    assert control.list_candidates() == []
+
+
+def test_candidate_registration_failure_finalizes_terminal_state(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, tracking, _, control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+
+    def fail_registration(*args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("candidate registry unavailable")
+
+    monkeypatch.setattr(control, "register_candidate", fail_registration)
+    with pytest.raises(RuntimeError, match="candidate registry unavailable"):
+        _run_flow(submission_id)
+
+    assert next(iter(tracking.runs.values())).status == "FAILED"
+    assert control.list_submissions()[0]["status"] == "Failed"
+    assert control.list_candidates() == []
+
+
+def test_candidate_and_submission_completion_are_atomic(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, tracking, _, control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    control.connection.executescript(
+        """
+        CREATE TRIGGER fail_submission_completion
+        BEFORE UPDATE OF status ON submissions
+        WHEN NEW.status = 'Complete'
+        BEGIN SELECT RAISE(ABORT, 'submission ledger unavailable'); END;
+        """
+    )
+
+    with pytest.raises(sqlite3.IntegrityError, match="submission ledger unavailable"):
         _run_flow(submission_id)
 
     assert next(iter(tracking.runs.values())).status == "FAILED"
