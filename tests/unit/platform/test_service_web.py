@@ -828,3 +828,25 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert 'condition == "marks"' in detail.text
     assert "relabeled" in detail.text
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
+
+
+def test_runs_render_safe_source_provenance_diagnostic(tmp_path: Path, passing_evidence) -> None:
+    from dataclasses import replace
+
+    policy, summary, report = passing_evidence
+    policy = replace(
+        policy,
+        source_provenance_failure_reason="manifest_malformed_json",
+    )
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=replace(report, policy_id=policy.policy_id),
+        artifacts=[],
+        summary=replace(summary, policy_id=policy.policy_id),
+    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    page = client.get("/runs")
+    assert "PROVENANCE: MANIFEST MALFORMED JSON" in page.text
