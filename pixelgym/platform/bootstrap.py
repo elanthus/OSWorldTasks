@@ -8,12 +8,14 @@ import os
 import subprocess
 import sys
 import threading
+from dataclasses import replace
 from pathlib import Path
 
 from fastapi import FastAPI
 
 from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
 from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
@@ -139,28 +141,38 @@ def create_app() -> FastAPI:
     runtime = PolicyRuntime()
     serving_provider = DemoReplayServingProvider(repository_root)
 
-    def activate_runtime(deployment: object) -> None:
-        candidate = control.get_candidate(deployment.candidate_id)
+    smoke_candidate = CandidateServiceSmoke(
+        FrozenSmokeFixture.load(repository_root), serving_provider
+    )
+
+    def activate_runtime(deployment: object, prepared: object) -> None:
+        if not isinstance(prepared, LoadedPolicy):
+            raise TypeError("deployment activation did not receive a loaded candidate runtime")
+        # The only mutation of the traffic runtime happens after the database CAS succeeds.
         runtime.activate(
-            LoadedPolicy(
-                manifest=candidate.policy,
-                deployment_id=deployment.deployment_id,
-                exact_policy_version=candidate.candidate_id,
-                provider=serving_provider,
-                approved=candidate.state.value == "Approved",
-                gate_passed=bool(candidate.gate_report["overall_passed"]),
-            )
+            replace(prepared, deployment_id=deployment.deployment_id)
         )
 
     coordinator = DeploymentCoordinator(
         control=control,
         store=immutable_store,
-        load_and_smoke=lambda policy: policy.condition == "raw",
+        load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
     )
     active, _generation = control.active()
     if active is not None:
-        activate_runtime(active)
+        candidate = control.get_candidate(active.candidate_id)
+        activate_runtime(
+            active,
+            LoadedPolicy(
+                manifest=candidate.policy,
+                deployment_id=active.deployment_id,
+                exact_policy_version=candidate.candidate_id,
+                provider=serving_provider,
+                approved=candidate.state.value == "Approved",
+                gate_passed=bool(candidate.gate_report["overall_passed"]),
+            ),
+        )
 
     scheduled: set[str] = set()
     schedule_lock = threading.Lock()
@@ -188,4 +200,6 @@ def create_app() -> FastAPI:
         ),
     )
     app.mount("/", create_serving_app(runtime))
+    app.state.deployment_coordinator = coordinator
+    app.state.policy_runtime = runtime
     return app

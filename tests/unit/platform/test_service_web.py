@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import dataclasses
 import importlib
 import io
 import re
@@ -11,7 +12,8 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.control_store import ControlStore, TransitionError
+from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
@@ -177,6 +179,135 @@ def test_bootstrap_factory_requires_explicit_csrf_secret(
 
     with pytest.raises(RuntimeError, match="CSRF_SECRET"):
         bootstrap.create_app()
+
+
+def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
+    from pixelgym.platform import bootstrap
+
+    database = tmp_path / "state/control.db"
+    database.parent.mkdir()
+    control = ControlStore(database, reviewer_identity="local-reviewer")
+    control.migrate()
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
+    monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    return bootstrap.create_app(), control
+
+
+def _approved_candidate(control: ControlStore, policy, summary, report):
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+    return candidate
+
+
+def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
+    tmp_path: Path, repository_root: Path, monkeypatch, passing_evidence, policy_factory
+) -> None:
+    app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
+    policy, summary, report = passing_evidence
+    candidate = _approved_candidate(control, policy, summary, report)
+
+    deployed = app.state.deployment_coordinator.deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first deploy"
+    )
+
+    runtime = app.state.policy_runtime.loaded
+    assert runtime is not None
+    assert runtime.manifest.policy_id == candidate.policy.policy_id
+    assert runtime.deployment_id == deployed.deployment_id
+    assert runtime.exact_policy_version == candidate.candidate_id
+    response = TestClient(app).get("/api/v1/policy")
+    assert response.json()["policy_id"] == candidate.policy.policy_id
+    assert response.json()["deployment_id"] == deployed.deployment_id
+
+    rollback_policy = policy_factory(1)
+    rollback_summary = dataclasses.replace(
+        summary, run_id="run-rollback", policy_id=rollback_policy.policy_id
+    )
+    rollback_report = dataclasses.replace(
+        report, run_id="run-rollback", policy_id=rollback_policy.policy_id
+    )
+    rollback_candidate = _approved_candidate(
+        control, rollback_policy, rollback_summary, rollback_report
+    )
+    second = app.state.deployment_coordinator.deploy(
+        rollback_candidate.candidate_id, actor="local-reviewer", reason="second deploy"
+    )
+    restored = app.state.deployment_coordinator.rollback(
+        actor="local-reviewer", reason="deterministic rollback"
+    )
+    runtime = app.state.policy_runtime.loaded
+    assert runtime is not None
+    assert restored.candidate_id == candidate.candidate_id
+    assert runtime.manifest.policy_id == candidate.policy.policy_id
+    assert runtime.deployment_id == restored.deployment_id
+    assert second.deployment_id != restored.deployment_id
+
+
+@pytest.mark.parametrize("failure", ["provider", "invalid-output", "identity"])
+def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime(
+    tmp_path: Path, repository_root: Path, monkeypatch, passing_evidence, failure: str
+) -> None:
+    app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
+    policy, summary, report = passing_evidence
+    first = _approved_candidate(control, policy, summary, report)
+    active = app.state.deployment_coordinator.deploy(
+        first.candidate_id, actor="local-reviewer", reason="first deploy"
+    )
+    # Rebuild a valid, distinct policy instead of mutating identity fields.
+    from pixelgym.platform.policy import build_policy_manifest, prompt_template
+
+    prompt_version = 3 if failure == "identity" else policy.prompt_version
+    prompt = "identity-mismatch fixture" if failure == "identity" else prompt_template(prompt_version) + " second"
+    second_policy = build_policy_manifest(
+        provider=policy.provider,
+        model=policy.model + "-second",
+        prompt_name=policy.prompt_name,
+        prompt_version=prompt_version,
+        prompt=prompt,
+        condition=policy.condition,
+        parameters=policy.parameters,
+        parser_version=policy.parser_version,
+        scorer_version=policy.scorer_version,
+        overlay_version=policy.overlay_version,
+        target_semantics=policy.target_semantics,
+        code_revision=policy.code_revision,
+        dependency_lock_sha256=policy.dependency_lock_sha256,
+    )
+    second_summary = dataclasses.replace(
+        summary, run_id="run-2", policy_id=second_policy.policy_id
+    )
+    second_report = dataclasses.replace(
+        report, run_id="run-2", policy_id=second_policy.policy_id
+    )
+    second = _approved_candidate(control, second_policy, second_summary, second_report)
+    smoke = app.state.deployment_coordinator.load_and_smoke
+    if failure == "provider":
+        smoke.provider = ServingFake(failure="timeout")
+    elif failure == "invalid-output":
+        smoke.provider = ServingFake("not-json")
+
+    with pytest.raises((DeploymentSmokeError, TransitionError)):
+        app.state.deployment_coordinator.deploy(
+            second.candidate_id, actor="local-reviewer", reason="must not activate"
+        )
+
+    assert control.active()[0] == active
+    runtime = app.state.policy_runtime.loaded
+    assert runtime is not None
+    assert runtime.deployment_id == active.deployment_id
+    assert runtime.manifest.policy_id == first.policy.policy_id
 
 
 def _csrf(text: str) -> str:
