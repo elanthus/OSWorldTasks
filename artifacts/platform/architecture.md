@@ -15,3 +15,9 @@ The Compose demo uses PostgreSQL for MLflow metadata and versioned MinIO buckets
 immutable response envelopes. Production should replace MinIO governance retention with an
 approved S3 Object Lock compliance policy, backup, replication, access controls, and recovery
 testing.
+
+Each serving request emits one redacted immutable operational record before a response is released.
+That append has a fixed two-operation immutable-store policy: `put_once` followed by a verified
+read-back of the returned pinned reference. The I/O runs in the serving framework's worker
+threadpool so remote or filesystem latency cannot block the async request loop; an append or
+verification failure fails the request closed with HTTP 503.

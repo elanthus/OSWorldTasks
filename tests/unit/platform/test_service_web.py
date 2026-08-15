@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import dataclasses
 import importlib
 import io
 import re
 import sys
+import threading
 from pathlib import Path
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
@@ -18,15 +21,18 @@ from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.operational_log import (
+    OPERATIONAL_RECORD_SCHEMA_VERSION,
     ImmutableOperationalLog,
     MemoryOperationalLog,
     OperationalLogError,
+    OperationalRecord,
 )
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
     LoadedPolicy,
     PolicyRuntime,
     ProviderFailure,
+    _operational_context,
     create_serving_app,
 )
 from pixelgym.platform.web import create_control_app
@@ -216,6 +222,96 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
     )
     assert response.status_code == 503
     assert response.json() == {"detail": "serving audit storage is unavailable"}
+
+
+def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(policy_factory) -> None:
+    class ContextInspectingLog:
+        def __init__(self, event_loop_thread: int) -> None:
+            self.event_loop_thread = event_loop_thread
+            self.append_thread: int | None = None
+            self.context_request_id: str | None = None
+
+        def append(self, record) -> None:
+            self.append_thread = threading.get_ident()
+            context = _operational_context.get()
+            self.context_request_id = context.request_id if context is not None else None
+
+        def get(self, request_id):
+            return None
+
+    async def exercise() -> tuple[ContextInspectingLog, httpx.Response, int]:
+        event_loop_thread = threading.get_ident()
+        log = ContextInspectingLog(event_loop_thread)
+        app = create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log
+        )
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/ground",
+                json={
+                    "image_base64": base64.b64encode(_image()).decode(),
+                    "media_type": "image/png",
+                    "target": "target",
+                },
+            )
+        return log, response, event_loop_thread
+
+    log, response, event_loop_thread = asyncio.run(exercise())
+    assert response.status_code == 200
+    assert log.append_thread is not None and log.append_thread != event_loop_thread
+    assert log.context_request_id == response.headers["x-pixelgym-request-id"]
+
+
+def test_immutable_operational_log_does_not_serialize_distinct_request_writes(tmp_path: Path) -> None:
+    class RendezvousStore:
+        def __init__(self) -> None:
+            self.delegate = LocalImmutableStore(tmp_path / "immutable")
+            self.put_barrier = threading.Barrier(2)
+
+        def put_once(self, logical_key, data, *, media_type):
+            self.put_barrier.wait(timeout=1)
+            return self.delegate.put_once(logical_key, data, media_type=media_type)
+
+        def get_verified(self, reference):
+            return self.delegate.get_verified(reference)
+
+        def get_reference(self, logical_key):
+            return self.delegate.get_reference(logical_key)
+
+    def record(index: int) -> OperationalRecord:
+        return OperationalRecord(
+            schema_version=OPERATIONAL_RECORD_SCHEMA_VERSION,
+            request_id=f"srv-{index:032x}",
+            occurred_at="2026-08-15T00:00:00+00:00",
+            policy_id="policy",
+            deployment_id="deployment",
+            exact_policy_version="candidate",
+            terminal_status="completed",
+            http_status=200,
+            latency_ms=1.0,
+            provider_latency_ms=None,
+            provider_request_id=None,
+            usage=None,
+        )
+
+    log = ImmutableOperationalLog(RendezvousStore())
+    errors: list[OperationalLogError] = []
+
+    def append(item: OperationalRecord) -> None:
+        try:
+            log.append(item)
+        except OperationalLogError as exc:  # pragma: no cover - assertion below checks this path.
+            errors.append(exc)
+
+    first = threading.Thread(target=append, args=(record(1),))
+    second = threading.Thread(target=append, args=(record(2),))
+    first.start()
+    second.start()
+    first.join(timeout=2)
+    second.join(timeout=2)
+    assert not first.is_alive() and not second.is_alive()
+    assert not errors
 
 
 def test_no_active_deployment_is_operationally_recorded() -> None:
