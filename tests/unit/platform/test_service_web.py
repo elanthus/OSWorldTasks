@@ -5,6 +5,7 @@ import base64
 import dataclasses
 import importlib
 import io
+import logging
 import re
 import sys
 import threading
@@ -237,6 +238,27 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
     )
     assert response.status_code == 503
     assert response.json() == {"detail": "serving audit storage is unavailable"}
+
+
+def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, caplog) -> None:
+    class ExplodingProvider(ServingFake):
+        def ground(self, **request):
+            raise RuntimeError("private provider and request payload")
+
+    with caplog.at_level(logging.ERROR, logger="pixelgym.platform.service"):
+        response = TestClient(
+            create_serving_app(
+                PolicyRuntime(_loaded(policy_factory(), ExplodingProvider())),
+                operational_log=MemoryOperationalLog(),
+            )
+        ).post(
+            "/api/v1/ground",
+            json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+        )
+    assert response.status_code == 500
+    assert "type=RuntimeError" in caplog.text
+    assert "test_service_web.py" in caplog.text
+    assert "private provider and request payload" not in caplog.text
 
 
 def test_cancelled_request_is_audited_without_masking_cancellation(policy_factory) -> None:
