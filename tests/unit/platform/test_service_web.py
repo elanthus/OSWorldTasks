@@ -12,6 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.control_store import ControlStore, TransitionError
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
@@ -444,10 +445,49 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     policy, summary, report = passing_evidence
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
-    first = control.register_candidate(source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[])
+    artifacts = [
+        ArtifactRef(
+            logical_key="raw-responses/a.json",
+            uri="https://evidence.test/raw/a.json",
+            version_id="v1",
+            sha256="a" * 64,
+            size=1,
+            media_type="application/json",
+            retention_status="locked",
+        ),
+        ArtifactRef(
+            logical_key="runs/submission-a/predictions.jsonl",
+            uri="https://evidence.test/runs/a/predictions.jsonl",
+            version_id="v1",
+            sha256="b" * 64,
+            size=1,
+            media_type="application/x-ndjson",
+            retention_status="locked",
+        ),
+        ArtifactRef(
+            logical_key="runs/submission-a/gate-report.json",
+            uri="https://evidence.test/runs/a/gate-report.json",
+            version_id="v1",
+            sha256="c" * 64,
+            size=1,
+            media_type="application/json",
+            retention_status="locked",
+        ),
+    ]
+    first = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=artifacts, summary=summary
+    )
     second_policy = policy_factory(model="another-exact-model")
-    second_report = replace(report, policy_id=second_policy.policy_id, run_id="run-2")
-    second = control.register_candidate(source_run_id="run-2", policy=second_policy, gate_report=second_report, artifacts=[])
+    second_report = replace(
+        report,
+        policy_id=second_policy.policy_id,
+        run_id="run-2",
+        accuracy=replace(report.accuracy, observed=0.9),
+    )
+    second_summary = replace(summary, run_id="run-2", policy_id=second_policy.policy_id, correct_count=90, accuracy=0.9)
+    second = control.register_candidate(
+        source_run_id="run-2", policy=second_policy, gate_report=second_report, artifacts=[], summary=second_summary
+    )
     client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     response = client.get(f"/compare?candidate={first.candidate_id}&candidate={second.candidate_id}")
     assert "COMPATIBLE" in response.text
@@ -455,3 +495,79 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     assert "Provider p95" in response.text
     assert "Accuracy" in response.text
     assert "80.0%" in response.text
+    assert "Δ +10.0 pp" in response.text
+    assert "Raw-response index (1)" in response.text
+    assert "Per-example errors" in response.text
+    assert "Gate report" in response.text
+    assert "MLflow run" in response.text
+    assert "Prompt diff (recorded versions)" in response.text
+    assert "Raw-response index unavailable" in response.text
+
+    raw = client.get(f"/candidates/{first.candidate_id}/evidence/raw-responses")
+    assert raw.status_code == 200
+    assert "raw-responses/a.json" in raw.text
+    assert "https://evidence.test/raw/a.json" in raw.text
+    diff = client.get(f"/compare/prompt-diff?candidate={first.candidate_id}&candidate={second.candidate_id}")
+    assert diff.status_code == 200
+    assert "no separate immutable prompt-diff artifact was recorded" in diff.text
+
+
+def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
+    tmp_path: Path, passing_evidence, policy_factory
+) -> None:
+    _, summary, report = passing_evidence
+    from dataclasses import replace
+
+    policy = policy_factory(
+        model="recorded-real-model",
+        provider="recorded-real-provider",
+        code_state="dirty",
+    )
+    summary = replace(summary, policy_id=policy.policy_id, synthetic_provider=False, dirty_code=True)
+    report = replace(report, policy_id=policy.policy_id)
+
+    incomplete = replace(
+        report,
+        cost_usd_per_100=replace(report.cost_usd_per_100, observed=None, passed=False),
+        completeness=replace(report.completeness, scored=99, unique=99, passed=False),
+        overall_passed=False,
+        reasons=("incomplete and unpriced",),
+    )
+    summary = replace(summary, invalid_count=3, unpriced_call_count=1)
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=incomplete,
+        artifacts=[],
+        summary=summary,
+    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    runs = client.get(
+        f"/runs?provider=recorded-real-provider&lifecycle=GateFailed&dataset={report.dataset_fingerprint.removeprefix('sha256:')[:8]}&code_revision={policy.code_revision[:8]}"
+    )
+    assert runs.status_code == 200
+    assert "REAL PROVIDER" in runs.text
+    assert "INCOMPLETE" in runs.text
+    assert "DIRTY CODE" in runs.text
+    assert "UNPRICED" in runs.text
+    assert "invalid 3" in runs.text
+    assert report.dataset_fingerprint.removeprefix("sha256:")[:12] in runs.text
+    assert policy.code_revision[:12] in runs.text
+    assert "Filter stored runs" in runs.text
+    detail = client.get(f"/candidates/{candidate.candidate_id}")
+    assert "Synthetic fixture disclosure" not in detail.text
+    replay_policy, replay_summary, replay_report = passing_evidence
+    replay = control.register_candidate(
+        source_run_id="replay-run",
+        policy=replay_policy,
+        gate_report=replace(replay_report, run_id="replay-run"),
+        artifacts=[],
+        summary=replace(replay_summary, run_id="replay-run"),
+    )
+    detail = client.get(f"/candidates/{replay.candidate_id}")
+    assert "Synthetic fixture disclosure" in detail.text
+    assert 'condition == "marks"' in detail.text
+    assert "relabeled" in detail.text
+    assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")

@@ -332,6 +332,7 @@ class GroundingEvaluationFlow(FlowSpec):
                 policy=PolicyManifest(**self.policy),
                 gate_report=GateReport.from_dict(self.report),
                 artifacts=[ArtifactRef(**value) for value in self.references],
+                summary=RunSummary(**self.summary),
                 submission_id=self.submission_id,
             )
         except BaseException:
