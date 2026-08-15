@@ -12,6 +12,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from pixelgym.platform.control_store import CandidateRecord
+from pixelgym.platform.operational_log import MemoryOperationalLog
 from pixelgym.platform.service import (
     LoadedPolicy,
     PolicyRuntime,
@@ -82,7 +83,7 @@ class CandidateServiceSmoke:
         )
         # This runtime and app are deliberately separate from the traffic-serving runtime.
         candidate_runtime = PolicyRuntime(loaded)
-        client = TestClient(create_serving_app(candidate_runtime))
+        client = TestClient(create_serving_app(candidate_runtime, operational_log=MemoryOperationalLog()))
         ready = client.get("/health/ready")
         if ready.status_code != 200 or ready.json() != {
             "status": "ready", "policy_id": candidate.policy.policy_id
