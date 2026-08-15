@@ -72,6 +72,18 @@ class ServingFake:
         return self.raw, self.provider_request_id, self.latency_ms, self.usage
 
 
+class BlockingServingFake(ServingFake):
+    def __init__(self) -> None:
+        super().__init__()
+        self.started = threading.Event()
+        self.release = threading.Event()
+
+    def ground(self, **request):
+        self.started.set()
+        assert self.release.wait(timeout=1)
+        return super().ground(**request)
+
+
 def _loaded(policy, provider, *, approved: bool = True, gate_passed: bool = True) -> LoadedPolicy:
     return LoadedPolicy(policy, "deployment-1", "candidate-1", provider, approved, gate_passed)
 
@@ -271,6 +283,38 @@ def test_cancelled_request_is_audited_without_masking_cancellation(policy_factor
         assert record.terminal_status == "cancelled"
         assert record.http_status == 499
         assert _operational_context.get() is None
+
+
+def test_cancelled_in_flight_request_completes_audit_through_base_http_middleware(policy_factory) -> None:
+    async def exercise() -> tuple[MemoryOperationalLog, asyncio.CancelledError]:
+        provider = BlockingServingFake()
+        log = MemoryOperationalLog()
+        app = create_serving_app(PolicyRuntime(_loaded(policy_factory(), provider)), operational_log=log)
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            request = asyncio.create_task(
+                client.post(
+                    "/api/v1/ground",
+                    json={
+                        "image_base64": base64.b64encode(_image()).decode(),
+                        "media_type": "image/png",
+                        "target": "target",
+                    },
+                )
+            )
+            assert await asyncio.to_thread(provider.started.wait, 1)
+            request.cancel()
+            provider.release.set()
+            with pytest.raises(asyncio.CancelledError) as cancelled:
+                await request
+        return log, cancelled.value
+
+    log, cancelled = asyncio.run(exercise())
+    assert isinstance(cancelled, asyncio.CancelledError)
+    assert len(log._records) == 1
+    record = next(iter(log._records.values()))
+    assert record.terminal_status == "cancelled"
+    assert record.http_status == 499
 
 
 def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(policy_factory) -> None:

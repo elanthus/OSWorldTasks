@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Protocol
 
+import anyio
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
@@ -243,7 +244,12 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
                 # out of the event loop.  Starlette propagates the current ContextVars into this
                 # worker call, which preserves request-scoped logging state for implementations
                 # that consume it.
-                await run_in_threadpool(operational_log.append, record)
+                # Starlette's BaseHTTPMiddleware runs under an AnyIO cancellation scope.  Once
+                # disconnected, it can re-deliver cancellation at every await; shield the one
+                # required audit append so it has a chance to finish before propagating the
+                # original cancellation out of this middleware.
+                with anyio.CancelScope(shield=True):
+                    await run_in_threadpool(operational_log.append, record)
             except Exception:  # noqa: BLE001 - an unrecorded serving result is never safe to return.
                 # Never return an apparently successful inference that lacks its required evidence.
                 # During cancellation there is no response to replace; preserving the original
