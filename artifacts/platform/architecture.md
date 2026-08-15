@@ -21,6 +21,9 @@ That append has a fixed two-operation immutable-store policy: `put_once` followe
 read-back of the returned pinned reference. The I/O runs in the serving framework's worker
 threadpool so remote or filesystem latency cannot block the async request loop; an append or
 verification failure fails the request closed with HTTP 503.
+If a client disconnect cancels a request before it has a response, the service records a
+`cancelled` terminal status with conventional operational status 499 when the append completes,
+then propagates the cancellation; an audit failure must not replace that cancellation with a 503.
 
 Packaged source-provenance verification also fails closed. Its persisted policy/run diagnostic and
 operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or

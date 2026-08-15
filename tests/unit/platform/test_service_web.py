@@ -14,6 +14,7 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from starlette.requests import Request
 
 from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.control_store import ControlStore, TransitionError
@@ -224,6 +225,52 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
     )
     assert response.status_code == 503
     assert response.json() == {"detail": "serving audit storage is unavailable"}
+
+
+def test_cancelled_request_is_audited_without_masking_cancellation(policy_factory) -> None:
+    class CapturingLog:
+        def __init__(self, *, fail: bool = False) -> None:
+            self.fail = fail
+            self.records = []
+
+        def append(self, record) -> None:
+            self.records.append(record)
+            if self.fail:
+                raise OperationalLogError("unavailable")
+
+        def get(self, request_id):
+            return None
+
+    def middleware_for(log: CapturingLog):
+        app = create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log)
+        return app.user_middleware[0].kwargs["dispatch"]
+
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/api/v1/ground",
+            "raw_path": b"/api/v1/ground",
+            "query_string": b"",
+            "headers": [(b"host", b"test")],
+            "client": ("test", 1234),
+            "server": ("test", 80),
+        }
+    )
+
+    async def cancelled_call_next(_: Request):
+        raise asyncio.CancelledError()
+
+    for failing_audit in (False, True):
+        log = CapturingLog(fail=failing_audit)
+        with pytest.raises(asyncio.CancelledError):
+            asyncio.run(middleware_for(log)(request, cancelled_call_next))
+        assert len(log.records) == 1
+        record = log.records[0]
+        assert record.terminal_status == "cancelled"
+        assert record.http_status == 499
+        assert _operational_context.get() is None
 
 
 def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(policy_factory) -> None:

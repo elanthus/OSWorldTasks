@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import binascii
 import io
@@ -202,16 +203,25 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
         if runtime.loaded is not None:
             # Validation failures still identify the traffic policy selected at receipt time.
             _set_identity(runtime.loaded)
-        response: Response
+        # A client disconnect can cancel the task while ``call_next`` is still running.  Keep
+        # this optional until a response really exists so the audit path cannot replace that
+        # cancellation with an UnboundLocalError.
+        response: Response | None = None
         try:
             response = await call_next(request)
+        except asyncio.CancelledError:
+            # No HTTP response was produced.  499 is the conventional client-disconnect status
+            # for an operational record; it is never sent because cancellation still propagates.
+            _set_terminal_status("cancelled")
+            raise
         except Exception:  # noqa: BLE001 - convert unknown handler errors into a redacted record.
             _set_terminal_status("internal_error")
             response = JSONResponse(status_code=500, content={"detail": "internal server error"})
         finally:
             latency_ms = (time.perf_counter() - started) * 1000
+            http_status = response.status_code if response is not None else 499
             status = context.terminal_status or (
-                "completed" if 200 <= response.status_code < 300 else "request_rejected"
+                "completed" if 200 <= http_status < 300 else "request_rejected"
             )
             record = OperationalRecord(
                 schema_version=OPERATIONAL_RECORD_SCHEMA_VERSION,
@@ -221,7 +231,7 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
                 deployment_id=context.deployment_id,
                 exact_policy_version=context.exact_policy_version,
                 terminal_status=status,
-                http_status=response.status_code,
+                http_status=http_status,
                 latency_ms=latency_ms,
                 provider_latency_ms=context.provider_latency_ms,
                 provider_request_id=context.provider_request_id,
@@ -236,11 +246,15 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
                 await run_in_threadpool(operational_log.append, record)
             except Exception:  # noqa: BLE001 - an unrecorded serving result is never safe to return.
                 # Never return an apparently successful inference that lacks its required evidence.
-                response = JSONResponse(
-                    status_code=503, content={"detail": "serving audit storage is unavailable"}
-                )
+                # During cancellation there is no response to replace; preserving the original
+                # cancellation is more truthful than turning a disconnected request into a 503.
+                if response is not None:
+                    response = JSONResponse(
+                        status_code=503, content={"detail": "serving audit storage is unavailable"}
+                    )
             finally:
                 _operational_context.reset(token)
+        assert response is not None  # Exceptions (including cancellation) do not reach this line.
         response.headers["X-PixelGym-Request-ID"] = context.request_id
         return response
 
