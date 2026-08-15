@@ -18,6 +18,7 @@ from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
+from pixelgym.platform.operational_log import ImmutableOperationalLog
 from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
 from pixelgym.platform.web import create_control_app
 from pixelgym.serialization import load_jsonl
@@ -199,7 +200,7 @@ def create_app() -> FastAPI:
             "PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"
         ),
     )
-    app.mount("/", create_serving_app(runtime))
+    app.mount("/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store)))
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime
     return app

@@ -59,6 +59,27 @@ python3.12 -m pytest tests/unit/platform/test_dependency_lock.py -q
 This does not change the documented developer setup: `python3.12 -m venv .venv && pip install -e
 ".[dev]"` remains the sole setup step for the fast suite and lint.
 
+## Serving operational records
+
+Every `/api/v1/ground` request creates one immutable, independently retrievable JSON record under
+`serving-operational-records/`. It records the server-generated request ID, UTC receipt time,
+policy/deployment/exact-policy identity when one was loaded, terminal status, HTTP status,
+end-to-end latency, provider request ID and latency, and normalized provider usage. A missing
+usage value is recorded as `null`; an empty usage map remains `{}`. The response includes the same
+server-generated ID in `X-PixelGym-Request-ID`.
+
+Operational records intentionally exclude prompts, targets, screenshots, request bodies, raw
+provider responses, expected answers, credentials, and provider error details. The service rejects
+malformed provider telemetry rather than writing ambiguous evidence. If immutable record writing or
+verification fails, the request is returned as `503` even if inference completed: traffic is not
+allowed to receive an unrecorded result. Consequently an operator should alert on that response and
+restore immutable-store access before retrying.
+
+The Compose stack stores these records in the same versioned MinIO bucket as other platform
+evidence, with the configured 30-day governance retention. Local filesystem runs use the existing
+application put-once adapter and do **not** claim storage-enforced WORM retention. Restrict object
+read access to the operational-review role; records are not exposed through the serving API.
+
 ## Production reference
 
 The immutable adapter pins S3 object version IDs and verifies SHA-256 on every boundary. Use a

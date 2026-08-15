@@ -16,6 +16,12 @@ from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.control_store import ControlStore, TransitionError
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
+from pixelgym.platform.immutable_store import LocalImmutableStore
+from pixelgym.platform.operational_log import (
+    ImmutableOperationalLog,
+    MemoryOperationalLog,
+    OperationalLogError,
+)
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
     LoadedPolicy,
@@ -34,25 +40,40 @@ def _image(width: int = 100, height: int = 80, image_format: str = "PNG") -> byt
 
 
 class ServingFake:
-    def __init__(self, raw: str = '{"x":20,"y":30}', failure: str | None = None) -> None:
+    def __init__(
+        self,
+        raw: str = '{"x":20,"y":30}',
+        failure: str | None = None,
+        *,
+        provider_request_id: object = "request-1",
+        latency_ms: object = 5.0,
+        usage: object = {"input_tokens": 1},
+    ) -> None:
         self.raw = raw
         self.failure = failure
+        self.provider_request_id = provider_request_id
+        self.latency_ms = latency_ms
+        self.usage = usage
         self.calls = 0
 
     def ground(self, **request):
         self.calls += 1
         if self.failure:
             raise ProviderFailure(self.failure, "private provider detail")
-        return self.raw, "request-1", 5.0, {"input_tokens": 1}
+        return self.raw, self.provider_request_id, self.latency_ms, self.usage
 
 
 def _loaded(policy, provider, *, approved: bool = True, gate_passed: bool = True) -> LoadedPolicy:
     return LoadedPolicy(policy, "deployment-1", "candidate-1", provider, approved, gate_passed)
 
 
+def _serving_app(runtime: PolicyRuntime):
+    return create_serving_app(runtime, operational_log=MemoryOperationalLog())
+
+
 def test_serving_contract_and_identity_headers(policy_factory) -> None:
     provider = ServingFake()
-    client = TestClient(create_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
     response = client.post(
         "/api/v1/ground",
         json={
@@ -69,6 +90,143 @@ def test_serving_contract_and_identity_headers(policy_factory) -> None:
     assert provider.calls == 1
 
 
+def test_operational_record_is_redacted_immutable_and_identifies_served_policy(policy_factory) -> None:
+    provider = ServingFake(usage={"input_tokens": 1, "output_tokens": 0})
+    log = MemoryOperationalLog()
+    policy = policy_factory()
+    response = TestClient(
+        create_serving_app(PolicyRuntime(_loaded(policy, provider)), operational_log=log)
+    ).post(
+        "/api/v1/ground",
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "private target must not be retained",
+        },
+    )
+    request_id = response.headers["x-pixelgym-request-id"]
+    record = log.get(request_id)
+    assert record is not None
+    assert record.policy_id == policy.policy_id
+    assert record.deployment_id == "deployment-1"
+    assert record.exact_policy_version == "candidate-1"
+    assert record.terminal_status == "completed"
+    assert record.http_status == 200
+    assert record.provider_request_id == "request-1"
+    assert record.usage == {"input_tokens": 1, "output_tokens": 0}
+    assert record.latency_ms >= 0 and record.occurred_at.endswith("+00:00")
+    assert "target" not in record.to_dict() and "image" not in record.to_dict()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        record.terminal_status = "changed"  # type: ignore[misc]
+
+
+def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_factory) -> None:
+    payload = {
+        "image_base64": base64.b64encode(_image()).decode(),
+        "media_type": "image/png",
+        "target": "target",
+    }
+    no_usage_log = MemoryOperationalLog()
+    no_usage = TestClient(
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake(usage=None))), operational_log=no_usage_log
+        )
+    ).post("/api/v1/ground", json=payload)
+    assert no_usage_log.get(no_usage.headers["x-pixelgym-request-id"]).usage is None
+
+    bad_metadata_log = MemoryOperationalLog()
+    malformed = TestClient(
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake(latency_ms=float("nan")))),
+            operational_log=bad_metadata_log,
+        )
+    ).post("/api/v1/ground", json=payload)
+    malformed_record = bad_metadata_log.get(malformed.headers["x-pixelgym-request-id"])
+    assert malformed.status_code == 502
+    assert malformed_record is not None and malformed_record.terminal_status == "provider_metadata_invalid"
+
+    failed_log = MemoryOperationalLog()
+    failed = TestClient(
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake(failure="timeout"))),
+            operational_log=failed_log,
+        )
+    ).post("/api/v1/ground", json=payload)
+    failed_record = failed_log.get(failed.headers["x-pixelgym-request-id"])
+    assert failed.status_code == 504
+    assert failed_record is not None and failed_record.terminal_status == "provider_timeout"
+
+
+def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
+    log = MemoryOperationalLog()
+    client = TestClient(
+        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake("not-json"))), operational_log=log)
+    )
+    invalid_input = client.post(
+        "/api/v1/ground", json={"image_base64": "bad", "media_type": "image/png", "target": "target"}
+    )
+    rejected = log.get(invalid_input.headers["x-pixelgym-request-id"])
+    assert invalid_input.status_code == 400
+    assert rejected is not None and rejected.terminal_status == "request_rejected"
+
+    invalid_output = client.post(
+        "/api/v1/ground",
+        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+    )
+    record = log.get(invalid_output.headers["x-pixelgym-request-id"])
+    assert invalid_output.status_code == 200
+    assert record is not None and record.terminal_status == "invalid_output"
+
+
+def test_immutable_operational_log_retrieves_verified_record_and_detects_tampering(
+    tmp_path: Path, policy_factory
+) -> None:
+    log = ImmutableOperationalLog(LocalImmutableStore(tmp_path / "immutable"))
+    client = TestClient(
+        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log)
+    )
+    response = client.post(
+        "/api/v1/ground",
+        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+    )
+    request_id = response.headers["x-pixelgym-request-id"]
+    assert log.get(request_id) is not None
+    record_path = tmp_path / "immutable" / "objects" / "serving-operational-records" / f"{request_id}.json"
+    record_path.write_text("{}\n")
+    with pytest.raises(OperationalLogError, match="retrieve verified"):
+        log.get(request_id)
+
+
+def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
+    class FailingLog:
+        def append(self, record) -> None:
+            raise OperationalLogError("unavailable")
+
+        def get(self, request_id):
+            return None
+
+    response = TestClient(
+        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=FailingLog())
+    ).post(
+        "/api/v1/ground",
+        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+    )
+    assert response.status_code == 503
+    assert response.json() == {"detail": "serving audit storage is unavailable"}
+
+
+def test_no_active_deployment_is_operationally_recorded() -> None:
+    log = MemoryOperationalLog()
+    response = TestClient(create_serving_app(PolicyRuntime(), operational_log=log)).post(
+        "/api/v1/ground",
+        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+    )
+    record = log.get(response.headers["x-pixelgym-request-id"])
+    assert response.status_code == 503
+    assert record is not None and record.terminal_status == "no_active_deployment"
+    assert record.policy_id is None and record.deployment_id is None
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -81,14 +239,14 @@ def test_serving_contract_and_identity_headers(policy_factory) -> None:
 )
 def test_invalid_requests_fail_before_provider(policy_factory, payload: dict) -> None:
     provider = ServingFake()
-    client = TestClient(create_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
     assert client.post("/api/v1/ground", json=payload).status_code in {400, 415, 422}
     assert provider.calls == 0
 
 
 def test_bad_dimensions_and_media_mismatch_fail_before_provider(policy_factory) -> None:
     provider = ServingFake()
-    client = TestClient(create_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
     too_wide = client.post(
         "/api/v1/ground",
         json={"image_base64": base64.b64encode(_image(4097, 1)).decode(), "media_type": "image/png", "target": "target"},
@@ -103,13 +261,13 @@ def test_bad_dimensions_and_media_mismatch_fail_before_provider(policy_factory) 
 
 def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory) -> None:
     invalid = ServingFake("not-json")
-    client = TestClient(create_serving_app(PolicyRuntime(_loaded(policy_factory(), invalid))))
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), invalid))))
     payload = {"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"}
     response = client.post("/api/v1/ground", json=payload)
     assert response.status_code == 200 and response.json()["parse_status"] == "invalid"
     assert invalid.calls == 1
     timeout = ServingFake(failure="timeout")
-    response = TestClient(create_serving_app(PolicyRuntime(_loaded(policy_factory(), timeout)))).post("/api/v1/ground", json=payload)
+    response = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), timeout)))).post("/api/v1/ground", json=payload)
     assert response.status_code == 504
     assert "private provider detail" not in response.text
     assert timeout.calls == 1
@@ -118,7 +276,7 @@ def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory)
 def test_unapproved_policy_cannot_become_ready(policy_factory) -> None:
     with pytest.raises(ValueError, match="unapproved"):
         PolicyRuntime(_loaded(policy_factory(), ServingFake(), approved=False))
-    client = TestClient(create_serving_app(PolicyRuntime()))
+    client = TestClient(_serving_app(PolicyRuntime()))
     assert client.get("/health/live").status_code == 200
     assert client.get("/health/ready").status_code == 503
 
