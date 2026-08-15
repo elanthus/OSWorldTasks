@@ -121,7 +121,7 @@ class EvaluationRunner:
         *,
         repository_root: Path,
         store: ImmutableStore,
-        tracking: Tracking,
+        tracking: Tracking | None,
         provider: PlatformProvider,
         policy: PolicyManifest,
         gate_policy: GatePolicy,
@@ -168,10 +168,11 @@ class EvaluationRunner:
             load_jsonl(self.root / "artifacts/grounding-dataset.jsonl"),
             key=lambda row: row["example_id"],
         )
-        overlays = {
-            row["example_id"]: row
-            for row in load_jsonl(self.root / "artifacts/grounding-overlays.jsonl")
-        }
+        overlay_rows = load_jsonl(self.root / "artifacts/grounding-overlays.jsonl")
+        overlay_ids = [row["example_id"] for row in overlay_rows]
+        if len(overlay_ids) != len(set(overlay_ids)):
+            raise ValueError("overlay example IDs must be unique")
+        overlays = {row["example_id"]: row for row in overlay_rows}
         example_ids = [row["example_id"] for row in examples]
         if len(example_ids) != len(set(example_ids)):
             raise ValueError("dataset example IDs must be unique")
@@ -196,6 +197,8 @@ class EvaluationRunner:
         ]
 
     def create_or_recover_run(self, *, max_calls: int) -> str:
+        if self.tracking is None:
+            raise RuntimeError("tracking is required to create or recover a run")
         examples, _ = self._inputs()
         if max_calls < len(examples):
             raise RuntimeError("evaluation call cap is below the frozen example count")
@@ -494,12 +497,16 @@ class EvaluationRunner:
         report: GateReport,
         references: list[ArtifactRef],
     ) -> None:
+        if self.tracking is None:
+            raise RuntimeError("tracking is required to finalize a successful run")
         self.tracking.log_summary(summary.run_id, summary, report, references)
         self.tracking.register_policy(summary.run_id, self.policy)
         self.tracking.finalize(summary.run_id, "FINISHED")
 
     def finalize_failure(self) -> str:
         """Recover the parent run and retain an explicit failed terminal status."""
+        if self.tracking is None:
+            raise RuntimeError("tracking is required to finalize a failed run")
         examples, _ = self._inputs()
         run_id = self.tracking.create_or_recover_run(
             self.submission_id, self._tracking_params(len(examples))

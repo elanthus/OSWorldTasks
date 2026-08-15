@@ -130,11 +130,11 @@ def _run_flow(
     GroundingEvaluationFlow.evaluate_gates(joined)
     if stop_after == "evaluate_gates":
         raise RuntimeError("fixture interruption")
-    GroundingEvaluationFlow.register_candidate(joined)
-    if stop_after == "register_candidate":
-        raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.finalize_mlflow_run(joined)
     if stop_after == "finalize_mlflow_run":
+        raise RuntimeError("fixture interruption")
+    GroundingEvaluationFlow.register_candidate(joined)
+    if stop_after == "register_candidate":
         raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.end(joined)
     return joined
@@ -305,6 +305,46 @@ def test_flow_failure_finalizes_partial_run_and_never_registers_candidate(
         _run_flow(submission_id)
 
     assert len(provider.call_ids) == 100
+    assert next(iter(tracking.runs.values())).status == "FAILED"
+    assert control.list_submissions()[0]["status"] == "Failed"
+    assert control.list_candidates() == []
+
+
+def test_offline_flow_steps_do_not_construct_tracking_clients(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, tracking, _, _, submission_id = _configure(monkeypatch, repository_root, tmp_path)
+    tracking_constructions = 0
+
+    def count_tracking() -> InMemoryTracking:
+        nonlocal tracking_constructions
+        tracking_constructions += 1
+        return tracking
+
+    monkeypatch.setattr(flow_module, "_tracking", count_tracking)
+    _run_flow(submission_id)
+
+    assert tracking_constructions == 2
+
+
+def test_tracking_finalization_failure_cannot_leave_an_eligible_candidate(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, tracking, _, control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+
+    def fail_finalization(*args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("tracking finalization unavailable")
+
+    monkeypatch.setattr(EvaluationRunner, "finalize_success", fail_finalization)
+    with pytest.raises(RuntimeError, match="tracking finalization unavailable"):
+        _run_flow(submission_id)
+
     assert next(iter(tracking.runs.values())).status == "FAILED"
     assert control.list_submissions()[0]["status"] == "Failed"
     assert control.list_candidates() == []

@@ -69,11 +69,11 @@ def _provider(flow: object) -> ScriptedReplayProvider:
     )
 
 
-def _runner(flow: object) -> EvaluationRunner:
+def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
     return EvaluationRunner(
         repository_root=_root(),
         store=_store(),
-        tracking=_tracking(),
+        tracking=_tracking() if with_tracking else None,
         provider=_provider(flow),
         policy=PolicyManifest(**flow.policy),
         gate_policy=GatePolicy(**flow.gate_policy),
@@ -86,7 +86,7 @@ def _runner(flow: object) -> EvaluationRunner:
 def _record_failure(flow: object) -> None:
     """Best-effort terminal evidence without hiding the step's original exception."""
     with contextlib.suppress(Exception):
-        flow.mlflow_run_id = _runner(flow).finalize_failure()
+        flow.mlflow_run_id = _runner(flow, with_tracking=True).finalize_failure()
     with contextlib.suppress(Exception):
         _control().mark_submission(flow.submission_id, "Failed")
 
@@ -166,7 +166,9 @@ class GroundingEvaluationFlow(FlowSpec):
     @_finalize_on_error
     def create_or_recover_mlflow_run(self) -> None:
         self.metaflow_pathspec = f"{current.flow_name}/{current.run_id}"
-        self.mlflow_run_id = _runner(self).create_or_recover_run(max_calls=self.maximum_calls)
+        self.mlflow_run_id = _runner(self, with_tracking=True).create_or_recover_run(
+            max_calls=self.maximum_calls
+        )
         _control().link_run(
             self.submission_id,
             metaflow_pathspec=self.metaflow_pathspec,
@@ -249,10 +251,19 @@ class GroundingEvaluationFlow(FlowSpec):
                 self.raw_responses,
             )
         ]
-        self.next(self.register_candidate)
+        self.next(self.finalize_mlflow_run)
 
     @step
     @_finalize_on_error
+    def finalize_mlflow_run(self) -> None:
+        _runner(self, with_tracking=True).finalize_success(
+            RunSummary(**self.summary),
+            GateReport.from_dict(self.report),
+            [ArtifactRef(**value) for value in self.references],
+        )
+        self.next(self.register_candidate)
+
+    @step
     def register_candidate(self) -> None:
         record = _control().register_candidate(
             source_run_id=self.summary["run_id"],
@@ -261,20 +272,9 @@ class GroundingEvaluationFlow(FlowSpec):
             artifacts=[ArtifactRef(**value) for value in self.references],
         )
         self.candidate_id = record.candidate_id
-        self.next(self.finalize_mlflow_run)
-
-    @step
-    @_finalize_on_error
-    def finalize_mlflow_run(self) -> None:
-        _runner(self).finalize_success(
-            RunSummary(**self.summary),
-            GateReport.from_dict(self.report),
-            [ArtifactRef(**value) for value in self.references],
-        )
         self.next(self.end)
 
     @step
-    @_finalize_on_error
     def end(self) -> None:
         _control().mark_submission(self.submission_id, "Complete")
 

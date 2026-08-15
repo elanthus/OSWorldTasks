@@ -174,5 +174,30 @@ def test_call_cap_is_enforced_before_provider_execution(
     assert provider.call_ids == []
 
 
+def test_duplicate_overlay_example_ids_are_rejected(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    artifact_dir = tmp_path / "artifacts"
+    artifact_dir.mkdir()
+    dataset_line = (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()[0]
+    overlay_line = (repository_root / "artifacts/grounding-overlays.jsonl").read_text().splitlines()[0]
+    (artifact_dir / "grounding-dataset.jsonl").write_text(dataset_line + "\n")
+    (artifact_dir / "grounding-overlays.jsonl").write_text(overlay_line + "\n" + overlay_line + "\n")
+    runner = EvaluationRunner(
+        repository_root=tmp_path,
+        store=LocalImmutableStore(tmp_path / "immutable"),
+        tracking=None,
+        provider=InvalidProvider(),
+        policy=policy_factory(2),
+        gate_policy=gate_policy,
+        dataset_fingerprint=gate_policy.required_dataset_fingerprint,
+        submission_id="submission-duplicate-overlay",
+        metaflow_pathspec="GroundingEvaluationFlow/duplicate-overlay",
+    )
+
+    with pytest.raises(ValueError, match="overlay example IDs must be unique"):
+        runner.build_shards(shard_size=1, max_calls=1)
+
+
 def test_frozen_p95_method_has_explicit_boundary() -> None:
     assert percentile_r7([0, 10, 20, 30, 40], 0.95) == pytest.approx(38.0)
