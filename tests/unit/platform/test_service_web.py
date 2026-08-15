@@ -243,8 +243,9 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
 def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, caplog) -> None:
     class ExplodingProvider(ServingFake):
         def ground(self, **request):
-            raise RuntimeError("private provider and request payload")
+            raise RuntimeError(f"private provider and request payload: {request['target']}")
 
+    secret_target = "redaction-contract-token-7f0f"
     with caplog.at_level(logging.ERROR, logger="pixelgym.platform.service"):
         response = TestClient(
             create_serving_app(
@@ -253,12 +254,19 @@ def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, capl
             )
         ).post(
             "/api/v1/ground",
-            json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+            json={
+                "image_base64": base64.b64encode(_image()).decode(),
+                "media_type": "image/png",
+                "target": secret_target,
+            },
         )
     assert response.status_code == 500
+    assert response.json() == {"detail": "internal server error"}
+    assert secret_target not in response.text
     assert "type=RuntimeError" in caplog.text
     assert "test_service_web.py" in caplog.text
     assert "private provider and request payload" not in caplog.text
+    assert secret_target not in caplog.text
 
 
 def test_cancelled_request_is_audited_without_masking_cancellation(policy_factory) -> None:
