@@ -28,6 +28,9 @@ The service deliberately does not impose a response timeout on this synchronous 
 racing a timeout against a non-cancellable write could leave a late record claiming completed/200
 after a client received 503. A finite cancellation-latency bound requires a future cancellable or
 transactional storage commit protocol; it is not approximated at the expense of truthful evidence.
+Serving audit I/O uses a dedicated, bounded worker limiter rather than the shared request-worker
+pool. S3 adapters configure finite connect/read operation deadlines; local adapters retain atomic
+filesystem commits. A request remains fail-closed until its record is durably verified.
 
 Packaged source-provenance verification also fails closed. Its persisted policy/run diagnostic and
 operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or

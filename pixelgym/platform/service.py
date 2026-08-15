@@ -22,7 +22,6 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field
-from starlette.concurrency import run_in_threadpool
 
 from pixelgym.grounding.evaluation import parse_prediction
 from pixelgym.platform.contracts import PolicyManifest
@@ -191,9 +190,20 @@ def _decode_and_validate(request: GroundRequest) -> tuple[bytes, int, int]:
     return data, width, height
 
 
-def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLog) -> FastAPI:
+def create_serving_app(
+    runtime: PolicyRuntime,
+    *,
+    operational_log: OperationalLog,
+    operational_audit_concurrency: int = 4,
+) -> FastAPI:
+    if operational_audit_concurrency <= 0:
+        raise ValueError("operational audit concurrency must be positive")
     app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None)
     app.state.operational_log = operational_log
+    # Audit I/O may wait for its configured storage deadline, but it must not occupy Starlette's
+    # shared worker capacity while it does. Waiting here preserves the rule that no response is
+    # released before its immutable evidence is verified.
+    audit_limiter = anyio.CapacityLimiter(operational_audit_concurrency)
 
     @app.middleware("http")
     async def record_ground_operation(request: Request, call_next):
@@ -264,7 +274,9 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
                 # required audit append so it has a chance to finish before propagating the
                 # original cancellation out of this middleware.
                 with anyio.CancelScope(shield=True):
-                    await run_in_threadpool(operational_log.append, record)
+                    await anyio.to_thread.run_sync(
+                        operational_log.append, record, limiter=audit_limiter
+                    )
             except Exception:  # noqa: BLE001 - an unrecorded serving result is never safe to return.
                 # Never return an apparently successful inference that lacks its required evidence.
                 # During cancellation there is no response to replace; preserving the original
