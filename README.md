@@ -113,15 +113,20 @@ synthetic governance fixtures, not model-quality evidence. It requires Docker an
 provider calls. From the repository root:
 
 ```bash
-docker compose --env-file deploy/.env.example -f deploy/compose.yaml up --build --wait
+python3.12 scripts/platform_compose.py up --build --wait
 ```
 
 Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
 stack while retaining its local evidence with:
 
 ```bash
-docker compose --env-file deploy/.env.example -f deploy/compose.yaml down
+python3.12 scripts/platform_compose.py down
 ```
+
+Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
+derives and bind-mounts the source-provenance file required to verify the packaged source. If a
+previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
+the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
 
 The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
 limitations are available in the [demo script](artifacts/platform/demo-script.md),

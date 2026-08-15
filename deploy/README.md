@@ -16,6 +16,9 @@ checkout and matching packaged source; do not paste a revision into an environme
 missing, malformed, or mismatched provenance is explicitly recorded and fails a policy with
 `dirty_code_allowed: false`. Local non-gate experiments can use a policy with
 `dirty_code_allowed: true`; that fallback remains visibly dirty/unverifiable in run evidence.
+Do not invoke `docker compose` against `deploy/compose.yaml` directly: Docker can create a
+directory at the file bind-mount path, allowing a stack to start without verifiable source
+provenance. The wrapper refuses that condition before an `up` command reaches Docker.
 Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Both host
 ports are configurable in `.env.example`.
 
@@ -27,6 +30,25 @@ python3.12 scripts/platform_compose.py down
 
 To remove local demo volumes, the human operator must explicitly add `--volumes`. That operation
 deletes local evidence and is intentionally not part of the normal workflow.
+
+## Recover a directory created by a direct Compose invocation
+
+If the wrapper reports that `.cache/platform/source-provenance.json` is a directory, first stop
+the stack through the wrapper; `down` deliberately works without rewriting provenance:
+
+```bash
+python3.12 scripts/platform_compose.py down
+```
+
+Inspect the path. Only if it is an empty directory created by Docker, remove that empty directory
+with the non-recursive command below, then rerun the documented `up` command. `rmdir` refuses to
+remove any directory that contains data.
+
+```bash
+ls -ld .cache/platform/source-provenance.json
+rmdir .cache/platform/source-provenance.json
+python3.12 scripts/platform_compose.py up --build --wait
+```
 
 ## Platform dependency lock
 
