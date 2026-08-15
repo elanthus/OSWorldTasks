@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from pixelgym.platform.source_provenance import load_packaged_source_provenance
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT_PATH = REPOSITORY_ROOT / "scripts/platform_compose.py"
 
@@ -70,6 +72,25 @@ def test_prepare_source_provenance_refuses_a_directory(script, tmp_path, monkeyp
         script.prepare_source_provenance(tmp_path)
 
     assert f"rmdir {path}" in str(exc_info.value)
+
+
+def test_documented_wrapper_generates_a_verifiable_manifest(script, tmp_path, monkeypatch) -> None:
+    """The only documented startup entrypoint writes the manifest it bind-mounts."""
+    monkeypatch.setattr(script, "PROVENANCE_RELATIVE_PATH", tmp_path / "source-provenance.json")
+
+    manifest = script.prepare_source_provenance(REPOSITORY_ROOT)
+
+    provenance = load_packaged_source_provenance(REPOSITORY_ROOT, manifest)
+    assert provenance.state in {"clean", "dirty"}
+    assert provenance.failure_reason is None
+
+
+def test_no_legacy_provenance_generator_can_drift_from_the_compose_wrapper() -> None:
+    legacy_generator = REPOSITORY_ROOT / "scripts/prepare_platform_source_provenance.py"
+
+    assert not legacy_generator.exists()
+    for documentation in (REPOSITORY_ROOT / "README.md", REPOSITORY_ROOT / "deploy/README.md"):
+        assert "prepare_platform_source_provenance.py" not in documentation.read_text()
 
 
 def test_down_skips_provenance_so_directory_trap_can_be_recovered(script, tmp_path, monkeypatch) -> None:
