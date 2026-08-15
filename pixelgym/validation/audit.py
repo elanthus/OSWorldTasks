@@ -24,9 +24,9 @@ def validate_reward_hacking(
     reward: dict[str, Any],
     spaces: dict[str, Any],
     *,
+    repository_root: Path,
     real_reset: dict[str, Any] | None = None,
     browser_boundary: dict[str, Any] | None = None,
-    repository_root: Path | None = None,
 ) -> dict[str, Any]:
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
@@ -61,10 +61,8 @@ def validate_reward_hacking(
     stale = _record_by_name(reward, "wrong-or-stale-task-id-fixture")
     duplicate = _record_by_name(reward, "duplicate-submit-after-success")
     browser_evidence_passed = browser_boundary_evidence_passed(browser_boundary)
-    browser_source_hashes_match = (
-        browser_boundary_source_hashes_match(browser_boundary, repository_root)
-        if repository_root is not None
-        else browser_evidence_passed
+    browser_source_hashes_match = browser_boundary_source_hashes_match(
+        browser_boundary, repository_root
     )
     if browser_evidence_passed:
         browser_version = browser_boundary["browser"]["version"]
@@ -73,12 +71,11 @@ def validate_reward_hacking(
             "privileged submission, preserved the settled validation message, and the host-side "
             "evaluator derived reward 0."
         )
-        if repository_root is not None:
-            browser_evidence += (
-                " Stored source hashes match the checked-out implementation."
-                if browser_source_hashes_match
-                else " Stored source hashes do not match the checked-out implementation."
-            )
+        browser_evidence += (
+            " Stored source hashes match the checked-out implementation."
+            if browser_source_hashes_match
+            else " Stored source hashes do not match the checked-out implementation."
+        )
     else:
         browser_evidence = "Browser-boundary evidence is missing or failed schema validation."
 

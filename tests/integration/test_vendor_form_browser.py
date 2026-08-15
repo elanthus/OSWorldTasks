@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.capture import local_capture_server
+from pixelgym.tasks.vendor_form.browser_contract import READY_SELECTOR, local_vendor_form_server
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 from pixelgym.validation.browser_boundary import (
     browser_boundary_evidence_passed,
@@ -21,7 +21,6 @@ from pixelgym.validation.browser_boundary import (
     validate_browser_boundary,
 )
 
-_READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
 _INCOMPLETE_RECORDING_FAILED_MESSAGE = (
     f"{INCOMPLETE_SUBMISSION_MESSAGE} Submission attempt was not recorded."
 )
@@ -62,13 +61,13 @@ def test_incomplete_browser_submit_is_recorded_and_rejected_by_evaluator() -> No
 def test_incomplete_browser_submit_reports_when_attempt_was_not_recorded() -> None:
     playwright_api = pytest.importorskip("playwright.sync_api")
 
-    with local_capture_server() as base_url, playwright_api.sync_playwright() as playwright:
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
         _json_request(f"{base_url}/api/reset", payload={"seed": 7})
         browser = playwright.chromium.launch(headless=True)
         try:
             page = browser.new_page(viewport={"width": 1024, "height": 768})
             page.goto(base_url)
-            page.locator(_READY_SELECTOR).wait_for(state="attached")
+            page.locator(READY_SELECTOR).wait_for(state="attached")
             page.evaluate("() => { document.getElementById('task_id').value = 'vf-stale'; }")
 
             with page.expect_response(

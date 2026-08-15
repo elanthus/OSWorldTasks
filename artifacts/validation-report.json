@@ -112,7 +112,8 @@
         "pixelgym/evaluator.py": "21a82f69343d37f6df43b9b3e173d8c5c95c742bfdb4c2e508733f1ba71ab271",
         "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
         "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
-        "pixelgym/validation/browser_boundary.py": "a73018e927ccf49f9e8cb5e334123f3fa43548a6f02428f6852039352429124c"
+        "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+        "pixelgym/validation/browser_boundary.py": "a09f2397f912ba4d16f19edac4a4bfd9b11eebf296b86eb902629f4342200fa6"
       },
       "summary": {
         "check_count": 10,
@@ -4426,7 +4427,8 @@
           "pixelgym/evaluator.py": "21a82f69343d37f6df43b9b3e173d8c5c95c742bfdb4c2e508733f1ba71ab271",
           "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
           "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
-          "pixelgym/validation/browser_boundary.py": "a73018e927ccf49f9e8cb5e334123f3fa43548a6f02428f6852039352429124c"
+          "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+          "pixelgym/validation/browser_boundary.py": "a09f2397f912ba4d16f19edac4a4bfd9b11eebf296b86eb902629f4342200fa6"
         },
         "summary": {
           "check_count": 10,
@@ -7927,7 +7929,7 @@
     }
   },
   "gate_disclaimer": "Automated validation status is not the D2.11 human acceptance verdict.",
-  "generated_at": "2026-08-14T23:48:24.046495+00:00",
+  "generated_at": "2026-08-15T00:16:51.938344+00:00",
   "human_gate": {
     "day3_authorized": true,
     "declaration": "Day 2 PASS; Day 3 authorized.",

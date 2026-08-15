@@ -9,9 +9,13 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.evaluator import evaluate
-from pixelgym.grounding.capture import _BROWSER_ARGS, _READY_SELECTOR, local_capture_server
 from pixelgym.grounding.schema import CSS_HEIGHT, CSS_WIDTH, DEVICE_SCALE_FACTOR
 from pixelgym.task_spec import Submission, TaskSpec
+from pixelgym.tasks.vendor_form.browser_contract import (
+    BROWSER_ARGS,
+    READY_SELECTOR,
+    local_vendor_form_server,
+)
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 BROWSER_BOUNDARY_SCHEMA_VERSION = "pixelgym-browser-boundary-v1"
@@ -21,6 +25,7 @@ SOURCE_PATHS = (
     "pixelgym/validation/browser_boundary.py",
     "pixelgym/tasks/vendor_form/app/static/app.js",
     "pixelgym/tasks/vendor_form/app/server.py",
+    "pixelgym/tasks/vendor_form/browser_contract.py",
     "pixelgym/evaluator.py",
     "pixelgym/env.py",
 )
@@ -165,10 +170,10 @@ def validate_browser_boundary(repository_root: Path, *, seed: int = 7) -> dict[s
     except ImportError as exc:  # pragma: no cover - depends on optional browser tooling
         raise RuntimeError('browser validation requires `pip install -e ".[dev]"`') from exc
 
-    with local_capture_server() as base_url, sync_playwright() as playwright:
+    with local_vendor_form_server() as base_url, sync_playwright() as playwright:
         reset = _json_request(f"{base_url}/api/reset", payload={"seed": seed})
         chromium_executable = Path(playwright.chromium.executable_path)
-        launch_options: dict[str, Any] = {"headless": True, "args": list(_BROWSER_ARGS)}
+        launch_options: dict[str, Any] = {"headless": True, "args": list(BROWSER_ARGS)}
         if chromium_executable.is_file():
             launch_options["executable_path"] = str(chromium_executable)
         try:
@@ -189,7 +194,7 @@ def validate_browser_boundary(repository_root: Path, *, seed: int = 7) -> dict[s
         page = context.new_page()
         try:
             page.goto(base_url, wait_until="networkidle")
-            page.locator(_READY_SELECTOR).wait_for(state="attached")
+            page.locator(READY_SELECTOR).wait_for(state="attached")
             with page.expect_response(
                 lambda response: response.url.endswith("/api/submit")
             ) as submission_response:
@@ -245,7 +250,7 @@ def validate_browser_boundary(repository_root: Path, *, seed: int = 7) -> dict[s
         "browser": {
             "engine": "chromium",
             "version": browser.version,
-            "args": list(_BROWSER_ARGS),
+            "args": list(BROWSER_ARGS),
             "viewport": [CSS_WIDTH, CSS_HEIGHT],
             "device_scale_factor": DEVICE_SCALE_FACTOR,
         },

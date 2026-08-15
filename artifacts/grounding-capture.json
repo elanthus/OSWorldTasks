@@ -31,7 +31,7 @@
     "validation_error": 20
   },
   "source_sha256": {
-    "pixelgym/grounding/capture.py": "e232bca97e247881976bffdfd9a7e6b62b56dcd2e8e6d1fc0b74d24e1fc25df1",
+    "pixelgym/grounding/capture.py": "daaf3c680f95d7cf4f93864e377161db47e2dc4477e191f78012689c409ee04b",
     "pixelgym/grounding/schema.py": "d0d27cad323395516d610fa414683a111519d26cd6579e76204dc3a39be59c8e",
     "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
     "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
@@ -40,6 +40,7 @@
     "pixelgym/tasks/vendor_form/app/static/fonts/LICENSE-DejaVu.txt": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
     "pixelgym/tasks/vendor_form/app/static/index.html": "d36a455921165eae906d3bf052c14e211d75c72d97ff29d4e0d165af1f10f5cc",
     "pixelgym/tasks/vendor_form/app/static/style.css": "ba5de15a817200d9fa1c0bb4a15f9d739fc2ea15668d46d4e9d4433822ebb7ec",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
     "pixelgym/tasks/vendor_form/ui.py": "ac46077e46f78f35c56719057f0c26d850e65c69c473debc4f3573f7216db5ce"
   },
   "summary_provenance": {

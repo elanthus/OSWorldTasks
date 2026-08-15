@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from pixelgym.validation.audit import validate_reward_hacking
 from pixelgym.validation.browser_boundary import (
     BROWSER_BOUNDARY_SCHEMA_VERSION,
@@ -140,3 +142,13 @@ def test_reward_audit_requires_current_browser_boundary_evidence() -> None:
     )
     assert empty_submit["evidence_passed"] is False
     assert stale["summary"]["passed"] is False
+
+
+def test_reward_audit_requires_repository_root_for_source_verification() -> None:
+    repository_root = Path(__file__).resolve().parents[2]
+    raw = repository_root / "artifacts/day-2/raw"
+    reward = json.loads((raw / "reward-timing.json").read_text(encoding="utf-8"))
+    spaces = json.loads((raw / "space-integrity.json").read_text(encoding="utf-8"))
+
+    with pytest.raises(TypeError, match="repository_root"):
+        validate_reward_hacking(reward, spaces)  # type: ignore[call-arg]
