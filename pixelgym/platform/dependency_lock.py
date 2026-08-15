@@ -19,6 +19,7 @@ PLATFORM_LOCK_RELATIVE_PATH = Path("requirements/platform-py312.lock")
 _INPUT_DIGEST_PREFIX = "# pixelgym-platform-input-sha256: "
 _PIN = re.compile(r"^([A-Za-z0-9_.-]+)==([^\s\\;]+)(?:\s*;[^\\]+)?\s*(?:\\)?$")
 _HASH = re.compile(r"^\s+--hash=sha256:[0-9a-f]{64}(?:\s+\\)?$")
+_EXACT_DECLARATION = re.compile(r"^\s*([A-Za-z0-9_.-]+)(?:\[[^]]+\])?==([^\s;]+)")
 
 
 def _normalized_name(requirement: str) -> str:
@@ -26,6 +27,14 @@ def _normalized_name(requirement: str) -> str:
     if match is None:
         raise ValueError(f"unsupported project dependency declaration: {requirement!r}")
     return re.sub(r"[-_.]+", "-", match.group(1)).lower()
+
+
+def _declared_exact_pins(requirements: list[str]) -> dict[str, str]:
+    return {
+        re.sub(r"[-_.]+", "-", match.group(1)).lower(): match.group(2)
+        for requirement in requirements
+        if (match := _EXACT_DECLARATION.match(requirement)) is not None
+    }
 
 
 def platform_input_sha256(pyproject_path: Path) -> str:
@@ -63,14 +72,14 @@ def verify_platform_lock(repository_root: Path, lock_path: Path | None = None) -
     if declared != expected:
         raise ValueError("platform dependency lock is stale or has an invalid platform-input digest")
 
-    pins: set[str] = set()
+    pins: dict[str, str] = {}
     index = 0
     while index < len(lines):
         match = _PIN.match(lines[index])
         if match is None:
             index += 1
             continue
-        pins.add(re.sub(r"[-_.]+", "-", match.group(1)).lower())
+        pins[re.sub(r"[-_.]+", "-", match.group(1)).lower()] = match.group(2)
         hashes = 0
         index += 1
         while index < len(lines) and lines[index].startswith((" ", "\t")):
@@ -85,9 +94,22 @@ def verify_platform_lock(repository_root: Path, lock_path: Path | None = None) -
     project = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))["project"]
     required = {_normalized_name(item) for item in project["dependencies"]}
     required.update(_normalized_name(item) for item in project["optional-dependencies"]["platform"])
-    missing = sorted(required - pins)
+    missing = sorted(required - pins.keys())
     if missing:
         raise ValueError("platform dependency lock omits declared runtime dependencies: " + ", ".join(missing))
+    exact_pins = _declared_exact_pins(
+        [*project["dependencies"], *project["optional-dependencies"]["platform"]]
+    )
+    mismatched = sorted(
+        f"{name}=={expected} (lock has {pins[name]})"
+        for name, expected in exact_pins.items()
+        if pins.get(name) != expected
+    )
+    if mismatched:
+        raise ValueError(
+            "platform dependency lock versions do not match exact declared dependencies: "
+            + ", ".join(mismatched)
+        )
 
 
 def main() -> None:

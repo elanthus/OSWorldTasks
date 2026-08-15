@@ -92,3 +92,18 @@ def test_inconsistent_lock_omitting_declared_dependency_fails_closed(tmp_path: P
     _write_lock(tmp_path, ["base-lib==1.0 \\", "    --hash=sha256:" + "a" * 64])
     with pytest.raises(ValueError, match="omits declared runtime dependencies: platform-lib"):
         verify_platform_lock(tmp_path)
+
+
+def test_lock_version_must_match_an_exact_declared_dependency(tmp_path: Path) -> None:
+    _write_project(tmp_path)
+    _write_lock(
+        tmp_path,
+        [
+            "base-lib==1.0 \\",
+            "    --hash=sha256:" + "a" * 64,
+            "platform-lib==9.0 \\",
+            "    --hash=sha256:" + "b" * 64,
+        ],
+    )
+    with pytest.raises(ValueError, match="versions do not match exact declared dependencies"):
+        verify_platform_lock(tmp_path)
