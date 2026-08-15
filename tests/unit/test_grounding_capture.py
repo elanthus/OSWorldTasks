@@ -124,6 +124,7 @@ def test_capture_summary_can_be_refreshed_without_recapturing_images(tmp_path: P
                 "browser_engine": "chromium",
                 "browser_version": "test-browser",
                 "browser_args": ["--test-flag"],
+                "source_sha256": {"app.js": "test-sha256"},
             }
         ),
         encoding="utf-8",
@@ -145,6 +146,7 @@ def test_capture_summary_can_be_refreshed_without_recapturing_images(tmp_path: P
         "mode": "offline_revalidation_of_frozen_capture",
         "browser_recapture_performed": False,
     }
+    assert summary["source_sha256"] == {"app.js": "test-sha256"}
     assert json.loads(capture_path.read_text()) == summary
 
 

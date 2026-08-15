@@ -2,19 +2,13 @@
 
 from __future__ import annotations
 
-import contextlib
 import hashlib
 import json
-import socket
-import threading
-import time
 import urllib.request
 from collections import Counter
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-import uvicorn
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.schema import (
@@ -34,22 +28,28 @@ from pixelgym.grounding.schema import (
     validate_example,
 )
 from pixelgym.serialization import canonical_json_text, load_jsonl
-from pixelgym.tasks.vendor_form.app.server import create_app
+from pixelgym.tasks.vendor_form.browser_contract import (
+    BROWSER_ARGS,
+    READY_SELECTOR,
+    local_vendor_form_server,
+)
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
-_READY_SELECTOR = 'body[data-pixelgym-ready="true"]'
-CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v2"
+CAPTURE_SUMMARY_SCHEMA_VERSION = "pixelgym-grounding-capture-summary-v3"
 # app.js cannot import this shared Python constant, so it carries the same text with a matching
 # synchronization comment. Capture asserts the settled browser message before retaining a record.
 _VALIDATION_MESSAGE = INCOMPLETE_SUBMISSION_MESSAGE
-_BROWSER_ARGS = (
-    "--disable-font-subpixel-positioning",
-    "--disable-gpu",
-    "--disable-lcd-text",
-    "--disable-skia-runtime-opts",
-    "--force-color-profile=srgb",
-    "--hide-scrollbars",
+_CAPTURE_SOURCE_PATHS = (
+    "pixelgym/grounding/capture.py",
+    "pixelgym/grounding/schema.py",
+    "pixelgym/tasks/vendor_form/app/server.py",
+    "pixelgym/tasks/vendor_form/browser_contract.py",
+    "pixelgym/tasks/vendor_form/ui.py",
 )
+_CAPTURE_STATIC_ROOT = Path("pixelgym/tasks/vendor_form/app/static")
+
+# Backward-compatible public alias for callers that used the original capture helper.
+local_capture_server = local_vendor_form_server
 
 _CANDIDATE_SCRIPT = """
 () => {
@@ -91,40 +91,17 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _free_local_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
-@contextlib.contextmanager
-def local_capture_server() -> Iterator[str]:
-    """Serve a private app instance for capture and always shut it down."""
-    port = _free_local_port()
-    server = uvicorn.Server(
-        uvicorn.Config(create_app(), host="127.0.0.1", port=port, log_level="warning")
+def capture_source_hashes(repository_root: Path) -> dict[str, str]:
+    """Hash every application and capture source used to render the frozen images."""
+    relative_paths = list(_CAPTURE_SOURCE_PATHS)
+    relative_paths.extend(
+        path.relative_to(repository_root).as_posix()
+        for path in sorted((repository_root / _CAPTURE_STATIC_ROOT).rglob("*"))
+        if path.is_file()
     )
-    thread = threading.Thread(target=server.run, name="grounding-capture-server", daemon=True)
-    thread.start()
-    deadline = time.monotonic() + 10.0
-    health_url = f"http://127.0.0.1:{port}/"
-    while time.monotonic() < deadline:
-        try:
-            urllib.request.urlopen(health_url, timeout=0.2).close()
-            break
-        except OSError:
-            time.sleep(0.02)
-    else:
-        server.should_exit = True
-        thread.join(timeout=2.0)
-        raise RuntimeError("capture server did not become ready")
-    try:
-        yield f"http://127.0.0.1:{port}"
-    finally:
-        server.should_exit = True
-        thread.join(timeout=5.0)
-        if thread.is_alive():
-            raise RuntimeError("capture server did not shut down")
+    return {
+        relative: _sha256((repository_root / relative).read_bytes()) for relative in relative_paths
+    }
 
 
 def _post_reset(base_url: str, seed: int) -> dict[str, Any]:
@@ -336,9 +313,7 @@ def refresh_capture_summary(repository_root: Path) -> dict[str, Any]:
     prior = json.loads(capture_path.read_text(encoding="utf-8"))
     examples = load_jsonl(artifact_root / "grounding-dataset.jsonl")
     candidate_records = load_jsonl(artifact_root / "grounding-candidates.jsonl")
-    summary = validate_dataset(
-        examples, candidate_records, repository_root=repository_root
-    )
+    summary = validate_dataset(examples, candidate_records, repository_root=repository_root)
     summary.update(
         {
             "protocol_version": PROTOCOL_VERSION,
@@ -349,15 +324,14 @@ def refresh_capture_summary(repository_root: Path) -> dict[str, Any]:
             "dataset_path": "artifacts/grounding-dataset.jsonl",
             "candidates_path": "artifacts/grounding-candidates.jsonl",
             "contact_sheet_path": "artifacts/grounding/contact-sheet.png",
+            "source_sha256": prior["source_sha256"],
             "summary_provenance": {
                 "mode": "offline_revalidation_of_frozen_capture",
                 "browser_recapture_performed": False,
             },
         }
     )
-    capture_path.write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    capture_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return summary
 
 
@@ -375,9 +349,9 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
     examples: list[dict[str, Any]] = []
     candidate_records: list[dict[str, Any]] = []
     browser_version = "unknown"
-    with local_capture_server() as base_url, sync_playwright() as playwright:
+    with local_vendor_form_server() as base_url, sync_playwright() as playwright:
         chromium_executable = Path(playwright.chromium.executable_path)
-        launch_options: dict[str, Any] = {"headless": True, "args": list(_BROWSER_ARGS)}
+        launch_options: dict[str, Any] = {"headless": True, "args": list(BROWSER_ARGS)}
         if chromium_executable.is_file():
             launch_options["executable_path"] = str(chromium_executable)
         try:
@@ -403,7 +377,7 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
                 for state in SCREEN_STATES:
                     reset = _post_reset(base_url, seed)
                     page.goto(base_url, wait_until="networkidle")
-                    page.locator(_READY_SELECTOR).wait_for(state="attached")
+                    page.locator(READY_SELECTOR).wait_for(state="attached")
                     page.evaluate("() => document.fonts.ready")
                     task = page.evaluate(
                         "() => fetch('/api/task').then(response => response.json())"
@@ -506,10 +480,11 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
             "capture_version": CAPTURE_VERSION,
             "browser_engine": "chromium",
             "browser_version": browser_version,
-            "browser_args": list(_BROWSER_ARGS),
+            "browser_args": list(BROWSER_ARGS),
             "dataset_path": dataset_path.relative_to(repository_root).as_posix(),
             "candidates_path": candidates_path.relative_to(repository_root).as_posix(),
             "contact_sheet_path": contact_sheet_path.relative_to(repository_root).as_posix(),
+            "source_sha256": capture_source_hashes(repository_root),
             "summary_provenance": {
                 "mode": "browser_capture",
                 "browser_recapture_performed": True,

@@ -26,6 +26,7 @@ DEFAULT_RAW_DIR = Path("artifacts/day-2/raw")
 DEFAULT_REPORT_JSON = Path("artifacts/validation-report.json")
 DEFAULT_GOLDEN = Path("tests/unit/fixtures/golden_trajectory_seed7.json")
 DEFAULT_PREPARATION = Path(".cache/osworld/preparation.json")
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _write(path: Path, value: Any) -> None:
@@ -43,6 +44,7 @@ def _assemble(raw_dir: Path, report_json: Path, preparation_path: Path) -> dict[
         "real_reset": _read_if_present(raw_dir / "real-reset.json"),
         "reward_timing": _read_if_present(raw_dir / "reward-timing.json"),
         "space_integrity": _read_if_present(raw_dir / "space-integrity.json"),
+        "browser_boundary": _read_if_present(raw_dir / "browser-boundary.json"),
         "real_space_smoke": _read_if_present(raw_dir / "real-space-smoke.json"),
         "reward_hacking": _read_if_present(raw_dir / "reward-hacking.json"),
         "real_golden_episode": _read_if_present(raw_dir / "real-golden-episode.json"),
@@ -83,12 +85,14 @@ def _assemble(raw_dir: Path, report_json: Path, preparation_path: Path) -> dict[
         "evidence": sections,
         "reproduction_commands": [
             "python scripts/prepare_osworld_docker.py",
+            "python scripts/validate_vendor_form_browser_boundary.py",
             "python scripts/validate_day2.py fake",
             "python scripts/smoke_osworld_reset.py",
             "python scripts/osworld_space_smoke.py",
             "python scripts/osworld_golden_trajectory.py check",
             "python scripts/osworld_golden_trajectory.py record",
             "python scripts/validate_day2.py real-resets",
+            "python scripts/validate_day2.py audit",
             "python scripts/validate_day2.py assemble",
             "python scripts/generate_validation_report.py",
         ],
@@ -110,7 +114,13 @@ def run_fake(raw_dir: Path, golden: Path, report_json: Path, preparation: Path) 
     _write(raw_dir / "reward-timing.json", reward)
     spaces = validate_space_integrity(golden, sampled_action_count=500)
     _write(raw_dir / "space-integrity.json", spaces)
-    audit = validate_reward_hacking(reward, spaces)
+    browser_boundary = _read_if_present(raw_dir / "browser-boundary.json")
+    audit = validate_reward_hacking(
+        reward,
+        spaces,
+        browser_boundary=browser_boundary,
+        repository_root=REPOSITORY_ROOT,
+    )
     _write(raw_dir / "reward-hacking.json", audit)
     report = _assemble(raw_dir, report_json, preparation)
     print(
@@ -147,11 +157,14 @@ def run_real_resets(
     _write(raw_dir / "real-reset.json", reset)
     reward = _read_if_present(raw_dir / "reward-timing.json")
     spaces = _read_if_present(raw_dir / "space-integrity.json")
+    browser_boundary = _read_if_present(raw_dir / "browser-boundary.json")
     if reward is not None and spaces is not None:
         audit = validate_reward_hacking(
             reward,
             spaces,
             real_reset=reset if reset["summary"]["passed"] else None,
+            browser_boundary=browser_boundary,
+            repository_root=REPOSITORY_ROOT,
         )
         _write(raw_dir / "reward-hacking.json", audit)
     report = _assemble(raw_dir, report_json, preparation)
@@ -167,9 +180,51 @@ def run_real_resets(
     )
 
 
+def run_audit(raw_dir: Path, report_json: Path, preparation: Path) -> None:
+    """Refresh the reward-hacking audit strictly from checked-in structured evidence."""
+    reward = _read_if_present(raw_dir / "reward-timing.json")
+    spaces = _read_if_present(raw_dir / "space-integrity.json")
+    browser_boundary = _read_if_present(raw_dir / "browser-boundary.json")
+    real_reset = _read_if_present(raw_dir / "real-reset.json")
+    missing = [
+        name
+        for name, value in (
+            ("reward-timing.json", reward),
+            ("space-integrity.json", spaces),
+            ("browser-boundary.json", browser_boundary),
+        )
+        if value is None
+    ]
+    if missing:
+        raise FileNotFoundError(f"missing stored audit evidence: {', '.join(missing)}")
+    audit = validate_reward_hacking(
+        reward,
+        spaces,
+        real_reset=(
+            real_reset
+            if real_reset is not None and real_reset["summary"].get("passed", False)
+            else None
+        ),
+        browser_boundary=browser_boundary,
+        repository_root=REPOSITORY_ROOT,
+    )
+    _write(raw_dir / "reward-hacking.json", audit)
+    report = _assemble(raw_dir, report_json, preparation)
+    print(
+        json.dumps(
+            {
+                "audit": audit["summary"],
+                "automated_validation": report["automated_validation"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("fake", "real-resets", "assemble"))
+    parser.add_argument("command", choices=("fake", "real-resets", "audit", "assemble"))
     parser.add_argument("--raw-dir", type=Path, default=DEFAULT_RAW_DIR)
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT_JSON)
     parser.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
@@ -185,6 +240,8 @@ def main(argv: list[str] | None = None) -> int:
             run_fake(args.raw_dir, args.golden, args.report_json, args.preparation)
         elif args.command == "real-resets":
             run_real_resets(args.raw_dir, args.report_json, args.preparation, args.guest_image)
+        elif args.command == "audit":
+            run_audit(args.raw_dir, args.report_json, args.preparation)
         else:
             report = _assemble(args.raw_dir, args.report_json, args.preparation)
             print(json.dumps(report["automated_validation"], indent=2, sort_keys=True))

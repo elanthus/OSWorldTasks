@@ -348,6 +348,31 @@ def render(report: dict[str, Any]) -> str:
                 f"{_value(record['passed'])} |"
             )
 
+    browser_boundary = evidence.get("browser_boundary")
+    lines.extend(["", "### Vendor-form browser submission boundary", ""])
+    if browser_boundary is None:
+        lines.append("Browser-boundary evidence is not available.")
+    else:
+        summary = browser_boundary["summary"]
+        boundary = browser_boundary["boundary"]
+        evaluation = boundary["evaluation"]
+        browser = browser_boundary["browser"]
+        lines.extend(
+            [
+                f"- Browser: `{browser['engine']} {browser['version']}`",
+                f"- Source files hashed: {len(browser_boundary['source_sha256'])}",
+                f"- Submit response: HTTP {boundary['submit_response_status']}",
+                f"- Privileged submissions recorded: {boundary['submission_count']}",
+                f"- Evaluator observed submission: {_value(evaluation['submitted'])}",
+                f"- Evaluator success: {_value(evaluation['success'])}",
+                (
+                    "- Derived environment reward: "
+                    f"{_value(evaluation['derived_environment_reward'])}"
+                ),
+                (f"- Checks: {summary['passed_count']} / {summary['check_count']} passed"),
+            ]
+        )
+
     audit = evidence.get("reward_hacking")
     lines.extend(["", "## Reward-hacking matrix", ""])
     if audit is None:
@@ -375,6 +400,7 @@ def render(report: dict[str, Any]) -> str:
         "real_reset": "day-2/raw/real-reset.json",
         "reward_timing": "day-2/raw/reward-timing.json",
         "space_integrity": "day-2/raw/space-integrity.json",
+        "browser_boundary": "day-2/raw/browser-boundary.json",
         "real_space_smoke": "day-2/raw/real-space-smoke.json",
         "reward_hacking": "day-2/raw/reward-hacking.json",
         "real_golden_episode": "day-2/raw/real-golden-episode.json",

@@ -1,12 +1,129 @@
 {
   "automated_validation": {
-    "completed_section_count": 7,
+    "completed_section_count": 8,
     "failed_sections": [],
     "missing_sections": [],
-    "required_section_count": 7,
+    "required_section_count": 8,
     "status": "PASS"
   },
   "evidence": {
+    "browser_boundary": {
+      "boundary": {
+        "evaluation": {
+          "derived_environment_reward": 0.0,
+          "mismatched_fields": [
+            "company_name",
+            "contact_email",
+            "contact_phone",
+            "country",
+            "payment_terms",
+            "tax_id"
+          ],
+          "score": 0.14285714285714285,
+          "submitted": true,
+          "success": false,
+          "task_id_matches": true
+        },
+        "submission": {
+          "final": true,
+          "seed": 7,
+          "submitted_at_step": 1,
+          "task_id": "vf-6bed55ed612d3c5a",
+          "values": {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        },
+        "submission_count": 1,
+        "submit_response_body": {
+          "submission_number": 1
+        },
+        "submit_response_status": 200,
+        "visible_status": "Complete all required fields before submitting."
+      },
+      "browser": {
+        "args": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--hide-scrollbars"
+        ],
+        "device_scale_factor": 1.0,
+        "engine": "chromium",
+        "version": "151.0.7922.34",
+        "viewport": [
+          1024,
+          768
+        ]
+      },
+      "checks": [
+        {
+          "name": "submit_response_ok",
+          "passed": true
+        },
+        {
+          "name": "submit_response_body_exact",
+          "passed": true
+        },
+        {
+          "name": "visible_validation_state_settled",
+          "passed": true
+        },
+        {
+          "name": "one_privileged_submission_recorded",
+          "passed": true
+        },
+        {
+          "name": "privileged_submission_exact",
+          "passed": true
+        },
+        {
+          "name": "evaluator_observed_submission",
+          "passed": true
+        },
+        {
+          "name": "evaluator_matched_task_identity",
+          "passed": true
+        },
+        {
+          "name": "evaluator_rejected_incomplete_submission",
+          "passed": true
+        },
+        {
+          "name": "derived_environment_reward_zero",
+          "passed": true
+        },
+        {
+          "name": "evaluator_mismatches_exact",
+          "passed": true
+        }
+      ],
+      "schema_version": "pixelgym-browser-boundary-v1",
+      "seed": 7,
+      "source_sha256": {
+        "pixelgym/env.py": "be23a5718f3bd5cb8dd4cb10713e89c08ef493b82c1716ee0fa416a7433c99da",
+        "pixelgym/evaluator.py": "21a82f69343d37f6df43b9b3e173d8c5c95c742bfdb4c2e508733f1ba71ab271",
+        "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
+        "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+        "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+        "pixelgym/validation/browser_boundary.py": "a09f2397f912ba4d16f19edac4a4bfd9b11eebf296b86eb902629f4342200fa6"
+      },
+      "summary": {
+        "check_count": 10,
+        "failed_count": 0,
+        "passed": true,
+        "passed_count": 10
+      },
+      "task_id": "vf-6bed55ed612d3c5a",
+      "validator": "vendor-form-browser-boundary"
+    },
     "fake_reset": {
       "backend": "fake",
       "metric_definition": {
@@ -4206,7 +4323,7 @@
         {
           "attack": "Empty or partial Submit",
           "disposition": "tested",
-          "evidence": "empty-submit trajectory produced no reward; a partial privileged submission was also evaluated without reward.",
+          "evidence": "empty-submit trajectory produced no reward; a partial privileged submission was also evaluated without reward. Chromium 151.0.7922.34 returned HTTP 200, recorded exactly one empty privileged submission, preserved the settled validation message, and the host-side evaluator derived reward 0. Stored source hashes match the checked-out implementation.",
           "evidence_passed": true
         },
         {
@@ -4284,6 +4401,44 @@
           "evidence_passed": true
         }
       ],
+      "browser_boundary_evidence": {
+        "browser": {
+          "args": [
+            "--disable-font-subpixel-positioning",
+            "--disable-gpu",
+            "--disable-lcd-text",
+            "--disable-skia-runtime-opts",
+            "--force-color-profile=srgb",
+            "--hide-scrollbars"
+          ],
+          "device_scale_factor": 1.0,
+          "engine": "chromium",
+          "version": "151.0.7922.34",
+          "viewport": [
+            1024,
+            768
+          ]
+        },
+        "raw_artifact": "artifacts/day-2/raw/browser-boundary.json",
+        "schema_version": "pixelgym-browser-boundary-v1",
+        "source_hashes_match": true,
+        "source_sha256": {
+          "pixelgym/env.py": "be23a5718f3bd5cb8dd4cb10713e89c08ef493b82c1716ee0fa416a7433c99da",
+          "pixelgym/evaluator.py": "21a82f69343d37f6df43b9b3e173d8c5c95c742bfdb4c2e508733f1ba71ab271",
+          "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
+          "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+          "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+          "pixelgym/validation/browser_boundary.py": "a09f2397f912ba4d16f19edac4a4bfd9b11eebf296b86eb902629f4342200fa6"
+        },
+        "summary": {
+          "check_count": 10,
+          "failed_count": 0,
+          "passed": true,
+          "passed_count": 10
+        },
+        "task_id": "vf-6bed55ed612d3c5a",
+        "validator": "vendor-form-browser-boundary"
+      },
       "known_limitations": [
         "The release-named x86 host and the Apple Silicon qemux/qemu base are third-party Docker Hub images without release signatures; digest pinning mitigates mutability, not publisher compromise.",
         "On Apple Silicon the native outer host avoids redundant container emulation, but the released guest remains x86-64 and runs without KVM. Boot/stabilization may still be slow or fail even when the adapter is correct.",
@@ -7774,7 +7929,7 @@
     }
   },
   "gate_disclaimer": "Automated validation status is not the D2.11 human acceptance verdict.",
-  "generated_at": "2026-08-10T05:55:02.318431+00:00",
+  "generated_at": "2026-08-15T00:16:51.938344+00:00",
   "human_gate": {
     "day3_authorized": true,
     "declaration": "Day 2 PASS; Day 3 authorized.",
@@ -7786,12 +7941,14 @@
   },
   "reproduction_commands": [
     "python scripts/prepare_osworld_docker.py",
+    "python scripts/validate_vendor_form_browser_boundary.py",
     "python scripts/validate_day2.py fake",
     "python scripts/smoke_osworld_reset.py",
     "python scripts/osworld_space_smoke.py",
     "python scripts/osworld_golden_trajectory.py check",
     "python scripts/osworld_golden_trajectory.py record",
     "python scripts/validate_day2.py real-resets",
+    "python scripts/validate_day2.py audit",
     "python scripts/validate_day2.py assemble",
     "python scripts/generate_validation_report.py"
   ],

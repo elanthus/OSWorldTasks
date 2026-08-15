@@ -117,6 +117,7 @@ dataset additionally requires Playwright's Chromium binary, installed once with:
 
 ```bash
 python -m playwright install chromium
+python scripts/validate_vendor_form_browser_boundary.py
 python scripts/capture_grounding_dataset.py
 ```
 
@@ -143,10 +144,12 @@ x86-64 guest. Full provider and image metadata are recorded in the
 source .venv/bin/activate
 pip install -e ".[osworld]"
 python scripts/prepare_osworld_docker.py
+python scripts/validate_vendor_form_browser_boundary.py
 python scripts/smoke_osworld_reset.py
 python scripts/osworld_space_smoke.py
 python scripts/osworld_golden_trajectory.py check
 python scripts/validate_day2.py real-resets
+python scripts/validate_day2.py audit
 python scripts/validate_day2.py assemble
 python scripts/generate_validation_report.py
 ```

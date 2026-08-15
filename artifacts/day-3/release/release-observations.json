@@ -150,10 +150,10 @@
     },
     "validation_report": {
       "automated_validation": {
-        "completed_section_count": 7,
+        "completed_section_count": 8,
         "failed_sections": [],
         "missing_sections": [],
-        "required_section_count": 7,
+        "required_section_count": 8,
         "status": "PASS"
       },
       "gate_disclaimer": "Automated validation status is not the D2.11 human acceptance verdict.",
@@ -221,7 +221,7 @@
       "exists": true,
       "path": "README.md",
       "placeholder_counts": {},
-      "sha256": "ce353d0320d9125c6ba1f6173a482c25a7d4a9351506721fade366e81772d16d"
+      "sha256": "5c1aa37a2f9b05f726d3c77d55aa2868d5ab142f406db6b4b11843666285d78a"
     },
     "readme_review_draft": {
       "exists": true,
@@ -229,7 +229,7 @@
       "placeholder_counts": {
         "[PENDING": 1
       },
-      "sha256": "921d33727d779713cab89fa1d871e0bc002ba3a86bfe42f1d79e953fed29efdb"
+      "sha256": "c2dacbc2716b5e0c0bf6f0c8aa297b15aef5d867eb3c05b0ea12fef4f8c34661"
     },
     "resume_final": {
       "exists": true,
@@ -288,8 +288,8 @@
     {
       "exists": true,
       "path": "artifacts/grounding-protocol.md",
-      "sha256": "a6ccc901ac0224868d3777fc4bdaa433793a865c1a6b548e47ef0e61e8496b27",
-      "size_bytes": 10679
+      "sha256": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140",
+      "size_bytes": 11337
     },
     {
       "exists": true,
@@ -306,14 +306,14 @@
     {
       "exists": true,
       "path": "artifacts/grounding-results.json",
-      "sha256": "db1be9797f8e56f8023344945383d6ed410b9724affa9690eee702b0c89a262b",
-      "size_bytes": 138670
+      "sha256": "0d65ee6da145762904cc8ba57c204c2e39acd384af8b0796a1c752a79072850a",
+      "size_bytes": 138906
     },
     {
       "exists": true,
       "path": "artifacts/grounding-report.md",
-      "sha256": "b285097138b8a4e364c1a2ec0bbde5e7e037b75424183872a0580e80ee81ac62",
-      "size_bytes": 5196
+      "sha256": "a761eab5ebb3c397f9a752181b644f81622752346037c0a12b9e0cb1b3e39f87",
+      "size_bytes": 5716
     },
     {
       "exists": true,
@@ -324,8 +324,8 @@
     {
       "exists": true,
       "path": "artifacts/grounding/figures/control-type-accuracy.png",
-      "sha256": "a3356655628839cc52d2b227671c5af8ef62f57801d07481a88518f5040ee7b1",
-      "size_bytes": 26218
+      "sha256": "1f2080858b542fa77130dacb1af959d6cbc221d5023cc8fc6e694e4764ba3d07",
+      "size_bytes": 27161
     },
     {
       "exists": true,
@@ -341,7 +341,9 @@
       "example_count": 100,
       "excluded_example_count": 0,
       "first_timestamp_utc": "2026-08-10T07:06:26.396148+00:00",
-      "last_timestamp_utc": "2026-08-10T08:05:49.250812+00:00"
+      "last_timestamp_utc": "2026-08-10T08:05:49.250812+00:00",
+      "timestamp_missing_count": 0,
+      "timestamp_observed_count": 200
     },
     "conditions": {
       "marks": {
@@ -421,10 +423,10 @@
         "recorded_sha256": "51e5b07bd9d9172b6454ca5b0c6759af4f36d7f6c48b460fc6aa8f15a659073c"
       },
       "artifacts/grounding-protocol.md": {
-        "current_sha256": "a6ccc901ac0224868d3777fc4bdaa433793a865c1a6b548e47ef0e61e8496b27",
+        "current_sha256": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140",
         "exists": true,
         "hashes_equal": true,
-        "recorded_sha256": "a6ccc901ac0224868d3777fc4bdaa433793a865c1a6b548e47ef0e61e8496b27"
+        "recorded_sha256": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140"
       }
     },
     "model": "gpt-5.4-mini",
@@ -437,11 +439,11 @@
         "recorded_sha256": "ad9ea82c10b6642ff31168cc5941722484d9a8ac857eecbcc3d01f3e0d545a3f"
       },
       "control_type_figure": {
-        "current_sha256": "a3356655628839cc52d2b227671c5af8ef62f57801d07481a88518f5040ee7b1",
+        "current_sha256": "1f2080858b542fa77130dacb1af959d6cbc221d5023cc8fc6e694e4764ba3d07",
         "exists": true,
         "hashes_equal": true,
         "path": "artifacts/grounding/figures/control-type-accuracy.png",
-        "recorded_sha256": "a3356655628839cc52d2b227671c5af8ef62f57801d07481a88518f5040ee7b1"
+        "recorded_sha256": "1f2080858b542fa77130dacb1af959d6cbc221d5023cc8fc6e694e4764ba3d07"
       },
       "gallery_manifest": {
         "current_sha256": "5d3de1d0b8933cc0abcbc858539be93b56adfa1e5fb7576acf83cac7ab530379",
@@ -467,7 +469,7 @@
     "prompt_version": "pixelgym-grounding-prompt-v1",
     "protocol_version": "pixelgym-grounding-v1",
     "provider": "codex-cli",
-    "schema_version": "pixelgym-grounding-results-v1",
+    "schema_version": "pixelgym-grounding-results-v2",
     "set_of_marks": {
       "conditional_selection_accuracy": 1.0,
       "conditional_selection_correct_count": 100,
