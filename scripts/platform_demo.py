@@ -1,4 +1,4 @@
-"""Prepare the two no-cost demo evaluations; human approval actions remain manual."""
+"""Prepare the two demo candidates plus a distinct no-cost rollback seed."""
 
 from __future__ import annotations
 
@@ -12,8 +12,9 @@ from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.policy import is_verified_clean_revision
 
 FIXTURES = (
-    ("1", "day3-replay-baseline-v1"),
-    ("2", "day3-replay-revised-v2"),
+    ("1", "day3-replay-baseline-v1", "blocked-candidate-a"),
+    ("2", "day3-replay-revised-rollback-seed-v1", "rollback-seed"),
+    ("2", "day3-replay-revised-v2", "eligible-candidate-b"),
 )
 
 
@@ -32,7 +33,7 @@ def main() -> None:
         args.database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
     )
-    for prompt_version, model in FIXTURES:
+    for prompt_version, model, lifecycle_role in FIXTURES:
         request = {
             "dataset": "day3-frozen-v1",
             "prompt_version": prompt_version,
@@ -40,6 +41,7 @@ def main() -> None:
             "condition": "raw",
             "maximum_calls": "100",
             "price_catalog": "pixelgym-demo-prices-v1",
+            "lifecycle_role": lifecycle_role,
         }
         submission_id = control.submit(request)
         command = [
@@ -61,7 +63,10 @@ def main() -> None:
         if completed.returncode:
             control.mark_submission(submission_id, "Failed")
             raise SystemExit(completed.returncode)
-    print("Both scripted candidates are prepared. Approval, deployment, and rollback remain manual.")
+    print(
+        "Both scripted candidates and the rollback seed are prepared. "
+        "Approval, deployment, and rollback remain manual."
+    )
 
 
 if __name__ == "__main__":

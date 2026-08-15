@@ -13,6 +13,12 @@
       "model": "day3-replay-revised-v2",
       "input_usd_per_million_tokens": 0.0,
       "output_usd_per_million_tokens": 0.0
+    },
+    {
+      "provider": "scripted-demo",
+      "model": "day3-replay-revised-rollback-seed-v1",
+      "input_usd_per_million_tokens": 0.0,
+      "output_usd_per_million_tokens": 0.0
     }
   ]
 }

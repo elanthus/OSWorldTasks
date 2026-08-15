@@ -1,21 +1,40 @@
-# Reviewer lifecycle demo script
+# D4.11 lifecycle rehearsal script
 
-1. Start the local stack using `deploy/README.md`. Confirm the UI labels all runs as synthetic.
-2. Submit baseline prompt v1. Open its candidate page and observe stored accuracy, cost, and p95
-   latency together. Confirm the failed accuracy gate removes the approval control.
-3. Attempt the documented direct approval API request for candidate A; retain the blocked response.
-4. Submit revised prompt v2 and compare it with candidate A. Confirm the dataset fingerprint,
-   scorer, and target semantics are compatible and all three metrics remain visible.
-5. Inspect candidate B's immutable policy ID and gate report. As `local-reviewer`, enter an approval
-   reason. Confirm this changes `Eligible` to `Approved` without deploying it.
-6. Deploy B with a separate reason. Call `/api/v1/policy`, then ground one frozen screenshot. Capture
-   the API schema, policy ID, deployment ID, exact policy version, and provider request ID.
-7. To rehearse rollback, first ensure an earlier eligible policy was separately approved and
-   deployed. Activate the newer approved version, then use Rollback. Confirm `/api/v1` is unchanged
-   while the returned exact policy and deployment IDs change.
-8. Open the audit trail and MLflow run. Run `scripts/verify_immutable_artifacts.py` and retain its
-   raw output. Export stored evidence with `scripts/export_platform_evidence.py`.
+Target runtime: 2–4 minutes. Everything shown is local, no-cost, and driven by a scripted provider.
+Accuracy, cost, and latency in this rehearsal are synthetic governance fixtures, not model-quality
+evidence.
 
-Do not treat scripted accuracy, zero cost, or synthetic latency as evidence about a real model.
-Public wording, paid calls, external deployment, and the milestone verdict remain separate human
-gates.
+1. **Fresh stack and empty history — 15 seconds.** Start the Compose stack from empty volumes at the
+   recorded clean Git revision. Open **Runs** and show `No evaluated candidates yet.` Point out the
+   footer label: `synthetic metrics are not model-quality evidence`.
+2. **Candidate A — 20 seconds.** Run the fixed baseline evaluation using
+   `demo-baseline-prompt-v1`. Open its candidate page and show 56% accuracy, $0.00 cost per 100,
+   25 ms provider p95, the frozen 100-example dataset, and the `GateFailed` state.
+3. **MLflow lineage — 20 seconds.** Open A's or B's linked MLflow run. Show the MLflow run ID,
+   Metaflow pathspec tag, exact code revision, dataset fingerprint, prompt version, policy model,
+   synthetic-provider tag, metrics, and immutable-artifact index.
+4. **Blocked approval — 20 seconds.** Show that candidate A has no approval control. Replay the
+   direct approval API request from `demo-api-transcript.jsonl`; it returns HTTP 409 with
+   `only an eligible candidate can be approved` and does not create an approval event.
+5. **Candidate B — 20 seconds.** Open the fixed revised evaluation. Compare A and B and show that
+   the dataset fingerprint, scorer, target semantics, and primary metric are compatible. Show B at
+   100% synthetic accuracy, $0.00 cost per 100, 25 ms p95, and `Eligible`—not approved.
+6. **Human approval — 20 seconds.** As `local-reviewer`, approve B with the recorded reason. Show
+   that the state changes from `Eligible` to `Approved`; no deployment exists yet.
+7. **Deploy exact policy — 25 seconds.** Approve and deploy the distinct revised-response rollback
+   seed first, then deploy B. The seed exists only to provide an older approved deployment with a
+   different immutable policy ID. Show the active B policy and deployment generation in the ledger.
+8. **Versioned serving API — 25 seconds.** Replay `/api/v1/policy` and one bounded
+   `/api/v1/ground` request using a frozen screenshot. Show API version `v1`, exact B policy ID,
+   exact candidate version, deployment ID, provider request ID, and the returned prediction.
+9. **Rollback — 20 seconds.** Execute rollback with a separate reason. Replay `/api/v1/policy` and
+   show that the API schema/version remains `v1` while the policy ID, exact policy version, and
+   deployment ID change back to the earlier approved seed.
+10. **Audit and integrity — 25 seconds.** Open **Deployment** and show the append-only approval,
+    deploy, and rollback events. Open `demo-mlflow-lineage.jsonl` and the immutable raw-response
+    indexes, then show `immutable-artifact-verification.json`: every selected object verifies by its
+    pinned version and SHA-256 digest with zero failures.
+
+The reviewer separately confirms the blocked approval, the human-only transition from eligible to
+approved, the serving identity changes, and immutable verification. Public wording, paid calls,
+external deployment, and the D4.12 milestone verdict remain separate human gates.

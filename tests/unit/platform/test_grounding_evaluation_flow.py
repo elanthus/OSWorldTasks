@@ -88,6 +88,23 @@ def _new_flow(submission_id: str) -> FlowHarness:
     )
 
 
+def test_start_allows_only_frozen_scripted_pairings() -> None:
+    rollback_seed = FlowHarness(
+        submission_id="submission-seed",
+        prompt_version=2,
+        model="day3-replay-revised-rollback-seed-v1",
+        maximum_calls=100,
+        shard_size=25,
+    )
+    GroundingEvaluationFlow.start(rollback_seed)
+    assert rollback_seed.transition == ("validate_and_freeze_inputs", {})
+
+    unknown = _new_flow("submission-unknown")
+    unknown.model = "unreviewed-model"
+    with pytest.raises(ValueError, match="outside the scripted allowlist"):
+        GroundingEvaluationFlow.start(unknown)
+
+
 def _run_flow(
     submission_id: str,
     *,

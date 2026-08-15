@@ -698,11 +698,23 @@ Required tests:
 - Failure before receipt yields an explicit request-failure record under the frozen policy.
 - Parallel shard order does not change output bytes after canonical aggregation.
 - Concurrency and call caps are enforced.
-- Cancellation finalizes partial evidence and never marks the run eligible.
+- Graceful cancellation finalizes partial evidence and never marks the run eligible.
+- A marked local-runtime test executes the production FlowSpec through Metaflow `run` and `resume`;
+  direct calls to step bodies are necessary unit coverage but are not resume evidence.
 
-**Done when:** killing a fixture run at each side-effect boundary and resuming it produces the same
-canonical final evidence as an uninterrupted run, with no duplicate billable call in the test
-provider ledger.
+The billing claim has two explicit boundaries. Content-addressed storage prevents a provider call
+from recurring after the raw response has been durably persisted. Failure after provider receipt
+but before local persistence requires provider-side idempotency for the deterministic request ID;
+the runtime fixture must record transport attempts separately from billable operations. A hard
+process kill cannot execute failure-finalization code and is not called graceful cancellation; a
+hard-kill guarantee requires a separate orphan-run reconciler.
+
+**Done when:** the production FlowSpec is failed once at each supported side-effect boundary and
+resumed through Metaflow. The resumed run produces the same run-independent canonical evidence as
+an uninterrupted run, with run-scoped IDs and digests compared after documented normalization. The
+durable provider ledger records 100 unique request IDs and 100 billable operations, observed
+concurrency does not exceed the configured worker cap, and incomplete evidence never registers a
+candidate.
 
 ## D4.6 — Implement gates and policy packaging
 

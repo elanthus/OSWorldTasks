@@ -1,0 +1,69 @@
+{
+  "candidates": [
+    {
+      "accuracy": {
+        "observed": 1.0,
+        "passed": true,
+        "threshold": 0.8
+      },
+      "candidate_id": "candidate-f3e4efb35c712a70b26e8d63",
+      "cost_usd_per_100": {
+        "observed": 0.0,
+        "passed": true,
+        "threshold": 0.0
+      },
+      "dataset_fingerprint": "sha256:01d7218c3657aa8d186a038b4c34c00cc227ebda91ee5af9ca238a8e1ed506a8",
+      "policy_id": "sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33",
+      "provider_latency_p95_ms": {
+        "observed": 25.0,
+        "passed": true,
+        "threshold": 100.0
+      },
+      "state": "Approved"
+    },
+    {
+      "accuracy": {
+        "observed": 1.0,
+        "passed": true,
+        "threshold": 0.8
+      },
+      "candidate_id": "candidate-87cb41002aeaceb4bdb035d0",
+      "cost_usd_per_100": {
+        "observed": 0.0,
+        "passed": true,
+        "threshold": 0.0
+      },
+      "dataset_fingerprint": "sha256:01d7218c3657aa8d186a038b4c34c00cc227ebda91ee5af9ca238a8e1ed506a8",
+      "policy_id": "sha256:87cb41002aeaceb4bdb035d0721ed415247376747211fc1514c99b2a3af859d2",
+      "provider_latency_p95_ms": {
+        "observed": 25.0,
+        "passed": true,
+        "threshold": 100.0
+      },
+      "state": "Approved"
+    },
+    {
+      "accuracy": {
+        "observed": 0.56,
+        "passed": false,
+        "threshold": 0.8
+      },
+      "candidate_id": "candidate-93d3400630f5051df89cb0ef",
+      "cost_usd_per_100": {
+        "observed": 0.0,
+        "passed": true,
+        "threshold": 0.0
+      },
+      "dataset_fingerprint": "sha256:01d7218c3657aa8d186a038b4c34c00cc227ebda91ee5af9ca238a8e1ed506a8",
+      "policy_id": "sha256:93d3400630f5051df89cb0efdeeb7aa3c0921e7ee851382ecaf88abd247f5f1b",
+      "provider_latency_p95_ms": {
+        "observed": 25.0,
+        "passed": true,
+        "threshold": 100.0
+      },
+      "state": "GateFailed"
+    }
+  ],
+  "note": "Stored observed values only; gate semantics were not recomputed.",
+  "schema_version": "pixelgym-platform-comparison-export-v1"
+}

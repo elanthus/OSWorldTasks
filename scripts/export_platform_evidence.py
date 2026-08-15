@@ -15,20 +15,13 @@ def _json(path: Path, value: object) -> None:
 
 
 def _jsonl(path: Path, values: list[object]) -> None:
-    path.write_text("".join(json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n" for value in values))
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--database", required=True)
-    parser.add_argument("--output", default="artifacts/platform")
-    args = parser.parse_args()
-    output = Path(args.output)
-    output.mkdir(parents=True, exist_ok=True)
-    control = ControlStore(
-        args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
+    path.write_text(
+        "".join(json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n" for value in values)
     )
+
+
+def export_evidence(control: ControlStore, output: Path) -> None:
+    output.mkdir(parents=True, exist_ok=True)
     submissions = control.list_submissions()
     candidates = control.list_candidates()
     candidates_by_run = {candidate.source_run_id: candidate for candidate in candidates}
@@ -84,7 +77,48 @@ def main() -> None:
     _jsonl(output / "demo-approval-events.jsonl", control.approval_events())
     _jsonl(output / "demo-deployment-events.jsonl", control.deployment_history())
     _jsonl(output / "demo-audit-events.jsonl", control.audit_events())
+    _jsonl(
+        output / "demo-mlflow-lineage.jsonl",
+        [
+            {
+                "schema_version": "pixelgym-platform-mlflow-lineage-v1",
+                "candidate_id": item.candidate_id,
+                "mlflow_run_id": item.source_run_id,
+                "metaflow_pathspec": next(
+                    (
+                        row["metaflow_pathspec"]
+                        for row in submissions
+                        if row["mlflow_run_id"] == item.source_run_id
+                    ),
+                    None,
+                ),
+                "policy_id": item.policy.policy_id,
+                "prompt": {
+                    "name": item.policy.prompt_name,
+                    "version": item.policy.prompt_version,
+                    "sha256": item.policy.prompt_sha256,
+                },
+                "provider": item.policy.provider,
+                "model": item.policy.model,
+                "synthetic": True,
+                "immutable_artifacts": [reference.to_dict() for reference in item.artifacts],
+            }
+            for item in candidates
+        ],
+    )
     print(f"exported stored platform evidence to {output}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--database", required=True)
+    parser.add_argument("--output", default="artifacts/platform")
+    args = parser.parse_args()
+    control = ControlStore(
+        args.database,
+        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
+    )
+    export_evidence(control, Path(args.output))
 
 
 if __name__ == "__main__":

@@ -68,6 +68,18 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
     assert revised_report.overall_passed
 
 
+def test_revised_rollback_seed_has_distinct_provider_identity(
+    repository_root: Path,
+) -> None:
+    provider = ScriptedReplayProvider(
+        repository_root / "artifacts/grounding-predictions.jsonl",
+        variant="revised",
+        model="day3-replay-revised-rollback-seed-v1",
+    )
+    assert provider.model == "day3-replay-revised-rollback-seed-v1"
+    assert provider.synthetic is True
+
+
 def test_resume_reuses_verified_raw_responses_without_duplicate_calls(
     repository_root: Path, tmp_path: Path, gate_policy, policy_factory
 ) -> None:
