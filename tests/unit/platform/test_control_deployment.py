@@ -138,7 +138,10 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
             scorer_version=policy.scorer_version,
             overlay_version=policy.overlay_version,
             target_semantics=policy.target_semantics,
-            code_revision=policy.code_revision,
+            source_provenance=__import__("pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]).SourceProvenance(
+                "pixelgym-source-provenance-v1", policy.code_revision, policy.source_tree_sha256,
+                policy.code_state, "git-build-inputs-v1"
+            ),
             dependency_lock_sha256=policy.dependency_lock_sha256,
             model_alias_disclosure=policy.model_alias_disclosure,
         )

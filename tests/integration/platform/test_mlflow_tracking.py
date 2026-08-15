@@ -18,6 +18,7 @@ from pixelgym.platform.policy import (
     build_policy_manifest,
     prompt_template,
 )
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
 @pytest.mark.platform_integration
@@ -39,7 +40,9 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
         scorer_version=gate.required_scorer_version,
         overlay_version="none-raw-coordinate-policy",
         target_semantics=gate.required_target_semantics,
-        code_revision="b" * 40,
+        source_provenance=SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION, "b" * 40, "c" * 64, "clean", "git-build-inputs-v1"
+        ),
         dependency_lock_sha256=hashlib.sha256(
             (repository_root / "pyproject.toml").read_bytes()
         ).hexdigest(),
@@ -65,6 +68,9 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
         "target_semantics": policy.target_semantics,
         "price_catalog_version": "pixelgym-demo-prices-v1",
         "code_revision": policy.code_revision,
+        "code_state": policy.code_state,
+        "source_tree_sha256": policy.source_tree_sha256,
+        "source_provenance_verified": policy.source_provenance_verified,
         "dependency_lock_sha256": policy.dependency_lock_sha256,
         "python_version": "3.12.0",
         "submission_id": "submission-integration",

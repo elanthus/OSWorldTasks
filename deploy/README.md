@@ -7,18 +7,22 @@ public values in `.env.example` are local demo credentials, not production secre
 From the repository root:
 
 ```bash
-docker compose --env-file deploy/.env.example -f deploy/compose.yaml up --build --wait
+python3.12 scripts/platform_compose.py up --build --wait
 ```
 
-Before a gate-eligible demo, replace `PIXELGYM_CODE_REVISION` with the exact 40-character lowercase
-clean Git commit being evaluated. Any other value—including the checked-in `unknown-dirty`
-fallback—fails the code-revision gate. Open the control plane at <http://localhost:5800> and MLflow at
-<http://localhost:5500>. Both host ports are configurable in `.env.example`.
+The wrapper derives a source-provenance manifest from the current Git checkout and binds it to the
+exact files packaged in the image. A gate-eligible run therefore requires a clean, verifiable
+checkout and matching packaged source; do not paste a revision into an environment file. Dirty,
+missing, malformed, or mismatched provenance is explicitly recorded and fails a policy with
+`dirty_code_allowed: false`. Local non-gate experiments can use a policy with
+`dirty_code_allowed: true`; that fallback remains visibly dirty/unverifiable in run evidence.
+Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Both host
+ports are configurable in `.env.example`.
 
 Stop the stack without deleting evidence:
 
 ```bash
-docker compose --env-file deploy/.env.example -f deploy/compose.yaml down
+python3.12 scripts/platform_compose.py down
 ```
 
 To remove local demo volumes, the human operator must explicitly add `--volumes`. That operation

@@ -101,6 +101,8 @@ class RunSummary:
     invalid_count: int = 0
     request_failure_count: int = 0
     dirty_code: bool = False
+    code_state: str = "unverifiable"
+    code_provenance_verified: bool = False
     synthetic_provider: bool = True
 
     def to_dict(self) -> dict[str, Any]:
@@ -173,6 +175,9 @@ class PolicyManifest:
     overlay_version: str
     target_semantics: str
     code_revision: str
+    code_state: str
+    source_tree_sha256: str | None
+    source_provenance_verified: bool
     dependency_lock_sha256: str
     policy_id: str = ""
 
