@@ -11,8 +11,9 @@ import json
 import math
 import re
 import threading
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from types import MappingProxyType
 from typing import Any, Protocol
 
 from pixelgym.platform.fingerprints import canonical_json_bytes
@@ -78,9 +79,23 @@ class OperationalRecord:
                     or value < 0
                 ):
                     raise ValueError("operational usage is malformed")
+            object.__setattr__(self, "usage", MappingProxyType(dict(self.usage)))
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "schema_version": self.schema_version,
+            "request_id": self.request_id,
+            "occurred_at": self.occurred_at,
+            "policy_id": self.policy_id,
+            "deployment_id": self.deployment_id,
+            "exact_policy_version": self.exact_policy_version,
+            "terminal_status": self.terminal_status,
+            "http_status": self.http_status,
+            "latency_ms": self.latency_ms,
+            "provider_latency_ms": self.provider_latency_ms,
+            "provider_request_id": self.provider_request_id,
+            "usage": dict(self.usage) if self.usage is not None else None,
+        }
 
 
 class OperationalLog(Protocol):

@@ -118,6 +118,8 @@ def test_operational_record_is_redacted_immutable_and_identifies_served_policy(p
     assert "target" not in record.to_dict() and "image" not in record.to_dict()
     with pytest.raises(dataclasses.FrozenInstanceError):
         record.terminal_status = "changed"  # type: ignore[misc]
+    with pytest.raises(TypeError):
+        record.usage["input_tokens"] = 99  # type: ignore[index]
 
 
 def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_factory) -> None:
@@ -168,6 +170,7 @@ def test_operational_log_captures_rejected_and_invalid_output_requests(policy_fa
     rejected = log.get(invalid_input.headers["x-pixelgym-request-id"])
     assert invalid_input.status_code == 400
     assert rejected is not None and rejected.terminal_status == "request_rejected"
+    assert rejected.policy_id == policy_factory().policy_id
 
     invalid_output = client.post(
         "/api/v1/ground",

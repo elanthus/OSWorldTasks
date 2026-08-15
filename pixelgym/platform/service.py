@@ -198,6 +198,9 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
         )
         started = time.perf_counter()
         token = _operational_context.set(context)
+        if runtime.loaded is not None:
+            # Validation failures still identify the traffic policy selected at receipt time.
+            _set_identity(runtime.loaded)
         response: Response
         try:
             response = await call_next(request)
