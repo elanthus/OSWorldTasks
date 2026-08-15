@@ -21,6 +21,7 @@ from pixelgym.platform.service import (
     create_serving_app,
 )
 from pixelgym.platform.web import create_control_app
+from scripts.capture_platform_api import _safe_body
 
 
 def _image(width: int = 100, height: int = 80, image_format: str = "PNG") -> bytes:
@@ -180,6 +181,15 @@ def test_bootstrap_factory_requires_explicit_csrf_secret(
 
 def _csrf(text: str) -> str:
     return re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', text).group(1)
+
+
+def test_api_transcript_html_redaction_excludes_csrf_and_page_chrome() -> None:
+    body = """<h1>Action blocked</h1><p>only an eligible candidate can be approved</p>
+    <meta name="csrf-token" content="secret-token"><footer>private host</footer>"""
+    assert _safe_body(body, "text/html") == {
+        "title": "Action blocked",
+        "detail": "only an eligible candidate can be approved",
+    }
 
 
 def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path: Path) -> None:

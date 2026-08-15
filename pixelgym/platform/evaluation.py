@@ -61,11 +61,19 @@ class ScriptedReplayProvider:
     name = "scripted-demo"
     synthetic = True
 
-    def __init__(self, prediction_path: Path, *, variant: str, latency_ms: float = 25.0) -> None:
+    def __init__(
+        self,
+        prediction_path: Path,
+        *,
+        variant: str,
+        latency_ms: float = 25.0,
+        model: str | None = None,
+    ) -> None:
         if variant not in {"baseline", "revised"}:
             raise ValueError("scripted variant must be baseline or revised")
         self.condition = "raw"
-        self.model = f"day3-replay-{variant}-{'v1' if variant == 'baseline' else 'v2'}"
+        default_model = f"day3-replay-{variant}-{'v1' if variant == 'baseline' else 'v2'}"
+        self.model = model or default_model
         self.latency_ms = latency_ms
         rows = load_jsonl(prediction_path)
         if variant == "baseline":

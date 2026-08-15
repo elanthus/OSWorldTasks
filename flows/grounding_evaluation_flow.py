@@ -34,6 +34,11 @@ from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 
 _TEST_HOOKS_ENV = "PIXELGYM_ENABLE_TEST_HOOKS"
+SCRIPTED_MODEL_VARIANTS = {
+    (1, "day3-replay-baseline-v1"): "baseline",
+    (2, "day3-replay-revised-v2"): "revised",
+    (2, "day3-replay-revised-rollback-seed-v1"): "revised",
+}
 
 
 def _root() -> Path:
@@ -86,6 +91,9 @@ def _test_fail_once(name: str) -> None:
 
 
 def _provider(flow: object) -> object:
+    variant = SCRIPTED_MODEL_VARIANTS.get((flow.prompt_version, flow.model))
+    if variant is None:
+        raise ValueError("prompt/model pairing is outside the scripted allowlist")
     ledger = os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER")
     if ledger:
         if os.environ.get(_TEST_HOOKS_ENV) != "1":
@@ -94,7 +102,7 @@ def _provider(flow: object) -> object:
 
         return LedgeredScriptedReplayProvider(
             _root() / "artifacts/grounding-predictions.jsonl",
-            variant="baseline" if flow.prompt_version == 1 else "revised",
+            variant=variant,
             ledger_path=Path(ledger),
             concurrency_barrier=int(
                 os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")
@@ -102,7 +110,8 @@ def _provider(flow: object) -> object:
         )
     return ScriptedReplayProvider(
         _root() / "artifacts/grounding-predictions.jsonl",
-        variant="baseline" if flow.prompt_version == 1 else "revised",
+        variant=variant,
+        model=flow.model,
     )
 
 
@@ -156,11 +165,7 @@ class GroundingEvaluationFlow(FlowSpec):
 
     @step
     def start(self) -> None:
-        allowed = {
-            1: "day3-replay-baseline-v1",
-            2: "day3-replay-revised-v2",
-        }
-        if allowed.get(self.prompt_version) != self.model:
+        if (self.prompt_version, self.model) not in SCRIPTED_MODEL_VARIANTS:
             raise ValueError("prompt/model pairing is outside the scripted allowlist")
         if self.maximum_calls != 100:
             raise ValueError("the frozen flow requires exactly 100 maximum calls")
