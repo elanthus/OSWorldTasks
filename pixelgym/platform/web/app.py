@@ -290,7 +290,13 @@ def create_control_app(
         rollback = ""
         if active:
             active_html = f'<h2>{_escape(active.policy_id)}</h2><p>Deployment {_escape(active.deployment_id)} · generation {active.generation}</p>'
-            if active.previous_deployment_id and coordinator is not None:
+            try:
+                control.previous_target(active)
+            except TransitionError:
+                has_rollback_target = False
+            else:
+                has_rollback_target = True
+            if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
         timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>' for event in events)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol></section></div>"""
