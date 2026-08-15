@@ -56,28 +56,24 @@ def _finite(value: float | None) -> bool:
 
 def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
     reasons: list[str] = []
+    count_values = (
+        summary.expected_count,
+        summary.scored_count,
+        summary.unique_record_count,
+        summary.correct_count,
+        summary.invalid_count,
+        summary.request_failure_count,
+    )
     count_evidence = (
-        summary.expected_count > 0
-        and all(
-            _is_count(value)
-            for value in (
-                summary.expected_count,
-                summary.scored_count,
-                summary.unique_record_count,
-                summary.correct_count,
-                summary.invalid_count,
-                summary.request_failure_count,
-            )
-        )
+        all(_is_count(value) for value in count_values)
+        and summary.expected_count > 0
         and summary.correct_count <= summary.scored_count <= summary.expected_count
         # Invalid and request-failure records are retained and counted as incorrect;
         # neither may be hidden by claiming it was a correct observation.
         and summary.correct_count + summary.invalid_count + summary.request_failure_count
         <= summary.scored_count
     )
-    expected_accuracy = (
-        summary.correct_count / summary.expected_count if summary.expected_count > 0 else None
-    )
+    expected_accuracy = summary.correct_count / summary.expected_count if count_evidence else None
     accuracy_consistent = (
         _finite(summary.accuracy)
         and expected_accuracy is not None

@@ -170,6 +170,8 @@ def test_confidence_bound_threshold_boundary_is_inclusive(passing_evidence, gate
     "changes",
     [
         {"scored_count": 0, "correct_count": 0, "accuracy": None},
+        {"expected_count": None, "accuracy": None},
+        {"scored_count": "100", "accuracy": None},
         {"correct_count": 101},
         {"invalid_count": -1},
         {"request_failure_count": 21},
