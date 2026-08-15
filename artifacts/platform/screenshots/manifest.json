@@ -1,0 +1,116 @@
+{
+  "schema_version": "pixelgym-platform-screenshot-manifest-v1",
+  "captured_revision": "29ab07c4bbea05e8d2f8fc5010335a765c941469",
+  "redaction": "Browser chrome is excluded; no credentials, hostnames, usernames, or private provider payloads are shown.",
+  "screenshots": [
+    {
+      "path": "01-empty-run-history.png",
+      "sha256": "ed0da3bd79d85f31f7143c3e1a5c12bd6a7f4a4872cc48ad4dea30f8b9b5cd04",
+      "size": 55909,
+      "state": "fresh stack with no evaluated candidates",
+      "candidate_ids": [],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "audit_event_types": []
+    },
+    {
+      "path": "02-candidate-a-gate-blocked.png",
+      "sha256": "71daf61d938b4b2ba74bf326bcea7ff0352c515b3cd2d8487caff8e3082bb3e0",
+      "size": 107843,
+      "state": "candidate A failed accuracy and exposes no approval control",
+      "candidate_ids": ["candidate-93d3400630f5051df89cb0ef"],
+      "mlflow_run_ids": ["f14e530a42fd4a759bbc232385a30617"],
+      "policy_ids": ["sha256:93d3400630f5051df89cb0efdeeb7aa3c0921e7ee851382ecaf88abd247f5f1b"],
+      "audit_event_types": ["candidate.gates_evaluated"]
+    },
+    {
+      "path": "03-compatible-comparison.png",
+      "sha256": "55f3127074b84feb6d062302f951a65a69dccabb3ab61925ca310ccade8b3ff5",
+      "size": 116530,
+      "state": "candidate A and B compatible metric comparison",
+      "candidate_ids": [
+        "candidate-93d3400630f5051df89cb0ef",
+        "candidate-f3e4efb35c712a70b26e8d63"
+      ],
+      "mlflow_run_ids": [
+        "f14e530a42fd4a759bbc232385a30617",
+        "114fce5800024f58929caaa6cc2f79dd"
+      ],
+      "policy_ids": [
+        "sha256:93d3400630f5051df89cb0efdeeb7aa3c0921e7ee851382ecaf88abd247f5f1b",
+        "sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33"
+      ],
+      "audit_event_types": ["candidate.gates_evaluated"]
+    },
+    {
+      "path": "04-mlflow-candidate-b-lineage.png",
+      "sha256": "a4efec63f1178b745cbe8c06eecb66527d8c15f5ff0b153890bb494409530564",
+      "size": 89773,
+      "state": "candidate B MLflow metrics, parameters, Metaflow tag, and policy registration",
+      "candidate_ids": ["candidate-f3e4efb35c712a70b26e8d63"],
+      "mlflow_run_ids": ["114fce5800024f58929caaa6cc2f79dd"],
+      "policy_ids": ["sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33"],
+      "audit_event_types": ["candidate.gates_evaluated"]
+    },
+    {
+      "path": "05-rollback-seed-deployed.png",
+      "sha256": "873792413783b832b7b53b1cab5cc8242ce92ab19348aae230f83af266a3deb5",
+      "size": 96728,
+      "state": "earlier approved rollback seed active at generation 1",
+      "candidate_ids": ["candidate-87cb41002aeaceb4bdb035d0"],
+      "mlflow_run_ids": ["96090623a9c14f19aa976406b675afab"],
+      "policy_ids": ["sha256:87cb41002aeaceb4bdb035d0721ed415247376747211fc1514c99b2a3af859d2"],
+      "audit_event_types": ["candidate.approved", "deployment.deploy"]
+    },
+    {
+      "path": "06-candidate-b-eligible.png",
+      "sha256": "ca9d6791989896894e2a2ddeff626d77fc2139f8d6975e62e2bcf210b749f6d0",
+      "size": 98101,
+      "state": "passing candidate B still requires human approval",
+      "candidate_ids": ["candidate-f3e4efb35c712a70b26e8d63"],
+      "mlflow_run_ids": ["114fce5800024f58929caaa6cc2f79dd"],
+      "policy_ids": ["sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33"],
+      "audit_event_types": ["candidate.gates_evaluated"]
+    },
+    {
+      "path": "07-candidate-b-approved.png",
+      "sha256": "61c43997c819be8617f5d7c77e2cd2e727d871bc18d103e1150402dff31bf5c1",
+      "size": 99014,
+      "state": "candidate B approved but not yet deployed",
+      "candidate_ids": ["candidate-f3e4efb35c712a70b26e8d63"],
+      "mlflow_run_ids": ["114fce5800024f58929caaa6cc2f79dd"],
+      "policy_ids": ["sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33"],
+      "audit_event_types": ["candidate.approved"]
+    },
+    {
+      "path": "08-candidate-b-deployed.png",
+      "sha256": "6150cc7396fa996903d2dd9a3f8d1b9474f90f6688f12ee8b61d40f2f0bb7d3a",
+      "size": 111758,
+      "state": "candidate B active at generation 2 with rollback available",
+      "candidate_ids": ["candidate-f3e4efb35c712a70b26e8d63"],
+      "mlflow_run_ids": ["114fce5800024f58929caaa6cc2f79dd"],
+      "policy_ids": ["sha256:f3e4efb35c712a70b26e8d630038a25dc97fe72593c7b6ce07a16aee9e491e33"],
+      "audit_event_types": ["deployment.deploy"]
+    },
+    {
+      "path": "09-rollback-restored-seed.png",
+      "sha256": "44c4513856b6ce3867a91f459481e82a5fb5068cf59777631450a42ec1b8b04c",
+      "size": 119756,
+      "state": "rollback restored the seed under a new generation 3 deployment event",
+      "candidate_ids": ["candidate-87cb41002aeaceb4bdb035d0"],
+      "mlflow_run_ids": ["96090623a9c14f19aa976406b675afab"],
+      "policy_ids": ["sha256:87cb41002aeaceb4bdb035d0721ed415247376747211fc1514c99b2a3af859d2"],
+      "audit_event_types": ["deployment.rollback"]
+    },
+    {
+      "path": "10-rollback-restored-seed-viewport.png",
+      "sha256": "af450d3ba4c9183c27b53a7f9cc9d0699182a5a2bb01b284ca28e5f218e3e500",
+      "size": 58634,
+      "state": "readable viewport capture of the generation 3 rollback identity",
+      "candidate_ids": ["candidate-87cb41002aeaceb4bdb035d0"],
+      "mlflow_run_ids": ["96090623a9c14f19aa976406b675afab"],
+      "policy_ids": ["sha256:87cb41002aeaceb4bdb035d0721ed415247376747211fc1514c99b2a3af859d2"],
+      "audit_event_types": ["deployment.rollback"]
+    }
+  ]
+}
