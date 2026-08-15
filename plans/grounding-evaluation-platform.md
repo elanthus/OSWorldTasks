@@ -308,8 +308,8 @@ start
   → parse_and_score
   → aggregate_metrics
   → evaluate_gates
-  → register_candidate
   → finalize_mlflow_run
+  → register_candidate
   → end
 ```
 
@@ -326,6 +326,8 @@ Key rules:
   conditions or shards, but the comparison UI reads the complete parent summary.
 - Finalize an incomplete or failed run with an explicit status and retained partial evidence. Never
   make a failed run disappear.
+- Register a promotable candidate only after the parent MLflow run has finalized successfully. A
+  failed or incomplete run must never leave an Eligible candidate behind.
 - The MLflow run ID and Metaflow pathspec are written as soon as both exist and reconciled if a
   process stops between those writes.
 
