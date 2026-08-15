@@ -24,10 +24,10 @@ verification failure fails the request closed with HTTP 503.
 If a client disconnect cancels a request before it has a response, the service records a
 `cancelled` terminal status with conventional operational status 499 when the append completes,
 then propagates the cancellation; an audit failure must not replace that cancellation with a 503.
-The service waits at most five seconds for that append. A request whose append has not completed
-by then fails closed (or keeps its cancellation), while the identified append remains tracked in
-the running application until it completes; a late immutable record is therefore attributable to
-that request rather than an untracked write.
+The service deliberately does not impose a response timeout on this synchronous immutable write:
+racing a timeout against a non-cancellable write could leave a late record claiming completed/200
+after a client received 503. A finite cancellation-latency bound requires a future cancellable or
+transactional storage commit protocol; it is not approximated at the expense of truthful evidence.
 
 Packaged source-provenance verification also fails closed. Its persisted policy/run diagnostic and
 operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or

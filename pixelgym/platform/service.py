@@ -20,13 +20,13 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.concurrency import run_in_threadpool
 
 from pixelgym.grounding.evaluation import parse_prediction
 from pixelgym.platform.contracts import PolicyManifest
 from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     OperationalLog,
-    OperationalLogError,
     OperationalRecord,
 )
 
@@ -34,7 +34,6 @@ API_SCHEMA_VERSION = "pixelgym-grounding-api-v1"
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MAX_DIMENSION = 4096
 ALLOWED_MEDIA_TYPES = {"image/png", "image/jpeg"}
-OPERATIONAL_AUDIT_TIMEOUT_SECONDS = 5.0
 _PROVIDER_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,256}$")
 _USAGE_KEY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
@@ -191,31 +190,6 @@ def _decode_and_validate(request: GroundRequest) -> tuple[bytes, int, int]:
 def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLog) -> FastAPI:
     app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None)
     app.state.operational_log = operational_log
-    app.state.pending_operational_appends: set[asyncio.Task[None]] = set()
-
-    async def append_operational_record(record: OperationalRecord) -> None:
-        """Durably append within a bounded wait, retaining any late append for observation."""
-        # Do not abandon a timed-out worker: the task stays visible on application state until it
-        # completes, and consumes its own late exception.  The record has a unique immutable key,
-        # so a late success is still attributable to this exact request rather than an untracked
-        # background write.
-        with anyio.CancelScope(shield=True):
-            append_task = asyncio.create_task(asyncio.to_thread(operational_log.append, record))
-            app.state.pending_operational_appends.add(append_task)
-
-            def complete(task: asyncio.Task[None]) -> None:
-                app.state.pending_operational_appends.discard(task)
-                if task.cancelled():
-                    return
-                task.exception()  # Consume a late exception after its request timed out.
-
-            append_task.add_done_callback(complete)
-            try:
-                await asyncio.wait_for(
-                    asyncio.shield(append_task), timeout=OPERATIONAL_AUDIT_TIMEOUT_SECONDS
-                )
-            except TimeoutError as exc:
-                raise OperationalLogError("timed out recording serving operation") from exc
 
     @app.middleware("http")
     async def record_ground_operation(request: Request, call_next):
@@ -267,14 +241,15 @@ def create_serving_app(runtime: PolicyRuntime, *, operational_log: OperationalLo
             try:
                 # Immutable logging deliberately performs two store operations (put-once, then
                 # verified read-back).  Both may perform remote or filesystem I/O, so keep them
-                # out of the event loop. asyncio.to_thread propagates the current ContextVars
-                # into its worker call, which preserves request-scoped logging state for
-                # implementations that consume it.
+                # out of the event loop. Starlette propagates the current ContextVars into this
+                # worker call, which preserves request-scoped logging state for implementations
+                # that consume it.
                 # Starlette's BaseHTTPMiddleware runs under an AnyIO cancellation scope.  Once
                 # disconnected, it can re-deliver cancellation at every await; shield the one
                 # required audit append so it has a chance to finish before propagating the
                 # original cancellation out of this middleware.
-                await append_operational_record(record)
+                with anyio.CancelScope(shield=True):
+                    await run_in_threadpool(operational_log.append, record)
             except Exception:  # noqa: BLE001 - an unrecorded serving result is never safe to return.
                 # Never return an apparently successful inference that lacks its required evidence.
                 # During cancellation there is no response to replace; preserving the original
