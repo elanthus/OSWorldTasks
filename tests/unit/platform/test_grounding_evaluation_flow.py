@@ -128,9 +128,11 @@ def _run_flow(
     if stop_after == "aggregate_metrics":
         raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.evaluate_gates(joined)
+    assert joined.transition == ("finalize_mlflow_run", {})
     if stop_after == "evaluate_gates":
         raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.finalize_mlflow_run(joined)
+    assert joined.transition == ("register_candidate", {})
     if stop_after == "finalize_mlflow_run":
         raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.register_candidate(joined)
