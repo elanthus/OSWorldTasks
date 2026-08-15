@@ -121,6 +121,13 @@ def _candidate_badges(candidate: Any) -> str:
         badges.append(_badge("INCOMPLETE", "bad"))
     if candidate.policy.code_state != "clean":
         badges.append(_badge("DIRTY CODE", "bad"))
+    if candidate.policy.source_provenance_failure_reason is not None:
+        badges.append(
+            _badge(
+                f"PROVENANCE: {candidate.policy.source_provenance_failure_reason.replace('_', ' ').upper()}",
+                "bad",
+            )
+        )
     unpriced = (
         report["cost_usd_per_100"]["observed"] is None
         or (summary is not None and summary.unpriced_call_count > 0)

@@ -78,6 +78,7 @@ def build_policy_manifest(
         source_tree_sha256=source_provenance.source_tree_sha256,
         source_provenance_verified=source_provenance.state != "unverifiable",
         dependency_lock_sha256=dependency_lock_sha256,
+        source_provenance_failure_reason=source_provenance.failure_reason,
     )
     policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(manifest.identity_dict()))
     return replace(manifest, policy_id=policy_id)

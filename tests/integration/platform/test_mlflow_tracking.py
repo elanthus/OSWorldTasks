@@ -69,6 +69,7 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
         "code_state": policy.code_state,
         "source_tree_sha256": policy.source_tree_sha256,
         "source_provenance_verified": policy.source_provenance_verified,
+        "source_provenance_failure_reason": policy.source_provenance_failure_reason,
         "dependency_lock_sha256": policy.dependency_lock_sha256,
         "python_version": "3.12.0",
         "submission_id": "submission-integration",

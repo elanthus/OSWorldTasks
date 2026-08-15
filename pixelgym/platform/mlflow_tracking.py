@@ -34,6 +34,7 @@ RUN_PARAM_KEYS = (
     "code_state",
     "source_tree_sha256",
     "source_provenance_verified",
+    "source_provenance_failure_reason",
     "dependency_lock_sha256",
     "python_version",
     "submission_id",

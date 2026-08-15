@@ -201,11 +201,16 @@ class PolicyManifest:
     source_tree_sha256: str | None
     source_provenance_verified: bool
     dependency_lock_sha256: str
+    source_provenance_failure_reason: str | None = None
     policy_id: str = ""
 
     def identity_dict(self) -> dict[str, Any]:
         value = asdict(self)
         value.pop("policy_id")
+        # Preserve verification of policy rows created before this optional field
+        # existed, but bind every newly recorded failure reason to its evidence.
+        if value["source_provenance_failure_reason"] is None:
+            value.pop("source_provenance_failure_reason")
         return value
 
     def to_dict(self) -> dict[str, Any]:

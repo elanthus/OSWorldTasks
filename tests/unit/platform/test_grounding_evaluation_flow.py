@@ -137,6 +137,7 @@ def test_hand_entered_revision_without_packaged_provenance_cannot_claim_clean(
     assert flow.policy["code_revision"] == "unverifiable"
     assert flow.policy["code_state"] == "unverifiable"
     assert not flow.policy["source_provenance_verified"]
+    assert flow.policy["source_provenance_failure_reason"] == "not_configured"
     assert flow.policy["dependency_lock_sha256"] == dependency_lock_sha256(repository_root)
 
 

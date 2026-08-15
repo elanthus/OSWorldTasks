@@ -16,6 +16,10 @@ checkout and matching packaged source; do not paste a revision into an environme
 missing, malformed, or mismatched provenance is explicitly recorded and fails a policy with
 `dirty_code_allowed: false`. Local non-gate experiments can use a policy with
 `dirty_code_allowed: true`; that fallback remains visibly dirty/unverifiable in run evidence.
+When provenance cannot be verified, the run evidence, control plane, and operator log record one
+safe reason code (for example `manifest_missing`, `manifest_malformed_json`, or
+`revision_invalid`/`source_digest_mismatch`) without exposing the manifest contents or local
+filesystem paths.
 Do not invoke `docker compose` against `deploy/compose.yaml` directly: Docker can create a
 directory at the file bind-mount path, allowing a stack to start without verifiable source
 provenance. The wrapper refuses that condition before an `up` command reaches Docker.

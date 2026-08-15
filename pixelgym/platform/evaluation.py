@@ -172,6 +172,7 @@ class EvaluationRunner:
             "code_state": self.policy.code_state,
             "source_tree_sha256": self.policy.source_tree_sha256,
             "source_provenance_verified": self.policy.source_provenance_verified,
+            "source_provenance_failure_reason": self.policy.source_provenance_failure_reason,
             "dependency_lock_sha256": self.policy.dependency_lock_sha256,
             "python_version": platform.python_version(),
             "submission_id": self.submission_id,

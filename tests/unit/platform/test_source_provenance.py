@@ -58,6 +58,42 @@ def test_matching_clean_manifest_is_verified(repository_root: Path, tmp_path: Pa
     assert provenance.revision == "a" * 40
 
 
+@pytest.mark.parametrize(
+    ("path_factory", "reason"),
+    [
+        (lambda _tmp: None, "not_configured"),
+        (lambda tmp: tmp / "missing.json", "manifest_missing"),
+        (lambda tmp: tmp, "manifest_not_regular_file"),
+    ],
+)
+def test_absent_or_non_file_manifest_has_a_safe_actionable_reason(
+    repository_root: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture, path_factory, reason: str
+) -> None:
+    with caplog.at_level("WARNING", logger="pixelgym.platform.source_provenance"):
+        provenance = load_packaged_source_provenance(repository_root, path_factory(tmp_path))
+    assert provenance.state == "unverifiable"
+    assert provenance.failure_reason == reason
+    assert reason in caplog.text
+    assert str(tmp_path) not in caplog.text
+
+
+def test_unreadable_manifest_has_a_safe_actionable_reason(
+    repository_root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    manifest = tmp_path / "source-provenance.json"
+    manifest.write_text("{}")
+    monkeypatch.setattr(Path, "read_text", lambda _path: (_ for _ in ()).throw(OSError("denied")))
+    provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.failure_reason == "manifest_read_failed"
+
+
+def test_malformed_json_has_a_distinct_reason(repository_root: Path, tmp_path: Path) -> None:
+    manifest = tmp_path / "source-provenance.json"
+    manifest.write_text("{")
+    provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.failure_reason == "manifest_malformed_json"
+
+
 @pytest.mark.parametrize("state", ["dirty", "unverifiable"])
 def test_dirty_or_missing_provenance_is_not_clean(repository_root: Path, tmp_path: Path, state: str) -> None:
     manifest = tmp_path / "source-provenance.json"
@@ -68,30 +104,50 @@ def test_dirty_or_missing_provenance_is_not_clean(repository_root: Path, tmp_pat
 
 
 @pytest.mark.parametrize(
-    "payload",
+    ("payload", "reason"),
     [
-        {"revision": "a" * 40},
-        {
-            "schema_version": SOURCE_PROVENANCE_SCHEMA_VERSION,
-            "revision": "A" * 40,
-            "source_tree_sha256": "b" * 64,
-            "state": "clean",
-            "verification_method": "git-build-inputs-v1",
-        },
+        ({"revision": "a" * 40}, "manifest_schema_invalid"),
+        (
+            {
+                "schema_version": SOURCE_PROVENANCE_SCHEMA_VERSION,
+                "revision": "A" * 40,
+                "source_tree_sha256": "b" * 64,
+                "state": "clean",
+                "verification_method": "git-build-inputs-v1",
+            },
+            "revision_invalid",
+        ),
     ],
 )
 def test_missing_or_spoofed_revision_payload_is_unverifiable(
-    repository_root: Path, tmp_path: Path, payload: dict[str, str]
+    repository_root: Path, tmp_path: Path, payload: dict[str, str], reason: str
 ) -> None:
     manifest = tmp_path / "source-provenance.json"
     manifest.write_text(json.dumps(payload))
-    assert load_packaged_source_provenance(repository_root, manifest).state == "unverifiable"
+    provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.state == "unverifiable"
+    assert provenance.failure_reason == reason
 
 
 def test_source_digest_mismatch_is_unverifiable(repository_root: Path, tmp_path: Path) -> None:
     manifest = tmp_path / "source-provenance.json"
     _write_manifest(repository_root, manifest, digest="c" * 64)
-    assert load_packaged_source_provenance(repository_root, manifest).state == "unverifiable"
+    provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.state == "unverifiable"
+    assert provenance.failure_reason == "source_digest_mismatch"
+
+
+def test_source_verification_failure_has_a_distinct_reason(
+    repository_root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    manifest = tmp_path / "source-provenance.json"
+    _write_manifest(repository_root, manifest)
+    monkeypatch.setattr(
+        "pixelgym.platform.source_provenance.source_tree_sha256",
+        lambda _root: (_ for _ in ()).throw(OSError("unreadable source")),
+    )
+    provenance = load_packaged_source_provenance(repository_root, manifest)
+    assert provenance.failure_reason == "source_verification_failed"
 
 
 def test_source_digest_ignores_nested_python_bytecode_and_cache_artifacts(tmp_path: Path) -> None:

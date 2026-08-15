@@ -8,6 +8,7 @@ string supplied in an environment variable is never evidence by itself.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import subprocess
 from dataclasses import asdict, dataclass
@@ -33,6 +34,20 @@ SOURCE_INPUT_PATHS = (
     "artifacts/grounding",
 )
 _PYTHON_BYTECODE_SUFFIXES = frozenset({".pyc", ".pyo"})
+_FAILURE_REASONS = frozenset(
+    {
+        "not_configured",
+        "manifest_missing",
+        "manifest_not_regular_file",
+        "manifest_read_failed",
+        "manifest_malformed_json",
+        "manifest_schema_invalid",
+        "revision_invalid",
+        "source_digest_mismatch",
+        "source_verification_failed",
+    }
+)
+_LOGGER = logging.getLogger(__name__)
 
 
 def _is_packaged_source_file(item: Path, root: Path) -> bool:
@@ -54,6 +69,7 @@ class SourceProvenance:
     source_tree_sha256: str | None
     state: str
     verification_method: str
+    failure_reason: str | None = None
 
     def __post_init__(self) -> None:
         if self.state not in {"clean", "dirty", "unverifiable"}:
@@ -61,7 +77,13 @@ class SourceProvenance:
         if self.state == "unverifiable":
             if self.revision is not None or self.source_tree_sha256 is not None:
                 raise ValueError("unverifiable provenance must not claim a revision or source digest")
+            if self.verification_method != "none":
+                raise ValueError("unverifiable provenance must use verification method none")
+            if self.failure_reason not in _FAILURE_REASONS:
+                raise ValueError("unverifiable provenance must include a recognized failure reason")
             return
+        if self.failure_reason is not None:
+            raise ValueError("verified provenance must not include a failure reason")
         if not self.revision or not _REVISION_RE.fullmatch(self.revision):
             raise ValueError("source provenance revision must be a lowercase 40-character Git commit")
         if not self.source_tree_sha256 or not re.fullmatch(r"[0-9a-f]{64}", self.source_tree_sha256):
@@ -129,14 +151,47 @@ def write_source_provenance(repository_root: Path, output: Path) -> SourceProven
 
 
 def load_packaged_source_provenance(repository_root: Path, path: Path | None) -> SourceProvenance:
-    """Return verified packaged provenance, or explicit unverified local fallback."""
-    if path is None or not path.is_file():
-        return SourceProvenance(SOURCE_PROVENANCE_SCHEMA_VERSION, None, None, "unverifiable", "none")
+    """Return verified packaged provenance or a safe, actionable unverified result.
+
+    Failure reasons are a small public enum: they are safe for persisted run evidence,
+    operator logs, and the control-plane UI without exposing a local path or manifest data.
+    """
+
+    def unverifiable(reason: str) -> SourceProvenance:
+        _LOGGER.warning("packaged source provenance is unverifiable: %s", reason)
+        return SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION, None, None, "unverifiable", "none", reason
+        )
+
+    if path is None:
+        return unverifiable("not_configured")
+    try:
+        if not path.exists():
+            return unverifiable("manifest_missing")
+        if not path.is_file():
+            return unverifiable("manifest_not_regular_file")
+    except OSError:
+        return unverifiable("manifest_read_failed")
     try:
         value = json.loads(path.read_text())
+    except OSError:
+        return unverifiable("manifest_read_failed")
+    except json.JSONDecodeError:
+        return unverifiable("manifest_malformed_json")
+    try:
+        if not isinstance(value, dict):
+            return unverifiable("manifest_schema_invalid")
+        revision = value.get("revision")
+        if not isinstance(revision, str) or not _REVISION_RE.fullmatch(revision):
+            return unverifiable("revision_invalid")
         provenance = SourceProvenance(**value)
+    except (TypeError, ValueError):
+        return unverifiable("manifest_schema_invalid")
+    try:
         if provenance.source_tree_sha256 != source_tree_sha256(repository_root):
-            raise ValueError("source provenance digest does not match packaged source")
+            return unverifiable("source_digest_mismatch")
         return provenance
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        return SourceProvenance(SOURCE_PROVENANCE_SCHEMA_VERSION, None, None, "unverifiable", "none")
+    except OSError:
+        return unverifiable("source_verification_failed")
+    except ValueError:
+        return unverifiable("source_verification_failed")

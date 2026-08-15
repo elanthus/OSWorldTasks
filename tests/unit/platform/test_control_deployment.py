@@ -14,7 +14,10 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
+from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
 def _control(tmp_path: Path) -> ControlStore:
@@ -102,6 +105,54 @@ def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence
         )
 
 
+def test_distinct_source_provenance_diagnostics_have_distinct_candidate_identities(
+    tmp_path: Path, passing_evidence, gate_policy
+) -> None:
+    _policy, summary, _report = passing_evidence
+    control = _control(tmp_path)
+
+    def policy_for(reason: str):
+        return build_policy_manifest(
+            provider="scripted-demo",
+            model="day3-replay-revised-v2",
+            prompt_name="pixelgym-grounding",
+            prompt_version=2,
+            prompt=prompt_template(2),
+            condition="raw",
+            parameters={"deterministic": True, "hidden_retries": 0},
+            parser_version="pixelgym-grounding-parser-v1",
+            scorer_version=gate_policy.required_scorer_version,
+            overlay_version="none-raw-coordinate-policy",
+            target_semantics=gate_policy.required_target_semantics,
+            source_provenance=SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION,
+                None,
+                None,
+                "unverifiable",
+                "none",
+                reason,
+            ),
+            dependency_lock_sha256="a" * 64,
+        )
+
+    first_policy = policy_for("manifest_missing")
+    second_policy = policy_for("source_digest_mismatch")
+    assert first_policy.policy_id != second_policy.policy_id
+    for policy in (first_policy, second_policy):
+        failed_summary = __import__("dataclasses").replace(
+            summary,
+            policy_id=policy.policy_id,
+            code_state="unverifiable",
+            code_provenance_verified=False,
+        )
+        candidate = control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=policy,
+            gate_report=evaluate_gates(gate_policy, failed_summary),
+            artifacts=[],
+            summary=failed_summary,
+        )
+        assert candidate.policy.policy_id == policy.policy_id
 def test_approval_requires_server_identity_reason_and_exact_report_digest(
     tmp_path: Path, passing_evidence
 ) -> None:
