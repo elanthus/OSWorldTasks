@@ -287,7 +287,11 @@ def create_serving_app(
                     )
             finally:
                 _operational_context.reset(token)
-        assert response is not None  # Exceptions (including cancellation) do not reach this line.
+        # ``call_next`` is required to return a response, and cancellations re-raise above.
+        # Keep this defensive check explicit: Python optimization must not remove a
+        # correctness boundary in the serving path.
+        if response is None:
+            raise RuntimeError("serving handler returned no response")
         response.headers["X-PixelGym-Request-ID"] = context.request_id
         return response
 

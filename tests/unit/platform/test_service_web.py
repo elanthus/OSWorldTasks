@@ -315,6 +315,46 @@ def test_cancelled_request_is_audited_without_masking_cancellation(policy_factor
         assert _operational_context.get() is None
 
 
+def test_missing_response_raises_after_auditing_and_context_cleanup(policy_factory) -> None:
+    class CapturingLog:
+        def __init__(self) -> None:
+            self.records = []
+
+        def append(self, record) -> None:
+            self.records.append(record)
+
+        def get(self, request_id):
+            return None
+
+    app = create_serving_app(
+        PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=CapturingLog()
+    )
+    middleware = app.user_middleware[0].kwargs["dispatch"]
+    log = app.state.operational_log
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/api/v1/ground",
+            "raw_path": b"/api/v1/ground",
+            "query_string": b"",
+            "headers": [(b"host", b"test")],
+            "client": ("test", 1234),
+            "server": ("test", 80),
+        }
+    )
+
+    async def missing_response(_: Request):
+        return None  # Exercise the defensive middleware boundary.
+
+    with pytest.raises(RuntimeError, match="serving handler returned no response"):
+        asyncio.run(middleware(request, missing_response))
+    assert len(log.records) == 1
+    assert log.records[0].http_status == 499
+    assert _operational_context.get() is None
+
+
 def test_cancelled_in_flight_request_completes_audit_through_base_http_middleware(policy_factory) -> None:
     async def exercise() -> tuple[MemoryOperationalLog, asyncio.CancelledError]:
         provider = BlockingServingFake()
