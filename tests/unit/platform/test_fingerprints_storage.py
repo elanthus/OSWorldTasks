@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from typing import ClassVar
 
-import boto3
 import pytest
 
 from pixelgym.platform.fingerprints import (
@@ -201,6 +200,7 @@ def test_s3_client_retries_are_opt_in_for_bounded_serving_writes(
     retry_max_attempts: int | None,
     expected_retries: dict[str, object] | None,
 ) -> None:
+    boto3 = pytest.importorskip("boto3")
     captured: dict[str, object] = {}
 
     def client(*args: object, **kwargs: object) -> object:
