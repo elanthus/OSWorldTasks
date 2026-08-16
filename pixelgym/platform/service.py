@@ -7,8 +7,6 @@ import base64
 import binascii
 import io
 import logging
-import math
-import re
 import time
 import traceback
 import uuid
@@ -29,6 +27,8 @@ from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     OperationalLog,
     OperationalRecord,
+    ProviderMetadata,
+    normalize_provider_metadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,8 +37,6 @@ API_SCHEMA_VERSION = "pixelgym-grounding-api-v1"
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MAX_DIMENSION = 4096
 ALLOWED_MEDIA_TYPES = {"image/png", "image/jpeg"}
-_PROVIDER_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,256}$")
-_USAGE_KEY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
 class ProviderFailure(RuntimeError):
@@ -65,8 +63,6 @@ class LoadedPolicy:
     deployment_id: str
     exact_policy_version: str
     provider: ServingProvider
-    approved: bool
-    gate_passed: bool
 
 
 class GroundRequest(BaseModel):
@@ -95,8 +91,6 @@ class PolicyRuntime:
             self.activate(loaded)
 
     def activate(self, loaded: LoadedPolicy) -> None:
-        if not loaded.approved or not loaded.gate_passed:
-            raise ValueError("unapproved or gate-failed policies cannot become ready")
         if loaded.manifest.condition != "raw":
             raise ValueError("serving v1 supports raw-coordinate policies only")
         self.loaded = loaded
@@ -110,9 +104,7 @@ class _OperationalContext:
     deployment_id: str | None = None
     exact_policy_version: str | None = None
     terminal_status: str | None = None
-    provider_latency_ms: float | None = None
-    provider_request_id: str | None = None
-    usage: dict[str, int | float] | None = None
+    provider_metadata: ProviderMetadata | None = None
 
 
 _operational_context: ContextVar[_OperationalContext | None] = ContextVar(
@@ -132,38 +124,6 @@ def _set_terminal_status(status: str) -> None:
     context = _operational_context.get()
     if context is not None:
         context.terminal_status = status
-
-
-def _normalize_provider_metadata(
-    request_id: object, latency_ms: object, usage: object
-) -> tuple[str, float | None, dict[str, int | float] | None]:
-    if not isinstance(request_id, str) or not _PROVIDER_REQUEST_ID.fullmatch(request_id):
-        raise ValueError("provider request ID is malformed")
-    if latency_ms is not None and (
-        isinstance(latency_ms, bool)
-        or not isinstance(latency_ms, (int, float))
-        or not math.isfinite(latency_ms)
-        or latency_ms < 0
-    ):
-        raise ValueError("provider latency is malformed")
-    if usage is None:
-        normalized_usage = None
-    elif not isinstance(usage, dict):
-        raise ValueError("provider usage is malformed")
-    else:
-        normalized_usage = {}
-        for key, value in usage.items():
-            if (
-                not isinstance(key, str)
-                or not _USAGE_KEY.fullmatch(key)
-                or isinstance(value, bool)
-                or not isinstance(value, (int, float))
-                or not math.isfinite(value)
-                or value < 0
-            ):
-                raise ValueError("provider usage is malformed")
-            normalized_usage[key] = value
-    return request_id, float(latency_ms) if latency_ms is not None else None, normalized_usage
 
 
 def _decode_and_validate(request: GroundRequest) -> tuple[bytes, int, int]:
@@ -259,9 +219,7 @@ def create_serving_app(
                 terminal_status=status,
                 http_status=http_status,
                 latency_ms=latency_ms,
-                provider_latency_ms=context.provider_latency_ms,
-                provider_request_id=context.provider_request_id,
-                usage=context.usage,
+                provider_metadata=context.provider_metadata,
             )
             try:
                 # Immutable logging deliberately performs two store operations (put-once, then
@@ -344,7 +302,7 @@ def create_serving_app(
             status = 504 if exc.code == "timeout" else 429 if exc.code == "rate_limit" else 502
             raise HTTPException(status, f"provider request failed: {exc.code}") from exc
         try:
-            provider_request_id, provider_latency_ms, usage = _normalize_provider_metadata(
+            provider_metadata = normalize_provider_metadata(
                 provider_request_id, provider_latency_ms, usage
             )
         except ValueError as exc:
@@ -352,9 +310,7 @@ def create_serving_app(
             raise HTTPException(502, "provider returned malformed operational metadata") from exc
         context = _operational_context.get()
         if context is not None:
-            context.provider_request_id = provider_request_id
-            context.provider_latency_ms = provider_latency_ms
-            context.usage = usage
+            context.provider_metadata = provider_metadata
         if runtime.loaded is not loaded:
             _set_terminal_status("runtime_mismatch")
             raise HTTPException(503, "active deployment changed during request")
@@ -371,7 +327,7 @@ def create_serving_app(
             policy_id=loaded.manifest.policy_id,
             deployment_id=loaded.deployment_id,
             exact_policy_version=loaded.exact_policy_version,
-            provider_request_id=provider_request_id,
+            provider_request_id=provider_metadata.request_id,
         )
 
     return app

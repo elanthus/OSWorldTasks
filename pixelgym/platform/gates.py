@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from statistics import NormalDist
 
 from pixelgym.platform.contracts import (
     CompletenessObservation,
@@ -22,14 +23,7 @@ def _is_count(value: object) -> bool:
 
 
 def _one_sided_normal_quantile(confidence_level: float) -> float:
-    """Return the standard-normal quantile for a one-sided confidence level.
-
-    ``statistics.NormalDist`` is in the standard library, so the calculation is
-    deterministic and does not make the platform depend on a floating statistics
-    package.  The policy records the level; the report records it and the method.
-    """
-    from statistics import NormalDist
-
+    """Use the deterministic stdlib quantile; reports record the level and method."""
     return NormalDist().inv_cdf(confidence_level)
 
 

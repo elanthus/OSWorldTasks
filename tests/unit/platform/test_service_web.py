@@ -28,6 +28,7 @@ from pixelgym.platform.operational_log import (
     MemoryOperationalLog,
     OperationalLogError,
     OperationalRecord,
+    normalize_provider_metadata,
 )
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.service import (
@@ -85,8 +86,8 @@ class BlockingServingFake(ServingFake):
         return super().ground(**request)
 
 
-def _loaded(policy, provider, *, approved: bool = True, gate_passed: bool = True) -> LoadedPolicy:
-    return LoadedPolicy(policy, "deployment-1", "candidate-1", provider, approved, gate_passed)
+def _loaded(policy, provider) -> LoadedPolicy:
+    return LoadedPolicy(policy, "deployment-1", "candidate-1", provider)
 
 
 def _serving_app(runtime: PolicyRuntime):
@@ -179,6 +180,69 @@ def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_f
     failed_record = failed_log.get(failed.headers["x-pixelgym-request-id"])
     assert failed.status_code == 504
     assert failed_record is not None and failed_record.terminal_status == "provider_timeout"
+
+
+@pytest.mark.parametrize(
+    ("request_id", "latency_ms", "usage"),
+    [
+        ("", 1.0, {}),
+        ("request-1", True, {}),
+        ("request-1", -1.0, {}),
+        ("request-1", 1.0, []),
+        ("request-1", 1.0, {"InvalidKey": 1}),
+        ("request-1", 1.0, {"input_tokens": True}),
+    ],
+)
+def test_provider_metadata_normalizer_rejects_malformed_values(
+    request_id: object, latency_ms: object, usage: object
+) -> None:
+    with pytest.raises(ValueError, match="provider"):
+        normalize_provider_metadata(request_id, latency_ms, usage)
+
+
+def test_provider_metadata_replace_revalidates_and_remains_immutable() -> None:
+    metadata = normalize_provider_metadata("request-1", 1, {"input_tokens": 1})
+
+    changed = dataclasses.replace(metadata, latency_ms=2)
+
+    assert changed.latency_ms == 2.0
+    assert changed.usage == {"input_tokens": 1}
+    with pytest.raises(ValueError, match="request ID"):
+        dataclasses.replace(metadata, request_id="")
+    with pytest.raises(TypeError):
+        changed.usage["input_tokens"] = 2  # type: ignore[index]
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"provider_request_id": ""},
+        {"provider_latency_ms": float("nan")},
+        {"usage": {"InvalidKey": 1}},
+        {"provider_request_id": None, "provider_latency_ms": 1.0},
+    ],
+)
+def test_operational_record_read_boundary_rejects_malformed_provider_metadata(
+    changes: dict[str, object],
+) -> None:
+    payload = {
+        "schema_version": OPERATIONAL_RECORD_SCHEMA_VERSION,
+        "request_id": "srv-" + "1" * 32,
+        "occurred_at": "2026-08-15T00:00:00+00:00",
+        "policy_id": "policy",
+        "deployment_id": "deployment",
+        "exact_policy_version": "candidate",
+        "terminal_status": "completed",
+        "http_status": 200,
+        "latency_ms": 1.0,
+        "provider_latency_ms": 1.0,
+        "provider_request_id": "request-1",
+        "usage": {"input_tokens": 1},
+        **changes,
+    }
+
+    with pytest.raises(ValueError, match="provider"):
+        OperationalRecord.from_dict(payload)
 
 
 def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
@@ -518,9 +582,7 @@ def test_immutable_operational_log_does_not_serialize_distinct_request_writes(tm
             terminal_status="completed",
             http_status=200,
             latency_ms=1.0,
-            provider_latency_ms=None,
-            provider_request_id=None,
-            usage=None,
+            provider_metadata=None,
         )
 
     log = ImmutableOperationalLog(RendezvousStore())
@@ -600,9 +662,7 @@ def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory)
     assert timeout.calls == 1
 
 
-def test_unapproved_policy_cannot_become_ready(policy_factory) -> None:
-    with pytest.raises(ValueError, match="unapproved"):
-        PolicyRuntime(_loaded(policy_factory(), ServingFake(), approved=False))
+def test_no_active_policy_is_not_ready() -> None:
     client = TestClient(_serving_app(PolicyRuntime()))
     assert client.get("/health/live").status_code == 200
     assert client.get("/health/ready").status_code == 503
@@ -633,8 +693,18 @@ def test_bootstrap_import_is_side_effect_free_and_factory_uses_explicit_migratio
         tmp_path / "state/control.db", reviewer_identity="local-reviewer"
     )
     migrated.migrate()
+    restore_called = False
+    original_restore = module.DeploymentCoordinator.restore_active
+
+    def restore_active(coordinator):
+        nonlocal restore_called
+        restore_called = True
+        return original_restore(coordinator)
+
+    monkeypatch.setattr(module.DeploymentCoordinator, "restore_active", restore_active)
     client = TestClient(module.create_app())
 
+    assert restore_called
     assert client.get("/").status_code == 200
     assert client.get("/health/live").status_code == 200
     assert (tmp_path / "state/control.db").is_file()

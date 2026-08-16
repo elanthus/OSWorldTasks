@@ -53,7 +53,6 @@ class DeploymentRecord:
     deployment_id: str
     candidate_id: str
     policy_id: str
-    previous_deployment_id: str | None
     action: str
     actor: str
     reason: str
@@ -97,7 +96,6 @@ CREATE TABLE IF NOT EXISTS deployments (
   deployment_id TEXT PRIMARY KEY,
   candidate_id TEXT NOT NULL REFERENCES candidates(candidate_id),
   policy_id TEXT NOT NULL,
-  previous_deployment_id TEXT REFERENCES deployments(deployment_id),
   action TEXT NOT NULL CHECK(action IN ('deploy', 'rollback')),
   actor TEXT NOT NULL,
   reason TEXT NOT NULL,
@@ -155,6 +153,55 @@ class ControlStore:
         )
         self.connection.row_factory = sqlite3.Row
 
+    def _migrate_legacy_deployments(self) -> None:
+        """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
+        self.connection.execute("PRAGMA foreign_keys = OFF")
+        try:
+            self.connection.execute("BEGIN IMMEDIATE")
+            self.connection.execute(
+                """CREATE TABLE deployments_without_previous (
+                  deployment_id TEXT PRIMARY KEY,
+                  candidate_id TEXT NOT NULL REFERENCES candidates(candidate_id),
+                  policy_id TEXT NOT NULL,
+                  action TEXT NOT NULL CHECK(action IN ('deploy', 'rollback')),
+                  actor TEXT NOT NULL,
+                  reason TEXT NOT NULL,
+                  created_at_utc TEXT NOT NULL,
+                  generation INTEGER NOT NULL UNIQUE
+                )"""
+            )
+            self.connection.execute(
+                """INSERT INTO deployments_without_previous(
+                    deployment_id, candidate_id, policy_id, action, actor, reason,
+                    created_at_utc, generation
+                )
+                SELECT deployment_id, candidate_id, policy_id, action, actor, reason,
+                       created_at_utc, generation
+                FROM deployments"""
+            )
+            self.connection.execute("DROP TABLE deployments")
+            self.connection.execute(
+                "ALTER TABLE deployments_without_previous RENAME TO deployments"
+            )
+            self.connection.execute(
+                """CREATE TRIGGER deployments_no_update BEFORE UPDATE ON deployments
+                BEGIN SELECT RAISE(ABORT, 'deployments are append-only'); END"""
+            )
+            self.connection.execute(
+                """CREATE TRIGGER deployments_no_delete BEFORE DELETE ON deployments
+                BEGIN SELECT RAISE(ABORT, 'deployments are append-only'); END"""
+            )
+            violations = list(self.connection.execute("PRAGMA foreign_key_check"))
+            if violations:
+                raise RuntimeError("legacy deployment migration violates foreign keys")
+            self.connection.commit()
+        except BaseException:
+            if self.connection.in_transaction:
+                self.connection.rollback()
+            raise
+        finally:
+            self.connection.execute("PRAGMA foreign_keys = ON")
+
     def migrate(self) -> None:
         with self._lock:
             self.connection.executescript(SCHEMA)
@@ -166,6 +213,12 @@ class ControlStore:
                 self.connection.execute(
                     "ALTER TABLE candidates ADD COLUMN summary_json TEXT NOT NULL DEFAULT '{}'"
                 )
+            deployment_columns = {
+                str(row["name"])
+                for row in self.connection.execute("PRAGMA table_info(deployments)")
+            }
+            if "previous_deployment_id" in deployment_columns:
+                self._migrate_legacy_deployments()
 
     def require_migrated(self) -> None:
         """Fail clearly when the explicit migration step has not completed."""
@@ -194,10 +247,19 @@ class ControlStore:
             pointer = self.connection.execute(
                 "SELECT deployment_id, generation FROM active_pointer WHERE singleton = 1"
             ).fetchone()
+            deployment_columns = {
+                str(row["name"])
+                for row in self.connection.execute("PRAGMA table_info(deployments)")
+            }
         if pointer is None:
             raise RuntimeError(
                 "control database migration is incomplete; active_pointer singleton row "
                 "is missing; rerun scripts/platform_migrate.py"
+            )
+        if "previous_deployment_id" in deployment_columns:
+            raise RuntimeError(
+                "control database migration is incomplete; legacy deployment links remain; "
+                "rerun scripts/platform_migrate.py"
             )
 
     @contextlib.contextmanager
@@ -496,6 +558,15 @@ class ControlStore:
                 ).fetchone()
             )
 
+    def get_approval(self, candidate_id: str) -> dict[str, Any]:
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM approvals WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(candidate_id)
+            return dict(row)
+
     def active(self) -> tuple[DeploymentRecord | None, int]:
         with self._lock:
             pointer = self.connection.execute(
@@ -546,10 +617,6 @@ class ControlStore:
                 raise TransitionError("approved gate report no longer verifies")
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
-            # A deployment record is an activation *event*.  Retain the active event
-            # as this new event's predecessor for both deploys and rollbacks, so the
-            # append-only event sequence cannot be truncated by a rollback.
-            previous_deployment_id = expected_deployment_id
             if action == "rollback":
                 if expected_deployment_id is None:
                     raise TransitionError("there is no active deployment to roll back")
@@ -571,19 +638,20 @@ class ControlStore:
             material = {
                 "candidate_id": candidate_id,
                 "policy_id": candidate["policy_id"],
-                "previous": previous_deployment_id,
                 "action": action,
                 "generation": generation,
             }
             deployment_id = "deployment-" + sha256_bytes(canonical_json_bytes(material))[:24]
             created = self._now()
             connection.execute(
-                "INSERT INTO deployments VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                """INSERT INTO deployments(
+                    deployment_id, candidate_id, policy_id, action, actor, reason,
+                    created_at_utc, generation
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     deployment_id,
                     candidate_id,
                     candidate["policy_id"],
-                    previous_deployment_id,
                     action,
                     actor,
                     reason.strip(),

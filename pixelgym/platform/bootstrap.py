@@ -162,20 +162,7 @@ def create_app() -> FastAPI:
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
     )
-    active, _generation = control.active()
-    if active is not None:
-        candidate = control.get_candidate(active.candidate_id)
-        activate_runtime(
-            active,
-            LoadedPolicy(
-                manifest=candidate.policy,
-                deployment_id=active.deployment_id,
-                exact_policy_version=candidate.candidate_id,
-                provider=serving_provider,
-                approved=candidate.state.value == "Approved",
-                gate_passed=bool(candidate.gate_report["overall_passed"]),
-            ),
-        )
+    coordinator.restore_active()
 
     scheduled: set[str] = set()
     schedule_lock = threading.Lock()
