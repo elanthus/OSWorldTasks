@@ -25,6 +25,38 @@ _PROVIDER_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,256}$")
 _USAGE_KEY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
+def normalize_provider_metadata(
+    request_id: object, latency_ms: object, usage: object
+) -> tuple[str, float | None, dict[str, int | float] | None]:
+    if not isinstance(request_id, str) or not _PROVIDER_REQUEST_ID.fullmatch(request_id):
+        raise ValueError("provider request ID is malformed")
+    if latency_ms is not None and (
+        isinstance(latency_ms, bool)
+        or not isinstance(latency_ms, (int, float))
+        or not math.isfinite(latency_ms)
+        or latency_ms < 0
+    ):
+        raise ValueError("provider latency is malformed")
+    if usage is None:
+        normalized_usage = None
+    elif not isinstance(usage, dict):
+        raise ValueError("provider usage is malformed")
+    else:
+        normalized_usage = {}
+        for key, value in usage.items():
+            if (
+                not isinstance(key, str)
+                or not _USAGE_KEY.fullmatch(key)
+                or isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0
+            ):
+                raise ValueError("provider usage is malformed")
+            normalized_usage[key] = value
+    return request_id, float(latency_ms) if latency_ms is not None else None, normalized_usage
+
+
 class OperationalLogError(RuntimeError):
     """A serving record could not be written or verified."""
 
@@ -61,24 +93,7 @@ class OperationalRecord:
             raise ValueError("operational terminal status and HTTP status are required")
         if not math.isfinite(self.latency_ms) or self.latency_ms < 0:
             raise ValueError("operational latency must be finite and nonnegative")
-        if self.provider_latency_ms is not None and (
-            not math.isfinite(self.provider_latency_ms) or self.provider_latency_ms < 0
-        ):
-            raise ValueError("provider latency must be finite and nonnegative")
-        if self.provider_request_id is not None and not _PROVIDER_REQUEST_ID.fullmatch(
-            self.provider_request_id
-        ):
-            raise ValueError("provider request ID is malformed")
         if self.usage is not None:
-            for key, value in self.usage.items():
-                if (
-                    not _USAGE_KEY.fullmatch(key)
-                    or isinstance(value, bool)
-                    or not isinstance(value, (int, float))
-                    or not math.isfinite(value)
-                    or value < 0
-                ):
-                    raise ValueError("operational usage is malformed")
             object.__setattr__(self, "usage", MappingProxyType(dict(self.usage)))
 
     def to_dict(self) -> dict[str, Any]:

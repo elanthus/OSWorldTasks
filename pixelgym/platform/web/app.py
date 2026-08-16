@@ -76,13 +76,12 @@ def _milliseconds(value: object) -> str:
 def _layout(title: str, body: str, *, csrf: str = "") -> str:
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{_escape(title)} · PixelGym Control</title><link rel="stylesheet" href="/static/platform.css"></head>
+<title>{_escape(title)} · PixelGym Control</title><link rel="stylesheet" href="/static/platform.css">
+<meta name="csrf-token" content="{_escape(csrf)}"></head>
 <body><header class="shell"><a class="brand" href="/">PIXELGYM <span>CONTROL</span></a>
 <nav aria-label="Primary"><a href="/">Submit</a><a href="/runs">Runs</a><a href="/compare">Compare</a><a href="/deployment">Deployment</a></nav></header>
 <main class="shell">{body}</main><footer class="shell">Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
-</body></html>""".replace(
-        "</head>", f'<meta name="csrf-token" content="{_escape(csrf)}"></head>'
-    )
+</body></html>"""
 
 
 def _token(secret: bytes, session: str) -> str:

@@ -28,6 +28,7 @@ from pixelgym.platform.operational_log import (
     MemoryOperationalLog,
     OperationalLogError,
     OperationalRecord,
+    normalize_provider_metadata,
 )
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.service import (
@@ -85,8 +86,8 @@ class BlockingServingFake(ServingFake):
         return super().ground(**request)
 
 
-def _loaded(policy, provider, *, approved: bool = True, gate_passed: bool = True) -> LoadedPolicy:
-    return LoadedPolicy(policy, "deployment-1", "candidate-1", provider, approved, gate_passed)
+def _loaded(policy, provider) -> LoadedPolicy:
+    return LoadedPolicy(policy, "deployment-1", "candidate-1", provider)
 
 
 def _serving_app(runtime: PolicyRuntime):
@@ -179,6 +180,24 @@ def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_f
     failed_record = failed_log.get(failed.headers["x-pixelgym-request-id"])
     assert failed.status_code == 504
     assert failed_record is not None and failed_record.terminal_status == "provider_timeout"
+
+
+@pytest.mark.parametrize(
+    ("request_id", "latency_ms", "usage"),
+    [
+        ("", 1.0, {}),
+        ("request-1", True, {}),
+        ("request-1", -1.0, {}),
+        ("request-1", 1.0, []),
+        ("request-1", 1.0, {"InvalidKey": 1}),
+        ("request-1", 1.0, {"input_tokens": True}),
+    ],
+)
+def test_provider_metadata_normalizer_rejects_malformed_values(
+    request_id: object, latency_ms: object, usage: object
+) -> None:
+    with pytest.raises(ValueError, match="provider"):
+        normalize_provider_metadata(request_id, latency_ms, usage)
 
 
 def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
@@ -600,9 +619,7 @@ def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory)
     assert timeout.calls == 1
 
 
-def test_unapproved_policy_cannot_become_ready(policy_factory) -> None:
-    with pytest.raises(ValueError, match="unapproved"):
-        PolicyRuntime(_loaded(policy_factory(), ServingFake(), approved=False))
+def test_no_active_policy_is_not_ready() -> None:
     client = TestClient(_serving_app(PolicyRuntime()))
     assert client.get("/health/live").status_code == 200
     assert client.get("/health/ready").status_code == 503

@@ -172,6 +172,32 @@ def test_approval_requires_server_identity_reason_and_exact_report_digest(
     assert control.get_candidate(candidate.candidate_id).state.value == "Approved"
 
 
+def test_deployment_coordinator_rejects_unapproved_candidate_before_smoke(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    smoke_called = False
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    coordinator = DeploymentCoordinator(
+        control=control,
+        store=LocalImmutableStore(tmp_path / "immutable"),
+        load_and_smoke=smoke,
+    )
+
+    with pytest.raises(TransitionError, match="approved"):
+        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="not reviewed")
+    assert not smoke_called
+
+
 def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImmutableStore, suffix: str):
     policy, summary, report = passing_evidence
     if suffix:
@@ -220,14 +246,12 @@ def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_ord
     with pytest.raises(TransitionError, match="smoke"):
         failing.deploy(second.candidate_id, actor="local-reviewer", reason="bad")
     assert control.active()[0] == deployed_first
-    deployed_second = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
     restored_first = coordinator.rollback(actor="local-reviewer", reason="rehearsal")
     restored_second = coordinator.rollback(actor="local-reviewer", reason="repeat rehearsal")
 
     assert restored_first.candidate_id == first.candidate_id
-    assert restored_first.previous_deployment_id == deployed_second.deployment_id
     assert restored_second.candidate_id == second.candidate_id
-    assert restored_second.previous_deployment_id == restored_first.deployment_id
     assert [event["candidate_id"] for event in control.deployment_history()] == [
         first.candidate_id,
         second.candidate_id,
@@ -240,6 +264,34 @@ def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_ord
         "rollback",
         "rollback",
     ]
+    assert all(
+        "previous_deployment_id" not in event for event in control.deployment_history()
+    )
+
+
+def test_migrate_drops_legacy_deployment_link_without_losing_history(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    deployed = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+    )
+    with pytest.raises(RuntimeError, match="legacy deployment links"):
+        control.require_migrated()
+
+    control.migrate()
+
+    columns = {
+        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
+    }
+    assert "previous_deployment_id" not in columns
+    control.require_migrated()
+    assert control.active()[0] == deployed
 
 
 def test_rollback_fails_when_no_previous_deployment_event_exists(

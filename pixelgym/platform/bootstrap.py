@@ -172,8 +172,6 @@ def create_app() -> FastAPI:
                 deployment_id=active.deployment_id,
                 exact_policy_version=candidate.candidate_id,
                 provider=serving_provider,
-                approved=candidate.state.value == "Approved",
-                gate_passed=bool(candidate.gate_report["overall_passed"]),
             ),
         )
 

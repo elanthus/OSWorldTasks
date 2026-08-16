@@ -78,8 +78,6 @@ class CandidateServiceSmoke:
             deployment_id=f"smoke-{candidate.candidate_id}",
             exact_policy_version=candidate.candidate_id,
             provider=self.provider,
-            approved=True,
-            gate_passed=True,
         )
         # This runtime and app are deliberately separate from the traffic-serving runtime.
         candidate_runtime = PolicyRuntime(loaded)
