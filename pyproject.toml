@@ -5,6 +5,7 @@ description = "PixelGym-OSWorld: a pixel-only GUI reinforcement-learning environ
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency
     "gymnasium~=0.28.1",  # matches the osworld extra's pin (xlang-ai/OSWorld-V2@v2026.06.24)
     "numpy>=1.26",
     "pillow>=10.0",
@@ -28,6 +29,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "build>=1.0",
+    "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
     "playwright>=1.52",  # deterministic Day 3 browser capture tooling

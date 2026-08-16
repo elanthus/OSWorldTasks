@@ -15,3 +15,24 @@ The Compose demo uses PostgreSQL for MLflow metadata and versioned MinIO buckets
 immutable response envelopes. Production should replace MinIO governance retention with an
 approved S3 Object Lock compliance policy, backup, replication, access controls, and recovery
 testing.
+
+Each serving request emits one redacted immutable operational record before a response is released.
+That append has a fixed two-operation immutable-store policy: `put_once` followed by a verified
+read-back of the returned pinned reference. The I/O runs in the serving framework's worker
+threadpool so remote or filesystem latency cannot block the async request loop; an append or
+verification failure fails the request closed with HTTP 503.
+If a client disconnect cancels a request before it has a response, the service records a
+`cancelled` terminal status with conventional operational status 499 when the append completes,
+then propagates the cancellation; an audit failure must not replace that cancellation with a 503.
+The service deliberately does not impose a response timeout on this synchronous immutable write:
+racing a timeout against a non-cancellable write could leave a late record claiming completed/200
+after a client received 503. A finite cancellation-latency bound requires a future cancellable or
+transactional storage commit protocol; it is not approximated at the expense of truthful evidence.
+Serving audit I/O uses a dedicated, bounded worker limiter rather than the shared request-worker
+pool. S3 adapters configure finite connect/read operation deadlines; local adapters retain atomic
+filesystem commits. A request remains fail-closed until its record is durably verified.
+
+Packaged source-provenance verification also fails closed. Its persisted policy/run diagnostic and
+operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or
+`manifest_invalid_utf8`/`revision_invalid`/`source_digest_mismatch`; they never include a provenance file path or its
+contents.

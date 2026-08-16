@@ -8,6 +8,7 @@ from typing import Any
 
 from pixelgym.platform.contracts import PolicyManifest
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
+from pixelgym.platform.source_provenance import SourceProvenance
 
 POLICY_SCHEMA_VERSION = "pixelgym-grounding-policy-v1"
 PROMPT_NAME = "pixelgym-grounding"
@@ -33,7 +34,7 @@ def prompt_template(version: int) -> str:
 
 
 def is_verified_clean_revision(value: str) -> bool:
-    """Return whether a revision is an exact, lowercase Git commit identity."""
+    """Return whether a revision has valid Git-commit *format*, not provenance."""
     return bool(_GIT_COMMIT_RE.fullmatch(value))
 
 
@@ -50,7 +51,7 @@ def build_policy_manifest(
     scorer_version: str,
     overlay_version: str,
     target_semantics: str,
-    code_revision: str,
+    source_provenance: SourceProvenance,
     dependency_lock_sha256: str,
     model_alias_disclosure: str | None = None,
 ) -> PolicyManifest:
@@ -72,8 +73,12 @@ def build_policy_manifest(
         scorer_version=scorer_version,
         overlay_version=overlay_version,
         target_semantics=target_semantics,
-        code_revision=code_revision,
+        code_revision=source_provenance.revision or "unverifiable",
+        code_state=source_provenance.state,
+        source_tree_sha256=source_provenance.source_tree_sha256,
+        source_provenance_verified=source_provenance.state != "unverifiable",
         dependency_lock_sha256=dependency_lock_sha256,
+        source_provenance_failure_reason=source_provenance.failure_reason,
     )
     policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(manifest.identity_dict()))
     return replace(manifest, policy_id=policy_id)

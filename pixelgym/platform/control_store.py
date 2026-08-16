@@ -12,7 +12,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from pixelgym.platform.contracts import ArtifactRef, CandidateState, GateReport, PolicyManifest
+from pixelgym.platform.contracts import (
+    ArtifactRef,
+    CandidateState,
+    GateReport,
+    PolicyManifest,
+    RunSummary,
+)
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.policy import verify_policy_manifest
 
@@ -37,6 +43,7 @@ class CandidateRecord:
     gate_report: dict[str, Any]
     gate_report_sha256: str
     artifacts: tuple[ArtifactRef, ...]
+    summary: RunSummary | None
     state: CandidateState
     version: int
 
@@ -73,6 +80,7 @@ CREATE TABLE IF NOT EXISTS candidates (
   gate_report_json TEXT NOT NULL,
   gate_report_sha256 TEXT NOT NULL,
   artifacts_json TEXT NOT NULL,
+  summary_json TEXT NOT NULL DEFAULT '{}',
   state TEXT NOT NULL,
   version INTEGER NOT NULL DEFAULT 1
 );
@@ -150,6 +158,14 @@ class ControlStore:
     def migrate(self) -> None:
         with self._lock:
             self.connection.executescript(SCHEMA)
+            columns = {
+                str(row["name"])
+                for row in self.connection.execute("PRAGMA table_info(candidates)")
+            }
+            if "summary_json" not in columns:
+                self.connection.execute(
+                    "ALTER TABLE candidates ADD COLUMN summary_json TEXT NOT NULL DEFAULT '{}'"
+                )
 
     def require_migrated(self) -> None:
         """Fail clearly when the explicit migration step has not completed."""
@@ -293,6 +309,7 @@ class ControlStore:
         policy: PolicyManifest,
         gate_report: GateReport,
         artifacts: list[ArtifactRef],
+        summary: RunSummary | None = None,
         submission_id: str | None = None,
     ) -> CandidateRecord:
         verify_policy_manifest(policy)
@@ -300,6 +317,12 @@ class ControlStore:
             raise ValueError("candidate gate report schema version is unsupported")
         if gate_report.policy_id != policy.policy_id or gate_report.run_id != source_run_id:
             raise ValueError("candidate policy, run, and gate report identities must match")
+        if summary is not None and (
+            summary.run_id != source_run_id
+            or summary.policy_id != policy.policy_id
+            or summary.dataset_fingerprint != gate_report.dataset_fingerprint
+        ):
+            raise ValueError("candidate summary identities must match policy, run, and gate report")
         required_passes = (
             gate_report.accuracy.passed,
             gate_report.cost_usd_per_100.passed,
@@ -307,6 +330,10 @@ class ControlStore:
             gate_report.completeness.passed,
             gate_report.compatibility_passed,
             gate_report.code_revision_passed,
+            (
+                gate_report.confidence_bound is None
+                or gate_report.confidence_bound.passed
+            ),
         )
         if gate_report.overall_passed and (not all(required_passes) or gate_report.reasons):
             raise ValueError("passing gate report has failed components or blocking reasons")
@@ -314,6 +341,7 @@ class ControlStore:
             raise ValueError("failed gate report must retain at least one blocking reason")
         report_bytes = canonical_json_bytes(gate_report.to_dict())
         report_sha = sha256_bytes(report_bytes)
+        summary_bytes = canonical_json_bytes(summary.to_dict() if summary is not None else {})
         candidate_id = "candidate-" + policy.policy_id.removeprefix("sha256:")[:24]
         state = CandidateState.ELIGIBLE if gate_report.overall_passed else CandidateState.GATE_FAILED
         with self.transaction() as connection:
@@ -328,13 +356,14 @@ class ControlStore:
                 report_bytes.decode(),
                 report_sha,
                 canonical_json_bytes([item.to_dict() for item in artifacts]).decode(),
+                summary_bytes.decode(),
                 state.value,
             )
             if existing:
-                expected = values[1:7]
+                expected = values[1:8]
                 actual = tuple(existing[key] for key in (
                     "source_run_id", "policy_id", "policy_json", "gate_report_json",
-                    "gate_report_sha256", "artifacts_json"
+                    "gate_report_sha256", "artifacts_json", "summary_json"
                 ))
                 if actual != expected or existing["state"] not in {
                     state.value,
@@ -343,7 +372,7 @@ class ControlStore:
                     raise ConflictError("candidate identity already has different evidence")
             else:
                 connection.execute(
-                    "INSERT INTO candidates(candidate_id, source_run_id, policy_id, policy_json, gate_report_json, gate_report_sha256, artifacts_json, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO candidates(candidate_id, source_run_id, policy_id, policy_json, gate_report_json, gate_report_sha256, artifacts_json, summary_json, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     values,
                 )
                 self._audit(
@@ -383,6 +412,11 @@ class ControlStore:
                 gate_report_sha256=row["gate_report_sha256"],
                 artifacts=tuple(
                     ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
+                ),
+                summary=(
+                    RunSummary(**json.loads(row["summary_json"]))
+                    if json.loads(row["summary_json"])
+                    else None
                 ),
                 state=CandidateState(row["state"]),
                 version=row["version"],
@@ -512,6 +546,9 @@ class ControlStore:
                 raise TransitionError("approved gate report no longer verifies")
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
+            # A deployment record is an activation *event*.  Retain the active event
+            # as this new event's predecessor for both deploys and rollbacks, so the
+            # append-only event sequence cannot be truncated by a rollback.
             previous_deployment_id = expected_deployment_id
             if action == "rollback":
                 if expected_deployment_id is None:
@@ -520,15 +557,16 @@ class ControlStore:
                     "SELECT * FROM deployments WHERE deployment_id = ?",
                     (expected_deployment_id,),
                 ).fetchone()
-                if current is None or current["previous_deployment_id"] is None:
-                    raise TransitionError("there is no previous deployment to roll back to")
+                if current is None:
+                    raise TransitionError("active deployment event does not exist")
                 target = connection.execute(
-                    "SELECT * FROM deployments WHERE deployment_id = ?",
-                    (current["previous_deployment_id"],),
+                    "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
+                    (current["generation"],),
                 ).fetchone()
-                if target is None or target["candidate_id"] != candidate_id:
-                    raise TransitionError("rollback target is not the active deployment's predecessor")
-                previous_deployment_id = target["previous_deployment_id"]
+                if target is None:
+                    raise TransitionError("there is no previous deployment to roll back to")
+                if target["candidate_id"] != candidate_id:
+                    raise TransitionError("rollback target is not the previous deployment event")
             generation = expected_generation + 1
             material = {
                 "candidate_id": candidate_id,
@@ -569,9 +607,21 @@ class ControlStore:
         return self.get_deployment(deployment_id)
 
     def previous_target(self, current: DeploymentRecord) -> DeploymentRecord:
-        if current.previous_deployment_id is None:
-            raise TransitionError("there is no previous deployment to roll back to")
-        return self.get_deployment(current.previous_deployment_id)
+        """Return the immutable event immediately preceding the active event.
+
+        Rollback deliberately follows the ledger's generation order, rather than a
+        mutable-looking per-row link.  A rollback is itself a new event, so this lets
+        repeated rollbacks traverse the recorded activation sequence without losing
+        the event that was just restored.
+        """
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
+                (current.generation,),
+            ).fetchone()
+            if row is None:
+                raise TransitionError("there is no previous deployment to roll back to")
+            return DeploymentRecord(**dict(row))
 
     def audit_events(self) -> list[dict[str, Any]]:
         with self._lock:

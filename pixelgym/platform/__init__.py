@@ -2,10 +2,18 @@
 
 from pixelgym.platform.contracts import (
     ArtifactRef,
+    ConfidenceBoundObservation,
     GatePolicy,
     GateReport,
     PolicyManifest,
     RunSummary,
 )
 
-__all__ = ["ArtifactRef", "GatePolicy", "GateReport", "PolicyManifest", "RunSummary"]
+__all__ = [
+    "ArtifactRef",
+    "ConfidenceBoundObservation",
+    "GatePolicy",
+    "GateReport",
+    "PolicyManifest",
+    "RunSummary",
+]

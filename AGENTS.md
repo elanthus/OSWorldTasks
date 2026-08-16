@@ -4,7 +4,14 @@ Operating instructions for any coding agent working in this repository. Read thi
 
 ## 1. What this project is
 
-PixelGym-OSWorld is a **pixel-only GUI reinforcement-learning environment** and a **GUI-grounding benchmark**, built on OSWorld-V2 and delivered as a three-day sprint. The deliverable is not "a working demo" — it is a working environment plus **evidence** that the environment is correct: reset determinism, reward timing, space integrity, and a reward-hacking audit.
+PixelGym-OSWorld is an implemented **pixel-only GUI reinforcement-learning environment** and
+**GUI-grounding benchmark** built on OSWorld-V2. Days 1–3 deliver the environment, validation
+evidence, and frozen grounding experiment. Milestone 4 adds a local-first grounding-evaluation and
+policy-delivery platform around that frozen workload; its human milestone gate remains separate.
+
+The deliverable is not "a working demo" — it is a working environment plus **evidence** that the
+environment is correct: reset determinism, reward timing, space integrity, and a reward-hacking
+audit.
 
 The single core task is one deterministic synthetic **vendor-onboarding form**.
 
@@ -14,14 +21,17 @@ Source of truth for scope and sequencing:
 - [plans/day-1-environment-core.md](plans/day-1-environment-core.md) — task app, contracts, Gymnasium env, fake backend, golden trajectory
 - [plans/day-2-osworld-integration-and-validation.md](plans/day-2-osworld-integration-and-validation.md) — OSWorld adapter, custom task, validation suite, reward-hacking audit
 - [plans/day-3-grounding-and-portfolio.md](plans/day-3-grounding-and-portfolio.md) — grounding dataset, set-of-marks experiment, analysis, portfolio package
+- [plans/grounding-evaluation-platform.md](plans/grounding-evaluation-platform.md) — local-first evaluation, governance, serving, and rollback platform milestone
 
 If this file and a day plan disagree, the day plan wins for task detail; this file wins for process and invariants.
 
 ## 2. Current repository state
 
-Planning documents only. There is **no code yet**. The first implementation task is D1.2 (project scaffold).
+The core environment, OSWorld adapter, validation suite, frozen grounding experiment, and
+local-first platform components are implemented. The platform milestone is in progress; its D4.12
+milestone gate is owned by the human and must not be declared passed by an agent.
 
-Target layout once scaffolded (from Day 1):
+Current repository layout includes the following core paths:
 
 ```text
 pixelgym/
@@ -30,9 +40,13 @@ pixelgym/
 ├── task_spec.py      # typed task + submission contracts
 ├── evaluator.py      # privileged, host-side, structured EvaluationResult
 ├── backends/         # base.py protocol, fake.py, later osworld.py
-└── tasks/vendor_form/app/   # deterministic HTML/CSS/JS + FastAPI service
+├── tasks/vendor_form/app/   # deterministic HTML/CSS/JS + FastAPI service
+├── grounding/               # frozen dataset, provider, scoring, and report code
+└── platform/                # evaluation, immutable evidence, gates, control plane, and serving API
+flows/                       # Metaflow evaluation flow
 tests/{unit,integration}/
-artifacts/            # validation + grounding reports, generated evidence
+artifacts/            # validation, grounding, and platform evidence
+deploy/               # local Compose stack and platform runtime images
 scripts/
 ```
 
@@ -74,7 +88,7 @@ These define the project's claim. Do not weaken one to make a task easier; stop 
 Some tasks in the plans are owned by **YOU** (the human), not by an agent. An agent must prepare work up to these points and then stop:
 
 - **Scope changes** (D1.1). If a feature does not improve the Gym contract, evaluator correctness, validation evidence, or the grounding experiment — defer it. Do not add it and ask later.
-- **Day gates** (D1.8, D2.11, D3.11). Agents run the documented checks and report **raw results only** — command, exit status, counts, full output. Do not summarize a gate as passing, do not offer a provisional PASS/FAIL, and do not tick the checklist boxes. The human reads the raw evidence and declares the verdict.
+- **Day gates** (D1.8, D2.11, D3.11, D4.12). Agents run the documented checks and report **raw results only** — command, exit status, counts, full output. Do not summarize a gate as passing, do not offer a provisional PASS/FAIL, and do not tick the checklist boxes. The human reads the raw evidence and declares the verdict.
 - **Provider choice and cloud spend** (D2.1), including the 90-minute infrastructure stop-loss.
 - **Any paid model call** (D3.5, D3.6). Run the ten-example pilot only after explicit approval, stop at twenty condition calls, and do not continue to the full run without a second approval.
 - **Public claims** — README wording, demo media, resume bullets (D3.9–D3.11).

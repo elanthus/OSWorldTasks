@@ -6,6 +6,7 @@ import math
 
 from pixelgym.platform.contracts import (
     CompletenessObservation,
+    ConfidenceBoundObservation,
     GateObservation,
     GatePolicy,
     GateReport,
@@ -13,6 +14,40 @@ from pixelgym.platform.contracts import (
 )
 
 GATE_REPORT_SCHEMA_VERSION = "pixelgym-promotion-gate-report-v1"
+WILSON_LOWER_BOUND_METHOD = "wilson-score-one-sided-v1"
+
+
+def _is_count(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _one_sided_normal_quantile(confidence_level: float) -> float:
+    """Return the standard-normal quantile for a one-sided confidence level.
+
+    ``statistics.NormalDist`` is in the standard library, so the calculation is
+    deterministic and does not make the platform depend on a floating statistics
+    package.  The policy records the level; the report records it and the method.
+    """
+    from statistics import NormalDist
+
+    return NormalDist().inv_cdf(confidence_level)
+
+
+def _wilson_lower_bound(*, successes: int, sample_size: int, confidence_level: float) -> float | None:
+    """One-sided Wilson score lower bound for Bernoulli accuracy observations."""
+    if not (_is_count(successes) and _is_count(sample_size) and 0 < sample_size):
+        return None
+    if successes > sample_size:
+        return None
+    z = _one_sided_normal_quantile(confidence_level)
+    proportion = successes / sample_size
+    z_squared = z * z
+    denominator = 1 + z_squared / sample_size
+    centre = proportion + z_squared / (2 * sample_size)
+    margin = z * math.sqrt(
+        proportion * (1 - proportion) / sample_size + z_squared / (4 * sample_size**2)
+    )
+    return (centre - margin) / denominator
 
 
 def _finite(value: float | None) -> bool:
@@ -21,14 +56,24 @@ def _finite(value: float | None) -> bool:
 
 def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
     reasons: list[str] = []
+    count_values = (
+        summary.expected_count,
+        summary.scored_count,
+        summary.unique_record_count,
+        summary.correct_count,
+        summary.invalid_count,
+        summary.request_failure_count,
+    )
     count_evidence = (
-        summary.expected_count > 0
-        and 0 <= summary.correct_count <= summary.scored_count <= summary.expected_count
-        and summary.unique_record_count >= 0
+        all(_is_count(value) for value in count_values)
+        and summary.expected_count > 0
+        and summary.correct_count <= summary.scored_count <= summary.expected_count
+        # Invalid and request-failure records are retained and counted as incorrect;
+        # neither may be hidden by claiming it was a correct observation.
+        and summary.correct_count + summary.invalid_count + summary.request_failure_count
+        <= summary.scored_count
     )
-    expected_accuracy = (
-        summary.correct_count / summary.expected_count if summary.expected_count > 0 else None
-    )
+    expected_accuracy = summary.correct_count / summary.expected_count if count_evidence else None
     accuracy_consistent = (
         _finite(summary.accuracy)
         and expected_accuracy is not None
@@ -83,12 +128,47 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
     if not compatibility_passed:
         reasons.append("dataset, scorer, target semantics, or provider class is incompatible")
 
-    code_revision_passed = policy.dirty_code_allowed or not summary.dirty_code
+    clean_provenance = (
+        summary.code_state == "clean"
+        and summary.code_provenance_verified
+        and not summary.dirty_code
+    )
+    code_revision_passed = policy.dirty_code_allowed or clean_provenance
     if not code_revision_passed:
-        reasons.append("dirty code revisions are forbidden by this gate policy")
+        reasons.append(
+            "dirty code or clean Git/build source provenance is missing, malformed, or unverifiable"
+        )
 
-    if policy.confidence_bound_required:
-        reasons.append("confidence-bound evidence is required but absent from run summary v1")
+    lower_bound = _wilson_lower_bound(
+        successes=summary.correct_count,
+        sample_size=summary.scored_count,
+        confidence_level=policy.confidence_level,
+    )
+    confidence_bound_passed = bool(
+        policy.confidence_bound_required
+        and count_evidence
+        and accuracy_consistent
+        and lower_bound is not None
+        and lower_bound >= policy.minimum_accuracy
+    )
+    confidence_bound = (
+        ConfidenceBoundObservation(
+            observed=lower_bound,
+            threshold=policy.minimum_accuracy,
+            passed=confidence_bound_passed,
+            method=WILSON_LOWER_BOUND_METHOD,
+            confidence_level=policy.confidence_level,
+            success_count=summary.correct_count,
+            sample_count=summary.scored_count,
+        )
+        if policy.confidence_bound_required
+        else None
+    )
+    if policy.confidence_bound_required and not confidence_bound_passed:
+        reasons.append(
+            "one-sided Wilson accuracy lower confidence bound is missing, inconsistent, "
+            "insufficient, or below the minimum"
+        )
 
     passed = all(
         (
@@ -98,7 +178,7 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
             completeness_passed,
             compatibility_passed,
             code_revision_passed,
-            not policy.confidence_bound_required,
+            not policy.confidence_bound_required or confidence_bound_passed,
         )
     )
     return GateReport(
@@ -125,5 +205,6 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
         compatibility_passed=compatibility_passed,
         code_revision_passed=code_revision_passed,
         overall_passed=passed,
+        confidence_bound=confidence_bound,
         reasons=tuple(reasons),
     )

@@ -97,6 +97,44 @@ The observation is only an RGB screenshot. The evaluator reads privileged task s
 agent interface; expected values and bounding boxes never enter the environment observation or
 `info`. Build-time grounding instrumentation is separate from the evaluation adapter.
 
+## Platform milestone
+
+The local-first platform wraps the frozen grounding workload with resumable evaluation, immutable
+evidence storage, mechanical promotion gates, explicit human approval, exact-version serving, and
+audited rollback. Its architecture keeps the control plane separate from MLflow metadata and the
+authoritative immutable artifact store. See the [platform architecture](artifacts/platform/architecture.md)
+and the [platform milestone plan](plans/grounding-evaluation-platform.md) for boundaries and
+current scope.
+
+### Local no-cost platform reproduction
+
+The scripted lifecycle demo uses local services and a deterministic provider; its metrics are
+synthetic governance fixtures, not model-quality evidence. It requires Docker and does not make
+provider calls. From the repository root:
+
+```bash
+python3.12 scripts/platform_compose.py up --build --wait
+```
+
+Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
+stack while retaining its local evidence with:
+
+```bash
+python3.12 scripts/platform_compose.py down
+```
+
+Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
+derives and bind-mounts the source-provenance file required to verify the packaged source. If a
+previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
+the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
+
+The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
+limitations are available in the [demo script](artifacts/platform/demo-script.md),
+[API transcript](artifacts/platform/demo-api-transcript.jsonl),
+[integrity evidence](artifacts/platform/immutable-artifact-verification.json), and
+[platform limitations](artifacts/platform/known-limitations.md). D4.12 remains a human-owned
+milestone gate; this documentation does not declare it passed.
+
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
@@ -209,3 +247,4 @@ known limitation, with the underlying evidence retained
 - [`plans/day-1-environment-core.md`](plans/day-1-environment-core.md)
 - [`plans/day-2-osworld-integration-and-validation.md`](plans/day-2-osworld-integration-and-validation.md)
 - [`plans/day-3-grounding-and-portfolio.md`](plans/day-3-grounding-and-portfolio.md)
+- [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)

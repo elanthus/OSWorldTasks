@@ -16,6 +16,11 @@ from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.runtime_fixture import provider_ledger_snapshot
+from pixelgym.platform.source_provenance import (
+    SOURCE_PROVENANCE_SCHEMA_VERSION,
+    SourceProvenance,
+    source_tree_sha256,
+)
 
 pytest.importorskip("mlflow")
 
@@ -60,13 +65,25 @@ def _prepare(root: Path) -> str:
 
 
 def _environment(repository_root: Path, root: Path, failpoint: str | None) -> dict[str, str]:
+    provenance_path = root / "source-provenance.json"
+    provenance_path.write_text(
+        json.dumps(
+            SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION,
+                "a" * 40,
+                source_tree_sha256(repository_root),
+                "clean",
+                "git-build-inputs-v1",
+            ).to_dict()
+        )
+    )
     environment = os.environ.copy()
     environment.update(
         {
             "PIXELGYM_REPOSITORY_ROOT": str(repository_root),
             "PIXELGYM_IMMUTABLE_ROOT": str(root / "immutable"),
             "PIXELGYM_CONTROL_DB": str(root / "control.db"),
-            "PIXELGYM_CODE_REVISION": "a" * 40,
+            "PIXELGYM_SOURCE_PROVENANCE_PATH": str(provenance_path),
             "MLFLOW_TRACKING_URI": f"sqlite:///{root / 'mlflow.db'}",
             "PIXELGYM_ENABLE_TEST_HOOKS": "1",
             "PIXELGYM_TEST_PROVIDER_LEDGER": str(root / "provider.db"),

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,6 +11,7 @@ import pytest
 from flows import grounding_evaluation_flow as flow_module
 from flows.grounding_evaluation_flow import GroundingEvaluationFlow
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.evaluation import (
     EvaluationRunner,
     PlatformProviderResponse,
@@ -17,6 +19,26 @@ from pixelgym.platform.evaluation import (
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.source_provenance import (
+    SOURCE_PROVENANCE_SCHEMA_VERSION,
+    SourceProvenance,
+    source_tree_sha256,
+)
+
+
+def test_evaluation_flow_leaves_s3_retry_policy_at_the_sdk_default(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class CapturedS3Store:
+        def __init__(self, **kwargs: object) -> None:
+            captured.update(kwargs)
+
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_BUCKET", "immutable")
+    monkeypatch.setattr(flow_module, "S3ImmutableStore", CapturedS3Store)
+
+    flow_module._store()
+
+    assert "retry_max_attempts" not in captured
 
 
 class FlowHarness:
@@ -74,7 +96,19 @@ def _configure(
         "current",
         SimpleNamespace(flow_name="GroundingEvaluationFlow", run_id="fixture-run"),
     )
-    monkeypatch.setenv("PIXELGYM_CODE_REVISION", "a" * 40)
+    provenance_path = tmp_path / "source-provenance.json"
+    provenance_path.write_text(
+        json.dumps(
+            SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION,
+                "a" * 40,
+                source_tree_sha256(repository_root),
+                "clean",
+                "git-build-inputs-v1",
+            ).to_dict()
+        )
+    )
+    monkeypatch.setenv("PIXELGYM_SOURCE_PROVENANCE_PATH", str(provenance_path))
     return store, tracking, provider, control, submission_id
 
 
@@ -103,6 +137,38 @@ def test_start_allows_only_frozen_scripted_pairings() -> None:
     unknown.model = "unreviewed-model"
     with pytest.raises(ValueError, match="outside the scripted allowlist"):
         GroundingEvaluationFlow.start(unknown)
+
+
+def test_hand_entered_revision_without_packaged_provenance_cannot_claim_clean(
+    monkeypatch: pytest.MonkeyPatch, repository_root: Path, tmp_path: Path
+) -> None:
+    _store, _tracking, _provider, _control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    monkeypatch.delenv("PIXELGYM_SOURCE_PROVENANCE_PATH")
+    monkeypatch.setenv("PIXELGYM_CODE_REVISION", "f" * 40)
+    flow = _new_flow(submission_id)
+    GroundingEvaluationFlow.validate_and_freeze_inputs(flow)
+    assert flow.policy["code_revision"] == "unverifiable"
+    assert flow.policy["code_state"] == "unverifiable"
+    assert not flow.policy["source_provenance_verified"]
+    assert flow.policy["source_provenance_failure_reason"] == "not_configured"
+    assert flow.policy["dependency_lock_sha256"] == dependency_lock_sha256(repository_root)
+
+
+def test_invalid_utf8_packaged_provenance_fails_closed_in_runtime_policy(
+    monkeypatch: pytest.MonkeyPatch, repository_root: Path, tmp_path: Path
+) -> None:
+    _store, _tracking, _provider, _control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    provenance_path = tmp_path / "source-provenance.json"
+    provenance_path.write_bytes(b'{"private": "\xff"}')
+    flow = _new_flow(submission_id)
+    GroundingEvaluationFlow.validate_and_freeze_inputs(flow)
+    assert flow.policy["code_state"] == "unverifiable"
+    assert not flow.policy["source_provenance_verified"]
+    assert flow.policy["source_provenance_failure_reason"] == "manifest_invalid_utf8"
 
 
 def _run_flow(

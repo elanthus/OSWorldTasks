@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
-from pixelgym.platform.policy import is_verified_clean_revision
 
 FIXTURES = (
     ("1", "day3-replay-baseline-v1", "blocked-candidate-a"),
@@ -23,12 +22,6 @@ def main() -> None:
     parser.add_argument("--database", required=True)
     args = parser.parse_args()
     root = Path(__file__).parents[1]
-    revision = os.environ.get("PIXELGYM_CODE_REVISION", "unknown-dirty")
-    if not is_verified_clean_revision(revision):
-        raise SystemExit(
-            "set PIXELGYM_CODE_REVISION to the exact 40-character lowercase clean Git commit "
-            "before preparing candidates"
-        )
     control = ControlStore(
         args.database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),

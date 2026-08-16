@@ -7,9 +7,10 @@ import hmac
 import html
 import secrets
 from collections.abc import Callable
+from difflib import HtmlDiff
 from pathlib import Path
 from typing import Annotated, Any
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -24,6 +25,7 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.policy import prompt_template
 
 DATASET_OPTIONS = {
     "day3-frozen-v1": "Frozen Day 3 dataset · 100 examples",
@@ -78,21 +80,117 @@ def _layout(title: str, body: str, *, csrf: str = "") -> str:
 <body><header class="shell"><a class="brand" href="/">PIXELGYM <span>CONTROL</span></a>
 <nav aria-label="Primary"><a href="/">Submit</a><a href="/runs">Runs</a><a href="/compare">Compare</a><a href="/deployment">Deployment</a></nav></header>
 <main class="shell">{body}</main><footer class="shell">Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
-<meta name="csrf-token" content="{_escape(csrf)}"></body></html>"""
+</body></html>""".replace(
+        "</head>", f'<meta name="csrf-token" content="{_escape(csrf)}"></head>'
+    )
 
 
 def _token(secret: bytes, session: str) -> str:
     return hmac.new(secret, session.encode(), hashlib.sha256).hexdigest()
 
 
+def _short_digest(value: str | None, *, width: int = 12) -> str:
+    if not value:
+        return "missing"
+    return value.removeprefix("sha256:")[:width]
+
+
+def _safe_link(uri: str, label: str) -> str:
+    """Render only stored external evidence URIs with a non-scriptable scheme."""
+    if urlsplit(uri).scheme not in {"http", "https", "s3"}:
+        return f'<span class="muted">{_escape(label)} unavailable</span>'
+    return f'<a href="{_escape(uri)}">{_escape(label)} ↗</a>'
+
+
+def _artifact(candidate: Any, suffix: str) -> Any | None:
+    return next((item for item in candidate.artifacts if item.logical_key.endswith(suffix)), None)
+
+
+def _candidate_badges(candidate: Any) -> str:
+    report = candidate.gate_report
+    summary = candidate.summary
+    # Older rows do not have a summary.  The scripted provider identity remains an
+    # attributable policy field; do not call an unrecorded provider "demo".
+    synthetic = (
+        summary.synthetic_provider
+        if summary is not None
+        else candidate.policy.provider == "scripted-demo"
+    )
+    badges = [_badge("DEMO PROVIDER" if synthetic else "REAL PROVIDER", "demo" if synthetic else "real")]
+    if not report["completeness"]["passed"]:
+        badges.append(_badge("INCOMPLETE", "bad"))
+    if candidate.policy.code_state != "clean":
+        badges.append(_badge("DIRTY CODE", "bad"))
+    if candidate.policy.source_provenance_failure_reason is not None:
+        badges.append(
+            _badge(
+                f"PROVENANCE: {candidate.policy.source_provenance_failure_reason.replace('_', ' ').upper()}",
+                "bad",
+            )
+        )
+    unpriced = (
+        report["cost_usd_per_100"]["observed"] is None
+        or (summary is not None and summary.unpriced_call_count > 0)
+    )
+    if unpriced:
+        badges.append(_badge("UNPRICED", "bad"))
+    return " ".join(badges)
+
+
 def _candidate_row(candidate: Any, mlflow_base_url: str) -> str:
     report = candidate.gate_report
     state_tone = "good" if candidate.state in {CandidateState.ELIGIBLE, CandidateState.APPROVED} else "bad"
-    return f"""<tr><td><a href="/candidates/{_escape(candidate.candidate_id)}">{_escape(candidate.candidate_id)}</a><br>{_badge('DEMO PROVIDER', 'demo')}</td>
+    summary = candidate.summary
+    invalid_count = "missing" if summary is None else str(summary.invalid_count)
+    return f"""<tr><td><a href="/candidates/{_escape(candidate.candidate_id)}">{_escape(candidate.candidate_id)}</a><br><span class="muted">{_escape(candidate.policy.provider)}</span><br>{_candidate_badges(candidate)}</td>
 <td>{_escape(candidate.policy.model)}<br><span class="muted">prompt v{candidate.policy.prompt_version}</span></td>
 <td class="number">{_percentage(report['accuracy']['observed'])}</td><td class="number">{_money(report['cost_usd_per_100']['observed'])}</td>
 <td class="number">{_milliseconds(report['provider_latency_p95_ms']['observed'])}</td><td>{_badge(candidate.state.value, state_tone)}</td>
-<td><a href="{_escape(mlflow_base_url)}/#/experiments/0/runs/{_escape(candidate.source_run_id)}">MLflow ↗</a></td></tr>"""
+<td><span class="mono">{_escape(_short_digest(report['dataset_fingerprint']))}</span><br><span class="muted">code {_escape(_short_digest(candidate.policy.code_revision))} · invalid {invalid_count}</span></td>
+<td>{_safe_link(f'{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}', 'MLflow')}</td></tr>"""
+
+
+def _evidence_links(candidate: Any, mlflow_base_url: str) -> str:
+    raw_count = sum(item.logical_key.startswith("raw-responses/") for item in candidate.artifacts)
+    predictions = _artifact(candidate, "/predictions.jsonl")
+    gate = _artifact(candidate, "/gate-report.json")
+    raw = (
+        f'<a href="/candidates/{_escape(candidate.candidate_id)}/evidence/raw-responses">'
+        f"Raw-response index ({raw_count})</a>"
+        if raw_count
+        else '<span class="muted">Raw-response index unavailable</span>'
+    )
+    per_example = (
+        _safe_link(predictions.uri, "Per-example errors")
+        if predictions is not None
+        else '<span class="muted">Per-example errors unavailable</span>'
+    )
+    gate_link = (
+        _safe_link(gate.uri, "Gate report")
+        if gate is not None
+        else '<span class="muted">Gate report unavailable</span>'
+    )
+    mlflow = _safe_link(
+        f"{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}", "MLflow run"
+    )
+    return f'<div class="evidence-links">{raw} · {per_example} · {gate_link} · {mlflow}</div>'
+
+
+def _delta(value: object, baseline: object, *, kind: str) -> str:
+    if value is None or baseline is None:
+        return "Δ unavailable"
+    difference = float(value) - float(baseline)
+    if kind == "accuracy":
+        return f"Δ {difference * 100:+.1f} pp"
+    if kind == "money":
+        return f"Δ ${difference:+.2f}"
+    return f"Δ {difference:+.1f} ms"
+
+
+def _comparison_card(candidate: Any, baseline: Any, mlflow_base_url: str) -> str:
+    report = candidate.gate_report
+    baseline_report = baseline.gate_report
+    return f"""<article class="metric-card"><p>{_escape(candidate.candidate_id)}</p><h3>{_percentage(report['accuracy']['observed'])}</h3><small>{_escape(_delta(report['accuracy']['observed'], baseline_report['accuracy']['observed'], kind='accuracy'))}</small><dl><dt>Cost / 100</dt><dd>{_money(report['cost_usd_per_100']['observed'])}<br><small>{_escape(_delta(report['cost_usd_per_100']['observed'], baseline_report['cost_usd_per_100']['observed'], kind='money'))}</small></dd><dt>Provider p95</dt><dd>{_milliseconds(report['provider_latency_p95_ms']['observed'])}<br><small>{_escape(_delta(report['provider_latency_p95_ms']['observed'], baseline_report['provider_latency_p95_ms']['observed'], kind='latency'))}</small></dd><dt>Gate state</dt><dd>{_escape(candidate.state.value)}</dd></dl>{_evidence_links(candidate, mlflow_base_url)}</article>"""
 
 
 def create_control_app(
@@ -182,14 +280,43 @@ def create_control_app(
         return RedirectResponse(f"/runs?submitted={submission_id}", status_code=303)
 
     @app.get("/runs", response_class=HTMLResponse)
-    def runs_view(request: Request, submitted: str | None = None) -> str:
+    def runs_view(
+        request: Request,
+        submitted: str | None = None,
+        provider: str | None = None,
+        lifecycle: str | None = None,
+        dataset: str | None = None,
+        code_revision: str | None = None,
+    ) -> str:
         candidates = control.list_candidates()
+        if provider:
+            candidates = [item for item in candidates if item.policy.provider == provider]
+        if lifecycle:
+            candidates = [item for item in candidates if item.state.value == lifecycle]
+        if dataset:
+            candidates = [
+                item
+                for item in candidates
+                if item.gate_report["dataset_fingerprint"].removeprefix("sha256:").startswith(dataset)
+            ]
+        if code_revision:
+            candidates = [
+                item
+                for item in candidates
+                if item.policy.code_revision.removeprefix("sha256:").startswith(code_revision)
+            ]
         notice = f'<div class="notice">Submission {_escape(submitted)} accepted.</div>' if submitted else ""
         rows = "".join(_candidate_row(item, mlflow_base_url) for item in candidates)
         if not rows:
-            rows = '<tr><td colspan="7" class="empty">No evaluated candidates yet.</td></tr>'
+            rows = '<tr><td colspan="8" class="empty">No evaluated candidates match these filters.</td></tr>'
+        provider_options = sorted({item.policy.provider for item in control.list_candidates()})
+        lifecycle_options = [item.value for item in CandidateState]
+        filter_form = f"""<form method="get" action="/runs" class="filter-grid"><label>Provider<select name="provider"><option value="">All providers</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == provider else ''}>{_escape(value)}</option>' for value in provider_options)}</select></label>
+<label>Lifecycle<select name="lifecycle"><option value="">All states</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == lifecycle else ''}>{_escape(value)}</option>' for value in lifecycle_options)}</select></label>
+<label>Dataset fingerprint prefix<input name="dataset" value="{_escape(dataset or '')}" pattern="[0-9a-f]*" maxlength="64"></label>
+<label>Code revision prefix<input name="code_revision" value="{_escape(code_revision or '')}" pattern="[0-9a-f]*" maxlength="40"></label><button type="submit">Filter runs</button></form>"""
         body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Every result stays visible.</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
-<section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table></section>"""
+<section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table></section>"""
         return _layout("Runs", body, csrf=request.state.csrf)
 
     @app.get("/compare", response_class=HTMLResponse)
@@ -210,15 +337,54 @@ def create_control_app(
         ) for item in selected}) == 1
         comparison = ""
         if selected:
+            baseline = selected[0]
             cards = "".join(
-                f"""<article class="metric-card"><p>{_escape(item.candidate_id)}</p><h3>{_percentage(item.gate_report['accuracy']['observed'])}</h3><dl><dt>Cost / 100</dt><dd>{_money(item.gate_report['cost_usd_per_100']['observed'])}</dd><dt>Provider p95</dt><dd>{_milliseconds(item.gate_report['provider_latency_p95_ms']['observed'])}</dd><dt>Gate state</dt><dd>{_escape(item.state.value)}</dd></dl></article>"""
+                _comparison_card(item, baseline, mlflow_base_url)
                 for item in selected
             )
             warning = _badge("COMPATIBLE", "good") if compatible else _badge("PROMOTION COMPARISON BLOCKED", "bad")
             explanation = "Same dataset fingerprint, scorer, target semantics, and primary metric." if compatible else "Select 2–4 runs with the same dataset fingerprint, scorer, and target semantics."
-            comparison = f'<section class="comparison-head">{warning}<p>{explanation}</p></section><div class="metric-grid">{cards}</div>'
+            prompt_diff = ""
+            if len(selected) >= 2:
+                query = urlencode([( "candidate", item.candidate_id) for item in selected[:2]])
+                prompt_diff = f'<p><a href="/compare/prompt-diff?{_escape(query)}">Prompt diff (recorded versions)</a></p>'
+            comparison = f'<section class="comparison-head">{warning}<p>{explanation}</p>{prompt_diff}</section><div class="metric-grid">{cards}</div>'
         body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>No favorable metric gets to travel alone.</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
         return _layout("Compare", body, csrf=request.state.csrf)
+
+    @app.get("/compare/prompt-diff", response_class=HTMLResponse)
+    def prompt_diff_view(
+        request: Request, candidate: Annotated[list[str] | None, Query()] = None
+    ) -> str:
+        selected_ids = candidate or []
+        if len(selected_ids) != 2:
+            raise HTTPException(422, "prompt diff requires exactly two candidates")
+        before, after = [candidate_or_404(item) for item in selected_ids]
+        try:
+            before_prompt = prompt_template(before.policy.prompt_version)
+            after_prompt = prompt_template(after.policy.prompt_version)
+        except ValueError as exc:
+            raise HTTPException(409, "recorded prompt version is unavailable for rendering") from exc
+        diff = HtmlDiff(wrapcolumn=88).make_table(
+            before_prompt.splitlines(),
+            after_prompt.splitlines(),
+            fromdesc=_escape(f"{before.candidate_id} · v{before.policy.prompt_version}"),
+            todesc=_escape(f"{after.candidate_id} · v{after.policy.prompt_version}"),
+            context=True,
+        )
+        body = f"""<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>This is rendered from each candidate's stored prompt version and digest using the frozen local templates; no separate immutable prompt-diff artifact was recorded.</p></section><section class="panel diff-table">{diff}</section>"""
+        return _layout("Prompt diff", body, csrf=request.state.csrf)
+
+    @app.get("/candidates/{candidate_id}/evidence/raw-responses", response_class=HTMLResponse)
+    def raw_response_index(candidate_id: str, request: Request) -> str:
+        item = candidate_or_404(candidate_id)
+        raw = [reference for reference in item.artifacts if reference.logical_key.startswith("raw-responses/")]
+        rows = "".join(
+            f"<li><span class=\"mono\">{_escape(reference.logical_key)}</span> · {_safe_link(reference.uri, 'immutable object')}</li>"
+            for reference in raw
+        ) or "<li>No raw-response references were stored for this candidate.</li>"
+        body = f"""<section class="page-title"><p class="eyebrow">IMMUTABLE EVIDENCE</p><h1>Raw-response index.</h1><p>{len(raw)} stored raw-response object references for {_escape(candidate_id)}.</p></section><section class="panel"><ul class="evidence-index">{rows}</ul></section>"""
+        return _layout("Raw-response index", body, csrf=request.state.csrf)
 
     @app.get("/candidates/{candidate_id}", response_class=HTMLResponse)
     def candidate_view(candidate_id: str, request: Request) -> str:
@@ -232,7 +398,11 @@ def create_control_app(
             controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/deploy"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Deployment reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Deploy approved version</button></form>"""
         else:
             controls = '<div class="blocked"><strong>Approval unavailable</strong><p>A failed gate is terminal for this candidate. Revise the policy and create a new run.</p></div>'
-        body = f"""<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1><p class="mono">{_escape(item.policy.policy_id)}</p></section><div class="detail-grid"><section class="panel"><h2>Gate report</h2><div class="metric-strip"><div><span>Accuracy</span><strong>{_percentage(report['accuracy']['observed'])}</strong><small>minimum {_percentage(report['accuracy']['threshold'])}</small></div><div><span>Cost / 100</span><strong>{_money(report['cost_usd_per_100']['observed'])}</strong><small>maximum {_money(report['cost_usd_per_100']['threshold'])}</small></div><div><span>Provider p95</span><strong>{_milliseconds(report['provider_latency_p95_ms']['observed'])}</strong><small>maximum {_milliseconds(report['provider_latency_p95_ms']['threshold'])}</small></div></div><h3>Decision details</h3><ul>{reasons}</ul></section><aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p><h2>{_escape(item.state.value)}</h2><p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>{controls}</aside></div>"""
+        invalid = "missing" if item.summary is None else str(item.summary.invalid_count)
+        disclosure = ""
+        if item.policy.provider == "scripted-demo" and item.policy.model == "day3-replay-revised-v2":
+            disclosure = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
+        body = f"""<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1><p class="mono">{_escape(item.policy.policy_id)}</p><p>{_escape(item.policy.provider)} · code {_escape(_short_digest(item.policy.code_revision))} · invalid outputs {invalid}</p>{_candidate_badges(item)}{disclosure}</section><div class="detail-grid"><section class="panel"><h2>Gate report</h2><div class="metric-strip"><div><span>Accuracy</span><strong>{_percentage(report['accuracy']['observed'])}</strong><small>minimum {_percentage(report['accuracy']['threshold'])}</small></div><div><span>Cost / 100</span><strong>{_money(report['cost_usd_per_100']['observed'])}</strong><small>maximum {_money(report['cost_usd_per_100']['threshold'])}</small></div><div><span>Provider p95</span><strong>{_milliseconds(report['provider_latency_p95_ms']['observed'])}</strong><small>maximum {_milliseconds(report['provider_latency_p95_ms']['threshold'])}</small></div></div><h3>Evidence</h3>{_evidence_links(item, mlflow_base_url)}<h3>Decision details</h3><ul>{reasons}</ul></section><aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p><h2>{_escape(item.state.value)}</h2><p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>{controls}</aside></div>"""
         return _layout("Candidate", body, csrf=request.state.csrf)
 
     def _approve(candidate_id: str, reason: str) -> None:
@@ -290,7 +460,13 @@ def create_control_app(
         rollback = ""
         if active:
             active_html = f'<h2>{_escape(active.policy_id)}</h2><p>Deployment {_escape(active.deployment_id)} · generation {active.generation}</p>'
-            if active.previous_deployment_id and coordinator is not None:
+            try:
+                control.previous_target(active)
+            except TransitionError:
+                has_rollback_target = False
+            else:
+                has_rollback_target = True
+            if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
         timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>' for event in events)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol></section></div>"""

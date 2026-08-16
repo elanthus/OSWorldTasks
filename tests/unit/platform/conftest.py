@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
 from pixelgym.platform.contracts import GatePolicy, RunSummary
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
 @pytest.fixture
@@ -25,9 +26,16 @@ def gate_policy(repository_root: Path) -> GatePolicy:
 
 @pytest.fixture
 def policy_factory(repository_root: Path, gate_policy: GatePolicy):
-    def build(version: int = 2, *, revision: str = "a" * 40, model: str | None = None):
+    def build(
+        version: int = 2,
+        *,
+        revision: str = "a" * 40,
+        model: str | None = None,
+        provider: str = "scripted-demo",
+        code_state: str = "clean",
+    ):
         return build_policy_manifest(
-            provider="scripted-demo",
+            provider=provider,
             model=model or ("day3-replay-baseline-v1" if version == 1 else "day3-replay-revised-v2"),
             prompt_name=PROMPT_NAME,
             prompt_version=version,
@@ -38,10 +46,10 @@ def policy_factory(repository_root: Path, gate_policy: GatePolicy):
             scorer_version=gate_policy.required_scorer_version,
             overlay_version="none-raw-coordinate-policy",
             target_semantics=gate_policy.required_target_semantics,
-            code_revision=revision,
-            dependency_lock_sha256=hashlib.sha256(
-                (repository_root / "pyproject.toml").read_bytes()
-            ).hexdigest(),
+            source_provenance=SourceProvenance(
+                SOURCE_PROVENANCE_SCHEMA_VERSION, revision, "b" * 64, code_state, "git-build-inputs-v1"
+            ),
+            dependency_lock_sha256=dependency_lock_sha256(repository_root),
         )
 
     return build
@@ -66,5 +74,7 @@ def passing_evidence(gate_policy: GatePolicy, policy_factory):
         unpriced_call_count=0,
         provider_latency_p95_ms=100.0,
         latency_measured_count=100,
+        code_state="clean",
+        code_provenance_verified=True,
     )
     return policy, summary, evaluate_gates(gate_policy, summary)

@@ -27,11 +27,13 @@ from pixelgym.platform.contracts import (
     RunSummary,
 )
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.evaluation import EvaluationRunner, ScriptedReplayProvider
 from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_json_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+from pixelgym.platform.source_provenance import load_packaged_source_provenance
 
 _TEST_HOOKS_ENV = "PIXELGYM_ENABLE_TEST_HOOKS"
 SCRIPTED_MODEL_VARIANTS = {
@@ -190,8 +192,11 @@ class GroundingEvaluationFlow(FlowSpec):
         )
         self.dataset_fingerprint = fingerprint
         self.gate_policy = json.loads((root / "config/promotion-gates.demo-v1.json").read_text())
-        code_revision = os.environ.get("PIXELGYM_CODE_REVISION", "unknown-dirty")
-        lock_digest = __import__("hashlib").sha256((root / "pyproject.toml").read_bytes()).hexdigest()
+        provenance_path = os.environ.get("PIXELGYM_SOURCE_PROVENANCE_PATH")
+        provenance = load_packaged_source_provenance(
+            root, Path(provenance_path) if provenance_path else None
+        )
+        lock_digest = dependency_lock_sha256(root)
         self.policy = asdict(
             build_policy_manifest(
                 provider="scripted-demo",
@@ -205,7 +210,7 @@ class GroundingEvaluationFlow(FlowSpec):
                 scorer_version="pixelgym-point-inside-half-open-box-v1",
                 overlay_version="none-raw-coordinate-policy",
                 target_semantics="requested-control-center-point-v1",
-                code_revision=code_revision,
+                source_provenance=provenance,
                 dependency_lock_sha256=lock_digest,
             )
         )
@@ -327,6 +332,7 @@ class GroundingEvaluationFlow(FlowSpec):
                 policy=PolicyManifest(**self.policy),
                 gate_report=GateReport.from_dict(self.report),
                 artifacts=[ArtifactRef(**value) for value in self.references],
+                summary=RunSummary(**self.summary),
                 submission_id=self.submission_id,
             )
         except BaseException:

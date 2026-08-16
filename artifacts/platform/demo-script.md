@@ -16,9 +16,12 @@ evidence.
 4. **Blocked approval — 20 seconds.** Show that candidate A has no approval control. Replay the
    direct approval API request from `demo-api-transcript.jsonl`; it returns HTTP 409 with
    `only an eligible candidate can be approved` and does not create an approval event.
-5. **Candidate B — 20 seconds.** Open the fixed revised evaluation. Compare A and B and show that
-   the dataset fingerprint, scorer, target semantics, and primary metric are compatible. Show B at
-   100% synthetic accuracy, $0.00 cost per 100, 25 ms p95, and `Eligible`—not approved.
+5. **Candidate B — 20 seconds.** Open the fixed revised evaluation. Before discussing its metric,
+   point out the on-screen fixture disclosure: B's scripted `revised` responses are derived from
+   the frozen Day 3 rows where `condition == "marks"`, then relabeled for this policy's raw-condition
+   demonstration. They are not raw-prompt results. Compare A and B and show that the dataset
+   fingerprint, scorer, target semantics, and primary metric are compatible. Show B at 100%
+   synthetic accuracy, $0.00 cost per 100, 25 ms p95, and `Eligible`—not approved.
 6. **Human approval — 20 seconds.** As `local-reviewer`, approve B with the recorded reason. Show
    that the state changes from `Eligible` to `Approved`; no deployment exists yet.
 7. **Deploy exact policy — 25 seconds.** Approve and deploy the distinct revised-response rollback
