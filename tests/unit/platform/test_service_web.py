@@ -200,6 +200,38 @@ def test_provider_metadata_normalizer_rejects_malformed_values(
         normalize_provider_metadata(request_id, latency_ms, usage)
 
 
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"provider_request_id": ""},
+        {"provider_latency_ms": float("nan")},
+        {"usage": {"InvalidKey": 1}},
+        {"provider_request_id": None, "provider_latency_ms": 1.0},
+    ],
+)
+def test_operational_record_read_boundary_rejects_malformed_provider_metadata(
+    changes: dict[str, object],
+) -> None:
+    payload = {
+        "schema_version": OPERATIONAL_RECORD_SCHEMA_VERSION,
+        "request_id": "srv-" + "1" * 32,
+        "occurred_at": "2026-08-15T00:00:00+00:00",
+        "policy_id": "policy",
+        "deployment_id": "deployment",
+        "exact_policy_version": "candidate",
+        "terminal_status": "completed",
+        "http_status": 200,
+        "latency_ms": 1.0,
+        "provider_latency_ms": 1.0,
+        "provider_request_id": "request-1",
+        "usage": {"input_tokens": 1},
+        **changes,
+    }
+
+    with pytest.raises(ValueError, match="provider"):
+        OperationalRecord.from_dict(payload)
+
+
 def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
     log = MemoryOperationalLog()
     client = TestClient(
@@ -537,9 +569,7 @@ def test_immutable_operational_log_does_not_serialize_distinct_request_writes(tm
             terminal_status="completed",
             http_status=200,
             latency_ms=1.0,
-            provider_latency_ms=None,
-            provider_request_id=None,
-            usage=None,
+            provider_metadata=None,
         )
 
     log = ImmutableOperationalLog(RendezvousStore())
@@ -650,8 +680,18 @@ def test_bootstrap_import_is_side_effect_free_and_factory_uses_explicit_migratio
         tmp_path / "state/control.db", reviewer_identity="local-reviewer"
     )
     migrated.migrate()
+    restore_called = False
+    original_restore = module.DeploymentCoordinator.restore_active
+
+    def restore_active(coordinator):
+        nonlocal restore_called
+        restore_called = True
+        return original_restore(coordinator)
+
+    monkeypatch.setattr(module.DeploymentCoordinator, "restore_active", restore_active)
     client = TestClient(module.create_app())
 
+    assert restore_called
     assert client.get("/").status_code == 200
     assert client.get("/health/live").status_code == 200
     assert (tmp_path / "state/control.db").is_file()

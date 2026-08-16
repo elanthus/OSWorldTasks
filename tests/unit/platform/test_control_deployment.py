@@ -14,6 +14,7 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
@@ -198,6 +199,50 @@ def test_deployment_coordinator_rejects_unapproved_candidate_before_smoke(
     assert not smoke_called
 
 
+@pytest.mark.parametrize("invalid_active", ["unapproved", "gate_failed"])
+def test_serving_restore_rejects_unapproved_or_gate_failed_active_policy(
+    tmp_path: Path, passing_evidence, invalid_active: str
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    deployed = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    if invalid_active == "unapproved":
+        control.connection.execute(
+            "UPDATE candidates SET state = ? WHERE candidate_id = ?",
+            ("Eligible", candidate.candidate_id),
+        )
+    else:
+        failed_report = {**candidate.gate_report, "overall_passed": False}
+        encoded = canonical_json_bytes(failed_report)
+        control.connection.execute(
+            "UPDATE candidates SET gate_report_json = ? WHERE candidate_id = ?",
+            (encoded.decode(), candidate.candidate_id),
+        )
+    smoke_called = False
+    activated: list[object] = []
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    restoring = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=smoke,
+        on_activated=lambda deployment, prepared: activated.append(deployment),
+    )
+
+    with pytest.raises(TransitionError, match="approved|gate report"):
+        restoring.restore_active()
+    assert control.active()[0] == deployed
+    assert not smoke_called
+    assert not activated
+
+
 def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImmutableStore, suffix: str):
     policy, summary, report = passing_evidence
     if suffix:
@@ -292,6 +337,39 @@ def test_migrate_drops_legacy_deployment_link_without_losing_history(
     assert "previous_deployment_id" not in columns
     control.require_migrated()
     assert control.active()[0] == deployed
+    assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        control.connection.execute("UPDATE deployments SET actor = 'changed'")
+
+
+def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+    )
+    control.connection.execute("PRAGMA foreign_keys = OFF")
+    control.connection.execute(
+        "UPDATE active_pointer SET deployment_id = 'missing-deployment' WHERE singleton = 1"
+    )
+    control.connection.execute("PRAGMA foreign_keys = ON")
+
+    with pytest.raises(RuntimeError, match="violates foreign keys"):
+        control.migrate()
+
+    columns = {
+        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
+    }
+    assert "previous_deployment_id" in columns
+    assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        control.connection.execute("UPDATE deployments SET actor = 'changed'")
 
 
 def test_rollback_fails_when_no_previous_deployment_event_exists(

@@ -27,6 +27,7 @@ from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     OperationalLog,
     OperationalRecord,
+    ProviderMetadata,
     normalize_provider_metadata,
 )
 
@@ -103,9 +104,7 @@ class _OperationalContext:
     deployment_id: str | None = None
     exact_policy_version: str | None = None
     terminal_status: str | None = None
-    provider_latency_ms: float | None = None
-    provider_request_id: str | None = None
-    usage: dict[str, int | float] | None = None
+    provider_metadata: ProviderMetadata | None = None
 
 
 _operational_context: ContextVar[_OperationalContext | None] = ContextVar(
@@ -220,9 +219,7 @@ def create_serving_app(
                 terminal_status=status,
                 http_status=http_status,
                 latency_ms=latency_ms,
-                provider_latency_ms=context.provider_latency_ms,
-                provider_request_id=context.provider_request_id,
-                usage=context.usage,
+                provider_metadata=context.provider_metadata,
             )
             try:
                 # Immutable logging deliberately performs two store operations (put-once, then
@@ -305,7 +302,7 @@ def create_serving_app(
             status = 504 if exc.code == "timeout" else 429 if exc.code == "rate_limit" else 502
             raise HTTPException(status, f"provider request failed: {exc.code}") from exc
         try:
-            provider_request_id, provider_latency_ms, usage = normalize_provider_metadata(
+            provider_metadata = normalize_provider_metadata(
                 provider_request_id, provider_latency_ms, usage
             )
         except ValueError as exc:
@@ -313,9 +310,7 @@ def create_serving_app(
             raise HTTPException(502, "provider returned malformed operational metadata") from exc
         context = _operational_context.get()
         if context is not None:
-            context.provider_request_id = provider_request_id
-            context.provider_latency_ms = provider_latency_ms
-            context.usage = usage
+            context.provider_metadata = provider_metadata
         if runtime.loaded is not loaded:
             _set_terminal_status("runtime_mismatch")
             raise HTTPException(503, "active deployment changed during request")
@@ -332,7 +327,7 @@ def create_serving_app(
             policy_id=loaded.manifest.policy_id,
             deployment_id=loaded.deployment_id,
             exact_policy_version=loaded.exact_policy_version,
-            provider_request_id=provider_request_id,
+            provider_request_id=provider_metadata.request_id,
         )
 
     return app

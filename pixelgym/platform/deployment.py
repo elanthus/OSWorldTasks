@@ -38,6 +38,15 @@ class DeploymentCoordinator:
         candidate = self.control.get_candidate(candidate_id)
         if candidate.state is not CandidateState.APPROVED:
             raise TransitionError("candidate must be approved before activation")
+        try:
+            approval = self.control.get_approval(candidate_id)
+        except KeyError as exc:
+            raise TransitionError("candidate approval evidence is missing") from exc
+        if (
+            approval["gate_report_sha256"] != candidate.gate_report_sha256
+            or approval["policy_id"] != candidate.policy.policy_id
+        ):
+            raise TransitionError("candidate approval evidence no longer matches")
         verify_policy_manifest(candidate.policy)
         report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report))
         if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.get("overall_passed"):
@@ -62,6 +71,15 @@ class DeploymentCoordinator:
         )
         self.on_activated(result, prepared)
         return result
+
+    def restore_active(self) -> DeploymentRecord | None:
+        """Reverify and load the active deployment during serving startup."""
+        current, _generation = self.control.active()
+        if current is None:
+            return None
+        prepared = self._verify_candidate(current.candidate_id)
+        self.on_activated(current, prepared)
+        return current
 
     def rollback(self, *, actor: str, reason: str) -> DeploymentRecord:
         current, generation = self.control.active()

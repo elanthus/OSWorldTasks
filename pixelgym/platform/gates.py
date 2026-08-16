@@ -23,6 +23,7 @@ def _is_count(value: object) -> bool:
 
 
 def _one_sided_normal_quantile(confidence_level: float) -> float:
+    """Use the deterministic stdlib quantile; reports record the level and method."""
     return NormalDist().inv_cdf(confidence_level)
 
 

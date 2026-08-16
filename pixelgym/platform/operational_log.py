@@ -11,6 +11,7 @@ import json
 import math
 import re
 import threading
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from types import MappingProxyType
@@ -25,9 +26,21 @@ _PROVIDER_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,256}$")
 _USAGE_KEY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
+@dataclass(frozen=True, init=False)
+class ProviderMetadata:
+    """Provider fields admitted by the single operational-metadata boundary."""
+
+    request_id: str
+    latency_ms: float | None
+    usage: Mapping[str, int | float] | None
+
+    def __init__(self) -> None:
+        raise TypeError("provider metadata must be created by normalize_provider_metadata")
+
+
 def normalize_provider_metadata(
     request_id: object, latency_ms: object, usage: object
-) -> tuple[str, float | None, dict[str, int | float] | None]:
+) -> ProviderMetadata:
     if not isinstance(request_id, str) or not _PROVIDER_REQUEST_ID.fullmatch(request_id):
         raise ValueError("provider request ID is malformed")
     if latency_ms is not None and (
@@ -54,7 +67,17 @@ def normalize_provider_metadata(
             ):
                 raise ValueError("provider usage is malformed")
             normalized_usage[key] = value
-    return request_id, float(latency_ms) if latency_ms is not None else None, normalized_usage
+    metadata = object.__new__(ProviderMetadata)
+    object.__setattr__(metadata, "request_id", request_id)
+    object.__setattr__(
+        metadata, "latency_ms", float(latency_ms) if latency_ms is not None else None
+    )
+    object.__setattr__(
+        metadata,
+        "usage",
+        MappingProxyType(normalized_usage) if normalized_usage is not None else None,
+    )
+    return metadata
 
 
 class OperationalLogError(RuntimeError):
@@ -74,9 +97,7 @@ class OperationalRecord:
     terminal_status: str
     http_status: int
     latency_ms: float
-    provider_latency_ms: float | None
-    provider_request_id: str | None
-    usage: dict[str, int | float] | None
+    provider_metadata: ProviderMetadata | None
 
     def __post_init__(self) -> None:
         if self.schema_version != OPERATIONAL_RECORD_SCHEMA_VERSION:
@@ -93,8 +114,40 @@ class OperationalRecord:
             raise ValueError("operational terminal status and HTTP status are required")
         if not math.isfinite(self.latency_ms) or self.latency_ms < 0:
             raise ValueError("operational latency must be finite and nonnegative")
-        if self.usage is not None:
-            object.__setattr__(self, "usage", MappingProxyType(dict(self.usage)))
+        if self.provider_metadata is not None and not isinstance(
+            self.provider_metadata, ProviderMetadata
+        ):
+            raise TypeError("provider metadata must be normalized before record construction")
+
+    @property
+    def provider_latency_ms(self) -> float | None:
+        return self.provider_metadata.latency_ms if self.provider_metadata is not None else None
+
+    @property
+    def provider_request_id(self) -> str | None:
+        return self.provider_metadata.request_id if self.provider_metadata is not None else None
+
+    @property
+    def usage(self) -> Mapping[str, int | float] | None:
+        return self.provider_metadata.usage if self.provider_metadata is not None else None
+
+    @classmethod
+    def from_dict(cls, value: object) -> OperationalRecord:
+        if not isinstance(value, dict):
+            raise TypeError("operational record must be a JSON object")
+        payload = dict(value)
+        provider_request_id = payload.pop("provider_request_id")
+        provider_latency_ms = payload.pop("provider_latency_ms")
+        usage = payload.pop("usage")
+        if provider_request_id is None:
+            if provider_latency_ms is not None or usage is not None:
+                raise ValueError("provider metadata without a request ID is malformed")
+            provider_metadata = None
+        else:
+            provider_metadata = normalize_provider_metadata(
+                provider_request_id, provider_latency_ms, usage
+            )
+        return cls(**payload, provider_metadata=provider_metadata)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -159,7 +212,7 @@ class ImmutableOperationalLog:
             if reference is None:
                 return None
             value = json.loads(self.store.get_verified(reference))
-            record = OperationalRecord(**value)
+            record = OperationalRecord.from_dict(value)
         except OperationalLogError:
             raise
         except Exception as exc:
