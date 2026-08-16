@@ -26,6 +26,21 @@ from pixelgym.platform.source_provenance import (
 )
 
 
+def test_evaluation_flow_leaves_s3_retry_policy_at_the_sdk_default(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class CapturedS3Store:
+        def __init__(self, **kwargs: object) -> None:
+            captured.update(kwargs)
+
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_BUCKET", "immutable")
+    monkeypatch.setattr(flow_module, "S3ImmutableStore", CapturedS3Store)
+
+    flow_module._store()
+
+    assert "retry_max_attempts" not in captured
+
+
 class FlowHarness:
     """Minimal Metaflow task object that executes the production step bodies directly."""
 

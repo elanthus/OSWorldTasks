@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from typing import ClassVar
 
+import boto3
 import pytest
 
 from pixelgym.platform.fingerprints import (
@@ -185,3 +186,31 @@ def test_s3_adapter_fails_closed_without_versioned_object_lock_metadata() -> Non
     store = S3ImmutableStore(bucket="immutable", client=client, retention_days=30)
     with pytest.raises(ImmutableStoreError, match="Object Lock"):
         store.get_reference("raw/unlocked.json")
+
+
+@pytest.mark.parametrize(
+    ("retry_max_attempts", "expected_retries"),
+    [
+        (1, {"max_attempts": 1, "mode": "standard"}),
+        (None, None),
+    ],
+    ids=["serving", "evaluation"],
+)
+def test_s3_client_retries_are_opt_in_for_bounded_serving_writes(
+    monkeypatch: pytest.MonkeyPatch,
+    retry_max_attempts: int | None,
+    expected_retries: dict[str, object] | None,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def client(*args: object, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return _FakeS3()
+
+    monkeypatch.setattr(boto3, "client", client)
+    S3ImmutableStore(bucket="immutable", retry_max_attempts=retry_max_attempts)
+
+    config = captured["config"]
+    assert config.connect_timeout == 10.0
+    assert config.read_timeout == 10.0
+    assert config.retries == expected_retries
