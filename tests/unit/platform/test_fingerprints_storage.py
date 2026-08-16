@@ -191,7 +191,7 @@ def test_s3_adapter_fails_closed_without_versioned_object_lock_metadata() -> Non
 @pytest.mark.parametrize(
     ("retry_max_attempts", "expected_retries"),
     [
-        (1, {"max_attempts": 1, "mode": "standard"}),
+        (1, {"total_max_attempts": 1, "mode": "standard"}),
         (None, None),
     ],
     ids=["serving", "evaluation"],

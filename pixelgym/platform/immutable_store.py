@@ -164,7 +164,7 @@ class S3ImmutableStore:
             }
             if retry_max_attempts is not None:
                 config_arguments["retries"] = {
-                    "max_attempts": retry_max_attempts,
+                    "total_max_attempts": retry_max_attempts,
                     "mode": "standard",
                 }
             client = boto3.client("s3", config=Config(**config_arguments))
