@@ -93,6 +93,8 @@ def _build_immutable_store(repository_root: Path) -> LocalImmutableStore | S3Imm
             prefix=os.environ.get("PIXELGYM_IMMUTABLE_PREFIX", "platform"),
             object_lock=os.environ.get("PIXELGYM_OBJECT_LOCK", "true").lower() == "true",
             retention_days=int(os.environ.get("PIXELGYM_RETENTION_DAYS", "30")),
+            # Serving audit writes must not outlive the bounded request lifecycle.
+            retry_max_attempts=1,
         )
     return LocalImmutableStore(
         Path(

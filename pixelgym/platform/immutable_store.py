@@ -141,23 +141,33 @@ class S3ImmutableStore:
         object_lock: bool = True,
         retention_days: int = 30,
         operation_timeout_seconds: float = 10.0,
+        retry_max_attempts: int | None = None,
     ) -> None:
-        if not bucket or retention_days <= 0 or operation_timeout_seconds <= 0:
-            raise ValueError("bucket, positive retention_days, and positive operation timeout are required")
+        if (
+            not bucket
+            or retention_days <= 0
+            or operation_timeout_seconds <= 0
+            or (retry_max_attempts is not None and retry_max_attempts < 1)
+        ):
+            raise ValueError(
+                "bucket, positive retention_days and operation timeout, and a positive retry maximum are required"
+            )
         if client is None:
             try:
                 import boto3
                 from botocore.config import Config
             except ImportError as exc:  # pragma: no cover - optional integration dependency
                 raise RuntimeError('install pixelgym with the "platform" extra') from exc
-            client = boto3.client(
-                "s3",
-                config=Config(
-                    connect_timeout=operation_timeout_seconds,
-                    read_timeout=operation_timeout_seconds,
-                    retries={"max_attempts": 1, "mode": "standard"},
-                ),
-            )
+            config_arguments: dict[str, object] = {
+                "connect_timeout": operation_timeout_seconds,
+                "read_timeout": operation_timeout_seconds,
+            }
+            if retry_max_attempts is not None:
+                config_arguments["retries"] = {
+                    "total_max_attempts": retry_max_attempts,
+                    "mode": "standard",
+                }
+            client = boto3.client("s3", config=Config(**config_arguments))
         self.client = client
         self.bucket = bucket
         self.prefix = prefix.strip("/")

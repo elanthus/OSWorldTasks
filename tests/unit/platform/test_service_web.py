@@ -627,6 +627,25 @@ def test_bootstrap_factory_requires_explicit_csrf_secret(
         bootstrap.create_app()
 
 
+def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    captured: dict[str, object] = {}
+
+    class CapturedS3Store:
+        def __init__(self, **kwargs: object) -> None:
+            captured.update(kwargs)
+
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_BUCKET", "immutable")
+    monkeypatch.setattr(bootstrap, "S3ImmutableStore", CapturedS3Store)
+
+    bootstrap._build_immutable_store(tmp_path)
+
+    assert captured["retry_max_attempts"] == 1
+
+
 def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
     from pixelgym.platform import bootstrap
 
