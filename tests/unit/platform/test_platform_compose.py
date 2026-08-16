@@ -93,10 +93,34 @@ def test_no_legacy_provenance_generator_can_drift_from_the_compose_wrapper() -> 
         assert "prepare_platform_source_provenance.py" not in documentation.read_text()
 
 
-def test_down_skips_provenance_so_directory_trap_can_be_recovered(script, tmp_path, monkeypatch) -> None:
+@pytest.mark.parametrize("command", ["up", "start", "restart", "run"])
+def test_container_start_commands_prepare_source_provenance(script, tmp_path, monkeypatch, command: str) -> None:
+    prepared: list[Path] = []
+    monkeypatch.setattr(script, "ROOT", tmp_path)
+    monkeypatch.setattr(script, "prepare_source_provenance", lambda root: prepared.append(root))
+    monkeypatch.setattr(script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})())
+
+    assert script.main([command]) == 0
+    assert prepared == [tmp_path]
+
+
+@pytest.mark.parametrize("command", ["up", "start", "restart", "run"])
+def test_container_start_commands_refuse_the_directory_trap(script, tmp_path, monkeypatch, capsys, command: str) -> None:
+    (tmp_path / script.PROVENANCE_RELATIVE_PATH).mkdir(parents=True)
+    monkeypatch.setattr(script, "ROOT", tmp_path)
+    monkeypatch.setattr(script.subprocess, "run", pytest.fail)
+
+    assert script.main([command]) == 2
+    assert "directory, not the required provenance file" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("command", ["down", "stop", "ps", "logs"])
+def test_non_start_commands_skip_provenance_so_directory_trap_can_be_recovered(
+    script, tmp_path, monkeypatch, command: str
+) -> None:
     (tmp_path / script.PROVENANCE_RELATIVE_PATH).mkdir(parents=True)
     monkeypatch.setattr(script, "ROOT", tmp_path)
     monkeypatch.setattr(script, "prepare_source_provenance", pytest.fail)
     monkeypatch.setattr(script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})())
 
-    assert script.main(["down"]) == 0
+    assert script.main([command]) == 0

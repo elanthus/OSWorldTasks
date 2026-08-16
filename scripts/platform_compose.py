@@ -30,12 +30,12 @@ def prepare_source_provenance(root: Path) -> Path:
 
 
 def _requires_source_provenance(arguments: list[str]) -> bool:
-    """Only startup commands create the bind-mounted manifest.
+    """Commands that start containers create or consume the bind-mounted manifest.
 
-    Keeping ``down`` independent lets an operator stop a stack that was started
-    incorrectly and left Docker's directory in place of the expected file.
+    Keeping teardown commands independent lets an operator stop a stack that was
+    started incorrectly and left Docker's directory in place of the expected file.
     """
-    return "up" in arguments
+    return any(command in {"up", "start", "restart", "run"} for command in arguments)
 
 
 def main(argv: list[str] | None = None) -> int:
