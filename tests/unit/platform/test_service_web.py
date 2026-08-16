@@ -200,6 +200,19 @@ def test_provider_metadata_normalizer_rejects_malformed_values(
         normalize_provider_metadata(request_id, latency_ms, usage)
 
 
+def test_provider_metadata_replace_revalidates_and_remains_immutable() -> None:
+    metadata = normalize_provider_metadata("request-1", 1, {"input_tokens": 1})
+
+    changed = dataclasses.replace(metadata, latency_ms=2)
+
+    assert changed.latency_ms == 2.0
+    assert changed.usage == {"input_tokens": 1}
+    with pytest.raises(ValueError, match="request ID"):
+        dataclasses.replace(metadata, request_id="")
+    with pytest.raises(TypeError):
+        changed.usage["input_tokens"] = 2  # type: ignore[index]
+
+
 @pytest.mark.parametrize(
     "changes",
     [

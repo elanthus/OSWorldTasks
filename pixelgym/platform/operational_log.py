@@ -15,7 +15,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from types import MappingProxyType
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.immutable_store import ImmutableStore
@@ -26,58 +26,63 @@ _PROVIDER_REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{1,256}$")
 _USAGE_KEY = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
-@dataclass(frozen=True, init=False)
+@dataclass(frozen=True)
 class ProviderMetadata:
     """Provider fields admitted by the single operational-metadata boundary."""
 
     request_id: str
-    latency_ms: float | None
-    usage: Mapping[str, int | float] | None
+    latency_ms: float | None = None
+    usage: Mapping[str, int | float] | None = None
 
-    def __init__(self) -> None:
-        raise TypeError("provider metadata must be created by normalize_provider_metadata")
+    def __post_init__(self) -> None:
+        if not isinstance(self.request_id, str) or not _PROVIDER_REQUEST_ID.fullmatch(
+            self.request_id
+        ):
+            raise ValueError("provider request ID is malformed")
+        if self.latency_ms is not None and (
+            isinstance(self.latency_ms, bool)
+            or not isinstance(self.latency_ms, (int, float))
+            or not math.isfinite(self.latency_ms)
+            or self.latency_ms < 0
+        ):
+            raise ValueError("provider latency is malformed")
+        if self.usage is None:
+            normalized_usage = None
+        elif not isinstance(self.usage, Mapping):
+            raise ValueError("provider usage is malformed")
+        else:
+            normalized_usage = {}
+            for key, value in self.usage.items():
+                if (
+                    not isinstance(key, str)
+                    or not _USAGE_KEY.fullmatch(key)
+                    or isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(value)
+                    or value < 0
+                ):
+                    raise ValueError("provider usage is malformed")
+                normalized_usage[key] = value
+        object.__setattr__(
+            self,
+            "latency_ms",
+            float(self.latency_ms) if self.latency_ms is not None else None,
+        )
+        object.__setattr__(
+            self,
+            "usage",
+            MappingProxyType(normalized_usage) if normalized_usage is not None else None,
+        )
 
 
 def normalize_provider_metadata(
     request_id: object, latency_ms: object, usage: object
 ) -> ProviderMetadata:
-    if not isinstance(request_id, str) or not _PROVIDER_REQUEST_ID.fullmatch(request_id):
-        raise ValueError("provider request ID is malformed")
-    if latency_ms is not None and (
-        isinstance(latency_ms, bool)
-        or not isinstance(latency_ms, (int, float))
-        or not math.isfinite(latency_ms)
-        or latency_ms < 0
-    ):
-        raise ValueError("provider latency is malformed")
-    if usage is None:
-        normalized_usage = None
-    elif not isinstance(usage, dict):
-        raise ValueError("provider usage is malformed")
-    else:
-        normalized_usage = {}
-        for key, value in usage.items():
-            if (
-                not isinstance(key, str)
-                or not _USAGE_KEY.fullmatch(key)
-                or isinstance(value, bool)
-                or not isinstance(value, (int, float))
-                or not math.isfinite(value)
-                or value < 0
-            ):
-                raise ValueError("provider usage is malformed")
-            normalized_usage[key] = value
-    metadata = object.__new__(ProviderMetadata)
-    object.__setattr__(metadata, "request_id", request_id)
-    object.__setattr__(
-        metadata, "latency_ms", float(latency_ms) if latency_ms is not None else None
+    return ProviderMetadata(
+        cast(str, request_id),
+        cast(float | None, latency_ms),
+        cast(Mapping[str, int | float] | None, usage),
     )
-    object.__setattr__(
-        metadata,
-        "usage",
-        MappingProxyType(normalized_usage) if normalized_usage is not None else None,
-    )
-    return metadata
 
 
 class OperationalLogError(RuntimeError):

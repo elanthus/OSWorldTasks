@@ -73,7 +73,11 @@ class DeploymentCoordinator:
         return result
 
     def restore_active(self) -> DeploymentRecord | None:
-        """Reverify and load the active deployment during serving startup."""
+        """Reverify and load the active deployment during serving startup.
+
+        Any verification or deterministic smoke failure aborts application construction. A
+        persisted pointer alone is not sufficient evidence to start the policy ready.
+        """
         current, _generation = self.control.active()
         if current is None:
             return None

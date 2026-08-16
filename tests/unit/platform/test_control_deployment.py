@@ -14,7 +14,7 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
-from pixelgym.platform.fingerprints import canonical_json_bytes
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
@@ -240,6 +240,60 @@ def test_serving_restore_rejects_unapproved_or_gate_failed_active_policy(
         restoring.restore_active()
     assert control.active()[0] == deployed
     assert not smoke_called
+    assert not activated
+
+
+def test_serving_restore_rejects_gate_report_rewritten_after_approval(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    rewritten_report = {**candidate.gate_report, "run_id": "rewritten-after-approval"}
+    encoded = canonical_json_bytes(rewritten_report)
+    control.connection.execute(
+        "UPDATE candidates SET gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (encoded.decode(), sha256_bytes(encoded), candidate.candidate_id),
+    )
+    smoke_called = False
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    restoring = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=smoke
+    )
+
+    with pytest.raises(TransitionError, match="approval evidence no longer matches"):
+        restoring.restore_active()
+    assert not smoke_called
+
+
+def test_serving_restore_aborts_startup_when_active_policy_smoke_fails(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    deployed = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    activated: list[object] = []
+    restoring = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda policy: False,
+        on_activated=lambda deployment, prepared: activated.append(deployment),
+    )
+
+    with pytest.raises(TransitionError, match="deterministic smoke"):
+        restoring.restore_active()
+    assert control.active()[0] == deployed
     assert not activated
 
 
