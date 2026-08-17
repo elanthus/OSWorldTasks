@@ -11,6 +11,7 @@ import sys
 import threading
 from pathlib import Path
 
+import anyio
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -523,7 +524,7 @@ def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(po
     assert log.context_request_id == response.headers["x-pixelgym-request-id"]
 
 
-def test_operational_audit_bulkhead_limits_blocking_appends(policy_factory) -> None:
+def test_operational_audit_bulkhead_limits_blocking_appends(policy_factory, monkeypatch) -> None:
     class BlockingLog:
         def __init__(self) -> None:
             self.entered = threading.Event()
@@ -548,6 +549,19 @@ def test_operational_audit_bulkhead_limits_blocking_appends(policy_factory) -> N
 
     async def exercise() -> tuple[list[httpx.Response], BlockingLog]:
         log = BlockingLog()
+        second_audit_attempted = asyncio.Event()
+        audit_attempts = 0
+        original_run_sync = anyio.to_thread.run_sync
+
+        async def observed_run_sync(function, *args, **kwargs):
+            nonlocal audit_attempts
+            if function == log.append:
+                audit_attempts += 1
+                if audit_attempts == 2:
+                    second_audit_attempted.set()
+            return await original_run_sync(function, *args, **kwargs)
+
+        monkeypatch.setattr(anyio.to_thread, "run_sync", observed_run_sync)
         app = create_serving_app(
             PolicyRuntime(_loaded(policy_factory(), ServingFake())),
             operational_log=log,
@@ -561,13 +575,9 @@ def test_operational_audit_bulkhead_limits_blocking_appends(policy_factory) -> N
         }
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             first = asyncio.create_task(client.post("/api/v1/ground", json=payload))
-            for _ in range(100):
-                if log.entered.is_set():
-                    break
-                await asyncio.sleep(0.001)
-            assert log.entered.is_set()
+            assert await asyncio.to_thread(log.entered.wait, 1)
             second = asyncio.create_task(client.post("/api/v1/ground", json=payload))
-            await asyncio.sleep(0.02)
+            await asyncio.wait_for(second_audit_attempted.wait(), timeout=1)
             assert log.maximum_active == 1 and not second.done()
             log.release.set()
             return await asyncio.gather(first, second), log
