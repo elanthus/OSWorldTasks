@@ -71,7 +71,7 @@
       ],
       "missing_evidence": [],
       "number": 1,
-      "observed_raw_result": "593 passed, 5 skipped, 3 warnings in 54.67s; environment checker 1 passed in 0.05s; golden trajectory output contains OK; Ruff output contains All checks passed."
+      "observed_raw_result": "{\"environment_pytest\":{\"passed\":1,\"runtime\":0.05,\"skipped\":0,\"warnings\":0},\"fast_pytest\":{\"passed\":593,\"runtime\":54.67,\"skipped\":5,\"warnings\":3},\"golden_trajectory_output_contains_OK\":true,\"ruff_output_contains_all_checks_passed\":true}"
     },
     {
       "checklist_text": "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
@@ -117,7 +117,7 @@
       ],
       "missing_evidence": [],
       "number": 2,
-      "observed_raw_result": "216 passed, 3 warnings in 14.31s; stored inventory is osworld_installed=false and provider_credentials_present_before_sanitization=false, followed by provider_credentials_removed=true; the sleep scan exited 1 with empty output."
+      "observed_raw_result": "{\"boundary_inventory\":[\"osworld_installed=false\",\"provider_credentials_present_before_sanitization=false\",\"provider_credentials_removed=true\"],\"platform_unit_pytest\":{\"passed\":216,\"runtime\":14.31,\"skipped\":0,\"warnings\":3},\"sleep_scan_exit_status\":1,\"sleep_scan_output\":\"\"}"
     },
     {
       "checklist_text": "Marked platform integration tests pass against a fresh local stack.",
@@ -151,7 +151,7 @@
       ],
       "missing_evidence": [],
       "number": 3,
-      "observed_raw_result": "2 passed in 153.97s; parsed post-run Docker inventory has zero containers, images, networks, and volumes."
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":153.97,\"skipped\":0,\"warnings\":0},\"post_run_docker_inventory\":{\"containers\":[],\"images\":[],\"networks\":[],\"volumes\":[]}}"
     },
     {
       "checklist_text": "Metaflow resume tests prove no duplicate fixture-provider calls.",
@@ -196,7 +196,7 @@
       ],
       "missing_evidence": [],
       "number": 4,
-      "observed_raw_result": "9 passed in 81.06s; structured ledgers cover 6 side-effect boundaries, uninterrupted execution, and SIGKILL recovery. Each has 100 unique requests, 100 billable calls, active=0, max_active=2, and normalized evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
+      "observed_raw_result": "{\"boundary_names\":[\"candidate_registered\",\"evidence_persisted\",\"mlflow_finalized\",\"provider_response_received\",\"raw_responses_persisted\",\"run_linked\"],\"hard_kill_signal_recorded\":true,\"local_runtime_pytest\":{\"passed\":9,\"runtime\":81.06,\"skipped\":0,\"warnings\":0},\"normalized_evidence_equal\":{\"candidate_registered\":true,\"evidence_persisted\":true,\"hard_kill\":true,\"mlflow_finalized\":true,\"provider_response_received\":true,\"raw_responses_persisted\":true,\"run_linked\":true,\"uninterrupted\":true},\"provider_ledgers\":{\"candidate_registered\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"evidence_persisted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"hard_kill\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"mlflow_finalized\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"provider_response_received\":{\"active\":0,\"attempts\":101,\"billable_calls\":100,\"cache_hits\":1,\"max_active\":2,\"unique_request_ids\":100},\"raw_responses_persisted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"run_linked\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"uninterrupted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100}}}"
     },
     {
       "checklist_text": "MLflow contains the complete run contract and links back to Metaflow.",
@@ -239,7 +239,7 @@
       ],
       "missing_evidence": [],
       "number": 5,
-      "observed_raw_result": "Local runtime 9 tests and fresh Compose 2 tests; 3 lineage records exactly reconcile with 3 manifests by run, pathspec, and policy."
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":153.97,\"skipped\":0,\"warnings\":0},\"identity_matches\":true,\"local_runtime_pytest\":{\"passed\":9,\"runtime\":81.06,\"skipped\":0,\"warnings\":0},\"mlflow_lineage_records\":3,\"run_manifests\":3}"
     },
     {
       "checklist_text": "Dataset and raw-response hashes verify from immutable storage.",
@@ -272,7 +272,7 @@
       ],
       "missing_evidence": [],
       "number": 6,
-      "observed_raw_result": "310 verified pinned objects, failure_count=0; verified references exactly equal the 310-object manifest union."
+      "observed_raw_result": "{\"immutable_failures\":0,\"immutable_verified\":310,\"manifest_artifact_union\":310,\"manifest_union_matches_verification\":true}"
     },
     {
       "checklist_text": "Missing cost or latency blocks promotion.",
@@ -296,7 +296,7 @@
       ],
       "missing_evidence": [],
       "number": 7,
-      "observed_raw_result": "Named missing/non-finite cost and latency cases are in the stored output; 23 passed, 3 warnings in 1.30s."
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":23,\"runtime\":1.3,\"skipped\":0,\"warnings\":3}}"
     },
     {
       "checklist_text": "Gate failure blocks both UI and direct approval API.",
@@ -345,7 +345,7 @@
       ],
       "missing_evidence": [],
       "number": 8,
-      "observed_raw_result": "Stored blocked approval is HTTP 409; screenshot hash/size and identities reconcile; the direct-approval case is in the validated 23-case output."
+      "observed_raw_result": "{\"blocked_approval_statuses\":[409],\"mechanical_pytest\":{\"passed\":23,\"runtime\":1.3,\"skipped\":0,\"warnings\":3},\"screenshot_hashes_and_sizes_match\":true,\"screenshot_identity_references_match\":true}"
     },
     {
       "checklist_text": "Passing gates do not bypass human approval.",
@@ -399,7 +399,7 @@
       ],
       "missing_evidence": [],
       "number": 9,
-      "observed_raw_result": "All 2 approval candidate/policy/gate-digest tuples exactly equal the stored passing tuples; failed tuples are disjoint; the project owner confirmed 4 D4.11 items."
+      "observed_raw_result": "{\"approval_events\":2,\"approval_tuples_match\":true,\"d411_confirmation_count\":4,\"d412_verdict\":null,\"failed_tuples_have_no_approval\":true}"
     },
     {
       "checklist_text": "Serving rejects an unapproved exact version.",
@@ -438,7 +438,7 @@
       ],
       "missing_evidence": [],
       "number": 10,
-      "observed_raw_result": "The named unapproved deployment and serving-restore cases are present in the validated 23-case output."
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":23,\"runtime\":1.3,\"skipped\":0,\"warnings\":3}}"
     },
     {
       "checklist_text": "Failed deployment leaves the current version active.",
@@ -477,7 +477,7 @@
       ],
       "missing_evidence": [],
       "number": 11,
-      "observed_raw_result": "The named deployment and pre-activation failure cases are present in the validated 23-case output."
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":23,\"runtime\":1.3,\"skipped\":0,\"warnings\":3}}"
     },
     {
       "checklist_text": "Rollback restores the previous approved exact version.",
@@ -510,7 +510,7 @@
       ],
       "missing_evidence": [],
       "number": 12,
-      "observed_raw_result": "Stored actions are ['deploy', 'deploy', 'rollback'] at generations [1, 2, 3]; generation 3 restores generation 1."
+      "observed_raw_result": "{\"deployment_actions\":[\"deploy\",\"deploy\",\"rollback\"],\"deployment_generations\":[1,2,3],\"rollback_restores_generation_1_policy\":true}"
     },
     {
       "checklist_text": "Concurrent transition tests produce one active deployment.",
@@ -549,7 +549,7 @@
       ],
       "missing_evidence": [],
       "number": 13,
-      "observed_raw_result": "The fresh lifecycle command is validated and the named stale compare-and-swap case is present in the validated 23-case output."
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":153.97,\"skipped\":0,\"warnings\":0},\"mechanical_pytest\":{\"passed\":23,\"runtime\":1.3,\"skipped\":0,\"warnings\":3}}"
     },
     {
       "checklist_text": "Demo evidence clearly distinguishes scripted and real provider results.",
@@ -572,7 +572,7 @@
       ],
       "missing_evidence": [],
       "number": 14,
-      "observed_raw_result": "Stored provider type is deterministic scripted replay; network_model_calls=false, paid_calls=0, external_deployment=false."
+      "observed_raw_result": "{\"provider\":{\"external_deployment\":false,\"network_model_calls\":false,\"paid_calls\":0,\"type\":\"deterministic scripted replay\"}}"
     },
     {
       "checklist_text": "No credentials, private payloads, or privileged benchmark data appear in artifacts.",
@@ -601,7 +601,7 @@
       ],
       "missing_evidence": [],
       "number": 15,
-      "observed_raw_result": "The recorded pre-generation scan covered 65 files with zero findings in every prohibited category; the generator separately scans the final report and manifest and stores redaction-scan.json."
+      "observed_raw_result": "{\"pre_generation_scan\":{\"files_scanned\":65,\"final_deliverables_scanned\":[\"REPORT.md\",\"evidence-manifest.json\"],\"finding_counts\":{\"aws_access_keys\":0,\"host_identity_paths_or_emails\":0,\"local_absolute_paths\":0,\"local_demo_credentials\":0,\"private_key_markers\":0,\"privileged_json_fields\":0,\"unredacted_image_payloads\":0},\"schema_version\":\"pixelgym-d412-redaction-scan-v1\"}}"
     },
     {
       "checklist_text": "Retention, backup, recovery, and known limitations are documented.",
@@ -624,7 +624,7 @@
       ],
       "missing_evidence": [],
       "number": 16,
-      "observed_raw_result": "Stored documentation distinguishes local governance retention from production WORM and identifies backup, replication, recovery testing, and disaster recovery as not demonstrated."
+      "observed_raw_result": "{\"indexed_documents\":[\"deploy/README.md\",\"artifacts/platform/architecture.md\",\"artifacts/platform/known-limitations.md\"]}"
     }
   ],
   "command_records": [

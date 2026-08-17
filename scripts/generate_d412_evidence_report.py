@@ -673,85 +673,124 @@ def _observations(
     local = summaries["local_runtime"]
     compose = summaries["compose"]
     mechanical = summaries["mechanical"]
+    cleanup = json.loads(records["commands/37-compose-cleanup-filtered.json"]["output"])
+    resume_ledgers = {
+        "uninterrupted": resume["uninterrupted"]["provider_ledger"],
+        **{
+            name: snapshot["provider_ledger"]
+            for name, snapshot in sorted(resume["boundaries"].items())
+        },
+        "hard_kill": resume["hard_kill"]["provider_ledger"],
+    }
+
+    def observed(**fields: Any) -> str:
+        return json.dumps(fields, separators=(",", ":"), sort_keys=True)
+
     return {
-        "fast_suite": (
-            f"{fast['passed']} passed, {fast['skipped']} skipped, {fast['warnings']} warnings "
-            f"in {fast['runtime']:.2f}s; environment checker {env_check['passed']} passed in "
-            f"{env_check['runtime']:.2f}s; golden trajectory output contains OK; Ruff output "
-            "contains All checks passed."
+        "fast_suite": observed(
+            fast_pytest=fast,
+            environment_pytest=env_check,
+            golden_trajectory_output_contains_OK=True,
+            ruff_output_contains_all_checks_passed=True,
         ),
-        "unit_boundaries": (
-            f"{units['passed']} passed, {units['warnings']} warnings in "
-            f"{units['runtime']:.2f}s; stored inventory is osworld_installed=false and "
-            "provider_credentials_present_before_sanitization=false, followed by "
-            "provider_credentials_removed=true; the sleep scan exited 1 with empty output."
+        "unit_boundaries": observed(
+            platform_unit_pytest=units,
+            boundary_inventory=records["commands/15-boundary-inventory.json"][
+                "output"
+            ].splitlines(),
+            sleep_scan_exit_status=records["commands/16-platform-sleep-scan.json"][
+                "exit_status"
+            ],
+            sleep_scan_output=records["commands/16-platform-sleep-scan.json"]["output"],
         ),
-        "fresh_stack": (
-            f"{compose['passed']} passed in {compose['runtime']:.2f}s; parsed post-run Docker "
-            "inventory has zero containers, images, networks, and volumes."
+        "fresh_stack": observed(
+            compose_pytest=compose,
+            post_run_docker_inventory=cleanup,
         ),
-        "metaflow_resume": (
-            f"{local['passed']} passed in {local['runtime']:.2f}s; structured ledgers cover "
-            f"{len(resume['boundaries'])} side-effect boundaries, uninterrupted execution, and "
-            "SIGKILL recovery. Each has "
-            "100 unique requests, 100 billable calls, active=0, max_active=2, and normalized "
-            "evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
+        "metaflow_resume": observed(
+            local_runtime_pytest=local,
+            boundary_names=sorted(resume["boundaries"]),
+            provider_ledgers=resume_ledgers,
+            hard_kill_signal_recorded=resume["hard_kill"]["killed_with_sigkill"],
+            normalized_evidence_equal={
+                name: snapshot["normalized_evidence_equal"]
+                for name, snapshot in {
+                    "uninterrupted": resume["uninterrupted"],
+                    **resume["boundaries"],
+                    "hard_kill": resume["hard_kill"],
+                }.items()
+            },
         ),
-        "mlflow_lineage": (
-            f"Local runtime {local['passed']} tests and fresh Compose {compose['passed']} tests; "
-            f"{counts['mlflow_lineage_records']} lineage records exactly reconcile with "
-            f"{counts['run_manifests']} manifests by run, pathspec, and policy."
+        "mlflow_lineage": observed(
+            local_runtime_pytest=local,
+            compose_pytest=compose,
+            mlflow_lineage_records=counts["mlflow_lineage_records"],
+            run_manifests=counts["run_manifests"],
+            identity_matches=reconciliation[
+                "run_manifest_mlflow_metaflow_policy_identity_matches"
+            ],
         ),
-        "immutable_storage": (
-            f"{counts['immutable_verified']} verified pinned objects, "
-            f"failure_count={counts['immutable_failures']}; verified references exactly equal "
-            f"the {counts['manifest_artifact_union']}-object manifest union."
+        "immutable_storage": observed(
+            immutable_verified=counts["immutable_verified"],
+            immutable_failures=counts["immutable_failures"],
+            manifest_artifact_union=counts["manifest_artifact_union"],
+            manifest_union_matches_verification=reconciliation[
+                "manifest_artifact_union_matches_immutable_verification"
+            ],
         ),
-        "mechanical_boundaries": (
-            f"Named missing/non-finite cost and latency cases are in the stored output; "
-            f"{mechanical['passed']} passed, {mechanical['warnings']} warnings in "
-            f"{mechanical['runtime']:.2f}s."
+        "mechanical_boundaries": observed(
+            mechanical_pytest=mechanical,
         ),
-        "gate_blocks_approval": (
-            f"Stored blocked approval is HTTP {blocked[0]['response']['status']}; screenshot "
-            "hash/size and identities reconcile; the direct-approval case is in the validated "
-            f"{mechanical['passed']}-case output."
+        "gate_blocks_approval": observed(
+            blocked_approval_statuses=[row["response"]["status"] for row in blocked],
+            screenshot_hashes_and_sizes_match=reconciliation[
+                "screenshot_hashes_and_sizes_match"
+            ],
+            screenshot_identity_references_match=reconciliation[
+                "screenshot_identity_references_match"
+            ],
+            mechanical_pytest=mechanical,
         ),
-        "human_approval": (
-            f"All {counts['approval_events']} approval candidate/policy/gate-digest tuples exactly "
-            "equal the stored passing tuples; failed tuples are disjoint; the project owner "
-            f"confirmed {confirmation['confirmation_count']} D4.11 items."
+        "human_approval": observed(
+            approval_events=counts["approval_events"],
+            approval_tuples_match=reconciliation[
+                "approval_candidate_policy_gate_digest_tuples_match"
+            ],
+            failed_tuples_have_no_approval=reconciliation[
+                "stored_failed_candidate_policy_gate_digest_tuples_have_no_approval"
+            ],
+            d411_confirmation_count=confirmation["confirmation_count"],
+            d412_verdict=confirmation["d412_verdict"],
         ),
-        "unapproved_rejected": (
-            "The named unapproved deployment and serving-restore cases are present in the "
-            f"validated {mechanical['passed']}-case output."
+        "unapproved_rejected": observed(
+            mechanical_pytest=mechanical,
         ),
-        "failed_deployment": (
-            "The named deployment and pre-activation failure cases are present in the validated "
-            f"{mechanical['passed']}-case output."
+        "failed_deployment": observed(
+            mechanical_pytest=mechanical,
         ),
-        "rollback": (
-            f"Stored actions are {reconciliation['deployment_actions']} at generations "
-            f"{reconciliation['deployment_generations']}; generation 3 restores generation 1."
+        "rollback": observed(
+            deployment_actions=reconciliation["deployment_actions"],
+            deployment_generations=reconciliation["deployment_generations"],
+            rollback_restores_generation_1_policy=reconciliation[
+                "rollback_restores_generation_1_policy"
+            ],
         ),
-        "concurrent_transitions": (
-            "The fresh lifecycle command is validated and the named stale compare-and-swap case "
-            f"is present in the validated {mechanical['passed']}-case output."
+        "concurrent_transitions": observed(
+            compose_pytest=compose,
+            mechanical_pytest=mechanical,
         ),
-        "scripted_provider": (
-            f"Stored provider type is {provider['type']}; network_model_calls="
-            f"{str(provider['network_model_calls']).lower()}, paid_calls={provider['paid_calls']}, "
-            f"external_deployment={str(provider['external_deployment']).lower()}."
+        "scripted_provider": observed(
+            provider=provider,
         ),
-        "redaction": (
-            f"The recorded pre-generation scan covered {prior_redaction['files_scanned']} files "
-            "with zero findings in every prohibited category; the generator separately scans "
-            "the final report and manifest and stores redaction-scan.json."
+        "redaction": observed(
+            pre_generation_scan=prior_redaction,
         ),
-        "retention": (
-            "Stored documentation distinguishes local governance retention from production WORM "
-            "and identifies backup, replication, recovery testing, and disaster recovery as not "
-            "demonstrated."
+        "retention": observed(
+            indexed_documents=[
+                "deploy/README.md",
+                "artifacts/platform/architecture.md",
+                "artifacts/platform/known-limitations.md",
+            ],
         ),
     }
 

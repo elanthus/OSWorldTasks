@@ -46,6 +46,10 @@ def test_generator_indexes_stored_observations_without_a_gate_verdict(
     assert manifest["evidence_revision"] == REVISION
     assert len(manifest["checklist_items"]) == len(CHECKLIST) == 16
     assert all(not item["missing_evidence"] for item in manifest["checklist_items"])
+    assert all(
+        isinstance(json.loads(item["observed_raw_result"]), dict)
+        for item in manifest["checklist_items"]
+    )
     assert "- [ ]" not in report
     assert "- [x]" not in report.lower()
     assert "declare a milestone verdict" in report
