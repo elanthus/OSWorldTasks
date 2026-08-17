@@ -13,6 +13,7 @@ from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -25,6 +26,8 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.deployment_smoke import DeploymentSmokeError
+from pixelgym.platform.immutable_store import ImmutableStoreError
 from pixelgym.platform.policy import prompt_template
 
 DATASET_OPTIONS = {
@@ -247,6 +250,15 @@ def create_control_app(
             raise HTTPException(422, "duplicate form fields are not allowed")
         return {key: items[0] for key, items in values.items()}
 
+    def active_precondition(fields: dict[str, str]) -> tuple[str | None, int]:
+        try:
+            generation = int(fields["expected_generation"])
+        except ValueError as exc:
+            raise HTTPException(422, "expected generation must be an integer") from exc
+        if generation < 0:
+            raise HTTPException(422, "expected generation must be nonnegative")
+        return fields["expected_deployment_id"] or None, generation
+
     @app.get("/", response_class=HTMLResponse)
     def submit_view(request: Request) -> str:
         body = f"""<section class="hero"><div><p class="eyebrow">GROUNDING EVALUATION</p><h1>Measure the policy.<br>Then earn the right to ship it.</h1>
@@ -273,7 +285,7 @@ def create_control_app(
         invalid = [key for key, value in payload.items() if value not in ALLOWED_SUBMISSION_FIELDS[key]]
         if invalid:
             raise HTTPException(422, f"submission contains non-allowlisted options: {', '.join(invalid)}")
-        submission_id = control.submit(payload)
+        submission_id = await run_in_threadpool(control.submit, payload)
         if submit_callback is not None:
             submit_callback(submission_id, payload)
         return RedirectResponse(f"/runs?submitted={submission_id}", status_code=303)
@@ -394,7 +406,9 @@ def create_control_app(
         if item.state is CandidateState.ELIGIBLE:
             controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/approve"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Approval reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Approve exact candidate</button></form>"""
         elif item.state is CandidateState.APPROVED and coordinator is not None:
-            controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/deploy"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Deployment reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Deploy approved version</button></form>"""
+            active, generation = control.active()
+            active_id = active.deployment_id if active is not None else ""
+            controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/deploy"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Deployment reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Deploy approved version</button></form>"""
         else:
             controls = '<div class="blocked"><strong>Approval unavailable</strong><p>A failed gate is terminal for this candidate. Revise the policy and create a new run.</p></div>'
         invalid = "missing" if item.summary is None else str(item.summary.invalid_count)
@@ -419,7 +433,7 @@ def create_control_app(
         require_csrf(request, fields.get("csrf_token"))
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "approval fields do not match the fixed contract")
-        _approve(candidate_id, fields["reason"])
+        await run_in_threadpool(_approve, candidate_id, fields["reason"])
         return RedirectResponse(f"/candidates/{candidate_id}", status_code=303)
 
     @app.post("/api/candidates/{candidate_id}/approve")
@@ -432,28 +446,45 @@ def create_control_app(
     async def deploy_form(candidate_id: str, request: Request) -> RedirectResponse:
         fields = await form_fields(request)
         require_csrf(request, fields.get("csrf_token"))
-        if set(fields) != {"csrf_token", "reason"}:
+        expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
+        if set(fields) != expected_fields:
             raise HTTPException(422, "deployment fields do not match the fixed contract")
         if coordinator is None:
             raise HTTPException(503, "deployment coordinator is unavailable")
-        candidate_or_404(candidate_id)
-        coordinator.deploy(candidate_id, actor=control.reviewer_identity, reason=fields["reason"])
+        expected_deployment_id, expected_generation = active_precondition(fields)
+        await run_in_threadpool(candidate_or_404, candidate_id)
+        await run_in_threadpool(
+            coordinator.deploy,
+            candidate_id,
+            actor=control.reviewer_identity,
+            reason=fields["reason"],
+            expected_deployment_id=expected_deployment_id,
+            expected_generation=expected_generation,
+        )
         return RedirectResponse("/deployment", status_code=303)
 
     @app.post("/rollback")
     async def rollback_form(request: Request) -> RedirectResponse:
         fields = await form_fields(request)
         require_csrf(request, fields.get("csrf_token"))
-        if set(fields) != {"csrf_token", "reason"}:
+        expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
+        if set(fields) != expected_fields:
             raise HTTPException(422, "rollback fields do not match the fixed contract")
         if coordinator is None:
             raise HTTPException(503, "deployment coordinator is unavailable")
-        coordinator.rollback(actor=control.reviewer_identity, reason=fields["reason"])
+        expected_deployment_id, expected_generation = active_precondition(fields)
+        await run_in_threadpool(
+            coordinator.rollback,
+            actor=control.reviewer_identity,
+            reason=fields["reason"],
+            expected_deployment_id=expected_deployment_id,
+            expected_generation=expected_generation,
+        )
         return RedirectResponse("/deployment", status_code=303)
 
     @app.get("/deployment", response_class=HTMLResponse)
     def deployment_view(request: Request) -> str:
-        active, _generation = control.active()
+        active, generation = control.active()
         events = control.audit_events()
         active_html = '<div class="empty">No policy is active.</div>'
         rollback = ""
@@ -466,7 +497,7 @@ def create_control_app(
             else:
                 has_rollback_target = True
             if has_rollback_target and coordinator is not None:
-                rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
+                rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
         timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>' for event in events)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol></section></div>"""
         return _layout("Deployment", body, csrf=request.state.csrf)
@@ -474,6 +505,8 @@ def create_control_app(
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
     @app.exception_handler(AuthorizationError)
+    @app.exception_handler(ImmutableStoreError)
+    @app.exception_handler(DeploymentSmokeError)
     async def lifecycle_error(request: Request, exc: Exception) -> HTMLResponse:
         status = 403 if isinstance(exc, AuthorizationError) else 409
         return HTMLResponse(

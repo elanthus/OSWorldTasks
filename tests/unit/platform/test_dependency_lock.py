@@ -54,6 +54,8 @@ def test_repository_lock_is_exact_hashed_and_is_the_manifest_digest(repository_r
     assert "metaflow==2.19.35" in text
     assert "boto3==1.40.1" in text
     assert "psycopg2-binary==2.9.10" in text
+    assert "greenlet==3.5.4" in text
+    assert "httpx2==2.9.1" in text
     assert "--hash=sha256:" in text
 
 

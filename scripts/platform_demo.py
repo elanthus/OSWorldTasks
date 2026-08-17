@@ -15,11 +15,18 @@ FIXTURES = (
     ("2", "day3-replay-revised-rollback-seed-v1", "rollback-seed"),
     ("2", "day3-replay-revised-v2", "eligible-candidate-b"),
 )
+FIXTURE_ROLES = {item[2] for item in FIXTURES}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--database", required=True)
+    parser.add_argument(
+        "--fixture",
+        choices=("all", *sorted(FIXTURE_ROLES)),
+        default="all",
+        help="prepare every lifecycle fixture or one named fixture",
+    )
     args = parser.parse_args()
     root = Path(__file__).parents[1]
     control = ControlStore(
@@ -27,6 +34,8 @@ def main() -> None:
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
     )
     for prompt_version, model, lifecycle_role in FIXTURES:
+        if args.fixture != "all" and lifecycle_role != args.fixture:
+            continue
         request = {
             "dataset": "day3-frozen-v1",
             "prompt_version": prompt_version,
@@ -56,10 +65,8 @@ def main() -> None:
         if completed.returncode:
             control.mark_submission(submission_id, "Failed")
             raise SystemExit(completed.returncode)
-    print(
-        "Both scripted candidates and the rollback seed are prepared. "
-        "Approval, deployment, and rollback remain manual."
-    )
+    print(f"Prepared scripted lifecycle fixture selection: {args.fixture}. "
+          "Approval, deployment, and rollback remain manual.")
 
 
 if __name__ == "__main__":

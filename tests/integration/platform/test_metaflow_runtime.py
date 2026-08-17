@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -321,3 +323,100 @@ def test_uninterrupted_runtime_enforces_worker_and_call_caps(
         "billable_calls": 100,
     }
     assert len(_final_evidence(uninterrupted_runtime)[0].splitlines()) == 100
+
+
+def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls(
+    tmp_path: Path,
+    uninterrupted_runtime: RuntimeResult,
+) -> None:
+    """Kill the whole local process group; remote schedulers still need orphan reconciliation."""
+    repository_root = Path(__file__).parents[3]
+    submission_id = _prepare(tmp_path)
+    origin_file = tmp_path / "origin-run-id"
+    environment = _environment(repository_root, tmp_path, None)
+    environment.update(
+        {
+            "PIXELGYM_TEST_PAUSE_ONCE": "evidence_persisted",
+            "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
+        }
+    )
+    log_path = tmp_path / "hard-kill-run.log"
+    with log_path.open("w") as log_file:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                str(repository_root / "flows/grounding_evaluation_flow.py"),
+                "run",
+                "--submission-id",
+                submission_id,
+                "--prompt-version",
+                "2",
+                "--model",
+                "day3-replay-revised-v2",
+                "--maximum-calls",
+                "100",
+                "--shard-size",
+                "25",
+                "--max-workers",
+                "2",
+                "--run-id-file",
+                str(origin_file),
+            ],
+            cwd=tmp_path,
+            env=environment,
+            text=True,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        marker = tmp_path / "failpoints/evidence_persisted.paused"
+        deadline = time.monotonic() + 90
+        try:
+            while time.monotonic() < deadline and not marker.exists():
+                if process.poll() is not None:
+                    log_file.flush()
+                    pytest.fail(
+                        f"flow exited before the hard-kill boundary:\n{log_path.read_text()}"
+                    )
+                time.sleep(0.05)
+            assert marker.exists(), "flow did not reach the durable hard-kill boundary"
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=10)
+        finally:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait(timeout=10)
+
+    assert process.returncode == -signal.SIGKILL, log_path.read_text()
+    origin_run_id = origin_file.read_text().strip()
+    interrupted_control = _control(tmp_path)
+    assert interrupted_control.list_candidates() == []
+    assert interrupted_control.list_submissions()[0]["status"] == "Running"
+
+    resumed = _invoke(
+        repository_root,
+        tmp_path,
+        [
+            "resume",
+            "--origin-run-id",
+            origin_run_id,
+            "--max-workers",
+            "2",
+            "--run-id-file",
+            str(tmp_path / "resume-run-id"),
+        ],
+        failpoint=None,
+    )
+    assert resumed.returncode == 0, resumed.stdout
+    assert "Cloning" in resumed.stdout
+    assert _final_evidence(RuntimeResult(tmp_path, submission_id, origin_run_id, "")) == (
+        _final_evidence(uninterrupted_runtime)
+    )
+    assert provider_ledger_snapshot(tmp_path / "provider.db") == {
+        "attempts": 100,
+        "unique_request_ids": 100,
+        "cache_hits": 0,
+        "active": 0,
+        "max_active": 2,
+        "billable_calls": 100,
+    }

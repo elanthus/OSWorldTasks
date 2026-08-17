@@ -24,6 +24,8 @@ platform = [
     "metaflow==2.19.35",
     "boto3==1.40.1",
     "psycopg2-binary==2.9.10",
+    "greenlet==3.5.4",  # SQLAlchemy requires this on x86_64 but not on arm64 lock hosts
+    "httpx2==2.9.1",  # deployment smoke uses Starlette's TestClient at runtime
 ]
 dev = [
     "pytest>=8.0",
@@ -54,6 +56,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
+    "platform_compose_integration: provisions an isolated Docker Compose platform stack",
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
 ]
 
