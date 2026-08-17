@@ -21,7 +21,7 @@ from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.control_store import ControlStore, TransitionError
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
-from pixelgym.platform.immutable_store import LocalImmutableStore
+from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
 from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     ImmutableOperationalLog,
@@ -1014,6 +1014,38 @@ def test_failed_candidate_has_visible_reasons_and_no_approval_control(
         headers={"X-CSRF-Token": token},
     )
     assert direct.status_code == 409
+
+
+def test_missing_immutable_package_renders_as_blocked_deployment(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = _approved_candidate(control, policy, summary, report)
+
+    class MissingPackageCoordinator:
+        def deploy(self, *args, **kwargs):
+            raise ImmutableStoreError("pinned immutable S3 object is missing")
+
+    client = TestClient(
+        create_control_app(
+            control,
+            coordinator=MissingPackageCoordinator(),
+            csrf_secret="test-secret-at-least-sixteen",
+        )
+    )
+    detail = client.get(f"/candidates/{candidate.candidate_id}")
+    response = client.post(
+        f"/candidates/{candidate.candidate_id}/deploy",
+        data={"csrf_token": _csrf(detail.text), "reason": "must fail closed"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 409
+    assert "Action blocked" in response.text
+    assert "pinned immutable S3 object is missing" in response.text
+    assert control.active()[0] is None
 
 
 def test_missing_gate_evidence_renders_as_blocked_instead_of_crashing(

@@ -25,6 +25,8 @@ from pixelgym.platform.control_store import (
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.deployment_smoke import DeploymentSmokeError
+from pixelgym.platform.immutable_store import ImmutableStoreError
 from pixelgym.platform.policy import prompt_template
 
 DATASET_OPTIONS = {
@@ -474,6 +476,8 @@ def create_control_app(
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
     @app.exception_handler(AuthorizationError)
+    @app.exception_handler(ImmutableStoreError)
+    @app.exception_handler(DeploymentSmokeError)
     async def lifecycle_error(request: Request, exc: Exception) -> HTMLResponse:
         status = 403 if isinstance(exc, AuthorizationError) else 409
         return HTMLResponse(
