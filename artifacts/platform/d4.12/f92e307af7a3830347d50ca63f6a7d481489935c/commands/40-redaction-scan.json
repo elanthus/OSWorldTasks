@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "import json; from pathlib import Path; data=json.loads(Path(\"<path-1>/artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'import json; from pathlib import Path; data=json.loads(Path(\"<path-1>/artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.024915,
+  "ended_at_utc": "2026-08-17T21:28:02.555923+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"files_scanned\": 65, \"final_deliverables_scanned\": [\"REPORT.md\", \"evidence-manifest.json\"], \"finding_counts\": {\"aws_access_keys\": 0, \"host_identity_paths_or_emails\": 0, \"local_absolute_paths\": 0, \"local_demo_credentials\": 0, \"private_key_markers\": 0, \"privileged_json_fields\": 0, \"unredacted_image_payloads\": 0}, \"schema_version\": \"pixelgym-d412-redaction-scan-v1\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T21:28:02.530093+00:00"
+}

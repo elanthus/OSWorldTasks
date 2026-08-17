@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -m pytest -q tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.364381,
+  "ended_at_utc": "2026-08-17T21:22:26.382170+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": ".                                                                        [100%]\n1 passed in 0.05s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T21:22:26.016246+00:00"
+}

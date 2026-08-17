@@ -1,6 +1,8 @@
 """Proves the package installs and imports cleanly without the optional OSWorld extra."""
 
 import importlib
+import tomllib
+from pathlib import Path
 
 
 def test_package_version():
@@ -20,3 +22,11 @@ def test_core_modules_import_without_osworld():
         "pixelgym.tasks.vendor_form",
     ]:
         importlib.import_module(module)
+
+
+def test_developer_extra_declares_direct_web_test_client_dependency():
+    repository_root = Path(__file__).resolve().parents[2]
+    project = tomllib.loads((repository_root / "pyproject.toml").read_text())["project"]
+    dev_requirements = project["optional-dependencies"]["dev"]
+
+    assert any(requirement.startswith("httpx>=") for requirement in dev_requirements)

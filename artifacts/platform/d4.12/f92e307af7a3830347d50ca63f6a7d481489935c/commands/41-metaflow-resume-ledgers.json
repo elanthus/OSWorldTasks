@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "<path-1>/scripts/capture_d412_metaflow_resume.py",
+    "--repository-root",
+    "<path-0>"
+  ],
+  "command": "<path-2>/dev-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+  "cwd": "<path-0>",
+  "duration_seconds": 80.711055,
+  "ended_at_utc": "2026-08-17T21:27:39.793885+00:00",
+  "environment": {
+    "PYTHONPATH": "<path-2>/integration-venv/lib/python3.12/site-packages:<path-0>"
+  },
+  "exit_status": 0,
+  "output": "{\"boundaries\": {\"candidate_registered\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"evidence_persisted\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"mlflow_finalized\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"provider_response_received\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 101, \"billable_calls\": 100, \"cache_hits\": 1, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"raw_responses_persisted\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"run_linked\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}}, \"hard_kill\": {\"candidate_count\": 1, \"killed_with_sigkill\": true, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}, \"schema_version\": \"pixelgym-d412-metaflow-resume-ledgers-v1\", \"uninterrupted\": {\"candidate_count\": 1, \"mlflow_status\": \"FINISHED\", \"normalized_evidence_equal\": true, \"prediction_count\": 100, \"provider_ledger\": {\"active\": 0, \"attempts\": 100, \"billable_calls\": 100, \"cache_hits\": 0, \"max_active\": 2, \"unique_request_ids\": 100}, \"submission_status\": \"Complete\", \"unique_example_conditions\": 100}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T21:26:19.086537+00:00"
+}
