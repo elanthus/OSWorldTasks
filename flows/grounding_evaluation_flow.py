@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import time
 from collections.abc import Callable
 from dataclasses import asdict
 from functools import wraps
@@ -90,6 +91,31 @@ def _test_fail_once(name: str) -> None:
         return
     os.close(descriptor)
     raise RuntimeError(f"injected one-shot failure after {name}")
+
+
+def _test_pause_once(name: str) -> None:
+    """Expose a durable boundary so a runtime test can hard-kill the process group."""
+    if os.environ.get(_TEST_HOOKS_ENV) != "1":
+        return
+    if os.environ.get("PIXELGYM_TEST_PAUSE_ONCE") != name:
+        return
+    state_root = os.environ.get("PIXELGYM_TEST_STATE_ROOT")
+    if not state_root:
+        raise RuntimeError("test pause injection requires PIXELGYM_TEST_STATE_ROOT")
+    marker_root = Path(state_root)
+    marker_root.mkdir(parents=True, exist_ok=True)
+    marker = marker_root / f"{name}.paused"
+    try:
+        descriptor = os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return
+    os.close(descriptor)
+    deadline = time.monotonic() + float(
+        os.environ.get("PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS", "60")
+    )
+    while time.monotonic() < deadline:
+        time.sleep(0.05)
+    raise RuntimeError(f"test pause after {name} timed out before hard kill")
 
 
 def _provider(flow: object) -> object:
@@ -309,6 +335,7 @@ class GroundingEvaluationFlow(FlowSpec):
             )
         ]
         _test_fail_once("evidence_persisted")
+        _test_pause_once("evidence_persisted")
         self.next(self.finalize_mlflow_run)
 
     @step

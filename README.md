@@ -127,6 +127,8 @@ Use this wrapper rather than invoking `docker compose` against `deploy/compose.y
 derives and bind-mounts the source-provenance file required to verify the packaged source. If a
 previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
 the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
+The deployment guide also documents the separate fast, local-runtime, and isolated
+Compose/Playwright test commands, their prerequisites, cleanup scope, and expected cold-run time.
 
 The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
 limitations are available in the [demo script](artifacts/platform/demo-script.md),

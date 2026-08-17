@@ -24,7 +24,8 @@ Do not invoke `docker compose` against `deploy/compose.yaml` directly: Docker ca
 directory at the file bind-mount path, allowing a stack to start without verifiable source
 provenance. The wrapper refuses that condition before an `up` command reaches Docker.
 Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Both host
-ports are configurable in `.env.example`.
+ports are configurable in `.env.example`; the PostgreSQL and MinIO API loopback ports are also
+configurable for isolated integration runs.
 
 Stop the stack without deleting evidence:
 
@@ -34,6 +35,46 @@ python3.12 scripts/platform_compose.py down
 
 To remove local demo volumes, the human operator must explicitly add `--volumes`. That operation
 deletes local evidence and is intentionally not part of the normal workflow.
+
+## Test-suite boundaries
+
+The ordinary fast path remains browser-free, Docker-free, network-free, and independent of the
+optional platform services:
+
+```bash
+.venv/bin/python -m pytest -q tests/unit
+```
+
+The real local Metaflow runtime and MLflow adapter suite requires the optional platform extra. It
+uses temporary local state and real `run`/`resume` commands, but it does not provision Compose:
+
+```bash
+.venv/bin/pip install -e ".[dev,platform]"
+.venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py
+```
+
+The fresh-stack suite additionally requires a running Docker daemon and Playwright Chromium. It
+creates a unique Compose project, binds dynamically selected loopback ports, uses new project-scoped
+PostgreSQL/MinIO/control volumes, and deletes only that project's containers and volumes in fixture
+cleanup. It does not touch a long-lived `pixelgym-platform` project. Allow up to ten minutes for a
+cold image build and lifecycle run:
+
+```bash
+.venv/bin/python -m playwright install chromium
+PIXELGYM_RUN_COMPOSE_TESTS=1 .venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py
+```
+
+The Compose assertion exercises PostgreSQL as MLflow's metadata backend. The authoritative
+approval/deployment ledger remains the explicit SQLite control store implemented by
+`ControlStore`; its supported legacy migration is rehearsed on the isolated `control-data` volume.
+There is no PostgreSQL control-ledger schema to migrate. Diagnostics redact repository/home paths
+and local demo credentials before pytest can print them.
+
+The Metaflow suite also sends `SIGKILL` to the entire local flow process group after durable
+evidence persistence and resumes the recorded origin run. It proves no duplicate fixture-provider
+billing in that bounded local runtime. A remote scheduler that loses its parent independently can
+still leave an orphan run; production use needs a separate orphan-run reconciler and this test does
+not claim otherwise.
 
 ## Recover a directory created by a direct Compose invocation
 
