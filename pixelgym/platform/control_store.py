@@ -131,6 +131,28 @@ BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
 """
 
 
+def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
+    return {str(row[1]) for row in connection.execute("PRAGMA table_info(deployments)")}
+
+
+def _fresh_deployment_columns() -> set[str]:
+    with sqlite3.connect(":memory:") as connection:
+        connection.executescript(SCHEMA)
+        return _deployment_columns(connection)
+
+
+def _assert_deployment_columns(
+    actual: set[str], expected: set[str], *, context: str
+) -> None:
+    if actual != expected:
+        missing = sorted(expected - actual)
+        unexpected = sorted(actual - expected)
+        raise RuntimeError(
+            f"{context} has a stale schema "
+            f"(missing columns: {missing}; unexpected columns: {unexpected})"
+        )
+
+
 class ControlStore:
     def __init__(
         self,
@@ -153,7 +175,7 @@ class ControlStore:
         )
         self.connection.row_factory = sqlite3.Row
 
-    def _migrate_legacy_deployments(self) -> None:
+    def _migrate_legacy_deployments(self, expected_columns: set[str]) -> None:
         """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
         self.connection.execute("PRAGMA foreign_keys = OFF")
         try:
@@ -179,6 +201,8 @@ class ControlStore:
                        created_at_utc, generation
                 FROM deployments"""
             )
+            # Preserve existing IDs verbatim: legacy rows are not reproducible from the
+            # current deployment-ID derivation formula.
             self.connection.execute("DROP TABLE deployments")
             self.connection.execute(
                 "ALTER TABLE deployments_without_previous RENAME TO deployments"
@@ -190,6 +214,11 @@ class ControlStore:
             self.connection.execute(
                 """CREATE TRIGGER deployments_no_delete BEFORE DELETE ON deployments
                 BEGIN SELECT RAISE(ABORT, 'deployments are append-only'); END"""
+            )
+            _assert_deployment_columns(
+                _deployment_columns(self.connection),
+                expected_columns,
+                context="deployment migration output",
             )
             violations = list(self.connection.execute("PRAGMA foreign_key_check"))
             if violations:
@@ -213,12 +242,20 @@ class ControlStore:
                 self.connection.execute(
                     "ALTER TABLE candidates ADD COLUMN summary_json TEXT NOT NULL DEFAULT '{}'"
                 )
-            deployment_columns = {
-                str(row["name"])
-                for row in self.connection.execute("PRAGMA table_info(deployments)")
-            }
+            expected_columns = _fresh_deployment_columns()
+            deployment_columns = _deployment_columns(self.connection)
             if "previous_deployment_id" in deployment_columns:
-                self._migrate_legacy_deployments()
+                _assert_deployment_columns(
+                    deployment_columns,
+                    expected_columns | {"previous_deployment_id"},
+                    context="legacy deployment migration input",
+                )
+                self._migrate_legacy_deployments(expected_columns)
+            _assert_deployment_columns(
+                _deployment_columns(self.connection),
+                expected_columns,
+                context="deployment migration output",
+            )
 
     def require_migrated(self) -> None:
         """Fail clearly when the explicit migration step has not completed."""

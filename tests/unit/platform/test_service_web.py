@@ -245,6 +245,39 @@ def test_operational_record_read_boundary_rejects_malformed_provider_metadata(
         OperationalRecord.from_dict(payload)
 
 
+def test_operational_record_read_boundary_names_missing_provider_request_id() -> None:
+    payload = {
+        "schema_version": OPERATIONAL_RECORD_SCHEMA_VERSION,
+        "request_id": "srv-" + "1" * 32,
+        "occurred_at": "2026-08-15T00:00:00+00:00",
+        "policy_id": "policy",
+        "deployment_id": "deployment",
+        "exact_policy_version": "candidate",
+        "terminal_status": "completed",
+        "http_status": 200,
+        "latency_ms": 1.0,
+        "provider_latency_ms": None,
+        "usage": None,
+    }
+
+    with pytest.raises(ValueError, match="missing required field: provider_request_id"):
+        OperationalRecord.from_dict(payload)
+
+
+def test_immutable_operational_log_surfaces_missing_provider_request_id() -> None:
+    class StoredRecordWithoutProviderRequestId:
+        def get_reference(self, logical_key):
+            return object()
+
+        def get_verified(self, reference):
+            return b'{"provider_latency_ms":null,"usage":null}'
+
+    log = ImmutableOperationalLog(StoredRecordWithoutProviderRequestId())
+
+    with pytest.raises(OperationalLogError, match="missing required field: provider_request_id"):
+        log.get("srv-" + "1" * 32)
+
+
 def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
     log = MemoryOperationalLog()
     client = TestClient(

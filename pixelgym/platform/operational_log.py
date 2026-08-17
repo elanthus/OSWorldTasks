@@ -141,7 +141,12 @@ class OperationalRecord:
         if not isinstance(value, dict):
             raise TypeError("operational record must be a JSON object")
         payload = dict(value)
-        provider_request_id = payload.pop("provider_request_id")
+        try:
+            provider_request_id = payload.pop("provider_request_id")
+        except KeyError as exc:
+            raise ValueError(
+                "operational record is missing required field: provider_request_id"
+            ) from exc
         provider_latency_ms = payload.pop("provider_latency_ms")
         usage = payload.pop("usage")
         if provider_request_id is None:
@@ -220,6 +225,10 @@ class ImmutableOperationalLog:
             record = OperationalRecord.from_dict(value)
         except OperationalLogError:
             raise
+        except ValueError as exc:
+            raise OperationalLogError(
+                f"failed to retrieve verified serving operation: {exc}"
+            ) from exc
         except Exception as exc:
             raise OperationalLogError("failed to retrieve verified serving operation") from exc
         if record.request_id != request_id:
