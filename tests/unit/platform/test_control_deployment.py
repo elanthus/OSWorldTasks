@@ -459,6 +459,47 @@ def test_legacy_deployment_migration_preserves_unexpected_schema_and_data(
     assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
+def test_migration_rejects_same_columns_with_missing_constraints(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "malformed.sqlite", reviewer_identity="local-reviewer")
+    control.connection.executescript(control_store.SCHEMA)
+    control.connection.execute("PRAGMA foreign_keys = OFF")
+    control.connection.execute("DROP TABLE deployments")
+    control.connection.execute(
+        """CREATE TABLE deployments (
+          deployment_id TEXT,
+          candidate_id TEXT,
+          policy_id TEXT,
+          action TEXT,
+          actor TEXT,
+          reason TEXT,
+          created_at_utc TEXT,
+          generation INTEGER
+        )"""
+    )
+    control.connection.executemany(
+        "INSERT INTO deployments VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            ("bad-1", "missing", "policy", "invalid", "actor", "reason", "now", 1),
+            ("bad-2", "missing", "policy", "invalid", "actor", "reason", "now", 1),
+        ],
+    )
+    control.connection.execute("PRAGMA foreign_keys = ON")
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"stale schema .*columns.*foreign_keys.*indexes.*checks.*triggers",
+    ):
+        control.require_migrated()
+    with pytest.raises(
+        RuntimeError,
+        match=r"stale schema .*columns.*foreign_keys.*indexes.*checks.*triggers",
+    ):
+        control.migrate()
+
+    assert control.connection.execute("SELECT COUNT(*) FROM deployments").fetchone()[0] == 2
+    assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
 def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
     tmp_path: Path, passing_evidence
 ) -> None:
