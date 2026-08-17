@@ -5,9 +5,15 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import re
 import time
+from concurrent.futures import ThreadPoolExecutor
+from http.cookiejar import CookieJar
 from pathlib import Path
+from threading import Barrier
+from urllib.error import HTTPError
 from urllib.parse import urlencode
+from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, Request, build_opener
 
 import pytest
 
@@ -58,12 +64,22 @@ def _candidate(page, stack, model: str, state: str) -> str:
 
 
 def _approve_and_deploy(page, stack, candidate_id: str, label: str) -> dict[str, object]:
+    _approve(page, stack, candidate_id, label)
+    return _deploy(page, stack, candidate_id, label)
+
+
+def _approve(page, stack, candidate_id: str, label: str) -> None:
     page.goto(f"{stack.platform_url}/candidates/{candidate_id}")
     playwright_api.expect(page.locator("main")).to_contain_text("Eligible")
     page.locator('form[action$="/approve"] textarea[name="reason"]').fill(
         f"integration approval for {label}"
     )
     page.locator('form[action$="/approve"] button').click()
+    playwright_api.expect(page.locator("main")).to_contain_text("Approved")
+
+
+def _deploy(page, stack, candidate_id: str, label: str) -> dict[str, object]:
+    page.goto(f"{stack.platform_url}/candidates/{candidate_id}")
     playwright_api.expect(page.locator("main")).to_contain_text("Approved")
     page.locator('form[action$="/deploy"] textarea[name="reason"]').fill(
         f"integration deployment for {label}"
@@ -73,6 +89,55 @@ def _approve_and_deploy(page, stack, candidate_id: str, label: str) -> dict[str,
     policy = page.context.request.get(f"{stack.platform_url}/api/v1/policy")
     assert policy.status == 200
     return policy.json()
+
+
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        return None
+
+
+def _concurrent_form_post(
+    stack,
+    *,
+    csrf_page: str,
+    form_path: str,
+    fields: dict[str, str],
+    barrier: Barrier,
+) -> int:
+    opener = build_opener(HTTPCookieProcessor(CookieJar()), _NoRedirect())
+    with opener.open(f"{stack.platform_url}{csrf_page}", timeout=10) as response:
+        body = response.read().decode("utf-8")
+    match = re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', body)
+    assert match is not None
+    barrier.wait(timeout=10)
+    request = Request(
+        f"{stack.platform_url}{form_path}",
+        data=urlencode({"csrf_token": match.group(1), **fields}).encode("ascii"),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    try:
+        with opener.open(request, timeout=120) as response:
+            return response.status
+    except HTTPError as exc:
+        return exc.code
+
+
+def _race_forms(stack, requests: list[tuple[str, str, dict[str, str]]]) -> list[int]:
+    barrier = Barrier(len(requests))
+    with ThreadPoolExecutor(max_workers=len(requests)) as executor:
+        futures = [
+            executor.submit(
+                _concurrent_form_post,
+                stack,
+                csrf_page=csrf_page,
+                form_path=form_path,
+                fields=fields,
+                barrier=barrier,
+            )
+            for csrf_page, form_path, fields in requests
+        ]
+    return [future.result(timeout=1) for future in futures]
 
 
 def _s3_client(stack):
@@ -161,7 +226,71 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
             playwright_api.expect(page.locator("main")).to_contain_text("Cost / 100")
             playwright_api.expect(page.locator("main")).to_contain_text("Provider p95")
 
-            b_policy = _approve_and_deploy(page, stack, candidate_b, "candidate B")
+            _approve(page, stack, candidate_b, "candidate B")
+            duplicate_approvals = _race_forms(
+                stack,
+                [
+                    (
+                        f"/candidates/{candidate_b}",
+                        f"/candidates/{candidate_b}/approve",
+                        {"reason": f"concurrent duplicate approval {index}"},
+                    )
+                    for index in range(2)
+                ],
+            )
+            assert duplicate_approvals == [409, 409]
+
+            concurrent_deploys = _race_forms(
+                stack,
+                [
+                    (
+                        f"/candidates/{candidate_b}",
+                        f"/candidates/{candidate_b}/deploy",
+                        {"reason": f"concurrent deployment {index}"},
+                    )
+                    for index in range(2)
+                ],
+            )
+            assert set(concurrent_deploys) <= {303, 409}
+            assert 303 in concurrent_deploys
+            race_deployed = page.context.request.get(
+                f"{stack.platform_url}/api/v1/policy"
+            ).json()
+            assert race_deployed["exact_policy_version"] == candidate_b
+
+            concurrent_rollbacks = _race_forms(
+                stack,
+                [
+                    (
+                        "/deployment",
+                        "/rollback",
+                        {"reason": f"concurrent rollback {index}"},
+                    )
+                    for index in range(2)
+                ],
+            )
+            assert set(concurrent_rollbacks) <= {303, 409}
+            assert 303 in concurrent_rollbacks
+            race_active = page.context.request.get(
+                f"{stack.platform_url}/api/v1/policy"
+            ).json()
+            assert race_active["exact_policy_version"] in {seed_id, candidate_b}
+            active_rows = stack.compose(
+                "exec",
+                "-T",
+                "platform",
+                "python",
+                "-c",
+                (
+                    "import sqlite3; c=sqlite3.connect('/state/control.db'); "
+                    "print(c.execute('SELECT COUNT(*) FROM active_pointer WHERE singleton=1').fetchone()[0])"
+                ),
+                timeout=30,
+            )
+            assert active_rows.stdout.strip() == "1"
+
+            _deploy(page, stack, seed_id, "post-race rollback seed")
+            b_policy = _deploy(page, stack, candidate_b, "candidate B")
             assert b_policy["policy_id"] != seed_policy["policy_id"]
             assert b_policy["deployment_id"] != seed_policy["deployment_id"]
 

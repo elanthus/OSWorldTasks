@@ -13,6 +13,7 @@ from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -275,7 +276,7 @@ def create_control_app(
         invalid = [key for key, value in payload.items() if value not in ALLOWED_SUBMISSION_FIELDS[key]]
         if invalid:
             raise HTTPException(422, f"submission contains non-allowlisted options: {', '.join(invalid)}")
-        submission_id = control.submit(payload)
+        submission_id = await run_in_threadpool(control.submit, payload)
         if submit_callback is not None:
             submit_callback(submission_id, payload)
         return RedirectResponse(f"/runs?submitted={submission_id}", status_code=303)
@@ -421,7 +422,7 @@ def create_control_app(
         require_csrf(request, fields.get("csrf_token"))
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "approval fields do not match the fixed contract")
-        _approve(candidate_id, fields["reason"])
+        await run_in_threadpool(_approve, candidate_id, fields["reason"])
         return RedirectResponse(f"/candidates/{candidate_id}", status_code=303)
 
     @app.post("/api/candidates/{candidate_id}/approve")
@@ -438,8 +439,13 @@ def create_control_app(
             raise HTTPException(422, "deployment fields do not match the fixed contract")
         if coordinator is None:
             raise HTTPException(503, "deployment coordinator is unavailable")
-        candidate_or_404(candidate_id)
-        coordinator.deploy(candidate_id, actor=control.reviewer_identity, reason=fields["reason"])
+        await run_in_threadpool(candidate_or_404, candidate_id)
+        await run_in_threadpool(
+            coordinator.deploy,
+            candidate_id,
+            actor=control.reviewer_identity,
+            reason=fields["reason"],
+        )
         return RedirectResponse("/deployment", status_code=303)
 
     @app.post("/rollback")
@@ -450,7 +456,11 @@ def create_control_app(
             raise HTTPException(422, "rollback fields do not match the fixed contract")
         if coordinator is None:
             raise HTTPException(503, "deployment coordinator is unavailable")
-        coordinator.rollback(actor=control.reviewer_identity, reason=fields["reason"])
+        await run_in_threadpool(
+            coordinator.rollback,
+            actor=control.reviewer_identity,
+            reason=fields["reason"],
+        )
         return RedirectResponse("/deployment", status_code=303)
 
     @app.get("/deployment", response_class=HTMLResponse)
