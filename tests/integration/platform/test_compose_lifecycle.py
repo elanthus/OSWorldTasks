@@ -316,9 +316,8 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 page, stack, "day3-replay-revised-v2", "Eligible"
             )
             page.goto(f"{stack.platform_url}/deployment")
-            expected_deployment_id = page.locator('input[name="expected_deployment_id"]').get_attribute("value")
-            expected_generation = page.locator('input[name="expected_generation"]').get_attribute("value")
-            assert expected_deployment_id and expected_generation
+            generation_match = re.search(r"generation ([0-9]+)", page.locator("main").inner_text())
+            assert generation_match is not None
             page.goto(f"{stack.platform_url}/candidates/{candidate_b}")
             csrf = _csrf(page)
             blocked_deploy = page.context.request.post(
@@ -327,8 +326,8 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 data=urlencode(
                     {
                         "csrf_token": csrf, "reason": "approval must come first",
-                        "expected_deployment_id": expected_deployment_id,
-                        "expected_generation": expected_generation,
+                        "expected_deployment_id": seed_policy["deployment_id"],
+                        "expected_generation": generation_match.group(1),
                     }
                 ),
                 max_redirects=0,
