@@ -542,6 +542,29 @@ def test_new_serving_connection_enforces_foreign_keys(tmp_path: Path) -> None:
         )
 
 
+def test_migration_ignores_check_text_in_sql_comment(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "commented-check.sqlite", reviewer_identity="local-reviewer")
+    malformed_schema = control_store.SCHEMA.replace(
+        "  action TEXT NOT NULL CHECK(action IN ('deploy', 'rollback')),",
+        "  action TEXT NOT NULL, -- CHECK(action IN ('deploy', 'rollback'))",
+    )
+    assert malformed_schema != control_store.SCHEMA
+    control.connection.executescript(malformed_schema)
+    control.connection.execute("PRAGMA foreign_keys = OFF")
+    control.connection.execute(
+        "INSERT INTO deployments VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        ("bad", "missing", "policy", "invalid", "actor", "reason", "now", 1),
+    )
+    control.connection.execute("PRAGMA foreign_keys = ON")
+
+    with pytest.raises(RuntimeError, match=r"stale schema .*checks"):
+        control.require_migrated()
+    with pytest.raises(RuntimeError, match=r"stale schema .*checks"):
+        control.migrate()
+
+    assert control.connection.execute("SELECT action FROM deployments").fetchone()[0] == "invalid"
+
+
 def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
     tmp_path: Path, passing_evidence
 ) -> None:

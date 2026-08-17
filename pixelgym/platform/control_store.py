@@ -144,6 +144,54 @@ def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
     return {str(row[1]) for row in connection.execute("PRAGMA table_xinfo(deployments)")}
 
 
+def _skip_sql_quoted(sql: str, cursor: int) -> int:
+    quote = sql[cursor]
+    terminator = "]" if quote == "[" else quote
+    cursor += 1
+    while cursor < len(sql):
+        if sql[cursor] == terminator:
+            if terminator != "]" and cursor + 1 < len(sql) and sql[cursor + 1] == terminator:
+                cursor += 2
+                continue
+            return cursor + 1
+        cursor += 1
+    raise RuntimeError("deployments table has malformed quoted SQL")
+
+
+def _skip_sql_comment(sql: str, cursor: int) -> int | None:
+    if sql.startswith("--", cursor):
+        newline = sql.find("\n", cursor + 2)
+        return len(sql) if newline < 0 else newline + 1
+    if sql.startswith("/*", cursor):
+        end = sql.find("*/", cursor + 2)
+        if end < 0:
+            raise RuntimeError("deployments table has malformed SQL comment")
+        return end + 2
+    return None
+
+
+def _next_active_check(sql: str, offset: int) -> int:
+    cursor = offset
+    while cursor < len(sql):
+        if sql[cursor] in {"'", '"', "`", "["}:
+            cursor = _skip_sql_quoted(sql, cursor)
+            continue
+        comment_end = _skip_sql_comment(sql, cursor)
+        if comment_end is not None:
+            cursor = comment_end
+            continue
+        if sql[cursor : cursor + len("CHECK")].upper() == "CHECK":
+            before = sql[cursor - 1] if cursor else ""
+            after_at = cursor + len("CHECK")
+            after = sql[after_at] if after_at < len(sql) else ""
+            if not (before.isalnum() or before == "_") and not (
+                after.isalnum() or after == "_"
+            ):
+                return cursor
+        cursor += 1
+    return -1
+
+
 def _deployment_checks(connection: sqlite3.Connection) -> frozenset[str]:
     row = connection.execute(
         "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'deployments'"
@@ -151,10 +199,9 @@ def _deployment_checks(connection: sqlite3.Connection) -> frozenset[str]:
     if row is None or row[0] is None:
         return frozenset()
     sql = str(row[0])
-    upper_sql = sql.upper()
     checks: set[str] = set()
     offset = 0
-    while (check_at := upper_sql.find("CHECK", offset)) >= 0:
+    while (check_at := _next_active_check(sql, offset)) >= 0:
         cursor = check_at + len("CHECK")
         while cursor < len(sql) and sql[cursor].isspace():
             cursor += 1
@@ -163,19 +210,17 @@ def _deployment_checks(connection: sqlite3.Connection) -> frozenset[str]:
             continue
         expression_start = cursor + 1
         depth = 1
-        quote: str | None = None
         cursor += 1
         while cursor < len(sql) and depth:
             character = sql[cursor]
-            if quote:
-                if character == quote:
-                    if cursor + 1 < len(sql) and sql[cursor + 1] == quote:
-                        cursor += 1
-                    else:
-                        quote = None
-            elif character in {"'", '"'}:
-                quote = character
-            elif character == "(":
+            if character in {"'", '"', "`", "["}:
+                cursor = _skip_sql_quoted(sql, cursor)
+                continue
+            comment_end = _skip_sql_comment(sql, cursor)
+            if comment_end is not None:
+                cursor = comment_end
+                continue
+            if character == "(":
                 depth += 1
             elif character == ")":
                 depth -= 1
