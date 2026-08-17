@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from pixelgym.platform import control_store
 from pixelgym.platform.control_store import (
     AuthorizationError,
     ConflictError,
@@ -394,6 +395,28 @@ def test_migrate_drops_legacy_deployment_link_without_losing_history(
     assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
         control.connection.execute("UPDATE deployments SET actor = 'changed'")
+
+
+def test_legacy_deployment_migration_rejects_schema_drift(
+    tmp_path: Path, passing_evidence, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+    )
+    changed_schema = control_store.SCHEMA.replace(
+        "  generation INTEGER NOT NULL UNIQUE\n);",
+        "  generation INTEGER NOT NULL UNIQUE,\n  release_channel TEXT NOT NULL DEFAULT 'stable'\n);",
+    )
+    monkeypatch.setattr(control_store, "SCHEMA", changed_schema)
+
+    with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
+        control.migrate()
 
 
 def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(

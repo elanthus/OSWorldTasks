@@ -131,6 +131,16 @@ BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
 """
 
 
+def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
+    return {str(row[1]) for row in connection.execute("PRAGMA table_info(deployments)")}
+
+
+def _fresh_deployment_columns() -> set[str]:
+    with sqlite3.connect(":memory:") as connection:
+        connection.executescript(SCHEMA)
+        return _deployment_columns(connection)
+
+
 class ControlStore:
     def __init__(
         self,
@@ -179,6 +189,8 @@ class ControlStore:
                        created_at_utc, generation
                 FROM deployments"""
             )
+            # Preserve existing IDs verbatim: legacy rows are not reproducible from the
+            # current deployment-ID derivation formula.
             self.connection.execute("DROP TABLE deployments")
             self.connection.execute(
                 "ALTER TABLE deployments_without_previous RENAME TO deployments"
@@ -219,6 +231,15 @@ class ControlStore:
             }
             if "previous_deployment_id" in deployment_columns:
                 self._migrate_legacy_deployments()
+            actual_columns = _deployment_columns(self.connection)
+            expected_columns = _fresh_deployment_columns()
+            if actual_columns != expected_columns:
+                missing = sorted(expected_columns - actual_columns)
+                unexpected = sorted(actual_columns - expected_columns)
+                raise RuntimeError(
+                    "deployment migration produced a stale schema "
+                    f"(missing columns: {missing}; unexpected columns: {unexpected})"
+                )
 
     def require_migrated(self) -> None:
         """Fail clearly when the explicit migration step has not completed."""
