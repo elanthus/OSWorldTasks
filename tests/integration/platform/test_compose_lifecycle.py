@@ -116,9 +116,9 @@ def _concurrent_form_post(
     expected_deployment = re.search(r'name="expected_deployment_id" value="([^"]*)"', body)
     expected_generation = re.search(r'name="expected_generation" value="([0-9]+)"', body)
     payload = {"csrf_token": match.group(1), **fields}
-    if expected_deployment is not None:
+    if form_path.endswith("/deploy") or form_path == "/rollback":
+        assert expected_deployment is not None and expected_generation is not None
         payload["expected_deployment_id"] = expected_deployment.group(1)
-    if expected_generation is not None:
         payload["expected_generation"] = expected_generation.group(1)
     barrier.wait(timeout=10)
     request = Request(
