@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import time
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -35,15 +36,25 @@ def _submit(page, stack, *, prompt_version: str, model: str) -> None:
     page.select_option('select[name="model"]', model)
     page.get_by_role("button", name="Submit fixed evaluation").click()
     page.wait_for_url(f"{stack.platform_url}/runs**")
+    assert "submitted=submission-" in page.url
+    playwright_api.expect(page.locator(".notice")).to_contain_text("accepted")
 
 
 def _candidate(page, stack, model: str, state: str) -> str:
-    page.goto(f"{stack.platform_url}/runs")
-    row = page.locator("tbody tr", has_text=model)
-    playwright_api.expect(row).to_contain_text(state, timeout=300_000)
-    href = row.locator("a").first.get_attribute("href")
-    assert href and href.startswith("/candidates/")
-    return href.removeprefix("/candidates/")
+    deadline = time.monotonic() + 300
+    last_table = ""
+    while time.monotonic() < deadline:
+        page.goto(f"{stack.platform_url}/runs")
+        row = page.locator("tbody tr", has_text=model)
+        if row.count() == 1 and state in row.inner_text():
+            href = row.locator("a").first.get_attribute("href")
+            assert href and href.startswith("/candidates/")
+            return href.removeprefix("/candidates/")
+        last_table = page.locator("table").inner_text()
+        page.wait_for_timeout(1_000)
+    raise AssertionError(
+        f"candidate for {model!r} did not reach {state!r}; last runs table:\n{last_table}"
+    )
 
 
 def _approve_and_deploy(page, stack, candidate_id: str, label: str) -> dict[str, object]:
