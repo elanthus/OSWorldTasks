@@ -60,6 +60,15 @@ class DeploymentRecord:
     generation: int
 
 
+@dataclass(frozen=True)
+class _DeploymentSchema:
+    columns: frozenset[tuple[str, str, int, str | None, int, int, int]]
+    foreign_keys: frozenset[tuple[object, ...]]
+    indexes: frozenset[tuple[int, str, int, tuple[str, ...]]]
+    checks: frozenset[str]
+    triggers: frozenset[tuple[str, str]]
+
+
 SCHEMA = """
 PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS submissions (
@@ -132,13 +141,145 @@ BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
 
 
 def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
-    return {str(row[1]) for row in connection.execute("PRAGMA table_info(deployments)")}
+    return {str(row[1]) for row in connection.execute("PRAGMA table_xinfo(deployments)")}
 
 
-def _fresh_deployment_columns() -> set[str]:
+def _skip_sql_quoted(sql: str, cursor: int) -> int:
+    quote = sql[cursor]
+    terminator = "]" if quote == "[" else quote
+    cursor += 1
+    while cursor < len(sql):
+        if sql[cursor] == terminator:
+            if terminator != "]" and cursor + 1 < len(sql) and sql[cursor + 1] == terminator:
+                cursor += 2
+                continue
+            return cursor + 1
+        cursor += 1
+    raise RuntimeError("deployments table has malformed quoted SQL")
+
+
+def _skip_sql_comment(sql: str, cursor: int) -> int | None:
+    if sql.startswith("--", cursor):
+        newline = sql.find("\n", cursor + 2)
+        return len(sql) if newline < 0 else newline + 1
+    if sql.startswith("/*", cursor):
+        end = sql.find("*/", cursor + 2)
+        if end < 0:
+            raise RuntimeError("deployments table has malformed SQL comment")
+        return end + 2
+    return None
+
+
+def _next_active_check(sql: str, offset: int) -> int:
+    cursor = offset
+    while cursor < len(sql):
+        if sql[cursor] in {"'", '"', "`", "["}:
+            cursor = _skip_sql_quoted(sql, cursor)
+            continue
+        comment_end = _skip_sql_comment(sql, cursor)
+        if comment_end is not None:
+            cursor = comment_end
+            continue
+        if sql[cursor : cursor + len("CHECK")].upper() == "CHECK":
+            before = sql[cursor - 1] if cursor else ""
+            after_at = cursor + len("CHECK")
+            after = sql[after_at] if after_at < len(sql) else ""
+            if not (before.isalnum() or before == "_") and not (
+                after.isalnum() or after == "_"
+            ):
+                return cursor
+        cursor += 1
+    return -1
+
+
+def _deployment_checks(connection: sqlite3.Connection) -> frozenset[str]:
+    row = connection.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'deployments'"
+    ).fetchone()
+    if row is None or row[0] is None:
+        return frozenset()
+    sql = str(row[0])
+    checks: set[str] = set()
+    offset = 0
+    while (check_at := _next_active_check(sql, offset)) >= 0:
+        cursor = check_at + len("CHECK")
+        while cursor < len(sql) and sql[cursor].isspace():
+            cursor += 1
+        if cursor >= len(sql) or sql[cursor] != "(":
+            offset = cursor
+            continue
+        expression_start = cursor + 1
+        depth = 1
+        cursor += 1
+        while cursor < len(sql) and depth:
+            character = sql[cursor]
+            if character in {"'", '"', "`", "["}:
+                cursor = _skip_sql_quoted(sql, cursor)
+                continue
+            comment_end = _skip_sql_comment(sql, cursor)
+            if comment_end is not None:
+                cursor = comment_end
+                continue
+            if character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+            cursor += 1
+        if depth:
+            raise RuntimeError("deployments table has malformed CHECK constraint SQL")
+        checks.add(" ".join(sql[expression_start : cursor - 1].split()))
+        offset = cursor
+    return frozenset(checks)
+
+
+def _deployment_schema(connection: sqlite3.Connection) -> _DeploymentSchema:
+    columns = frozenset(
+        (
+            str(row[1]),
+            str(row[2]),
+            int(row[3]),
+            None if row[4] is None else str(row[4]),
+            int(row[5]),
+            int(row[0]),
+            int(row[6]),
+        )
+        for row in connection.execute("PRAGMA table_xinfo(deployments)")
+    )
+    foreign_keys = frozenset(
+        tuple(row[1:]) for row in connection.execute("PRAGMA foreign_key_list(deployments)")
+    )
+    indexes: set[tuple[int, str, int, tuple[str, ...]]] = set()
+    for row in connection.execute("PRAGMA index_list(deployments)"):
+        index_name = str(row[1]).replace("'", "''")
+        index_columns = tuple(
+            str(index_row[2])
+            for index_row in connection.execute(f"PRAGMA index_info('{index_name}')")
+        )
+        indexes.add((int(row[2]), str(row[3]), int(row[4]), index_columns))
+    return _DeploymentSchema(
+        columns=columns,
+        foreign_keys=foreign_keys,
+        indexes=frozenset(indexes),
+        checks=_deployment_checks(connection),
+        triggers=frozenset(
+            (str(row[0]), " ".join(str(row[1]).split()))
+            for row in connection.execute(
+                "SELECT name, sql FROM sqlite_master "
+                "WHERE type = 'trigger' AND tbl_name = 'deployments'"
+            )
+        ),
+    )
+
+
+def _fresh_deployment_schema(*, legacy: bool = False) -> _DeploymentSchema:
     with sqlite3.connect(":memory:") as connection:
         connection.executescript(SCHEMA)
-        return _deployment_columns(connection)
+        if legacy:
+            connection.execute(
+                "ALTER TABLE deployments ADD COLUMN previous_deployment_id "
+                "TEXT REFERENCES deployments(deployment_id)"
+            )
+        return _deployment_schema(connection)
 
 
 def _assert_deployment_columns(
@@ -150,6 +291,26 @@ def _assert_deployment_columns(
         raise RuntimeError(
             f"{context} has a stale schema "
             f"(missing columns: {missing}; unexpected columns: {unexpected})"
+        )
+
+
+def _assert_deployment_schema(
+    actual: _DeploymentSchema, expected: _DeploymentSchema, *, context: str
+) -> None:
+    _assert_deployment_columns(
+        {column[0] for column in actual.columns},
+        {column[0] for column in expected.columns},
+        context=context,
+    )
+    mismatches = [
+        name
+        for name in ("columns", "foreign_keys", "indexes", "checks", "triggers")
+        if getattr(actual, name) != getattr(expected, name)
+    ]
+    if mismatches:
+        raise RuntimeError(
+            f"{context} has a stale schema "
+            f"(constraint or index mismatch: {', '.join(mismatches)})"
         )
 
 
@@ -174,8 +335,9 @@ class ControlStore:
             uri=target.startswith("file:"),
         )
         self.connection.row_factory = sqlite3.Row
+        self.connection.execute("PRAGMA foreign_keys = ON")
 
-    def _migrate_legacy_deployments(self, expected_columns: set[str]) -> None:
+    def _migrate_legacy_deployments(self, expected_schema: _DeploymentSchema) -> None:
         """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
         self.connection.execute("PRAGMA foreign_keys = OFF")
         try:
@@ -215,9 +377,9 @@ class ControlStore:
                 """CREATE TRIGGER deployments_no_delete BEFORE DELETE ON deployments
                 BEGIN SELECT RAISE(ABORT, 'deployments are append-only'); END"""
             )
-            _assert_deployment_columns(
-                _deployment_columns(self.connection),
-                expected_columns,
+            _assert_deployment_schema(
+                _deployment_schema(self.connection),
+                expected_schema,
                 context="deployment migration output",
             )
             violations = list(self.connection.execute("PRAGMA foreign_key_check"))
@@ -233,6 +395,19 @@ class ControlStore:
 
     def migrate(self) -> None:
         with self._lock:
+            deployments_exists = self.connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'deployments'"
+            ).fetchone()
+            if deployments_exists:
+                deployment_schema = _deployment_schema(self.connection)
+                is_legacy = "previous_deployment_id" in {
+                    column[0] for column in deployment_schema.columns
+                }
+                _assert_deployment_schema(
+                    deployment_schema,
+                    _fresh_deployment_schema(legacy=is_legacy),
+                    context="deployment migration input",
+                )
             self.connection.executescript(SCHEMA)
             columns = {
                 str(row["name"])
@@ -242,18 +417,13 @@ class ControlStore:
                 self.connection.execute(
                     "ALTER TABLE candidates ADD COLUMN summary_json TEXT NOT NULL DEFAULT '{}'"
                 )
-            expected_columns = _fresh_deployment_columns()
+            expected_schema = _fresh_deployment_schema()
             deployment_columns = _deployment_columns(self.connection)
             if "previous_deployment_id" in deployment_columns:
-                _assert_deployment_columns(
-                    deployment_columns,
-                    expected_columns | {"previous_deployment_id"},
-                    context="legacy deployment migration input",
-                )
-                self._migrate_legacy_deployments(expected_columns)
-            _assert_deployment_columns(
-                _deployment_columns(self.connection),
-                expected_columns,
+                self._migrate_legacy_deployments(expected_schema)
+            _assert_deployment_schema(
+                _deployment_schema(self.connection),
+                expected_schema,
                 context="deployment migration output",
             )
 
@@ -284,10 +454,13 @@ class ControlStore:
             pointer = self.connection.execute(
                 "SELECT deployment_id, generation FROM active_pointer WHERE singleton = 1"
             ).fetchone()
-            deployment_columns = {
-                str(row["name"])
-                for row in self.connection.execute("PRAGMA table_info(deployments)")
-            }
+            deployment_schema = _deployment_schema(self.connection)
+            deployment_columns = {column[0] for column in deployment_schema.columns}
+            foreign_keys_enabled = int(
+                self.connection.execute("PRAGMA foreign_keys").fetchone()[0]
+            )
+        if not foreign_keys_enabled:
+            raise RuntimeError("control database foreign-key enforcement is disabled")
         if pointer is None:
             raise RuntimeError(
                 "control database migration is incomplete; active_pointer singleton row "
@@ -298,6 +471,11 @@ class ControlStore:
                 "control database migration is incomplete; legacy deployment links remain; "
                 "rerun scripts/platform_migrate.py"
             )
+        _assert_deployment_schema(
+            deployment_schema,
+            _fresh_deployment_schema(),
+            context="control database deployments table",
+        )
 
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
