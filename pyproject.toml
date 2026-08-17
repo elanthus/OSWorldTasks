@@ -34,6 +34,7 @@ dev = [
     "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
+    "httpx>=0.27,<1",  # platform web tests directly import httpx.AsyncClient/ASGITransport
     "playwright>=1.52",  # deterministic Day 3 browser capture tooling
     "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
 ]
