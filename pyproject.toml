@@ -24,6 +24,7 @@ platform = [
     "metaflow==2.19.35",
     "boto3==1.40.1",
     "psycopg2-binary==2.9.10",
+    "greenlet==3.5.4",  # SQLAlchemy requires this on x86_64 but not on arm64 lock hosts
 ]
 dev = [
     "pytest>=8.0",

@@ -156,7 +156,7 @@ def compose_stack() -> ComposeStack:
         yield stack
     finally:
         completed = stack.compose(
-            "down", "--volumes", "--remove-orphans", timeout=180, check=False
+            "down", "--volumes", "--remove-orphans", "--rmi", "local", timeout=180, check=False
         )
         if completed.returncode:
             pytest.fail(
