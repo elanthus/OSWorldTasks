@@ -8,6 +8,7 @@ import json
 import os
 import shlex
 import subprocess
+import tempfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,7 +27,18 @@ def _timestamp() -> str:
 
 def _redact(value: str, paths: list[Path]) -> str:
     redacted = value
-    replacements = [(str(Path.home()), "<home>")]
+    replacements: list[tuple[str, str]] = []
+    try:
+        replacements.append((str(Path.home()), "<home>"))
+    except RuntimeError:
+        pass
+    temporary = Path(tempfile.gettempdir())
+    replacements.extend(
+        {
+            (str(temporary), "<system-temp>"),
+            (str(temporary.resolve()), "<system-temp>"),
+        }
+    )
     replacements.extend(
         (str(path.resolve()), f"<path-{index}>") for index, path in enumerate(paths)
     )

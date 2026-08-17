@@ -1,12 +1,12 @@
 {
-  "files_scanned": 67,
+  "files_scanned": 65,
   "final_deliverables_scanned": [
     "REPORT.md",
     "evidence-manifest.json"
   ],
   "finding_counts": {
     "aws_access_keys": 0,
-    "host_usernames_or_emails": 0,
+    "host_identity_paths_or_emails": 0,
     "local_absolute_paths": 0,
     "local_demo_credentials": 0,
     "private_key_markers": 0,

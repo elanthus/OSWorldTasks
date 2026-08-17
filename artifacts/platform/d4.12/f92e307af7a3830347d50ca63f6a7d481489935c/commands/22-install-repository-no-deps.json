@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "--no-deps",
+    "-e",
+    "."
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pip install --no-deps -e .",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.392922,
+  "ended_at_utc": "2026-08-17T21:23:55.831181+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Obtaining file://<path-0>\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'done'\n  Checking if build backend supports build_editable: started\n  Checking if build backend supports build_editable: finished with status 'done'\n  Getting requirements to build editable: started\n  Getting requirements to build editable: finished with status 'done'\n  Preparing editable metadata (pyproject.toml): started\n  Preparing editable metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pixelgym\n  Building editable for pixelgym (pyproject.toml): started\n  Building editable for pixelgym (pyproject.toml): finished with status 'done'\n  Created wheel for pixelgym: filename=pixelgym-0.1.0-0.editable-py3-none-any.whl size=8438 sha256=f52b415547dcf2023bd43d77a419eed20ec93c6032072211ff9f35e8e3d49ff8\n  Stored in directory: <system-temp>/pip-ephem-wheel-cache-g8j_ithj/wheels/1e/5f/0d/99a54c16de563df56d0c7c73df0c485c1c7673451f81e83b88\nSuccessfully built pixelgym\nInstalling collected packages: pixelgym\nSuccessfully installed pixelgym-0.1.0\n\n[notice] A new release of pip is available: 26.1.2 -> 26.2.1\n[notice] To update, run: <path-2>/integration-venv/bin/python -m pip install --upgrade pip\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T21:23:54.436768+00:00"
+}

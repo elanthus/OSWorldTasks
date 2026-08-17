@@ -5,111 +5,119 @@
       "evidence": [
         {
           "command": "<path-2>/dev-venv/bin/python -m pip install -e '.[dev]'",
-          "duration_seconds": 8.229202,
-          "ended_at_utc": "2026-08-17T20:11:12.114530+00:00",
+          "duration_seconds": 10.413297,
+          "ended_at_utc": "2026-08-17T21:21:04.351490+00:00",
           "exit_status": 0,
           "full_output_path": "commands/07-install-dev.json",
           "path": "commands/07-install-dev.json",
-          "sha256": "59d40591532f06c6d0e752197be060c5754c0d534fed92c0e081f428277b451e",
-          "started_at_utc": "2026-08-17T20:11:03.884525+00:00"
+          "sha256": "2871eb8ee75d4337babfd73da97f457c6b5786401815e249b8d5c3c61f392026",
+          "size": 13097,
+          "started_at_utc": "2026-08-17T21:20:53.935828+00:00"
         },
         {
           "command": "<path-2>/dev-venv/bin/python -m pytest tests/ -q",
-          "duration_seconds": 54.288559,
-          "ended_at_utc": "2026-08-17T20:12:12.200230+00:00",
+          "duration_seconds": 55.071895,
+          "ended_at_utc": "2026-08-17T21:22:05.529265+00:00",
           "exit_status": 0,
           "full_output_path": "commands/08-fast-suite.json",
           "observed_test_summary": {
             "passed": 593,
-            "runtime": 53.84,
+            "runtime": 54.67,
             "skipped": 5,
             "warnings": 3
           },
           "path": "commands/08-fast-suite.json",
-          "sha256": "1d78d7807eba3a47e6393d9c3dc04124fd54c70951d038edd43028664e999260",
-          "started_at_utc": "2026-08-17T20:11:17.910658+00:00"
+          "sha256": "94039a2e898bae7063e7ce54ea528194e2509de11ebaef25b33bbf6020124a91",
+          "size": 1993,
+          "started_at_utc": "2026-08-17T21:21:10.456046+00:00"
         },
         {
           "command": "<path-2>/dev-venv/bin/python -m pytest -q tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend",
-          "duration_seconds": 0.404828,
-          "ended_at_utc": "2026-08-17T20:13:54.089763+00:00",
+          "duration_seconds": 0.364381,
+          "ended_at_utc": "2026-08-17T21:22:26.382170+00:00",
           "exit_status": 0,
           "full_output_path": "commands/09-environment-checker.json",
           "observed_test_summary": {
             "passed": 1,
-            "runtime": 0.04
+            "runtime": 0.05
           },
           "path": "commands/09-environment-checker.json",
-          "sha256": "5ff54c752802b1b1c79562d29f83f112c476d10730b42131fefa8ff23ddb27b2",
-          "started_at_utc": "2026-08-17T20:13:53.684325+00:00"
+          "sha256": "328f78c1d1e465aa3d499d3e513e354934fedc0e8ed64152a9443e61cc86f5d8",
+          "size": 709,
+          "started_at_utc": "2026-08-17T21:22:26.016246+00:00"
         },
         {
           "command": "<path-2>/dev-venv/bin/python scripts/golden_trajectory.py check",
-          "duration_seconds": 2.524121,
-          "ended_at_utc": "2026-08-17T20:13:56.208800+00:00",
+          "duration_seconds": 2.520394,
+          "ended_at_utc": "2026-08-17T21:22:28.982002+00:00",
           "exit_status": 0,
           "full_output_path": "commands/10-golden-trajectory.json",
           "path": "commands/10-golden-trajectory.json",
-          "sha256": "eb46c7a441e85503e6452af2c0f20397e437d7ea393a1c5a920160a2fcaab6f4",
-          "started_at_utc": "2026-08-17T20:13:53.684169+00:00"
+          "sha256": "ca5af9577e71887c7c4c09cb401fd4e37c7adfa789aff91325930f37d98f5b80",
+          "size": 861,
+          "started_at_utc": "2026-08-17T21:22:26.460159+00:00"
         },
         {
           "command": "<path-2>/dev-venv/bin/python -m ruff check .",
-          "duration_seconds": 0.601661,
-          "ended_at_utc": "2026-08-17T20:13:54.309120+00:00",
+          "duration_seconds": 0.638273,
+          "ended_at_utc": "2026-08-17T21:22:44.560285+00:00",
           "exit_status": 0,
           "full_output_path": "commands/13-ruff.json",
           "path": "commands/13-ruff.json",
-          "sha256": "b27b27858d765c717778896467b6bf1653b9f6697415a78a07ae4a5bd6109aed",
-          "started_at_utc": "2026-08-17T20:13:53.706902+00:00"
+          "sha256": "83a55143808ad24437c3859f8e65d875a7f9943d6e890aa6d3e6850e0d415774",
+          "size": 455,
+          "started_at_utc": "2026-08-17T21:22:43.920583+00:00"
         }
       ],
       "missing_evidence": [],
       "number": 1,
-      "observed_raw_result": "593 passed, 5 skipped, 3 warnings in 53.84s; environment checker 1 passed in 0.04s; golden trajectory output contains OK; Ruff output contains All checks passed."
+      "observed_raw_result": "593 passed, 5 skipped, 3 warnings in 54.67s; environment checker 1 passed in 0.05s; golden trajectory output contains OK; Ruff output contains All checks passed."
     },
     {
       "checklist_text": "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
       "evidence": [
         {
-          "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
-          "duration_seconds": 14.579389,
-          "ended_at_utc": "2026-08-17T20:14:08.264088+00:00",
+          "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 all_proxy=http://127.0.0.1:9 NO_PROXY=localhost,127.0.0.1,::1 no_proxy=localhost,127.0.0.1,::1 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
+          "duration_seconds": 14.644009,
+          "ended_at_utc": "2026-08-17T21:22:43.702022+00:00",
           "exit_status": 0,
           "full_output_path": "commands/11-platform-unit-boundaries.json",
           "observed_test_summary": {
             "passed": 216,
-            "runtime": 14.13,
+            "runtime": 14.31,
             "warnings": 3
           },
           "path": "commands/11-platform-unit-boundaries.json",
-          "sha256": "dcbd88fbc4b8227eb5c76de8f97aefdd5f7eddc0a0948d6133ba74aaec2c84e1",
-          "started_at_utc": "2026-08-17T20:13:53.683883+00:00"
+          "sha256": "6e31b6db8109fe37b277c3da1657cf5d5da0d002cf616ca0eb8fa46b5a4019a4",
+          "size": 2311,
+          "started_at_utc": "2026-08-17T21:22:29.055921+00:00"
         },
         {
-          "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY <path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present='\"'\"'+str(any(os.environ.get(n) for n in names)).lower())'",
-          "duration_seconds": 0.051109,
-          "ended_at_utc": "2026-08-17T20:13:53.747947+00:00",
+          "command": "<path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); present=any(os.environ.get(n) for n in names); [os.environ.pop(n,None) for n in names]; print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present_before_sanitization='\"'\"'+str(present).lower()); print('\"'\"'provider_credentials_removed='\"'\"'+str(not any(os.environ.get(n) for n in names)).lower())'",
+          "duration_seconds": 0.026569,
+          "ended_at_utc": "2026-08-17T21:22:44.953124+00:00",
           "exit_status": 0,
           "full_output_path": "commands/15-boundary-inventory.json",
           "path": "commands/15-boundary-inventory.json",
-          "sha256": "1d383972fccd3132250bce127fce88feee232f664e8176c2e0eee4d03397a245",
-          "started_at_utc": "2026-08-17T20:13:53.696094+00:00"
+          "sha256": "619fcaf2c47a3cdc655a075502571e7ef6f5e8531a848eea4607042cb17b6e52",
+          "size": 1557,
+          "started_at_utc": "2026-08-17T21:22:44.925414+00:00"
         },
         {
           "command": "rg -n 'time\\.sleep|sleep\\(' tests/unit/platform",
-          "duration_seconds": 0.024168,
-          "ended_at_utc": "2026-08-17T20:13:53.760852+00:00",
+          "duration_seconds": 0.018757,
+          "ended_at_utc": "2026-08-17T21:22:45.066160+00:00",
           "exit_status": 1,
           "full_output_path": "commands/16-platform-sleep-scan.json",
           "path": "commands/16-platform-sleep-scan.json",
-          "sha256": "afc66af7124c76715981377910880f39a4c1ad856fac2dc28201151798876016",
-          "started_at_utc": "2026-08-17T20:13:53.735946+00:00"
+          "sha256": "2578e02d7e043355aa456870d699f3c967ace6f6b0c75ddc93d3ad9f05ceb4a9",
+          "size": 436,
+          "started_at_utc": "2026-08-17T21:22:45.046349+00:00"
         }
       ],
       "missing_evidence": [],
       "number": 2,
-      "observed_raw_result": "216 passed, 3 warnings in 14.13s; stored inventory is osworld_installed=false and provider_credentials_present=false; the sleep scan exited 1 with empty output."
+      "observed_raw_result": "216 passed, 3 warnings in 14.31s; stored inventory is osworld_installed=false and provider_credentials_present_before_sanitization=false, followed by provider_credentials_removed=true; the sleep scan exited 1 with empty output."
     },
     {
       "checklist_text": "Marked platform integration tests pass against a fresh local stack.",
@@ -126,6 +134,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -136,6 +145,7 @@
           "full_output_path": "commands/37-compose-cleanup-filtered.json",
           "path": "commands/37-compose-cleanup-filtered.json",
           "sha256": "d4043677b0314b54eab0e4ec505db6bdb587f973b806eabcd52ddaa92c1d839e",
+          "size": 2104,
           "started_at_utc": "2026-08-17T20:25:27.392671+00:00"
         }
       ],
@@ -147,60 +157,64 @@
       "checklist_text": "Metaflow resume tests prove no duplicate fixture-provider calls.",
       "evidence": [
         {
-          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
-          "duration_seconds": 86.915253,
-          "ended_at_utc": "2026-08-17T20:19:49.011552+00:00",
+          "command": "<path-2>/dev-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+          "duration_seconds": 81.626344,
+          "ended_at_utc": "2026-08-17T21:26:06.779345+00:00",
           "exit_status": 0,
-          "full_output_path": "commands/28-platform-local-runtime-retry.json",
+          "full_output_path": "commands/27-platform-local-runtime.json",
           "observed_test_summary": {
             "passed": 9,
-            "runtime": 86.3
+            "runtime": 81.06
           },
-          "path": "commands/28-platform-local-runtime-retry.json",
-          "sha256": "e5cb48d31c7e966b49ab8c36dbd9690e69cb0cfba6901088a2dd52f60e08c9a1",
-          "started_at_utc": "2026-08-17T20:18:22.093051+00:00"
+          "path": "commands/27-platform-local-runtime.json",
+          "sha256": "f89f84a7d3756cbeaf665dc4c2b22a5558d99fc1371df8c3d06032b0626e316b",
+          "size": 903,
+          "started_at_utc": "2026-08-17T21:24:45.152481+00:00"
         },
         {
-          "command": "<path-2>/integration-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
-          "duration_seconds": 1.984707,
-          "ended_at_utc": "2026-08-17T20:28:47.861731+00:00",
+          "command": "<path-2>/dev-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 13.253164,
+          "ended_at_utc": "2026-08-17T21:24:36.283205+00:00",
           "exit_status": 0,
-          "full_output_path": "commands/39-integration-test-inventory.json",
-          "path": "commands/39-integration-test-inventory.json",
-          "sha256": "5a75aec2a307bcec8927a44839723c0e3ce2a2033d00dbe57eb4cf29f37bf6c1",
-          "started_at_utc": "2026-08-17T20:28:45.875861+00:00"
+          "full_output_path": "commands/26-integration-test-inventory.json",
+          "path": "commands/26-integration-test-inventory.json",
+          "sha256": "9cb14ceac98cea4a70b5d31056fb150acf7d04545cc65d921cb2c98e77ddba56",
+          "size": 2374,
+          "started_at_utc": "2026-08-17T21:24:23.028101+00:00"
         },
         {
-          "command": "<path-2>/integration-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
-          "duration_seconds": 85.404964,
-          "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
+          "command": "<path-2>/dev-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+          "duration_seconds": 80.711055,
+          "ended_at_utc": "2026-08-17T21:27:39.793885+00:00",
           "exit_status": 0,
           "full_output_path": "commands/41-metaflow-resume-ledgers.json",
           "path": "commands/41-metaflow-resume-ledgers.json",
-          "sha256": "52302bc79b0a2cb52cc461668fc9bbc02258600298b69cacde22ad08bde87822",
-          "started_at_utc": "2026-08-17T20:54:02.289306+00:00"
+          "sha256": "be08882c4058e65ec3177a6efca07b50e049e86f1d31fb803746d80a10246f07",
+          "size": 3696,
+          "started_at_utc": "2026-08-17T21:26:19.086537+00:00"
         }
       ],
       "missing_evidence": [],
       "number": 4,
-      "observed_raw_result": "9 passed in 86.30s; structured ledgers cover 6 side-effect boundaries, uninterrupted execution, and SIGKILL recovery. Each has 100 unique requests, 100 billable calls, active=0, max_active=2, and normalized evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
+      "observed_raw_result": "9 passed in 81.06s; structured ledgers cover 6 side-effect boundaries, uninterrupted execution, and SIGKILL recovery. Each has 100 unique requests, 100 billable calls, active=0, max_active=2, and normalized evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
     },
     {
       "checklist_text": "MLflow contains the complete run contract and links back to Metaflow.",
       "evidence": [
         {
-          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
-          "duration_seconds": 86.915253,
-          "ended_at_utc": "2026-08-17T20:19:49.011552+00:00",
+          "command": "<path-2>/dev-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+          "duration_seconds": 81.626344,
+          "ended_at_utc": "2026-08-17T21:26:06.779345+00:00",
           "exit_status": 0,
-          "full_output_path": "commands/28-platform-local-runtime-retry.json",
+          "full_output_path": "commands/27-platform-local-runtime.json",
           "observed_test_summary": {
             "passed": 9,
-            "runtime": 86.3
+            "runtime": 81.06
           },
-          "path": "commands/28-platform-local-runtime-retry.json",
-          "sha256": "e5cb48d31c7e966b49ab8c36dbd9690e69cb0cfba6901088a2dd52f60e08c9a1",
-          "started_at_utc": "2026-08-17T20:18:22.093051+00:00"
+          "path": "commands/27-platform-local-runtime.json",
+          "sha256": "f89f84a7d3756cbeaf665dc4c2b22a5558d99fc1371df8c3d06032b0626e316b",
+          "size": 903,
+          "started_at_utc": "2026-08-17T21:24:45.152481+00:00"
         },
         {
           "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
@@ -214,6 +228,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -241,6 +256,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -274,6 +290,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         }
       ],
@@ -296,6 +313,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -311,6 +329,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         },
         {
@@ -343,6 +362,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -358,6 +378,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         },
         {
@@ -395,6 +416,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -410,6 +432,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         }
       ],
@@ -432,6 +455,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -447,6 +471,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         }
       ],
@@ -469,6 +494,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -501,6 +527,7 @@
           },
           "path": "commands/30-compose-browser-sandbox-retry.json",
           "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+          "size": 784,
           "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
         },
         {
@@ -516,6 +543,7 @@
           },
           "path": "commands/31-mechanical-boundaries.json",
           "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+          "size": 6947,
           "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
         }
       ],
@@ -550,19 +578,20 @@
       "checklist_text": "No credentials, private payloads, or privileged benchmark data appear in artifacts.",
       "evidence": [
         {
-          "command": ".venv/bin/python -c 'import json; from pathlib import Path; data=json.loads(Path(\"artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)'",
-          "duration_seconds": 0.031492,
-          "ended_at_utc": "2026-08-17T20:31:02.486982+00:00",
+          "command": "<path-2>/dev-venv/bin/python -c 'import json; from pathlib import Path; data=json.loads(Path(\"<path-1>/artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)'",
+          "duration_seconds": 0.024915,
+          "ended_at_utc": "2026-08-17T21:28:02.555923+00:00",
           "exit_status": 0,
           "full_output_path": "commands/40-redaction-scan.json",
           "path": "commands/40-redaction-scan.json",
-          "sha256": "454a79fa4a13da1f6f61cebaba71c911a9996ac4575c471800f9c95f6dba25e5",
-          "started_at_utc": "2026-08-17T20:31:02.454989+00:00"
+          "sha256": "153849319760edf0728bab02cb2d3efcf9d461be154cb393b86a000ef34e8055",
+          "size": 1407,
+          "started_at_utc": "2026-08-17T21:28:02.530093+00:00"
         },
         {
           "path": "redaction-scan.json",
-          "sha256": "ed4ed4f4327a4d765b39f35f25cee20ea9e91212d2128b785be0a6496902426a",
-          "size": 416
+          "sha256": "7ed0169bbeb3bed5f5f473d46cb17927b6ceb13b037ad2e499567bf753f0aca3",
+          "size": 421
         },
         {
           "path": "artifacts/platform/screenshots/manifest.json",
@@ -572,7 +601,7 @@
       ],
       "missing_evidence": [],
       "number": 15,
-      "observed_raw_result": "The recorded pre-generation scan covered 64 files with zero findings in every prohibited category; the generator separately scans the final report and manifest and stores redaction-scan.json."
+      "observed_raw_result": "The recorded pre-generation scan covered 65 files with zero findings in every prohibited category; the generator separately scans the final report and manifest and stores redaction-scan.json."
     },
     {
       "checklist_text": "Retention, backup, recovery, and known limitations are documented.",
@@ -607,6 +636,7 @@
       "full_output_path": "commands/00-git-revision.json",
       "path": "commands/00-git-revision.json",
       "sha256": "124ea7375ce8bb7a3a0aadf76a1d30fdfddc3519ab337a8c04a4a1a3606c0721",
+      "size": 411,
       "started_at_utc": "2026-08-17T20:10:46.298307+00:00"
     },
     {
@@ -617,6 +647,7 @@
       "full_output_path": "commands/01-worktree-status.json",
       "path": "commands/01-worktree-status.json",
       "sha256": "19c25ccf0995e13dc2abda4bd73ec7b5da4b533f41380421ff78beadf49aad8b",
+      "size": 426,
       "started_at_utc": "2026-08-17T20:10:46.298334+00:00"
     },
     {
@@ -627,6 +658,7 @@
       "full_output_path": "commands/02-python-version.json",
       "path": "commands/02-python-version.json",
       "sha256": "2b12ae541b57caff181959c3a6aff27454133679afd6cf6a2af1d8775535695b",
+      "size": 382,
       "started_at_utc": "2026-08-17T20:10:46.303252+00:00"
     },
     {
@@ -637,6 +669,7 @@
       "full_output_path": "commands/03-os-architecture.json",
       "path": "commands/03-os-architecture.json",
       "sha256": "56aba4f33575ae5b8d8b7233f3077bd25c98247585524f0022d822e1cfdfe2f6",
+      "size": 367,
       "started_at_utc": "2026-08-17T20:10:46.298403+00:00"
     },
     {
@@ -647,6 +680,7 @@
       "full_output_path": "commands/04-docker-version.json",
       "path": "commands/04-docker-version.json",
       "sha256": "4a102f2832797990a596ecfd62a962530740b83e5c6ec1bd19c0900d85eab248",
+      "size": 395,
       "started_at_utc": "2026-08-17T20:10:46.326204+00:00"
     },
     {
@@ -657,260 +691,269 @@
       "full_output_path": "commands/05-compose-version.json",
       "path": "commands/05-compose-version.json",
       "sha256": "a97c01e2062b1730c206d20b2731372286547ae42e506ca7a4f7e56310f4dec3",
+      "size": 407,
       "started_at_utc": "2026-08-17T20:10:46.315322+00:00"
     },
     {
       "command": "python3.12 -m venv <path-2>/dev-venv",
-      "duration_seconds": 1.263763,
-      "ended_at_utc": "2026-08-17T20:10:53.396083+00:00",
+      "duration_seconds": 1.25366,
+      "ended_at_utc": "2026-08-17T21:20:25.533122+00:00",
       "exit_status": 0,
       "full_output_path": "commands/06-create-dev-venv.json",
       "path": "commands/06-create-dev-venv.json",
-      "sha256": "7825743c85188ae161628798ba26584bd7930b5aeaeeed7b7abb9d552810eebd",
-      "started_at_utc": "2026-08-17T20:10:52.131680+00:00"
+      "sha256": "5955a98d8e8174cec20d3d44e74323f3d85897e3665e49d37ce873a0f9ef40b8",
+      "size": 411,
+      "started_at_utc": "2026-08-17T21:20:24.278188+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -m pip install -e '.[dev]'",
-      "duration_seconds": 8.229202,
-      "ended_at_utc": "2026-08-17T20:11:12.114530+00:00",
+      "duration_seconds": 10.413297,
+      "ended_at_utc": "2026-08-17T21:21:04.351490+00:00",
       "exit_status": 0,
       "full_output_path": "commands/07-install-dev.json",
       "path": "commands/07-install-dev.json",
-      "sha256": "59d40591532f06c6d0e752197be060c5754c0d534fed92c0e081f428277b451e",
-      "started_at_utc": "2026-08-17T20:11:03.884525+00:00"
+      "sha256": "2871eb8ee75d4337babfd73da97f457c6b5786401815e249b8d5c3c61f392026",
+      "size": 13097,
+      "started_at_utc": "2026-08-17T21:20:53.935828+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -m pytest tests/ -q",
-      "duration_seconds": 54.288559,
-      "ended_at_utc": "2026-08-17T20:12:12.200230+00:00",
+      "duration_seconds": 55.071895,
+      "ended_at_utc": "2026-08-17T21:22:05.529265+00:00",
       "exit_status": 0,
       "full_output_path": "commands/08-fast-suite.json",
       "observed_test_summary": {
         "passed": 593,
-        "runtime": 53.84,
+        "runtime": 54.67,
         "skipped": 5,
         "warnings": 3
       },
       "path": "commands/08-fast-suite.json",
-      "sha256": "1d78d7807eba3a47e6393d9c3dc04124fd54c70951d038edd43028664e999260",
-      "started_at_utc": "2026-08-17T20:11:17.910658+00:00"
+      "sha256": "94039a2e898bae7063e7ce54ea528194e2509de11ebaef25b33bbf6020124a91",
+      "size": 1993,
+      "started_at_utc": "2026-08-17T21:21:10.456046+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -m pytest -q tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend",
-      "duration_seconds": 0.404828,
-      "ended_at_utc": "2026-08-17T20:13:54.089763+00:00",
+      "duration_seconds": 0.364381,
+      "ended_at_utc": "2026-08-17T21:22:26.382170+00:00",
       "exit_status": 0,
       "full_output_path": "commands/09-environment-checker.json",
       "observed_test_summary": {
         "passed": 1,
-        "runtime": 0.04
+        "runtime": 0.05
       },
       "path": "commands/09-environment-checker.json",
-      "sha256": "5ff54c752802b1b1c79562d29f83f112c476d10730b42131fefa8ff23ddb27b2",
-      "started_at_utc": "2026-08-17T20:13:53.684325+00:00"
+      "sha256": "328f78c1d1e465aa3d499d3e513e354934fedc0e8ed64152a9443e61cc86f5d8",
+      "size": 709,
+      "started_at_utc": "2026-08-17T21:22:26.016246+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python scripts/golden_trajectory.py check",
-      "duration_seconds": 2.524121,
-      "ended_at_utc": "2026-08-17T20:13:56.208800+00:00",
+      "duration_seconds": 2.520394,
+      "ended_at_utc": "2026-08-17T21:22:28.982002+00:00",
       "exit_status": 0,
       "full_output_path": "commands/10-golden-trajectory.json",
       "path": "commands/10-golden-trajectory.json",
-      "sha256": "eb46c7a441e85503e6452af2c0f20397e437d7ea393a1c5a920160a2fcaab6f4",
-      "started_at_utc": "2026-08-17T20:13:53.684169+00:00"
+      "sha256": "ca5af9577e71887c7c4c09cb401fd4e37c7adfa789aff91325930f37d98f5b80",
+      "size": 861,
+      "started_at_utc": "2026-08-17T21:22:26.460159+00:00"
     },
     {
-      "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
-      "duration_seconds": 14.579389,
-      "ended_at_utc": "2026-08-17T20:14:08.264088+00:00",
+      "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 all_proxy=http://127.0.0.1:9 NO_PROXY=localhost,127.0.0.1,::1 no_proxy=localhost,127.0.0.1,::1 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
+      "duration_seconds": 14.644009,
+      "ended_at_utc": "2026-08-17T21:22:43.702022+00:00",
       "exit_status": 0,
       "full_output_path": "commands/11-platform-unit-boundaries.json",
       "observed_test_summary": {
         "passed": 216,
-        "runtime": 14.13,
+        "runtime": 14.31,
         "warnings": 3
       },
       "path": "commands/11-platform-unit-boundaries.json",
-      "sha256": "dcbd88fbc4b8227eb5c76de8f97aefdd5f7eddc0a0948d6133ba74aaec2c84e1",
-      "started_at_utc": "2026-08-17T20:13:53.683883+00:00"
+      "sha256": "6e31b6db8109fe37b277c3da1657cf5d5da0d002cf616ca0eb8fa46b5a4019a4",
+      "size": 2311,
+      "started_at_utc": "2026-08-17T21:22:29.055921+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python pixelgym/platform/dependency_lock.py --repository-root .",
-      "duration_seconds": 0.086727,
-      "ended_at_utc": "2026-08-17T20:13:53.772186+00:00",
+      "duration_seconds": 0.0408,
+      "ended_at_utc": "2026-08-17T21:22:43.825238+00:00",
       "exit_status": 0,
       "full_output_path": "commands/12-dependency-lock-check.json",
       "path": "commands/12-dependency-lock-check.json",
-      "sha256": "932d5af671f979c51b9fd6d6db0f59c23301384ed499d842d9b2db41a8d7703c",
-      "started_at_utc": "2026-08-17T20:13:53.684679+00:00"
+      "sha256": "67d8763f64ac14dd0765527ff268634ba81fd540d71c02005d25f43405e3463e",
+      "size": 508,
+      "started_at_utc": "2026-08-17T21:22:43.783198+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -m ruff check .",
-      "duration_seconds": 0.601661,
-      "ended_at_utc": "2026-08-17T20:13:54.309120+00:00",
+      "duration_seconds": 0.638273,
+      "ended_at_utc": "2026-08-17T21:22:44.560285+00:00",
       "exit_status": 0,
       "full_output_path": "commands/13-ruff.json",
       "path": "commands/13-ruff.json",
-      "sha256": "b27b27858d765c717778896467b6bf1653b9f6697415a78a07ae4a5bd6109aed",
-      "started_at_utc": "2026-08-17T20:13:53.706902+00:00"
+      "sha256": "83a55143808ad24437c3859f8e65d875a7f9943d6e890aa6d3e6850e0d415774",
+      "size": 455,
+      "started_at_utc": "2026-08-17T21:22:43.920583+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -m pip check",
-      "duration_seconds": 0.28383,
-      "ended_at_utc": "2026-08-17T20:13:53.973593+00:00",
+      "duration_seconds": 0.215318,
+      "ended_at_utc": "2026-08-17T21:22:44.856000+00:00",
       "exit_status": 0,
       "full_output_path": "commands/14-pip-check.json",
       "path": "commands/14-pip-check.json",
-      "sha256": "10addc9e0d8a5e9a5953e650743fd13c6f86d8f48e6f64c03c8f8e70c35be6c4",
-      "started_at_utc": "2026-08-17T20:13:53.689158+00:00"
+      "sha256": "810fe1580dc67bcc60e87a8142077cee1e64dd46fc1c5f867b65eb4c12f9f494",
+      "size": 721,
+      "started_at_utc": "2026-08-17T21:22:44.639537+00:00"
     },
     {
-      "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY <path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present='\"'\"'+str(any(os.environ.get(n) for n in names)).lower())'",
-      "duration_seconds": 0.051109,
-      "ended_at_utc": "2026-08-17T20:13:53.747947+00:00",
+      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); present=any(os.environ.get(n) for n in names); [os.environ.pop(n,None) for n in names]; print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present_before_sanitization='\"'\"'+str(present).lower()); print('\"'\"'provider_credentials_removed='\"'\"'+str(not any(os.environ.get(n) for n in names)).lower())'",
+      "duration_seconds": 0.026569,
+      "ended_at_utc": "2026-08-17T21:22:44.953124+00:00",
       "exit_status": 0,
       "full_output_path": "commands/15-boundary-inventory.json",
       "path": "commands/15-boundary-inventory.json",
-      "sha256": "1d383972fccd3132250bce127fce88feee232f664e8176c2e0eee4d03397a245",
-      "started_at_utc": "2026-08-17T20:13:53.696094+00:00"
+      "sha256": "619fcaf2c47a3cdc655a075502571e7ef6f5e8531a848eea4607042cb17b6e52",
+      "size": 1557,
+      "started_at_utc": "2026-08-17T21:22:44.925414+00:00"
     },
     {
       "command": "rg -n 'time\\.sleep|sleep\\(' tests/unit/platform",
-      "duration_seconds": 0.024168,
-      "ended_at_utc": "2026-08-17T20:13:53.760852+00:00",
+      "duration_seconds": 0.018757,
+      "ended_at_utc": "2026-08-17T21:22:45.066160+00:00",
       "exit_status": 1,
       "full_output_path": "commands/16-platform-sleep-scan.json",
       "path": "commands/16-platform-sleep-scan.json",
-      "sha256": "afc66af7124c76715981377910880f39a4c1ad856fac2dc28201151798876016",
-      "started_at_utc": "2026-08-17T20:13:53.735946+00:00"
+      "sha256": "2578e02d7e043355aa456870d699f3c967ace6f6b0c75ddc93d3ad9f05ceb4a9",
+      "size": 436,
+      "started_at_utc": "2026-08-17T21:22:45.046349+00:00"
     },
     {
       "command": "<path-2>/dev-venv/bin/python -c 'from pathlib import Path; import json; from pixelgym.platform.source_provenance import generate_source_provenance; print(json.dumps(generate_source_provenance(Path('\"'\"'.'\"'\"')).to_dict(), sort_keys=True))'",
-      "duration_seconds": 0.224472,
-      "ended_at_utc": "2026-08-17T20:13:53.948318+00:00",
+      "duration_seconds": 0.221095,
+      "ended_at_utc": "2026-08-17T21:22:45.380882+00:00",
       "exit_status": 0,
       "full_output_path": "commands/17-source-provenance.json",
       "path": "commands/17-source-provenance.json",
-      "sha256": "bec3d6bd4d45d31deac07ad57f7dce5a3debb976052558bf0133fb14dc63e85a",
-      "started_at_utc": "2026-08-17T20:13:53.722951+00:00"
+      "sha256": "c18ae44e7a8bb0997b06cde414fb239706b7aab8415b40964c40ff17d6cce259",
+      "size": 1114,
+      "started_at_utc": "2026-08-17T21:22:45.158765+00:00"
     },
     {
       "command": "shasum -a 256 requirements/platform-py312.lock",
-      "duration_seconds": 0.045149,
-      "ended_at_utc": "2026-08-17T20:13:53.760118+00:00",
+      "duration_seconds": 0.028075,
+      "ended_at_utc": "2026-08-17T21:22:45.470191+00:00",
       "exit_status": 0,
       "full_output_path": "commands/18-lock-sha256.json",
       "path": "commands/18-lock-sha256.json",
-      "sha256": "c862a797c71cb914716a6077bae13229c8a7a72b4d85568eea7d582079620e0c",
-      "started_at_utc": "2026-08-17T20:13:53.714426+00:00"
+      "sha256": "0c62a79d891a9eb0bae5a7205d766bee35e3cd521042710dd43fc542f31845ad",
+      "size": 532,
+      "started_at_utc": "2026-08-17T21:22:45.441156+00:00"
     },
     {
-      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym-osworld'\"'\"','\"'\"'pytest'\"'\"','\"'\"'ruff'\"'\"','\"'\"'gymnasium'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'mlflow'\"'\"'); print(json.dumps({n:(m.version(n) if n in {d.metadata['\"'\"'Name'\"'\"'].lower() for d in m.distributions()} else None) for n in names}, sort_keys=True))'",
-      "duration_seconds": 0.18467,
-      "ended_at_utc": "2026-08-17T20:13:53.869243+00:00",
+      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'pytest'\"'\"','\"'\"'ruff'\"'\"','\"'\"'gymnasium'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'mlflow'\"'\"'); available={d.metadata['\"'\"'Name'\"'\"'].lower() for d in m.distributions()}; print(json.dumps({n:(m.version(n) if n in available else None) for n in names}, sort_keys=True))'",
+      "duration_seconds": 0.062527,
+      "ended_at_utc": "2026-08-17T21:22:45.627161+00:00",
       "exit_status": 0,
       "full_output_path": "commands/19-dev-package-versions.json",
       "path": "commands/19-dev-package-versions.json",
-      "sha256": "faa557ae53faca50071d39e7eec12324b76c7cf720e5eab056db749badd25202",
-      "started_at_utc": "2026-08-17T20:13:53.683882+00:00"
+      "sha256": "10be5a0421dc127df994d6efd4ef851cc592ba9530961226b91207c874887c7b",
+      "size": 1165,
+      "started_at_utc": "2026-08-17T21:22:45.563466+00:00"
     },
     {
       "command": "python3.12 -m venv <path-2>/integration-venv",
-      "duration_seconds": 1.341015,
-      "ended_at_utc": "2026-08-17T20:14:20.745094+00:00",
+      "duration_seconds": 1.282339,
+      "ended_at_utc": "2026-08-17T21:22:47.004019+00:00",
       "exit_status": 0,
       "full_output_path": "commands/20-create-integration-venv.json",
       "path": "commands/20-create-integration-venv.json",
-      "sha256": "1ded7deb0d00850096ecac60797fcf774f3fef3be80eab5be3d2ef0f3d29f0ce",
-      "started_at_utc": "2026-08-17T20:14:19.403296+00:00"
+      "sha256": "ef30da9ac1b9080a20e145bb429f96ce459c6d8a9e552d7a0ef5e3e5cbcf1a35",
+      "size": 428,
+      "started_at_utc": "2026-08-17T21:22:45.720551+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python -m pip install -e '.[dev,platform]'",
-      "duration_seconds": 8.105314,
-      "ended_at_utc": "2026-08-17T20:14:33.441305+00:00",
-      "exit_status": 1,
-      "full_output_path": "commands/21-install-platform.json",
-      "path": "commands/21-install-platform.json",
-      "sha256": "424f29d8ba1ae060cbce5b992c3d5d062216b6d8e0e1eda82105b6b3b0cb5e99",
-      "started_at_utc": "2026-08-17T20:14:25.335040+00:00"
-    },
-    {
-      "command": "<path-2>/integration-venv/bin/python -m pip install -e '.[dev,platform]'",
-      "duration_seconds": 27.844906,
-      "ended_at_utc": "2026-08-17T20:15:15.981557+00:00",
+      "command": "<path-2>/integration-venv/bin/python -m pip install --require-hashes -r requirements/platform-py312.lock",
+      "duration_seconds": 21.329542,
+      "ended_at_utc": "2026-08-17T21:23:32.158206+00:00",
       "exit_status": 0,
-      "full_output_path": "commands/22-install-platform-network-retry.json",
-      "path": "commands/22-install-platform-network-retry.json",
-      "sha256": "cf6ea2a4f32f9ec0bce4937fea8264abccb8ab6bf3b4b6b3c86730abc4b1e896",
-      "started_at_utc": "2026-08-17T20:14:48.135768+00:00"
+      "full_output_path": "commands/21-install-platform-lock.json",
+      "path": "commands/21-install-platform-lock.json",
+      "sha256": "9920c1f3bd28e636dbc296e559db9f53ebebb5b4b1c2faada7de6c31ae283c86",
+      "size": 18744,
+      "started_at_utc": "2026-08-17T21:23:10.826945+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python -m playwright install chromium",
-      "duration_seconds": 471.402338,
-      "ended_at_utc": "2026-08-17T20:23:13.024126+00:00",
-      "exit_status": 1,
+      "command": "<path-2>/integration-venv/bin/python -m pip install --no-deps -e .",
+      "duration_seconds": 1.392922,
+      "ended_at_utc": "2026-08-17T21:23:55.831181+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/22-install-repository-no-deps.json",
+      "path": "commands/22-install-repository-no-deps.json",
+      "sha256": "0ee33e4a05c4a3de34bca152cefc0e231b3c08951e2ca692024760d942b25124",
+      "size": 1780,
+      "started_at_utc": "2026-08-17T21:23:54.436768+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m playwright install chromium",
+      "duration_seconds": 1.714612,
+      "ended_at_utc": "2026-08-17T21:24:07.948326+00:00",
+      "exit_status": 0,
       "full_output_path": "commands/23-playwright-chromium.json",
       "path": "commands/23-playwright-chromium.json",
-      "sha256": "740975a5b0dc8304115987f7b1baeb688a9393b17023dcecc5212a32dce39121",
-      "started_at_utc": "2026-08-17T20:15:21.656443+00:00"
+      "sha256": "9018cae5a99acdd5d69f317055d6db046b81413ca0e79d82265454efdc9ddc95",
+      "size": 465,
+      "started_at_utc": "2026-08-17T21:24:06.232301+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python -m playwright install chromium",
-      "duration_seconds": 0.212051,
-      "ended_at_utc": "2026-08-17T20:16:42.663223+00:00",
+      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'mlflow'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'boto3'\"'\"','\"'\"'psycopg2-binary'\"'\"','\"'\"'playwright'\"'\"','\"'\"'pytest'\"'\"','\"'\"'greenlet'\"'\"','\"'\"'httpx2'\"'\"'); print(json.dumps({n:m.version(n) for n in names},sort_keys=True))'",
+      "duration_seconds": 0.066367,
+      "ended_at_utc": "2026-08-17T21:24:22.596433+00:00",
       "exit_status": 0,
-      "full_output_path": "commands/24-playwright-chromium-network-retry.json",
-      "path": "commands/24-playwright-chromium-network-retry.json",
-      "sha256": "47cfc21f0fb064890101bd17d9eaaf061cbb78f3dfd29bf2ac4129d0a06000f9",
-      "started_at_utc": "2026-08-17T20:16:42.450375+00:00"
-    },
-    {
-      "command": "<path-2>/integration-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'mlflow'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'boto3'\"'\"','\"'\"'psycopg2-binary'\"'\"','\"'\"'playwright'\"'\"','\"'\"'greenlet'\"'\"','\"'\"'httpx2'\"'\"'); print(json.dumps({n:m.version(n) for n in names},sort_keys=True))'",
-      "duration_seconds": 0.09552,
-      "ended_at_utc": "2026-08-17T20:16:52.343369+00:00",
-      "exit_status": 0,
-      "full_output_path": "commands/25-integration-package-versions.json",
-      "path": "commands/25-integration-package-versions.json",
-      "sha256": "f430da2da2d3778855ed1a97f914dfe8fd42565c295bdcce6c8fe3630a111b15",
-      "started_at_utc": "2026-08-17T20:16:52.247234+00:00"
+      "full_output_path": "commands/24-integration-package-versions.json",
+      "path": "commands/24-integration-package-versions.json",
+      "sha256": "943f23769a3644acd882c7f1f99782ab1938b3e35e6f5c7c482e16da30fa74fb",
+      "size": 1249,
+      "started_at_utc": "2026-08-17T21:24:22.529019+00:00"
     },
     {
       "command": "<path-2>/integration-venv/bin/python -m pip check",
-      "duration_seconds": 0.350263,
-      "ended_at_utc": "2026-08-17T20:16:52.598104+00:00",
+      "duration_seconds": 0.291485,
+      "ended_at_utc": "2026-08-17T21:24:22.958318+00:00",
       "exit_status": 0,
-      "full_output_path": "commands/26-integration-pip-check.json",
-      "path": "commands/26-integration-pip-check.json",
-      "sha256": "b5902e5c21b08638490d22971e046f7ec181e04d582f5676725e59a9f641dcd9",
-      "started_at_utc": "2026-08-17T20:16:52.247185+00:00"
+      "full_output_path": "commands/25-integration-pip-check.json",
+      "path": "commands/25-integration-pip-check.json",
+      "sha256": "9f52a40bd641a8814a4844933f1824ec1b649affd0a86586b8f272e5e9c606f5",
+      "size": 737,
+      "started_at_utc": "2026-08-17T21:24:22.665434+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
-      "duration_seconds": 98.290659,
-      "ended_at_utc": "2026-08-17T20:18:39.601395+00:00",
+      "command": "<path-2>/dev-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
+      "duration_seconds": 13.253164,
+      "ended_at_utc": "2026-08-17T21:24:36.283205+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/26-integration-test-inventory.json",
+      "path": "commands/26-integration-test-inventory.json",
+      "sha256": "9cb14ceac98cea4a70b5d31056fb150acf7d04545cc65d921cb2c98e77ddba56",
+      "size": 2374,
+      "started_at_utc": "2026-08-17T21:24:23.028101+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+      "duration_seconds": 81.626344,
+      "ended_at_utc": "2026-08-17T21:26:06.779345+00:00",
       "exit_status": 0,
       "full_output_path": "commands/27-platform-local-runtime.json",
       "observed_test_summary": {
         "passed": 9,
-        "runtime": 97.6
+        "runtime": 81.06
       },
       "path": "commands/27-platform-local-runtime.json",
-      "sha256": "77c1dbef2ea2d4691f666246c42b07b571e5f94002452e951dbad07b5500e55f",
-      "started_at_utc": "2026-08-17T20:17:01.309342+00:00"
-    },
-    {
-      "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
-      "duration_seconds": 86.915253,
-      "ended_at_utc": "2026-08-17T20:19:49.011552+00:00",
-      "exit_status": 0,
-      "full_output_path": "commands/28-platform-local-runtime-retry.json",
-      "observed_test_summary": {
-        "passed": 9,
-        "runtime": 86.3
-      },
-      "path": "commands/28-platform-local-runtime-retry.json",
-      "sha256": "e5cb48d31c7e966b49ab8c36dbd9690e69cb0cfba6901088a2dd52f60e08c9a1",
-      "started_at_utc": "2026-08-17T20:18:22.093051+00:00"
+      "sha256": "f89f84a7d3756cbeaf665dc4c2b22a5558d99fc1371df8c3d06032b0626e316b",
+      "size": 903,
+      "started_at_utc": "2026-08-17T21:24:45.152481+00:00"
     },
     {
       "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
@@ -920,6 +963,7 @@
       "full_output_path": "commands/29-compose-browser.json",
       "path": "commands/29-compose-browser.json",
       "sha256": "7074cb9e77a31e9d1d3b56b6c7ea9c7da0d785b1a2da1826d53f6ee061675dfe",
+      "size": 4220,
       "started_at_utc": "2026-08-17T20:19:56.388966+00:00"
     },
     {
@@ -934,6 +978,7 @@
       },
       "path": "commands/30-compose-browser-sandbox-retry.json",
       "sha256": "8d8f19950093f052c8635f9d595c26a11a3c263431c39a604d95cd418dd4974e",
+      "size": 784,
       "started_at_utc": "2026-08-17T20:20:09.593264+00:00"
     },
     {
@@ -949,6 +994,7 @@
       },
       "path": "commands/31-mechanical-boundaries.json",
       "sha256": "f4d7b78c21186277efe40678cde031f4bdcfe0f448652f1661c697bc82bc04b2",
+      "size": 6947,
       "started_at_utc": "2026-08-17T20:24:19.428356+00:00"
     },
     {
@@ -959,6 +1005,7 @@
       "full_output_path": "commands/37-compose-cleanup-filtered.json",
       "path": "commands/37-compose-cleanup-filtered.json",
       "sha256": "d4043677b0314b54eab0e4ec505db6bdb587f973b806eabcd52ddaa92c1d839e",
+      "size": 2104,
       "started_at_utc": "2026-08-17T20:25:27.392671+00:00"
     },
     {
@@ -969,40 +1016,33 @@
       "full_output_path": "commands/38-evidence-branch.json",
       "path": "commands/38-evidence-branch.json",
       "sha256": "e19019c79c80c31a6ac5cede970e9c89527a43137b0b38efd64aaab59ced8d88",
+      "size": 411,
       "started_at_utc": "2026-08-17T20:25:53.089098+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
-      "duration_seconds": 1.984707,
-      "ended_at_utc": "2026-08-17T20:28:47.861731+00:00",
-      "exit_status": 0,
-      "full_output_path": "commands/39-integration-test-inventory.json",
-      "path": "commands/39-integration-test-inventory.json",
-      "sha256": "5a75aec2a307bcec8927a44839723c0e3ce2a2033d00dbe57eb4cf29f37bf6c1",
-      "started_at_utc": "2026-08-17T20:28:45.875861+00:00"
-    },
-    {
-      "command": ".venv/bin/python -c 'import json; from pathlib import Path; data=json.loads(Path(\"artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)'",
-      "duration_seconds": 0.031492,
-      "ended_at_utc": "2026-08-17T20:31:02.486982+00:00",
+      "command": "<path-2>/dev-venv/bin/python -c 'import json; from pathlib import Path; data=json.loads(Path(\"<path-1>/artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/redaction-scan.json\").read_text()); print(json.dumps(data,sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data[\"finding_counts\"].values()) else 1)'",
+      "duration_seconds": 0.024915,
+      "ended_at_utc": "2026-08-17T21:28:02.555923+00:00",
       "exit_status": 0,
       "full_output_path": "commands/40-redaction-scan.json",
       "path": "commands/40-redaction-scan.json",
-      "sha256": "454a79fa4a13da1f6f61cebaba71c911a9996ac4575c471800f9c95f6dba25e5",
-      "started_at_utc": "2026-08-17T20:31:02.454989+00:00"
+      "sha256": "153849319760edf0728bab02cb2d3efcf9d461be154cb393b86a000ef34e8055",
+      "size": 1407,
+      "started_at_utc": "2026-08-17T21:28:02.530093+00:00"
     },
     {
-      "command": "<path-2>/integration-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
-      "duration_seconds": 85.404964,
-      "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
+      "command": "<path-2>/dev-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+      "duration_seconds": 80.711055,
+      "ended_at_utc": "2026-08-17T21:27:39.793885+00:00",
       "exit_status": 0,
       "full_output_path": "commands/41-metaflow-resume-ledgers.json",
       "path": "commands/41-metaflow-resume-ledgers.json",
-      "sha256": "52302bc79b0a2cb52cc461668fc9bbc02258600298b69cacde22ad08bde87822",
-      "started_at_utc": "2026-08-17T20:54:02.289306+00:00"
+      "sha256": "be08882c4058e65ec3177a6efca07b50e049e86f1d31fb803746d80a10246f07",
+      "size": 3696,
+      "started_at_utc": "2026-08-17T21:26:19.086537+00:00"
     }
   ],
-  "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
+  "ended_at_utc": "2026-08-17T21:28:02.555923+00:00",
   "evidence_branch": "agent/issue-47-d412-evidence",
   "evidence_revision": "f92e307af7a3830347d50ca63f6a7d481489935c",
   "frozen_worktree_status": "",
@@ -1072,14 +1112,14 @@
     "type": "deterministic scripted replay"
   },
   "redaction_scan": {
-    "files_scanned": 67,
+    "files_scanned": 65,
     "final_deliverables_scanned": [
       "REPORT.md",
       "evidence-manifest.json"
     ],
     "finding_counts": {
       "aws_access_keys": 0,
-      "host_usernames_or_emails": 0,
+      "host_identity_paths_or_emails": 0,
       "local_absolute_paths": 0,
       "local_demo_credentials": 0,
       "private_key_markers": 0,

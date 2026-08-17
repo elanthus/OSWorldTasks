@@ -25,7 +25,8 @@ def test_core_modules_import_without_osworld():
 
 
 def test_developer_extra_declares_direct_web_test_client_dependency():
-    project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
+    repository_root = Path(__file__).resolve().parents[2]
+    project = tomllib.loads((repository_root / "pyproject.toml").read_text())["project"]
     dev_requirements = project["optional-dependencies"]["dev"]
 
     assert any(requirement.startswith("httpx>=") for requirement in dev_requirements)

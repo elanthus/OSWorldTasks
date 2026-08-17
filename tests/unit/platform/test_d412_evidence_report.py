@@ -65,7 +65,7 @@ def test_generated_artifact_digests_verify_independently(
 
     for entry in manifest["command_records"]:
         data = (evidence_dir / entry["path"]).read_bytes()
-        assert len(data) == entry.get("size", len(data))
+        assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     for entry in manifest["supporting_artifacts"]:
         data = (isolated_root / entry["path"]).read_bytes()
@@ -100,4 +100,64 @@ def test_generator_rejects_tampered_success_claim(repository_root: Path, tmp_pat
     command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
 
     with pytest.raises(ValueError, match="unexpected exit status"):
+        generate(isolated_root, evidence_dir)
+
+
+def test_generator_reproduces_committed_manifest(repository_root: Path, tmp_path: Path) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+
+    generate(isolated_root, evidence_dir)
+    generated = json.loads((evidence_dir / "evidence-manifest.json").read_text())
+    committed = json.loads(
+        (repository_root / "artifacts/platform/d4.12" / REVISION / "evidence-manifest.json").read_text()
+    )
+
+    assert generated == committed
+
+
+def test_generator_rejects_dirty_frozen_worktree(repository_root: Path, tmp_path: Path) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    status_path = evidence_dir / "commands/01-worktree-status.json"
+    record = json.loads(status_path.read_text())
+    record["output"] = " M pixelgym/platform/control_store.py\n"
+    status_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+
+    with pytest.raises(ValueError, match="frozen checkout status"):
+        generate(isolated_root, evidence_dir)
+
+
+def test_generator_rejects_tampered_resume_ledger(repository_root: Path, tmp_path: Path) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    command_path = evidence_dir / "commands/41-metaflow-resume-ledgers.json"
+    command = json.loads(command_path.read_text())
+    ledger = json.loads(command["output"])
+    ledger["boundaries"]["run_linked"]["provider_ledger"]["billable_calls"] = 101
+    command["output"] = json.dumps(ledger, sort_keys=True) + "\n"
+    command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
+
+    with pytest.raises(ValueError, match="unexpected provider ledger"):
+        generate(isolated_root, evidence_dir)
+
+
+def test_generator_rejects_policy_mapped_to_multiple_candidates(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    lineage_path = isolated_root / "artifacts/platform/demo-mlflow-lineage.jsonl"
+    rows = [json.loads(line) for line in lineage_path.read_text().splitlines()]
+    rows[1]["policy_id"] = rows[0]["policy_id"]
+    lineage_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
+
+    with pytest.raises(ValueError, match="multiple candidates"):
+        generate(isolated_root, evidence_dir)
+
+
+def test_generator_rejects_host_identity_in_supporting_artifact(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    limitations = isolated_root / "artifacts/platform/known-limitations.md"
+    limitations.write_text(limitations.read_text() + "\n/home/example-user/private.txt\n")
+
+    with pytest.raises(ValueError, match="redaction scan found prohibited data"):
         generate(isolated_root, evidence_dir)

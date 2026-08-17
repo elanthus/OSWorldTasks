@@ -7,11 +7,11 @@
   ],
   "command": "python3.12 -m venv <path-2>/integration-venv",
   "cwd": "<path-0>",
-  "duration_seconds": 1.341015,
-  "ended_at_utc": "2026-08-17T20:14:20.745094+00:00",
+  "duration_seconds": 1.282339,
+  "ended_at_utc": "2026-08-17T21:22:47.004019+00:00",
   "environment": {},
   "exit_status": 0,
   "output": "",
   "schema_version": "pixelgym-d412-command-record-v1",
-  "started_at_utc": "2026-08-17T20:14:19.403296+00:00"
+  "started_at_utc": "2026-08-17T21:22:45.720551+00:00"
 }

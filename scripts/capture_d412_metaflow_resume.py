@@ -16,6 +16,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+PAUSE_TIMEOUT_SECONDS = 90
+
 
 def _load_runtime_module(repository_root: Path) -> ModuleType:
     path = repository_root / "tests/integration/platform/test_metaflow_runtime.py"
@@ -59,7 +61,7 @@ def _hard_kill(
     environment.update(
         {
             "PIXELGYM_TEST_PAUSE_ONCE": "evidence_persisted",
-            "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
+            "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": str(PAUSE_TIMEOUT_SECONDS),
         }
     )
     log_path = root / "hard-kill-run.log"
@@ -92,7 +94,7 @@ def _hard_kill(
             start_new_session=True,
         )
         marker = root / "failpoints/evidence_persisted.paused"
-        deadline = time.monotonic() + 90
+        deadline = time.monotonic() + PAUSE_TIMEOUT_SECONDS
         try:
             while time.monotonic() < deadline and not marker.exists():
                 if process.poll() is not None:

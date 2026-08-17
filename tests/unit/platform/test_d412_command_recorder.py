@@ -56,6 +56,18 @@ def test_recorder_redacts_paths_and_local_demo_secrets(
     assert "<redacted-local-demo-secret>" in record["output"]
 
 
+def test_recorder_redacts_system_temporary_paths(repository_root: Path, tmp_path: Path) -> None:
+    completed = _record(
+        repository_root,
+        tmp_path,
+        [sys.executable, "-c", "import tempfile; print(tempfile.gettempdir())"],
+    )
+
+    assert completed.returncode == 0
+    record = json.loads((tmp_path / "record.json").read_text())
+    assert record["output"] == "<system-temp>\n"
+
+
 def test_recorder_redacts_public_environment_values(repository_root: Path, tmp_path: Path) -> None:
     completed = _record(
         repository_root,
@@ -67,6 +79,26 @@ def test_recorder_redacts_public_environment_values(repository_root: Path, tmp_p
     assert completed.returncode == 0
     record = json.loads((tmp_path / "record.json").read_text())
     assert record["environment"] == {"DEMO_SECRET": "<redacted-local-demo-secret>"}
+
+
+def test_recorder_does_not_publish_inherited_environment(
+    repository_root: Path, tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("PIXELGYM_INHERITED_TEST_SECRET", "not-for-the-record")
+    completed = _record(
+        repository_root,
+        tmp_path,
+        [
+            sys.executable,
+            "-c",
+            "import os; assert os.environ['PIXELGYM_INHERITED_TEST_SECRET']",
+        ],
+    )
+
+    assert completed.returncode == 0
+    record = json.loads((tmp_path / "record.json").read_text())
+    assert record["environment"] == {}
+    assert "not-for-the-record" not in completed.stdout
 
 
 def test_recorder_preserves_failure_output_and_exit_status(

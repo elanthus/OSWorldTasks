@@ -12,6 +12,10 @@ from typing import Any
 
 COMMAND_SCHEMA = "pixelgym-d412-command-record-v1"
 MANIFEST_SCHEMA = "pixelgym-d412-evidence-manifest-v1"
+PYTEST_SUMMARY = re.compile(
+    r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
+    r"(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s"
+)
 
 EXPECTED_COMMAND_STATUSES = {
     **{
@@ -37,24 +41,22 @@ EXPECTED_COMMAND_STATUSES = {
             (18, "lock-sha256"),
             (19, "dev-package-versions"),
             (20, "create-integration-venv"),
-            (22, "install-platform-network-retry"),
-            (24, "playwright-chromium-network-retry"),
-            (25, "integration-package-versions"),
-            (26, "integration-pip-check"),
+            (21, "install-platform-lock"),
+            (22, "install-repository-no-deps"),
+            (23, "playwright-chromium"),
+            (24, "integration-package-versions"),
+            (25, "integration-pip-check"),
+            (26, "integration-test-inventory"),
             (27, "platform-local-runtime"),
-            (28, "platform-local-runtime-retry"),
             (30, "compose-browser-sandbox-retry"),
             (31, "mechanical-boundaries"),
             (37, "compose-cleanup-filtered"),
             (38, "evidence-branch"),
-            (39, "integration-test-inventory"),
             (40, "redaction-scan"),
             (41, "metaflow-resume-ledgers"),
         )
     },
     "commands/16-platform-sleep-scan.json": 1,
-    "commands/21-install-platform.json": 1,
-    "commands/23-playwright-chromium.json": 1,
     "commands/29-compose-browser.json": 1,
 }
 
@@ -90,8 +92,8 @@ CHECKLIST: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
         "Metaflow resume tests prove no duplicate fixture-provider calls.",
         (
-            "commands/28-platform-local-runtime-retry.json",
-            "commands/39-integration-test-inventory.json",
+            "commands/27-platform-local-runtime.json",
+            "commands/26-integration-test-inventory.json",
             "commands/41-metaflow-resume-ledgers.json",
         ),
         "metaflow_resume",
@@ -99,7 +101,7 @@ CHECKLIST: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
         "MLflow contains the complete run contract and links back to Metaflow.",
         (
-            "commands/28-platform-local-runtime-retry.json",
+            "commands/27-platform-local-runtime.json",
             "commands/30-compose-browser-sandbox-retry.json",
             "artifacts/platform/demo-mlflow-lineage.jsonl",
         ),
@@ -272,6 +274,7 @@ def _command_index(evidence_dir: Path) -> tuple[list[dict[str, Any]], dict[str, 
         entry = {
             "path": relative,
             "sha256": _sha256(path),
+            "size": path.stat().st_size,
             "command": record["command"],
             "exit_status": record["exit_status"],
             "duration_seconds": record["duration_seconds"],
@@ -279,10 +282,7 @@ def _command_index(evidence_dir: Path) -> tuple[list[dict[str, Any]], dict[str, 
             "ended_at_utc": record["ended_at_utc"],
             "full_output_path": relative,
         }
-        summary = re.search(
-            r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s",
-            record["output"],
-        )
+        summary = PYTEST_SUMMARY.search(record["output"])
         if summary:
             entry["observed_test_summary"] = {
                 key: (float(value) if key == "runtime" else int(value))
@@ -302,11 +302,7 @@ def _summary(
     skipped: int = 0,
     warnings: int = 0,
 ) -> dict[str, Any]:
-    match = re.search(
-        r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
-        r"(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s",
-        records[path]["output"],
-    )
+    match = PYTEST_SUMMARY.search(records[path]["output"])
     if match is None:
         raise ValueError(f"missing pytest summary in {path}")
     observed = {
@@ -324,6 +320,15 @@ def _summary(
 def _require_text(records: dict[str, dict[str, Any]], path: str, text: str) -> None:
     if text not in records[path]["output"]:
         raise ValueError(f"missing expected output {text!r} in {path}")
+
+
+def _require_argv_tokens(
+    records: dict[str, dict[str, Any]], path: str, tokens: tuple[str, ...]
+) -> None:
+    argv = records[path]["argv"]
+    missing = [token for token in tokens if token not in argv]
+    if missing:
+        raise ValueError(f"missing required argv tokens in {path}: {missing}")
 
 
 def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -344,7 +349,7 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
             records, "commands/11-platform-unit-boundaries.json", passed=216, warnings=3
         ),
         "local_runtime": _summary(
-            records, "commands/28-platform-local-runtime-retry.json", passed=9
+            records, "commands/27-platform-local-runtime.json", passed=9
         ),
         "compose": _summary(records, "commands/30-compose-browser-sandbox-retry.json", passed=2),
         "mechanical": _summary(
@@ -353,11 +358,46 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
     _require_text(records, "commands/10-golden-trajectory.json", "OK")
     _require_text(records, "commands/13-ruff.json", "All checks passed!")
+    _require_argv_tokens(
+        records,
+        "commands/11-platform-unit-boundaries.json",
+        (
+            "HTTP_PROXY=http://127.0.0.1:9",
+            "http_proxy=http://127.0.0.1:9",
+            "HTTPS_PROXY=http://127.0.0.1:9",
+            "https_proxy=http://127.0.0.1:9",
+            "ALL_PROXY=http://127.0.0.1:9",
+            "all_proxy=http://127.0.0.1:9",
+            "NO_PROXY=localhost,127.0.0.1,::1",
+            "no_proxy=localhost,127.0.0.1,::1",
+        ),
+    )
+    _require_argv_tokens(
+        records,
+        "commands/21-install-platform-lock.json",
+        ("--require-hashes", "requirements/platform-py312.lock"),
+    )
+    _require_argv_tokens(
+        records,
+        "commands/22-install-repository-no-deps.json",
+        ("--no-deps", "-e", "."),
+    )
+    if records["commands/40-redaction-scan.json"]["argv"][0] != (
+        "<path-2>/dev-venv/bin/python"
+    ):
+        raise ValueError("redaction scan was not run with the recorded clean dev environment")
     inventory = records["commands/15-boundary-inventory.json"]["output"].splitlines()
-    if inventory != ["osworld_installed=false", "provider_credentials_present=false"]:
+    if inventory != [
+        "osworld_installed=false",
+        "provider_credentials_present_before_sanitization=false",
+        "provider_credentials_removed=true",
+    ]:
         raise ValueError(f"unexpected boundary inventory: {inventory}")
     if records["commands/16-platform-sleep-scan.json"]["output"]:
         raise ValueError("platform sleep scan must have zero matches")
+    dev_versions = json.loads(records["commands/19-dev-package-versions.json"]["output"])
+    if set(dev_versions) != {"pixelgym", "pytest", "ruff", "gymnasium", "metaflow", "mlflow"}:
+        raise ValueError(f"unexpected dev package inventory: {dev_versions}")
     cleanup = json.loads(records["commands/37-compose-cleanup-filtered.json"]["output"])
     if cleanup != {"containers": [], "images": [], "networks": [], "volumes": []}:
         raise ValueError(f"fresh Compose cleanup is incomplete: {cleanup}")
@@ -366,7 +406,7 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "test_metaflow_resume_at_each_side_effect_boundary[provider_response_received]",
         "test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls",
     ):
-        _require_text(records, "commands/39-integration-test-inventory.json", name)
+        _require_text(records, "commands/26-integration-test-inventory.json", name)
     for name in (
         "test_missing_and_nonfinite_gate_evidence_fails_closed",
         "test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove",
@@ -450,7 +490,23 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
         _artifact_key(item) for row in manifests for item in row["artifact_index"]
     }
     verified_artifacts = {_artifact_key(item) for item in verification["verified"]}
-    candidate_by_policy = {row["policy_id"]: row["candidate_id"] for row in lineage}
+    candidate_ids_by_policy: dict[str, set[str]] = {}
+    for row in lineage:
+        candidate_ids_by_policy.setdefault(row["policy_id"], set()).add(row["candidate_id"])
+    conflicting_policies = {
+        policy_id: sorted(candidate_ids)
+        for policy_id, candidate_ids in candidate_ids_by_policy.items()
+        if len(candidate_ids) != 1
+    }
+    if conflicting_policies:
+        raise ValueError(
+            "lineage maps a policy to multiple candidates: "
+            f"{conflicting_policies}"
+        )
+    candidate_by_policy = {
+        policy_id: next(iter(candidate_ids))
+        for policy_id, candidate_ids in candidate_ids_by_policy.items()
+    }
     passing_approval_tuples = {
         (candidate_by_policy[row["policy_id"]], row["policy_id"], _canonical_sha256(row))
         for row in gates
@@ -532,11 +588,11 @@ def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]
     paths.extend(repository_root / path for path in SUPPORTING_PATHS)
     paths.extend((repository_root / "artifacts/platform/screenshots").glob("*.png"))
     patterns = {
-        "local_absolute_paths": re.compile(rb"/Users/|/private/tmp/"),
-        "host_usernames_or_emails": re.compile(
-            rb"(?:"
-            + re.escape(Path.home().name.encode())
-            + rb"|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})"
+        "local_absolute_paths": re.compile(
+            rb"/(?:Users|home)/|/private/(?:tmp|var)/|/var/folders/"
+        ),
+        "host_identity_paths_or_emails": re.compile(
+            rb"/(?:Users|home)/[^/\s]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
         ),
         "local_demo_credentials": re.compile(
             rb"local_demo_postgres_only|local_demo_minio_only|local-demo-csrf-secret"
@@ -627,7 +683,8 @@ def _observations(
         "unit_boundaries": (
             f"{units['passed']} passed, {units['warnings']} warnings in "
             f"{units['runtime']:.2f}s; stored inventory is osworld_installed=false and "
-            "provider_credentials_present=false; the sleep scan exited 1 with empty output."
+            "provider_credentials_present_before_sanitization=false, followed by "
+            "provider_credentials_removed=true; the sleep scan exited 1 with empty output."
         ),
         "fresh_stack": (
             f"{compose['passed']} passed in {compose['runtime']:.2f}s; parsed post-run Docker "
@@ -828,7 +885,7 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
             "",
             "## Raw command inventory",
             "",
-            "Each JSON record stores the exact argv/command, cwd, public environment, UTC timestamps, process runtime, exit status, and complete combined output. Expected sandbox/no-match attempts remain visible alongside their successful retries.",
+            "Each JSON record stores the exact argv/command, cwd, public environment, UTC timestamps, process runtime, exit status, and complete combined output. Expected sandbox and no-match observations remain visible.",
             "",
             "| Record | Exit | Runtime (s) | Parsed pytest summary |",
             "| --- | ---: | ---: | --- |",
