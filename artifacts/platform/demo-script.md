@@ -22,11 +22,12 @@ evidence.
    demonstration. They are not raw-prompt results. Compare A and B and show that the dataset
    fingerprint, scorer, target semantics, and primary metric are compatible. Show B at 100%
    synthetic accuracy, $0.00 cost per 100, 25 ms p95, and `Eligible`—not approved.
-6. **Human approval — 20 seconds.** As `local-reviewer`, approve B with the recorded reason. Show
-   that the state changes from `Eligible` to `Approved`; no deployment exists yet.
-7. **Deploy exact policy — 25 seconds.** Approve and deploy the distinct revised-response rollback
-   seed first, then deploy B. The seed exists only to provide an older approved deployment with a
-   different immutable policy ID. Show the active B policy and deployment generation in the ledger.
+6. **Prepare rollback and approve B — 20 seconds.** Approve and deploy the distinct revised-response
+   rollback seed first; it exists only to provide an older approved deployment with a different
+   immutable policy ID. Then, as `local-reviewer`, approve B with the recorded reason and show that
+   B changes from `Eligible` to `Approved` while the seed remains the active deployment.
+7. **Deploy exact policy — 25 seconds.** Deploy B. Show the active B policy and deployment generation
+   in the ledger.
 8. **Versioned serving API — 25 seconds.** Replay `/api/v1/policy` and one bounded
    `/api/v1/ground` request using a frozen screenshot. Show API version `v1`, exact B policy ID,
    exact candidate version, deployment ID, provider request ID, and the returned prediction.
