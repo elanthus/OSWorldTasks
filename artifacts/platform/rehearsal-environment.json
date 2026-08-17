@@ -1,0 +1,67 @@
+{
+  "captured_at_utc": "2026-08-17T18:47:16+00:00",
+  "compose_project": "pixelgym-d411-fa4f414",
+  "dependency_lock": {
+    "path": "requirements/platform-py312.lock",
+    "sha256": "9e18b808952b820e1ef76cfeb56d652d0bfa01695404dec522b3111b74335a88"
+  },
+  "fresh_state": {
+    "created_volumes": [
+      "pixelgym-d411-fa4f414_control-data",
+      "pixelgym-d411-fa4f414_minio-data",
+      "pixelgym-d411-fa4f414_postgres-data"
+    ],
+    "initial_candidate_count": 0,
+    "initial_deployment_count": 0,
+    "teardown": "compose down --volumes completed after export and verification"
+  },
+  "host_python_version": "3.12.13",
+  "provider": {
+    "external_deployment": false,
+    "network_model_calls": false,
+    "paid_calls": 0,
+    "type": "deterministic scripted replay"
+  },
+  "runtime_python_version": "3.12.11",
+  "schema_version": "pixelgym-platform-rehearsal-environment-v1",
+  "start_command": ".venv/bin/python scripts/platform_compose.py --project-name pixelgym-d411-fa4f414 up --build --wait --wait-timeout 180",
+  "services": [
+    {
+      "health": "healthy",
+      "image": "pixelgym-d411-fa4f414-platform@sha256:8c861f04cfabf0a1b3c50e3501eb2e7ed293acd9d83bab9c6abc2e7aa3621c8f",
+      "name": "platform",
+      "published_port": 15800,
+      "target_port": 8000
+    },
+    {
+      "health": "healthy",
+      "image": "pixelgym-d411-fa4f414-mlflow@sha256:a8ed654156998dfa43d0405dcd492dcf5fe9402d0f787c427ce7c3a9b085038a",
+      "name": "mlflow",
+      "published_port": 15500,
+      "target_port": 5000
+    },
+    {
+      "health": "healthy",
+      "image": "postgres:17.5-bookworm@sha256:fbcea1bd13b6a882cd6caa6b58db3ae5c102efe50ec625b3e2a5cbc50db5bfe4",
+      "name": "postgres",
+      "published_port": 15433,
+      "target_port": 5432
+    },
+    {
+      "health": "healthy",
+      "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e",
+      "name": "minio",
+      "published_port": 15900,
+      "target_port": 9000
+    }
+  ],
+  "source_provenance": {
+    "failure_reason": null,
+    "revision": "fa4f414db15bf4a9f46dfcf0781828d2bf78afe9",
+    "schema_version": "pixelgym-source-provenance-v1",
+    "source_tree_sha256": "16786db01a34f7cd9e42783bdaddedc5d313d6234019c25a2a6d1f91806ee610",
+    "state": "clean",
+    "verification_method": "git-build-inputs-v1"
+  },
+  "worktree_porcelain_at_start": ""
+}
