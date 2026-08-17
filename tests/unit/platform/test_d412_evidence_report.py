@@ -2,19 +2,43 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
-from scripts.generate_d412_evidence_report import CHECKLIST, generate
+import pytest
+
+from scripts.generate_d412_evidence_report import CHECKLIST, SUPPORTING_PATHS, generate
 
 REVISION = "f92e307af7a3830347d50ca63f6a7d481489935c"
 
 
-def test_generator_indexes_stored_observations_without_a_gate_verdict(
-    repository_root: Path,
-) -> None:
-    evidence_dir = repository_root / "artifacts/platform/d4.12" / REVISION
+def _isolated_evidence(repository_root: Path, tmp_path: Path) -> tuple[Path, Path]:
+    isolated_root = tmp_path / "repository"
+    source_evidence = repository_root / "artifacts/platform/d4.12" / REVISION
+    evidence_dir = isolated_root / "artifacts/platform/d4.12" / REVISION
+    shutil.copytree(source_evidence, evidence_dir)
+    for relative in SUPPORTING_PATHS:
+        source = repository_root / relative
+        destination = isolated_root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    screenshot_manifest = json.loads(
+        (repository_root / "artifacts/platform/screenshots/manifest.json").read_text()
+    )
+    for item in screenshot_manifest["screenshots"]:
+        relative = Path("artifacts/platform/screenshots") / item["path"]
+        destination = isolated_root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(repository_root / relative, destination)
+    return isolated_root, evidence_dir
 
-    manifest = generate(repository_root, evidence_dir)
+
+def test_generator_indexes_stored_observations_without_a_gate_verdict(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+
+    manifest = generate(isolated_root, evidence_dir)
     report = (evidence_dir / "REPORT.md").read_text()
 
     assert manifest["verdict"] is None
@@ -25,18 +49,26 @@ def test_generator_indexes_stored_observations_without_a_gate_verdict(
     assert "- [ ]" not in report
     assert "- [x]" not in report.lower()
     assert "declare a milestone verdict" in report
+    redaction = json.loads((evidence_dir / "redaction-scan.json").read_text())
+    assert redaction["final_deliverables_scanned"] == [
+        "REPORT.md",
+        "evidence-manifest.json",
+    ]
+    assert all(count == 0 for count in redaction["finding_counts"].values())
 
 
-def test_generated_artifact_digests_verify_independently(repository_root: Path) -> None:
-    evidence_dir = repository_root / "artifacts/platform/d4.12" / REVISION
-    manifest = generate(repository_root, evidence_dir)
+def test_generated_artifact_digests_verify_independently(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    manifest = generate(isolated_root, evidence_dir)
 
     for entry in manifest["command_records"]:
         data = (evidence_dir / entry["path"]).read_bytes()
         assert len(data) == entry.get("size", len(data))
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     for entry in manifest["supporting_artifacts"]:
-        data = (repository_root / entry["path"]).read_bytes()
+        data = (isolated_root / entry["path"]).read_bytes()
         assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
 
@@ -54,3 +86,18 @@ def test_generated_artifact_digests_verify_independently(repository_root: Path) 
         "run_manifests": 3,
         "screenshots": 10,
     }
+    reconciliation = on_disk["identity_reconciliation"]
+    assert reconciliation["approval_candidate_policy_gate_digest_tuples_match"] is True
+    assert reconciliation["deployment_candidate_policy_tuples_are_approved"] is True
+
+
+def test_generator_rejects_tampered_success_claim(repository_root: Path, tmp_path: Path) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    command_path = evidence_dir / "commands/08-fast-suite.json"
+    command = json.loads(command_path.read_text())
+    command["exit_status"] = 9
+    command["output"] = "BROKEN\n"
+    command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
+
+    with pytest.raises(ValueError, match="unexpected exit status"):
+        generate(isolated_root, evidence_dir)

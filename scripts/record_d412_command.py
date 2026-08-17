@@ -27,7 +27,9 @@ def _timestamp() -> str:
 def _redact(value: str, paths: list[Path]) -> str:
     redacted = value
     replacements = [(str(Path.home()), "<home>")]
-    replacements.extend((str(path.resolve()), f"<path-{index}>") for index, path in enumerate(paths))
+    replacements.extend(
+        (str(path.resolve()), f"<path-{index}>") for index, path in enumerate(paths)
+    )
     for source, replacement in sorted(replacements, key=lambda item: len(item[0]), reverse=True):
         redacted = redacted.replace(source, replacement)
     for secret in _LOCAL_DEMO_SECRETS:
@@ -72,7 +74,7 @@ def main() -> None:
         "command": _redact(shlex.join(command), paths),
         "argv": [_redact(argument, paths) for argument in command],
         "cwd": _redact(str(args.cwd.resolve()), paths),
-        "environment": public_environment,
+        "environment": {name: _redact(value, paths) for name, value in public_environment.items()},
         "started_at_utc": started_at,
         "ended_at_utc": _timestamp(),
         "duration_seconds": round(duration, 6),

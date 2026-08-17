@@ -13,86 +13,192 @@ from typing import Any
 COMMAND_SCHEMA = "pixelgym-d412-command-record-v1"
 MANIFEST_SCHEMA = "pixelgym-d412-evidence-manifest-v1"
 
+EXPECTED_COMMAND_STATUSES = {
+    **{
+        f"commands/{number:02d}-{name}.json": 0
+        for number, name in (
+            (0, "git-revision"),
+            (1, "worktree-status"),
+            (2, "python-version"),
+            (3, "os-architecture"),
+            (4, "docker-version"),
+            (5, "compose-version"),
+            (6, "create-dev-venv"),
+            (7, "install-dev"),
+            (8, "fast-suite"),
+            (9, "environment-checker"),
+            (10, "golden-trajectory"),
+            (11, "platform-unit-boundaries"),
+            (12, "dependency-lock-check"),
+            (13, "ruff"),
+            (14, "pip-check"),
+            (15, "boundary-inventory"),
+            (17, "source-provenance"),
+            (18, "lock-sha256"),
+            (19, "dev-package-versions"),
+            (20, "create-integration-venv"),
+            (22, "install-platform-network-retry"),
+            (24, "playwright-chromium-network-retry"),
+            (25, "integration-package-versions"),
+            (26, "integration-pip-check"),
+            (27, "platform-local-runtime"),
+            (28, "platform-local-runtime-retry"),
+            (30, "compose-browser-sandbox-retry"),
+            (31, "mechanical-boundaries"),
+            (37, "compose-cleanup-filtered"),
+            (38, "evidence-branch"),
+            (39, "integration-test-inventory"),
+            (40, "redaction-scan"),
+            (41, "metaflow-resume-ledgers"),
+        )
+    },
+    "commands/16-platform-sleep-scan.json": 1,
+    "commands/21-install-platform.json": 1,
+    "commands/23-playwright-chromium.json": 1,
+    "commands/29-compose-browser.json": 1,
+}
+
 CHECKLIST: tuple[tuple[str, tuple[str, ...], str], ...] = (
     (
         "Existing PixelGym fast suite still passes from the documented clean install.",
-        ("commands/07-install-dev.json", "commands/08-fast-suite.json", "commands/09-environment-checker.json", "commands/10-golden-trajectory.json", "commands/13-ruff.json"),
-        "593 passed, 5 skipped, 3 warnings in 53.84s; environment checker 1 passed in 0.04s; golden trajectory reported OK; Ruff reported all checks passed.",
+        (
+            "commands/07-install-dev.json",
+            "commands/08-fast-suite.json",
+            "commands/09-environment-checker.json",
+            "commands/10-golden-trajectory.json",
+            "commands/13-ruff.json",
+        ),
+        "fast_suite",
     ),
     (
         "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
-        ("commands/11-platform-unit-boundaries.json", "commands/15-boundary-inventory.json", "commands/16-platform-sleep-scan.json"),
-        "216 passed, 3 warnings in 14.13s with closed proxy endpoints and provider credentials removed; osworld_installed=false; provider_credentials_present=false; the sleep scan returned zero matches (rg exit 1).",
+        (
+            "commands/11-platform-unit-boundaries.json",
+            "commands/15-boundary-inventory.json",
+            "commands/16-platform-sleep-scan.json",
+        ),
+        "unit_boundaries",
     ),
     (
         "Marked platform integration tests pass against a fresh local stack.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/37-compose-cleanup-filtered.json"),
-        "2 passed in 153.97s; the post-run filtered Docker inventory contained zero pixelgym-it containers, images, networks, or volumes.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/37-compose-cleanup-filtered.json",
+        ),
+        "fresh_stack",
     ),
     (
         "Metaflow resume tests prove no duplicate fixture-provider calls.",
-        ("commands/28-platform-local-runtime-retry.json", "commands/39-integration-test-inventory.json"),
-        "The marked local runtime command recorded 9 passed in 86.30s; its collected cases include every side-effect boundary, hard-kill resume, call caps, and concurrency caps.",
+        (
+            "commands/28-platform-local-runtime-retry.json",
+            "commands/39-integration-test-inventory.json",
+            "commands/41-metaflow-resume-ledgers.json",
+        ),
+        "metaflow_resume",
     ),
     (
         "MLflow contains the complete run contract and links back to Metaflow.",
-        ("commands/28-platform-local-runtime-retry.json", "commands/30-compose-browser-sandbox-retry.json", "artifacts/platform/demo-mlflow-lineage.jsonl"),
-        "The local runtime and fresh Compose commands recorded 9 and 2 passing tests; three stored MLflow lineage records reconcile with three run manifests by run ID, Metaflow pathspec, and policy ID.",
+        (
+            "commands/28-platform-local-runtime-retry.json",
+            "commands/30-compose-browser-sandbox-retry.json",
+            "artifacts/platform/demo-mlflow-lineage.jsonl",
+        ),
+        "mlflow_lineage",
     ),
     (
         "Dataset and raw-response hashes verify from immutable storage.",
-        ("commands/30-compose-browser-sandbox-retry.json", "artifacts/platform/immutable-artifact-verification.json", "identity-reconciliation.json"),
-        "The stored immutable verification has 310 verified pinned objects and failure_count=0; its reference set equals the three run-manifest artifact union; the fresh Compose case also exercised real MinIO version/digest/tamper paths.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "artifacts/platform/immutable-artifact-verification.json",
+            "identity-reconciliation.json",
+        ),
+        "immutable_storage",
     ),
     (
         "Missing cost or latency blocks promotion.",
         ("commands/31-mechanical-boundaries.json",),
-        "The named missing/non-finite cost and latency boundary cases are present in the 23-case command output; 23 passed in 1.30s.",
+        "mechanical_boundaries",
     ),
     (
         "Gate failure blocks both UI and direct approval API.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/31-mechanical-boundaries.json", "artifacts/platform/demo-api-transcript.jsonl", "artifacts/platform/screenshots/02-candidate-a-gate-blocked.png"),
-        "The stored blocked-approval exchange is HTTP 409; the failed-candidate screenshot is hash verified; the named direct-approval case appears in the 23-case output; the fresh browser/API lifecycle recorded 2 passed.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/31-mechanical-boundaries.json",
+            "artifacts/platform/demo-api-transcript.jsonl",
+            "artifacts/platform/screenshots/02-candidate-a-gate-blocked.png",
+        ),
+        "gate_blocks_approval",
     ),
     (
         "Passing gates do not bypass human approval.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/31-mechanical-boundaries.json", "artifacts/platform/demo-approval-events.jsonl", "artifacts/platform/screenshots/06-candidate-b-eligible.png", "d411-human-confirmation.json"),
-        "Two stored approval events belong only to the two stored passing-policy identities; the eligible screenshot precedes approval; the project owner separately confirmed all four D4.11 review items.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/31-mechanical-boundaries.json",
+            "artifacts/platform/demo-approval-events.jsonl",
+            "artifacts/platform/screenshots/06-candidate-b-eligible.png",
+            "d411-human-confirmation.json",
+        ),
+        "human_approval",
     ),
     (
         "Serving rejects an unapproved exact version.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/31-mechanical-boundaries.json"),
-        "The named unapproved deployment and serving-restore cases appear in the 23-case output; the fresh browser lifecycle recorded the pre-approval deployment response as 409 within its passing case.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/31-mechanical-boundaries.json",
+        ),
+        "unapproved_rejected",
     ),
     (
         "Failed deployment leaves the current version active.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/31-mechanical-boundaries.json"),
-        "The named deploy and pre-activation failure cases appear in the 23-case output; the fresh Compose lifecycle exercised missing-package deploy and rollback failures while retaining the stored active identity.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/31-mechanical-boundaries.json",
+        ),
+        "failed_deployment",
     ),
     (
         "Rollback restores the previous approved exact version.",
-        ("commands/30-compose-browser-sandbox-retry.json", "artifacts/platform/demo-deployment-events.jsonl", "artifacts/platform/demo-api-transcript.jsonl"),
-        "Stored generations are deploy/deploy/rollback with generation 3 restoring generation 1's candidate and policy; the fresh browser lifecycle recorded 2 passed.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "artifacts/platform/demo-deployment-events.jsonl",
+            "artifacts/platform/demo-api-transcript.jsonl",
+        ),
+        "rollback",
     ),
     (
         "Concurrent transition tests produce one active deployment.",
-        ("commands/30-compose-browser-sandbox-retry.json", "commands/31-mechanical-boundaries.json"),
-        "The fresh lifecycle's passing case contains exact [303, 409] deploy and rollback race assertions and an active-pointer count of one; the named stale compare-and-swap case is in the 23-case output.",
+        (
+            "commands/30-compose-browser-sandbox-retry.json",
+            "commands/31-mechanical-boundaries.json",
+        ),
+        "concurrent_transitions",
     ),
     (
         "Demo evidence clearly distinguishes scripted and real provider results.",
-        ("artifacts/platform/EVIDENCE_REVIEW.md", "artifacts/platform/rehearsal-environment.json", "artifacts/platform/demo-mlflow-lineage.jsonl"),
-        "The review index labels all demo metrics synthetic, and the stored environment records deterministic scripted replay, zero network model calls, zero paid calls, and no external deployment.",
+        (
+            "artifacts/platform/EVIDENCE_REVIEW.md",
+            "artifacts/platform/rehearsal-environment.json",
+            "artifacts/platform/demo-mlflow-lineage.jsonl",
+        ),
+        "scripted_provider",
     ),
     (
         "No credentials, private payloads, or privileged benchmark data appear in artifacts.",
-        ("commands/40-redaction-scan.json", "artifacts/platform/screenshots/manifest.json"),
-        "The recorded redaction scan reports zero findings in every prohibited category; the screenshot manifest states the excluded data classes.",
+        (
+            "commands/40-redaction-scan.json",
+            "redaction-scan.json",
+            "artifacts/platform/screenshots/manifest.json",
+        ),
+        "redaction",
     ),
     (
         "Retention, backup, recovery, and known limitations are documented.",
-        ("deploy/README.md", "artifacts/platform/architecture.md", "artifacts/platform/known-limitations.md"),
-        "Stored documentation distinguishes 30-day local governance retention from production WORM and identifies production backup, replication, recovery testing, and disaster-recovery work as unapproved/not demonstrated.",
+        (
+            "deploy/README.md",
+            "artifacts/platform/architecture.md",
+            "artifacts/platform/known-limitations.md",
+        ),
+        "retention",
     ),
 )
 
@@ -136,6 +242,17 @@ def _artifact_key(item: dict[str, Any]) -> tuple[str, str, str]:
     return item["uri"], item["version_id"], item["sha256"]
 
 
+def _canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _index(path: Path, root: Path) -> dict[str, Any]:
     return {
         "path": path.relative_to(root).as_posix(),
@@ -177,6 +294,140 @@ def _command_index(evidence_dir: Path) -> tuple[list[dict[str, Any]], dict[str, 
     return records, by_path
 
 
+def _summary(
+    records: dict[str, dict[str, Any]],
+    path: str,
+    *,
+    passed: int,
+    skipped: int = 0,
+    warnings: int = 0,
+) -> dict[str, Any]:
+    match = re.search(
+        r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
+        r"(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s",
+        records[path]["output"],
+    )
+    if match is None:
+        raise ValueError(f"missing pytest summary in {path}")
+    observed = {
+        "passed": int(match["passed"]),
+        "skipped": int(match["skipped"] or 0),
+        "warnings": int(match["warnings"] or 0),
+        "runtime": float(match["runtime"]),
+    }
+    expected = {"passed": passed, "skipped": skipped, "warnings": warnings}
+    if {key: observed[key] for key in expected} != expected:
+        raise ValueError(f"unexpected pytest summary in {path}: {observed}")
+    return observed
+
+
+def _require_text(records: dict[str, dict[str, Any]], path: str, text: str) -> None:
+    if text not in records[path]["output"]:
+        raise ValueError(f"missing expected output {text!r} in {path}")
+
+
+def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    if set(records) != set(EXPECTED_COMMAND_STATUSES):
+        missing = sorted(set(EXPECTED_COMMAND_STATUSES) - set(records))
+        extra = sorted(set(records) - set(EXPECTED_COMMAND_STATUSES))
+        raise ValueError(f"unexpected command record set; missing={missing}, extra={extra}")
+    for path, expected in EXPECTED_COMMAND_STATUSES.items():
+        if records[path]["exit_status"] != expected:
+            raise ValueError(
+                f"unexpected exit status in {path}: {records[path]['exit_status']} != {expected}"
+            )
+
+    summaries = {
+        "fast": _summary(records, "commands/08-fast-suite.json", passed=593, skipped=5, warnings=3),
+        "environment": _summary(records, "commands/09-environment-checker.json", passed=1),
+        "platform_units": _summary(
+            records, "commands/11-platform-unit-boundaries.json", passed=216, warnings=3
+        ),
+        "local_runtime": _summary(
+            records, "commands/28-platform-local-runtime-retry.json", passed=9
+        ),
+        "compose": _summary(records, "commands/30-compose-browser-sandbox-retry.json", passed=2),
+        "mechanical": _summary(
+            records, "commands/31-mechanical-boundaries.json", passed=23, warnings=3
+        ),
+    }
+    _require_text(records, "commands/10-golden-trajectory.json", "OK")
+    _require_text(records, "commands/13-ruff.json", "All checks passed!")
+    inventory = records["commands/15-boundary-inventory.json"]["output"].splitlines()
+    if inventory != ["osworld_installed=false", "provider_credentials_present=false"]:
+        raise ValueError(f"unexpected boundary inventory: {inventory}")
+    if records["commands/16-platform-sleep-scan.json"]["output"]:
+        raise ValueError("platform sleep scan must have zero matches")
+    cleanup = json.loads(records["commands/37-compose-cleanup-filtered.json"]["output"])
+    if cleanup != {"containers": [], "images": [], "networks": [], "volumes": []}:
+        raise ValueError(f"fresh Compose cleanup is incomplete: {cleanup}")
+    for name in (
+        "test_metaflow_resume_at_each_side_effect_boundary[run_linked]",
+        "test_metaflow_resume_at_each_side_effect_boundary[provider_response_received]",
+        "test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls",
+    ):
+        _require_text(records, "commands/39-integration-test-inventory.json", name)
+    for name in (
+        "test_missing_and_nonfinite_gate_evidence_fails_closed",
+        "test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove",
+        "test_deployment_coordinator_rejects_unapproved_candidate_before_smoke",
+        "test_serving_restore_rejects_unapproved_or_gate_failed_active_policy",
+        "test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order",
+        "test_stale_compare_and_swap_loses_cleanly",
+        "test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime",
+    ):
+        _require_text(records, "commands/31-mechanical-boundaries.json", name)
+    return summaries
+
+
+def _validate_resume_ledgers(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    evidence = json.loads(records["commands/41-metaflow-resume-ledgers.json"]["output"])
+    if evidence.get("schema_version") != "pixelgym-d412-metaflow-resume-ledgers-v1":
+        raise ValueError("unexpected Metaflow resume-ledger schema")
+    expected_boundaries = {
+        "run_linked",
+        "provider_response_received",
+        "raw_responses_persisted",
+        "evidence_persisted",
+        "mlflow_finalized",
+        "candidate_registered",
+    }
+    if set(evidence.get("boundaries", {})) != expected_boundaries:
+        raise ValueError("resume-ledger evidence does not cover every supported boundary")
+    snapshots = {
+        "uninterrupted": evidence["uninterrupted"],
+        **evidence["boundaries"],
+        "hard_kill": evidence["hard_kill"],
+    }
+    for name, snapshot in snapshots.items():
+        ledger = snapshot["provider_ledger"]
+        expected_attempts = 101 if name == "provider_response_received" else 100
+        expected_hits = 1 if name == "provider_response_received" else 0
+        expected_ledger = {
+            "attempts": expected_attempts,
+            "unique_request_ids": 100,
+            "cache_hits": expected_hits,
+            "active": 0,
+            "max_active": 2,
+            "billable_calls": 100,
+        }
+        if ledger != expected_ledger:
+            raise ValueError(f"unexpected provider ledger for {name}: {ledger}")
+        expected_snapshot = {
+            "normalized_evidence_equal": True,
+            "prediction_count": 100,
+            "unique_example_conditions": 100,
+            "submission_status": "Complete",
+            "candidate_count": 1,
+            "mlflow_status": "FINISHED",
+        }
+        if any(snapshot.get(key) != value for key, value in expected_snapshot.items()):
+            raise ValueError(f"unexpected normalized result for {name}: {snapshot}")
+    if evidence["hard_kill"].get("killed_with_sigkill") is not True:
+        raise ValueError("hard-kill evidence did not record SIGKILL")
+    return evidence
+
+
 def _reconcile(repository_root: Path) -> dict[str, Any]:
     base = repository_root / "artifacts/platform"
     manifests = _jsonl(base / "demo-run-manifests.jsonl")
@@ -190,21 +441,33 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
     screenshots = _json(base / "screenshots/manifest.json")
 
     manifest_identity = {
-        (row["mlflow_run_id"], row["metaflow_pathspec"], row["policy_id"])
-        for row in manifests
+        (row["mlflow_run_id"], row["metaflow_pathspec"], row["policy_id"]) for row in manifests
     }
     lineage_identity = {
-        (row["mlflow_run_id"], row["metaflow_pathspec"], row["policy_id"])
-        for row in lineage
+        (row["mlflow_run_id"], row["metaflow_pathspec"], row["policy_id"]) for row in lineage
     }
     manifest_artifacts = {
         _artifact_key(item) for row in manifests for item in row["artifact_index"]
     }
     verified_artifacts = {_artifact_key(item) for item in verification["verified"]}
-    passing_policies = {row["policy_id"] for row in gates if row["overall_passed"]}
-    failed_policies = {row["policy_id"] for row in gates if not row["overall_passed"]}
-    approval_policies = {row["policy_id"] for row in approvals}
-    approval_candidates = {row["candidate_id"] for row in approvals}
+    candidate_by_policy = {row["policy_id"]: row["candidate_id"] for row in lineage}
+    passing_approval_tuples = {
+        (candidate_by_policy[row["policy_id"]], row["policy_id"], _canonical_sha256(row))
+        for row in gates
+        if row["overall_passed"]
+    }
+    failed_approval_tuples = {
+        (candidate_by_policy[row["policy_id"]], row["policy_id"], _canonical_sha256(row))
+        for row in gates
+        if not row["overall_passed"]
+    }
+    approval_tuples = {
+        (row["candidate_id"], row["policy_id"], row["gate_report_sha256"]) for row in approvals
+    }
+    approval_candidate_policy = {
+        (candidate_id, policy_id) for candidate_id, policy_id, _ in approval_tuples
+    }
+    deployment_candidate_policy = {(row["candidate_id"], row["policy_id"]) for row in deployments}
 
     screenshot_hashes_match = True
     for item in screenshots["screenshots"]:
@@ -240,18 +503,25 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
             "immutable_verified": len(verified_artifacts),
             "immutable_failures": verification["failure_count"],
         },
-        "run_manifest_mlflow_metaflow_policy_identity_matches": manifest_identity == lineage_identity,
-        "manifest_artifact_union_matches_immutable_verification": manifest_artifacts == verified_artifacts,
-        "approval_policy_ids": sorted(approval_policies),
-        "approval_candidate_ids": sorted(approval_candidates),
-        "approval_policies_are_stored_passing_policies": approval_policies <= passing_policies,
-        "stored_failed_policies_have_no_approval": failed_policies.isdisjoint(approval_policies),
-        "deployment_candidates_are_approved": {
-            row["candidate_id"] for row in deployments
-        } <= approval_candidates,
+        "run_manifest_mlflow_metaflow_policy_identity_matches": manifest_identity
+        == lineage_identity,
+        "manifest_artifact_union_matches_immutable_verification": manifest_artifacts
+        == verified_artifacts,
+        "expected_passing_approval_tuples": sorted(passing_approval_tuples),
+        "stored_approval_tuples": sorted(approval_tuples),
+        "approval_candidate_policy_gate_digest_tuples_match": (
+            approval_tuples == passing_approval_tuples
+        ),
+        "stored_failed_candidate_policy_gate_digest_tuples_have_no_approval": (
+            failed_approval_tuples.isdisjoint(approval_tuples)
+        ),
+        "deployment_candidate_policy_tuples_are_approved": (
+            deployment_candidate_policy <= approval_candidate_policy
+        ),
         "deployment_generations": [row["generation"] for row in deployments],
         "deployment_actions": [row["action"] for row in deployments],
-        "rollback_restores_generation_1_policy": deployments[2]["policy_id"] == deployments[0]["policy_id"],
+        "rollback_restores_generation_1_policy": deployments[2]["policy_id"]
+        == deployments[0]["policy_id"],
         "screenshot_hashes_and_sizes_match": screenshot_hashes_match,
         "screenshot_identity_references_match": screenshot_identities_match,
     }
@@ -263,6 +533,11 @@ def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]
     paths.extend((repository_root / "artifacts/platform/screenshots").glob("*.png"))
     patterns = {
         "local_absolute_paths": re.compile(rb"/Users/|/private/tmp/"),
+        "host_usernames_or_emails": re.compile(
+            rb"(?:"
+            + re.escape(Path.home().name.encode())
+            + rb"|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})"
+        ),
         "local_demo_credentials": re.compile(
             rb"local_demo_postgres_only|local_demo_minio_only|local-demo-csrf-secret"
         ),
@@ -275,8 +550,9 @@ def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]
     }
     findings = {name: 0 for name in patterns}
     scanned = 0
-    for path in dict.fromkeys(paths):
-        if path.name in {"evidence-manifest.json", "REPORT.md", "redaction-scan.json"}:
+    unique_paths = list(dict.fromkeys(paths))
+    for path in unique_paths:
+        if path.name == "redaction-scan.json":
             continue
         data = path.read_bytes()
         scanned += 1
@@ -285,7 +561,141 @@ def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]
     return {
         "schema_version": "pixelgym-d412-redaction-scan-v1",
         "files_scanned": scanned,
+        "final_deliverables_scanned": [
+            name
+            for name in ("REPORT.md", "evidence-manifest.json")
+            if evidence_dir / name in unique_paths
+        ],
         "finding_counts": findings,
+    }
+
+
+def _observations(
+    repository_root: Path,
+    evidence_dir: Path,
+    records: dict[str, dict[str, Any]],
+    summaries: dict[str, Any],
+    resume: dict[str, Any],
+    reconciliation: dict[str, Any],
+) -> dict[str, str]:
+    counts = reconciliation["stored_counts"]
+    required_reconciliation = (
+        "run_manifest_mlflow_metaflow_policy_identity_matches",
+        "manifest_artifact_union_matches_immutable_verification",
+        "approval_candidate_policy_gate_digest_tuples_match",
+        "stored_failed_candidate_policy_gate_digest_tuples_have_no_approval",
+        "deployment_candidate_policy_tuples_are_approved",
+        "rollback_restores_generation_1_policy",
+        "screenshot_hashes_and_sizes_match",
+        "screenshot_identity_references_match",
+    )
+    if not all(reconciliation[key] is True for key in required_reconciliation):
+        raise ValueError("stored identity reconciliation contains a mismatch")
+    confirmation = _json(evidence_dir / "d411-human-confirmation.json")
+    if confirmation["confirmation_count"] != 4 or confirmation["d412_verdict"] is not None:
+        raise ValueError("D4.11 human confirmation is incomplete or contains a D4.12 verdict")
+    environment = _json(repository_root / "artifacts/platform/rehearsal-environment.json")
+    provider = environment["provider"]
+    if provider != {
+        "type": "deterministic scripted replay",
+        "network_model_calls": False,
+        "paid_calls": 0,
+        "external_deployment": False,
+    }:
+        raise ValueError(f"unexpected stored provider environment: {provider}")
+    api = _jsonl(repository_root / "artifacts/platform/demo-api-transcript.jsonl")
+    blocked = [row for row in api if row["event"] == "blocked-approval"]
+    if len(blocked) != 1 or blocked[0]["response"]["status"] != 409:
+        raise ValueError("stored blocked-approval exchange is not exactly one HTTP 409")
+    prior_redaction = json.loads(records["commands/40-redaction-scan.json"]["output"])
+    if any(prior_redaction["finding_counts"].values()):
+        raise ValueError("recorded pre-generation redaction scan contains findings")
+
+    fast = summaries["fast"]
+    env_check = summaries["environment"]
+    units = summaries["platform_units"]
+    local = summaries["local_runtime"]
+    compose = summaries["compose"]
+    mechanical = summaries["mechanical"]
+    return {
+        "fast_suite": (
+            f"{fast['passed']} passed, {fast['skipped']} skipped, {fast['warnings']} warnings "
+            f"in {fast['runtime']:.2f}s; environment checker {env_check['passed']} passed in "
+            f"{env_check['runtime']:.2f}s; golden trajectory output contains OK; Ruff output "
+            "contains All checks passed."
+        ),
+        "unit_boundaries": (
+            f"{units['passed']} passed, {units['warnings']} warnings in "
+            f"{units['runtime']:.2f}s; stored inventory is osworld_installed=false and "
+            "provider_credentials_present=false; the sleep scan exited 1 with empty output."
+        ),
+        "fresh_stack": (
+            f"{compose['passed']} passed in {compose['runtime']:.2f}s; parsed post-run Docker "
+            "inventory has zero containers, images, networks, and volumes."
+        ),
+        "metaflow_resume": (
+            f"{local['passed']} passed in {local['runtime']:.2f}s; structured ledgers cover "
+            f"{len(resume['boundaries'])} side-effect boundaries, uninterrupted execution, and "
+            "SIGKILL recovery. Each has "
+            "100 unique requests, 100 billable calls, active=0, max_active=2, and normalized "
+            "evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
+        ),
+        "mlflow_lineage": (
+            f"Local runtime {local['passed']} tests and fresh Compose {compose['passed']} tests; "
+            f"{counts['mlflow_lineage_records']} lineage records exactly reconcile with "
+            f"{counts['run_manifests']} manifests by run, pathspec, and policy."
+        ),
+        "immutable_storage": (
+            f"{counts['immutable_verified']} verified pinned objects, "
+            f"failure_count={counts['immutable_failures']}; verified references exactly equal "
+            f"the {counts['manifest_artifact_union']}-object manifest union."
+        ),
+        "mechanical_boundaries": (
+            f"Named missing/non-finite cost and latency cases are in the stored output; "
+            f"{mechanical['passed']} passed, {mechanical['warnings']} warnings in "
+            f"{mechanical['runtime']:.2f}s."
+        ),
+        "gate_blocks_approval": (
+            f"Stored blocked approval is HTTP {blocked[0]['response']['status']}; screenshot "
+            "hash/size and identities reconcile; the direct-approval case is in the validated "
+            f"{mechanical['passed']}-case output."
+        ),
+        "human_approval": (
+            f"All {counts['approval_events']} approval candidate/policy/gate-digest tuples exactly "
+            "equal the stored passing tuples; failed tuples are disjoint; the project owner "
+            f"confirmed {confirmation['confirmation_count']} D4.11 items."
+        ),
+        "unapproved_rejected": (
+            "The named unapproved deployment and serving-restore cases are present in the "
+            f"validated {mechanical['passed']}-case output."
+        ),
+        "failed_deployment": (
+            "The named deployment and pre-activation failure cases are present in the validated "
+            f"{mechanical['passed']}-case output."
+        ),
+        "rollback": (
+            f"Stored actions are {reconciliation['deployment_actions']} at generations "
+            f"{reconciliation['deployment_generations']}; generation 3 restores generation 1."
+        ),
+        "concurrent_transitions": (
+            "The fresh lifecycle command is validated and the named stale compare-and-swap case "
+            f"is present in the validated {mechanical['passed']}-case output."
+        ),
+        "scripted_provider": (
+            f"Stored provider type is {provider['type']}; network_model_calls="
+            f"{str(provider['network_model_calls']).lower()}, paid_calls={provider['paid_calls']}, "
+            f"external_deployment={str(provider['external_deployment']).lower()}."
+        ),
+        "redaction": (
+            f"The recorded pre-generation scan covered {prior_redaction['files_scanned']} files "
+            "with zero findings in every prohibited category; the generator separately scans "
+            "the final report and manifest and stores redaction-scan.json."
+        ),
+        "retention": (
+            "Stored documentation distinguishes local governance retention from production WORM "
+            "and identifies backup, replication, recovery testing, and disaster recovery as not "
+            "demonstrated."
+        ),
     }
 
 
@@ -293,6 +703,8 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     repository_root = repository_root.resolve()
     evidence_dir = evidence_dir.resolve()
     commands, command_records = _command_index(evidence_dir)
+    summaries = _validate_commands(command_records)
+    resume = _validate_resume_ledgers(command_records)
     revision = command_records["commands/00-git-revision.json"]["output"].strip()
     branch = command_records["commands/38-evidence-branch.json"]["output"].strip()
     source = json.loads(command_records["commands/17-source-provenance.json"]["output"])
@@ -301,7 +713,9 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     if source["revision"] != revision or source["state"] != "clean":
         raise ValueError("stored source provenance does not match the frozen clean revision")
 
-    supporting = [_index(repository_root / relative, repository_root) for relative in SUPPORTING_PATHS]
+    supporting = [
+        _index(repository_root / relative, repository_root) for relative in SUPPORTING_PATHS
+    ]
     screenshots = _json(repository_root / "artifacts/platform/screenshots/manifest.json")
     for item in screenshots["screenshots"]:
         relative = Path("artifacts/platform/screenshots") / item["path"]
@@ -311,9 +725,23 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     (evidence_dir / "identity-reconciliation.json").write_text(
         json.dumps(reconciliation, indent=2, sort_keys=True) + "\n"
     )
-    redaction = _redaction_scan(repository_root, evidence_dir)
+    observations = _observations(
+        repository_root,
+        evidence_dir,
+        command_records,
+        summaries,
+        resume,
+        reconciliation,
+    )
+
+    # Keep these files present during both scans so the count and result are stable.
+    (evidence_dir / "evidence-manifest.json").write_text("{}\n")
+    (evidence_dir / "REPORT.md").write_text("")
+    preliminary_redaction = _redaction_scan(repository_root, evidence_dir)
+    if any(preliminary_redaction["finding_counts"].values()):
+        raise ValueError(f"redaction scan found prohibited data: {preliminary_redaction}")
     (evidence_dir / "redaction-scan.json").write_text(
-        json.dumps(redaction, indent=2, sort_keys=True) + "\n"
+        json.dumps(preliminary_redaction, indent=2, sort_keys=True) + "\n"
     )
 
     started = min(record["started_at_utc"] for record in command_records.values())
@@ -322,21 +750,25 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     artifact_lookup["identity-reconciliation.json"] = _index(
         evidence_dir / "identity-reconciliation.json", evidence_dir
     )
-    artifact_lookup["redaction-scan.json"] = _index(evidence_dir / "redaction-scan.json", evidence_dir)
+    artifact_lookup["redaction-scan.json"] = _index(
+        evidence_dir / "redaction-scan.json", evidence_dir
+    )
     artifact_lookup["d411-human-confirmation.json"] = _index(
         evidence_dir / "d411-human-confirmation.json", evidence_dir
     )
 
     items = []
-    for number, (text, evidence, observed) in enumerate(CHECKLIST, start=1):
+    for number, (text, evidence, observation_key) in enumerate(CHECKLIST, start=1):
         missing = [path for path in evidence if path not in artifact_lookup]
+        if missing:
+            raise ValueError(f"checklist item {number} has missing evidence: {missing}")
         items.append(
             {
                 "number": number,
                 "checklist_text": text,
-                "evidence": [artifact_lookup[path] for path in evidence if path in artifact_lookup],
-                "missing_evidence": missing,
-                "observed_raw_result": observed,
+                "evidence": [artifact_lookup[path] for path in evidence],
+                "missing_evidence": [],
+                "observed_raw_result": observations[observation_key],
             }
         )
 
@@ -351,13 +783,13 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         "source_tree_sha256": source["source_tree_sha256"],
         "started_at_utc": started,
         "ended_at_utc": ended,
-        "provider_calls": 0,
-        "paid_services": 0,
-        "external_deployments": 0,
+        "provider_environment": _json(
+            repository_root / "artifacts/platform/rehearsal-environment.json"
+        )["provider"],
         "command_records": commands,
         "supporting_artifacts": supporting,
         "identity_reconciliation": reconciliation,
-        "redaction_scan": redaction,
+        "redaction_scan": preliminary_redaction,
         "checklist_items": items,
     }
     (evidence_dir / "evidence-manifest.json").write_text(
@@ -367,10 +799,14 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     report_lines = [
         "# D4.12 raw evidence index",
         "",
-        f"Evidence revision: `{revision}`  ",
-        f"Evidence branch: `{branch}`  ",
-        f"Observation window: `{started}` to `{ended}`  ",
-        "Verdict: `null`  ",
+        f"Evidence revision: `{revision}`",
+        "",
+        f"Evidence branch: `{branch}`",
+        "",
+        f"Observation window: `{started}` to `{ended}`",
+        "",
+        "Verdict: `null`",
+        "",
         "Verdict owner: project owner",
         "",
         "This index copies and links stored observations only. It does not rerun tests, reinterpret gate semantics, declare a milestone verdict, or change human-owned checklist state.",
@@ -416,6 +852,17 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     if "- [ ]" in report or "- [x]" in report.lower():
         raise ValueError("generated report must not contain checklist boxes")
     (evidence_dir / "REPORT.md").write_text(report)
+    final_redaction = _redaction_scan(repository_root, evidence_dir)
+    if final_redaction != preliminary_redaction:
+        raise ValueError(
+            "redaction result changed after writing the final report and manifest: "
+            f"{preliminary_redaction} != {final_redaction}"
+        )
+    if any(final_redaction["finding_counts"].values()):
+        raise ValueError(f"redaction scan found prohibited data: {final_redaction}")
+    (evidence_dir / "redaction-scan.json").write_text(
+        json.dumps(final_redaction, indent=2, sort_keys=True) + "\n"
+    )
     return manifest
 
 

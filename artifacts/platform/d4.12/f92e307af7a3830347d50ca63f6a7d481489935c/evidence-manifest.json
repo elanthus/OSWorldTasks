@@ -66,7 +66,7 @@
       ],
       "missing_evidence": [],
       "number": 1,
-      "observed_raw_result": "593 passed, 5 skipped, 3 warnings in 53.84s; environment checker 1 passed in 0.04s; golden trajectory reported OK; Ruff reported all checks passed."
+      "observed_raw_result": "593 passed, 5 skipped, 3 warnings in 53.84s; environment checker 1 passed in 0.04s; golden trajectory output contains OK; Ruff output contains All checks passed."
     },
     {
       "checklist_text": "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
@@ -109,7 +109,7 @@
       ],
       "missing_evidence": [],
       "number": 2,
-      "observed_raw_result": "216 passed, 3 warnings in 14.13s with closed proxy endpoints and provider credentials removed; osworld_installed=false; provider_credentials_present=false; the sleep scan returned zero matches (rg exit 1)."
+      "observed_raw_result": "216 passed, 3 warnings in 14.13s; stored inventory is osworld_installed=false and provider_credentials_present=false; the sleep scan exited 1 with empty output."
     },
     {
       "checklist_text": "Marked platform integration tests pass against a fresh local stack.",
@@ -141,7 +141,7 @@
       ],
       "missing_evidence": [],
       "number": 3,
-      "observed_raw_result": "2 passed in 153.97s; the post-run filtered Docker inventory contained zero pixelgym-it containers, images, networks, or volumes."
+      "observed_raw_result": "2 passed in 153.97s; parsed post-run Docker inventory has zero containers, images, networks, and volumes."
     },
     {
       "checklist_text": "Metaflow resume tests prove no duplicate fixture-provider calls.",
@@ -169,11 +169,21 @@
           "path": "commands/39-integration-test-inventory.json",
           "sha256": "5a75aec2a307bcec8927a44839723c0e3ce2a2033d00dbe57eb4cf29f37bf6c1",
           "started_at_utc": "2026-08-17T20:28:45.875861+00:00"
+        },
+        {
+          "command": "<path-2>/integration-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+          "duration_seconds": 85.404964,
+          "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/41-metaflow-resume-ledgers.json",
+          "path": "commands/41-metaflow-resume-ledgers.json",
+          "sha256": "52302bc79b0a2cb52cc461668fc9bbc02258600298b69cacde22ad08bde87822",
+          "started_at_utc": "2026-08-17T20:54:02.289306+00:00"
         }
       ],
       "missing_evidence": [],
       "number": 4,
-      "observed_raw_result": "The marked local runtime command recorded 9 passed in 86.30s; its collected cases include every side-effect boundary, hard-kill resume, call caps, and concurrency caps."
+      "observed_raw_result": "9 passed in 86.30s; structured ledgers cover 6 side-effect boundaries, uninterrupted execution, and SIGKILL recovery. Each has 100 unique requests, 100 billable calls, active=0, max_active=2, and normalized evidence equality; provider_response_received alone has attempts=101/cache_hits=1."
     },
     {
       "checklist_text": "MLflow contains the complete run contract and links back to Metaflow.",
@@ -214,7 +224,7 @@
       ],
       "missing_evidence": [],
       "number": 5,
-      "observed_raw_result": "The local runtime and fresh Compose commands recorded 9 and 2 passing tests; three stored MLflow lineage records reconcile with three run manifests by run ID, Metaflow pathspec, and policy ID."
+      "observed_raw_result": "Local runtime 9 tests and fresh Compose 2 tests; 3 lineage records exactly reconcile with 3 manifests by run, pathspec, and policy."
     },
     {
       "checklist_text": "Dataset and raw-response hashes verify from immutable storage.",
@@ -240,13 +250,13 @@
         },
         {
           "path": "identity-reconciliation.json",
-          "sha256": "6f5f99a9c55d121a595ba029bacea6474a014aefbb1751df0d03d287b9f3c8dc",
-          "size": 1255
+          "sha256": "bd0cd02d23b9d8d879ce12d583753e1a3a0396fdfa185e9e1aca18cddbdd715c",
+          "size": 1915
         }
       ],
       "missing_evidence": [],
       "number": 6,
-      "observed_raw_result": "The stored immutable verification has 310 verified pinned objects and failure_count=0; its reference set equals the three run-manifest artifact union; the fresh Compose case also exercised real MinIO version/digest/tamper paths."
+      "observed_raw_result": "310 verified pinned objects, failure_count=0; verified references exactly equal the 310-object manifest union."
     },
     {
       "checklist_text": "Missing cost or latency blocks promotion.",
@@ -269,7 +279,7 @@
       ],
       "missing_evidence": [],
       "number": 7,
-      "observed_raw_result": "The named missing/non-finite cost and latency boundary cases are present in the 23-case command output; 23 passed in 1.30s."
+      "observed_raw_result": "Named missing/non-finite cost and latency cases are in the stored output; 23 passed, 3 warnings in 1.30s."
     },
     {
       "checklist_text": "Gate failure blocks both UI and direct approval API.",
@@ -316,7 +326,7 @@
       ],
       "missing_evidence": [],
       "number": 8,
-      "observed_raw_result": "The stored blocked-approval exchange is HTTP 409; the failed-candidate screenshot is hash verified; the named direct-approval case appears in the 23-case output; the fresh browser/API lifecycle recorded 2 passed."
+      "observed_raw_result": "Stored blocked approval is HTTP 409; screenshot hash/size and identities reconcile; the direct-approval case is in the validated 23-case output."
     },
     {
       "checklist_text": "Passing gates do not bypass human approval.",
@@ -368,7 +378,7 @@
       ],
       "missing_evidence": [],
       "number": 9,
-      "observed_raw_result": "Two stored approval events belong only to the two stored passing-policy identities; the eligible screenshot precedes approval; the project owner separately confirmed all four D4.11 review items."
+      "observed_raw_result": "All 2 approval candidate/policy/gate-digest tuples exactly equal the stored passing tuples; failed tuples are disjoint; the project owner confirmed 4 D4.11 items."
     },
     {
       "checklist_text": "Serving rejects an unapproved exact version.",
@@ -405,7 +415,7 @@
       ],
       "missing_evidence": [],
       "number": 10,
-      "observed_raw_result": "The named unapproved deployment and serving-restore cases appear in the 23-case output; the fresh browser lifecycle recorded the pre-approval deployment response as 409 within its passing case."
+      "observed_raw_result": "The named unapproved deployment and serving-restore cases are present in the validated 23-case output."
     },
     {
       "checklist_text": "Failed deployment leaves the current version active.",
@@ -442,7 +452,7 @@
       ],
       "missing_evidence": [],
       "number": 11,
-      "observed_raw_result": "The named deploy and pre-activation failure cases appear in the 23-case output; the fresh Compose lifecycle exercised missing-package deploy and rollback failures while retaining the stored active identity."
+      "observed_raw_result": "The named deployment and pre-activation failure cases are present in the validated 23-case output."
     },
     {
       "checklist_text": "Rollback restores the previous approved exact version.",
@@ -474,7 +484,7 @@
       ],
       "missing_evidence": [],
       "number": 12,
-      "observed_raw_result": "Stored generations are deploy/deploy/rollback with generation 3 restoring generation 1's candidate and policy; the fresh browser lifecycle recorded 2 passed."
+      "observed_raw_result": "Stored actions are ['deploy', 'deploy', 'rollback'] at generations [1, 2, 3]; generation 3 restores generation 1."
     },
     {
       "checklist_text": "Concurrent transition tests produce one active deployment.",
@@ -511,7 +521,7 @@
       ],
       "missing_evidence": [],
       "number": 13,
-      "observed_raw_result": "The fresh lifecycle's passing case contains exact [303, 409] deploy and rollback race assertions and an active-pointer count of one; the named stale compare-and-swap case is in the 23-case output."
+      "observed_raw_result": "The fresh lifecycle command is validated and the named stale compare-and-swap case is present in the validated 23-case output."
     },
     {
       "checklist_text": "Demo evidence clearly distinguishes scripted and real provider results.",
@@ -534,7 +544,7 @@
       ],
       "missing_evidence": [],
       "number": 14,
-      "observed_raw_result": "The review index labels all demo metrics synthetic, and the stored environment records deterministic scripted replay, zero network model calls, zero paid calls, and no external deployment."
+      "observed_raw_result": "Stored provider type is deterministic scripted replay; network_model_calls=false, paid_calls=0, external_deployment=false."
     },
     {
       "checklist_text": "No credentials, private payloads, or privileged benchmark data appear in artifacts.",
@@ -550,6 +560,11 @@
           "started_at_utc": "2026-08-17T20:31:02.454989+00:00"
         },
         {
+          "path": "redaction-scan.json",
+          "sha256": "ed4ed4f4327a4d765b39f35f25cee20ea9e91212d2128b785be0a6496902426a",
+          "size": 416
+        },
+        {
           "path": "artifacts/platform/screenshots/manifest.json",
           "sha256": "309d96f4ffa1998896f5070c72c87c1c0319ef5fc1e0817b1b90e4d0fc2be62c",
           "size": 6369
@@ -557,7 +572,7 @@
       ],
       "missing_evidence": [],
       "number": 15,
-      "observed_raw_result": "The recorded redaction scan reports zero findings in every prohibited category; the screenshot manifest states the excluded data classes."
+      "observed_raw_result": "The recorded pre-generation scan covered 64 files with zero findings in every prohibited category; the generator separately scans the final report and manifest and stores redaction-scan.json."
     },
     {
       "checklist_text": "Retention, backup, recovery, and known limitations are documented.",
@@ -580,7 +595,7 @@
       ],
       "missing_evidence": [],
       "number": 16,
-      "observed_raw_result": "Stored documentation distinguishes 30-day local governance retention from production WORM and identifies production backup, replication, recovery testing, and disaster-recovery work as unapproved/not demonstrated."
+      "observed_raw_result": "Stored documentation distinguishes local governance retention from production WORM and identifies backup, replication, recovery testing, and disaster recovery as not demonstrated."
     }
   ],
   "command_records": [
@@ -975,34 +990,47 @@
       "path": "commands/40-redaction-scan.json",
       "sha256": "454a79fa4a13da1f6f61cebaba71c911a9996ac4575c471800f9c95f6dba25e5",
       "started_at_utc": "2026-08-17T20:31:02.454989+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python <path-1>/scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+      "duration_seconds": 85.404964,
+      "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/41-metaflow-resume-ledgers.json",
+      "path": "commands/41-metaflow-resume-ledgers.json",
+      "sha256": "52302bc79b0a2cb52cc461668fc9bbc02258600298b69cacde22ad08bde87822",
+      "started_at_utc": "2026-08-17T20:54:02.289306+00:00"
     }
   ],
-  "ended_at_utc": "2026-08-17T20:31:02.486982+00:00",
+  "ended_at_utc": "2026-08-17T20:55:27.695484+00:00",
   "evidence_branch": "agent/issue-47-d412-evidence",
   "evidence_revision": "f92e307af7a3830347d50ca63f6a7d481489935c",
-  "external_deployments": 0,
   "frozen_worktree_status": "",
   "gate": "D4.12",
   "identity_reconciliation": {
-    "approval_candidate_ids": [
-      "candidate-ab125729e03ef236acbf1919",
-      "candidate-cb167e4e9cca9cd71885b809"
-    ],
-    "approval_policies_are_stored_passing_policies": true,
-    "approval_policy_ids": [
-      "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
-      "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25"
-    ],
+    "approval_candidate_policy_gate_digest_tuples_match": true,
     "deployment_actions": [
       "deploy",
       "deploy",
       "rollback"
     ],
-    "deployment_candidates_are_approved": true,
+    "deployment_candidate_policy_tuples_are_approved": true,
     "deployment_generations": [
       1,
       2,
       3
+    ],
+    "expected_passing_approval_tuples": [
+      [
+        "candidate-ab125729e03ef236acbf1919",
+        "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
+        "d5b7c02b5bd1171e5868192ac0a453ec64650daa70fead125ccbbade6ede275e"
+      ],
+      [
+        "candidate-cb167e4e9cca9cd71885b809",
+        "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25",
+        "a1bd58f2d4552e0729e9c0b12b324a39af76899aff23aad41218577714f2bd1e"
+      ]
     ],
     "manifest_artifact_union_matches_immutable_verification": true,
     "rollback_restores_generation_1_policy": true,
@@ -1010,6 +1038,18 @@
     "schema_version": "pixelgym-d412-identity-reconciliation-v1",
     "screenshot_hashes_and_sizes_match": true,
     "screenshot_identity_references_match": true,
+    "stored_approval_tuples": [
+      [
+        "candidate-ab125729e03ef236acbf1919",
+        "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
+        "d5b7c02b5bd1171e5868192ac0a453ec64650daa70fead125ccbbade6ede275e"
+      ],
+      [
+        "candidate-cb167e4e9cca9cd71885b809",
+        "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25",
+        "a1bd58f2d4552e0729e9c0b12b324a39af76899aff23aad41218577714f2bd1e"
+      ]
+    ],
     "stored_counts": {
       "api_exchanges": 5,
       "approval_events": 2,
@@ -1023,14 +1063,23 @@
       "run_manifests": 3,
       "screenshots": 10
     },
-    "stored_failed_policies_have_no_approval": true
+    "stored_failed_candidate_policy_gate_digest_tuples_have_no_approval": true
   },
-  "paid_services": 0,
-  "provider_calls": 0,
+  "provider_environment": {
+    "external_deployment": false,
+    "network_model_calls": false,
+    "paid_calls": 0,
+    "type": "deterministic scripted replay"
+  },
   "redaction_scan": {
-    "files_scanned": 64,
+    "files_scanned": 67,
+    "final_deliverables_scanned": [
+      "REPORT.md",
+      "evidence-manifest.json"
+    ],
     "finding_counts": {
       "aws_access_keys": 0,
+      "host_usernames_or_emails": 0,
       "local_absolute_paths": 0,
       "local_demo_credentials": 0,
       "private_key_markers": 0,

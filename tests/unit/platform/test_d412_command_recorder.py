@@ -6,7 +6,13 @@ import sys
 from pathlib import Path
 
 
-def _record(repository_root: Path, tmp_path: Path, command: list[str]) -> subprocess.CompletedProcess[str]:
+def _record(
+    repository_root: Path,
+    tmp_path: Path,
+    command: list[str],
+    *,
+    environment: list[str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             sys.executable,
@@ -17,6 +23,7 @@ def _record(repository_root: Path, tmp_path: Path, command: list[str]) -> subpro
             str(tmp_path),
             "--redact-path",
             str(repository_root),
+            *(argument for value in environment or [] for argument in ("--env", value)),
             "--",
             *command,
         ],
@@ -36,11 +43,7 @@ def test_recorder_redacts_paths_and_local_demo_secrets(
         [
             sys.executable,
             "-c",
-            (
-                "import pathlib; "
-                "print(pathlib.Path.cwd()); "
-                "print('local_demo_postgres_only')"
-            ),
+            ("import pathlib; print(pathlib.Path.cwd()); print('local_demo_postgres_only')"),
         ],
     )
 
@@ -51,6 +54,19 @@ def test_recorder_redacts_paths_and_local_demo_secrets(
     assert "local_demo_postgres_only" not in record["output"]
     assert "<path-0>" in record["output"]
     assert "<redacted-local-demo-secret>" in record["output"]
+
+
+def test_recorder_redacts_public_environment_values(repository_root: Path, tmp_path: Path) -> None:
+    completed = _record(
+        repository_root,
+        tmp_path,
+        [sys.executable, "-c", "print('ok')"],
+        environment=["DEMO_SECRET=local_demo_postgres_only"],
+    )
+
+    assert completed.returncode == 0
+    record = json.loads((tmp_path / "record.json").read_text())
+    assert record["environment"] == {"DEMO_SECRET": "<redacted-local-demo-secret>"}
 
 
 def test_recorder_preserves_failure_output_and_exit_status(
