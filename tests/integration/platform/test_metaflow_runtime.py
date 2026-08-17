@@ -340,50 +340,54 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
             "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
         }
     )
-    process = subprocess.Popen(
-        [
-            sys.executable,
-            str(repository_root / "flows/grounding_evaluation_flow.py"),
-            "run",
-            "--submission-id",
-            submission_id,
-            "--prompt-version",
-            "2",
-            "--model",
-            "day3-replay-revised-v2",
-            "--maximum-calls",
-            "100",
-            "--shard-size",
-            "25",
-            "--max-workers",
-            "2",
-            "--run-id-file",
-            str(origin_file),
-        ],
-        cwd=tmp_path,
-        env=environment,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
-    )
-    marker = tmp_path / "failpoints/evidence_persisted.paused"
-    deadline = time.monotonic() + 90
-    try:
-        while time.monotonic() < deadline and not marker.exists():
-            if process.poll() is not None:
-                output = process.communicate()[0]
-                pytest.fail(f"flow exited before the hard-kill boundary:\n{output}")
-            time.sleep(0.05)
-        assert marker.exists(), "flow did not reach the durable hard-kill boundary"
-        os.killpg(process.pid, signal.SIGKILL)
-        killed_output = process.communicate(timeout=10)[0]
-    finally:
-        if process.poll() is None:
+    log_path = tmp_path / "hard-kill-run.log"
+    with log_path.open("w") as log_file:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                str(repository_root / "flows/grounding_evaluation_flow.py"),
+                "run",
+                "--submission-id",
+                submission_id,
+                "--prompt-version",
+                "2",
+                "--model",
+                "day3-replay-revised-v2",
+                "--maximum-calls",
+                "100",
+                "--shard-size",
+                "25",
+                "--max-workers",
+                "2",
+                "--run-id-file",
+                str(origin_file),
+            ],
+            cwd=tmp_path,
+            env=environment,
+            text=True,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        marker = tmp_path / "failpoints/evidence_persisted.paused"
+        deadline = time.monotonic() + 90
+        try:
+            while time.monotonic() < deadline and not marker.exists():
+                if process.poll() is not None:
+                    log_file.flush()
+                    pytest.fail(
+                        f"flow exited before the hard-kill boundary:\n{log_path.read_text()}"
+                    )
+                time.sleep(0.05)
+            assert marker.exists(), "flow did not reach the durable hard-kill boundary"
             os.killpg(process.pid, signal.SIGKILL)
-            process.communicate(timeout=10)
+            process.wait(timeout=10)
+        finally:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait(timeout=10)
 
-    assert process.returncode == -signal.SIGKILL, killed_output
+    assert process.returncode == -signal.SIGKILL, log_path.read_text()
     origin_run_id = origin_file.read_text().strip()
     interrupted_control = _control(tmp_path)
     assert interrupted_control.list_candidates() == []

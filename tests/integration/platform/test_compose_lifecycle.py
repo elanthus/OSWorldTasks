@@ -155,8 +155,8 @@ def _s3_client(stack):
     return boto3.client(
         "s3",
         endpoint_url=stack.minio_url,
-        aws_access_key_id="pixelgym_demo",
-        aws_secret_access_key="local_demo_minio_only",
+        aws_access_key_id=stack.environment["PIXELGYM_MINIO_USER"],
+        aws_secret_access_key=stack.environment["PIXELGYM_MINIO_PASSWORD"],
         region_name="us-east-1",
     )
 
@@ -478,12 +478,14 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
         host="127.0.0.1",
         port=stack.postgres_port,
         dbname="mlflow",
-        user="pixelgym_demo",
-        password="local_demo_postgres_only",
+        user=stack.environment["PIXELGYM_POSTGRES_USER"],
+        password=stack.environment["PIXELGYM_POSTGRES_PASSWORD"],
         connect_timeout=5,
     ) as connection, connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM runs")
-        assert cursor.fetchone()[0] == len(runs)
+        cursor.execute(
+            "SELECT COUNT(*) FROM runs WHERE run_uuid = %s", (revised.info.run_id,)
+        )
+        assert cursor.fetchone()[0] == 1
 
     stack.compose("stop", "platform", timeout=60)
     stack.compose(

@@ -60,6 +60,7 @@ built images in fixture cleanup. It does not touch a long-lived `pixelgym-platfo
 up to ten minutes for a cold image build and lifecycle run:
 
 ```bash
+.venv/bin/pip install -e ".[dev,platform]"
 .venv/bin/python -m playwright install chromium
 PIXELGYM_RUN_COMPOSE_TESTS=1 .venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py
 ```

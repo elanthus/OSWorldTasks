@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -157,7 +158,7 @@ class ComposeStack:
 
 
 @pytest.fixture(scope="session")
-def compose_stack() -> ComposeStack:
+def compose_stack() -> Iterator[ComposeStack]:
     if os.environ.get(OPT_IN_ENV) != "1":
         pytest.skip(f"set {OPT_IN_ENV}=1 to run fresh-stack integration tests")
     repository_root = Path(__file__).parents[3]
