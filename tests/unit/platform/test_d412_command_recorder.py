@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+def _record(repository_root: Path, tmp_path: Path, command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(repository_root / "scripts/record_d412_command.py"),
+            "--output",
+            str(tmp_path / "record.json"),
+            "--cwd",
+            str(tmp_path),
+            "--redact-path",
+            str(repository_root),
+            "--",
+            *command,
+        ],
+        cwd=repository_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def test_recorder_redacts_paths_and_local_demo_secrets(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    completed = _record(
+        repository_root,
+        tmp_path,
+        [
+            sys.executable,
+            "-c",
+            (
+                "import pathlib; "
+                "print(pathlib.Path.cwd()); "
+                "print('local_demo_postgres_only')"
+            ),
+        ],
+    )
+
+    assert completed.returncode == 0
+    record = json.loads((tmp_path / "record.json").read_text())
+    assert record["exit_status"] == 0
+    assert str(tmp_path) not in record["output"]
+    assert "local_demo_postgres_only" not in record["output"]
+    assert "<path-0>" in record["output"]
+    assert "<redacted-local-demo-secret>" in record["output"]
+
+
+def test_recorder_preserves_failure_output_and_exit_status(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    completed = _record(
+        repository_root,
+        tmp_path,
+        [sys.executable, "-c", "import sys; print('raw failure'); raise SystemExit(7)"],
+    )
+
+    assert completed.returncode == 7
+    record = json.loads((tmp_path / "record.json").read_text())
+    assert record["exit_status"] == 7
+    assert record["output"] == "raw failure\n"
