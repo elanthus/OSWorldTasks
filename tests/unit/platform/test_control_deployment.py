@@ -417,6 +417,46 @@ def test_legacy_deployment_migration_rejects_schema_drift(
 
     with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
         control.migrate()
+    columns = {
+        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
+    }
+    assert "previous_deployment_id" in columns
+    active_candidate = control.connection.execute(
+        """SELECT deployments.candidate_id
+        FROM active_pointer JOIN deployments USING(deployment_id)
+        WHERE singleton = 1"""
+    ).fetchone()
+    assert active_candidate["candidate_id"] == candidate.candidate_id
+
+
+def test_legacy_deployment_migration_preserves_unexpected_schema_and_data(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+    )
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN release_channel TEXT NOT NULL DEFAULT 'sentinel-channel'"
+    )
+
+    with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
+        control.migrate()
+
+    columns = {
+        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
+    }
+    assert {"previous_deployment_id", "release_channel"} <= columns
+    row = control.connection.execute(
+        "SELECT release_channel FROM deployments"
+    ).fetchone()
+    assert row["release_channel"] == "sentinel-channel"
+    assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
 def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
