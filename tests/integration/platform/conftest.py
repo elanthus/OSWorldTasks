@@ -16,10 +16,18 @@ from urllib.request import urlopen
 import pytest
 
 OPT_IN_ENV = "PIXELGYM_RUN_COMPOSE_TESTS"
+FIXTURE_ENVIRONMENT = {
+    "PIXELGYM_POSTGRES_USER": "pixelgym_demo",
+    "PIXELGYM_POSTGRES_PASSWORD": "local_demo_postgres_only",
+    "PIXELGYM_MINIO_USER": "pixelgym_demo",
+    "PIXELGYM_MINIO_PASSWORD": "local_demo_minio_only",
+    "PIXELGYM_REVIEWER_ID": "local-reviewer",
+    "PIXELGYM_CSRF_SECRET": "local-demo-csrf-secret-change-before-any-shared-use",
+}
 LOCAL_DEMO_SECRETS = (
-    "local_demo_postgres_only",
-    "local_demo_minio_only",
-    "local-demo-csrf-secret-change-before-any-shared-use",
+    FIXTURE_ENVIRONMENT["PIXELGYM_POSTGRES_PASSWORD"],
+    FIXTURE_ENVIRONMENT["PIXELGYM_MINIO_PASSWORD"],
+    FIXTURE_ENVIRONMENT["PIXELGYM_CSRF_SECRET"],
 )
 
 
@@ -133,6 +141,7 @@ def compose_stack() -> ComposeStack:
         pytest.fail("fresh-stack integration tests require a clean committed worktree")
     ports = [_free_port() for _ in range(4)]
     environment = os.environ.copy()
+    environment.update(FIXTURE_ENVIRONMENT)
     environment.update(
         {
             "PIXELGYM_PLATFORM_PORT": str(ports[0]),

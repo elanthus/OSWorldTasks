@@ -55,9 +55,9 @@ uses temporary local state and real `run`/`resume` commands, but it does not pro
 
 The fresh-stack suite additionally requires a running Docker daemon and Playwright Chromium. It
 creates a unique Compose project, binds dynamically selected loopback ports, uses new project-scoped
-PostgreSQL/MinIO/control volumes, and deletes only that project's containers and volumes in fixture
-cleanup. It does not touch a long-lived `pixelgym-platform` project. Allow up to ten minutes for a
-cold image build and lifecycle run:
+PostgreSQL/MinIO/control volumes, and deletes only that project's containers, volumes, and locally
+built images in fixture cleanup. It does not touch a long-lived `pixelgym-platform` project. Allow
+up to ten minutes for a cold image build and lifecycle run:
 
 ```bash
 .venv/bin/python -m playwright install chromium

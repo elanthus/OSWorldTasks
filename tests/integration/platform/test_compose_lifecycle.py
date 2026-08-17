@@ -305,6 +305,13 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
 
 
 def test_compose_diagnostics_redact_credentials_and_host_paths(compose_stack) -> None:
+    assert compose_stack.environment["PIXELGYM_POSTGRES_PASSWORD"] == (
+        "local_demo_postgres_only"
+    )
+    assert compose_stack.environment["PIXELGYM_MINIO_PASSWORD"] == "local_demo_minio_only"
+    assert compose_stack.environment["PIXELGYM_CSRF_SECRET"] == (
+        "local-demo-csrf-secret-change-before-any-shared-use"
+    )
     raw = (
         f"{compose_stack.repository_root} {Path.home()} "
         "local_demo_postgres_only local_demo_minio_only "
