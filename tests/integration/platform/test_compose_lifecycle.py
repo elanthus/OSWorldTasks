@@ -8,6 +8,7 @@ import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime, timedelta
 from http.cookiejar import CookieJar
 from pathlib import Path
 from threading import Barrier
@@ -17,6 +18,9 @@ from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, Request, bu
 
 import pytest
 
+from pixelgym.platform.contracts import ArtifactRef, GatePolicy, PolicyManifest
+from pixelgym.platform.evaluation import EvaluationRunner, ScriptedReplayProvider
+from pixelgym.platform.immutable_store import ImmutableStoreError, S3ImmutableStore
 from pixelgym.platform.mlflow_tracking import RUN_PARAM_KEYS
 
 playwright_api = pytest.importorskip("playwright.sync_api")
@@ -109,10 +113,17 @@ def _concurrent_form_post(
         body = response.read().decode("utf-8")
     match = re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', body)
     assert match is not None
+    expected_deployment = re.search(r'name="expected_deployment_id" value="([^"]*)"', body)
+    expected_generation = re.search(r'name="expected_generation" value="([0-9]+)"', body)
+    payload = {"csrf_token": match.group(1), **fields}
+    if expected_deployment is not None:
+        payload["expected_deployment_id"] = expected_deployment.group(1)
+    if expected_generation is not None:
+        payload["expected_generation"] = expected_generation.group(1)
     barrier.wait(timeout=10)
     request = Request(
         f"{stack.platform_url}{form_path}",
-        data=urlencode({"csrf_token": match.group(1), **fields}).encode("ascii"),
+        data=urlencode(payload).encode("ascii"),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         method="POST",
     )
@@ -148,6 +159,107 @@ def _s3_client(stack):
         aws_secret_access_key="local_demo_minio_only",
         region_name="us-east-1",
     )
+
+
+def _control_count(stack, table: str) -> int:
+    if table not in {"candidates", "approvals", "deployments"}:
+        raise ValueError("control table is not allowlisted")
+    completed = stack.compose(
+        "exec", "-T", "platform", "python", "-c",
+        "import sqlite3,sys; c=sqlite3.connect('/state/control.db'); print(c.execute(f'SELECT COUNT(*) FROM {sys.argv[1]}').fetchone()[0])",
+        table, timeout=30,
+    )
+    return int(completed.stdout.strip())
+
+
+def _candidate_evidence(stack, candidate_id: str) -> tuple[PolicyManifest, list[ArtifactRef]]:
+    completed = stack.compose(
+        "exec", "-T", "platform", "python", "-c",
+        "import json,sqlite3,sys; c=sqlite3.connect('/state/control.db'); r=c.execute('SELECT policy_json,artifacts_json FROM candidates WHERE candidate_id=?',(sys.argv[1],)).fetchone(); print(json.dumps({'policy':json.loads(r[0]),'artifacts':json.loads(r[1])}))",
+        candidate_id, timeout=30,
+    )
+    payload = json.loads(completed.stdout)
+    return PolicyManifest(**payload["policy"]), [ArtifactRef(**item) for item in payload["artifacts"]]
+
+
+def _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_id: str) -> None:
+    policy, artifacts = _candidate_evidence(stack, candidate_id)
+    store = S3ImmutableStore(
+        bucket="pixelgym-immutable", prefix="platform", client=_s3_client(stack),
+        object_lock=True, retention_days=30,
+    )
+    raw_reference = next(
+        item for item in artifacts if item.logical_key.startswith("raw-responses/")
+    )
+    example_id = json.loads(store.get_verified(raw_reference))["example_id"]
+    gate_policy = GatePolicy(
+        **json.loads((stack.repository_root / "config/promotion-gates.demo-v1.json").read_text())
+    )
+    runner = EvaluationRunner(
+        repository_root=stack.repository_root,
+        store=store,
+        tracking=None,
+        provider=ScriptedReplayProvider(
+            stack.repository_root / "artifacts/grounding-predictions.jsonl",
+            variant="revised", model=policy.model,
+        ),
+        policy=policy,
+        gate_policy=gate_policy,
+        dataset_fingerprint=gate_policy.required_dataset_fingerprint,
+        submission_id="real-minio-tamper-verification-only",
+        metaflow_pathspec="GroundingEvaluationFlow/real-minio-tamper-verification-only",
+    )
+    candidate_count = _control_count(stack, "candidates")
+    s3 = store.client
+    key = f"platform/{raw_reference.logical_key}"
+    created_versions: list[str] = []
+
+    def put_version(data: bytes) -> str:
+        result = s3.put_object(
+            Bucket="pixelgym-immutable", Key=key, Body=data,
+            ContentType=raw_reference.media_type,
+            Metadata={"sha256": hashlib.sha256(data).hexdigest(), "media-type": raw_reference.media_type},
+            ObjectLockMode="GOVERNANCE",
+            ObjectLockRetainUntilDate=datetime.now(UTC) + timedelta(days=1),
+        )
+        created_versions.append(result["VersionId"])
+        return result["VersionId"]
+
+    def row(reference: ArtifactRef) -> list[dict[str, object]]:
+        return [{"example_id": example_id, "reference": reference.to_dict()}]
+
+    try:
+        changed = b"X" * raw_reference.size
+        changed_reference = ArtifactRef(
+            **{**raw_reference.to_dict(), "version_id": put_version(changed)}
+        )
+        with pytest.raises(ImmutableStoreError, match="size or digest verification"):
+            runner.verify_raw_artifacts(row(changed_reference), require_complete=False)
+
+        corrupt = b"{not-valid-json"
+        corrupt_reference = ArtifactRef(
+            **{
+                **raw_reference.to_dict(),
+                "version_id": put_version(corrupt),
+                "sha256": hashlib.sha256(corrupt).hexdigest(),
+                "size": len(corrupt),
+            }
+        )
+        with pytest.raises(json.JSONDecodeError):
+            runner.verify_raw_artifacts(row(corrupt_reference), require_complete=False)
+
+        missing_reference = ArtifactRef(
+            **{**raw_reference.to_dict(), "version_id": "missing-integration-version"}
+        )
+        with pytest.raises(ImmutableStoreError, match="pinned immutable S3 object is missing"):
+            runner.verify_raw_artifacts(row(missing_reference), require_complete=False)
+        assert _control_count(stack, "candidates") == candidate_count
+    finally:
+        for version_id in created_versions:
+            s3.delete_object(
+                Bucket="pixelgym-immutable", Key=key, VersionId=version_id,
+                BypassGovernanceRetention=True,
+            )
 
 
 def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stack) -> None:
@@ -203,13 +315,21 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
             candidate_b = _candidate(
                 page, stack, "day3-replay-revised-v2", "Eligible"
             )
+            page.goto(f"{stack.platform_url}/deployment")
+            expected_deployment_id = page.locator('input[name="expected_deployment_id"]').get_attribute("value")
+            expected_generation = page.locator('input[name="expected_generation"]').get_attribute("value")
+            assert expected_deployment_id and expected_generation
             page.goto(f"{stack.platform_url}/candidates/{candidate_b}")
             csrf = _csrf(page)
             blocked_deploy = page.context.request.post(
                 f"{stack.platform_url}/candidates/{candidate_b}/deploy",
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
                 data=urlencode(
-                    {"csrf_token": csrf, "reason": "approval must come first"}
+                    {
+                        "csrf_token": csrf, "reason": "approval must come first",
+                        "expected_deployment_id": expected_deployment_id,
+                        "expected_generation": expected_generation,
+                    }
                 ),
                 max_redirects=0,
             )
@@ -251,8 +371,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                     for index in range(2)
                 ],
             )
-            assert set(concurrent_deploys) <= {303, 409}
-            assert 303 in concurrent_deploys
+            assert sorted(concurrent_deploys) == [303, 409]
             race_deployed = page.context.request.get(
                 f"{stack.platform_url}/api/v1/policy"
             ).json()
@@ -269,12 +388,11 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                     for index in range(2)
                 ],
             )
-            assert set(concurrent_rollbacks) <= {303, 409}
-            assert 303 in concurrent_rollbacks
+            assert sorted(concurrent_rollbacks) == [303, 409]
             race_active = page.context.request.get(
                 f"{stack.platform_url}/api/v1/policy"
             ).json()
-            assert race_active["exact_policy_version"] in {seed_id, candidate_b}
+            assert race_active["exact_policy_version"] == seed_id
             active_rows = stack.compose(
                 "exec",
                 "-T",
@@ -289,7 +407,6 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
             )
             assert active_rows.stdout.strip() == "1"
 
-            _deploy(page, stack, seed_id, "post-race rollback seed")
             b_policy = _deploy(page, stack, candidate_b, "candidate B")
             assert b_policy["policy_id"] != seed_policy["policy_id"]
             assert b_policy["deployment_id"] != seed_policy["deployment_id"]
@@ -345,6 +462,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
         Bucket="pixelgym-immutable", Key=policy_key, VersionId=head["VersionId"]
     )["Body"].read()
     assert hashlib.sha256(policy_bytes).hexdigest() == head["Metadata"]["sha256"]
+    _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_b)
 
     tracking = mlflow.MlflowClient(tracking_uri=stack.mlflow_url)
     experiment = tracking.get_experiment_by_name("pixelgym-grounding")

@@ -1038,7 +1038,12 @@ def test_missing_immutable_package_renders_as_blocked_deployment(
     detail = client.get(f"/candidates/{candidate.candidate_id}")
     response = client.post(
         f"/candidates/{candidate.candidate_id}/deploy",
-        data={"csrf_token": _csrf(detail.text), "reason": "must fail closed"},
+        data={
+            "csrf_token": _csrf(detail.text),
+            "reason": "must fail closed",
+            "expected_deployment_id": "",
+            "expected_generation": "0",
+        },
         follow_redirects=False,
     )
 

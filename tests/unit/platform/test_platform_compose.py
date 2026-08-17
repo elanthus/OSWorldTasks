@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from pixelgym.platform.source_provenance import load_packaged_source_provenance
+from tests.integration.platform.conftest import ComposeStack
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT_PATH = REPOSITORY_ROOT / "scripts/platform_compose.py"
@@ -91,6 +93,37 @@ def test_no_legacy_provenance_generator_can_drift_from_the_compose_wrapper() -> 
     assert not legacy_generator.exists()
     for documentation in (REPOSITORY_ROOT / "README.md", REPOSITORY_ROOT / "deploy/README.md"):
         assert "prepare_platform_source_provenance.py" not in documentation.read_text()
+
+
+def test_compose_timeout_reports_redacted_scoped_diagnostics(monkeypatch) -> None:
+    stack = ComposeStack(
+        repository_root=REPOSITORY_ROOT,
+        project="pixelgym-it-timeout",
+        environment={},
+        platform_port=10001,
+        mlflow_port=10002,
+        postgres_port=10003,
+        minio_port=10004,
+    )
+
+    def invoke(self, *arguments: str, timeout: float):
+        output = f"{REPOSITORY_ROOT} local_demo_postgres_only command={' '.join(arguments)}"
+        if arguments == ("up",):
+            raise subprocess.TimeoutExpired(arguments, timeout, output=output)
+        return subprocess.CompletedProcess(arguments, 0, stdout=output)
+
+    monkeypatch.setattr(ComposeStack, "_invoke", invoke)
+    with pytest.raises(pytest.fail.Exception) as exc_info:
+        stack.compose("up", timeout=0.25)
+
+    message = str(exc_info.value)
+    assert "Compose command timed out after 0.25s: up" in message
+    assert "command=ps --all" in message
+    assert "command=logs --no-color --tail 200" in message
+    assert str(REPOSITORY_ROOT) not in message
+    assert "local_demo_postgres_only" not in message
+    assert "<repository>" in message
+    assert "<redacted-local-demo-secret>" in message
 
 
 @pytest.mark.parametrize("command", ["up", "start", "restart", "run"])

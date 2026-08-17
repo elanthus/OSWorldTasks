@@ -8,6 +8,7 @@ from typing import TypeVar
 from pixelgym.platform.contracts import CandidateState
 from pixelgym.platform.control_store import (
     CandidateRecord,
+    ConflictError,
     ControlStore,
     DeploymentRecord,
     TransitionError,
@@ -58,16 +59,35 @@ class DeploymentCoordinator:
             raise TransitionError("candidate failed load or deterministic smoke check")
         return prepared
 
-    def deploy(self, candidate_id: str, *, actor: str, reason: str) -> DeploymentRecord:
+    def deploy(
+        self,
+        candidate_id: str,
+        *,
+        actor: str,
+        reason: str,
+        expected_deployment_id: str | None = None,
+        expected_generation: int | None = None,
+    ) -> DeploymentRecord:
         current, generation = self.control.active()
+        if expected_generation is not None and (
+            generation != expected_generation
+            or (current.deployment_id if current else None) != expected_deployment_id
+        ):
+            raise ConflictError("active deployment changed concurrently")
         prepared = self._verify_candidate(candidate_id)
         result = self.control.activate(
             candidate_id,
             actor=actor,
             reason=reason,
             action="deploy",
-            expected_deployment_id=current.deployment_id if current else None,
-            expected_generation=generation,
+            expected_deployment_id=(
+                expected_deployment_id
+                if expected_generation is not None
+                else (current.deployment_id if current else None)
+            ),
+            expected_generation=(
+                expected_generation if expected_generation is not None else generation
+            ),
         )
         self.on_activated(result, prepared)
         return result
@@ -85,10 +105,21 @@ class DeploymentCoordinator:
         self.on_activated(current, prepared)
         return current
 
-    def rollback(self, *, actor: str, reason: str) -> DeploymentRecord:
+    def rollback(
+        self,
+        *,
+        actor: str,
+        reason: str,
+        expected_deployment_id: str | None = None,
+        expected_generation: int | None = None,
+    ) -> DeploymentRecord:
         current, generation = self.control.active()
         if current is None:
             raise TransitionError("there is no active deployment")
+        if expected_generation is not None and (
+            generation != expected_generation or current.deployment_id != expected_deployment_id
+        ):
+            raise ConflictError("active deployment changed concurrently")
         previous = self.control.previous_target(current)
         prepared = self._verify_candidate(previous.candidate_id)
         result = self.control.activate(
@@ -96,8 +127,12 @@ class DeploymentCoordinator:
             actor=actor,
             reason=reason,
             action="rollback",
-            expected_deployment_id=current.deployment_id,
-            expected_generation=generation,
+            expected_deployment_id=(
+                expected_deployment_id if expected_generation is not None else current.deployment_id
+            ),
+            expected_generation=(
+                expected_generation if expected_generation is not None else generation
+            ),
         )
         self.on_activated(result, prepared)
         return result

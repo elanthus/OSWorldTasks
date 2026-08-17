@@ -668,6 +668,38 @@ def test_stale_compare_and_swap_loses_cleanly(tmp_path: Path, passing_evidence) 
         control.activate(candidate.candidate_id, actor="local-reviewer", reason="loser", action="deploy", expected_deployment_id=None, expected_generation=0)
 
 
+def test_coordinator_rejects_stale_rendered_deploy_and_rollback_state(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
+    deployed_first = coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+    _rendered_deployment, rendered_generation = control.active()
+    deployed_second = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+
+    with pytest.raises(ConflictError, match="changed concurrently"):
+        coordinator.deploy(
+            first.candidate_id, actor="local-reviewer", reason="stale deploy form",
+            expected_deployment_id=deployed_first.deployment_id,
+            expected_generation=rendered_generation,
+        )
+    assert control.active()[0] == deployed_second
+
+    rolled_back = coordinator.rollback(actor="local-reviewer", reason="first rollback")
+    with pytest.raises(ConflictError, match="changed concurrently"):
+        coordinator.rollback(
+            actor="local-reviewer", reason="stale rollback form",
+            expected_deployment_id=deployed_second.deployment_id,
+            expected_generation=deployed_second.generation,
+        )
+    assert control.active()[0] == rolled_back
+
+
 def test_identical_audit_events_with_fixed_clock_have_distinct_ids(tmp_path: Path) -> None:
     control = ControlStore(
         tmp_path / "control.db",
