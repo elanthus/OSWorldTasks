@@ -500,6 +500,48 @@ def test_migration_rejects_same_columns_with_missing_constraints(tmp_path: Path)
     assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
+def test_migration_rejects_hidden_generated_column_without_losing_history(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    deployed = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    control.connection.execute(
+        "ALTER TABLE deployments ADD COLUMN poison INTEGER "
+        "GENERATED ALWAYS AS (generation + 1) VIRTUAL"
+    )
+
+    with pytest.raises(RuntimeError, match=r"stale schema .*poison"):
+        control.require_migrated()
+    with pytest.raises(RuntimeError, match=r"stale schema .*poison"):
+        control.migrate()
+
+    row = control.connection.execute(
+        "SELECT deployment_id, poison FROM deployments"
+    ).fetchone()
+    assert (row["deployment_id"], row["poison"]) == (deployed.deployment_id, 2)
+
+
+def test_new_serving_connection_enforces_foreign_keys(tmp_path: Path) -> None:
+    database = tmp_path / "control.sqlite"
+    migrator = ControlStore(database, reviewer_identity="local-reviewer")
+    migrator.migrate()
+    migrator.connection.close()
+
+    serving = ControlStore(database, reviewer_identity="local-reviewer")
+    serving.require_migrated()
+
+    assert serving.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY"):
+        serving.connection.execute(
+            "INSERT INTO deployments VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("bad", "missing", "policy", "deploy", "actor", "reason", "now", 1),
+        )
+
+
 def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
     tmp_path: Path, passing_evidence
 ) -> None:

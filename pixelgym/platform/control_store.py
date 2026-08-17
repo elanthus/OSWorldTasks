@@ -62,7 +62,7 @@ class DeploymentRecord:
 
 @dataclass(frozen=True)
 class _DeploymentSchema:
-    columns: frozenset[tuple[str, str, int, str | None, int]]
+    columns: frozenset[tuple[str, str, int, str | None, int, int, int]]
     foreign_keys: frozenset[tuple[object, ...]]
     indexes: frozenset[tuple[int, str, int, tuple[str, ...]]]
     checks: frozenset[str]
@@ -141,7 +141,7 @@ BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
 
 
 def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
-    return {str(row[1]) for row in connection.execute("PRAGMA table_info(deployments)")}
+    return {str(row[1]) for row in connection.execute("PRAGMA table_xinfo(deployments)")}
 
 
 def _deployment_checks(connection: sqlite3.Connection) -> frozenset[str]:
@@ -195,8 +195,10 @@ def _deployment_schema(connection: sqlite3.Connection) -> _DeploymentSchema:
             int(row[3]),
             None if row[4] is None else str(row[4]),
             int(row[5]),
+            int(row[0]),
+            int(row[6]),
         )
-        for row in connection.execute("PRAGMA table_info(deployments)")
+        for row in connection.execute("PRAGMA table_xinfo(deployments)")
     )
     foreign_keys = frozenset(
         tuple(row[1:]) for row in connection.execute("PRAGMA foreign_key_list(deployments)")
@@ -288,6 +290,7 @@ class ControlStore:
             uri=target.startswith("file:"),
         )
         self.connection.row_factory = sqlite3.Row
+        self.connection.execute("PRAGMA foreign_keys = ON")
 
     def _migrate_legacy_deployments(self, expected_schema: _DeploymentSchema) -> None:
         """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
@@ -408,6 +411,11 @@ class ControlStore:
             ).fetchone()
             deployment_schema = _deployment_schema(self.connection)
             deployment_columns = {column[0] for column in deployment_schema.columns}
+            foreign_keys_enabled = int(
+                self.connection.execute("PRAGMA foreign_keys").fetchone()[0]
+            )
+        if not foreign_keys_enabled:
+            raise RuntimeError("control database foreign-key enforcement is disabled")
         if pointer is None:
             raise RuntimeError(
                 "control database migration is incomplete; active_pointer singleton row "
