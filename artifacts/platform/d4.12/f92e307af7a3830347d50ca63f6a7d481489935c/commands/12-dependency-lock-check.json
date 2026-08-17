@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "pixelgym/platform/dependency_lock.py",
+    "--repository-root",
+    "."
+  ],
+  "command": "<path-2>/dev-venv/bin/python pixelgym/platform/dependency_lock.py --repository-root .",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.086727,
+  "ended_at_utc": "2026-08-17T20:13:53.772186+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T20:13:53.684679+00:00"
+}

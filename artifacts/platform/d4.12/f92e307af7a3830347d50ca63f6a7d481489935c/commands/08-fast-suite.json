@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/",
+    "-q"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -m pytest tests/ -q",
+  "cwd": "<path-0>",
+  "duration_seconds": 54.288559,
+  "ended_at_utc": "2026-08-17T20:12:12.200230+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "..ss.................................................................... [ 12%]\n........................................................................ [ 24%]\n........................................................................ [ 36%]\n........................................................................ [ 48%]\n........................................................................ [ 60%]\n........................................................................ [ 72%]\n........................................................................ [ 84%]\n........................................................................ [ 96%]\n...................                                                      [100%]\n=============================== warnings summary ===============================\n../dev-venv/lib/python3.12/site-packages/metaflow/graph.py:61\n../dev-venv/lib/python3.12/site-packages/metaflow/graph.py:61\n  <path-2>/dev-venv/lib/python3.12/site-packages/metaflow/graph.py:61: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead\n    if hasattr(ast, \"Str\") and isinstance(node, ast.Str):\n\n../dev-venv/lib/python3.12/site-packages/metaflow/graph.py:62\n  <path-2>/dev-venv/lib/python3.12/site-packages/metaflow/graph.py:62: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead\n    return node.s\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n593 passed, 5 skipped, 3 warnings in 53.84s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T20:11:17.910658+00:00"
+}

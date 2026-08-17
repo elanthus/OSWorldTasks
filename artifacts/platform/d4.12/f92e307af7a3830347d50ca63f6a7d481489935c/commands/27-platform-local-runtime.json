@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-m",
+    "platform_integration",
+    "tests/integration/platform/test_metaflow_runtime.py",
+    "tests/integration/platform/test_mlflow_tracking.py"
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 98.290659,
+  "ended_at_utc": "2026-08-17T20:18:39.601395+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": ".........                                                                [100%]\n9 passed in 97.60s (0:01:37)\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T20:17:01.309342+00:00"
+}

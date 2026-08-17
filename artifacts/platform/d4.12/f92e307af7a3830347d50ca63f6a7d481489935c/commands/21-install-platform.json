@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "-e",
+    ".[dev,platform]"
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pip install -e '.[dev,platform]'",
+  "cwd": "<path-0>",
+  "duration_seconds": 8.105314,
+  "ended_at_utc": "2026-08-17T20:14:33.441305+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "WARNING: The directory '<home>/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.\nObtaining file://<path-0>\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'error'\n  error: subprocess-exited-with-error\n  \n  \u00d7 installing build dependencies did not run successfully.\n  \u2502 exit code: 1\n  \u2570\u2500> [8 lines of output]\n      WARNING: The directory '<home>/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.\n      WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError(\"HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno 8] nodename nor servname provided, or not known)\")': /simple/setuptools/\n      ERROR: Could not find a version that satisfies the requirement setuptools>=68 (from versions: none)\n      ERROR: No matching distribution found for setuptools>=68\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file://<path-0>' when installing build dependencies\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-17T20:14:25.335040+00:00"
+}

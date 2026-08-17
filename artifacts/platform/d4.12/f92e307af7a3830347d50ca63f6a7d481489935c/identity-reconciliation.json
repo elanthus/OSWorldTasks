@@ -1,0 +1,42 @@
+{
+  "approval_candidate_ids": [
+    "candidate-ab125729e03ef236acbf1919",
+    "candidate-cb167e4e9cca9cd71885b809"
+  ],
+  "approval_policies_are_stored_passing_policies": true,
+  "approval_policy_ids": [
+    "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
+    "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25"
+  ],
+  "deployment_actions": [
+    "deploy",
+    "deploy",
+    "rollback"
+  ],
+  "deployment_candidates_are_approved": true,
+  "deployment_generations": [
+    1,
+    2,
+    3
+  ],
+  "manifest_artifact_union_matches_immutable_verification": true,
+  "rollback_restores_generation_1_policy": true,
+  "run_manifest_mlflow_metaflow_policy_identity_matches": true,
+  "schema_version": "pixelgym-d412-identity-reconciliation-v1",
+  "screenshot_hashes_and_sizes_match": true,
+  "screenshot_identity_references_match": true,
+  "stored_counts": {
+    "api_exchanges": 5,
+    "approval_events": 2,
+    "audit_events": 11,
+    "deployment_events": 3,
+    "gate_reports": 3,
+    "immutable_failures": 0,
+    "immutable_verified": 310,
+    "manifest_artifact_union": 310,
+    "mlflow_lineage_records": 3,
+    "run_manifests": 3,
+    "screenshots": 10
+  },
+  "stored_failed_policies_have_no_approval": true
+}
