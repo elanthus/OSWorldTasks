@@ -98,7 +98,7 @@ _ACTION_FIELDS = ("action_type", "x", "y", "key")
 _TIMELINE_FIELDS = ("step", "action_type", "reward", "terminated", "truncated")
 
 FIXTURE_NOTE = (
-    "Golden trajectory (D1.7): a frozen list of public actions that solves the "
+    "Frozen golden trajectory: a list of public actions that solves the "
     "seed-7 vendor-onboarding task, and the reward timeline it must produce. "
     "Replayed verbatim by tests/unit/test_golden_trajectory.py, which never "
     "consults the task generator or any privileged backend state. Coordinates "
