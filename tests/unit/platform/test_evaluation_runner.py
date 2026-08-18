@@ -118,6 +118,17 @@ class InvalidProvider:
         return PlatformProviderResponse("not-json", 25.0, {}, 0.0)
 
 
+class InvalidUsageProvider(InvalidProvider):
+    def invoke(self, **request):
+        self.call_ids.append(request["request_id"])
+        return PlatformProviderResponse(
+            "{}",
+            25.0,
+            {"input_tokens": "unknown"},  # type: ignore[dict-item]
+            0.0,
+        )
+
+
 def test_invalid_answers_are_final_and_raw_is_stored_before_parser(
     repository_root: Path, tmp_path: Path, gate_policy, policy_factory
 ) -> None:
@@ -204,6 +215,27 @@ def test_schema_invalid_gate_configuration_is_rejected_before_provider_execution
         )
 
     assert provider.call_ids == []
+
+
+def test_schema_invalid_usage_is_rejected_before_immutable_write(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    provider = InvalidUsageProvider()
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+        provider=provider,
+    )
+    shard = runner.build_shards(shard_size=1, max_calls=100)[0]
+
+    with pytest.raises(ContractValidationError, match="raw_response"):
+        runner.evaluate_shard(shard, max_calls=100)
+
+    assert len(provider.call_ids) == 1
+    assert not (tmp_path / "immutable/objects").exists()
 
 
 def test_duplicate_overlay_example_ids_are_rejected(

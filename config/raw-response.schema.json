@@ -14,7 +14,7 @@
     "started_at_utc": {"type": ["string", "null"], "format": "date-time"},
     "started_at_missing_reason": {"type": ["string", "null"]},
     "latency_ms": {"type": ["number", "null"], "minimum": 0},
-    "usage": {"type": ["object", "null"]},
+    "usage": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/usage"}]},
     "usage_missing_reason": {"type": ["string", "null"]},
     "price_catalog_version": {"type": "string", "minLength": 1},
     "cost_usd": {"type": ["number", "null"], "minimum": 0},
@@ -40,7 +40,7 @@
       }
     }]},
     {"oneOf": [
-      {"properties": {"usage": {"type": "object"}, "usage_missing_reason": {"type": "null"}}},
+      {"properties": {"usage": {"$ref": "#/$defs/usage"}, "usage_missing_reason": {"type": "null"}}},
       {"properties": {"usage": {"type": "null"}, "usage_missing_reason": {"type": "string", "minLength": 1}}}
     ]},
     {"oneOf": [
@@ -51,5 +51,14 @@
       {"properties": {"request_status": {"const": "responded"}, "raw_response": {"type": "string"}, "request_failure": {"type": "null"}}},
       {"properties": {"request_status": {"const": "request_failure"}, "raw_response": {"type": "null"}, "request_failure": {"type": "string", "minLength": 1}}}
     ]}
-  ]
+  ],
+  "$defs": {
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9_]{0,63}$": {"type": "number", "minimum": 0}
+      }
+    }
+  }
 }
