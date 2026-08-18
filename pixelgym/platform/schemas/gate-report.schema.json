@@ -30,7 +30,8 @@
           "provider_latency_p95_ms": {"properties": {"passed": {"const": true}}},
           "completeness": {"properties": {"passed": {"const": true}}},
           "compatibility_passed": {"const": true},
-          "code_revision_passed": {"const": true}
+          "code_revision_passed": {"const": true},
+          "confidence_bound": {"oneOf": [{"type": "null"}, {"type": "object", "properties": {"passed": {"const": true}}}]}
         }
       }
     }

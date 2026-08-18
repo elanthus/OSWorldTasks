@@ -248,6 +248,7 @@ def test_gate_report_rejects_empty_provenance_identifiers(
         ("completeness", "passed"),
         ("compatibility_passed",),
         ("code_revision_passed",),
+        ("confidence_bound", "passed"),
     ],
 )
 def test_gate_report_rejects_passing_overall_with_failed_component(
@@ -258,12 +259,22 @@ def test_gate_report_rejects_passing_overall_with_failed_component(
     value = copy.deepcopy(
         _representatives(repository_root, passing_evidence)["gate_report"]
     )
+    if path[0] == "confidence_bound":
+        value["confidence_bound"] = {
+            "observed": 0.75,
+            "threshold": 0.8,
+            "passed": False,
+            "method": "wilson-score-one-sided-v1",
+            "confidence_level": 0.95,
+            "success_count": 75,
+            "sample_count": 100,
+        }
     target = value
     for component in path[:-1]:
         target = target[component]
     target[path[-1]] = False
 
-    with pytest.raises(ContractValidationError, match="True was expected"):
+    with pytest.raises(ContractValidationError, match="gate_report"):
         PlatformSchemas(repository_root).validate("gate_report", value)
 
     value["overall_passed"] = False
