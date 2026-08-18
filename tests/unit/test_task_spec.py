@@ -1,4 +1,4 @@
-"""Typed contract tests for TaskSpec, Submission, and EvaluationResult (D1.4)."""
+"""Typed contract tests for TaskSpec, Submission, and EvaluationResult."""
 
 import dataclasses
 

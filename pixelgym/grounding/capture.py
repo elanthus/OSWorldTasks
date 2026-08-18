@@ -48,7 +48,7 @@ _CAPTURE_SOURCE_PATHS = (
 )
 _CAPTURE_STATIC_ROOT = Path("pixelgym/tasks/vendor_form/app/static")
 
-# Backward-compatible public alias for callers that used the original capture helper.
+# Public capture-server alias; both names intentionally use the shared browser lifecycle helper.
 local_capture_server = local_vendor_form_server
 
 _CANDIDATE_SCRIPT = """

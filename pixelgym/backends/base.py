@@ -1,10 +1,10 @@
-"""Backend protocol that `PixelGuiEnv` talks to (D1.5).
+"""Backend protocol that `PixelGuiEnv` talks to.
 
 `PixelGuiEnv` is written only against this `Protocol` -- it never imports a
 concrete backend, OSWorld included (see AGENTS.md invariant 12: no OSWorld
-import in the core module). `pixelgym.backends.fake.FakeBackend` (D1.6) and a
-future OSWorld-backed implementation both satisfy this protocol without the
-environment knowing which one it is holding.
+import in the core module). `pixelgym.backends.fake.FakeBackend` and
+`pixelgym.backends.osworld.OSWorldBackend` both satisfy this protocol without
+the environment knowing which one it is holding.
 
 A backend owns exactly the mechanics of *one running task application*:
 installing a task for a seed, driving click/key input into it, capturing its
@@ -54,10 +54,10 @@ class Backend(Protocol):
         """Install a fresh task for `seed`, discarding any prior task and
         submission history, and return the generated task record.
 
-        The record must be shaped like `pixelgym.tasks.vendor_form.generator
-        .generate_task`'s output -- at minimum `task_id`, `seed`, and
-        `fields` -- so the caller can build a `TaskSpec` via
-        `TaskSpec.from_generated`. Calling `reset` with the same seed twice
+        The record must be shaped like
+        `pixelgym.tasks.vendor_form.generator.generate_task`'s output -- at
+        minimum `task_id`, `seed`, and `fields` -- so the caller can build a
+        `TaskSpec` via `TaskSpec.from_generated`. Calling `reset` with the same seed twice
         must produce byte-identical records (AGENTS.md invariant 9) and must
         leave no submission from the prior task reachable via
         `read_submissions` (invariant 11).

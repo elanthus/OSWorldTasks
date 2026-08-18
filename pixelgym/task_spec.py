@@ -1,4 +1,4 @@
-"""Typed task, submission, and evaluation-result contracts (D1.4).
+"""Typed task, submission, and evaluation-result contracts.
 
 These are the shapes that cross the privileged boundary between the
 host-side evaluator and everything else (the environment, the fake and

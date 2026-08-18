@@ -1,5 +1,5 @@
 {
-  "note": "Golden trajectory (D1.7): a frozen list of public actions that solves the seed-7 vendor-onboarding task, and the reward timeline it must produce. Replayed verbatim by tests/unit/test_golden_trajectory.py, which never consults the task generator or any privileged backend state. Coordinates are absolute pixels for the screen size below, and 'key' indexes KEY_ALLOWLIST at the version below -- both must match or the replay is meaningless. Verify with 'python scripts/golden_trajectory.py check'; that command also prints the regeneration recipe when this file has drifted.",
+  "note": "Frozen golden trajectory: a list of public actions that solves the seed-7 vendor-onboarding task, and the reward timeline it must produce. Replayed verbatim by tests/unit/test_golden_trajectory.py, which never consults the task generator or any privileged backend state. Coordinates are absolute pixels for the screen size below, and 'key' indexes KEY_ALLOWLIST at the version below -- both must match or the replay is meaningless. Verify with 'python scripts/golden_trajectory.py check'; that command also prints the regeneration recipe when this file has drifted.",
   "schema_version": 1,
   "seed": 7,
   "task_id": "vf-6bed55ed612d3c5a",

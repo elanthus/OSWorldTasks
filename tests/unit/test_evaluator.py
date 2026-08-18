@@ -1,4 +1,4 @@
-"""Threat-model tests for the privileged evaluator boundary (D1.4).
+"""Threat-model tests for the privileged evaluator boundary.
 
 The evaluator must never be able to observe screenshot pixels, a UI success
 banner, or an agent's self-declared "done" -- its only inputs are the
@@ -184,7 +184,7 @@ def test_non_final_submission_is_not_treated_as_agent_declared_completion():
 
 
 def test_duplicate_submission_of_correct_values_still_evaluates_to_success():
-    """Reward firing only once is the environment's job (D1.5); the
+    """Reward firing only once is the environment's job; the
     evaluator itself must stay a pure function of its inputs."""
     task = _task()
     submissions = [_submission(submitted_at_step=1), _submission(submitted_at_step=2)]

@@ -1,4 +1,4 @@
-"""Raw Day 3 release observations with no automated gate verdict."""
+"""Raw grounding-release observations with no automated gate verdict."""
 
 from __future__ import annotations
 
@@ -230,7 +230,7 @@ def _demo_observations(root: Path) -> dict[str, Any] | None:
 
 
 def collect_release_observations(repository_root: Path) -> dict[str, Any]:
-    """Collect raw evidence only; the project owner decides the D3.11 verdict."""
+    """Collect raw evidence only; the project owner decides the release verdict."""
     dataset = _dataset_observations(repository_root)
     return {
         "schema_version": RELEASE_OBSERVATIONS_SCHEMA_VERSION,

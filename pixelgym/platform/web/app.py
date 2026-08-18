@@ -1,4 +1,4 @@
-"""Four-view local control plane with allowlisted submissions and CSRF protection."""
+"""Server-rendered local control plane with allowlisted submissions and CSRF protection."""
 
 from __future__ import annotations
 
@@ -115,8 +115,8 @@ def _artifact(candidate: Any, suffix: str) -> Any | None:
 def _candidate_badges(candidate: Any) -> str:
     report = candidate.gate_report
     summary = candidate.summary
-    # Older rows do not have a summary.  The scripted provider identity remains an
-    # attributable policy field; do not call an unrecorded provider "demo".
+    # A candidate imported without a run summary falls back to its recorded provider;
+    # never infer that an unattributed provider is the scripted demo.
     synthetic = (
         summary.synthetic_provider
         if summary is not None

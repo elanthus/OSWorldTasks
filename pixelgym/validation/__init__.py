@@ -1,1 +1,1 @@
-"""Day 2 validation runners and evidence utilities."""
+"""Environment and OSWorld validation runners and evidence utilities."""

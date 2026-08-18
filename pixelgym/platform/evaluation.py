@@ -1,4 +1,4 @@
-"""Idempotent platform evaluation wrapped around the frozen Day 3 parser and scorer."""
+"""Idempotent platform evaluation wrapped around the frozen parser and scorer."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ class PlatformProvider(Protocol):
 
 
 class ScriptedReplayProvider:
-    """No-cost provider replaying frozen Day 3 response text with synthetic timing."""
+    """No-cost provider replaying frozen grounding responses with synthetic timing."""
 
     name = "scripted-demo"
     synthetic = True
@@ -123,7 +123,7 @@ class ScriptedReplayProvider:
 
 
 def percentile_r7(values: list[float], quantile: float) -> float:
-    """Hyndman-Fan type 7 linear percentile, matching the frozen Day 3 method."""
+    """Hyndman-Fan type 7 linear percentile used by the frozen grounding analysis."""
     if not values or not 0 <= quantile <= 1:
         raise ValueError("percentile requires values and a quantile in [0, 1]")
     ordered = sorted(values)
@@ -781,9 +781,9 @@ class EvaluationRunner:
     def _run_once(self, *, max_calls: int) -> tuple[RunSummary, Any, list[ArtifactRef]]:
         run_id = self.create_or_recover_run(max_calls=max_calls)
         evaluation_started = time.perf_counter()
-        # The compatibility runner keeps a one-example parse boundary so its interruption tests
-        # remain maximally strict. The Metaflow graph uses larger deterministic fetch shards and
-        # joins them before the explicit verification and offline parse steps.
+        # The synchronous runner persists and parses one example at a time so an interruption
+        # leaves the smallest possible unparsed boundary. The Metaflow graph uses larger
+        # deterministic fetch shards, then joins them before verification and offline parsing.
         shards = self.build_shards(shard_size=1, max_calls=max_calls)
         raw_parts: list[list[dict[str, Any]]] = []
         records: list[dict[str, Any]] = []

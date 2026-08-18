@@ -369,8 +369,8 @@ class ControlStore:
                        created_at_utc, generation
                 FROM deployments"""
             )
-            # Preserve existing IDs verbatim: legacy rows are not reproducible from the
-            # current deployment-ID derivation formula.
+            # Preserve the imported IDs verbatim: records from the predecessor-link
+            # schema cannot be reproduced by the event-ledger ID formula.
             self.connection.execute("DROP TABLE deployments")
             self.connection.execute(
                 "ALTER TABLE deployments_without_previous RENAME TO deployments"

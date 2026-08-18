@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run and store the Day 2 vendor-form browser-boundary evidence."""
+"""Run and store vendor-form browser-boundary evidence."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture raw D3.11 clean-install command evidence without issuing a verdict."""
+"""Capture raw clean-install command evidence without issuing a verdict."""
 
 from __future__ import annotations
 

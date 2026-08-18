@@ -223,7 +223,7 @@ class PlatformSchemas:
 
 
 def load_policy_manifest(schemas: PlatformSchemas, value: object) -> PolicyManifest:
-    """Decode current or formerly schema-valid v1 policy evidence without changing identity."""
+    """Decode current or provenance-free v1 policy evidence without changing its ID."""
     try:
         schemas.validate("policy_package", value)
         current = value

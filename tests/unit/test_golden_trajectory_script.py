@@ -1,4 +1,4 @@
-"""`scripts/golden_trajectory.py` as a maintenance workflow (D1.7).
+"""Tests for `scripts/golden_trajectory.py` as a maintenance workflow.
 
 `test_golden_trajectory.py` proves the *fixture* is correct. This file proves
 the tooling around it behaves:
@@ -66,8 +66,7 @@ def _run_cli(*argv: str) -> subprocess.CompletedProcess[str]:
 
 
 def test_check_passes_against_the_committed_fixture(script):
-    """The Day 1 gate command. If this fails, the committed fixture and the
-    current code disagree and the printed diff says how."""
+    """The fixture check reports how committed evidence differs from current code."""
     assert script.main(["check"]) == 0
 
 

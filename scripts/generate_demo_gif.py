@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the review-only real-episode GIF from stored Day 2 evidence."""
+"""Generate the review-only real-episode GIF from stored OSWorld evidence."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Render Markdown from stored Day 2 JSON evidence without rerunning checks."""
+"""Render Markdown from stored validation JSON without rerunning checks."""
 
 from __future__ import annotations
 

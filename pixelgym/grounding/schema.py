@@ -1,4 +1,4 @@
-"""Frozen Day 3 grounding schema and validation helpers.
+"""Frozen grounding-dataset schema and validation helpers.
 
 This module is intentionally independent of both environment backends. Browser
 instrumentation imports it while constructing the dataset; the evaluation adapter

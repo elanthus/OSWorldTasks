@@ -1,16 +1,15 @@
 """In-process fake backend (no VM, no browser, no network, no wall-clock).
 
-Implements the backend contract D1.6 asks for
-(`plans/sprint-1-environment-core.md`): `reset` installs a freshly seeded task
-via the real generator (`pixelgym.tasks.vendor_form.generator`, so determinism
-is genuine rather than stipulated), `screenshot` returns a deterministic RGB
-frame, `click`/`key` drive an actual model of the vendor form, and
-`read_submissions` exposes the privileged submission state the evaluator
-reads.
+Implements the `Backend` protocol entirely in process: `reset` installs a
+freshly seeded task via the production generator
+(`pixelgym.tasks.vendor_form.generator`, so determinism is genuine rather than
+stipulated), `screenshot` returns a deterministic RGB frame, `click`/`key`
+drive an actual model of the vendor form, and `read_submissions` exposes the
+privileged submission state the evaluator reads.
 
 The point of driving a real form model, rather than accepting and discarding
 input events, is that reward has to be *reachable through the action space*:
-the golden trajectory (D1.7) is required to submit a correct answer using only
+the frozen golden trajectory submits a correct answer using only
 `CLICK` and `KEY`, and every unit test asserting "reward fires exactly once, on
 a valid submission" is worth little if the only way to produce a submission is
 a privileged test hook. Widget geometry and interaction semantics live in
@@ -28,7 +27,7 @@ Fidelity to the real app, where it matters:
 
 What this backend still does not attempt: real browser layout, font
 rasterization identical to a browser's, or the timing behavior of a live VM.
-Those belong to the OSWorld backend (Day 2) and are measured there.
+Those properties are measured separately on the OSWorld backend.
 
 Two hooks exist for tests only and are not part of the `Backend` protocol:
 `install_form_values` (put the form into a precise state without typing) and

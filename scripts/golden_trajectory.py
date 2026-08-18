@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate, verify, and report a golden trajectory (D1.7).
+"""Generate, verify, and report the frozen golden trajectory.
 
 A golden trajectory is a frozen list of public `NOOP`/`CLICK`/`KEY` actions
 that solves one seeded vendor-onboarding task, plus the reward timeline it is
@@ -98,7 +98,7 @@ _ACTION_FIELDS = ("action_type", "x", "y", "key")
 _TIMELINE_FIELDS = ("step", "action_type", "reward", "terminated", "truncated")
 
 FIXTURE_NOTE = (
-    "Golden trajectory (D1.7): a frozen list of public actions that solves the "
+    "Frozen golden trajectory: a list of public actions that solves the "
     "seed-7 vendor-onboarding task, and the reward timeline it must produce. "
     "Replayed verbatim by tests/unit/test_golden_trajectory.py, which never "
     "consults the task generator or any privileged backend state. Coordinates "
@@ -274,8 +274,7 @@ def replay(fixture: dict[str, Any], *, collect_evidence: bool = False) -> dict[s
 
 
 def timeline_of(steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """The `(step, action_type, reward, terminated, truncated)` record D1.7
-    asks for, without the replay-only observation hashes and diagnostics."""
+    """Return the public reward-timing record without replay-only diagnostics."""
     return [{field: step[field] for field in _TIMELINE_FIELDS} for step in steps]
 
 
@@ -497,8 +496,7 @@ def _structural_problems(fixture: dict[str, Any]) -> list[str]:
 
 
 def _timeline_shape_problems(timeline: list[dict[str, Any]]) -> list[str]:
-    """The D1.7 acceptance shape, asserted against the timeline independently
-    of the replay.
+    """Check the required reward shape independently of replay.
 
     This is what stops the fixture from becoming a snapshot of whatever the
     code happens to do: `verify_fixture` compares the replay to the recorded
@@ -987,8 +985,8 @@ def _fail(message: str) -> int:
 
 def command_check(_args: argparse.Namespace) -> int:
     """Verify the committed fixture. Fixed to seed 7 on purpose: this is the
-    D1.7 gate command, and it is asserting something about one specific
-    committed artifact, not about whatever seed that file happens to name."""
+    canonical fixture check, and it asserts something about one specific
+    committed artifact rather than whatever seed that file happens to name."""
     try:
         fixture = _load(COMMITTED_FIXTURE)
     except FixtureLoadError as error:

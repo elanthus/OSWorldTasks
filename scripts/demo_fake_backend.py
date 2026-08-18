@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run PixelGuiEnv against the fake backend and print the reward trace (D1.6).
+"""Run PixelGuiEnv against the fake backend and print an incomplete-form reward trace.
 
 The scripted interaction fills part of the vendor form and then presses Submit
 with the form still incomplete. Every reward stays `0.0` and the episode does
@@ -7,7 +7,7 @@ not terminate -- which is the point worth demonstrating: pressing Submit is not
 what pays out. Reward comes only from the privileged host-side evaluator
 agreeing that the submitted values exactly match the task.
 
-The successful, reward-`1.0` counterpart is the golden trajectory (D1.7).
+The successful, reward-`1.0` counterpart is the frozen golden trajectory.
 
 Usage:
     python scripts/demo_fake_backend.py [--seed 7] [--screenshot PATH]

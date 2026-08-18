@@ -1,8 +1,9 @@
-"""Run Day 2 validators and store structured evidence.
+"""Run environment and OSWorld validators and store structured evidence.
 
-This is not the human D2.11 acceptance gate.  It runs named automated checks,
-stores their raw records, and assembles ``artifacts/validation-report.json``.
-The human still reads the gate command output and declares the Day 2 verdict.
+This command does not declare the human-owned acceptance verdict. It runs named
+automated checks, stores their raw records, and assembles
+``artifacts/validation-report.json``. The project owner reads the gate command
+output and declares the verdict separately.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Action types (NOOP, CLICK, KEY) and the versioned key allowlist (D1.5).
+"""Action types (NOOP, CLICK, KEY) and the versioned key allowlist.
 
 The action space is a *fixed* ``spaces.Dict`` -- every action carries all
 four fields (``action_type``, ``x``, ``y``, ``key``) regardless of which

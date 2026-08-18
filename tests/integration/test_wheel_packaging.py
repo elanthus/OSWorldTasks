@@ -1,8 +1,8 @@
-"""Installed-wheel smoke test (D1.3 review finding #3).
+"""Installed-wheel smoke test for packaged application assets.
 
-Builds the pixelgym wheel and installs it into an isolated directory with
-``pip install --no-deps`` (no venv creation, no dependency resolution, so no
-network is touched beyond the local wheel build). A subprocess then imports
+Builds the pixelgym wheel without build isolation and installs it into an
+isolated directory with ``pip install --no-deps``. No virtual environment,
+dependency resolution, or network access is needed. A subprocess then imports
 the package and serves ``/`` from a working directory outside the source
 checkout, proving the static HTML/CSS/JS and the bundled font are genuinely
 packaged rather than merely reachable via the repo's cwd.

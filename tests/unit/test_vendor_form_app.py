@@ -1,4 +1,4 @@
-"""Tests for the vendor-onboarding FastAPI service (D1.3).
+"""Tests for the vendor-onboarding FastAPI service.
 
 Uses FastAPI's in-process TestClient — no sockets, no network, no wall clock.
 """
@@ -160,7 +160,7 @@ def test_submit_normalizes_surrounding_whitespace():
 
 def test_stale_submission_for_a_previous_task_is_rejected_not_relabeled():
     """load seed 1, reset seed 2, then submit the seed-1 view: must be rejected, never
-    silently stamped with the now-active seed-2 task_id (D1.3 review finding #1)."""
+    silently stamped with the active seed-2 task_id."""
     client = _client()
     client.post("/api/reset", json={"seed": 1})
     stale_view = client.get("/api/task").json()
