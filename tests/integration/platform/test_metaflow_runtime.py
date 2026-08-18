@@ -241,9 +241,22 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
     candidate_gate["run_id"] = "<run-id>"
     artifact_values = [artifact.to_dict() for artifact in candidate.artifacts]
     for artifact in artifact_values:
-        if artifact["logical_key"].endswith("/gate-report.json"):
-            artifact["sha256"] = "<run-bound-gate-sha256>"
-            artifact["version_id"] = "<run-bound-gate-sha256>"
+        run_bound_suffix = next(
+            (
+                suffix
+                for suffix in (
+                    "gate-report.json",
+                    "summary.json",
+                    "run-manifest.json",
+                )
+                if artifact["logical_key"].endswith(f"/{suffix}")
+            ),
+            None,
+        )
+        if run_bound_suffix is not None:
+            placeholder = f"<run-bound-{run_bound_suffix}-sha256>"
+            artifact["sha256"] = placeholder
+            artifact["version_id"] = placeholder
     canonical_candidate = canonical_json_bytes(
         {
             "candidate_id": candidate.candidate_id,
