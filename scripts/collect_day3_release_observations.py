@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print raw D3.11 evidence without declaring a release verdict."""
+"""Print raw grounding-release evidence without declaring a verdict."""
 
 from __future__ import annotations
 

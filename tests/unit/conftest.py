@@ -6,8 +6,7 @@ it up as pytest fixtures and loads the committed fixture file.
 
 **The solver is explicitly not the golden trajectory.** It reads the expected
 values off the backend at runtime, which the checked-in golden trajectory is
-forbidden to do (D1.7: "confirm the trajectory does not use privileged expected
-answers directly at runtime"). The golden trajectory is a frozen list of literal
+forbidden to do. The golden trajectory is a frozen list of literal
 actions plus its recorded reward timeline in
 `fixtures/golden_trajectory_seed7.json`, replayed by `test_golden_trajectory.py`,
 which is the authority on reward timing.

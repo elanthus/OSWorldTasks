@@ -1,8 +1,8 @@
-"""The privileged solver that *generates* golden-trajectory candidates (D1.7).
+"""The privileged solver that *generates* golden-trajectory candidates.
 
 This module reads a `FakeBackend`'s expected field values at call time. It is
-therefore the opposite of the golden trajectory itself, which D1.7 requires to
-be blind:
+therefore the opposite of the golden trajectory itself, whose replay must be
+blind to expected values:
 
     generation (here, privileged)  ->  candidate JSON  ->  blind replay (tests)
 
@@ -11,11 +11,11 @@ vendor form correctly for whatever task a `FakeBackend` currently holds.
 `CLICK` and `KEY` are the only action types it emits, so reward stays reachable
 through the action space rather than through a privileged test hook.
 
-`build_golden_actions` is the exact recipe the committed seed-7 fixture was
-generated from -- the solver's actions with one leading `NOOP`, which is there
-so a replay exercises all three declared action types. Candidate generation and
-the committed fixture must agree action-for-action, so `scripts/golden_trajectory.py
-check` can diff them directly.
+`build_golden_actions` defines the committed seed-7 fixture's exact recipe: the
+solver's actions with one leading `NOOP`, which makes replay exercise all three
+declared action types. Candidate generation and the committed fixture must agree
+action-for-action, so ``python scripts/golden_trajectory.py check`` can diff them
+directly.
 
 Why the solver is kept even though the frozen fixture is the reward-timing
 authority:

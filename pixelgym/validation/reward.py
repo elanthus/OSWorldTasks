@@ -1,4 +1,4 @@
-"""Reward-timing trajectories required by the Day 2 validation plan."""
+"""Reward-timing trajectories for fake and OSWorld validation."""
 
 from __future__ import annotations
 

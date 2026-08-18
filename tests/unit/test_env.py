@@ -1,4 +1,4 @@
-"""Unit tests for `PixelGuiEnv` (D1.5): spaces, reset, step, reward,
+"""Unit tests for `PixelGuiEnv`: spaces, reset, step, reward,
 termination, truncation, the agent-facing info boundary, strict action
 validation, and observation-space integrity.
 
@@ -29,10 +29,8 @@ from pixelgym.tasks.vendor_form.ui import WidgetId
 class _StatefulMapping(Mapping):
     """A caller-controlled `Mapping` whose `__getitem__` for `sneaky_key`
     returns `safe_value` on the first read and an out-of-range
-    `evil_value` on every later read -- reproduces the reported
-    vulnerability where `validate_action` would validate a safe value but
-    `_dispatch` would separately re-read the mapping and get a different,
-    unvalidated one."""
+    `evil_value` on every later read -- modeling a mapping that could pass
+    validation and then supply a different value if dispatch re-read it."""
 
     def __init__(self, base: dict, *, sneaky_key: str, safe_value: int, evil_value: int) -> None:
         self._base = dict(base)
@@ -58,9 +56,8 @@ class _StatefulInt(int):
     """An accepted `int` subclass (`isinstance(_, int)` is `True`, it is
     not `bool`) whose stored value is always `safe_value`, but whose
     `__int__` returns an out-of-range `evil_value` from the second call
-    onward -- reproduces the reported vulnerability where validation's
-    `int(value)` call and dispatch's separate `int(value)` call could see
-    different results for the same object."""
+    onward -- modeling an integer-like value that could change if validation
+    and dispatch converted it separately."""
 
     def __new__(cls, safe_value: int, evil_value: int) -> Self:
         obj = super().__new__(cls, safe_value)
@@ -463,7 +460,7 @@ def test_out_of_range_click_coordinate_is_rejected():
 
 
 # -- Validate-then-dispatch: no re-read of the caller's action after -------
-# -- validation (regression coverage for the reported vulnerability) -------
+# -- validation (stateful caller inputs must not bypass validation) ---------
 
 
 def test_stateful_mapping_second_read_never_reaches_the_backend():

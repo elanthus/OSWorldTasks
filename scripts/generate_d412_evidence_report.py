@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Index stored D4.12 observations without rerunning checks or judging the gate."""
+"""Index stored platform-gate observations without rerunning or judging them."""
 
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
-"""Unit tests for the fake backend (D1.6): determinism, the deterministic RGB
+"""Unit tests for the fake backend: determinism, the deterministic RGB
 frame, click/key interaction semantics, and the privileged submission state.
 
 These exercise the backend directly, below the Gymnasium contract. The
-environment-level half of D1.6's matrix -- spaces, action rejection, reward
-timing, termination vs. truncation -- lives in `test_env.py`.
+environment-level contract -- spaces, action rejection, reward timing,
+termination vs. truncation -- is tested in `test_env.py`.
 
 Nothing here touches the network, a browser, OSWorld, or the clock.
 """
@@ -633,7 +633,7 @@ def test_a_real_submission_is_always_attributed_to_the_active_task(backend):
 
 def test_no_two_controls_overlap(backend):
     """Overlapping rectangles would make a scripted click ambiguous -- the
-    golden trajectory (D1.7) has to mean one thing forever."""
+    frozen golden trajectory must always resolve each click unambiguously."""
     layout = backend.layout
     rects = [
         rect for widget, rect in layout.controls.items() if widget is not WidgetId.PAYMENT_TERMS

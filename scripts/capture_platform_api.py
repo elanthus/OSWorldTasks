@@ -1,4 +1,4 @@
-"""Append a redacted lifecycle API exchange to the D4.11 transcript."""
+"""Append a redacted lifecycle API exchange to the platform transcript."""
 
 from __future__ import annotations
 

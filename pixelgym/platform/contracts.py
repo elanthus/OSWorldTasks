@@ -226,8 +226,8 @@ class PolicyManifest:
             ):
                 value.pop(field_name)
             return value
-        # Preserve verification of policy rows created before this optional field
-        # existed, but bind every newly recorded failure reason to its evidence.
+        # A null failure reason is omitted from the policy identity; any recorded
+        # failure reason remains identity-bound to its provenance evidence.
         if value["source_provenance_failure_reason"] is None:
             value.pop("source_provenance_failure_reason")
         return value

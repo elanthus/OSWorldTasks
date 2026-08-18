@@ -1,4 +1,4 @@
-"""Widget geometry and interaction semantics for the vendor-onboarding form (D1.6).
+"""Widget geometry and interaction semantics for the vendor-onboarding form.
 
 This module is what lets the fake backend (`pixelgym.backends.fake`) turn a
 bounded `CLICK` or an allowlisted `KEY` into real form state, and finally into
@@ -18,8 +18,8 @@ Two things live here:
   `click()` and `key()`.
 
 Interaction semantics deliberately mirror an ordinary browser rather than
-inventing shortcuts, because the golden trajectory (D1.7) has to "resemble
-legitimate UI interaction": Tab walks the tab order and wraps, printable keys
+inventing shortcuts, because the frozen golden trajectory must resemble
+legitimate UI interaction: Tab walks the tab order and wraps, printable keys
 append to the focused text field, Backspace deletes one character, arrows move
 a `<select>` value or a radio group, Space toggles a focused checkbox, and
 Enter performs HTML implicit form submission from anywhere inside the form.

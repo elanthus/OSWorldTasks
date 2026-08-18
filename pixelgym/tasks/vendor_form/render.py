@@ -1,4 +1,4 @@
-"""Deterministic rendering of the vendor form to an RGB frame (D1.6).
+"""Deterministic rendering of the vendor form to an RGB frame.
 
 The fake backend has no browser, so it draws the same screen itself. Colors,
 panel split, and control geometry follow the real app's stylesheet
@@ -14,8 +14,8 @@ and the form state.
 
 Scope note: this is bit-for-bit reproducible for a given Pillow build, which is
 what the fake path needs. It is *not* evidence about the real browser path --
-Day 2's visual-determinism work measures that separately, and neither number
-may be reported as the other (AGENTS.md section 7).
+The OSWorld validation path measures browser visual determinism separately,
+and neither number may be reported as the other (AGENTS.md section 7).
 """
 
 from __future__ import annotations

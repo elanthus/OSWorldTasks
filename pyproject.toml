@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Heavy, network-fetching stack. Only needed for Day 2 OSWorld integration
-# tests; the core package and fast unit tests never require it.
+# Heavy, network-fetching stack for OSWorld integration tests; the core package
+# and fast unit tests never require it.
 osworld = [
     "osworld @ git+https://github.com/xlang-ai/OSWorld-V2.git@v2026.06.24",
 ]
@@ -36,7 +36,7 @@ dev = [
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
     "httpx>=0.27,<1",  # platform web tests directly import httpx.AsyncClient/ASGITransport
-    "playwright>=1.52",  # deterministic Day 3 browser capture tooling
+    "playwright>=1.52",  # deterministic grounding-dataset browser capture tooling
     "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
 ]
 

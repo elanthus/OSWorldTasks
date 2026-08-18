@@ -1,4 +1,4 @@
-"""Gymnasium environment contract: `PixelGuiEnv` (D1.5).
+"""Gymnasium environment contract: `PixelGuiEnv`.
 
 `PixelGuiEnv` implements the project's final behavioral contract (AGENTS.md
 section 3) against any backend satisfying `pixelgym.backends.base.Backend`:

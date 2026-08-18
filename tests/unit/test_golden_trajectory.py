@@ -1,4 +1,4 @@
-"""Replay of the checked-in seed-7 golden trajectory (D1.7).
+"""Replay of the checked-in seed-7 golden trajectory.
 
 The trajectory is a frozen list of literal `NOOP`/`CLICK`/`KEY` dictionaries in
 `fixtures/golden_trajectory_seed7.json`, together with the
@@ -101,9 +101,11 @@ def test_fixture_uses_every_action_type_the_space_declares(golden_trajectory):
 
 
 def test_recorded_timeline_is_zeros_then_exactly_one(golden_trajectory):
-    """D1.7's done-when clause, asserted against the *fixture* rather than
-    against a replay. This is what keeps the fixture from being a snapshot of
-    whatever the environment currently does."""
+    """Assert the reward contract against the fixture, independently of replay.
+
+    This keeps the fixture from becoming a snapshot of whatever the environment
+    currently does.
+    """
     timeline = golden_trajectory["timeline"]
 
     rewards = [step["reward"] for step in timeline]
@@ -172,8 +174,7 @@ def test_stepping_after_the_trajectory_raises_the_documented_error(env, golden_t
 
 
 def test_replaying_the_trajectory_twice_reproduces_it_exactly(env, golden_trajectory):
-    """ "Reproduces exactly" is the D1.7 acceptance wording: a second reset to
-    the same seed must yield the same timeline, not merely another success."""
+    """A second reset to the same seed must reproduce the exact timeline."""
     actions = golden_trajectory["actions"]
 
     env.reset(seed=SEED)

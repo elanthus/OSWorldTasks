@@ -1,4 +1,4 @@
-"""Unit tests for the action contract (D1.5): types, the versioned key
+"""Unit tests for action types, the versioned key
 allowlist, the fixed action space, and strict validation."""
 
 from collections.abc import Mapping

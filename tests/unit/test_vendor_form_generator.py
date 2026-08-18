@@ -1,4 +1,4 @@
-"""Determinism tests for the seeded vendor-onboarding task generator (D1.3)."""
+"""Determinism tests for the seeded vendor-onboarding task generator."""
 
 import json
 

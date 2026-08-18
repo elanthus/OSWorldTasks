@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record one D4.12 command as redacted raw evidence without judging it."""
+"""Record one platform-gate command as redacted raw evidence without judging it."""
 
 from __future__ import annotations
 

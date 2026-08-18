@@ -1,4 +1,4 @@
-"""Seeded generator for the deterministic vendor-onboarding task (D1.3).
+"""Seeded generator for the deterministic vendor-onboarding task.
 
 All output derives only from an integer seed via ``random.Random(seed)``, so
 identical seeds always produce byte-identical canonical JSON. Values are

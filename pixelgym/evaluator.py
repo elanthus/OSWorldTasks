@@ -1,4 +1,4 @@
-"""Privileged, host-side evaluator (D1.4).
+"""Privileged, host-side evaluator.
 
 `evaluate` consumes only the `TaskSpec` the environment reset to and the
 `Submission` history read from the privileged backend state (``/api/state``

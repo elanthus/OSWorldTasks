@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture and validate the frozen Day 3 grounding benchmark."""
+"""Capture and validate the frozen grounding benchmark."""
 
 from __future__ import annotations
 

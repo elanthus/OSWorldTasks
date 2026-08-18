@@ -1,10 +1,10 @@
 """Dependency-free guest service for the OSWorld vendor-form task.
 
-The Day 1 development server uses FastAPI.  The released OSWorld desktop
-image is deliberately treated as an appliance, though: task setup must not
-depend on whatever third-party Python packages happen to be installed in the
-guest or on a network package install.  This module therefore exposes the
-same small HTTP contract using only the Python standard library.
+The local application service in ``app/server.py`` uses FastAPI. The OSWorld
+desktop image is deliberately treated as an appliance, though: task setup
+must not depend on whatever third-party Python packages happen to be installed
+in the guest or on a network package install. This module therefore exposes
+the same small HTTP contract using only the Python standard library.
 
 The task record is generated and hashed on the trusted host, bundled with the
 static application, and passed with ``--task-json``.  ``POST /api/reset``
