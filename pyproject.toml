@@ -30,6 +30,7 @@ platform = [
 ]
 dev = [
     "pytest>=8.0",
+    "pytest-xdist>=3.8",
     "ruff>=0.4",
     "build>=1.0",
     "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
