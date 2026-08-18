@@ -18,6 +18,7 @@ from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
+from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.operational_log import ImmutableOperationalLog
 from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
 from pixelgym.platform.web import create_control_app
@@ -111,7 +112,12 @@ def _run_flow(
     control: ControlStore,
     submission_id: str,
     payload: dict[str, str],
+    processes: dict[str, subprocess.Popen[str]] | None = None,
+    process_lock: threading.Lock | None = None,
+    cancelled_submissions: set[str] | None = None,
 ) -> None:
+    if control.get_submission(submission_id)["status"] == "Cancelled":
+        return
     command = [
         sys.executable,
         str(repository_root / "flows/grounding_evaluation_flow.py"),
@@ -127,8 +133,23 @@ def _run_flow(
         "--max-workers",
         "1",
     ]
-    completed = subprocess.run(command, cwd=repository_root, check=False)
-    if completed.returncode != 0:
+    process = subprocess.Popen(command, cwd=repository_root, text=True)
+    if processes is not None and process_lock is not None:
+        with process_lock:
+            processes[submission_id] = process
+    returncode = process.wait()
+    was_cancelled = False
+    if processes is not None and process_lock is not None:
+        with process_lock:
+            processes.pop(submission_id, None)
+            if cancelled_submissions is not None:
+                was_cancelled = submission_id in cancelled_submissions
+                cancelled_submissions.discard(submission_id)
+    if (
+        returncode != 0
+        and not was_cancelled
+        and control.get_submission(submission_id)["status"] != "Cancelled"
+    ):
         control.mark_submission(submission_id, "Failed")
 
 
@@ -141,6 +162,8 @@ def create_app() -> FastAPI:
 
     control = _build_control(repository_root)
     immutable_store = _build_immutable_store(repository_root)
+    tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
+    tracking = MlflowTracking(tracking_uri) if tracking_uri else None
     runtime = PolicyRuntime()
     serving_provider = DemoReplayServingProvider(repository_root)
 
@@ -161,11 +184,17 @@ def create_app() -> FastAPI:
         store=immutable_store,
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
+        tracking=tracking,
     )
     coordinator.restore_active()
+    if tracking is not None:
+        coordinator.reconcile_tracking()
 
     scheduled: set[str] = set()
     schedule_lock = threading.Lock()
+    processes: dict[str, subprocess.Popen[str]] = {}
+    cancelled_submissions: set[str] = set()
+    process_lock = threading.Lock()
 
     def schedule_submission(submission_id: str, payload: dict[str, str]) -> None:
         with schedule_lock:
@@ -174,17 +203,40 @@ def create_app() -> FastAPI:
             scheduled.add(submission_id)
         worker = threading.Thread(
             target=_run_flow,
-            args=(repository_root, control, submission_id, dict(payload)),
+            args=(
+                repository_root,
+                control,
+                submission_id,
+                dict(payload),
+                processes,
+                process_lock,
+                cancelled_submissions,
+            ),
             daemon=True,
             name=submission_id,
         )
         worker.start()
+
+    def cancel_submission(submission_id: str) -> bool:
+        with process_lock:
+            process = processes.get(submission_id)
+            if process is None:
+                return control.get_submission(submission_id)["status"] == "Submitted"
+            cancelled_submissions.add(submission_id)
+            try:
+                process.terminate()
+            except OSError:
+                cancelled_submissions.discard(submission_id)
+                return False
+            return True
 
     app = create_control_app(
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
         submit_callback=schedule_submission,
+        cancel_callback=cancel_submission,
+        tracking=tracking,
         mlflow_base_url=os.environ.get(
             "PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"
         ),

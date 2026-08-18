@@ -13,7 +13,7 @@ from pixelgym.platform.evaluation import (
     percentile_r7,
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
-from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.mlflow_tracking import RUN_PARAM_KEYS, InMemoryTracking
 from pixelgym.platform.schema_validation import ContractValidationError
 
 
@@ -68,6 +68,34 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
     assert not baseline_report.overall_passed
     assert revised_summary.accuracy == 1.0
     assert revised_report.overall_passed
+    assert revised_summary.provider_latency_p50_ms == 25.0
+    assert revised_summary.provider_latency_max_ms == 25.0
+    assert revised_summary.evaluation_end_to_end_duration_ms == 2500.0
+    assert revised_summary.total_cost_usd == 0.0
+    assert revised_summary.cost_usd_per_example == 0.0
+    tracking = revised.tracking
+    assert isinstance(tracking, InMemoryTracking)
+    run = tracking.runs[revised_summary.run_id]
+    assert set(run.params) == set(RUN_PARAM_KEYS)
+    assert len(run.dataset_inputs) == 1
+    assert run.dataset_inputs[0].fingerprint == revised_summary.dataset_fingerprint
+    assert {
+        "run-manifest-reference.json",
+        "raw-response-index-reference.json",
+        "parsed-predictions-reference.json",
+        "per-example-scores-reference.json",
+        "summary-reference.json",
+        "gate-report-reference.json",
+        "environment-manifest-reference.json",
+        "policy-package-reference.json",
+        "representative-images-reference.json",
+    } <= set(run.artifacts)
+    compatible = tracking.search_compatible_runs(
+        dataset_fingerprint=revised_summary.dataset_fingerprint,
+        scorer_version=revised_summary.scorer_version,
+        target_semantics=revised_summary.target_semantics,
+    )
+    assert [item.run_id for item in compatible] == [revised_summary.run_id]
 
 
 def test_revised_rollback_seed_has_distinct_provider_identity(
@@ -145,7 +173,12 @@ def test_invalid_answers_are_final_and_raw_is_stored_before_parser(
     assert summary.invalid_count == 100
     assert not report.overall_passed
     assert len(provider.call_ids) == 100
-    first_envelope = json.loads(LocalImmutableStore(tmp_path / "immutable").get_verified(references[0]))
+    first_raw = next(
+        reference for reference in references if reference.logical_key.startswith("raw-responses/")
+    )
+    first_envelope = json.loads(
+        LocalImmutableStore(tmp_path / "immutable").get_verified(first_raw)
+    )
     assert first_envelope["raw_response"] == "not-json"
     assert first_envelope["request_status"] == "responded"
     assert first_envelope["started_at_utc"] is None

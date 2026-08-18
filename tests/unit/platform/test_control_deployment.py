@@ -18,6 +18,7 @@ from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
+from pixelgym.platform.mlflow_tracking import TrackingMirrorError
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.schema_validation import ContractValidationError
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
@@ -713,6 +714,78 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
     )
     control.approve(candidate.candidate_id, actor="local-reviewer", reason="reviewed", gate_report_sha256=candidate.gate_report_sha256)
     return candidate
+
+
+class _LifecycleMirror:
+    def __init__(self, *, fail_alias: bool = False) -> None:
+        self.fail_alias = fail_alias
+        self.statuses: list[tuple[str, str, str]] = []
+        self.champions: list[str] = []
+
+    def mirror_candidate_status(
+        self, policy_id: str, *, gate_status: str, approval_status: str
+    ) -> None:
+        self.statuses.append((policy_id, gate_status, approval_status))
+
+    def set_champion(self, policy_id: str) -> None:
+        if self.fail_alias:
+            raise TrackingMirrorError("registry unavailable")
+        self.champions.append(policy_id)
+
+
+def test_deploy_mirrors_champion_after_activation_and_records_alias_failure(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    mirror = _LifecycleMirror()
+    deployed = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda policy: True,
+        tracking=mirror,
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="activate")
+
+    assert mirror.champions == [candidate.policy.policy_id]
+    assert control.active()[0] == deployed
+
+    failed_mirror = _LifecycleMirror(fail_alias=True)
+    second = _approved_candidate(control, passing_evidence, store, "second-mirror")
+    deployed_second = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda policy: True,
+        tracking=failed_mirror,
+    ).deploy(second.candidate_id, actor="local-reviewer", reason="activate despite mirror")
+
+    assert control.active()[0] == deployed_second
+    event = control.audit_events()[-1]
+    assert event["event_type"] == "tracking.reconciliation_required"
+    assert event["details"]["operation"] == "set_champion_alias"
+
+
+def test_reconcile_tracking_mirrors_authoritative_status_and_active_alias(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="activate")
+    mirror = _LifecycleMirror()
+
+    DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda policy: True,
+        tracking=mirror,
+    ).reconcile_tracking()
+
+    assert mirror.statuses == [(candidate.policy.policy_id, "eligible", "approved")]
+    assert mirror.champions == [candidate.policy.policy_id]
+    assert control.audit_events()[-1]["event_type"] == "tracking.reconciliation_resolved"
 
 
 def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order(

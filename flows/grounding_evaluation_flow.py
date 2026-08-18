@@ -336,6 +336,7 @@ class GroundingEvaluationFlow(FlowSpec):
             item.to_dict()
             for item in runner.persist_evidence(
                 self.records,
+                RunSummary(**self.summary),
                 report,
                 self.raw_responses,
             )

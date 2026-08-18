@@ -101,6 +101,14 @@ class RunSummary:
     unpriced_call_count: int
     provider_latency_p95_ms: float | None
     latency_measured_count: int
+    provider_latency_p50_ms: float | None = None
+    provider_latency_max_ms: float | None = None
+    evaluation_end_to_end_duration_ms: float | None = None
+    total_cost_usd: float | None = None
+    cost_usd_per_example: float | None = None
+    proposal_coverage: float | None = None
+    conditional_mark_selection_accuracy: float | None = None
+    primary_metric: str = "accuracy"
     invalid_count: int = 0
     request_failure_count: int = 0
     dirty_code: bool = False

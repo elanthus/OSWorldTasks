@@ -23,6 +23,7 @@ from pixelgym.platform.control_store import ControlStore, TransitionError
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
+from pixelgym.platform.mlflow_tracking import TrackingRunView
 from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     ImmutableOperationalLog,
@@ -978,9 +979,61 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
     second = client.post("/experiments", data=form, follow_redirects=False)
     assert first.status_code == second.status_code == 303
     assert first.headers["location"] == second.headers["location"]
+    assert first.headers["location"].startswith("/submissions/submission-")
+    detail = client.get(first.headers["location"])
+    assert "Submitted" in detail.text
+    assert "Metaflow pathspec" in detail.text
+    assert "MLflow run pending" in detail.text
+    assert "Cancel experiment" in detail.text
+    cancelled = client.post(
+        f"{first.headers['location']}/cancel",
+        data={"csrf_token": _csrf(detail.text), "reason": "stop fixture"},
+        follow_redirects=True,
+    )
+    assert cancelled.status_code == 200
+    assert "Cancelled" in cancelled.text
+    assert "Cancellation is no longer available" in cancelled.text
     blocked = client.post("/experiments", data={**form, "model": "shell-command"})
     assert blocked.status_code == 422
     assert "DEMO PROVIDER" in page.text
+
+
+def test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure(
+    tmp_path: Path, passing_evidence
+) -> None:
+    from pixelgym.platform.mlflow_tracking import TrackingMirrorError
+
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+
+    class Mirror:
+        def mirror_candidate_status(self, *args, **kwargs):
+            raise TrackingMirrorError("MLflow unavailable")
+
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            tracking=Mirror(),
+        )
+    )
+    page = client.get(f"/candidates/{candidate.candidate_id}")
+    response = client.post(
+        f"/candidates/{candidate.candidate_id}/approve",
+        data={"csrf_token": _csrf(page.text), "reason": "reviewed"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert control.get_candidate(candidate.candidate_id).state.value == "Approved"
+    assert control.audit_events()[-1]["event_type"] == "tracking.reconciliation_required"
 
 
 def test_empty_form_body_and_unknown_candidates_are_client_errors(tmp_path: Path) -> None:
@@ -998,6 +1051,49 @@ def test_empty_form_body_and_unknown_candidates_are_client_errors(tmp_path: Path
     assert empty.status_code == 422
     assert client.get("/candidates/nope").status_code == 404
     assert client.get("/compare?candidate=nope").status_code == 404
+
+
+def test_compatible_run_api_uses_tracking_view_model(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+
+    class TrackingView:
+        def search_compatible_runs(self, **filters):
+            assert filters["primary_metric"] == "accuracy"
+            return [
+                TrackingRunView(
+                    run_id="mlflow-run-1",
+                    status="FINISHED",
+                    params={
+                        "dataset_fingerprint": filters["dataset_fingerprint"],
+                        "scorer_version": filters["scorer_version"],
+                        "target_semantics": filters["target_semantics"],
+                    },
+                    tags={"primary_metric": "accuracy"},
+                    metrics={"accuracy": 1.0},
+                    artifact_paths=("summary.json",),
+                    dataset_inputs=(),
+                )
+            ]
+
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            tracking=TrackingView(),
+        )
+    )
+    response = client.get(
+        "/api/tracking/runs/compatible",
+        params={
+            "dataset_fingerprint": "sha256:" + "a" * 64,
+            "scorer_version": "scorer-v1",
+            "target_semantics": "target-v1",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["runs"][0]["run_id"] == "mlflow-run-1"
 
 
 def test_failed_candidate_has_visible_reasons_and_no_approval_control(
@@ -1165,6 +1261,31 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     assert diff.status_code == 200
     assert "no separate immutable prompt-diff artifact was recorded" in diff.text
 
+    incompatible_policy = policy_factory(model="different-primary-metric")
+    incompatible_summary = replace(
+        summary,
+        run_id="run-primary-mismatch",
+        policy_id=incompatible_policy.policy_id,
+        primary_metric="mean_distance",
+    )
+    incompatible_report = replace(
+        report,
+        run_id=incompatible_summary.run_id,
+        policy_id=incompatible_policy.policy_id,
+    )
+    incompatible = control.register_candidate(
+        source_run_id=incompatible_summary.run_id,
+        policy=incompatible_policy,
+        gate_report=incompatible_report,
+        artifacts=[],
+        summary=incompatible_summary,
+    )
+    blocked = client.get(
+        f"/compare?candidate={first.candidate_id}&candidate={incompatible.candidate_id}"
+    )
+    assert "PROMOTION COMPARISON BLOCKED" in blocked.text
+    assert "recorded primary metric" in blocked.text
+
 
 def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     tmp_path: Path, passing_evidence, policy_factory
@@ -1225,6 +1346,57 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert 'condition == "marks"' in detail.text
     assert "relabeled" in detail.text
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
+
+
+def test_runs_filter_prompt_model_status_date_and_gate_result(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    submission_id = control.submit(
+        {
+            "dataset": "day3-frozen-v1",
+            "prompt_version": str(policy.prompt_version),
+            "model": policy.model,
+            "condition": policy.condition,
+            "maximum_calls": "100",
+            "price_catalog": "pixelgym-demo-prices-v1",
+        }
+    )
+    control.link_run(
+        submission_id,
+        metaflow_pathspec="GroundingEvaluationFlow/1",
+        mlflow_run_id=summary.run_id,
+    )
+    control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+        summary=summary,
+        submission_id=submission_id,
+    )
+    created_date = control.get_submission(submission_id)["created_at_utc"][:10]
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    )
+
+    matched = client.get(
+        "/runs",
+        params={
+            "prompt_version": policy.prompt_version,
+            "model": policy.model,
+            "status": "Complete",
+            "date_from": created_date,
+            "date_to": created_date,
+            "gate_result": "passed",
+        },
+    )
+    excluded = client.get("/runs", params={"gate_result": "failed"})
+
+    assert policy.model in matched.text
+    assert "No evaluated candidates" in excluded.text
 
 
 def test_runs_render_safe_source_provenance_diagnostic(

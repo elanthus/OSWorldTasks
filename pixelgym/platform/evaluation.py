@@ -18,10 +18,14 @@ from pixelgym.platform.contracts import (
     PolicyManifest,
     RunSummary,
 )
-from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
+from pixelgym.platform.fingerprints import (
+    build_dataset_manifest,
+    canonical_json_bytes,
+    sha256_bytes,
+)
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
-from pixelgym.platform.mlflow_tracking import Tracking
+from pixelgym.platform.mlflow_tracking import DatasetInputContract, Tracking
 from pixelgym.platform.policy import PROMPT_TEMPLATES, prompt_template
 from pixelgym.platform.schema_validation import PlatformSchemas
 from pixelgym.serialization import load_jsonl
@@ -139,6 +143,7 @@ class EvaluationRunner:
         submission_id: str,
         metaflow_pathspec: str,
         price_catalog_version: str = "pixelgym-demo-prices-v1",
+        provider_concurrency: int = 1,
         provider_response_hook: Callable[[str], None] | None = None,
     ) -> None:
         self.root = repository_root
@@ -151,6 +156,9 @@ class EvaluationRunner:
         self.submission_id = submission_id
         self.metaflow_pathspec = metaflow_pathspec
         self.price_catalog_version = price_catalog_version
+        if provider_concurrency <= 0:
+            raise ValueError("provider concurrency must be positive")
+        self.provider_concurrency = provider_concurrency
         self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
         self.schemas = PlatformSchemas()
@@ -158,16 +166,36 @@ class EvaluationRunner:
         self.schemas.validate("policy_package", self.policy.to_dict())
 
     def _tracking_params(self, example_count: int) -> dict[str, Any]:
+        dataset = self._dataset_input()
+        parameters = self.policy.parameters
         return {
+            "dataset_name": "pixelgym-grounding-day3-frozen",
             "dataset_fingerprint": self.dataset_fingerprint,
+            "mlflow_dataset_digest": dataset.mlflow_digest,
+            "dataset_manifest_uri": dataset.manifest_uri,
+            "dataset_manifest_version": dataset.manifest_version,
+            "dataset_schema": dataset.schema,
             "dataset_protocol_version": "pixelgym-grounding-v1",
             "dataset_example_count": example_count,
             "prompt_name": self.policy.prompt_name,
             "prompt_version": self.policy.prompt_version,
             "prompt_sha256": self.policy.prompt_sha256,
+            "rendered_template_schema": "pixelgym-grounding-rendered-prompt-v1",
             "provider": self.policy.provider,
             "model": self.policy.model,
+            "model_alias_disclosure": self.policy.model_alias_disclosure,
+            "endpoint_class": "local-scripted" if self.provider.synthetic else "remote-provider",
+            "structured_output_mode": "json-schema",
+            "inference_temperature": parameters.get("temperature"),
+            "inference_reasoning": parameters.get("reasoning", "unsupported"),
+            "inference_seed": parameters.get("seed"),
+            "inference_max_output": parameters.get("max_output_tokens", "provider-default"),
             "condition": self.policy.condition,
+            "retry_policy": {
+                "hidden_retries": parameters.get("hidden_retries", 0),
+                "request_retry": "none",
+            },
+            "concurrency": self.provider_concurrency,
             "parser_version": self.policy.parser_version,
             "scorer_version": self.policy.scorer_version,
             "target_semantics": self.policy.target_semantics,
@@ -179,9 +207,36 @@ class EvaluationRunner:
             "source_provenance_failure_reason": self.policy.source_provenance_failure_reason,
             "dependency_lock_sha256": self.policy.dependency_lock_sha256,
             "python_version": platform.python_version(),
+            "metaflow_flow_name": self.metaflow_pathspec.split("/", 1)[0],
+            "metaflow_attempt": 0,
+            "metaflow_resume_origin": self.metaflow_pathspec,
             "submission_id": self.submission_id,
             "synthetic_provider": self.provider.synthetic,
         }
+
+    def _dataset_input(self) -> DatasetInputContract:
+        manifest, fingerprint = build_dataset_manifest(
+            repository_root=self.root,
+            dataset_path=self.root / "artifacts/grounding-dataset.jsonl",
+            overlays_path=self.root / "artifacts/grounding-overlays.jsonl",
+        )
+        if fingerprint != self.dataset_fingerprint:
+            raise ValueError("frozen dataset fingerprint differs from the evaluation contract")
+        reference = self.store.put_once(
+            f"datasets/{fingerprint.removeprefix('sha256:')}.json",
+            canonical_json_bytes(manifest) + b"\n",
+            media_type="application/vnd.pixelgym.dataset-manifest+json",
+        )
+        return DatasetInputContract(
+            name="pixelgym-grounding-day3-frozen",
+            fingerprint=fingerprint,
+            mlflow_digest=fingerprint.removeprefix("sha256:")[:32],
+            manifest_uri=reference.uri,
+            manifest_version=reference.version_id,
+            schema=str(manifest.get("schema_version", "pixelgym-grounding-dataset-manifest-v1")),
+            protocol_version="pixelgym-grounding-v1",
+            example_count=int(manifest["example_count"]),
+        )
 
     def _inputs(self) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
         examples = sorted(
@@ -231,6 +286,7 @@ class EvaluationRunner:
         run_id = self.tracking.create_or_recover_run(
             self.submission_id, self._tracking_params(len(examples))
         )
+        self.tracking.log_dataset_input(run_id, self._dataset_input())
         self._tracking_run_id = run_id
         self.tracking.link_prompt_to_run(
             run_id, self.policy.prompt_name, self.policy.prompt_version
@@ -494,6 +550,19 @@ class EvaluationRunner:
             unpriced_call_count=len(records) - len(costs),
             provider_latency_p95_ms=percentile_r7(latency, 0.95) if latency else None,
             latency_measured_count=len(latency),
+            provider_latency_p50_ms=percentile_r7(latency, 0.50) if latency else None,
+            provider_latency_max_ms=max(latency) if latency else None,
+            evaluation_end_to_end_duration_ms=(
+                sum(latency) if latency and self.provider_concurrency == 1 else None
+            ),
+            total_cost_usd=sum(costs) if len(costs) == len(records) else None,
+            cost_usd_per_example=(
+                sum(costs) / len(records)
+                if records and len(costs) == len(records)
+                else None
+            ),
+            proposal_coverage=None,
+            conditional_mark_selection_accuracy=None,
             invalid_count=sum(row["parse_status"] == "invalid" for row in records),
             request_failure_count=sum(
                 row["parse_status"] == "request_failure" for row in records
@@ -510,6 +579,7 @@ class EvaluationRunner:
     def persist_evidence(
         self,
         records: list[dict[str, Any]],
+        summary: RunSummary,
         report: GateReport,
         raw: list[dict[str, Any]],
     ) -> list[ArtifactRef]:
@@ -519,6 +589,16 @@ class EvaluationRunner:
             f"runs/{self.submission_id}/predictions.jsonl",
             b"".join(canonical_json_bytes(row) + b"\n" for row in records),
             media_type="application/x-ndjson",
+        )
+        score_ref = self.store.put_once(
+            f"runs/{self.submission_id}/per-example-scores.jsonl",
+            b"".join(canonical_json_bytes(row) + b"\n" for row in records),
+            media_type="application/x-ndjson",
+        )
+        summary_ref = self.store.put_once(
+            f"runs/{self.submission_id}/summary.json",
+            canonical_json_bytes(summary.to_dict()) + b"\n",
+            media_type="application/vnd.pixelgym.run-summary+json",
         )
         gate_ref = self.store.put_once(
             f"runs/{self.submission_id}/gate-report.json",
@@ -534,7 +614,71 @@ class EvaluationRunner:
             f"datasets/{self.dataset_fingerprint.removeprefix('sha256:')}.json"
         )
         raw_refs = [ArtifactRef(**item["reference"]) for item in raw]
-        return [*([dataset_ref] if dataset_ref else []), *raw_refs, prediction_ref, gate_ref, policy_ref]
+        raw_index_ref = self.store.put_once(
+            f"runs/{self.submission_id}/raw-response-index.json",
+            canonical_json_bytes([item.to_dict() for item in raw_refs]) + b"\n",
+            media_type="application/vnd.pixelgym.artifact-index+json",
+        )
+        environment_ref = self.store.put_once(
+            f"runs/{self.submission_id}/environment-manifest.json",
+            canonical_json_bytes(
+                {
+                    "python_version": platform.python_version(),
+                    "dependency_lock_sha256": self.policy.dependency_lock_sha256,
+                    "code_revision": self.policy.code_revision,
+                    "code_state": self.policy.code_state,
+                    "provider_concurrency": self.provider_concurrency,
+                }
+            )
+            + b"\n",
+            media_type="application/vnd.pixelgym.environment-manifest+json",
+        )
+        examples, _ = self._inputs()
+        representative_refs = [
+            self.store.put_once(
+                f"runs/{self.submission_id}/representative-images/{example['example_id']}.png",
+                (self.root / example["image_path"]).read_bytes(),
+                media_type="image/png",
+            )
+            for example in examples[:3]
+        ]
+        references = [
+            *([dataset_ref] if dataset_ref else []),
+            *raw_refs,
+            raw_index_ref,
+            prediction_ref,
+            score_ref,
+            summary_ref,
+            gate_ref,
+            environment_ref,
+            policy_ref,
+            *representative_refs,
+        ]
+        run_manifest = {
+            "schema_version": RUN_MANIFEST_SCHEMA_VERSION,
+            "submission_id": self.submission_id,
+            "mlflow_run_id": summary.run_id,
+            "metaflow_pathspec": self.metaflow_pathspec,
+            "dataset_fingerprint": self.dataset_fingerprint,
+            "policy_id": self.policy.policy_id,
+            "status": "Complete",
+            "request": {
+                "dataset": "day3-frozen-v1",
+                "prompt_version": str(self.policy.prompt_version),
+                "model": self.policy.model,
+                "condition": self.policy.condition,
+                "maximum_calls": str(summary.expected_count),
+                "price_catalog": self.price_catalog_version,
+            },
+            "artifact_index": [item.to_dict() for item in references],
+        }
+        self.schemas.validate("run_manifest", run_manifest)
+        manifest_ref = self.store.put_once(
+            f"runs/{self.submission_id}/run-manifest.json",
+            canonical_json_bytes(run_manifest) + b"\n",
+            media_type="application/vnd.pixelgym.run-manifest+json",
+        )
+        return [*references, manifest_ref]
 
     def finalize_success(
         self,
@@ -587,6 +731,6 @@ class EvaluationRunner:
         raw = self.canonical_join(raw_parts)
         summary = self.aggregate_metrics(records, run_id=run_id)
         report = self.evaluate_gates(summary)
-        references = self.persist_evidence(records, report, raw)
+        references = self.persist_evidence(records, summary, report, raw)
         self.finalize_success(summary, report, references)
         return summary, report, references
