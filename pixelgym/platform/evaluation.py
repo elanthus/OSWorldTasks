@@ -23,6 +23,7 @@ from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import Tracking
 from pixelgym.platform.policy import PROMPT_TEMPLATES, prompt_template
+from pixelgym.platform.schema_validation import PlatformSchemas
 from pixelgym.serialization import load_jsonl
 
 RAW_RESPONSE_SCHEMA_VERSION = "pixelgym-raw-response-v1"
@@ -152,6 +153,9 @@ class EvaluationRunner:
         self.price_catalog_version = price_catalog_version
         self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
+        self.schemas = PlatformSchemas()
+        self.schemas.validate("gate_policy", self.gate_policy.to_dict())
+        self.schemas.validate("policy_package", self.policy.to_dict())
 
     def _tracking_params(self, example_count: int) -> dict[str, Any]:
         return {
@@ -328,6 +332,7 @@ class EvaluationRunner:
                     "request_status": "request_failure" if response.request_failure else "responded",
                     "request_failure": response.request_failure,
                 }
+                self.schemas.validate("raw_response", envelope)
                 # This durable write is the provider/parse side-effect boundary.
                 reference = self.store.put_once(
                     logical_key,
@@ -371,6 +376,7 @@ class EvaluationRunner:
                 by_id[identifier], overlays[identifier]
             )
             envelope = json.loads(self.store.get_verified(reference))
+            self.schemas.validate("raw_response", envelope)
             if (
                 reference.logical_key != f"raw-responses/{request_sha256}.json"
                 or envelope.get("schema_version") != RAW_RESPONSE_SCHEMA_VERSION
@@ -413,6 +419,7 @@ class EvaluationRunner:
             overlay = overlays[example["example_id"]]
             reference = ArtifactRef(**item["reference"])
             envelope = item["envelope"]
+            self.schemas.validate("raw_response", envelope)
             if not isinstance(envelope, dict) or envelope.get("example_id") != example["example_id"]:
                 raise ValueError("verified response envelope does not match its example")
             if envelope["request_failure"]:
@@ -506,6 +513,8 @@ class EvaluationRunner:
         report: GateReport,
         raw: list[dict[str, Any]],
     ) -> list[ArtifactRef]:
+        self.schemas.validate("gate_report", report.to_dict())
+        self.schemas.validate("policy_package", self.policy.to_dict())
         prediction_ref = self.store.put_once(
             f"runs/{self.submission_id}/predictions.jsonl",
             b"".join(canonical_json_bytes(row) + b"\n" for row in records),

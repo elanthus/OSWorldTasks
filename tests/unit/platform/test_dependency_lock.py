@@ -109,3 +109,18 @@ def test_lock_version_must_match_an_exact_declared_dependency(tmp_path: Path) ->
     )
     with pytest.raises(ValueError, match="versions do not match exact declared dependencies"):
         verify_platform_lock(tmp_path)
+
+
+def test_lock_parser_accepts_pinned_dependency_extras(tmp_path: Path) -> None:
+    _write_project(tmp_path, platform_requirement="platform-lib[formats]==2.0")
+    _write_lock(
+        tmp_path,
+        [
+            "base-lib==1.0 \\",
+            "    --hash=sha256:" + "a" * 64,
+            "platform-lib[formats]==2.0 \\",
+            "    --hash=sha256:" + "b" * 64,
+        ],
+    )
+
+    verify_platform_lock(tmp_path)

@@ -88,6 +88,14 @@ def test_static_assets_are_packaged_in_the_wheel(installed_wheel_site_dir):
         assert (app_static / relative_path).is_file(), relative_path
 
 
+def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
+    schemas = installed_wheel_site_dir / "pixelgym" / "platform" / "schemas"
+    expected = {path.name for path in (REPO_ROOT / "config").glob("*.schema.json")}
+    installed = {path.name for path in schemas.glob("*.schema.json")}
+
+    assert installed == expected
+
+
 def test_installed_wheel_serves_index_html_from_outside_the_source_checkout(
     installed_wheel_site_dir, tmp_path
 ):
@@ -106,6 +114,35 @@ def test_installed_wheel_serves_index_html_from_outside_the_source_checkout(
         assert response.status_code == 200, response.status_code
         assert "text/html" in response.headers["content-type"]
         assert "PixelGym Sans" in response.text or "/static/style.css" in response.text
+        print("OK")
+        """
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=outside_cwd,
+        env={**os.environ, "PYTHONPATH": str(installed_wheel_site_dir)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "OK" in result.stdout
+
+
+def test_installed_wheel_constructs_control_store_outside_source_checkout(
+    installed_wheel_site_dir, tmp_path
+):
+    outside_cwd = tmp_path / "control-store-outside-source"
+    outside_cwd.mkdir()
+    script = textwrap.dedent(
+        """
+        from pixelgym.platform.control_store import ControlStore
+
+        control = ControlStore(":memory:", reviewer_identity="local-reviewer")
+        control.migrate()
+        assert control.list_submissions() == []
         print("OK")
         """
     )

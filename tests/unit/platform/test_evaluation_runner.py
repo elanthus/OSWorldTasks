@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from pixelgym.platform.evaluation import (
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.schema_validation import ContractValidationError
 
 
 def _runner(
@@ -116,6 +118,17 @@ class InvalidProvider:
         return PlatformProviderResponse("not-json", 25.0, {}, 0.0)
 
 
+class InvalidUsageProvider(InvalidProvider):
+    def invoke(self, **request):
+        self.call_ids.append(request["request_id"])
+        return PlatformProviderResponse(
+            "{}",
+            25.0,
+            {"input_tokens": "unknown"},  # type: ignore[dict-item]
+            0.0,
+        )
+
+
 def test_invalid_answers_are_final_and_raw_is_stored_before_parser(
     repository_root: Path, tmp_path: Path, gate_policy, policy_factory
 ) -> None:
@@ -186,6 +199,45 @@ def test_call_cap_is_enforced_before_provider_execution(
     assert provider.call_ids == []
 
 
+def test_schema_invalid_gate_configuration_is_rejected_before_provider_execution(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    provider = InvalidProvider()
+
+    with pytest.raises(ContractValidationError, match="gate_policy"):
+        _runner(
+            repository_root=repository_root,
+            tmp_path=tmp_path,
+            gate_policy=dataclasses.replace(gate_policy, schema_version="unsupported"),
+            policy_factory=policy_factory,
+            variant="revised",
+            provider=provider,
+        )
+
+    assert provider.call_ids == []
+
+
+def test_schema_invalid_usage_is_rejected_before_immutable_write(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    provider = InvalidUsageProvider()
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+        provider=provider,
+    )
+    shard = runner.build_shards(shard_size=1, max_calls=100)[0]
+
+    with pytest.raises(ContractValidationError, match="raw_response"):
+        runner.evaluate_shard(shard, max_calls=100)
+
+    assert len(provider.call_ids) == 1
+    assert not (tmp_path / "immutable/objects").exists()
+
+
 def test_duplicate_overlay_example_ids_are_rejected(
     repository_root: Path, tmp_path: Path, gate_policy, policy_factory
 ) -> None:
@@ -241,6 +293,33 @@ def test_verified_envelopes_are_not_read_and_hashed_again_during_parse(
 
     assert len(records) == 1
     assert verified_reads == 1
+
+
+def test_schema_invalid_raw_envelope_is_rejected_before_scoring(
+    repository_root: Path,
+    tmp_path: Path,
+    gate_policy,
+    policy_factory,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+    )
+    shard = runner.build_shards(shard_size=1, max_calls=100)[0]
+    raw = runner.evaluate_shard(shard, max_calls=100)
+    verified = runner.verify_raw_artifacts(raw, require_complete=False)
+    verified[0]["envelope"]["unexpected"] = "must fail closed"
+    monkeypatch.setattr(
+        "pixelgym.platform.evaluation.parse_prediction",
+        lambda *args, **kwargs: pytest.fail("schema-invalid evidence reached the parser"),
+    )
+
+    with pytest.raises(ContractValidationError, match="raw_response"):
+        runner.parse_and_score(verified, require_complete=False)
 
 
 def test_failure_finalization_uses_known_run_when_inputs_later_become_invalid(
