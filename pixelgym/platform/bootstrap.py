@@ -116,8 +116,6 @@ def _run_flow(
     process_lock: threading.Lock | None = None,
     cancelled_submissions: set[str] | None = None,
 ) -> None:
-    if control.get_submission(submission_id)["status"] == "Cancelled":
-        return
     command = [
         sys.executable,
         str(repository_root / "flows/grounding_evaluation_flow.py"),
@@ -135,10 +133,26 @@ def _run_flow(
         "--max-workers",
         "1",
     ]
-    process = subprocess.Popen(command, cwd=repository_root, text=True)
+    process: subprocess.Popen[str]
     if processes is not None and process_lock is not None:
         with process_lock:
+            if (
+                control.get_submission(submission_id)["status"] == "Cancelled"
+                or cancelled_submissions is not None
+                and submission_id in cancelled_submissions
+            ):
+                if cancelled_submissions is not None:
+                    cancelled_submissions.discard(submission_id)
+                return
+            # Hold the same lock used by cancellation across process creation and
+            # registration. A cancellation callback therefore cannot observe an
+            # already-started but unregistered worker.
+            process = subprocess.Popen(command, cwd=repository_root, text=True)
             processes[submission_id] = process
+    else:
+        if control.get_submission(submission_id)["status"] == "Cancelled":
+            return
+        process = subprocess.Popen(command, cwd=repository_root, text=True)
     returncode = process.wait()
     was_cancelled = False
     if processes is not None and process_lock is not None:
@@ -155,6 +169,25 @@ def _run_flow(
         control.mark_submission(submission_id, "Failed")
 
 
+def _record_cancellation_intent(
+    control: ControlStore,
+    submission_id: str,
+    *,
+    process_lock: threading.Lock,
+    cancelled_submissions: set[str],
+) -> bool:
+    """Coordinate a committed cancellation with worker startup/registration."""
+    with process_lock:
+        try:
+            status = control.get_submission(submission_id)["status"]
+        except KeyError:
+            return False
+        if status != "Cancelled":
+            return False
+        cancelled_submissions.add(submission_id)
+        return True
+
+
 def create_app() -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
     repository_root = _repository_root()
@@ -165,7 +198,19 @@ def create_app() -> FastAPI:
     control = _build_control(repository_root)
     immutable_store = _build_immutable_store(repository_root)
     tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
-    tracking = MlflowTracking(tracking_uri) if tracking_uri else None
+    tracking = None
+    if tracking_uri:
+        try:
+            tracking = MlflowTracking(tracking_uri)
+        except Exception as exc:  # noqa: BLE001 - optional MLflow clients expose varied failures.
+            # Tracking is a discoverability mirror. The transactional control plane
+            # remains authoritative when MLflow is unavailable during startup.
+            control.record_tracking_reconciliation(
+                subject_id="mlflow-tracking",
+                operation="initialize_tracking",
+                error=f"{type(exc).__name__}: {exc}",
+                resolved=False,
+            )
     runtime = PolicyRuntime()
     serving_provider = DemoReplayServingProvider(repository_root)
 
@@ -189,8 +234,6 @@ def create_app() -> FastAPI:
         tracking=tracking,
     )
     coordinator.restore_active()
-    if tracking is not None:
-        coordinator.reconcile_tracking()
 
     scheduled: set[str] = set()
     schedule_lock = threading.Lock()
@@ -221,12 +264,12 @@ def create_app() -> FastAPI:
 
     def cancel_submission(submission_id: str) -> bool:
         """Record worker intent; the control-plane Cancelled state stops the flow safely."""
-        with process_lock:
-            process = processes.get(submission_id)
-            if process is None:
-                return control.get_submission(submission_id)["status"] == "Submitted"
-            cancelled_submissions.add(submission_id)
-            return True
+        return _record_cancellation_intent(
+            control,
+            submission_id,
+            process_lock=process_lock,
+            cancelled_submissions=cancelled_submissions,
+        )
 
     app = create_control_app(
         control,
@@ -242,4 +285,12 @@ def create_app() -> FastAPI:
     app.mount("/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store)))
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime
+    if tracking is not None:
+        reconciliation = threading.Thread(
+            target=coordinator.reconcile_tracking,
+            daemon=True,
+            name="tracking-reconciliation",
+        )
+        reconciliation.start()
+        app.state.tracking_reconciliation_thread = reconciliation
     return app

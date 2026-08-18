@@ -63,7 +63,7 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
         variant="revised",
     )
     baseline_summary, baseline_report, _ = baseline.run(max_calls=100)
-    revised_summary, revised_report, _ = revised.run(max_calls=100)
+    revised_summary, revised_report, references = revised.run(max_calls=100)
     assert baseline_summary.accuracy == 0.56
     assert not baseline_report.overall_passed
     assert revised_summary.accuracy == 1.0
@@ -97,6 +97,32 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
         target_semantics=revised_summary.target_semantics,
     )
     assert [item.run_id for item in compatible] == [revised_summary.run_id]
+    tracking.policy_tags[revised.policy.policy_id]["approval_status"] = "approved"
+    run.tags["gate_status"] = "failed"
+    tracking.register_policy(revised_summary.run_id, revised.policy)
+    assert tracking.policy_tags[revised.policy.policy_id] == {
+        "policy_id": revised.policy.policy_id,
+        "gate_status": "failed",
+        "approval_status": "approved",
+    }
+    by_key = {item.logical_key: item for item in references}
+    prediction_bytes = revised.store.get_verified(
+        by_key["runs/submission-revised/predictions.jsonl"]
+    )
+    score_bytes = revised.store.get_verified(
+        by_key["runs/submission-revised/per-example-scores.jsonl"]
+    )
+    assert prediction_bytes != score_bytes
+    prediction = json.loads(prediction_bytes.splitlines()[0])
+    score = json.loads(score_bytes.splitlines()[0])
+    assert "parsed_prediction" in prediction and "correct" not in prediction
+    assert "correct" in score and "parsed_prediction" not in score
+    run_manifest = json.loads(
+        revised.store.get_verified(
+            by_key["runs/submission-revised/run-manifest.json"]
+        )
+    )
+    assert run_manifest["status"] == "Running"
 
 
 def test_revised_rollback_seed_has_distinct_provider_identity(

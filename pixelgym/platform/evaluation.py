@@ -7,6 +7,7 @@ import math
 import platform
 import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -336,8 +337,7 @@ class EvaluationRunner:
         if any(identifier not in by_id for identifier in identifiers):
             raise ValueError("shard contains an unknown example ID")
 
-        raw: list[dict[str, Any]] = []
-        for identifier in sorted(identifiers):
+        def evaluate_one(identifier: str) -> dict[str, Any]:
             example = by_id[identifier]
             overlay = overlays[identifier]
             request_sha256, prompt, condition, schema, image_path = self._request_material(
@@ -396,8 +396,17 @@ class EvaluationRunner:
                     canonical_json_bytes(envelope) + b"\n",
                     media_type="application/vnd.pixelgym.raw-response+json",
                 )
-            raw.append({"example_id": identifier, "reference": reference.to_dict()})
-        return raw
+            return {"example_id": identifier, "reference": reference.to_dict()}
+
+        ordered = sorted(identifiers)
+        # The declared provider concurrency is the actual per-run call cap. Metaflow's
+        # foreach worker count is kept at one by the supported launch commands so this
+        # executor is the single source of provider parallelism.
+        with ThreadPoolExecutor(
+            max_workers=min(self.provider_concurrency, len(ordered)),
+            thread_name_prefix=f"{self.submission_id}-provider",
+        ) as executor:
+            return list(executor.map(evaluate_one, ordered))
 
     def canonical_join(self, shards: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
         """Join branch outputs independently of branch completion or input order."""
@@ -598,14 +607,45 @@ class EvaluationRunner:
     ) -> list[ArtifactRef]:
         self.schemas.validate("gate_report", report.to_dict())
         self.schemas.validate("policy_package", self.policy.to_dict())
+        prediction_rows = [
+            {
+                key: row[key]
+                for key in (
+                    "example_id",
+                    "condition",
+                    "raw_artifact",
+                    "parse_status",
+                    "parse_error",
+                    "parsed_prediction",
+                    "point",
+                    "mark_id",
+                )
+            }
+            for row in records
+        ]
+        score_rows = [
+            {
+                key: row[key]
+                for key in (
+                    "example_id",
+                    "condition",
+                    "parse_status",
+                    "correct",
+                    "normalized_center_distance",
+                    "latency_ms",
+                    "cost_usd",
+                )
+            }
+            for row in records
+        ]
         prediction_ref = self.store.put_once(
             f"runs/{self.submission_id}/predictions.jsonl",
-            b"".join(canonical_json_bytes(row) + b"\n" for row in records),
+            b"".join(canonical_json_bytes(row) + b"\n" for row in prediction_rows),
             media_type="application/x-ndjson",
         )
         score_ref = self.store.put_once(
             f"runs/{self.submission_id}/per-example-scores.jsonl",
-            b"".join(canonical_json_bytes(row) + b"\n" for row in records),
+            b"".join(canonical_json_bytes(row) + b"\n" for row in score_rows),
             media_type="application/x-ndjson",
         )
         summary_ref = self.store.put_once(
@@ -674,7 +714,9 @@ class EvaluationRunner:
             "metaflow_pathspec": self.metaflow_pathspec,
             "dataset_fingerprint": self.dataset_fingerprint,
             "policy_id": self.policy.policy_id,
-            "status": "Complete",
+            # This immutable snapshot is written at the evidence-persisted boundary,
+            # before MLflow finalization and control-plane candidate registration.
+            "status": "Running",
             "request": {
                 "dataset": "day3-frozen-v1",
                 "prompt_version": str(self.policy.prompt_version),

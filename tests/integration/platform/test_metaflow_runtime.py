@@ -145,7 +145,7 @@ def _run_uninterrupted(repository_root: Path, root: Path) -> RuntimeResult:
             "--shard-size",
             "25",
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(run_id_file),
         ],
@@ -179,7 +179,7 @@ def _run_failed_then_resume(
             "--shard-size",
             "25",
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(origin_file),
         ],
@@ -206,7 +206,7 @@ def _run_failed_then_resume(
             "--origin-run-id",
             origin_run_id,
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(root / "resume-run-id"),
         ],
@@ -357,53 +357,60 @@ def test_graceful_cancellation_finalizes_failed_tracking_without_candidate(
             "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
         }
     )
-    process = subprocess.Popen(
-        [
-            sys.executable,
-            str(repository_root / "flows/grounding_evaluation_flow.py"),
-            "run",
-            "--submission-id",
-            submission_id,
-            "--prompt-version",
-            "2",
-            "--model",
-            "day3-replay-revised-v2",
-            "--maximum-calls",
-            "100",
-            "--shard-size",
-            "25",
-            "--provider-concurrency",
-            "2",
-            "--max-workers",
-            "2",
-            "--run-id-file",
-            str(origin_file),
-        ],
-        cwd=tmp_path,
-        env=environment,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
-    marker = tmp_path / "failpoints/evidence_persisted.paused"
-    deadline = time.monotonic() + 90
-    try:
-        while time.monotonic() < deadline and not marker.exists():
-            assert process.poll() is None, process.stdout.read() if process.stdout else ""
-            time.sleep(0.05)
-        assert marker.exists()
-        control = _control(tmp_path)
-        control.cancel_submission(
-            submission_id,
-            actor="local-reviewer",
-            reason="runtime cancellation test",
+    log_path = tmp_path / "cancellation-run.log"
+    with log_path.open("w") as log_file:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                str(repository_root / "flows/grounding_evaluation_flow.py"),
+                "run",
+                "--submission-id",
+                submission_id,
+                "--prompt-version",
+                "2",
+                "--model",
+                "day3-replay-revised-v2",
+                "--maximum-calls",
+                "100",
+                "--shard-size",
+                "25",
+                "--provider-concurrency",
+                "2",
+                "--max-workers",
+                "1",
+                "--run-id-file",
+                str(origin_file),
+            ],
+            cwd=tmp_path,
+            env=environment,
+            text=True,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
         )
-        (tmp_path / "failpoints/evidence_persisted.release").touch()
-        output = process.communicate(timeout=30)[0]
-    finally:
-        if process.poll() is None:
-            process.terminate()
-            process.wait(timeout=10)
+        marker = tmp_path / "failpoints/evidence_persisted.paused"
+        deadline = time.monotonic() + 90
+        try:
+            while time.monotonic() < deadline and not marker.exists():
+                if process.poll() is not None:
+                    log_file.flush()
+                    pytest.fail(
+                        f"flow exited before the cancellation boundary:\n{log_path.read_text()}"
+                    )
+                time.sleep(0.05)
+            assert marker.exists()
+            control = _control(tmp_path)
+            control.cancel_submission(
+                submission_id,
+                actor="local-reviewer",
+                reason="runtime cancellation test",
+            )
+            (tmp_path / "failpoints/evidence_persisted.release").touch()
+            process.wait(timeout=30)
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=10)
+    output = log_path.read_text()
 
     assert process.returncode != 0, output
     control = _control(tmp_path)
@@ -451,7 +458,7 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
                 "--provider-concurrency",
                 "2",
                 "--max-workers",
-                "2",
+                "1",
                 "--run-id-file",
                 str(origin_file),
             ],
@@ -494,7 +501,7 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
             "--origin-run-id",
             origin_run_id,
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(tmp_path / "resume-run-id"),
         ],

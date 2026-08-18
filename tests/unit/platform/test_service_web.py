@@ -781,6 +781,106 @@ def test_bootstrap_factory_requires_explicit_csrf_secret(
         bootstrap.create_app()
 
 
+def test_bootstrap_tracking_initialization_fails_open_with_reconciliation(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    database = tmp_path / "state/control.db"
+    database.parent.mkdir()
+    control = ControlStore(database, reviewer_identity="local-reviewer")
+    control.migrate()
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
+    monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    monkeypatch.setenv("MLFLOW_TRACKING_URI", "http://unavailable.invalid")
+    monkeypatch.setattr(
+        bootstrap,
+        "MlflowTracking",
+        lambda _uri: (_ for _ in ()).throw(ConnectionError("tracking unavailable")),
+    )
+
+    app = bootstrap.create_app()
+
+    assert TestClient(app).get("/").status_code == 200
+    event = control.audit_events()[-1]
+    assert event["event_type"] == "tracking.reconciliation_required"
+    assert event["details"]["operation"] == "initialize_tracking"
+
+
+def test_worker_registration_and_cancellation_intent_are_atomic(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    payload = {
+        "dataset": "day3-frozen-v1",
+        "prompt_version": "2",
+        "model": "day3-replay-revised-v2",
+        "condition": "raw",
+        "maximum_calls": "100",
+        "price_catalog": "pixelgym-demo-prices-v1",
+    }
+    submission_id = control.submit(payload)
+    process_lock = threading.Lock()
+    processes = {}
+    cancelled = set()
+    popen_started = threading.Event()
+    release_popen = threading.Event()
+
+    class Process:
+        returncode = 0
+
+        def wait(self):
+            return self.returncode
+
+    def popen(*args, **kwargs):
+        popen_started.set()
+        assert release_popen.wait(timeout=1)
+        return Process()
+
+    monkeypatch.setattr(bootstrap.subprocess, "Popen", popen)
+    worker = threading.Thread(
+        target=bootstrap._run_flow,
+        args=(repository_root, control, submission_id, payload),
+        kwargs={
+            "processes": processes,
+            "process_lock": process_lock,
+            "cancelled_submissions": cancelled,
+        },
+    )
+    worker.start()
+    assert popen_started.wait(timeout=1)
+    acquired_during_popen = process_lock.acquire(blocking=False)
+    if acquired_during_popen:
+        process_lock.release()
+    assert not acquired_during_popen
+    release_popen.set()
+    worker.join(timeout=1)
+    assert not worker.is_alive()
+
+    control.cancel_submission(
+        submission_id, actor="local-reviewer", reason="cancel before another worker"
+    )
+    with pytest.raises(ValueError, match="unknown submission status"):
+        control.mark_submission(submission_id, "Cancelled")
+    assert bootstrap._record_cancellation_intent(
+        control,
+        submission_id,
+        process_lock=process_lock,
+        cancelled_submissions=cancelled,
+    )
+    assert not bootstrap._record_cancellation_intent(
+        control,
+        "submission-missing",
+        process_lock=process_lock,
+        cancelled_submissions=cancelled,
+    )
+
+
 def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -1066,6 +1166,8 @@ def test_compatible_run_api_uses_tracking_view_model(tmp_path: Path) -> None:
     class TrackingView:
         def search_compatible_runs(self, **filters):
             assert filters["primary_metric"] == "accuracy"
+            assert filters["max_results"] == 20
+            assert filters["timeout_seconds"] == 5.0
             return [
                 TrackingRunView(
                     run_id="mlflow-run-1",
@@ -1267,6 +1369,23 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     assert diff.status_code == 200
     assert "no separate immutable prompt-diff artifact was recorded" in diff.text
 
+
+
+def test_compare_blocks_promotion_for_different_primary_metrics(
+    tmp_path: Path, passing_evidence, policy_factory
+) -> None:
+    from dataclasses import replace
+
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    first = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+        summary=summary,
+    )
     incompatible_policy = policy_factory(model="different-primary-metric")
     incompatible_summary = replace(
         summary,
@@ -1285,6 +1404,9 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
         gate_report=incompatible_report,
         artifacts=[],
         summary=incompatible_summary,
+    )
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
     )
     blocked = client.get(
         f"/compare?candidate={first.candidate_id}&candidate={incompatible.candidate_id}"
@@ -1399,10 +1521,68 @@ def test_runs_filter_prompt_model_status_date_and_gate_result(
             "gate_result": "passed",
         },
     )
-    excluded = client.get("/runs", params={"gate_result": "failed"})
-
     assert policy.model in matched.text
-    assert "No evaluated candidates" in excluded.text
+    for filters in (
+        {"prompt_version": policy.prompt_version + 1},
+        {"model": "different-model"},
+        {"status": "Failed"},
+        {"date_from": "2999-01-01"},
+        {"gate_result": "failed"},
+    ):
+        excluded = client.get("/runs", params=filters)
+        assert excluded.status_code == 200
+        assert "No evaluated candidates" in excluded.text
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"date_from": "not-a-date"},
+        {"date_from": "2026-02-30"},
+        {"date_to": "2026-8-18"},
+        {"gate_result": "unknown"},
+    ],
+)
+def test_runs_reject_invalid_date_and_gate_filters(tmp_path: Path, params) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs", params=params)
+    assert response.status_code == 422
+
+
+def test_compatible_run_api_rejects_unsafe_filters_and_maps_timeout(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+
+    class SlowTracking:
+        calls = 0
+
+        def search_compatible_runs(self, **filters):
+            self.calls += 1
+            raise TimeoutError("slow tracking")
+
+    tracking = SlowTracking()
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            tracking=tracking,
+        )
+    )
+    base = {
+        "dataset_fingerprint": "sha256:" + "a" * 64,
+        "scorer_version": "scorer-v1",
+        "target_semantics": "target-v1",
+    }
+    assert client.get(
+        "/api/tracking/runs/compatible",
+        params={**base, "scorer_version": "unsafe'value"},
+    ).status_code == 422
+    assert tracking.calls == 0
+    assert client.get("/api/tracking/runs/compatible", params=base).status_code == 504
+    assert tracking.calls == 1
 
 
 def test_runs_render_safe_source_provenance_diagnostic(

@@ -248,3 +248,6 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
         target_semantics=gate.required_target_semantics,
     )
     assert [item.run_id for item in compatible] == [run_id]
+    assert compatible[0].artifact_paths == ()
+    detail = tracking.get_run_view(run_id)
+    assert "policy/policy-manifest.json" in detail.artifact_paths

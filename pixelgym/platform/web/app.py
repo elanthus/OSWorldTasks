@@ -5,9 +5,11 @@ from __future__ import annotations
 import hashlib
 import hmac
 import html
+import re
 import secrets
 from collections.abc import Callable
 from dataclasses import asdict
+from datetime import date
 from difflib import HtmlDiff
 from pathlib import Path
 from typing import Annotated, Any
@@ -311,7 +313,7 @@ def create_control_app(
         pathspec = submission["metaflow_pathspec"] or "pending"
         cancellation = '<p class="muted">Cancellation is no longer available for this terminal run.</p>'
         if submission["status"] in {"Submitted", "Running"}:
-            cancellation = f"""<form method="post" action="/submissions/{_escape(submission_id)}/cancel"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Cancellation reason<textarea name="reason" required minlength="1"></textarea></label><button class="secondary" type="submit">Cancel experiment</button><p class="muted">Cancellation terminates the local flow process, retains partial immutable evidence, and records a Cancelled control-plane state.</p></form>"""
+            cancellation = f"""<form method="post" action="/submissions/{_escape(submission_id)}/cancel"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Cancellation reason<textarea name="reason" required minlength="1"></textarea></label><button class="secondary" type="submit">Cancel experiment</button><p class="muted">Cancellation records the authoritative state immediately; the local flow stops at its next durable step boundary while retaining partial immutable evidence.</p></form>"""
         request_rows = "".join(
             f"<dt>{_escape(key)}</dt><dd>{_escape(value)}</dd>"
             for key, value in submission["request"].items()
@@ -356,6 +358,18 @@ def create_control_app(
         date_to: str | None = None,
         gate_result: str | None = None,
     ) -> str:
+        for label, value in (("date_from", date_from), ("date_to", date_to)):
+            if value:
+                try:
+                    parsed = date.fromisoformat(value)
+                except ValueError as exc:
+                    raise HTTPException(
+                        422, f"{label} must use a valid YYYY-MM-DD date"
+                    ) from exc
+                if parsed.isoformat() != value:
+                    raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date")
+        if gate_result is not None and gate_result not in {"passed", "failed"}:
+            raise HTTPException(422, "gate_result must be passed or failed")
         candidates = control.list_candidates()
         submissions = control.list_submissions()
         submission_by_run = {
@@ -433,12 +447,29 @@ def create_control_app(
     ) -> dict[str, Any]:
         if tracking is None:
             raise HTTPException(503, "MLflow tracking is unavailable")
-        runs = tracking.search_compatible_runs(
-            dataset_fingerprint=dataset_fingerprint,
-            scorer_version=scorer_version,
-            target_semantics=target_semantics,
-            primary_metric=primary_metric,
-        )
+        values = {
+            "dataset_fingerprint": dataset_fingerprint,
+            "scorer_version": scorer_version,
+            "target_semantics": target_semantics,
+            "primary_metric": primary_metric,
+        }
+        if any(
+            not value
+            or len(value) > 256
+            or not re.fullmatch(r"[A-Za-z0-9:._-]+", value)
+            for value in values.values()
+        ):
+            raise HTTPException(422, "tracking compatibility filters contain unsafe values")
+        try:
+            runs = tracking.search_compatible_runs(
+                **values,
+                max_results=20,
+                timeout_seconds=5.0,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        except TimeoutError as exc:
+            raise HTTPException(504, "MLflow compatible-run search timed out") from exc
         return {"runs": [asdict(run) for run in runs]}
 
     @app.get("/compare", response_class=HTMLResponse)

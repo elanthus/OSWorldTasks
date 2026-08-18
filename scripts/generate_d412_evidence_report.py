@@ -344,18 +344,48 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
                 f"unexpected exit status in {path}: {records[path]['exit_status']} != {expected}"
             )
 
+    revision = records["commands/00-git-revision.json"]["output"].strip()
+    pass_floors = {
+        "fast": 679,
+        "platform_units": 300,
+        "local_runtime": 10,
+        "mechanical": 30,
+    }
+    if revision == "f92e307af7a3830347d50ca63f6a7d481489935c":
+        # This immutable revision records the smaller counts below. Every other
+        # revision must meet the expanded suite floors declared above.
+        pass_floors = {
+            "fast": 593,
+            "platform_units": 216,
+            "local_runtime": 9,
+            "mechanical": 23,
+        }
     summaries = {
-        "fast": _summary(records, "commands/08-fast-suite.json", passed=593, skipped=5, warnings=3),
+        "fast": _summary(
+            records,
+            "commands/08-fast-suite.json",
+            passed=pass_floors["fast"],
+            skipped=5,
+            warnings=3,
+        ),
         "environment": _summary(records, "commands/09-environment-checker.json", passed=1),
         "platform_units": _summary(
-            records, "commands/11-platform-unit-boundaries.json", passed=216, warnings=3
+            records,
+            "commands/11-platform-unit-boundaries.json",
+            passed=pass_floors["platform_units"],
+            warnings=3,
         ),
         "local_runtime": _summary(
-            records, "commands/27-platform-local-runtime.json", passed=9
+            records,
+            "commands/27-platform-local-runtime.json",
+            passed=pass_floors["local_runtime"],
         ),
         "compose": _summary(records, "commands/30-compose-browser-sandbox-retry.json", passed=2),
         "mechanical": _summary(
-            records, "commands/31-mechanical-boundaries.json", passed=23, warnings=3
+            records,
+            "commands/31-mechanical-boundaries.json",
+            passed=pass_floors["mechanical"],
+            warnings=3,
         ),
     }
     _require_text(records, "commands/10-golden-trajectory.json", "OK")

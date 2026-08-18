@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import queue
 import re
 import tempfile
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -125,6 +128,8 @@ class Tracking(Protocol):
         scorer_version: str,
         target_semantics: str,
         primary_metric: str = PRIMARY_METRIC,
+        max_results: int = 20,
+        timeout_seconds: float = 5.0,
     ) -> list[TrackingRunView]: ...
     def finalize(self, run_id: str, status: str) -> None: ...
 
@@ -251,6 +256,10 @@ class InMemoryTracking:
                 "approval_status": "pending",
             },
         )
+        self.policy_tags[manifest.policy_id]["gate_status"] = self.runs[run_id].tags.get(
+            "gate_status", "unknown"
+        )
+        self.policy_tags[manifest.policy_id].setdefault("approval_status", "pending")
         return version
 
     def mirror_candidate_status(
@@ -274,10 +283,16 @@ class InMemoryTracking:
         scorer_version: str,
         target_semantics: str,
         primary_metric: str = PRIMARY_METRIC,
+        max_results: int = 20,
+        timeout_seconds: float = 5.0,
     ) -> list[TrackingRunView]:
+        if not 1 <= max_results <= 100:
+            raise ValueError("max_results must be between 1 and 100")
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
         views = [self._view(run) for run in self.runs.values()]
         key = (dataset_fingerprint, scorer_version, target_semantics, primary_metric)
-        return [view for view in views if view.comparison_key == key]
+        return [view for view in views if view.comparison_key == key][:max_results]
 
     def _view(self, run: MemoryRun) -> TrackingRunView:
         return TrackingRunView(
@@ -603,9 +618,7 @@ class MlflowTracking:
         except Exception as exc:  # MLflow raises a typed RESOURCE_ALREADY_EXISTS exception.
             if "already exists" not in str(exc).lower():
                 raise
-        for existing in self.client.search_model_versions(
-            f"name = '{REGISTERED_POLICY_NAME}'"
-        ):
+        for existing in self._all_policy_versions():
             if existing.run_id == run_id and existing.tags.get("policy_id") == manifest.policy_id:
                 self.client.set_model_version_tag(
                     REGISTERED_POLICY_NAME,
@@ -638,9 +651,7 @@ class MlflowTracking:
     def _policy_version(self, policy_id: str) -> Any:
         matches = [
             item
-            for item in self.client.search_model_versions(
-                f"name = '{REGISTERED_POLICY_NAME}'"
-            )
+            for item in self._all_policy_versions()
             if item.tags.get("policy_id") == policy_id
         ]
         if len(matches) != 1:
@@ -648,6 +659,20 @@ class MlflowTracking:
                 f"expected exactly one MLflow policy version for {policy_id}, found {len(matches)}"
             )
         return matches[0]
+
+    def _all_policy_versions(self) -> list[Any]:
+        versions: list[Any] = []
+        page_token: str | None = None
+        while True:
+            page = self.client.search_model_versions(
+                f"name = '{REGISTERED_POLICY_NAME}'",
+                max_results=1000,
+                page_token=page_token,
+            )
+            versions.extend(page)
+            page_token = getattr(page, "token", None)
+            if not page_token:
+                return versions
 
     def mirror_candidate_status(
         self, policy_id: str, *, gate_status: str, approval_status: str
@@ -682,7 +707,13 @@ class MlflowTracking:
         scorer_version: str,
         target_semantics: str,
         primary_metric: str = PRIMARY_METRIC,
+        max_results: int = 20,
+        timeout_seconds: float = 5.0,
     ) -> list[TrackingRunView]:
+        if not 1 <= max_results <= 100:
+            raise ValueError("max_results must be between 1 and 100")
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
         filter_string = " and ".join(
             (
                 f"params.dataset_fingerprint = '{_filter_literal(dataset_fingerprint)}'",
@@ -691,23 +722,43 @@ class MlflowTracking:
                 f"tags.primary_metric = '{_filter_literal(primary_metric)}'",
             )
         )
-        return [
-            self._view(run)
-            for run in self.client.search_runs(
-                [self.experiment_id], filter_string=filter_string, order_by=["start_time DESC"]
-            )
-        ]
+        runs = _bounded_call(
+            lambda: self.client.search_runs(
+                [self.experiment_id],
+                filter_string=filter_string,
+                max_results=max_results,
+                order_by=["start_time DESC"],
+            ),
+            timeout_seconds=timeout_seconds,
+        )
+        # Compatibility search is a lightweight request path. Artifact paths are
+        # loaded only by the explicit detail view below.
+        return [self._view(run) for run in runs]
 
-    def _view(self, run: Any) -> TrackingRunView:
+    def get_run_view(self, run_id: str) -> TrackingRunView:
+        return self._view(
+            self.client.get_run(run_id), artifact_paths=self._artifact_paths(run_id)
+        )
+
+    def _artifact_paths(self, run_id: str, path: str | None = None) -> tuple[str, ...]:
+        paths: list[str] = []
+        for item in self.client.list_artifacts(run_id, path):
+            if item.is_dir:
+                paths.extend(self._artifact_paths(run_id, item.path))
+            else:
+                paths.append(item.path)
+        return tuple(sorted(paths))
+
+    def _view(
+        self, run: Any, *, artifact_paths: tuple[str, ...] = ()
+    ) -> TrackingRunView:
         return TrackingRunView(
             run_id=run.info.run_id,
             status=run.info.status,
             params=dict(run.data.params),
             tags=dict(run.data.tags),
             metrics=dict(run.data.metrics),
-            artifact_paths=tuple(
-                sorted(item.path for item in self.client.list_artifacts(run.info.run_id))
-            ),
+            artifact_paths=artifact_paths,
             dataset_inputs=tuple(
                 _dataset_contract(item) for item in run.inputs.dataset_inputs
             ),
@@ -720,6 +771,28 @@ class MlflowTracking:
 def _filter_literal(value: str) -> str:
     if "'" in value or "\\" in value:
         raise ValueError("tracking filter values contain unsafe characters")
+    return value
+
+
+def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
+    """Return a tracking result without letting one remote request hold the caller."""
+    result: queue.Queue[tuple[bool, Any]] = queue.Queue(maxsize=1)
+
+    def invoke() -> None:
+        try:
+            result.put((True, call()))
+        except Exception as exc:  # noqa: BLE001 - preserve the adapter's original exception.
+            result.put((False, exc))
+
+    threading.Thread(target=invoke, daemon=True, name="mlflow-compatible-run-search").start()
+    try:
+        succeeded, value = result.get(timeout=timeout_seconds)
+    except queue.Empty as exc:
+        raise TimeoutError("MLflow request exceeded its deadline") from exc
+    if not succeeded:
+        if not isinstance(value, BaseException):
+            raise TypeError("tracking request returned an invalid failure value")
+        raise value
     return value
 
 

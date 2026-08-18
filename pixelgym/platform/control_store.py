@@ -648,7 +648,7 @@ class ControlStore:
             ]
 
     def mark_submission(self, submission_id: str, status: str) -> None:
-        allowed = {"Submitted", "Running", "Complete", "Failed", "Cancelled"}
+        allowed = {"Submitted", "Running", "Complete", "Failed"}
         if status not in allowed:
             raise ValueError("unknown submission status")
         with self.transaction() as connection:
