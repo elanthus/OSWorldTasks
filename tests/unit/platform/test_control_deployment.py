@@ -19,6 +19,7 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.schema_validation import ContractValidationError
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
@@ -82,6 +83,65 @@ def test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprov
         )
 
 
+def test_schema_invalid_approval_and_deployment_fail_before_authoritative_changes(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    validate = control.schemas.validate
+
+    def reject_approval(contract: str, value: object) -> None:
+        if contract == "approval":
+            raise ContractValidationError("approval violates its frozen schema")
+        validate(contract, value)
+
+    monkeypatch.setattr(control.schemas, "validate", reject_approval)
+    with pytest.raises(ContractValidationError, match="approval"):
+        control.approve(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="reviewed",
+            gate_report_sha256=candidate.gate_report_sha256,
+        )
+    with pytest.raises(KeyError):
+        control.get_approval(candidate.candidate_id)
+    assert control.get_candidate(candidate.candidate_id).state.value == "Eligible"
+
+    monkeypatch.setattr(control.schemas, "validate", validate)
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+
+    def reject_deployment(contract: str, value: object) -> None:
+        if contract == "deployment":
+            raise ContractValidationError("deployment violates its frozen schema")
+        validate(contract, value)
+
+    monkeypatch.setattr(control.schemas, "validate", reject_deployment)
+    with pytest.raises(ContractValidationError, match="deployment"):
+        control.activate(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="deploy",
+            action="deploy",
+            expected_deployment_id=None,
+            expected_generation=0,
+        )
+    assert control.deployment_history() == []
+    assert control.active() == (None, 0)
+
+
 def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence(
     tmp_path: Path, passing_evidence
 ) -> None:
@@ -89,6 +149,15 @@ def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence
 
     policy, summary, report = passing_evidence
     control = _control(tmp_path)
+    invalid_schema = dataclasses.replace(report, schema_version="unsupported-report")
+    with pytest.raises(ContractValidationError, match="gate_report"):
+        control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=policy,
+            gate_report=invalid_schema,
+            artifacts=[],
+        )
+    assert control.list_candidates() == []
     with pytest.raises(ValueError, match="identities"):
         control.register_candidate(
             source_run_id="different-run", policy=policy, gate_report=report, artifacts=[]

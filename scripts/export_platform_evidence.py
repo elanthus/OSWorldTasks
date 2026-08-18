@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.schema_validation import PlatformSchemas
 
 
 def _json(path: Path, value: object) -> None:
@@ -21,7 +22,7 @@ def _jsonl(path: Path, values: list[object]) -> None:
 
 
 def export_evidence(control: ControlStore, output: Path) -> None:
-    output.mkdir(parents=True, exist_ok=True)
+    schemas = PlatformSchemas(Path(__file__).parents[1])
     submissions = control.list_submissions()
     candidates = control.list_candidates()
     candidates_by_run = {candidate.source_run_id: candidate for candidate in candidates}
@@ -55,6 +56,22 @@ def export_evidence(control: ControlStore, output: Path) -> None:
         for row in submissions
     ]
     gate_reports = [candidate.gate_report for candidate in candidates]
+    approvals = control.approval_events()
+    deployments = control.deployment_history()
+    audit_events = control.audit_events()
+    for manifest in manifests:
+        schemas.validate("run_manifest", manifest)
+    for report in gate_reports:
+        schemas.validate("gate_report", report)
+    for candidate in candidates:
+        schemas.validate("policy_package", candidate.policy.to_dict())
+    for approval in approvals:
+        schemas.validate("approval", approval)
+    for deployment in deployments:
+        schemas.validate("deployment", deployment)
+    for event in audit_events:
+        schemas.validate("audit_event", event)
+
     comparison = {
         "schema_version": "pixelgym-platform-comparison-export-v1",
         "note": "Stored observed values only; gate semantics were not recomputed.",
@@ -71,12 +88,13 @@ def export_evidence(control: ControlStore, output: Path) -> None:
             for item in candidates
         ],
     }
+    output.mkdir(parents=True, exist_ok=True)
     _jsonl(output / "demo-run-manifests.jsonl", manifests)
     _json(output / "demo-comparison.json", comparison)
     _jsonl(output / "demo-gate-reports.jsonl", gate_reports)
-    _jsonl(output / "demo-approval-events.jsonl", control.approval_events())
-    _jsonl(output / "demo-deployment-events.jsonl", control.deployment_history())
-    _jsonl(output / "demo-audit-events.jsonl", control.audit_events())
+    _jsonl(output / "demo-approval-events.jsonl", approvals)
+    _jsonl(output / "demo-deployment-events.jsonl", deployments)
+    _jsonl(output / "demo-audit-events.jsonl", audit_events)
     _jsonl(
         output / "demo-mlflow-lineage.jsonl",
         [

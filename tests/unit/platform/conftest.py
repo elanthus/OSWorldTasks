@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -9,6 +8,7 @@ from pixelgym.platform.contracts import GatePolicy, RunSummary
 from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+from pixelgym.platform.schema_validation import load_gate_policy
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
@@ -19,9 +19,7 @@ def repository_root() -> Path:
 
 @pytest.fixture
 def gate_policy(repository_root: Path) -> GatePolicy:
-    return GatePolicy(
-        **json.loads((repository_root / "config/promotion-gates.demo-v1.json").read_text())
-    )
+    return load_gate_policy(repository_root)
 
 
 @pytest.fixture

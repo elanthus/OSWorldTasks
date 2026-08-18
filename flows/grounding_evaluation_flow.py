@@ -9,7 +9,6 @@ idempotency for the deterministic request ID; the runtime fixture exercises that
 from __future__ import annotations
 
 import contextlib
-import json
 import os
 import time
 from collections.abc import Callable
@@ -34,6 +33,7 @@ from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_jso
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
+from pixelgym.platform.schema_validation import load_gate_policy, load_price_catalog
 from pixelgym.platform.source_provenance import load_packaged_source_provenance
 
 _TEST_HOOKS_ENV = "PIXELGYM_ENABLE_TEST_HOOKS"
@@ -154,6 +154,7 @@ def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
         dataset_fingerprint=flow.dataset_fingerprint,
         submission_id=flow.submission_id,
         metaflow_pathspec=flow.metaflow_pathspec,
+        price_catalog_version=flow.price_catalog_version,
         provider_response_hook=(
             (lambda request_id: _test_fail_once("provider_response_received"))
             if os.environ.get(_TEST_HOOKS_ENV) == "1"
@@ -217,7 +218,11 @@ class GroundingEvaluationFlow(FlowSpec):
             )
         )
         self.dataset_fingerprint = fingerprint
-        self.gate_policy = json.loads((root / "config/promotion-gates.demo-v1.json").read_text())
+        self.gate_policy = load_gate_policy(root).to_dict()
+        price_catalog = load_price_catalog(root)
+        if price_catalog["catalog_version"] != "pixelgym-demo-prices-v1":
+            raise ValueError("the frozen flow requires the demo-v1 price catalog")
+        self.price_catalog_version = price_catalog["catalog_version"]
         provenance_path = os.environ.get("PIXELGYM_SOURCE_PROVENANCE_PATH")
         provenance = load_packaged_source_provenance(
             root, Path(provenance_path) if provenance_path else None
@@ -291,6 +296,7 @@ class GroundingEvaluationFlow(FlowSpec):
             "dataset_manifest_ref",
             "metaflow_pathspec",
             "mlflow_run_id",
+            "price_catalog_version",
         ):
             setattr(self, name, getattr(source, name))
         self.raw_responses = _runner(self).canonical_join(

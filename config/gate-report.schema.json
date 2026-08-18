@@ -3,7 +3,7 @@
   "$id": "https://pixelgym.local/schemas/gate-report-v1.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "gate_policy_version", "run_id", "dataset_fingerprint", "policy_id", "accuracy", "cost_usd_per_100", "provider_latency_p95_ms", "completeness", "compatibility_passed", "code_revision_passed", "overall_passed", "reasons"],
+  "required": ["schema_version", "gate_policy_version", "run_id", "dataset_fingerprint", "policy_id", "accuracy", "cost_usd_per_100", "provider_latency_p95_ms", "completeness", "compatibility_passed", "code_revision_passed", "overall_passed", "confidence_bound", "reasons"],
   "properties": {
     "schema_version": {"const": "pixelgym-promotion-gate-report-v1"},
     "gate_policy_version": {"type": "string"},
@@ -13,11 +13,15 @@
     "accuracy": {"$ref": "#/$defs/observation"},
     "cost_usd_per_100": {"$ref": "#/$defs/observation"},
     "provider_latency_p95_ms": {"$ref": "#/$defs/observation"},
-    "completeness": {"type": "object", "required": ["expected", "scored", "unique", "passed"], "properties": {"expected": {"type": "integer"}, "scored": {"type": "integer"}, "unique": {"type": "integer"}, "passed": {"type": "boolean"}}},
+    "completeness": {"type": "object", "additionalProperties": false, "required": ["expected", "scored", "unique", "passed"], "properties": {"expected": {"type": "integer", "minimum": 0}, "scored": {"type": "integer", "minimum": 0}, "unique": {"type": "integer", "minimum": 0}, "passed": {"type": "boolean"}}},
     "compatibility_passed": {"type": "boolean"},
     "code_revision_passed": {"type": "boolean"},
     "overall_passed": {"type": "boolean"},
+    "confidence_bound": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/confidence_bound"}]},
     "reasons": {"type": "array", "items": {"type": "string"}}
   },
-  "$defs": {"observation": {"type": "object", "required": ["observed", "threshold", "passed"], "properties": {"observed": {"type": ["number", "null"]}, "threshold": {"type": "number"}, "passed": {"type": "boolean"}}}}
+  "$defs": {
+    "observation": {"type": "object", "additionalProperties": false, "required": ["observed", "threshold", "passed"], "properties": {"observed": {"type": ["number", "null"]}, "threshold": {"type": "number"}, "passed": {"type": "boolean"}}},
+    "confidence_bound": {"type": "object", "additionalProperties": false, "required": ["observed", "threshold", "passed", "method", "confidence_level", "success_count", "sample_count"], "properties": {"observed": {"type": ["number", "null"]}, "threshold": {"type": "number"}, "passed": {"type": "boolean"}, "method": {"type": "string", "minLength": 1}, "confidence_level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1}, "success_count": {"type": "integer", "minimum": 0}, "sample_count": {"type": "integer", "minimum": 0}}}
+  }
 }

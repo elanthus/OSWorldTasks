@@ -9,7 +9,7 @@
     "maximum_cost_usd_per_100", "maximum_provider_latency_p95_ms",
     "minimum_measured_count", "required_dataset_fingerprint",
     "required_scorer_version", "required_target_semantics", "dirty_code_allowed",
-    "confidence_bound_required", "synthetic_only"
+    "confidence_bound_required", "confidence_level", "synthetic_only"
   ],
   "properties": {
     "schema_version": {"const": "pixelgym-promotion-gate-policy-v1"},
@@ -23,6 +23,7 @@
     "required_target_semantics": {"type": "string", "minLength": 1},
     "dirty_code_allowed": {"type": "boolean"},
     "confidence_bound_required": {"type": "boolean"},
+    "confidence_level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
     "synthetic_only": {"type": "boolean"}
   }
 }

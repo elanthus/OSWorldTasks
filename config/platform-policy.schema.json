@@ -3,7 +3,7 @@
   "$id": "https://pixelgym.local/schemas/platform-policy-v1.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "dependency_lock_sha256", "policy_id"],
+  "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "code_state", "source_tree_sha256", "source_provenance_verified", "source_provenance_failure_reason", "dependency_lock_sha256", "policy_id"],
   "properties": {
     "schema_version": {"const": "pixelgym-grounding-policy-v1"},
     "provider": {"type": "string", "minLength": 1},
@@ -18,9 +18,20 @@
     "scorer_version": {"type": "string", "minLength": 1},
     "overlay_version": {"type": "string", "minLength": 1},
     "target_semantics": {"type": "string", "minLength": 1},
-    "code_revision": {"type": "string", "pattern": "^([0-9a-f]{40}|.+-dirty)$"},
+    "code_revision": {"type": "string", "minLength": 1},
+    "code_state": {"enum": ["clean", "dirty", "unverifiable"]},
+    "source_tree_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]},
+    "source_provenance_verified": {"type": "boolean"},
+    "source_provenance_failure_reason": {"type": ["string", "null"]},
     "dependency_lock_sha256": {"$ref": "#/$defs/digest"},
     "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"code_state": {"const": "unverifiable"}}},
+      "then": {"properties": {"code_revision": {"const": "unverifiable"}, "source_tree_sha256": {"type": "null"}, "source_provenance_verified": {"const": false}, "source_provenance_failure_reason": {"type": "string", "minLength": 1}}},
+      "else": {"properties": {"code_revision": {"pattern": "^[0-9a-f]{40}$"}, "source_tree_sha256": {"$ref": "#/$defs/digest"}, "source_provenance_verified": {"const": true}, "source_provenance_failure_reason": {"type": "null"}}}
+    }
+  ],
   "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
 }

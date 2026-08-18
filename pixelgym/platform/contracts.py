@@ -158,7 +158,9 @@ class GateReport:
     reasons: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        value = asdict(self)
+        value["reasons"] = list(self.reasons)
+        return value
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> GateReport:

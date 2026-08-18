@@ -25,7 +25,8 @@
     "request_status": {"enum": ["responded", "request_failure"]},
     "request_failure": {"type": ["string", "null"]}
   },
-  "oneOf": [
+  "allOf": [
+    {"oneOf": [
     {
       "properties": {
         "started_at_utc": {"type": "string", "format": "date-time"},
@@ -37,6 +38,18 @@
         "started_at_utc": {"type": "null"},
         "started_at_missing_reason": {"type": "string", "minLength": 1}
       }
-    }
+    }]},
+    {"oneOf": [
+      {"properties": {"usage": {"type": "object"}, "usage_missing_reason": {"type": "null"}}},
+      {"properties": {"usage": {"type": "null"}, "usage_missing_reason": {"type": "string", "minLength": 1}}}
+    ]},
+    {"oneOf": [
+      {"properties": {"cost_usd": {"type": "number", "minimum": 0}, "cost_missing_reason": {"type": "null"}}},
+      {"properties": {"cost_usd": {"type": "null"}, "cost_missing_reason": {"type": "string", "minLength": 1}}}
+    ]},
+    {"oneOf": [
+      {"properties": {"request_status": {"const": "responded"}, "raw_response": {"type": "string"}, "request_failure": {"type": "null"}}},
+      {"properties": {"request_status": {"const": "request_failure"}, "raw_response": {"type": "null"}, "request_failure": {"type": "string", "minLength": 1}}}
+    ]}
   ]
 }

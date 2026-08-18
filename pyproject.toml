@@ -10,6 +10,7 @@ dependencies = [
     "numpy>=1.26",
     "pillow>=10.0",
     "fastapi>=0.110",
+    "jsonschema==4.25.1",
     "uvicorn>=0.29",
 ]
 

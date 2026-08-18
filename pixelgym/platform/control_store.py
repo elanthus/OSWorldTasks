@@ -21,6 +21,7 @@ from pixelgym.platform.contracts import (
 )
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.policy import verify_policy_manifest
+from pixelgym.platform.schema_validation import PlatformSchemas
 
 
 class ConflictError(RuntimeError):
@@ -327,6 +328,7 @@ class ControlStore:
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
+        self.schemas = PlatformSchemas(Path(__file__).resolve().parents[2])
         target = str(database)
         self.connection = sqlite3.connect(
             target,
@@ -509,6 +511,19 @@ class ControlStore:
             "sequence": sequence,
         }
         event_id = "audit-" + sha256_bytes(canonical_json_bytes(material))[:24]
+        details_json = canonical_json_bytes(details).decode()
+        self.schemas.validate(
+            "audit_event",
+            {
+                "event_id": event_id,
+                "event_type": event_type,
+                "actor": actor,
+                "subject_id": subject_id,
+                "details_json": details_json,
+                "details": details,
+                "created_at_utc": material["created_at_utc"],
+            },
+        )
         connection.execute(
             "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?, ?)",
             (
@@ -516,7 +531,7 @@ class ControlStore:
                 event_type,
                 actor,
                 subject_id,
-                canonical_json_bytes(details).decode(),
+                details_json,
                 material["created_at_utc"],
             ),
         )
@@ -589,6 +604,8 @@ class ControlStore:
         summary: RunSummary | None = None,
         submission_id: str | None = None,
     ) -> CandidateRecord:
+        self.schemas.validate("policy_package", policy.to_dict())
+        self.schemas.validate("gate_report", gate_report.to_dict())
         verify_policy_manifest(policy)
         if gate_report.schema_version != "pixelgym-promotion-gate-report-v1":
             raise ValueError("candidate gate report schema version is unsupported")
@@ -744,16 +761,29 @@ class ControlStore:
                     {"candidate_id": candidate_id, "actor": actor, "reason": reason.strip(), "created": created}
                 )
             )[:24]
+            approval = {
+                "approval_id": approval_id,
+                "candidate_id": candidate_id,
+                "actor": actor,
+                "reason": reason.strip(),
+                "gate_report_sha256": gate_report_sha256,
+                "policy_id": row["policy_id"],
+                "created_at_utc": created,
+            }
+            self.schemas.validate("approval", approval)
             connection.execute(
                 "INSERT INTO approvals VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    approval_id,
-                    candidate_id,
-                    actor,
-                    reason.strip(),
-                    gate_report_sha256,
-                    row["policy_id"],
-                    created,
+                tuple(
+                    approval[key]
+                    for key in (
+                        "approval_id",
+                        "candidate_id",
+                        "actor",
+                        "reason",
+                        "gate_report_sha256",
+                        "policy_id",
+                        "created_at_utc",
+                    )
                 ),
             )
             connection.execute(
@@ -858,20 +888,34 @@ class ControlStore:
             }
             deployment_id = "deployment-" + sha256_bytes(canonical_json_bytes(material))[:24]
             created = self._now()
+            deployment = {
+                "deployment_id": deployment_id,
+                "candidate_id": candidate_id,
+                "policy_id": candidate["policy_id"],
+                "action": action,
+                "actor": actor,
+                "reason": reason.strip(),
+                "created_at_utc": created,
+                "generation": generation,
+            }
+            self.schemas.validate("deployment", deployment)
             connection.execute(
                 """INSERT INTO deployments(
                     deployment_id, candidate_id, policy_id, action, actor, reason,
                     created_at_utc, generation
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    deployment_id,
-                    candidate_id,
-                    candidate["policy_id"],
-                    action,
-                    actor,
-                    reason.strip(),
-                    created,
-                    generation,
+                tuple(
+                    deployment[key]
+                    for key in (
+                        "deployment_id",
+                        "candidate_id",
+                        "policy_id",
+                        "action",
+                        "actor",
+                        "reason",
+                        "created_at_utc",
+                        "generation",
+                    )
                 ),
             )
             changed = connection.execute(
