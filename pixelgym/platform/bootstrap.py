@@ -220,6 +220,7 @@ def create_app() -> FastAPI:
         worker.start()
 
     def cancel_submission(submission_id: str) -> bool:
+        """Record worker intent; the control-plane Cancelled state stops the flow safely."""
         with process_lock:
             process = processes.get(submission_id)
             if process is None:
