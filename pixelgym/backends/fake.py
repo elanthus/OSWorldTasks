@@ -1,7 +1,7 @@
 """In-process fake backend (no VM, no browser, no network, no wall-clock).
 
 Implements the backend contract D1.6 asks for
-(`plans/day-1-environment-core.md`): `reset` installs a freshly seeded task
+(`plans/sprint-1-environment-core.md`): `reset` installs a freshly seeded task
 via the real generator (`pixelgym.tasks.vendor_form.generator`, so determinism
 is genuine rather than stipulated), `screenshot` returns a deterministic RGB
 frame, `click`/`key` drive an actual model of the vendor form, and

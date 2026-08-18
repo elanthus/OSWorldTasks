@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TypeVar
 
-from pixelgym.platform.contracts import CandidateState
 from pixelgym.platform.control_store import (
     CandidateRecord,
     ConflictError,
@@ -36,18 +35,7 @@ class DeploymentCoordinator:
         self.on_activated = on_activated or (lambda deployment, prepared: None)
 
     def _verify_candidate(self, candidate_id: str) -> PreparedCandidate | bool:
-        candidate = self.control.get_candidate(candidate_id)
-        if candidate.state is not CandidateState.APPROVED:
-            raise TransitionError("candidate must be approved before activation")
-        try:
-            approval = self.control.get_approval(candidate_id)
-        except KeyError as exc:
-            raise TransitionError("candidate approval evidence is missing") from exc
-        if (
-            approval["gate_report_sha256"] != candidate.gate_report_sha256
-            or approval["policy_id"] != candidate.policy.policy_id
-        ):
-            raise TransitionError("candidate approval evidence no longer matches")
+        candidate, _approval = self.control.verify_candidate_approval(candidate_id)
         verify_policy_manifest(candidate.policy)
         report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report))
         if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.get("overall_passed"):
