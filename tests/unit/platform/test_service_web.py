@@ -957,11 +957,16 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
     scheduled: list[tuple[str, dict]] = []
+    cancellation_states: list[str] = []
     client = TestClient(
         create_control_app(
             control,
             csrf_secret="test-secret-at-least-sixteen",
             submit_callback=lambda submission, payload: scheduled.append((submission, payload)),
+            cancel_callback=lambda submission: cancellation_states.append(
+                control.get_submission(submission)["status"]
+            )
+            or True,
         )
     )
     page = client.get("/")
@@ -993,6 +998,7 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
     assert cancelled.status_code == 200
     assert "Cancelled" in cancelled.text
     assert "Cancellation is no longer available" in cancelled.text
+    assert cancellation_states == ["Cancelled"]
     blocked = client.post("/experiments", data={**form, "model": "shell-command"})
     assert blocked.status_code == 422
     assert "DEMO PROVIDER" in page.text

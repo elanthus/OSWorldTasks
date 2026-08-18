@@ -331,14 +331,14 @@ def create_control_app(
             raise HTTPException(404, "submission does not exist") from exc
         if submission["status"] == "Running" and cancel_callback is None:
             raise HTTPException(409, "running flow cancellation is unavailable")
-        if cancel_callback is not None and not cancel_callback(submission_id):
-            raise HTTPException(409, "flow process could not be cancelled")
         await run_in_threadpool(
             control.cancel_submission,
             submission_id,
             actor=control.reviewer_identity,
             reason=fields["reason"],
         )
+        if cancel_callback is not None:
+            cancel_callback(submission_id)
         return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
 
     @app.get("/runs", response_class=HTMLResponse)
