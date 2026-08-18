@@ -15,6 +15,17 @@
     "request": {"$ref": "#/$defs/request"},
     "artifact_index": {"type": "array", "items": {"$ref": "#/$defs/artifact_ref"}}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "Complete"}}},
+      "then": {
+        "properties": {
+          "dataset_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    }
+  ],
   "$defs": {
     "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "artifact_ref": {

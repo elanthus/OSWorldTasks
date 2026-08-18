@@ -34,6 +34,12 @@ def _control(tmp_path: Path) -> ControlStore:
     return control
 
 
+def _disable_approval_append_only_guards(control: ControlStore) -> None:
+    """Simulate an externally corrupted database for read-boundary tests."""
+    control.connection.execute("DROP TRIGGER approvals_no_update")
+    control.connection.execute("DROP TRIGGER approvals_no_delete")
+
+
 def test_require_migrated_rejects_missing_active_pointer_singleton(tmp_path: Path) -> None:
     control = _control(tmp_path)
     control.connection.execute("DELETE FROM active_pointer WHERE singleton = 1")
@@ -203,6 +209,121 @@ def test_approval_and_deployment_revalidate_stored_candidate_evidence(
     assert deployment_control.active() == (None, 0)
 
 
+def test_reapproval_rejects_approved_candidate_without_approval_evidence(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "DELETE FROM approvals WHERE candidate_id = ?",
+        (candidate.candidate_id,),
+    )
+
+    with pytest.raises(
+        ContractValidationError, match="approved candidate has no approval evidence"
+    ):
+        control.approve(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="reviewed",
+            gate_report_sha256=candidate.gate_report_sha256,
+        )
+
+    assert control.get_candidate(candidate.candidate_id).state.value == "Approved"
+    with pytest.raises(KeyError):
+        control.get_approval(candidate.candidate_id)
+
+
+def test_idempotent_reapproval_revalidates_stored_approval_evidence(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE approvals SET created_at_utc = '' WHERE candidate_id = ?",
+        (candidate.candidate_id,),
+    )
+
+    with pytest.raises(ContractValidationError, match="approval"):
+        control.approve(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="reviewed",
+            gate_report_sha256=candidate.gate_report_sha256,
+        )
+
+    assert control.get_candidate(candidate.candidate_id).state.value == "Approved"
+    assert control.deployment_history() == []
+
+
+def test_activation_rejects_approval_policy_identity_mismatch(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ? WHERE candidate_id = ?",
+        ("sha256:" + "0" * 64, candidate.candidate_id),
+    )
+
+    with pytest.raises(
+        ContractValidationError, match="approval policy identity does not match candidate"
+    ):
+        control.activate(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="must remain blocked",
+            action="deploy",
+            expected_deployment_id=None,
+            expected_generation=0,
+        )
+
+    assert control.deployment_history() == []
+    assert control.active() == (None, 0)
+
+
 def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence(
     tmp_path: Path, passing_evidence
 ) -> None:
@@ -228,7 +349,7 @@ def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence
         accuracy=dataclasses.replace(report.accuracy, passed=False),
         overall_passed=True,
     )
-    with pytest.raises(ValueError, match="failed components"):
+    with pytest.raises(ContractValidationError, match="gate_report"):
         control.register_candidate(
             source_run_id=summary.run_id,
             policy=policy,

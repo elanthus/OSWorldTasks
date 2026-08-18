@@ -98,6 +98,7 @@ class PlatformSchemas:
             )
         self._schemas: dict[str, dict[str, Any]] = {}
         self._validators: dict[str, Draft202012Validator] = {}
+        self._file_validators: dict[str, Draft202012Validator] = {}
         self._load_and_check_inventory()
 
     def _schema(self, filename: str) -> dict[str, Any]:
@@ -143,10 +144,23 @@ class PlatformSchemas:
             )
         return self._validators[contract]
 
-    def validate(self, contract: str, value: object) -> None:
-        _validate_strict_json(value, label=contract)
+    def _file_validator(self, filename: str) -> Draft202012Validator:
+        if filename not in self._file_validators:
+            self._file_validators[filename] = Draft202012Validator(
+                self._schema(filename),
+                format_checker=FormatChecker(),
+            )
+        return self._file_validators[filename]
+
+    @staticmethod
+    def _raise_first_error(
+        validator: Draft202012Validator,
+        *,
+        label: str,
+        value: object,
+    ) -> None:
         errors = sorted(
-            self._validator(contract).iter_errors(value),
+            validator.iter_errors(value),
             key=lambda error: (
                 tuple(str(component) for component in error.absolute_path),
                 error.message,
@@ -154,10 +168,17 @@ class PlatformSchemas:
         )
         if errors:
             error = errors[0]
-            location = error.json_path
             raise ContractValidationError(
-                f"{contract} violates its frozen schema at {location}: {error.message}"
+                f"{label} violates its frozen schema at {error.json_path}: {error.message}"
             )
+
+    def validate(self, contract: str, value: object) -> None:
+        _validate_strict_json(value, label=contract)
+        self._raise_first_error(
+            self._validator(contract),
+            label=contract,
+            value=value,
+        )
         if contract == "audit_event":
             assert isinstance(value, dict)
             try:
@@ -176,22 +197,11 @@ class PlatformSchemas:
 
     def validate_price_catalog(self, value: object) -> None:
         _validate_strict_json(value, label="price_catalog")
-        validator = Draft202012Validator(
-            self._schema(PRICE_CATALOG_SCHEMA_FILE),
-            format_checker=FormatChecker(),
+        self._raise_first_error(
+            self._file_validator(PRICE_CATALOG_SCHEMA_FILE),
+            label="price_catalog",
+            value=value,
         )
-        errors = sorted(
-            validator.iter_errors(value),
-            key=lambda error: (
-                tuple(str(component) for component in error.absolute_path),
-                error.message,
-            ),
-        )
-        if errors:
-            error = errors[0]
-            raise ContractValidationError(
-                f"price_catalog violates its frozen schema at {error.json_path}: {error.message}"
-            )
         assert isinstance(value, dict)
         entries = value["entries"]
         identities = [(entry["provider"], entry["model"]) for entry in entries]
@@ -200,20 +210,11 @@ class PlatformSchemas:
 
     def validate_legacy_policy(self, value: object) -> None:
         _validate_strict_json(value, label="legacy_policy_package")
-        validator = Draft202012Validator(self._schema(LEGACY_POLICY_SCHEMA_FILE))
-        errors = sorted(
-            validator.iter_errors(value),
-            key=lambda error: (
-                tuple(str(component) for component in error.absolute_path),
-                error.message,
-            ),
+        self._raise_first_error(
+            self._file_validator(LEGACY_POLICY_SCHEMA_FILE),
+            label="legacy_policy_package",
+            value=value,
         )
-        if errors:
-            error = errors[0]
-            raise ContractValidationError(
-                "legacy_policy_package violates its frozen schema "
-                f"at {error.json_path}: {error.message}"
-            )
 
 
 def load_policy_manifest(schemas: PlatformSchemas, value: object) -> PolicyManifest:
@@ -224,8 +225,8 @@ def load_policy_manifest(schemas: PlatformSchemas, value: object) -> PolicyManif
     except ContractValidationError as current_error:
         try:
             schemas.validate_legacy_policy(value)
-        except ContractValidationError:
-            raise current_error
+        except ContractValidationError as legacy_error:
+            raise current_error from legacy_error
         assert isinstance(value, dict)
         current = {
             **value,

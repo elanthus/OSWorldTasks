@@ -90,9 +90,10 @@ def test_static_assets_are_packaged_in_the_wheel(installed_wheel_site_dir):
 
 def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
     schemas = installed_wheel_site_dir / "pixelgym" / "platform" / "schemas"
+    expected = {path.name for path in (REPO_ROOT / "config").glob("*.schema.json")}
+    installed = {path.name for path in schemas.glob("*.schema.json")}
 
-    assert (schemas / "platform-contracts.schema.json").is_file()
-    assert (schemas / "platform-policy.legacy-v1.schema.json").is_file()
+    assert installed == expected
 
 
 def test_installed_wheel_serves_index_html_from_outside_the_source_checkout(

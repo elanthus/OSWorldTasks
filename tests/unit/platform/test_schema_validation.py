@@ -105,9 +105,13 @@ def test_registry_inventory_matches_every_d41_contract(repository_root: Path) ->
 
 
 def test_packaged_schemas_match_authoritative_config(repository_root: Path) -> None:
+    config = repository_root / "config"
     packaged = repository_root / "pixelgym/platform/schemas"
+    config_names = {path.name for path in config.glob("*.schema.json")}
+    packaged_names = {path.name for path in packaged.glob("*.schema.json")}
 
-    for config_path in sorted((repository_root / "config").glob("*.schema.json")):
+    assert packaged_names == config_names
+    for config_path in sorted(config.glob("*.schema.json")):
         assert (packaged / config_path.name).read_bytes() == config_path.read_bytes()
 
 
@@ -218,6 +222,80 @@ def test_date_time_format_is_enforced(repository_root: Path, passing_evidence) -
 
     with pytest.raises(ContractValidationError, match="date-time"):
         PlatformSchemas(repository_root).validate("approval", value)
+
+
+@pytest.mark.parametrize("field", ["gate_policy_version", "run_id"])
+def test_gate_report_rejects_empty_provenance_identifiers(
+    repository_root: Path,
+    passing_evidence,
+    field: str,
+) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["gate_report"]
+    )
+    value[field] = ""
+
+    with pytest.raises(ContractValidationError, match="non-empty"):
+        PlatformSchemas(repository_root).validate("gate_report", value)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("accuracy", "passed"),
+        ("cost_usd_per_100", "passed"),
+        ("provider_latency_p95_ms", "passed"),
+        ("completeness", "passed"),
+        ("compatibility_passed",),
+        ("code_revision_passed",),
+    ],
+)
+def test_gate_report_rejects_passing_overall_with_failed_component(
+    repository_root: Path,
+    passing_evidence,
+    path: tuple[str, ...],
+) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["gate_report"]
+    )
+    target = value
+    for component in path[:-1]:
+        target = target[component]
+    target[path[-1]] = False
+
+    with pytest.raises(ContractValidationError, match="True was expected"):
+        PlatformSchemas(repository_root).validate("gate_report", value)
+
+    value["overall_passed"] = False
+    PlatformSchemas(repository_root).validate("gate_report", value)
+
+
+@pytest.mark.parametrize("field", ["dataset_fingerprint", "policy_id"])
+def test_complete_run_manifest_requires_dataset_and_policy_provenance(
+    repository_root: Path,
+    passing_evidence,
+    field: str,
+) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["run_manifest"]
+    )
+    value[field] = None
+
+    with pytest.raises(ContractValidationError, match="not of type 'string'"):
+        PlatformSchemas(repository_root).validate("run_manifest", value)
+
+    value["status"] = "Failed"
+    PlatformSchemas(repository_root).validate("run_manifest", value)
+
+
+def test_invalid_policy_reports_current_and_legacy_schema_failures(
+    repository_root: Path,
+) -> None:
+    with pytest.raises(ContractValidationError) as captured:
+        load_policy_manifest(PlatformSchemas(repository_root), {})
+
+    assert isinstance(captured.value.__cause__, ContractValidationError)
+    assert "legacy_policy_package" in str(captured.value.__cause__)
 
 
 def test_former_v1_policy_remains_readable_with_identity_and_fail_closed_provenance(

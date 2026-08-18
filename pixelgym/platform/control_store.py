@@ -740,6 +740,8 @@ class ControlStore:
             ) from exc
         policy = load_policy_manifest(self.schemas, policy_value)
         self.schemas.validate("gate_report", gate_report)
+        # Keep strict validation before canonical serialization so corrupt stored
+        # numbers fail as ContractValidationError rather than json.dumps ValueError.
         report_digest = sha256_bytes(canonical_json_bytes(gate_report))
         if report_digest != row["gate_report_sha256"]:
             raise ContractValidationError("stored gate_report digest does not verify")
