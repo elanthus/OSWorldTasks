@@ -9,7 +9,7 @@ separate human gates.
 
 ## Outcome
 
-Build a small, local-first platform around the frozen Day 3 GUI-grounding workload. The platform
+Build a small, local-first platform around the frozen Sprint 3 GUI-grounding workload. The platform
 should:
 
 - Run grounding evaluations as resumable Metaflow flows.
@@ -27,13 +27,13 @@ The reviewer-facing demo is one complete lifecycle:
 > Submit experiment → inspect comparison → promotion blocked → revise prompt/model → thresholds
 > pass → approve → deploy → invoke the versioned API → rollback.
 
-This milestone adds a platform layer around the existing benchmark. It must not alter the Day 3
+This milestone adds a platform layer around the existing benchmark. It must not alter the Sprint 3
 ground-truth boxes, silently repair model outputs, discard failures, or reinterpret the published
-Day 3 result.
+Sprint 3 result.
 
 ## Why this is a separate milestone
 
-Day 3 answered an experimental question using a frozen paired dataset. This milestone demonstrates
+Sprint 3 answered an experimental question using a frozen paired dataset. This milestone demonstrates
 the system that repeatedly executes, governs, and delivers that kind of experiment. The existing
 artifacts are its first workload and compatibility fixture:
 
@@ -42,7 +42,7 @@ artifacts are its first workload and compatibility fixture:
 - [`artifacts/grounding-predictions.jsonl`](../artifacts/grounding-predictions.jsonl)
 - [`artifacts/grounding-results.json`](../artifacts/grounding-results.json)
 
-The published Day 3 result remains immutable. Platform runs get new run IDs, manifests, and
+The published Sprint 3 result remains immutable. Platform runs get new run IDs, manifests, and
 artifacts even when they replay the same dataset.
 
 ## Ownership legend
@@ -68,7 +68,7 @@ fixtures may be developed in parallel after their interfaces are frozen.
 - A small server-rendered web UI; avoid a separate JavaScript build unless the interaction requires
   it.
 - A deterministic no-cost provider for tests and the scripted lifecycle demo.
-- The existing provider-neutral Day 3 adapter for explicitly approved real runs.
+- The existing provider-neutral Sprint 3 adapter for explicitly approved real runs.
 - One active deployment, an append-only deployment history, and rollback to the immediately
   previous approved version.
 - A FastAPI serving process with a versioned request/response schema.
@@ -92,7 +92,7 @@ These are acceptance criteria, not aspirations.
 
 1. **Raw-before-score:** a provider response is durably written before it is parsed or scored.
 2. **No hidden retries:** a wrong, invalid, or unparseable response is final. A transport failure
-   before any response may be retried only under the existing Day 3 request rules.
+   before any response may be retried only under the existing Sprint 3 request rules.
 3. **Content identity:** every dataset snapshot, image, prompt, raw response, prediction file, gate
    report, and policy manifest has a SHA-256 digest.
 4. **Immutable authority:** raw responses and frozen dataset snapshots live under
@@ -118,7 +118,7 @@ These are acceptance criteria, not aspirations.
     policy version.
 14. **Registry aliases are views:** MLflow aliases and tags mirror control-plane state but are not
     the authoritative approval or deployment ledger.
-15. **Day 3 boundaries survive:** target boxes remain build-time data; expected answers never enter
+15. **Sprint 3 boundaries survive:** target boxes remain build-time data; expected answers never enter
     the served policy; invalid outputs remain visible and scored as incorrect.
 16. **Secrets stay out of evidence:** credentials are injected at runtime and never enter Metaflow
     artifacts, MLflow params/tags, logs, raw-response envelopes, screenshots, or Git.
@@ -215,7 +215,7 @@ tests/
 artifacts/platform/             # generated, reviewer-safe evidence only
 ```
 
-Do not move or rewrite the current Day 3 files merely to fit this layout. The new package imports
+Do not move or rewrite the current Sprint 3 files merely to fit this layout. The new package imports
 the existing evaluator through a narrow adapter.
 
 ## Canonical identities
@@ -559,7 +559,7 @@ Concurrent deploy/rollback requests must yield one winner and a clear conflict f
 ## Demo design
 
 The acceptance demo must be deterministic and must not depend on a paid model changing behavior on
-cue. Use the real frozen Day 3 dataset and scorer with a clearly labeled scripted provider that
+cue. Use the real frozen Sprint 3 dataset and scorer with a clearly labeled scripted provider that
 replays immutable response fixtures.
 
 1. Start the local platform stack and show empty or seeded run history.
@@ -658,7 +658,7 @@ Required tests:
 - Version ID, retention status, URI, digest, media type, and size appear in the MLflow index.
 - Corrupt or missing content blocks scoring, promotion, deploy, and rollback.
 
-**Done when:** the existing Day 3 dataset has a reproducible authoritative fingerprint and a
+**Done when:** the existing Sprint 3 dataset has a reproducible authoritative fingerprint and a
 tamper test proves that changed bytes cannot be accepted under the original identity.
 
 ## D4.4 — Implement MLflow tracking
@@ -685,7 +685,7 @@ opening local files manually.
 
 **Owner: AGENT · high**
 
-Wrap, do not duplicate, the existing Day 3 provider, parser, and scoring logic. Freeze inputs,
+Wrap, do not duplicate, the existing Sprint 3 provider, parser, and scoring logic. Freeze inputs,
 evaluate deterministic shards, preserve responses before parsing, aggregate offline, log MLflow
 evidence, and emit a candidate package.
 
@@ -835,7 +835,7 @@ Agent work:
 - Produce a 2–4 minute script, screenshots or video, API transcript, audit export, and integrity
   verification report.
 - Redact hostnames, usernames, credentials, account IDs, and private provider payload fields.
-- Label synthetic metrics and keep real Day 3 results distinct.
+- Label synthetic metrics and keep real Sprint 3 results distinct.
 
 Your review:
 
@@ -879,7 +879,7 @@ full output. Agents do not declare this gate passed and do not tick these boxes.
 - Pure schema, hashing, gate, state-machine, API-contract, and view-model tests.
 - In-memory control repository plus fakes that preserve real protocol behavior.
 - Deterministic monotonic clock and provider ledgers; no `sleep()`.
-- Existing Day 3 fixtures as compatibility tests.
+- Existing Sprint 3 fixtures as compatibility tests.
 - No Docker, network, browser, MLflow server, Metaflow service, OSWorld, or credentials.
 
 ### Local integration path

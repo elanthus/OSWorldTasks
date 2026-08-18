@@ -1,8 +1,8 @@
-# Day 3 — Run the Grounding Experiment and Package the Portfolio Project
+# Sprint 3 — Run the Grounding Experiment and Package the Portfolio Project
 
 ## Outcome
 
-By the end of Day 3, the repository should contain a versioned GUI-grounding dataset derived from the task environment, a paired raw-screenshot versus set-of-marks experiment, statistically honest results, and a concise portfolio presentation.
+By the end of Sprint 3, the repository should contain a versioned GUI-grounding dataset derived from the task environment, a paired raw-screenshot versus set-of-marks experiment, statistically honest results, and a concise portfolio presentation.
 
 The goal is an experiment with a measured result, not a predetermined improvement. A null or negative set-of-marks result is acceptable if the benchmark, controls, analysis, and error investigation are sound.
 
@@ -366,8 +366,8 @@ Suggested agent handoff:
 
 Mark the sprint **COMPLETE** only if:
 
-- [ ] Day 1 fast tests and environment checker pass from a clean install.
-- [ ] Day 2 has one successful real OSWorld episode.
+- [ ] Sprint 1 fast tests and environment checker pass from a clean install.
+- [ ] Sprint 2 has one successful real OSWorld episode.
 - [ ] The upstream tag and provider metadata are recorded.
 - [ ] Validation reports are generated from structured evidence.
 - [ ] The reward-hacking report includes known limitations.
