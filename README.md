@@ -247,7 +247,7 @@ known limitation, with the underlying evidence retained
 
 ## Sprint plans
 
-- [`plans/day-1-environment-core.md`](plans/day-1-environment-core.md)
-- [`plans/day-2-osworld-integration-and-validation.md`](plans/day-2-osworld-integration-and-validation.md)
-- [`plans/day-3-grounding-and-portfolio.md`](plans/day-3-grounding-and-portfolio.md)
+- [`plans/sprint-1-environment-core.md`](plans/sprint-1-environment-core.md)
+- [`plans/sprint-2-osworld-integration-and-validation.md`](plans/sprint-2-osworld-integration-and-validation.md)
+- [`plans/sprint-3-grounding-and-portfolio.md`](plans/sprint-3-grounding-and-portfolio.md)
 - [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)

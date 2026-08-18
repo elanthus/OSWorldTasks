@@ -1,12 +1,12 @@
-# Day 2 — Integrate OSWorld-V2 and Validate the Environment
+# Sprint 2 — Integrate OSWorld-V2 and Validate the Environment
 
 **Status: COMPLETE — PASS.** The project owner declared the D2.11 gate PASS
-and authorized Day 3 on 2026-08-09. The stored human-gate record is
+and authorized Sprint 3 on 2026-08-09. The stored human-gate record is
 [`artifacts/day-2/raw/human-gate.json`](../artifacts/day-2/raw/human-gate.json).
 
 ## Outcome
 
-By the end of Day 2, the same environment contract from Day 1 should run through a real OSWorld-V2 desktop backend, and the repository should generate a validation report covering reset reproducibility, reward timing, action/observation integrity, and reward-hacking surfaces.
+By the end of Sprint 2, the same environment contract from Sprint 1 should run through a real OSWorld-V2 desktop backend, and the repository should generate a validation report covering reset reproducibility, reward timing, action/observation integrity, and reward-hacking surfaces.
 
 One recorded real-OSWorld episode is the key gate. Fake-backend tests remain the fast regression suite, but they are not sufficient evidence for the portfolio claim.
 
@@ -33,7 +33,7 @@ Do not give credentials to an agent prompt or commit them to the repository. Sup
 | D2.8 | 45 min | **AGENT · medium** | Build space-integrity validation | Checker, samples, boundaries, invalid actions |
 | D2.9 | 75 min | **AGENT · high** | Run the reward-hacking audit | Attack matrix with evidence and residual risks |
 | D2.10 | 30 min | **AGENT · medium** | Generate the validation report | JSON plus readable Markdown summary |
-| D2.11 | 30 min | **YOU** | Run the Day 2 gate | Pass/fail and Day 3 authorization |
+| D2.11 | 30 min | **YOU** | Run the Sprint 2 gate | Pass/fail and Sprint 3 authorization |
 
 ## D2.1 — Choose the provider and set a stop-loss rule
 
@@ -52,7 +52,7 @@ Set a firm infrastructure stop-loss:
 - At 90 minutes without a captured OSWorld screenshot, stop broad debugging.
 - Record the exact blocker.
 - Switch to the best available supported provider or request focused help.
-- Do not rewrite the Day 1 environment around provider-specific behavior.
+- Do not rewrite the Sprint 1 environment around provider-specific behavior.
 
 **Done when:** the provider is named, credentials are available through a safe mechanism, and there is an explicit limit on time or cloud usage.
 
@@ -78,7 +78,7 @@ Suggested agent handoff:
 
 **Owner: AGENT · high**
 
-The adapter should satisfy the Day 1 backend protocol without leaking OSWorld details into `PixelGuiEnv`.
+The adapter should satisfy the Sprint 1 backend protocol without leaking OSWorld details into `PixelGuiEnv`.
 
 Responsibilities:
 
@@ -136,7 +136,7 @@ Suggested agent handoff:
 
 Agent work:
 
-- Adapt the Day 1 golden trajectory only where real coordinates differ.
+- Adapt the Sprint 1 golden trajectory only where real coordinates differ.
 - Use public click and key actions exclusively.
 - Record screenshots, action trace, evaluator diagnostics, and reward at every step.
 - Save provider and release metadata with the run.
@@ -286,11 +286,11 @@ Suggested agent handoff:
 
 **Done when:** deleting the Markdown report and rerunning one documented command recreates it from JSON evidence.
 
-## D2.11 — Day 2 acceptance gate
+## D2.11 — Sprint 2 acceptance gate
 
 **Owner: YOU**
 
-Mark Day 2 **PASS** only if:
+Mark Sprint 2 **PASS** only if:
 
 - [x] OSWorld-V2 is pinned to `v2026.06.24`.
 - [x] Core tests still run without OSWorld.
@@ -303,7 +303,7 @@ Mark Day 2 **PASS** only if:
 - [x] The reward-hacking matrix has evidence and residual risks.
 - [x] The provider was closed or stopped after validation.
 
-If no real OSWorld run succeeded, Day 3 may still build the grounding pipeline from the local app, but the README must label OSWorld integration as incomplete. Do not claim a completed OSWorld environment on a resume until the integration gate passes.
+If no real OSWorld run succeeded, Sprint 3 may still build the grounding pipeline from the local app, but the README must label OSWorld integration as incomplete. Do not claim a completed OSWorld environment on a resume until the integration gate passes.
 
 ## End-of-day artifacts
 

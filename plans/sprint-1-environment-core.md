@@ -1,8 +1,8 @@
-# Day 1 — Build the Environment Core
+# Sprint 1 — Build the Environment Core
 
 ## Outcome
 
-By the end of Day 1, the repository should contain a deterministic synthetic form task and a Gymnasium-compliant environment that runs against a fast fake desktop backend. No OSWorld VM is required for today's acceptance gate.
+By the end of Sprint 1, the repository should contain a deterministic synthetic form task and a Gymnasium-compliant environment that runs against a fast fake desktop backend. No OSWorld VM is required for this sprint's acceptance gate.
 
 The environment must already have the final behavioral contract:
 
@@ -35,7 +35,7 @@ Run one writing agent at a time unless two tasks touch completely disjoint paths
 | D1.5 | 120 min | **AGENT · high** | Implement the Gymnasium environment | Valid spaces, reset, step, reward, termination, truncation |
 | D1.6 | 75 min | **AGENT · medium** | Build the fake backend and unit tests | Fast tests requiring no VM or network |
 | D1.7 | 45 min | **PAIR** | Create and replay a golden trajectory | Passing successful trace and recorded reward sequence |
-| D1.8 | 30 min | **YOU** | Run the Day 1 gate | Explicit pass/fail and carryover list |
+| D1.8 | 30 min | **YOU** | Run the Sprint 1 gate | Explicit pass/fail and carryover list |
 
 ## D1.1 — Freeze the scope
 
@@ -46,12 +46,12 @@ Write down these decisions before implementation begins:
 - Core task: synthetic vendor-onboarding form.
 - Visible source: a request card rendered beside the form.
 - Required controls: four text fields, one dropdown, one radio group, one checkbox, and Submit.
-- Task variants: seeded values only; one fixed layout on Day 1.
+- Task variants: seeded values only; one fixed layout in Sprint 1.
 - Observation: RGB screenshot array only.
 - Allowed action types: `NOOP`, `CLICK`, and `KEY`.
 - Printable characters plus Tab, Enter, Backspace, and arrow keys are allowed.
 - No arbitrary Python commands, shell actions, browser navigation commands, or accessibility-tree observations.
-- File upload is a stretch goal after Day 2 passes.
+- File upload is a stretch goal after Sprint 2 passes.
 - Spreadsheet automation is not part of this sprint.
 
 Decision rule: if a proposed feature does not improve the Gym contract, evaluator correctness, validation evidence, or grounding experiment, defer it.
@@ -89,7 +89,7 @@ Keep dependencies narrow: Gymnasium, NumPy, Pillow, FastAPI, Uvicorn, pytest, an
 
 Suggested agent handoff:
 
-> Scaffold a Python 3.12 package for PixelGym-OSWorld. Add the package and test layout from `plans/day-1-environment-core.md`. Keep OSWorld optional. Add commands for formatting, unit tests, and a fake-backend demo. Do not implement the environment yet. Run the smallest relevant checks and report the files changed.
+> Scaffold a Python 3.12 package for PixelGym-OSWorld. Add the package and test layout from `plans/sprint-1-environment-core.md`. Keep OSWorld optional. Add commands for formatting, unit tests, and a fake-backend demo. Do not implement the environment yet. Run the smallest relevant checks and report the files changed.
 
 **Done when:** a fresh environment can install the package and execute an empty unit-test suite without OSWorld.
 
@@ -117,7 +117,7 @@ Determinism requirements:
 
 Suggested agent handoff:
 
-> Implement the deterministic vendor-onboarding task app described in Day 1. Use static HTML/CSS/JavaScript and a minimal FastAPI service. All randomness must come from an explicit seed. Add tests proving that identical seeds produce byte-identical canonical task JSON, different seeds change the task, and reset removes prior submissions. Do not add external frontend dependencies.
+> Implement the deterministic vendor-onboarding task app described in Sprint 1. Use static HTML/CSS/JavaScript and a minimal FastAPI service. All randomness must come from an explicit seed. Add tests proving that identical seeds produce byte-identical canonical task JSON, different seeds change the task, and reset removes prior submissions. Do not add external frontend dependencies.
 
 **Done when:** the app can be reset twice with one seed and returns the same task hash and empty submission state both times.
 
@@ -234,7 +234,7 @@ The `info` dictionary may contain task ID and validation hashes, but not expecte
 
 Suggested agent handoff:
 
-> Implement `PixelGuiEnv` as a modern Gymnasium environment using the contracts in Day 1. Pay special attention to seeding, post-terminal behavior, action containment, one-shot sparse reward, and the distinction between `terminated` and `truncated`. Use only the backend protocol; do not import OSWorld in the core module. Run Gymnasium's environment checker against the fake backend.
+> Implement `PixelGuiEnv` as a modern Gymnasium environment using the contracts in Sprint 1. Pay special attention to seeding, post-terminal behavior, action containment, one-shot sparse reward, and the distinction between `terminated` and `truncated`. Use only the backend protocol; do not import OSWorld in the core module. Run Gymnasium's environment checker against the fake backend.
 
 **Done when:** the official environment checker passes against the fake backend and the step result always contains five values of the documented types.
 
@@ -267,7 +267,7 @@ Required unit tests:
 
 Suggested agent handoff:
 
-> Implement a deterministic fake backend and the Day 1 unit-test matrix. Keep tests fast and independent of network, browser, OSWorld, and wall-clock sleeps. Prefer explicit fixtures over mocks that duplicate implementation details. Report test count and runtime.
+> Implement a deterministic fake backend and the Sprint 1 unit-test matrix. Keep tests fast and independent of network, browser, OSWorld, and wall-clock sleeps. Prefer explicit fixtures over mocks that duplicate implementation details. Report test count and runtime.
 
 **Done when:** all unit tests pass in well under one minute on a laptop.
 
@@ -295,13 +295,13 @@ Suggested agent handoff:
 
 **Done when:** the checked-in trajectory reproduces exactly and its expected reward vector is `[0, ..., 0, 1]`.
 
-## D1.8 — Day 1 acceptance gate
+## D1.8 — Sprint 1 acceptance gate
 
 **Owner: YOU**
 
 Run the documented install, unit-test, environment-checker, and fake-demo commands.
 
-Mark Day 1 **PASS** only if:
+Mark Sprint 1 **PASS** only if:
 
 - [ ] The package installs without OSWorld.
 - [ ] The task app is deterministic for a fixed seed.
@@ -313,7 +313,7 @@ Mark Day 1 **PASS** only if:
 - [ ] All fast tests pass without network or VM access.
 - [ ] A golden trajectory exists as a public-action fixture.
 
-If the gate fails, carry only correctness work into Day 2. Do not start the file-upload variant.
+If the gate fails, carry only correctness work into Sprint 2. Do not start the file-upload variant.
 
 ## End-of-day artifacts
 
@@ -324,4 +324,4 @@ If the gate fails, carry only correctness work into Day 2. Do not start the file
 - Structured task evaluator.
 - Unit-test suite and environment-checker result.
 - Golden trajectory with sparse reward timeline.
-- Short Day 1 decision log listing deferred features.
+- Short Sprint 1 decision log listing deferred features.
