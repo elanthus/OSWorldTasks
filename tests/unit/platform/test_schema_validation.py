@@ -281,6 +281,19 @@ def test_gate_report_rejects_passing_overall_with_failed_component(
     PlatformSchemas(repository_root).validate("gate_report", value)
 
 
+def test_gate_report_rejects_passing_overall_with_blocking_reasons(
+    repository_root: Path,
+    passing_evidence,
+) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["gate_report"]
+    )
+    value["reasons"] = ["blocking evidence retained"]
+
+    with pytest.raises(ContractValidationError, match="gate_report"):
+        PlatformSchemas(repository_root).validate("gate_report", value)
+
+
 @pytest.mark.parametrize("field", ["dataset_fingerprint", "policy_id"])
 def test_complete_run_manifest_requires_dataset_and_policy_provenance(
     repository_root: Path,
@@ -370,6 +383,78 @@ def test_invalid_stored_gate_report_fails_before_export_derivation(
         control,
         "list_candidates",
         lambda: [dataclasses.replace(candidate, gate_report=invalid_report)],
+    )
+    output = tmp_path / "export"
+
+    with pytest.raises(ContractValidationError, match="gate_report"):
+        export_evidence(control, output)
+
+    assert not output.exists()
+
+
+def test_stored_submission_digest_mismatch_blocks_export_before_writes(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    submission_id = control.submit({"model": "original"})
+    control.connection.execute(
+        "UPDATE submissions SET request_json = ? WHERE submission_id = ?",
+        (canonical_json_bytes({"model": "tampered"}).decode(), submission_id),
+    )
+    output = tmp_path / "export"
+
+    with pytest.raises(ContractValidationError, match="submission digest"):
+        export_evidence(control, output)
+
+    assert not output.exists()
+
+
+def test_stored_gate_report_digest_mismatch_blocks_export_before_derivation(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    tampered_report = copy.deepcopy(candidate.gate_report)
+    tampered_report["accuracy"]["observed"] = 0.01
+    control.connection.execute(
+        "UPDATE candidates SET gate_report_json = ? WHERE candidate_id = ?",
+        (canonical_json_bytes(tampered_report).decode(), candidate.candidate_id),
+    )
+    output = tmp_path / "export"
+
+    with pytest.raises(ContractValidationError, match="gate_report digest"):
+        export_evidence(control, output)
+
+    assert not output.exists()
+
+
+def test_passing_gate_report_with_reasons_blocks_export_before_derivation(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    invalid_report = {**candidate.gate_report, "reasons": ["blocking evidence retained"]}
+    encoded = canonical_json_bytes(invalid_report)
+    control.connection.execute(
+        "UPDATE candidates SET gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (encoded.decode(), sha256_bytes(encoded), candidate.candidate_id),
     )
     output = tmp_path / "export"
 

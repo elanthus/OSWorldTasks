@@ -695,6 +695,25 @@ class ControlStore:
                 )
         return self.get_candidate(candidate_id)
 
+    def _candidate_record(self, row: sqlite3.Row) -> CandidateRecord:
+        return CandidateRecord(
+            candidate_id=row["candidate_id"],
+            source_run_id=row["source_run_id"],
+            policy=load_policy_manifest(self.schemas, json.loads(row["policy_json"])),
+            gate_report=json.loads(row["gate_report_json"]),
+            gate_report_sha256=row["gate_report_sha256"],
+            artifacts=tuple(
+                ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
+            ),
+            summary=(
+                RunSummary(**json.loads(row["summary_json"]))
+                if json.loads(row["summary_json"])
+                else None
+            ),
+            state=CandidateState(row["state"]),
+            version=row["version"],
+        )
+
     def get_candidate(self, candidate_id: str) -> CandidateRecord:
         with self._lock:
             row = self.connection.execute(
@@ -702,23 +721,7 @@ class ControlStore:
             ).fetchone()
             if row is None:
                 raise KeyError(candidate_id)
-            return CandidateRecord(
-                candidate_id=row["candidate_id"],
-                source_run_id=row["source_run_id"],
-                policy=load_policy_manifest(self.schemas, json.loads(row["policy_json"])),
-                gate_report=json.loads(row["gate_report_json"]),
-                gate_report_sha256=row["gate_report_sha256"],
-                artifacts=tuple(
-                    ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
-                ),
-                summary=(
-                    RunSummary(**json.loads(row["summary_json"]))
-                    if json.loads(row["summary_json"])
-                    else None
-                ),
-                state=CandidateState(row["state"]),
-                version=row["version"],
-            )
+            return self._candidate_record(row)
 
     def list_candidates(self) -> list[CandidateRecord]:
         with self._lock:
@@ -755,6 +758,40 @@ class ControlStore:
             raise ContractValidationError("stored candidate no longer has passing gates")
         if not policy.source_provenance_verified or not gate_report["code_revision_passed"]:
             raise ContractValidationError("stored candidate source provenance is not promotable")
+
+    def _validate_candidate_approval_evidence(
+        self,
+        candidate: sqlite3.Row,
+        approval: sqlite3.Row,
+    ) -> None:
+        self._validate_candidate_evidence(candidate)
+        self.schemas.validate("approval", dict(approval))
+        if approval["candidate_id"] != candidate["candidate_id"]:
+            raise ContractValidationError("approval candidate identity does not match candidate")
+        if approval["policy_id"] != candidate["policy_id"]:
+            raise ContractValidationError("approval policy identity does not match candidate")
+        if approval["gate_report_sha256"] != candidate["gate_report_sha256"]:
+            raise TransitionError("approved gate report no longer verifies")
+
+    def verify_candidate_approval(
+        self, candidate_id: str
+    ) -> tuple[CandidateRecord, dict[str, Any]]:
+        """Validate stored candidate and approval evidence before external preparation."""
+        with self._lock:
+            candidate = self.connection.execute(
+                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if candidate is None:
+                raise KeyError(candidate_id)
+            if candidate["state"] != CandidateState.APPROVED.value:
+                raise TransitionError("candidate must be approved before activation")
+            approval = self.connection.execute(
+                "SELECT * FROM approvals WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if approval is None:
+                raise TransitionError("candidate approval evidence is missing")
+            self._validate_candidate_approval_evidence(candidate, approval)
+            return self._candidate_record(candidate), dict(approval)
 
     def approve(
         self,
@@ -893,12 +930,7 @@ class ControlStore:
             ).fetchone()
             if candidate is None or approval is None or candidate["state"] != CandidateState.APPROVED.value:
                 raise TransitionError("deployment target is not approved")
-            self._validate_candidate_evidence(candidate)
-            self.schemas.validate("approval", dict(approval))
-            if approval["policy_id"] != candidate["policy_id"]:
-                raise ContractValidationError("approval policy identity does not match candidate")
-            if candidate["gate_report_sha256"] != approval["gate_report_sha256"]:
-                raise TransitionError("approved gate report no longer verifies")
+            self._validate_candidate_approval_evidence(candidate, approval)
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
             if action == "rollback":

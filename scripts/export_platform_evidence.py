@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.schema_validation import ContractValidationError, PlatformSchemas
 
 
@@ -25,9 +26,16 @@ def export_evidence(control: ControlStore, output: Path) -> None:
     schemas = PlatformSchemas(Path(__file__).parents[1])
     submissions = control.list_submissions()
     candidates = control.list_candidates()
+    for submission in submissions:
+        request_digest = sha256_bytes(canonical_json_bytes(submission["request"]))
+        if request_digest != submission["request_sha256"]:
+            raise ContractValidationError("stored submission digest does not verify")
     gate_reports = [candidate.gate_report for candidate in candidates]
-    for report in gate_reports:
+    for candidate, report in zip(candidates, gate_reports, strict=True):
         schemas.validate("gate_report", report)
+        report_digest = sha256_bytes(canonical_json_bytes(report))
+        if report_digest != candidate.gate_report_sha256:
+            raise ContractValidationError("stored gate_report digest does not verify")
     for candidate in candidates:
         schemas.validate("policy_package", candidate.policy.to_dict())
 

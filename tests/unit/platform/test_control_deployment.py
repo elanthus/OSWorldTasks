@@ -488,7 +488,9 @@ def test_serving_restore_rejects_unapproved_or_gate_failed_active_policy(
         on_activated=lambda deployment, prepared: activated.append(deployment),
     )
 
-    with pytest.raises(TransitionError, match="approved|gate report"):
+    with pytest.raises(
+        (TransitionError, ContractValidationError), match="approved|gate.?report"
+    ):
         restoring.restore_active()
     assert control.active()[0] == deployed
     assert not smoke_called
@@ -521,8 +523,137 @@ def test_serving_restore_rejects_gate_report_rewritten_after_approval(
         control=control, store=store, load_and_smoke=smoke
     )
 
-    with pytest.raises(TransitionError, match="approval evidence no longer matches"):
+    with pytest.raises(ContractValidationError, match="run identity"):
         restoring.restore_active()
+    assert not smoke_called
+
+
+def test_serving_restore_uses_validated_candidate_snapshot_without_second_read(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    loaded: list[str] = []
+
+    def reject_second_read(_candidate_id: str):
+        raise AssertionError("validated candidate must not be read again")
+
+    monkeypatch.setattr(control, "get_candidate", reject_second_read)
+    restoring = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda item: loaded.append(item.candidate_id) or True,
+    )
+
+    restored = restoring.restore_active()
+
+    assert restored is not None
+    assert restored.candidate_id == candidate.candidate_id
+    assert loaded == [candidate.candidate_id]
+
+
+def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_smoke(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    legacy_policy = candidate.policy.to_dict()
+    for field_name in (
+        "code_state",
+        "source_tree_sha256",
+        "source_provenance_verified",
+        "source_provenance_failure_reason",
+    ):
+        legacy_policy.pop(field_name)
+    legacy_identity = dict(legacy_policy)
+    legacy_identity.pop("policy_id")
+    legacy_policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(legacy_identity))
+    legacy_policy["policy_id"] = legacy_policy_id
+    rewritten_report = {**candidate.gate_report, "policy_id": legacy_policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            legacy_policy_id,
+            canonical_json_bytes(legacy_policy).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (legacy_policy_id, report_digest, candidate.candidate_id),
+    )
+    artifact_called = False
+    smoke_called = False
+
+    def verify_artifact(_reference):
+        nonlocal artifact_called
+        artifact_called = True
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    monkeypatch.setattr(store, "get_verified", verify_artifact)
+    restoring = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ContractValidationError, match="source provenance"):
+        restoring.restore_active()
+    assert not artifact_called
+    assert not smoke_called
+
+
+def test_serving_restore_rejects_malformed_approval_before_artifacts_or_smoke(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE approvals SET reason = '' WHERE candidate_id = ?",
+        (candidate.candidate_id,),
+    )
+    artifact_called = False
+    smoke_called = False
+
+    def verify_artifact(_reference):
+        nonlocal artifact_called
+        artifact_called = True
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    monkeypatch.setattr(store, "get_verified", verify_artifact)
+    restoring = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ContractValidationError, match="approval"):
+        restoring.restore_active()
+    assert not artifact_called
     assert not smoke_called
 
 
