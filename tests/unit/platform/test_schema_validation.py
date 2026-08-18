@@ -305,6 +305,7 @@ def test_invalid_policy_reports_current_and_legacy_schema_failures(
     with pytest.raises(ContractValidationError) as captured:
         load_policy_manifest(PlatformSchemas(repository_root), {})
 
+    assert "policy_package" in str(captured.value)
     assert isinstance(captured.value.__cause__, ContractValidationError)
     assert "legacy_policy_package" in str(captured.value.__cause__)
 
