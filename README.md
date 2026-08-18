@@ -147,7 +147,8 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-pytest tests/
+ruff check .
+pytest -q tests/unit
 python scripts/golden_trajectory.py check
 python scripts/demo_fake_backend.py --seed 7
 ```
