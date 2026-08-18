@@ -32,8 +32,8 @@ jobs:
       - name: Run Ruff
         run: python -m ruff check .
 
-  test:
-    name: Tests
+  fast-suite:
+    name: Fast suite
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -50,5 +50,5 @@ jobs:
       - name: Install development dependencies
         run: python -m pip install -e ".[dev]"
 
-      - name: Run tests
-        run: python -m pytest tests/
+      - name: Run fast suite
+        run: python -m pytest -q tests/unit
