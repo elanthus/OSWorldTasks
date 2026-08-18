@@ -45,9 +45,6 @@ optional platform services:
 .venv/bin/python -m pytest -q tests/unit
 ```
 
-Pull-request CI requires this fast suite and Ruff. The local platform integration suite below runs
-nightly and can also be started manually from GitHub Actions.
-
 The real local Metaflow runtime and MLflow adapter suite requires the optional platform extra. It
 uses temporary local state and real `run`/`resume` commands, but it does not provision Compose:
 
