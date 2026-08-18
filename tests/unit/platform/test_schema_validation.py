@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import concurrent.futures
 import copy
 import dataclasses
 import json
+import threading
 from pathlib import Path
 
 import pytest
 
+from pixelgym.platform import schema_validation
 from pixelgym.platform.contracts import GateReport, PolicyManifest
 from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -38,6 +41,33 @@ WRONG_TYPE_FIELDS = {
     "deployment": "generation",
     "audit_event": "event_type",
 }
+
+
+def test_validator_cache_initialization_is_thread_safe(repository_root: Path, monkeypatch) -> None:
+    schemas = PlatformSchemas(repository_root)
+    original_validator = schema_validation.Draft202012Validator
+    constructor_entered = threading.Event()
+    release_constructor = threading.Event()
+    constructor_calls = 0
+    count_lock = threading.Lock()
+
+    def blocking_constructor(*args, **kwargs):
+        nonlocal constructor_calls
+        with count_lock:
+            constructor_calls += 1
+        constructor_entered.set()
+        assert release_constructor.wait(timeout=1)
+        return original_validator(*args, **kwargs)
+
+    monkeypatch.setattr(schema_validation, "Draft202012Validator", blocking_constructor)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(schemas._validator, "raw_response") for _ in range(8)]
+        assert constructor_entered.wait(timeout=1)
+        release_constructor.set()
+        validators = [future.result(timeout=1) for future in futures]
+
+    assert constructor_calls == 1
+    assert all(validator is validators[0] for validator in validators)
 
 
 def _jsonl(path: Path) -> list[dict[str, object]]:
@@ -127,9 +157,7 @@ def test_committed_configuration_and_exports_validate(repository_root: Path) -> 
             schemas.validate(contract, value)
 
 
-def test_representative_python_contracts_validate(
-    repository_root: Path, passing_evidence
-) -> None:
+def test_representative_python_contracts_validate(repository_root: Path, passing_evidence) -> None:
     schemas = PlatformSchemas(repository_root)
 
     for contract, value in _representatives(repository_root, passing_evidence).items():
@@ -161,9 +189,7 @@ def test_unknown_missing_and_wrongly_typed_fields_fail_for_every_contract(
 def test_config_loaders_reject_invalid_data_before_runtime_use(
     repository_root: Path, tmp_path: Path
 ) -> None:
-    invalid_gate = json.loads(
-        (repository_root / "config/promotion-gates.demo-v1.json").read_text()
-    )
+    invalid_gate = json.loads((repository_root / "config/promotion-gates.demo-v1.json").read_text())
     invalid_gate["provider_api_key"] = "must-not-be-accepted"
     gate_path = tmp_path / "gates.json"
     gate_path.write_text(json.dumps(invalid_gate), encoding="utf-8")
@@ -182,9 +208,7 @@ def test_config_loaders_reject_invalid_data_before_runtime_use(
 def test_audit_serialized_and_parsed_details_must_match(
     repository_root: Path, passing_evidence
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["audit_event"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["audit_event"])
     value["details"] = {"different": True}
 
     with pytest.raises(ContractValidationError, match="does not match"):
@@ -205,9 +229,7 @@ def test_non_json_values_fail_before_schema_validation(
     field: str,
     invalid: object,
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["raw_response"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["raw_response"])
     value[field] = invalid
 
     with pytest.raises(ContractValidationError, match="JSON"):
@@ -215,9 +237,7 @@ def test_non_json_values_fail_before_schema_validation(
 
 
 def test_date_time_format_is_enforced(repository_root: Path, passing_evidence) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["approval"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["approval"])
     value["created_at_utc"] = "not-a-timestamp"
 
     with pytest.raises(ContractValidationError, match="date-time"):
@@ -230,9 +250,7 @@ def test_gate_report_rejects_empty_provenance_identifiers(
     passing_evidence,
     field: str,
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["gate_report"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["gate_report"])
     value[field] = ""
 
     with pytest.raises(ContractValidationError, match="non-empty"):
@@ -256,9 +274,7 @@ def test_gate_report_rejects_passing_overall_with_failed_component(
     passing_evidence,
     path: tuple[str, ...],
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["gate_report"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["gate_report"])
     if path[0] == "confidence_bound":
         value["confidence_bound"] = {
             "observed": 0.75,
@@ -285,9 +301,7 @@ def test_gate_report_rejects_passing_overall_with_blocking_reasons(
     repository_root: Path,
     passing_evidence,
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["gate_report"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["gate_report"])
     value["reasons"] = ["blocking evidence retained"]
 
     with pytest.raises(ContractValidationError, match="gate_report"):
@@ -300,9 +314,7 @@ def test_complete_run_manifest_requires_dataset_and_policy_provenance(
     passing_evidence,
     field: str,
 ) -> None:
-    value = copy.deepcopy(
-        _representatives(repository_root, passing_evidence)["run_manifest"]
-    )
+    value = copy.deepcopy(_representatives(repository_root, passing_evidence)["run_manifest"])
     value[field] = None
 
     with pytest.raises(ContractValidationError, match="not of type 'string'"):

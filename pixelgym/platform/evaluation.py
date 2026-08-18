@@ -115,7 +115,10 @@ class ScriptedReplayProvider:
             return PlatformProviderResponse(None, self.latency_ms, {}, 0.0, "fixture missing")
         self.call_ids.append(request_id)
         return PlatformProviderResponse(
-            self.responses[example_id], self.latency_ms, {"input_tokens": 0, "output_tokens": 0}, 0.0
+            self.responses[example_id],
+            self.latency_ms,
+            {"input_tokens": 0, "output_tokens": 0},
+            0.0,
         )
 
 
@@ -163,6 +166,7 @@ class EvaluationRunner:
         self.provider_concurrency = provider_concurrency
         self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
+        self._dataset_input_contract: DatasetInputContract | None = None
         self.schemas = PlatformSchemas()
         self.schemas.validate("gate_policy", self.gate_policy.to_dict())
         self.schemas.validate("policy_package", self.policy.to_dict())
@@ -217,6 +221,8 @@ class EvaluationRunner:
         }
 
     def _dataset_input(self) -> DatasetInputContract:
+        if self._dataset_input_contract is not None:
+            return self._dataset_input_contract
         manifest, fingerprint = build_dataset_manifest(
             repository_root=self.root,
             dataset_path=self.root / "artifacts/grounding-dataset.jsonl",
@@ -229,7 +235,7 @@ class EvaluationRunner:
             canonical_json_bytes(manifest) + b"\n",
             media_type="application/vnd.pixelgym.dataset-manifest+json",
         )
-        return DatasetInputContract(
+        self._dataset_input_contract = DatasetInputContract(
             name="pixelgym-grounding-day3-frozen",
             fingerprint=fingerprint,
             mlflow_digest=fingerprint.removeprefix("sha256:")[:32],
@@ -239,6 +245,7 @@ class EvaluationRunner:
             protocol_version="pixelgym-grounding-v1",
             example_count=int(manifest["example_count"]),
         )
+        return self._dataset_input_contract
 
     def _inputs(self) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
         examples = sorted(
@@ -306,7 +313,9 @@ class EvaluationRunner:
                 "{{target}}", example["target"]
             )
         schema = schema_for(condition)
-        image_relative = example["image_path"] if condition == "raw" else overlay["marked_image_path"]
+        image_relative = (
+            example["image_path"] if condition == "raw" else overlay["marked_image_path"]
+        )
         request_material = {
             "dataset_fingerprint": self.dataset_fingerprint,
             "policy_id": self.policy.policy_id,
@@ -321,9 +330,7 @@ class EvaluationRunner:
         request_sha256 = sha256_bytes(canonical_json_bytes(request_material))
         return request_sha256, prompt, condition, schema, self.root / image_relative
 
-    def evaluate_shard(
-        self, shard: dict[str, Any], *, max_calls: int
-    ) -> list[dict[str, Any]]:
+    def evaluate_shard(self, shard: dict[str, Any], *, max_calls: int) -> list[dict[str, Any]]:
         """Invoke the provider and durably store raw envelopes; never parse or score here."""
         examples, overlays = self._inputs()
         by_id = {row["example_id"]: row for row in examples}
@@ -386,7 +393,9 @@ class EvaluationRunner:
                     "response_media_type": "application/json",
                     "response_sha256": sha256_bytes(response_bytes),
                     "raw_response": response.raw_response,
-                    "request_status": "request_failure" if response.request_failure else "responded",
+                    "request_status": "request_failure"
+                    if response.request_failure
+                    else "responded",
                     "request_failure": response.request_failure,
                 }
                 self.schemas.validate("raw_response", envelope)
@@ -432,7 +441,9 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in raw]
         if require_complete and identifiers != list(by_id):
             raise ValueError("raw artifact set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
+        if identifiers != sorted(set(identifiers)) or any(
+            item not in by_id for item in identifiers
+        ):
             raise ValueError("raw artifact set must be canonical, unique, and known")
         verified: list[dict[str, Any]] = []
         for item in raw:
@@ -477,7 +488,9 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in verified]
         if require_complete and identifiers != list(by_id):
             raise ValueError("verified response set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
+        if identifiers != sorted(set(identifiers)) or any(
+            item not in by_id for item in identifiers
+        ):
             raise ValueError("verified response set must be canonical, unique, and known")
         records: list[dict[str, Any]] = []
         for item in verified:
@@ -486,7 +499,10 @@ class EvaluationRunner:
             reference = ArtifactRef(**item["reference"])
             envelope = item["envelope"]
             self.schemas.validate("raw_response", envelope)
-            if not isinstance(envelope, dict) or envelope.get("example_id") != example["example_id"]:
+            if (
+                not isinstance(envelope, dict)
+                or envelope.get("example_id") != example["example_id"]
+            ):
                 raise ValueError("verified response envelope does not match its example")
             if envelope["request_failure"]:
                 parse_status, parsed, point, mark_id, parse_error = (
@@ -542,9 +558,7 @@ class EvaluationRunner:
         evaluation_end_to_end_duration_ms: float | None = None,
     ) -> RunSummary:
         examples, _ = self._inputs()
-        existing_summary = self.store.get_reference(
-            f"runs/{self.submission_id}/summary.json"
-        )
+        existing_summary = self.store.get_reference(f"runs/{self.submission_id}/summary.json")
         if existing_summary is not None:
             stored_summary = json.loads(self.store.get_verified(existing_summary))
             evaluation_end_to_end_duration_ms = stored_summary.get(
@@ -566,9 +580,7 @@ class EvaluationRunner:
             correct_count=correct_count,
             accuracy=correct_count / len(examples) if len(records) == len(examples) else None,
             cost_usd_per_100=(
-                sum(costs) * 100 / len(records)
-                if records and len(costs) == len(records)
-                else None
+                sum(costs) * 100 / len(records) if records and len(costs) == len(records) else None
             ),
             priced_call_count=len(costs),
             unpriced_call_count=len(records) - len(costs),
@@ -577,18 +589,14 @@ class EvaluationRunner:
             provider_latency_p50_ms=percentile_r7(latency, 0.50) if latency else None,
             provider_latency_max_ms=max(latency) if latency else None,
             evaluation_end_to_end_duration_ms=evaluation_end_to_end_duration_ms,
-            total_cost_usd=sum(costs) if len(costs) == len(records) else None,
+            total_cost_usd=(sum(costs) if records and len(costs) == len(records) else None),
             cost_usd_per_example=(
-                sum(costs) / len(records)
-                if records and len(costs) == len(records)
-                else None
+                sum(costs) / len(records) if records and len(costs) == len(records) else None
             ),
             proposal_coverage=None,
             conditional_mark_selection_accuracy=None,
             invalid_count=sum(row["parse_status"] == "invalid" for row in records),
-            request_failure_count=sum(
-                row["parse_status"] == "request_failure" for row in records
-            ),
+            request_failure_count=sum(row["parse_status"] == "request_failure" for row in records),
             dirty_code=self.policy.code_state != "clean",
             code_state=self.policy.code_state,
             code_provenance_verified=self.policy.source_provenance_verified,

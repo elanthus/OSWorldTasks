@@ -48,9 +48,7 @@ class DemoReplayServingProvider:
             if row["condition"] == "marks"
         }
 
-    def ground(
-        self, *, image_bytes: bytes, media_type: str, target: str, policy: object
-    ) -> tuple:
+    def ground(self, *, image_bytes: bytes, media_type: str, target: str, policy: object) -> tuple:
         del media_type
         image_sha256 = hashlib.sha256(image_bytes).hexdigest()
         example_id = self.examples.get((image_sha256, target))
@@ -222,9 +220,7 @@ def create_app() -> FastAPI:
         if not isinstance(prepared, LoadedPolicy):
             raise TypeError("deployment activation did not receive a loaded candidate runtime")
         # The only mutation of the traffic runtime happens after the database CAS succeeds.
-        runtime.activate(
-            replace(prepared, deployment_id=deployment.deployment_id)
-        )
+        runtime.activate(replace(prepared, deployment_id=deployment.deployment_id))
 
     coordinator = DeploymentCoordinator(
         control=control,
@@ -278,16 +274,28 @@ def create_app() -> FastAPI:
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,
         tracking=tracking,
-        mlflow_base_url=os.environ.get(
-            "PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"
-        ),
+        mlflow_base_url=os.environ.get("PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"),
     )
-    app.mount("/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store)))
+    app.mount(
+        "/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store))
+    )
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime
     if tracking is not None:
+
+        def run_reconciliation() -> None:
+            try:
+                coordinator.reconcile_tracking()
+            except Exception as exc:  # noqa: BLE001 - optional clients expose varied failures.
+                control.record_tracking_reconciliation(
+                    subject_id="mlflow-tracking",
+                    operation="startup_reconciliation",
+                    error=f"{type(exc).__name__}: {exc}",
+                    resolved=False,
+                )
+
         reconciliation = threading.Thread(
-            target=coordinator.reconcile_tracking,
+            target=run_reconciliation,
             daemon=True,
             name="tracking-reconciliation",
         )

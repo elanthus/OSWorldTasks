@@ -218,11 +218,9 @@ def _run_failed_then_resume(
     return RuntimeResult(root, submission_id, origin_run_id, failed.stdout + resumed.stdout)
 
 
-def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
+def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes, bytes, bytes]:
     store = LocalImmutableStore(result.root / "immutable")
-    predictions_ref = store.get_reference(
-        f"runs/{result.submission_id}/predictions.jsonl"
-    )
+    predictions_ref = store.get_reference(f"runs/{result.submission_id}/predictions.jsonl")
     gate_ref = store.get_reference(f"runs/{result.submission_id}/gate-report.json")
     assert predictions_ref is not None and gate_ref is not None
     predictions = store.get_verified(predictions_ref)
@@ -242,6 +240,27 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
     candidate_gate = dict(candidate.gate_report)
     candidate_gate["run_id"] = "<run-id>"
     artifact_values = [artifact.to_dict() for artifact in candidate.artifacts]
+    summary_ref = next(
+        artifact
+        for artifact in candidate.artifacts
+        if artifact.logical_key.endswith("/summary.json")
+    )
+    run_manifest_ref = next(
+        artifact
+        for artifact in candidate.artifacts
+        if artifact.logical_key.endswith("/run-manifest.json")
+    )
+    summary_document = json.loads(store.get_verified(summary_ref))
+    summary_document["run_id"] = "<run-id>"
+    summary_document["evaluation_end_to_end_duration_ms"] = "<measured-duration>"
+    run_manifest_document = json.loads(store.get_verified(run_manifest_ref))
+    run_manifest_document["run_id"] = "<run-id>"
+    run_manifest_document["metaflow_pathspec"] = "<metaflow-pathspec>"
+    run_manifest_document["mlflow_run_id"] = "<mlflow-run-id>"
+    # Candidate artifacts below compare the index entries. Compare the manifest's
+    # own semantic fields separately so run-bound reference identities do not hide
+    # or manufacture resume equivalence.
+    run_manifest_document.pop("artifact_index")
     for artifact in artifact_values:
         run_bound_suffix = next(
             (
@@ -270,7 +289,14 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
             "state": candidate.state.value,
         }
     )
-    return predictions, canonical_json_bytes(gate), policy, canonical_candidate
+    return (
+        predictions,
+        canonical_json_bytes(gate),
+        policy,
+        canonical_candidate,
+        canonical_json_bytes(summary_document),
+        canonical_json_bytes(run_manifest_document),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -295,12 +321,15 @@ def test_metaflow_resume_at_each_side_effect_boundary(
 
     evidence = _final_evidence(resumed)
     assert len(evidence[0].splitlines()) == 100
-    assert len(
-        {
-            (record["example_id"], record["condition"])
-            for record in map(json.loads, evidence[0].splitlines())
-        }
-    ) == 100
+    assert (
+        len(
+            {
+                (record["example_id"], record["condition"])
+                for record in map(json.loads, evidence[0].splitlines())
+            }
+        )
+        == 100
+    )
     assert evidence == _final_evidence(uninterrupted_runtime)
 
     ledger = provider_ledger_snapshot(tmp_path / "provider.db")
@@ -319,9 +348,7 @@ def test_metaflow_resume_at_each_side_effect_boundary(
     submission = control.list_submissions()[0]
     candidate = control.list_candidates()[0]
     assert submission["status"] == "Complete"
-    assert submission["metaflow_pathspec"] == (
-        f"GroundingEvaluationFlow/{resumed.origin_run_id}"
-    )
+    assert submission["metaflow_pathspec"] == (f"GroundingEvaluationFlow/{resumed.origin_run_id}")
     tracking = MlflowTracking(f"sqlite:///{tmp_path / 'mlflow.db'}")
     tracked = tracking.client.get_run(candidate.source_run_id)
     assert tracked.info.status == "FINISHED"

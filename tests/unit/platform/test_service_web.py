@@ -115,7 +115,9 @@ def test_serving_contract_and_identity_headers(policy_factory) -> None:
     assert provider.calls == 1
 
 
-def test_operational_record_is_redacted_immutable_and_identifies_served_policy(policy_factory) -> None:
+def test_operational_record_is_redacted_immutable_and_identifies_served_policy(
+    policy_factory,
+) -> None:
     provider = ServingFake(usage={"input_tokens": 1, "output_tokens": 0})
     log = MemoryOperationalLog()
     policy = policy_factory()
@@ -156,7 +158,8 @@ def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_f
     no_usage_log = MemoryOperationalLog()
     no_usage = TestClient(
         create_serving_app(
-            PolicyRuntime(_loaded(policy_factory(), ServingFake(usage=None))), operational_log=no_usage_log
+            PolicyRuntime(_loaded(policy_factory(), ServingFake(usage=None))),
+            operational_log=no_usage_log,
         )
     ).post("/api/v1/ground", json=payload)
     assert no_usage_log.get(no_usage.headers["x-pixelgym-request-id"]).usage is None
@@ -170,7 +173,10 @@ def test_operational_log_distinguishes_absent_usage_and_failure_classes(policy_f
     ).post("/api/v1/ground", json=payload)
     malformed_record = bad_metadata_log.get(malformed.headers["x-pixelgym-request-id"])
     assert malformed.status_code == 502
-    assert malformed_record is not None and malformed_record.terminal_status == "provider_metadata_invalid"
+    assert (
+        malformed_record is not None
+        and malformed_record.terminal_status == "provider_metadata_invalid"
+    )
 
     failed_log = MemoryOperationalLog()
     failed = TestClient(
@@ -283,10 +289,13 @@ def test_immutable_operational_log_surfaces_missing_provider_request_id() -> Non
 def test_operational_log_captures_rejected_and_invalid_output_requests(policy_factory) -> None:
     log = MemoryOperationalLog()
     client = TestClient(
-        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake("not-json"))), operational_log=log)
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake("not-json"))), operational_log=log
+        )
     )
     invalid_input = client.post(
-        "/api/v1/ground", json={"image_base64": "bad", "media_type": "image/png", "target": "target"}
+        "/api/v1/ground",
+        json={"image_base64": "bad", "media_type": "image/png", "target": "target"},
     )
     rejected = log.get(invalid_input.headers["x-pixelgym-request-id"])
     assert invalid_input.status_code == 400
@@ -295,7 +304,11 @@ def test_operational_log_captures_rejected_and_invalid_output_requests(policy_fa
 
     invalid_output = client.post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
     )
     record = log.get(invalid_output.headers["x-pixelgym-request-id"])
     assert invalid_output.status_code == 200
@@ -307,15 +320,23 @@ def test_immutable_operational_log_retrieves_verified_record_and_detects_tamperi
 ) -> None:
     log = ImmutableOperationalLog(LocalImmutableStore(tmp_path / "immutable"))
     client = TestClient(
-        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log)
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log
+        )
     )
     response = client.post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
     )
     request_id = response.headers["x-pixelgym-request-id"]
     assert log.get(request_id) is not None
-    record_path = tmp_path / "immutable" / "objects" / "serving-operational-records" / f"{request_id}.json"
+    record_path = (
+        tmp_path / "immutable" / "objects" / "serving-operational-records" / f"{request_id}.json"
+    )
     record_path.write_text("{}\n")
     with pytest.raises(OperationalLogError, match="retrieve verified"):
         log.get(request_id)
@@ -330,10 +351,16 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
             return None
 
     response = TestClient(
-        create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=FailingLog())
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=FailingLog()
+        )
     ).post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
     )
     assert response.status_code == 503
     assert response.json() == {"detail": "serving audit storage is unavailable"}
@@ -383,7 +410,9 @@ def test_cancelled_request_is_audited_without_masking_cancellation(policy_factor
             return None
 
     def middleware_for(log: CapturingLog):
-        app = create_serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log)
+        app = create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=log
+        )
         return app.user_middleware[0].kwargs["dispatch"]
 
     request = Request(
@@ -454,11 +483,15 @@ def test_missing_response_raises_after_auditing_and_context_cleanup(policy_facto
     assert _operational_context.get() is None
 
 
-def test_cancelled_in_flight_request_completes_audit_through_base_http_middleware(policy_factory) -> None:
+def test_cancelled_in_flight_request_completes_audit_through_base_http_middleware(
+    policy_factory,
+) -> None:
     async def exercise() -> tuple[MemoryOperationalLog, asyncio.CancelledError]:
         provider = BlockingServingFake()
         log = MemoryOperationalLog()
-        app = create_serving_app(PolicyRuntime(_loaded(policy_factory(), provider)), operational_log=log)
+        app = create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), provider)), operational_log=log
+        )
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             request = asyncio.create_task(
@@ -486,7 +519,9 @@ def test_cancelled_in_flight_request_completes_audit_through_base_http_middlewar
     assert record.http_status == 499
 
 
-def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(policy_factory) -> None:
+def test_operational_append_runs_off_the_event_loop_and_keeps_request_context(
+    policy_factory,
+) -> None:
     class ContextInspectingLog:
         def __init__(self, event_loop_thread: int) -> None:
             self.event_loop_thread = event_loop_thread
@@ -599,7 +634,9 @@ def test_operational_audit_bulkhead_requires_positive_limit(policy_factory) -> N
         )
 
 
-def test_immutable_operational_log_does_not_serialize_distinct_request_writes(tmp_path: Path) -> None:
+def test_immutable_operational_log_does_not_serialize_distinct_request_writes(
+    tmp_path: Path,
+) -> None:
     class RendezvousStore:
         def __init__(self) -> None:
             self.delegate = LocalImmutableStore(tmp_path / "immutable")
@@ -652,7 +689,11 @@ def test_no_active_deployment_is_operationally_recorded() -> None:
     log = MemoryOperationalLog()
     response = TestClient(create_serving_app(PolicyRuntime(), operational_log=log)).post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
     )
     record = log.get(response.headers["x-pixelgym-request-id"])
     assert response.status_code == 503
@@ -664,10 +705,27 @@ def test_no_active_deployment_is_operationally_recorded() -> None:
     "payload",
     [
         {"image_base64": "not-base64", "media_type": "image/png", "target": "target"},
-        {"image_base64": base64.b64encode(b"not-image").decode(), "media_type": "image/png", "target": "target"},
-        {"image_base64": base64.b64encode(_image()).decode(), "media_type": "text/plain", "target": "target"},
-        {"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "   "},
-        {"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target", "extra": "forbidden"},
+        {
+            "image_base64": base64.b64encode(b"not-image").decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
+        {
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "text/plain",
+            "target": "target",
+        },
+        {
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "   ",
+        },
+        {
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+            "extra": "forbidden",
+        },
     ],
 )
 def test_invalid_requests_fail_before_provider(policy_factory, payload: dict) -> None:
@@ -682,11 +740,19 @@ def test_bad_dimensions_and_media_mismatch_fail_before_provider(policy_factory) 
     client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
     too_wide = client.post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image(4097, 1)).decode(), "media_type": "image/png", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image(4097, 1)).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        },
     )
     mismatch = client.post(
         "/api/v1/ground",
-        json={"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/jpeg", "target": "target"},
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/jpeg",
+            "target": "target",
+        },
     )
     assert too_wide.status_code == 400 and mismatch.status_code == 415
     assert provider.calls == 0
@@ -695,12 +761,18 @@ def test_bad_dimensions_and_media_mismatch_fail_before_provider(policy_factory) 
 def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory) -> None:
     invalid = ServingFake("not-json")
     client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), invalid))))
-    payload = {"image_base64": base64.b64encode(_image()).decode(), "media_type": "image/png", "target": "target"}
+    payload = {
+        "image_base64": base64.b64encode(_image()).decode(),
+        "media_type": "image/png",
+        "target": "target",
+    }
     response = client.post("/api/v1/ground", json=payload)
     assert response.status_code == 200 and response.json()["parse_status"] == "invalid"
     assert invalid.calls == 1
     timeout = ServingFake(failure="timeout")
-    response = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), timeout)))).post("/api/v1/ground", json=payload)
+    response = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), timeout)))).post(
+        "/api/v1/ground", json=payload
+    )
     assert response.status_code == 504
     assert "private provider detail" not in response.text
     assert timeout.calls == 1
@@ -733,9 +805,7 @@ def test_bootstrap_import_is_side_effect_free_and_factory_uses_explicit_migratio
     monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
     monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
     (tmp_path / "state").mkdir()
-    migrated = ControlStore(
-        tmp_path / "state/control.db", reviewer_identity="local-reviewer"
-    )
+    migrated = ControlStore(tmp_path / "state/control.db", reviewer_identity="local-reviewer")
     migrated.migrate()
     restore_called = False
     original_restore = module.DeploymentCoordinator.restore_active
@@ -809,6 +879,37 @@ def test_bootstrap_tracking_initialization_fails_open_with_reconciliation(
     assert event["details"]["operation"] == "initialize_tracking"
 
 
+def test_bootstrap_records_background_reconciliation_failure(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    database = tmp_path / "state/control.db"
+    database.parent.mkdir()
+    control = ControlStore(database, reviewer_identity="local-reviewer")
+    control.migrate()
+    monkeypatch.setenv("PIXELGYM_REPOSITORY_ROOT", str(repository_root))
+    monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
+    monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
+    monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    monkeypatch.setenv("MLFLOW_TRACKING_URI", "http://tracking.invalid")
+    monkeypatch.setattr(bootstrap, "MlflowTracking", lambda _uri: object())
+    monkeypatch.setattr(
+        bootstrap.DeploymentCoordinator,
+        "reconcile_tracking",
+        lambda _coordinator: (_ for _ in ()).throw(ConnectionError("mirror unavailable")),
+    )
+
+    app = bootstrap.create_app()
+    app.state.tracking_reconciliation_thread.join(timeout=1)
+
+    assert not app.state.tracking_reconciliation_thread.is_alive()
+    event = control.audit_events()[-1]
+    assert event["event_type"] == "tracking.reconciliation_required"
+    assert event["details"]["operation"] == "startup_reconciliation"
+    assert event["details"]["error"] == "ConnectionError: mirror unavailable"
+
+
 def test_worker_registration_and_cancellation_intent_are_atomic(
     tmp_path: Path, repository_root: Path, monkeypatch
 ) -> None:
@@ -830,11 +931,18 @@ def test_worker_registration_and_cancellation_intent_are_atomic(
     cancelled = set()
     popen_started = threading.Event()
     release_popen = threading.Event()
+    process_waiting = threading.Event()
+    release_process = threading.Event()
+    cancellation_committed = threading.Event()
+    cancellation_recorded = threading.Event()
+    cancellation_result: list[bool] = []
 
     class Process:
         returncode = 0
 
         def wait(self):
+            process_waiting.set()
+            assert release_process.wait(timeout=1)
             return self.returncode
 
     def popen(*args, **kwargs):
@@ -858,21 +966,42 @@ def test_worker_registration_and_cancellation_intent_are_atomic(
     if acquired_during_popen:
         process_lock.release()
     assert not acquired_during_popen
-    release_popen.set()
-    worker.join(timeout=1)
-    assert not worker.is_alive()
 
-    control.cancel_submission(
-        submission_id, actor="local-reviewer", reason="cancel before another worker"
-    )
+    def cancel() -> None:
+        control.cancel_submission(
+            submission_id, actor="local-reviewer", reason="cancel during worker startup"
+        )
+        cancellation_committed.set()
+        cancellation_result.append(
+            bootstrap._record_cancellation_intent(
+                control,
+                submission_id,
+                process_lock=process_lock,
+                cancelled_submissions=cancelled,
+            )
+        )
+        cancellation_recorded.set()
+
+    cancellation = threading.Thread(target=cancel)
+    cancellation.start()
+    assert cancellation_committed.wait(timeout=1)
+    assert not cancellation_recorded.is_set()
+    release_popen.set()
+    assert process_waiting.wait(timeout=1)
+    assert cancellation_recorded.wait(timeout=1)
+    assert cancellation_result == [True]
+    assert submission_id in processes
+    assert submission_id in cancelled
+    release_process.set()
+    worker.join(timeout=1)
+    cancellation.join(timeout=1)
+    assert not worker.is_alive()
+    assert not cancellation.is_alive()
+    assert control.get_submission(submission_id)["status"] == "Cancelled"
+    assert submission_id not in processes
+    assert submission_id not in cancelled
     with pytest.raises(ValueError, match="unknown submission status"):
         control.mark_submission(submission_id, "Cancelled")
-    assert bootstrap._record_cancellation_intent(
-        control,
-        submission_id,
-        process_lock=process_lock,
-        cancelled_submissions=cancelled,
-    )
     assert not bootstrap._record_cancellation_intent(
         control,
         "submission-missing",
@@ -996,7 +1125,11 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     from pixelgym.platform.policy import build_policy_manifest, prompt_template
 
     prompt_version = 3 if failure == "identity" else policy.prompt_version
-    prompt = "identity-mismatch fixture" if failure == "identity" else prompt_template(prompt_version) + " second"
+    prompt = (
+        "identity-mismatch fixture"
+        if failure == "identity"
+        else prompt_template(prompt_version) + " second"
+    )
     second_policy = build_policy_manifest(
         provider=policy.provider,
         model=policy.model + "-second",
@@ -1009,18 +1142,19 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
         scorer_version=policy.scorer_version,
         overlay_version=policy.overlay_version,
         target_semantics=policy.target_semantics,
-        source_provenance=__import__("pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]).SourceProvenance(
-            "pixelgym-source-provenance-v1", policy.code_revision, policy.source_tree_sha256,
-            policy.code_state, "git-build-inputs-v1"
+        source_provenance=__import__(
+            "pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]
+        ).SourceProvenance(
+            "pixelgym-source-provenance-v1",
+            policy.code_revision,
+            policy.source_tree_sha256,
+            policy.code_state,
+            "git-build-inputs-v1",
         ),
         dependency_lock_sha256=policy.dependency_lock_sha256,
     )
-    second_summary = dataclasses.replace(
-        summary, run_id="run-2", policy_id=second_policy.policy_id
-    )
-    second_report = dataclasses.replace(
-        report, run_id="run-2", policy_id=second_policy.policy_id
-    )
+    second_summary = dataclasses.replace(summary, run_id="run-2", policy_id=second_policy.policy_id)
+    second_report = dataclasses.replace(report, run_id="run-2", policy_id=second_policy.policy_id)
     second = _approved_candidate(control, second_policy, second_summary, second_report)
     smoke = app.state.deployment_coordinator.load_and_smoke
     if failure == "provider":
@@ -1063,10 +1197,9 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
             control,
             csrf_secret="test-secret-at-least-sixteen",
             submit_callback=lambda submission, payload: scheduled.append((submission, payload)),
-            cancel_callback=lambda submission: cancellation_states.append(
-                control.get_submission(submission)["status"]
-            )
-            or True,
+            cancel_callback=lambda submission: (
+                cancellation_states.append(control.get_submission(submission)["status"]) or True
+            ),
         )
     )
     page = client.get("/")
@@ -1145,9 +1278,7 @@ def test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure(
 def test_empty_form_body_and_unknown_candidates_are_client_errors(tmp_path: Path) -> None:
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
-    client = TestClient(
-        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
-    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
 
     empty = client.post(
         "/experiments",
@@ -1214,7 +1345,9 @@ def test_failed_candidate_has_visible_reasons_and_no_approval_control(
     report = evaluate_gates(gate_policy, summary)
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
-    candidate = control.register_candidate(source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[])
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
     client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     page = client.get(f"/candidates/{candidate.candidate_id}")
     assert "Approval unavailable" in page.text
@@ -1333,7 +1466,11 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
         ),
     ]
     first = control.register_candidate(
-        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=artifacts, summary=summary
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=artifacts,
+        summary=summary,
     )
     second_policy = policy_factory(model="another-exact-model")
     second_report = replace(
@@ -1342,12 +1479,20 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
         run_id="run-2",
         accuracy=replace(report.accuracy, observed=0.9),
     )
-    second_summary = replace(summary, run_id="run-2", policy_id=second_policy.policy_id, correct_count=90, accuracy=0.9)
+    second_summary = replace(
+        summary, run_id="run-2", policy_id=second_policy.policy_id, correct_count=90, accuracy=0.9
+    )
     second = control.register_candidate(
-        source_run_id="run-2", policy=second_policy, gate_report=second_report, artifacts=[], summary=second_summary
+        source_run_id="run-2",
+        policy=second_policy,
+        gate_report=second_report,
+        artifacts=[],
+        summary=second_summary,
     )
     client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
-    response = client.get(f"/compare?candidate={first.candidate_id}&candidate={second.candidate_id}")
+    response = client.get(
+        f"/compare?candidate={first.candidate_id}&candidate={second.candidate_id}"
+    )
     assert "COMPATIBLE" in response.text
     assert "Cost / 100" in response.text
     assert "Provider p95" in response.text
@@ -1365,10 +1510,11 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
     assert raw.status_code == 200
     assert "raw-responses/a.json" in raw.text
     assert "https://evidence.test/raw/a.json" in raw.text
-    diff = client.get(f"/compare/prompt-diff?candidate={first.candidate_id}&candidate={second.candidate_id}")
+    diff = client.get(
+        f"/compare/prompt-diff?candidate={first.candidate_id}&candidate={second.candidate_id}"
+    )
     assert diff.status_code == 200
     assert "no separate immutable prompt-diff artifact was recorded" in diff.text
-
 
 
 def test_compare_blocks_promotion_for_different_primary_metrics(
@@ -1405,9 +1551,7 @@ def test_compare_blocks_promotion_for_different_primary_metrics(
         artifacts=[],
         summary=incompatible_summary,
     )
-    client = TestClient(
-        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
-    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     blocked = client.get(
         f"/compare?candidate={first.candidate_id}&candidate={incompatible.candidate_id}"
     )
@@ -1426,7 +1570,9 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
         provider="recorded-real-provider",
         code_state="dirty",
     )
-    summary = replace(summary, policy_id=policy.policy_id, synthetic_provider=False, dirty_code=True)
+    summary = replace(
+        summary, policy_id=policy.policy_id, synthetic_provider=False, dirty_code=True
+    )
     report = replace(report, policy_id=policy.policy_id)
 
     incomplete = replace(
@@ -1506,9 +1652,7 @@ def test_runs_filter_prompt_model_status_date_and_gate_result(
         submission_id=submission_id,
     )
     created_date = control.get_submission(submission_id)["created_at_utc"][:10]
-    client = TestClient(
-        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
-    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
 
     matched = client.get(
         "/runs",
@@ -1576,10 +1720,13 @@ def test_compatible_run_api_rejects_unsafe_filters_and_maps_timeout(tmp_path: Pa
         "scorer_version": "scorer-v1",
         "target_semantics": "target-v1",
     }
-    assert client.get(
-        "/api/tracking/runs/compatible",
-        params={**base, "scorer_version": "unsafe'value"},
-    ).status_code == 422
+    assert (
+        client.get(
+            "/api/tracking/runs/compatible",
+            params={**base, "scorer_version": "unsafe'value"},
+        ).status_code
+        == 422
+    )
     assert tracking.calls == 0
     assert client.get("/api/tracking/runs/compatible", params=base).status_code == 504
     assert tracking.calls == 1

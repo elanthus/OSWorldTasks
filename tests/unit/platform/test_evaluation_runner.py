@@ -118,11 +118,43 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
     assert "parsed_prediction" in prediction and "correct" not in prediction
     assert "correct" in score and "parsed_prediction" not in score
     run_manifest = json.loads(
-        revised.store.get_verified(
-            by_key["runs/submission-revised/run-manifest.json"]
-        )
+        revised.store.get_verified(by_key["runs/submission-revised/run-manifest.json"])
     )
     assert run_manifest["status"] == "Running"
+
+
+def test_dataset_input_is_cached_after_success(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+    )
+
+    first = runner._dataset_input()
+
+    assert runner._dataset_input() is first
+
+
+def test_empty_aggregate_has_no_cost_totals(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+    )
+
+    summary = runner.aggregate_metrics([], run_id="empty-run")
+
+    assert summary.total_cost_usd is None
+    assert summary.cost_usd_per_example is None
+    assert summary.cost_usd_per_100 is None
 
 
 def test_revised_rollback_seed_has_distinct_provider_identity(
@@ -203,9 +235,7 @@ def test_invalid_answers_are_final_and_raw_is_stored_before_parser(
     first_raw = next(
         reference for reference in references if reference.logical_key.startswith("raw-responses/")
     )
-    first_envelope = json.loads(
-        LocalImmutableStore(tmp_path / "immutable").get_verified(first_raw)
-    )
+    first_envelope = json.loads(LocalImmutableStore(tmp_path / "immutable").get_verified(first_raw))
     assert first_envelope["raw_response"] == "not-json"
     assert first_envelope["request_status"] == "responded"
     assert first_envelope["started_at_utc"] is None
@@ -231,7 +261,11 @@ def test_failure_after_receipt_resumes_from_raw_without_duplicate_first_call(
     from pixelgym.platform import evaluation as module
 
     original = module.parse_prediction
-    monkeypatch.setattr(module, "parse_prediction", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("crash after receipt")))
+    monkeypatch.setattr(
+        module,
+        "parse_prediction",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("crash after receipt")),
+    )
     with pytest.raises(RuntimeError, match="after receipt"):
         runner.run(max_calls=100)
     assert len(provider.call_ids) == 1
@@ -303,10 +337,16 @@ def test_duplicate_overlay_example_ids_are_rejected(
 ) -> None:
     artifact_dir = tmp_path / "artifacts"
     artifact_dir.mkdir()
-    dataset_line = (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()[0]
-    overlay_line = (repository_root / "artifacts/grounding-overlays.jsonl").read_text().splitlines()[0]
+    dataset_line = (
+        (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()[0]
+    )
+    overlay_line = (
+        (repository_root / "artifacts/grounding-overlays.jsonl").read_text().splitlines()[0]
+    )
     (artifact_dir / "grounding-dataset.jsonl").write_text(dataset_line + "\n")
-    (artifact_dir / "grounding-overlays.jsonl").write_text(overlay_line + "\n" + overlay_line + "\n")
+    (artifact_dir / "grounding-overlays.jsonl").write_text(
+        overlay_line + "\n" + overlay_line + "\n"
+    )
     runner = EvaluationRunner(
         repository_root=tmp_path,
         store=LocalImmutableStore(tmp_path / "immutable"),

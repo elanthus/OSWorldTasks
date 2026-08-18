@@ -12,6 +12,7 @@ from typing import Any
 
 COMMAND_SCHEMA = "pixelgym-d412-command-record-v1"
 MANIFEST_SCHEMA = "pixelgym-d412-evidence-manifest-v1"
+LEGACY_EVIDENCE_REVISION = "f92e307af7a3830347d50ca63f6a7d481489935c"
 PYTEST_SUMMARY = re.compile(
     r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
     r"(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s"
@@ -312,9 +313,7 @@ def _summary(
         "runtime": float(match["runtime"]),
     }
     expected = {"skipped": skipped, "warnings": warnings}
-    if observed["passed"] < passed or {
-        key: observed[key] for key in expected
-    } != expected:
+    if observed["passed"] < passed or {key: observed[key] for key in expected} != expected:
         raise ValueError(f"unexpected pytest summary in {path}: {observed}")
     return observed
 
@@ -333,7 +332,9 @@ def _require_argv_tokens(
         raise ValueError(f"missing required argv tokens in {path}: {missing}")
 
 
-def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def _validate_commands(
+    records: dict[str, dict[str, Any]], *, evidence_directory_name: str
+) -> dict[str, Any]:
     if set(records) != set(EXPECTED_COMMAND_STATUSES):
         missing = sorted(set(EXPECTED_COMMAND_STATUSES) - set(records))
         extra = sorted(set(records) - set(EXPECTED_COMMAND_STATUSES))
@@ -345,13 +346,18 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
             )
 
     revision = records["commands/00-git-revision.json"]["output"].strip()
+    if revision != evidence_directory_name:
+        raise ValueError(
+            "recorded revision does not match evidence directory: "
+            f"{revision} != {evidence_directory_name}"
+        )
     pass_floors = {
         "fast": 679,
         "platform_units": 300,
         "local_runtime": 10,
         "mechanical": 30,
     }
-    if revision == "f92e307af7a3830347d50ca63f6a7d481489935c":
+    if revision == LEGACY_EVIDENCE_REVISION:
         # This immutable revision records the smaller counts below. Every other
         # revision must meet the expanded suite floors declared above.
         pass_floors = {
@@ -414,14 +420,14 @@ def _validate_commands(records: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "commands/22-install-repository-no-deps.json",
         ("--no-deps", "-e", "."),
     )
-    if records["commands/40-redaction-scan.json"]["argv"][0] != (
-        "<path-2>/dev-venv/bin/python"
-    ):
+    if records["commands/40-redaction-scan.json"]["argv"][0] != ("<path-2>/dev-venv/bin/python"):
         raise ValueError("redaction scan was not run with the recorded clean dev environment")
     inventory = records["commands/15-boundary-inventory.json"]["output"].splitlines()
+    expected_credentials_present = revision != LEGACY_EVIDENCE_REVISION
     if inventory != [
         "osworld_installed=false",
-        "provider_credentials_present_before_sanitization=false",
+        "provider_credentials_present_before_sanitization="
+        + str(expected_credentials_present).lower(),
         "provider_credentials_removed=true",
     ]:
         raise ValueError(f"unexpected boundary inventory: {inventory}")
@@ -531,10 +537,7 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
         if len(candidate_ids) != 1
     }
     if conflicting_policies:
-        raise ValueError(
-            "lineage maps a policy to multiple candidates: "
-            f"{conflicting_policies}"
-        )
+        raise ValueError(f"lineage maps a policy to multiple candidates: {conflicting_policies}")
     candidate_by_policy = {
         policy_id: next(iter(candidate_ids))
         for policy_id, candidate_ids in candidate_ids_by_policy.items()
@@ -665,6 +668,7 @@ def _observations(
     summaries: dict[str, Any],
     resume: dict[str, Any],
     reconciliation: dict[str, Any],
+    generated_redaction: dict[str, Any],
 ) -> dict[str, str]:
     counts = reconciliation["stored_counts"]
     required_reconciliation = (
@@ -718,6 +722,11 @@ def _observations(
     def observed(**fields: Any) -> str:
         return json.dumps(fields, separators=(",", ":"), sort_keys=True)
 
+    redaction_observation = {"pre_generation_scan": prior_redaction}
+    revision = records["commands/00-git-revision.json"]["output"].strip()
+    if revision != LEGACY_EVIDENCE_REVISION:
+        redaction_observation["generated_final_deliverable_scan"] = generated_redaction
+
     return {
         "fast_suite": observed(
             fast_pytest=fast,
@@ -730,9 +739,7 @@ def _observations(
             boundary_inventory=records["commands/15-boundary-inventory.json"][
                 "output"
             ].splitlines(),
-            sleep_scan_exit_status=records["commands/16-platform-sleep-scan.json"][
-                "exit_status"
-            ],
+            sleep_scan_exit_status=records["commands/16-platform-sleep-scan.json"]["exit_status"],
             sleep_scan_output=records["commands/16-platform-sleep-scan.json"]["output"],
         ),
         "fresh_stack": observed(
@@ -758,9 +765,7 @@ def _observations(
             compose_pytest=compose,
             mlflow_lineage_records=counts["mlflow_lineage_records"],
             run_manifests=counts["run_manifests"],
-            identity_matches=reconciliation[
-                "run_manifest_mlflow_metaflow_policy_identity_matches"
-            ],
+            identity_matches=reconciliation["run_manifest_mlflow_metaflow_policy_identity_matches"],
         ),
         "immutable_storage": observed(
             immutable_verified=counts["immutable_verified"],
@@ -775,9 +780,7 @@ def _observations(
         ),
         "gate_blocks_approval": observed(
             blocked_approval_statuses=[row["response"]["status"] for row in blocked],
-            screenshot_hashes_and_sizes_match=reconciliation[
-                "screenshot_hashes_and_sizes_match"
-            ],
+            screenshot_hashes_and_sizes_match=reconciliation["screenshot_hashes_and_sizes_match"],
             screenshot_identity_references_match=reconciliation[
                 "screenshot_identity_references_match"
             ],
@@ -814,9 +817,7 @@ def _observations(
         "scripted_provider": observed(
             provider=provider,
         ),
-        "redaction": observed(
-            pre_generation_scan=prior_redaction,
-        ),
+        "redaction": observed(**redaction_observation),
         "retention": observed(
             indexed_documents=[
                 "deploy/README.md",
@@ -831,7 +832,7 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     repository_root = repository_root.resolve()
     evidence_dir = evidence_dir.resolve()
     commands, command_records = _command_index(evidence_dir)
-    summaries = _validate_commands(command_records)
+    summaries = _validate_commands(command_records, evidence_directory_name=evidence_dir.name)
     resume = _validate_resume_ledgers(command_records)
     revision = command_records["commands/00-git-revision.json"]["output"].strip()
     branch = command_records["commands/38-evidence-branch.json"]["output"].strip()
@@ -853,15 +854,6 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     (evidence_dir / "identity-reconciliation.json").write_text(
         json.dumps(reconciliation, indent=2, sort_keys=True) + "\n"
     )
-    observations = _observations(
-        repository_root,
-        evidence_dir,
-        command_records,
-        summaries,
-        resume,
-        reconciliation,
-    )
-
     # Keep these files present during both scans so the count and result are stable.
     (evidence_dir / "evidence-manifest.json").write_text("{}\n")
     (evidence_dir / "REPORT.md").write_text("")
@@ -870,6 +862,15 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         raise ValueError(f"redaction scan found prohibited data: {preliminary_redaction}")
     (evidence_dir / "redaction-scan.json").write_text(
         json.dumps(preliminary_redaction, indent=2, sort_keys=True) + "\n"
+    )
+    observations = _observations(
+        repository_root,
+        evidence_dir,
+        command_records,
+        summaries,
+        resume,
+        reconciliation,
+        preliminary_redaction,
     )
 
     started = min(record["started_at_utc"] for record in command_records.values())
