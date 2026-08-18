@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/run-manifest-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "submission_id", "mlflow_run_id", "metaflow_pathspec", "dataset_fingerprint", "policy_id", "status", "request", "artifact_index"],
+  "properties": {
+    "schema_version": {"const": "pixelgym-platform-run-manifest-v1"},
+    "submission_id": {"type": "string", "minLength": 1},
+    "mlflow_run_id": {"type": ["string", "null"]},
+    "metaflow_pathspec": {"type": ["string", "null"]},
+    "dataset_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+    "policy_id": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["Submitted", "Running", "Complete", "Failed", "Cancelled"]},
+    "request": {"$ref": "#/$defs/request"},
+    "artifact_index": {"type": "array", "items": {"$ref": "#/$defs/artifact_ref"}}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_key", "uri", "version_id", "sha256", "size", "media_type", "retention_status"],
+      "properties": {
+        "logical_key": {"type": "string", "minLength": 1},
+        "uri": {"type": "string", "minLength": 1},
+        "version_id": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/digest"},
+        "size": {"type": "integer", "minimum": 0},
+        "media_type": {"type": "string", "minLength": 1},
+        "retention_status": {"type": "string", "minLength": 1}
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset", "prompt_version", "model", "condition", "maximum_calls", "price_catalog"],
+      "properties": {
+        "dataset": {"type": "string", "minLength": 1},
+        "prompt_version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "model": {"type": "string", "minLength": 1},
+        "condition": {"enum": ["raw", "marks"]},
+        "maximum_calls": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "price_catalog": {"type": "string", "minLength": 1},
+        "lifecycle_role": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

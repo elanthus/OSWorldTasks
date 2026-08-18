@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 from pathlib import Path
 
@@ -8,12 +9,14 @@ import pytest
 
 from pixelgym.platform.contracts import GateReport, PolicyManifest
 from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.policy import verify_policy_manifest
 from pixelgym.platform.schema_validation import (
     CONTRACT_SCHEMA_FILES,
     ContractValidationError,
     PlatformSchemas,
     load_gate_policy,
+    load_policy_manifest,
     load_price_catalog,
 )
 from scripts.export_platform_evidence import export_evidence
@@ -101,6 +104,13 @@ def test_registry_inventory_matches_every_d41_contract(repository_root: Path) ->
     }
 
 
+def test_packaged_schemas_match_authoritative_config(repository_root: Path) -> None:
+    packaged = repository_root / "pixelgym/platform/schemas"
+
+    for config_path in sorted((repository_root / "config").glob("*.schema.json")):
+        assert (packaged / config_path.name).read_bytes() == config_path.read_bytes()
+
+
 def test_committed_configuration_and_exports_validate(repository_root: Path) -> None:
     schemas = PlatformSchemas(repository_root)
     gate_policy = load_gate_policy(repository_root)
@@ -177,16 +187,62 @@ def test_audit_serialized_and_parsed_details_must_match(
         PlatformSchemas(repository_root).validate("audit_event", value)
 
 
-def test_legacy_optional_policy_diagnostic_remains_readable_and_emits_current_shape(
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [
+        ("latency_ms", float("nan")),
+        ("usage", {1: 1}),
+        ("usage", {"input_tokens": (1, 2)}),
+    ],
+)
+def test_non_json_values_fail_before_schema_validation(
+    repository_root: Path,
+    passing_evidence,
+    field: str,
+    invalid: object,
+) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["raw_response"]
+    )
+    value[field] = invalid
+
+    with pytest.raises(ContractValidationError, match="JSON"):
+        PlatformSchemas(repository_root).validate("raw_response", value)
+
+
+def test_date_time_format_is_enforced(repository_root: Path, passing_evidence) -> None:
+    value = copy.deepcopy(
+        _representatives(repository_root, passing_evidence)["approval"]
+    )
+    value["created_at_utc"] = "not-a-timestamp"
+
+    with pytest.raises(ContractValidationError, match="date-time"):
+        PlatformSchemas(repository_root).validate("approval", value)
+
+
+def test_former_v1_policy_remains_readable_with_identity_and_fail_closed_provenance(
     repository_root: Path, passing_evidence
 ) -> None:
     policy, _summary, _report = passing_evidence
     legacy = policy.to_dict()
-    legacy.pop("source_provenance_failure_reason")
+    for field_name in (
+        "code_state",
+        "source_tree_sha256",
+        "source_provenance_verified",
+        "source_provenance_failure_reason",
+    ):
+        legacy.pop(field_name)
+    identity = dict(legacy)
+    identity.pop("policy_id")
+    legacy["policy_id"] = "sha256:" + sha256_bytes(canonical_json_bytes(identity))
 
-    decoded = PolicyManifest(**legacy)
+    decoded = load_policy_manifest(PlatformSchemas(repository_root), legacy)
 
     verify_policy_manifest(decoded)
+    assert decoded.policy_id == legacy["policy_id"]
+    assert decoded.code_state == "unverifiable"
+    assert not decoded.source_provenance_verified
+    assert decoded.source_provenance_failure_reason == "legacy_schema_missing_provenance"
     PlatformSchemas(repository_root).validate("policy_package", decoded.to_dict())
 
 
@@ -199,6 +255,59 @@ def test_invalid_run_manifest_blocks_export_before_any_file_is_written(
     output = tmp_path / "export"
 
     with pytest.raises(ContractValidationError, match="run_manifest"):
+        export_evidence(control, output)
+
+    assert not output.exists()
+
+
+def test_invalid_stored_gate_report_fails_before_export_derivation(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    invalid_report = dict(candidate.gate_report)
+    invalid_report.pop("dataset_fingerprint")
+    monkeypatch.setattr(
+        control,
+        "list_candidates",
+        lambda: [dataclasses.replace(candidate, gate_report=invalid_report)],
+    )
+    output = tmp_path / "export"
+
+    with pytest.raises(ContractValidationError, match="gate_report"):
+        export_evidence(control, output)
+
+    assert not output.exists()
+
+
+def test_malformed_stored_audit_details_fail_as_contract_error(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    control.connection.execute(
+        "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?, ?)",
+        (
+            "audit-corrupt",
+            "fixture.corrupt",
+            "system",
+            "fixture",
+            "{",
+            "2026-08-18T00:00:00+00:00",
+        ),
+    )
+    output = tmp_path / "export"
+
+    with pytest.raises(ContractValidationError, match="audit_event"):
         export_evidence(control, output)
 
     assert not output.exists()

@@ -142,6 +142,67 @@ def test_schema_invalid_approval_and_deployment_fail_before_authoritative_change
     assert control.active() == (None, 0)
 
 
+def test_approval_and_deployment_revalidate_stored_candidate_evidence(
+    tmp_path: Path,
+    passing_evidence,
+) -> None:
+    policy, summary, report = passing_evidence
+
+    approval_root = tmp_path / "approval"
+    approval_root.mkdir()
+    approval_control = _control(approval_root)
+    approval_candidate = approval_control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    approval_control.connection.execute(
+        "UPDATE candidates SET policy_json = '{}' WHERE candidate_id = ?",
+        (approval_candidate.candidate_id,),
+    )
+    with pytest.raises(ContractValidationError, match="policy_package"):
+        approval_control.approve(
+            approval_candidate.candidate_id,
+            actor="local-reviewer",
+            reason="must revalidate",
+            gate_report_sha256=approval_candidate.gate_report_sha256,
+        )
+    with pytest.raises(KeyError):
+        approval_control.get_approval(approval_candidate.candidate_id)
+
+    deployment_root = tmp_path / "deployment"
+    deployment_root.mkdir()
+    deployment_control = _control(deployment_root)
+    deployment_candidate = deployment_control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    deployment_control.approve(
+        deployment_candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed before corruption",
+        gate_report_sha256=deployment_candidate.gate_report_sha256,
+    )
+    deployment_control.connection.execute(
+        "UPDATE candidates SET gate_report_json = '{}' WHERE candidate_id = ?",
+        (deployment_candidate.candidate_id,),
+    )
+    with pytest.raises(ContractValidationError, match="gate_report"):
+        deployment_control.activate(
+            deployment_candidate.candidate_id,
+            actor="local-reviewer",
+            reason="must revalidate",
+            action="deploy",
+            expected_deployment_id=None,
+            expected_generation=0,
+        )
+    assert deployment_control.deployment_history() == []
+    assert deployment_control.active() == (None, 0)
+
+
 def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence(
     tmp_path: Path, passing_evidence
 ) -> None:

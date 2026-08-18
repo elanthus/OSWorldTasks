@@ -153,7 +153,7 @@ class EvaluationRunner:
         self.price_catalog_version = price_catalog_version
         self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
-        self.schemas = PlatformSchemas(Path(__file__).resolve().parents[2])
+        self.schemas = PlatformSchemas()
         self.schemas.validate("gate_policy", self.gate_policy.to_dict())
         self.schemas.validate("policy_package", self.policy.to_dict())
 

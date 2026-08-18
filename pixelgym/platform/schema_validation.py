@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import json
+import math
+from importlib import resources
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import SchemaError
 
-from pixelgym.platform.contracts import GatePolicy
+from pixelgym.platform.contracts import GatePolicy, PolicyManifest
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 
 CONTRACT_SCHEMA_FILES = {
     "run_manifest": "run-manifest.schema.json",
@@ -28,6 +32,7 @@ CONTROL_EVENT_DEFINITIONS = {
 }
 PRICE_CATALOG_SCHEMA_FILE = "price-catalog.schema.json"
 REGISTRY_SCHEMA_FILE = "platform-contracts.schema.json"
+LEGACY_POLICY_SCHEMA_FILE = "platform-policy.legacy-v1.schema.json"
 
 
 class ContractValidationError(ValueError):
@@ -38,7 +43,7 @@ def _reject_nonstandard_constant(value: str) -> None:
     raise ValueError(f"non-standard JSON numeric constant is forbidden: {value}")
 
 
-def _load_json_object(path: Path) -> dict[str, Any]:
+def _load_json_object(path: Path | Traversable) -> dict[str, Any]:
     try:
         value = json.loads(
             path.read_text(encoding="utf-8"),
@@ -51,12 +56,46 @@ def _load_json_object(path: Path) -> dict[str, Any]:
     return value
 
 
+def _validate_strict_json(value: object, *, label: str, path: str = "$") -> None:
+    if value is None or isinstance(value, (bool, int, str)):
+        return
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ContractValidationError(
+                f"{label} contains a non-finite JSON number at {path}"
+            )
+        return
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            _validate_strict_json(item, label=label, path=f"{path}[{index}]")
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ContractValidationError(
+                    f"{label} contains a non-string JSON object key at {path}"
+                )
+            _validate_strict_json(item, label=label, path=f"{path}.{key}")
+        return
+    raise ContractValidationError(
+        f"{label} contains a non-JSON {type(value).__name__} at {path}"
+    )
+
+
 class PlatformSchemas:
     """Load checked-in schemas once and validate exact contract-specific shapes."""
 
-    def __init__(self, repository_root: Path) -> None:
-        self.repository_root = repository_root.resolve()
-        self.schema_root = self.repository_root / "config"
+    def __init__(self, repository_root: Path | None = None) -> None:
+        self.repository_root = repository_root.resolve() if repository_root else None
+        if self.repository_root is not None:
+            self.schema_root: Path | Traversable = self.repository_root / "config"
+        else:
+            packaged = resources.files("pixelgym.platform").joinpath("schemas")
+            self.schema_root = (
+                packaged
+                if packaged.joinpath(REGISTRY_SCHEMA_FILE).is_file()
+                else Path(__file__).resolve().parents[2] / "config"
+            )
         self._schemas: dict[str, dict[str, Any]] = {}
         self._validators: dict[str, Draft202012Validator] = {}
         self._load_and_check_inventory()
@@ -79,7 +118,11 @@ class PlatformSchemas:
             raise ContractValidationError("platform contract registry has no frozen inventory") from exc
         if not isinstance(versions, dict) or set(versions) != set(CONTRACT_SCHEMA_FILES):
             raise ContractValidationError("platform contract registry and schema inventory differ")
-        for filename in {*CONTRACT_SCHEMA_FILES.values(), PRICE_CATALOG_SCHEMA_FILE}:
+        for filename in {
+            *CONTRACT_SCHEMA_FILES.values(),
+            PRICE_CATALOG_SCHEMA_FILE,
+            LEGACY_POLICY_SCHEMA_FILE,
+        }:
             self._schema(filename)
 
     @property
@@ -101,6 +144,7 @@ class PlatformSchemas:
         return self._validators[contract]
 
     def validate(self, contract: str, value: object) -> None:
+        _validate_strict_json(value, label=contract)
         errors = sorted(
             self._validator(contract).iter_errors(value),
             key=lambda error: (
@@ -131,6 +175,7 @@ class PlatformSchemas:
                 )
 
     def validate_price_catalog(self, value: object) -> None:
+        _validate_strict_json(value, label="price_catalog")
         validator = Draft202012Validator(
             self._schema(PRICE_CATALOG_SCHEMA_FILE),
             format_checker=FormatChecker(),
@@ -152,6 +197,55 @@ class PlatformSchemas:
         identities = [(entry["provider"], entry["model"]) for entry in entries]
         if len(identities) != len(set(identities)):
             raise ContractValidationError("price_catalog contains duplicate provider/model entries")
+
+    def validate_legacy_policy(self, value: object) -> None:
+        _validate_strict_json(value, label="legacy_policy_package")
+        validator = Draft202012Validator(self._schema(LEGACY_POLICY_SCHEMA_FILE))
+        errors = sorted(
+            validator.iter_errors(value),
+            key=lambda error: (
+                tuple(str(component) for component in error.absolute_path),
+                error.message,
+            ),
+        )
+        if errors:
+            error = errors[0]
+            raise ContractValidationError(
+                "legacy_policy_package violates its frozen schema "
+                f"at {error.json_path}: {error.message}"
+            )
+
+
+def load_policy_manifest(schemas: PlatformSchemas, value: object) -> PolicyManifest:
+    """Decode current or formerly schema-valid v1 policy evidence without changing identity."""
+    try:
+        schemas.validate("policy_package", value)
+        current = value
+    except ContractValidationError as current_error:
+        try:
+            schemas.validate_legacy_policy(value)
+        except ContractValidationError:
+            raise current_error
+        assert isinstance(value, dict)
+        current = {
+            **value,
+            "code_state": "unverifiable",
+            "source_tree_sha256": None,
+            "source_provenance_verified": False,
+            "source_provenance_failure_reason": "legacy_schema_missing_provenance",
+        }
+        schemas.validate("policy_package", current)
+    assert isinstance(current, dict)
+    try:
+        policy = PolicyManifest(**current)
+    except (TypeError, ValueError) as exc:
+        raise ContractValidationError(
+            "policy_package violates typed runtime invariants"
+        ) from exc
+    expected = "sha256:" + sha256_bytes(canonical_json_bytes(policy.identity_dict()))
+    if policy.policy_id != expected:
+        raise ContractValidationError("policy_package identity digest does not verify")
+    return policy
 
 
 def load_gate_policy(repository_root: Path, path: Path | None = None) -> GatePolicy:

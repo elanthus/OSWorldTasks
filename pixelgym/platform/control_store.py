@@ -21,7 +21,11 @@ from pixelgym.platform.contracts import (
 )
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.policy import verify_policy_manifest
-from pixelgym.platform.schema_validation import PlatformSchemas
+from pixelgym.platform.schema_validation import (
+    ContractValidationError,
+    PlatformSchemas,
+    load_policy_manifest,
+)
 
 
 class ConflictError(RuntimeError):
@@ -328,7 +332,7 @@ class ControlStore:
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
-        self.schemas = PlatformSchemas(Path(__file__).resolve().parents[2])
+        self.schemas = PlatformSchemas()
         target = str(database)
         self.connection = sqlite3.connect(
             target,
@@ -701,7 +705,7 @@ class ControlStore:
             return CandidateRecord(
                 candidate_id=row["candidate_id"],
                 source_run_id=row["source_run_id"],
-                policy=PolicyManifest(**json.loads(row["policy_json"])),
+                policy=load_policy_manifest(self.schemas, json.loads(row["policy_json"])),
                 gate_report=json.loads(row["gate_report_json"]),
                 gate_report_sha256=row["gate_report_sha256"],
                 artifacts=tuple(
@@ -726,6 +730,30 @@ class ControlStore:
             ]
             return [self.get_candidate(candidate_id) for candidate_id in ids]
 
+    def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
+        try:
+            policy_value = json.loads(row["policy_json"])
+            gate_report = json.loads(row["gate_report_json"])
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise ContractValidationError(
+                "stored candidate evidence is not strict JSON"
+            ) from exc
+        policy = load_policy_manifest(self.schemas, policy_value)
+        self.schemas.validate("gate_report", gate_report)
+        report_digest = sha256_bytes(canonical_json_bytes(gate_report))
+        if report_digest != row["gate_report_sha256"]:
+            raise ContractValidationError("stored gate_report digest does not verify")
+        if policy.policy_id != row["policy_id"]:
+            raise ContractValidationError("stored policy identity does not match candidate")
+        if gate_report["policy_id"] != row["policy_id"]:
+            raise ContractValidationError("stored gate_report policy identity does not match candidate")
+        if gate_report["run_id"] != row["source_run_id"]:
+            raise ContractValidationError("stored gate_report run identity does not match candidate")
+        if not gate_report["overall_passed"]:
+            raise ContractValidationError("stored candidate no longer has passing gates")
+        if not policy.source_provenance_verified or not gate_report["code_revision_passed"]:
+            raise ContractValidationError("stored candidate source provenance is not promotable")
+
     def approve(
         self,
         candidate_id: str,
@@ -747,14 +775,19 @@ class ControlStore:
             if row["gate_report_sha256"] != gate_report_sha256:
                 raise TransitionError("gate report digest changed or is missing")
             if row["state"] == CandidateState.APPROVED.value:
+                self._validate_candidate_evidence(row)
                 existing = connection.execute(
                     "SELECT * FROM approvals WHERE candidate_id = ?", (candidate_id,)
                 ).fetchone()
+                if existing is None:
+                    raise ContractValidationError("approved candidate has no approval evidence")
+                self.schemas.validate("approval", dict(existing))
                 if existing["actor"] == actor and existing["reason"] == reason.strip():
                     return dict(existing)
                 raise ConflictError("candidate is already approved with different evidence")
             if row["state"] != CandidateState.ELIGIBLE.value:
                 raise TransitionError("only an eligible candidate can be approved")
+            self._validate_candidate_evidence(row)
             created = self._now()
             approval_id = "approval-" + sha256_bytes(
                 canonical_json_bytes(
@@ -858,6 +891,10 @@ class ControlStore:
             ).fetchone()
             if candidate is None or approval is None or candidate["state"] != CandidateState.APPROVED.value:
                 raise TransitionError("deployment target is not approved")
+            self._validate_candidate_evidence(candidate)
+            self.schemas.validate("approval", dict(approval))
+            if approval["policy_id"] != candidate["policy_id"]:
+                raise ContractValidationError("approval policy identity does not match candidate")
             if candidate["gate_report_sha256"] != approval["gate_report_sha256"]:
                 raise TransitionError("approved gate report no longer verifies")
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:

@@ -209,6 +209,15 @@ class PolicyManifest:
     def identity_dict(self) -> dict[str, Any]:
         value = asdict(self)
         value.pop("policy_id")
+        if self.source_provenance_failure_reason == "legacy_schema_missing_provenance":
+            for field_name in (
+                "code_state",
+                "source_tree_sha256",
+                "source_provenance_verified",
+                "source_provenance_failure_reason",
+            ):
+                value.pop(field_name)
+            return value
         # Preserve verification of policy rows created before this optional field
         # existed, but bind every newly recorded failure reason to its evidence.
         if value["source_provenance_failure_reason"] is None:

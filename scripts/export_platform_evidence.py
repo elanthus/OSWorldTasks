@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
-from pixelgym.platform.schema_validation import PlatformSchemas
+from pixelgym.platform.schema_validation import ContractValidationError, PlatformSchemas
 
 
 def _json(path: Path, value: object) -> None:
@@ -25,6 +25,12 @@ def export_evidence(control: ControlStore, output: Path) -> None:
     schemas = PlatformSchemas(Path(__file__).parents[1])
     submissions = control.list_submissions()
     candidates = control.list_candidates()
+    gate_reports = [candidate.gate_report for candidate in candidates]
+    for report in gate_reports:
+        schemas.validate("gate_report", report)
+    for candidate in candidates:
+        schemas.validate("policy_package", candidate.policy.to_dict())
+
     candidates_by_run = {candidate.source_run_id: candidate for candidate in candidates}
     manifests = [
         {
@@ -55,16 +61,16 @@ def export_evidence(control: ControlStore, output: Path) -> None:
         }
         for row in submissions
     ]
-    gate_reports = [candidate.gate_report for candidate in candidates]
     approvals = control.approval_events()
     deployments = control.deployment_history()
-    audit_events = control.audit_events()
+    try:
+        audit_events = control.audit_events()
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise ContractValidationError(
+            "audit_event details_json is not strict JSON"
+        ) from exc
     for manifest in manifests:
         schemas.validate("run_manifest", manifest)
-    for report in gate_reports:
-        schemas.validate("gate_report", report)
-    for candidate in candidates:
-        schemas.validate("policy_package", candidate.policy.to_dict())
     for approval in approvals:
         schemas.validate("approval", approval)
     for deployment in deployments:

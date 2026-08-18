@@ -17,7 +17,9 @@ from typing import Any
 
 PLATFORM_LOCK_RELATIVE_PATH = Path("requirements/platform-py312.lock")
 _INPUT_DIGEST_PREFIX = "# pixelgym-platform-input-sha256: "
-_PIN = re.compile(r"^([A-Za-z0-9_.-]+)==([^\s\\;]+)(?:\s*;[^\\]+)?\s*(?:\\)?$")
+_PIN = re.compile(
+    r"^([A-Za-z0-9_.-]+)(?:\[[^]]+\])?==([^\s\\;]+)(?:\s*;[^\\]+)?\s*(?:\\)?$"
+)
 _HASH = re.compile(r"^\s+--hash=sha256:[0-9a-f]{64}(?:\s+\\)?$")
 _EXACT_DECLARATION = re.compile(r"^\s*([A-Za-z0-9_.-]+)(?:\[[^]]+\])?==([^\s;]+)")
 
