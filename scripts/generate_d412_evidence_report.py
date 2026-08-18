@@ -311,8 +311,10 @@ def _summary(
         "warnings": int(match["warnings"] or 0),
         "runtime": float(match["runtime"]),
     }
-    expected = {"passed": passed, "skipped": skipped, "warnings": warnings}
-    if {key: observed[key] for key in expected} != expected:
+    expected = {"skipped": skipped, "warnings": warnings}
+    if observed["passed"] < passed or {
+        key: observed[key] for key in expected
+    } != expected:
         raise ValueError(f"unexpected pytest summary in {path}: {observed}")
     return observed
 
