@@ -39,9 +39,11 @@ def _redact(value: str, paths: list[Path]) -> str:
             (str(temporary.resolve()), "<system-temp>"),
         }
     )
-    replacements.extend(
-        (str(path.resolve()), f"<path-{index}>") for index, path in enumerate(paths)
-    )
+    for index, path in enumerate(paths):
+        replacement = f"<path-{index}>"
+        replacements.extend(
+            ((str(path), replacement), (str(path.resolve()), replacement))
+        )
     for source, replacement in sorted(replacements, key=lambda item: len(item[0]), reverse=True):
         redacted = redacted.replace(source, replacement)
     for secret in _LOCAL_DEMO_SECRETS:
