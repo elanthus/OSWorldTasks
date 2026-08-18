@@ -70,9 +70,13 @@ def test_recorder_redacts_system_temporary_paths(repository_root: Path, tmp_path
     assert record["output"] == "<system-temp>\n"
 
 
-def test_redact_handles_literal_and_resolved_path_spellings() -> None:
-    literal = Path("/tmp/pixelgym-d412-path-alias")
+def test_redact_handles_literal_and_resolved_path_spellings(tmp_path: Path) -> None:
+    target = tmp_path / "real-root"
+    target.mkdir()
+    literal = tmp_path / "alias-root"
+    literal.symlink_to(target, target_is_directory=True)
     resolved = literal.resolve()
+    assert resolved != literal
 
     assert _redact(str(literal / "result.json"), [literal]) == "<path-0>/result.json"
     assert _redact(str(resolved / "result.json"), [literal]) == "<path-0>/result.json"
