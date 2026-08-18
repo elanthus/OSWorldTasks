@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "python3.12",
+    "-m",
+    "venv",
+    "<path-2>/dev-venv"
+  ],
+  "command": "python3.12 -m venv <path-2>/dev-venv",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.366313,
+  "ended_at_utc": "2026-08-18T21:25:10.829520+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T21:25:09.461906+00:00"
+}
