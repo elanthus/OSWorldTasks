@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "import json, runpy; from pathlib import Path; scan=runpy.run_path('scripts/generate_d412_evidence_report.py')['_redaction_scan']; data=scan(Path('.'), Path('<path-1>')); print(json.dumps(data, sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data['finding_counts'].values()) else 1)"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'import json, runpy; from pathlib import Path; scan=runpy.run_path('\"'\"'scripts/generate_d412_evidence_report.py'\"'\"')['\"'\"'_redaction_scan'\"'\"']; data=scan(Path('\"'\"'.'\"'\"'), Path('\"'\"'<path-1>'\"'\"')); print(json.dumps(data, sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data['\"'\"'finding_counts'\"'\"'].values()) else 1)'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.095999,
+  "ended_at_utc": "2026-08-18T21:34:37.874789+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"files_scanned\": 60, \"final_deliverables_scanned\": [], \"finding_counts\": {\"aws_access_keys\": 0, \"host_identity_paths_or_emails\": 0, \"local_absolute_paths\": 0, \"local_demo_credentials\": 0, \"private_key_markers\": 0, \"privileged_json_fields\": 0, \"unredacted_image_payloads\": 0}, \"schema_version\": \"pixelgym-d412-redaction-scan-v1\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T21:34:37.777340+00:00"
+}

@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import dataclasses
 import math
+from types import SimpleNamespace
 
 import pytest
 
 from pixelgym.platform.gates import evaluate_gates
-from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.mlflow_tracking import (
+    DatasetInputContract,
+    InMemoryTracking,
+    MlflowTracking,
+)
 from pixelgym.platform.policy import is_verified_clean_revision, verify_policy_manifest
 
 
@@ -238,18 +243,33 @@ def test_confidence_level_must_be_a_finite_open_probability(gate_policy, confide
 def test_tracking_contract_is_idempotent_and_params_are_immutable(
     passing_evidence, policy_factory
 ) -> None:
-    policy, summary, report = passing_evidence
+    policy, summary, _report = passing_evidence
     tracking = InMemoryTracking()
     params = {
+        "dataset_name": "pixelgym-grounding-day3-frozen",
         "dataset_fingerprint": summary.dataset_fingerprint,
+        "mlflow_dataset_digest": summary.dataset_fingerprint.removeprefix("sha256:")[:32],
+        "dataset_manifest_uri": "s3://immutable/dataset.json",
+        "dataset_manifest_version": "version-1",
+        "dataset_schema": "pixelgym-grounding-dataset-manifest-v1",
         "dataset_protocol_version": "pixelgym-grounding-v1",
         "dataset_example_count": 100,
         "prompt_name": policy.prompt_name,
         "prompt_version": policy.prompt_version,
         "prompt_sha256": policy.prompt_sha256,
+        "rendered_template_schema": "pixelgym-grounding-rendered-prompt-v1",
         "provider": policy.provider,
         "model": policy.model,
+        "model_alias_disclosure": policy.model_alias_disclosure,
+        "endpoint_class": "local-scripted",
+        "structured_output_mode": "json-schema",
+        "inference_temperature": None,
+        "inference_reasoning": "unsupported",
+        "inference_seed": None,
+        "inference_max_output": "provider-default",
         "condition": policy.condition,
+        "retry_policy": {"hidden_retries": 0, "request_retry": "none"},
+        "concurrency": 1,
         "parser_version": policy.parser_version,
         "scorer_version": policy.scorer_version,
         "target_semantics": policy.target_semantics,
@@ -261,17 +281,58 @@ def test_tracking_contract_is_idempotent_and_params_are_immutable(
         "source_provenance_failure_reason": policy.source_provenance_failure_reason,
         "dependency_lock_sha256": policy.dependency_lock_sha256,
         "python_version": "3.12.0",
+        "metaflow_flow_name": "GroundingEvaluationFlow",
+        "metaflow_attempt": 0,
+        "metaflow_resume_origin": "GroundingEvaluationFlow/1",
         "submission_id": "submission-1",
         "synthetic_provider": True,
     }
     run_id = tracking.create_or_recover_run("submission-1", params)
     assert tracking.create_or_recover_run("submission-1", params) == run_id
+    dataset_input = DatasetInputContract(
+        name=params["dataset_name"],
+        fingerprint=summary.dataset_fingerprint,
+        mlflow_digest=params["mlflow_dataset_digest"],
+        manifest_uri=params["dataset_manifest_uri"],
+        manifest_version=params["dataset_manifest_version"],
+        schema=params["dataset_schema"],
+        protocol_version=params["dataset_protocol_version"],
+        example_count=100,
+    )
+    tracking.log_dataset_input(run_id, dataset_input)
+    tracking.log_dataset_input(run_id, dataset_input)
+    assert tracking.runs[run_id].dataset_inputs == [dataset_input]
+    with pytest.raises(ValueError, match="immutable dataset input changed"):
+        tracking.log_dataset_input(
+            run_id, dataclasses.replace(dataset_input, manifest_version="version-2")
+        )
     tracking.reconcile_pathspec(run_id, "GroundingEvaluationFlow/1")
-    tracking.log_summary(run_id, summary, report, [])
-    assert set(tracking.runs[run_id].artifacts) == {
-        "summary.json", "gate-report.json", "immutable-artifact-index.json"
-    }
     with pytest.raises(ValueError, match="changed"):
         tracking.create_or_recover_run("submission-1", {**params, "model": "different"})
     with pytest.raises(ValueError, match="unsafe"):
         tracking.create_or_recover_run("submission-' OR 1=1", params)
+
+
+def test_mlflow_policy_version_scan_consumes_every_page() -> None:
+    class Page(list):
+        def __init__(self, items, token):
+            super().__init__(items)
+            self.token = token
+
+    first = SimpleNamespace(tags={"policy_id": "policy-a"})
+    second = SimpleNamespace(tags={"policy_id": "policy-b"})
+
+    class Client:
+        def __init__(self) -> None:
+            self.tokens = []
+
+        def search_model_versions(self, _filter, *, max_results, page_token):
+            assert max_results == 1000
+            self.tokens.append(page_token)
+            return Page([first], "next") if page_token is None else Page([second], None)
+
+    tracking = object.__new__(MlflowTracking)
+    tracking.client = Client()
+
+    assert tracking._all_policy_versions() == [first, second]
+    assert tracking.client.tokens == [None, "next"]

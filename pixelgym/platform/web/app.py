@@ -5,8 +5,11 @@ from __future__ import annotations
 import hashlib
 import hmac
 import html
+import re
 import secrets
 from collections.abc import Callable
+from dataclasses import asdict
+from datetime import date
 from difflib import HtmlDiff
 from pathlib import Path
 from typing import Annotated, Any
@@ -28,6 +31,7 @@ from pixelgym.platform.control_store import (
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.immutable_store import ImmutableStoreError
+from pixelgym.platform.mlflow_tracking import Tracking, TrackingMirrorError
 from pixelgym.platform.policy import prompt_template
 
 DATASET_OPTIONS = {
@@ -201,6 +205,8 @@ def create_control_app(
     coordinator: DeploymentCoordinator | None = None,
     csrf_secret: str,
     submit_callback: Callable[[str, dict[str, str]], None] | None = None,
+    cancel_callback: Callable[[str], bool] | None = None,
+    tracking: Tracking | None = None,
     mlflow_base_url: str = "http://localhost:5000",
 ) -> FastAPI:
     if len(csrf_secret) < 16:
@@ -288,7 +294,54 @@ def create_control_app(
         submission_id = await run_in_threadpool(control.submit, payload)
         if submit_callback is not None:
             submit_callback(submission_id, payload)
-        return RedirectResponse(f"/runs?submitted={submission_id}", status_code=303)
+        return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
+
+    @app.get("/submissions/{submission_id}", response_class=HTMLResponse)
+    def submission_view(submission_id: str, request: Request) -> str:
+        try:
+            submission = control.get_submission(submission_id)
+        except KeyError as exc:
+            raise HTTPException(404, "submission does not exist") from exc
+        run_link = (
+            _safe_link(
+                f"{mlflow_base_url}/#/experiments/0/runs/{submission['mlflow_run_id']}",
+                "MLflow run",
+            )
+            if submission["mlflow_run_id"]
+            else '<span class="muted">MLflow run pending</span>'
+        )
+        pathspec = submission["metaflow_pathspec"] or "pending"
+        cancellation = '<p class="muted">Cancellation is no longer available for this terminal run.</p>'
+        if submission["status"] in {"Submitted", "Running"}:
+            cancellation = f"""<form method="post" action="/submissions/{_escape(submission_id)}/cancel"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Cancellation reason<textarea name="reason" required minlength="1"></textarea></label><button class="secondary" type="submit">Cancel experiment</button><p class="muted">Cancellation records the authoritative state immediately; the local flow stops at its next durable step boundary while retaining partial immutable evidence.</p></form>"""
+        request_rows = "".join(
+            f"<dt>{_escape(key)}</dt><dd>{_escape(value)}</dd>"
+            for key, value in submission["request"].items()
+        )
+        body = f"""<section class="page-title"><p class="eyebrow">SUBMISSION</p><h1>{_escape(submission_id)}</h1><p>{_badge(submission['status'], 'good' if submission['status'] == 'Complete' else 'neutral')}</p></section><div class="detail-grid"><section class="panel"><h2>Execution lineage</h2><dl><dt>Status</dt><dd>{_escape(submission['status'])}</dd><dt>Metaflow pathspec</dt><dd class="mono">{_escape(pathspec)}</dd><dt>Tracking</dt><dd>{run_link}</dd></dl><h3>Resolved request</h3><dl>{request_rows}</dl></section><aside class="panel action-panel"><h2>Cancellation</h2>{cancellation}</aside></div>"""
+        return _layout("Submission", body, csrf=request.state.csrf)
+
+    @app.post("/submissions/{submission_id}/cancel")
+    async def cancel_submission(submission_id: str, request: Request) -> RedirectResponse:
+        fields = await form_fields(request)
+        require_csrf(request, fields.get("csrf_token"))
+        if set(fields) != {"csrf_token", "reason"}:
+            raise HTTPException(422, "cancellation fields do not match the fixed contract")
+        try:
+            submission = control.get_submission(submission_id)
+        except KeyError as exc:
+            raise HTTPException(404, "submission does not exist") from exc
+        if submission["status"] == "Running" and cancel_callback is None:
+            raise HTTPException(409, "running flow cancellation is unavailable")
+        await run_in_threadpool(
+            control.cancel_submission,
+            submission_id,
+            actor=control.reviewer_identity,
+            reason=fields["reason"],
+        )
+        if cancel_callback is not None:
+            cancel_callback(submission_id)
+        return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
 
     @app.get("/runs", response_class=HTMLResponse)
     def runs_view(
@@ -298,8 +351,30 @@ def create_control_app(
         lifecycle: str | None = None,
         dataset: str | None = None,
         code_revision: str | None = None,
+        prompt_version: int | None = None,
+        model: str | None = None,
+        status: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        gate_result: str | None = None,
     ) -> str:
+        for label, value in (("date_from", date_from), ("date_to", date_to)):
+            if value:
+                try:
+                    parsed = date.fromisoformat(value)
+                except ValueError as exc:
+                    raise HTTPException(
+                        422, f"{label} must use a valid YYYY-MM-DD date"
+                    ) from exc
+                if parsed.isoformat() != value:
+                    raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date")
+        if gate_result is not None and gate_result not in {"passed", "failed"}:
+            raise HTTPException(422, "gate_result must be passed or failed")
         candidates = control.list_candidates()
+        submissions = control.list_submissions()
+        submission_by_run = {
+            item["mlflow_run_id"]: item for item in submissions if item["mlflow_run_id"]
+        }
         if provider:
             candidates = [item for item in candidates if item.policy.provider == provider]
         if lifecycle:
@@ -316,6 +391,37 @@ def create_control_app(
                 for item in candidates
                 if item.policy.code_revision.removeprefix("sha256:").startswith(code_revision)
             ]
+        if prompt_version is not None:
+            candidates = [
+                item for item in candidates if item.policy.prompt_version == prompt_version
+            ]
+        if model:
+            candidates = [item for item in candidates if item.policy.model == model]
+        if status:
+            candidates = [
+                item
+                for item in candidates
+                if submission_by_run.get(item.source_run_id, {}).get("status") == status
+            ]
+        if date_from:
+            candidates = [
+                item
+                for item in candidates
+                if submission_by_run.get(item.source_run_id, {}).get("created_at_utc", "")[:10]
+                >= date_from
+            ]
+        if date_to:
+            candidates = [
+                item
+                for item in candidates
+                if submission_by_run.get(item.source_run_id, {}).get("created_at_utc", "")[:10]
+                <= date_to
+            ]
+        if gate_result:
+            expected = gate_result == "passed"
+            candidates = [
+                item for item in candidates if item.gate_report["overall_passed"] is expected
+            ]
         notice = f'<div class="notice">Submission {_escape(submitted)} accepted.</div>' if submitted else ""
         rows = "".join(_candidate_row(item, mlflow_base_url) for item in candidates)
         if not rows:
@@ -325,10 +431,46 @@ def create_control_app(
         filter_form = f"""<form method="get" action="/runs" class="filter-grid"><label>Provider<select name="provider"><option value="">All providers</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == provider else ''}>{_escape(value)}</option>' for value in provider_options)}</select></label>
 <label>Lifecycle<select name="lifecycle"><option value="">All states</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == lifecycle else ''}>{_escape(value)}</option>' for value in lifecycle_options)}</select></label>
 <label>Dataset fingerprint prefix<input name="dataset" value="{_escape(dataset or '')}" pattern="[0-9a-f]*" maxlength="64"></label>
+<label>Prompt version<input name="prompt_version" type="number" min="1" value="{_escape(prompt_version or '')}"></label><label>Model<input name="model" value="{_escape(model or '')}"></label>
+<label>Submission status<input name="status" value="{_escape(status or '')}"></label><label>From date<input name="date_from" type="date" value="{_escape(date_from or '')}"></label><label>Through date<input name="date_to" type="date" value="{_escape(date_to or '')}"></label><label>Gate result<select name="gate_result"><option value="">All results</option><option value="passed" {'selected' if gate_result == 'passed' else ''}>Passed</option><option value="failed" {'selected' if gate_result == 'failed' else ''}>Failed</option></select></label>
 <label>Code revision prefix<input name="code_revision" value="{_escape(code_revision or '')}" pattern="[0-9a-f]*" maxlength="40"></label><button type="submit">Filter runs</button></form>"""
         body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Every result stays visible.</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
 <section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table></section>"""
         return _layout("Runs", body, csrf=request.state.csrf)
+
+    @app.get("/api/tracking/runs/compatible")
+    def compatible_tracking_runs(
+        dataset_fingerprint: str,
+        scorer_version: str,
+        target_semantics: str,
+        primary_metric: str = "accuracy",
+    ) -> dict[str, Any]:
+        if tracking is None:
+            raise HTTPException(503, "MLflow tracking is unavailable")
+        values = {
+            "dataset_fingerprint": dataset_fingerprint,
+            "scorer_version": scorer_version,
+            "target_semantics": target_semantics,
+            "primary_metric": primary_metric,
+        }
+        if any(
+            not value
+            or len(value) > 256
+            or not re.fullmatch(r"[A-Za-z0-9:._-]+", value)
+            for value in values.values()
+        ):
+            raise HTTPException(422, "tracking compatibility filters contain unsafe values")
+        try:
+            runs = tracking.search_compatible_runs(
+                **values,
+                max_results=20,
+                timeout_seconds=5.0,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        except TimeoutError as exc:
+            raise HTTPException(504, "MLflow compatible-run search timed out") from exc
+        return {"runs": [asdict(run) for run in runs]}
 
     @app.get("/compare", response_class=HTMLResponse)
     def compare_view(
@@ -343,9 +485,18 @@ def create_control_app(
             for item in all_candidates
         ) or '<p class="muted">Evaluate candidates to enable comparison.</p>'
         selected = [candidate_or_404(item) for item in selected_ids]
-        compatible = len(selected) >= 2 and len({(
-            item.gate_report["dataset_fingerprint"], item.policy.scorer_version, item.policy.target_semantics
-        ) for item in selected}) == 1
+        comparison_keys = {
+            (
+                item.gate_report["dataset_fingerprint"],
+                item.policy.scorer_version,
+                item.policy.target_semantics,
+                item.summary.primary_metric if item.summary is not None else "unknown",
+            )
+            for item in selected
+        }
+        compatible = len(selected) >= 2 and len(comparison_keys) == 1 and all(
+            item.summary is not None for item in selected
+        )
         comparison = ""
         if selected:
             baseline = selected[0]
@@ -354,7 +505,7 @@ def create_control_app(
                 for item in selected
             )
             warning = _badge("COMPATIBLE", "good") if compatible else _badge("PROMOTION COMPARISON BLOCKED", "bad")
-            explanation = "Same dataset fingerprint, scorer, target semantics, and primary metric." if compatible else "Select 2–4 runs with the same dataset fingerprint, scorer, and target semantics."
+            explanation = "Same dataset fingerprint, scorer, target semantics, and primary metric." if compatible else "Select 2–4 runs with the same dataset fingerprint, scorer, target semantics, and recorded primary metric."
             prompt_diff = ""
             if len(selected) >= 2:
                 query = urlencode([( "candidate", item.candidate_id) for item in selected[:2]])
@@ -426,6 +577,20 @@ def create_control_app(
             reason=reason,
             gate_report_sha256=item.gate_report_sha256,
         )
+        if tracking is not None:
+            try:
+                tracking.mirror_candidate_status(
+                    item.policy.policy_id,
+                    gate_status="eligible",
+                    approval_status="approved",
+                )
+            except TrackingMirrorError as exc:
+                control.record_tracking_reconciliation(
+                    subject_id=candidate_id,
+                    operation="mirror_approval_tags",
+                    error=f"{type(exc).__name__}: {exc}",
+                    resolved=False,
+                )
 
     @app.post("/candidates/{candidate_id}/approve")
     async def approve_form(candidate_id: str, request: Request) -> RedirectResponse:

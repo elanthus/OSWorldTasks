@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "rg",
+    "-n",
+    "time\\.sleep|sleep\\(",
+    "tests/unit/platform"
+  ],
+  "command": "rg -n 'time\\.sleep|sleep\\(' tests/unit/platform",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.009659,
+  "ended_at_utc": "2026-08-18T19:12:49.611407+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T19:12:49.600338+00:00"
+}

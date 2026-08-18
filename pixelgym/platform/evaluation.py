@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import math
 import platform
+import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -18,10 +20,14 @@ from pixelgym.platform.contracts import (
     PolicyManifest,
     RunSummary,
 )
-from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
+from pixelgym.platform.fingerprints import (
+    build_dataset_manifest,
+    canonical_json_bytes,
+    sha256_bytes,
+)
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
-from pixelgym.platform.mlflow_tracking import Tracking
+from pixelgym.platform.mlflow_tracking import DatasetInputContract, Tracking
 from pixelgym.platform.policy import PROMPT_TEMPLATES, prompt_template
 from pixelgym.platform.schema_validation import PlatformSchemas
 from pixelgym.serialization import load_jsonl
@@ -109,7 +115,10 @@ class ScriptedReplayProvider:
             return PlatformProviderResponse(None, self.latency_ms, {}, 0.0, "fixture missing")
         self.call_ids.append(request_id)
         return PlatformProviderResponse(
-            self.responses[example_id], self.latency_ms, {"input_tokens": 0, "output_tokens": 0}, 0.0
+            self.responses[example_id],
+            self.latency_ms,
+            {"input_tokens": 0, "output_tokens": 0},
+            0.0,
         )
 
 
@@ -139,6 +148,7 @@ class EvaluationRunner:
         submission_id: str,
         metaflow_pathspec: str,
         price_catalog_version: str = "pixelgym-demo-prices-v1",
+        provider_concurrency: int = 1,
         provider_response_hook: Callable[[str], None] | None = None,
     ) -> None:
         self.root = repository_root
@@ -151,23 +161,47 @@ class EvaluationRunner:
         self.submission_id = submission_id
         self.metaflow_pathspec = metaflow_pathspec
         self.price_catalog_version = price_catalog_version
+        if provider_concurrency <= 0:
+            raise ValueError("provider concurrency must be positive")
+        self.provider_concurrency = provider_concurrency
         self.provider_response_hook = provider_response_hook
         self._tracking_run_id: str | None = None
+        self._dataset_input_contract: DatasetInputContract | None = None
         self.schemas = PlatformSchemas()
         self.schemas.validate("gate_policy", self.gate_policy.to_dict())
         self.schemas.validate("policy_package", self.policy.to_dict())
 
     def _tracking_params(self, example_count: int) -> dict[str, Any]:
+        dataset = self._dataset_input()
+        parameters = self.policy.parameters
         return {
+            "dataset_name": "pixelgym-grounding-day3-frozen",
             "dataset_fingerprint": self.dataset_fingerprint,
+            "mlflow_dataset_digest": dataset.mlflow_digest,
+            "dataset_manifest_uri": dataset.manifest_uri,
+            "dataset_manifest_version": dataset.manifest_version,
+            "dataset_schema": dataset.schema,
             "dataset_protocol_version": "pixelgym-grounding-v1",
             "dataset_example_count": example_count,
             "prompt_name": self.policy.prompt_name,
             "prompt_version": self.policy.prompt_version,
             "prompt_sha256": self.policy.prompt_sha256,
+            "rendered_template_schema": "pixelgym-grounding-rendered-prompt-v1",
             "provider": self.policy.provider,
             "model": self.policy.model,
+            "model_alias_disclosure": self.policy.model_alias_disclosure,
+            "endpoint_class": "local-scripted" if self.provider.synthetic else "remote-provider",
+            "structured_output_mode": "json-schema",
+            "inference_temperature": parameters.get("temperature"),
+            "inference_reasoning": parameters.get("reasoning", "unsupported"),
+            "inference_seed": parameters.get("seed"),
+            "inference_max_output": parameters.get("max_output_tokens", "provider-default"),
             "condition": self.policy.condition,
+            "retry_policy": {
+                "hidden_retries": parameters.get("hidden_retries", 0),
+                "request_retry": "none",
+            },
+            "concurrency": self.provider_concurrency,
             "parser_version": self.policy.parser_version,
             "scorer_version": self.policy.scorer_version,
             "target_semantics": self.policy.target_semantics,
@@ -179,9 +213,39 @@ class EvaluationRunner:
             "source_provenance_failure_reason": self.policy.source_provenance_failure_reason,
             "dependency_lock_sha256": self.policy.dependency_lock_sha256,
             "python_version": platform.python_version(),
+            "metaflow_flow_name": self.metaflow_pathspec.split("/", 1)[0],
+            "metaflow_attempt": 0,
+            "metaflow_resume_origin": self.metaflow_pathspec,
             "submission_id": self.submission_id,
             "synthetic_provider": self.provider.synthetic,
         }
+
+    def _dataset_input(self) -> DatasetInputContract:
+        if self._dataset_input_contract is not None:
+            return self._dataset_input_contract
+        manifest, fingerprint = build_dataset_manifest(
+            repository_root=self.root,
+            dataset_path=self.root / "artifacts/grounding-dataset.jsonl",
+            overlays_path=self.root / "artifacts/grounding-overlays.jsonl",
+        )
+        if fingerprint != self.dataset_fingerprint:
+            raise ValueError("frozen dataset fingerprint differs from the evaluation contract")
+        reference = self.store.put_once(
+            f"datasets/{fingerprint.removeprefix('sha256:')}.json",
+            canonical_json_bytes(manifest) + b"\n",
+            media_type="application/vnd.pixelgym.dataset-manifest+json",
+        )
+        self._dataset_input_contract = DatasetInputContract(
+            name="pixelgym-grounding-day3-frozen",
+            fingerprint=fingerprint,
+            mlflow_digest=fingerprint.removeprefix("sha256:")[:32],
+            manifest_uri=reference.uri,
+            manifest_version=reference.version_id,
+            schema=str(manifest.get("schema_version", "pixelgym-grounding-dataset-manifest-v1")),
+            protocol_version="pixelgym-grounding-v1",
+            example_count=int(manifest["example_count"]),
+        )
+        return self._dataset_input_contract
 
     def _inputs(self) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
         examples = sorted(
@@ -231,6 +295,7 @@ class EvaluationRunner:
         run_id = self.tracking.create_or_recover_run(
             self.submission_id, self._tracking_params(len(examples))
         )
+        self.tracking.log_dataset_input(run_id, self._dataset_input())
         self._tracking_run_id = run_id
         self.tracking.link_prompt_to_run(
             run_id, self.policy.prompt_name, self.policy.prompt_version
@@ -248,7 +313,9 @@ class EvaluationRunner:
                 "{{target}}", example["target"]
             )
         schema = schema_for(condition)
-        image_relative = example["image_path"] if condition == "raw" else overlay["marked_image_path"]
+        image_relative = (
+            example["image_path"] if condition == "raw" else overlay["marked_image_path"]
+        )
         request_material = {
             "dataset_fingerprint": self.dataset_fingerprint,
             "policy_id": self.policy.policy_id,
@@ -263,9 +330,7 @@ class EvaluationRunner:
         request_sha256 = sha256_bytes(canonical_json_bytes(request_material))
         return request_sha256, prompt, condition, schema, self.root / image_relative
 
-    def evaluate_shard(
-        self, shard: dict[str, Any], *, max_calls: int
-    ) -> list[dict[str, Any]]:
+    def evaluate_shard(self, shard: dict[str, Any], *, max_calls: int) -> list[dict[str, Any]]:
         """Invoke the provider and durably store raw envelopes; never parse or score here."""
         examples, overlays = self._inputs()
         by_id = {row["example_id"]: row for row in examples}
@@ -279,8 +344,7 @@ class EvaluationRunner:
         if any(identifier not in by_id for identifier in identifiers):
             raise ValueError("shard contains an unknown example ID")
 
-        raw: list[dict[str, Any]] = []
-        for identifier in sorted(identifiers):
+        def evaluate_one(identifier: str) -> dict[str, Any]:
             example = by_id[identifier]
             overlay = overlays[identifier]
             request_sha256, prompt, condition, schema, image_path = self._request_material(
@@ -329,7 +393,9 @@ class EvaluationRunner:
                     "response_media_type": "application/json",
                     "response_sha256": sha256_bytes(response_bytes),
                     "raw_response": response.raw_response,
-                    "request_status": "request_failure" if response.request_failure else "responded",
+                    "request_status": "request_failure"
+                    if response.request_failure
+                    else "responded",
                     "request_failure": response.request_failure,
                 }
                 self.schemas.validate("raw_response", envelope)
@@ -339,8 +405,17 @@ class EvaluationRunner:
                     canonical_json_bytes(envelope) + b"\n",
                     media_type="application/vnd.pixelgym.raw-response+json",
                 )
-            raw.append({"example_id": identifier, "reference": reference.to_dict()})
-        return raw
+            return {"example_id": identifier, "reference": reference.to_dict()}
+
+        ordered = sorted(identifiers)
+        # The declared provider concurrency is the actual per-run call cap. Metaflow's
+        # foreach worker count is kept at one by the supported launch commands so this
+        # executor is the single source of provider parallelism.
+        with ThreadPoolExecutor(
+            max_workers=min(self.provider_concurrency, len(ordered)),
+            thread_name_prefix=f"{self.submission_id}-provider",
+        ) as executor:
+            return list(executor.map(evaluate_one, ordered))
 
     def canonical_join(self, shards: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
         """Join branch outputs independently of branch completion or input order."""
@@ -366,7 +441,9 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in raw]
         if require_complete and identifiers != list(by_id):
             raise ValueError("raw artifact set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
+        if identifiers != sorted(set(identifiers)) or any(
+            item not in by_id for item in identifiers
+        ):
             raise ValueError("raw artifact set must be canonical, unique, and known")
         verified: list[dict[str, Any]] = []
         for item in raw:
@@ -411,7 +488,9 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in verified]
         if require_complete and identifiers != list(by_id):
             raise ValueError("verified response set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(item not in by_id for item in identifiers):
+        if identifiers != sorted(set(identifiers)) or any(
+            item not in by_id for item in identifiers
+        ):
             raise ValueError("verified response set must be canonical, unique, and known")
         records: list[dict[str, Any]] = []
         for item in verified:
@@ -420,7 +499,10 @@ class EvaluationRunner:
             reference = ArtifactRef(**item["reference"])
             envelope = item["envelope"]
             self.schemas.validate("raw_response", envelope)
-            if not isinstance(envelope, dict) or envelope.get("example_id") != example["example_id"]:
+            if (
+                not isinstance(envelope, dict)
+                or envelope.get("example_id") != example["example_id"]
+            ):
                 raise ValueError("verified response envelope does not match its example")
             if envelope["request_failure"]:
                 parse_status, parsed, point, mark_id, parse_error = (
@@ -468,8 +550,20 @@ class EvaluationRunner:
             )
         return sorted(records, key=lambda row: (row["example_id"], row["condition"]))
 
-    def aggregate_metrics(self, records: list[dict[str, Any]], *, run_id: str) -> RunSummary:
+    def aggregate_metrics(
+        self,
+        records: list[dict[str, Any]],
+        *,
+        run_id: str,
+        evaluation_end_to_end_duration_ms: float | None = None,
+    ) -> RunSummary:
         examples, _ = self._inputs()
+        existing_summary = self.store.get_reference(f"runs/{self.submission_id}/summary.json")
+        if existing_summary is not None:
+            stored_summary = json.loads(self.store.get_verified(existing_summary))
+            evaluation_end_to_end_duration_ms = stored_summary.get(
+                "evaluation_end_to_end_duration_ms"
+            )
         unique = {(row["example_id"], row["condition"]) for row in records}
         latency = [float(row["latency_ms"]) for row in records if row["latency_ms"] is not None]
         costs = [float(row["cost_usd"]) for row in records if row["cost_usd"] is not None]
@@ -486,18 +580,23 @@ class EvaluationRunner:
             correct_count=correct_count,
             accuracy=correct_count / len(examples) if len(records) == len(examples) else None,
             cost_usd_per_100=(
-                sum(costs) * 100 / len(records)
-                if records and len(costs) == len(records)
-                else None
+                sum(costs) * 100 / len(records) if records and len(costs) == len(records) else None
             ),
             priced_call_count=len(costs),
             unpriced_call_count=len(records) - len(costs),
             provider_latency_p95_ms=percentile_r7(latency, 0.95) if latency else None,
             latency_measured_count=len(latency),
-            invalid_count=sum(row["parse_status"] == "invalid" for row in records),
-            request_failure_count=sum(
-                row["parse_status"] == "request_failure" for row in records
+            provider_latency_p50_ms=percentile_r7(latency, 0.50) if latency else None,
+            provider_latency_max_ms=max(latency) if latency else None,
+            evaluation_end_to_end_duration_ms=evaluation_end_to_end_duration_ms,
+            total_cost_usd=(sum(costs) if records and len(costs) == len(records) else None),
+            cost_usd_per_example=(
+                sum(costs) / len(records) if records and len(costs) == len(records) else None
             ),
+            proposal_coverage=None,
+            conditional_mark_selection_accuracy=None,
+            invalid_count=sum(row["parse_status"] == "invalid" for row in records),
+            request_failure_count=sum(row["parse_status"] == "request_failure" for row in records),
             dirty_code=self.policy.code_state != "clean",
             code_state=self.policy.code_state,
             code_provenance_verified=self.policy.source_provenance_verified,
@@ -510,15 +609,57 @@ class EvaluationRunner:
     def persist_evidence(
         self,
         records: list[dict[str, Any]],
+        summary: RunSummary,
         report: GateReport,
         raw: list[dict[str, Any]],
     ) -> list[ArtifactRef]:
         self.schemas.validate("gate_report", report.to_dict())
         self.schemas.validate("policy_package", self.policy.to_dict())
+        prediction_rows = [
+            {
+                key: row[key]
+                for key in (
+                    "example_id",
+                    "condition",
+                    "raw_artifact",
+                    "parse_status",
+                    "parse_error",
+                    "parsed_prediction",
+                    "point",
+                    "mark_id",
+                )
+            }
+            for row in records
+        ]
+        score_rows = [
+            {
+                key: row[key]
+                for key in (
+                    "example_id",
+                    "condition",
+                    "parse_status",
+                    "correct",
+                    "normalized_center_distance",
+                    "latency_ms",
+                    "cost_usd",
+                )
+            }
+            for row in records
+        ]
         prediction_ref = self.store.put_once(
             f"runs/{self.submission_id}/predictions.jsonl",
-            b"".join(canonical_json_bytes(row) + b"\n" for row in records),
+            b"".join(canonical_json_bytes(row) + b"\n" for row in prediction_rows),
             media_type="application/x-ndjson",
+        )
+        score_ref = self.store.put_once(
+            f"runs/{self.submission_id}/per-example-scores.jsonl",
+            b"".join(canonical_json_bytes(row) + b"\n" for row in score_rows),
+            media_type="application/x-ndjson",
+        )
+        summary_ref = self.store.put_once(
+            f"runs/{self.submission_id}/summary.json",
+            canonical_json_bytes(summary.to_dict()) + b"\n",
+            media_type="application/vnd.pixelgym.run-summary+json",
         )
         gate_ref = self.store.put_once(
             f"runs/{self.submission_id}/gate-report.json",
@@ -534,7 +675,73 @@ class EvaluationRunner:
             f"datasets/{self.dataset_fingerprint.removeprefix('sha256:')}.json"
         )
         raw_refs = [ArtifactRef(**item["reference"]) for item in raw]
-        return [*([dataset_ref] if dataset_ref else []), *raw_refs, prediction_ref, gate_ref, policy_ref]
+        raw_index_ref = self.store.put_once(
+            f"runs/{self.submission_id}/raw-response-index.json",
+            canonical_json_bytes([item.to_dict() for item in raw_refs]) + b"\n",
+            media_type="application/vnd.pixelgym.artifact-index+json",
+        )
+        environment_ref = self.store.put_once(
+            f"runs/{self.submission_id}/environment-manifest.json",
+            canonical_json_bytes(
+                {
+                    "python_version": platform.python_version(),
+                    "dependency_lock_sha256": self.policy.dependency_lock_sha256,
+                    "code_revision": self.policy.code_revision,
+                    "code_state": self.policy.code_state,
+                    "provider_concurrency": self.provider_concurrency,
+                }
+            )
+            + b"\n",
+            media_type="application/vnd.pixelgym.environment-manifest+json",
+        )
+        examples, _ = self._inputs()
+        representative_refs = [
+            self.store.put_once(
+                f"runs/{self.submission_id}/representative-images/{example['example_id']}.png",
+                (self.root / example["image_path"]).read_bytes(),
+                media_type="image/png",
+            )
+            for example in examples[:3]
+        ]
+        references = [
+            *([dataset_ref] if dataset_ref else []),
+            *raw_refs,
+            raw_index_ref,
+            prediction_ref,
+            score_ref,
+            summary_ref,
+            gate_ref,
+            environment_ref,
+            policy_ref,
+            *representative_refs,
+        ]
+        run_manifest = {
+            "schema_version": RUN_MANIFEST_SCHEMA_VERSION,
+            "submission_id": self.submission_id,
+            "mlflow_run_id": summary.run_id,
+            "metaflow_pathspec": self.metaflow_pathspec,
+            "dataset_fingerprint": self.dataset_fingerprint,
+            "policy_id": self.policy.policy_id,
+            # This immutable snapshot is written at the evidence-persisted boundary,
+            # before MLflow finalization and control-plane candidate registration.
+            "status": "Running",
+            "request": {
+                "dataset": "day3-frozen-v1",
+                "prompt_version": str(self.policy.prompt_version),
+                "model": self.policy.model,
+                "condition": self.policy.condition,
+                "maximum_calls": str(summary.expected_count),
+                "price_catalog": self.price_catalog_version,
+            },
+            "artifact_index": [item.to_dict() for item in references],
+        }
+        self.schemas.validate("run_manifest", run_manifest)
+        manifest_ref = self.store.put_once(
+            f"runs/{self.submission_id}/run-manifest.json",
+            canonical_json_bytes(run_manifest) + b"\n",
+            media_type="application/vnd.pixelgym.run-manifest+json",
+        )
+        return [*references, manifest_ref]
 
     def finalize_success(
         self,
@@ -573,6 +780,7 @@ class EvaluationRunner:
 
     def _run_once(self, *, max_calls: int) -> tuple[RunSummary, Any, list[ArtifactRef]]:
         run_id = self.create_or_recover_run(max_calls=max_calls)
+        evaluation_started = time.perf_counter()
         # The compatibility runner keeps a one-example parse boundary so its interruption tests
         # remain maximally strict. The Metaflow graph uses larger deterministic fetch shards and
         # joins them before the explicit verification and offline parse steps.
@@ -585,8 +793,12 @@ class EvaluationRunner:
             records.extend(self.parse_and_score(verified, require_complete=False))
             raw_parts.append(part)
         raw = self.canonical_join(raw_parts)
-        summary = self.aggregate_metrics(records, run_id=run_id)
+        summary = self.aggregate_metrics(
+            records,
+            run_id=run_id,
+            evaluation_end_to_end_duration_ms=(time.perf_counter() - evaluation_started) * 1000,
+        )
         report = self.evaluate_gates(summary)
-        references = self.persist_evidence(records, report, raw)
+        references = self.persist_evidence(records, summary, report, raw)
         self.finalize_success(summary, report, references)
         return summary, report, references

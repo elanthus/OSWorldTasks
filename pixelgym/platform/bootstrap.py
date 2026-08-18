@@ -18,6 +18,7 @@ from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
+from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.operational_log import ImmutableOperationalLog
 from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
 from pixelgym.platform.web import create_control_app
@@ -47,9 +48,7 @@ class DemoReplayServingProvider:
             if row["condition"] == "marks"
         }
 
-    def ground(
-        self, *, image_bytes: bytes, media_type: str, target: str, policy: object
-    ) -> tuple:
+    def ground(self, *, image_bytes: bytes, media_type: str, target: str, policy: object) -> tuple:
         del media_type
         image_sha256 = hashlib.sha256(image_bytes).hexdigest()
         example_id = self.examples.get((image_sha256, target))
@@ -111,6 +110,9 @@ def _run_flow(
     control: ControlStore,
     submission_id: str,
     payload: dict[str, str],
+    processes: dict[str, subprocess.Popen[str]] | None = None,
+    process_lock: threading.Lock | None = None,
+    cancelled_submissions: set[str] | None = None,
 ) -> None:
     command = [
         sys.executable,
@@ -124,12 +126,64 @@ def _run_flow(
         payload["model"],
         "--maximum-calls",
         payload["maximum_calls"],
+        "--provider-concurrency",
+        "1",
         "--max-workers",
         "1",
     ]
-    completed = subprocess.run(command, cwd=repository_root, check=False)
-    if completed.returncode != 0:
+    process: subprocess.Popen[str]
+    if processes is not None and process_lock is not None:
+        with process_lock:
+            if (
+                control.get_submission(submission_id)["status"] == "Cancelled"
+                or cancelled_submissions is not None
+                and submission_id in cancelled_submissions
+            ):
+                if cancelled_submissions is not None:
+                    cancelled_submissions.discard(submission_id)
+                return
+            # Hold the same lock used by cancellation across process creation and
+            # registration. A cancellation callback therefore cannot observe an
+            # already-started but unregistered worker.
+            process = subprocess.Popen(command, cwd=repository_root, text=True)
+            processes[submission_id] = process
+    else:
+        if control.get_submission(submission_id)["status"] == "Cancelled":
+            return
+        process = subprocess.Popen(command, cwd=repository_root, text=True)
+    returncode = process.wait()
+    was_cancelled = False
+    if processes is not None and process_lock is not None:
+        with process_lock:
+            processes.pop(submission_id, None)
+            if cancelled_submissions is not None:
+                was_cancelled = submission_id in cancelled_submissions
+                cancelled_submissions.discard(submission_id)
+    if (
+        returncode != 0
+        and not was_cancelled
+        and control.get_submission(submission_id)["status"] != "Cancelled"
+    ):
         control.mark_submission(submission_id, "Failed")
+
+
+def _record_cancellation_intent(
+    control: ControlStore,
+    submission_id: str,
+    *,
+    process_lock: threading.Lock,
+    cancelled_submissions: set[str],
+) -> bool:
+    """Coordinate a committed cancellation with worker startup/registration."""
+    with process_lock:
+        try:
+            status = control.get_submission(submission_id)["status"]
+        except KeyError:
+            return False
+        if status != "Cancelled":
+            return False
+        cancelled_submissions.add(submission_id)
+        return True
 
 
 def create_app() -> FastAPI:
@@ -141,6 +195,20 @@ def create_app() -> FastAPI:
 
     control = _build_control(repository_root)
     immutable_store = _build_immutable_store(repository_root)
+    tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
+    tracking = None
+    if tracking_uri:
+        try:
+            tracking = MlflowTracking(tracking_uri)
+        except Exception as exc:  # noqa: BLE001 - optional MLflow clients expose varied failures.
+            # Tracking is a discoverability mirror. The transactional control plane
+            # remains authoritative when MLflow is unavailable during startup.
+            control.record_tracking_reconciliation(
+                subject_id="mlflow-tracking",
+                operation="initialize_tracking",
+                error=f"{type(exc).__name__}: {exc}",
+                resolved=False,
+            )
     runtime = PolicyRuntime()
     serving_provider = DemoReplayServingProvider(repository_root)
 
@@ -152,20 +220,22 @@ def create_app() -> FastAPI:
         if not isinstance(prepared, LoadedPolicy):
             raise TypeError("deployment activation did not receive a loaded candidate runtime")
         # The only mutation of the traffic runtime happens after the database CAS succeeds.
-        runtime.activate(
-            replace(prepared, deployment_id=deployment.deployment_id)
-        )
+        runtime.activate(replace(prepared, deployment_id=deployment.deployment_id))
 
     coordinator = DeploymentCoordinator(
         control=control,
         store=immutable_store,
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
+        tracking=tracking,
     )
     coordinator.restore_active()
 
     scheduled: set[str] = set()
     schedule_lock = threading.Lock()
+    processes: dict[str, subprocess.Popen[str]] = {}
+    cancelled_submissions: set[str] = set()
+    process_lock = threading.Lock()
 
     def schedule_submission(submission_id: str, payload: dict[str, str]) -> None:
         with schedule_lock:
@@ -174,22 +244,61 @@ def create_app() -> FastAPI:
             scheduled.add(submission_id)
         worker = threading.Thread(
             target=_run_flow,
-            args=(repository_root, control, submission_id, dict(payload)),
+            args=(
+                repository_root,
+                control,
+                submission_id,
+                dict(payload),
+                processes,
+                process_lock,
+                cancelled_submissions,
+            ),
             daemon=True,
             name=submission_id,
         )
         worker.start()
+
+    def cancel_submission(submission_id: str) -> bool:
+        """Record worker intent; the control-plane Cancelled state stops the flow safely."""
+        return _record_cancellation_intent(
+            control,
+            submission_id,
+            process_lock=process_lock,
+            cancelled_submissions=cancelled_submissions,
+        )
 
     app = create_control_app(
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
         submit_callback=schedule_submission,
-        mlflow_base_url=os.environ.get(
-            "PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"
-        ),
+        cancel_callback=cancel_submission,
+        tracking=tracking,
+        mlflow_base_url=os.environ.get("PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"),
     )
-    app.mount("/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store)))
+    app.mount(
+        "/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store))
+    )
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime
+    if tracking is not None:
+
+        def run_reconciliation() -> None:
+            try:
+                coordinator.reconcile_tracking()
+            except Exception as exc:  # noqa: BLE001 - optional clients expose varied failures.
+                control.record_tracking_reconciliation(
+                    subject_id="mlflow-tracking",
+                    operation="startup_reconciliation",
+                    error=f"{type(exc).__name__}: {exc}",
+                    resolved=False,
+                )
+
+        reconciliation = threading.Thread(
+            target=run_reconciliation,
+            daemon=True,
+            name="tracking-reconciliation",
+        )
+        reconciliation.start()
+        app.state.tracking_reconciliation_thread = reconciliation
     return app

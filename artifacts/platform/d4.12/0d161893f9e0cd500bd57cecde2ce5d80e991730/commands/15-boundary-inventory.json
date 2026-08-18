@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "import importlib.util, os; names=('OPENAI_API_KEY','ANTHROPIC_API_KEY','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY'); present=any(os.environ.get(n) for n in names); [os.environ.pop(n,None) for n in names]; print('osworld_installed='+str(importlib.util.find_spec('desktop_env') is not None).lower()); print('provider_credentials_present_before_sanitization='+str(present).lower()); print('provider_credentials_removed='+str(not any(os.environ.get(n) for n in names)).lower())"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); present=any(os.environ.get(n) for n in names); [os.environ.pop(n,None) for n in names]; print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present_before_sanitization='\"'\"'+str(present).lower()); print('\"'\"'provider_credentials_removed='\"'\"'+str(not any(os.environ.get(n) for n in names)).lower())'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.029445,
+  "ended_at_utc": "2026-08-18T19:12:49.557994+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "osworld_installed=false\nprovider_credentials_present_before_sanitization=false\nprovider_credentials_removed=true\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T19:12:49.526327+00:00"
+}

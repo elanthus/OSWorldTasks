@@ -113,7 +113,9 @@ def test_generator_reproduces_committed_manifest(repository_root: Path, tmp_path
     generate(isolated_root, evidence_dir)
     generated = json.loads((evidence_dir / "evidence-manifest.json").read_text())
     committed = json.loads(
-        (repository_root / "artifacts/platform/d4.12" / REVISION / "evidence-manifest.json").read_text()
+        (
+            repository_root / "artifacts/platform/d4.12" / REVISION / "evidence-manifest.json"
+        ).read_text()
     )
 
     assert generated == committed
@@ -128,6 +130,17 @@ def test_generator_rejects_dirty_frozen_worktree(repository_root: Path, tmp_path
 
     with pytest.raises(ValueError, match="frozen checkout status"):
         generate(isolated_root, evidence_dir)
+
+
+def test_generator_rejects_revision_directory_mismatch(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    mismatched = evidence_dir.with_name("0" * 40)
+    evidence_dir.rename(mismatched)
+
+    with pytest.raises(ValueError, match="recorded revision does not match evidence directory"):
+        generate(isolated_root, mismatched)
 
 
 def test_generator_rejects_tampered_resume_ledger(repository_root: Path, tmp_path: Path) -> None:

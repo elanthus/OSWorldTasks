@@ -108,6 +108,8 @@ def _invoke(
     *,
     failpoint: str | None,
 ) -> subprocess.CompletedProcess[str]:
+    if arguments[:1] == ["run"] and "--provider-concurrency" not in arguments:
+        arguments = ["run", "--provider-concurrency", "2", *arguments[1:]]
     return subprocess.run(
         [
             sys.executable,
@@ -143,7 +145,7 @@ def _run_uninterrupted(repository_root: Path, root: Path) -> RuntimeResult:
             "--shard-size",
             "25",
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(run_id_file),
         ],
@@ -177,7 +179,7 @@ def _run_failed_then_resume(
             "--shard-size",
             "25",
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(origin_file),
         ],
@@ -204,7 +206,7 @@ def _run_failed_then_resume(
             "--origin-run-id",
             origin_run_id,
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(root / "resume-run-id"),
         ],
@@ -216,11 +218,9 @@ def _run_failed_then_resume(
     return RuntimeResult(root, submission_id, origin_run_id, failed.stdout + resumed.stdout)
 
 
-def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
+def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes, bytes, bytes]:
     store = LocalImmutableStore(result.root / "immutable")
-    predictions_ref = store.get_reference(
-        f"runs/{result.submission_id}/predictions.jsonl"
-    )
+    predictions_ref = store.get_reference(f"runs/{result.submission_id}/predictions.jsonl")
     gate_ref = store.get_reference(f"runs/{result.submission_id}/gate-report.json")
     assert predictions_ref is not None and gate_ref is not None
     predictions = store.get_verified(predictions_ref)
@@ -240,10 +240,45 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
     candidate_gate = dict(candidate.gate_report)
     candidate_gate["run_id"] = "<run-id>"
     artifact_values = [artifact.to_dict() for artifact in candidate.artifacts]
+    summary_ref = next(
+        artifact
+        for artifact in candidate.artifacts
+        if artifact.logical_key.endswith("/summary.json")
+    )
+    run_manifest_ref = next(
+        artifact
+        for artifact in candidate.artifacts
+        if artifact.logical_key.endswith("/run-manifest.json")
+    )
+    summary_document = json.loads(store.get_verified(summary_ref))
+    summary_document["run_id"] = "<run-id>"
+    summary_document["evaluation_end_to_end_duration_ms"] = "<measured-duration>"
+    run_manifest_document = json.loads(store.get_verified(run_manifest_ref))
+    run_manifest_document["run_id"] = "<run-id>"
+    run_manifest_document["metaflow_pathspec"] = "<metaflow-pathspec>"
+    run_manifest_document["mlflow_run_id"] = "<mlflow-run-id>"
+    # Candidate artifacts below compare the index entries. Compare the manifest's
+    # own semantic fields separately so run-bound reference identities do not hide
+    # or manufacture resume equivalence.
+    run_manifest_document.pop("artifact_index")
     for artifact in artifact_values:
-        if artifact["logical_key"].endswith("/gate-report.json"):
-            artifact["sha256"] = "<run-bound-gate-sha256>"
-            artifact["version_id"] = "<run-bound-gate-sha256>"
+        run_bound_suffix = next(
+            (
+                suffix
+                for suffix in (
+                    "gate-report.json",
+                    "summary.json",
+                    "run-manifest.json",
+                )
+                if artifact["logical_key"].endswith(f"/{suffix}")
+            ),
+            None,
+        )
+        if run_bound_suffix is not None:
+            placeholder = f"<run-bound-{run_bound_suffix}-sha256>"
+            artifact["sha256"] = placeholder
+            artifact["version_id"] = placeholder
+            artifact["size"] = f"<run-bound-{run_bound_suffix}-size>"
     canonical_candidate = canonical_json_bytes(
         {
             "candidate_id": candidate.candidate_id,
@@ -254,7 +289,14 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
             "state": candidate.state.value,
         }
     )
-    return predictions, canonical_json_bytes(gate), policy, canonical_candidate
+    return (
+        predictions,
+        canonical_json_bytes(gate),
+        policy,
+        canonical_candidate,
+        canonical_json_bytes(summary_document),
+        canonical_json_bytes(run_manifest_document),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -279,12 +321,15 @@ def test_metaflow_resume_at_each_side_effect_boundary(
 
     evidence = _final_evidence(resumed)
     assert len(evidence[0].splitlines()) == 100
-    assert len(
-        {
-            (record["example_id"], record["condition"])
-            for record in map(json.loads, evidence[0].splitlines())
-        }
-    ) == 100
+    assert (
+        len(
+            {
+                (record["example_id"], record["condition"])
+                for record in map(json.loads, evidence[0].splitlines())
+            }
+        )
+        == 100
+    )
     assert evidence == _final_evidence(uninterrupted_runtime)
 
     ledger = provider_ledger_snapshot(tmp_path / "provider.db")
@@ -303,11 +348,12 @@ def test_metaflow_resume_at_each_side_effect_boundary(
     submission = control.list_submissions()[0]
     candidate = control.list_candidates()[0]
     assert submission["status"] == "Complete"
-    assert submission["metaflow_pathspec"] == (
-        f"GroundingEvaluationFlow/{resumed.origin_run_id}"
-    )
+    assert submission["metaflow_pathspec"] == (f"GroundingEvaluationFlow/{resumed.origin_run_id}")
     tracking = MlflowTracking(f"sqlite:///{tmp_path / 'mlflow.db'}")
-    assert tracking.client.get_run(candidate.source_run_id).info.status == "FINISHED"
+    tracked = tracking.client.get_run(candidate.source_run_id)
+    assert tracked.info.status == "FINISHED"
+    assert tracked.data.params["concurrency"] == "2"
+    assert tracked.data.metrics["evaluation_end_to_end_duration_ms"] > 0
 
 
 def test_uninterrupted_runtime_enforces_worker_and_call_caps(
@@ -323,6 +369,85 @@ def test_uninterrupted_runtime_enforces_worker_and_call_caps(
         "billable_calls": 100,
     }
     assert len(_final_evidence(uninterrupted_runtime)[0].splitlines()) == 100
+
+
+def test_graceful_cancellation_finalizes_failed_tracking_without_candidate(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(__file__).parents[3]
+    submission_id = _prepare(tmp_path)
+    origin_file = tmp_path / "origin-run-id"
+    environment = _environment(repository_root, tmp_path, None)
+    environment.update(
+        {
+            "PIXELGYM_TEST_PAUSE_ONCE": "evidence_persisted",
+            "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
+        }
+    )
+    log_path = tmp_path / "cancellation-run.log"
+    with log_path.open("w") as log_file:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                str(repository_root / "flows/grounding_evaluation_flow.py"),
+                "run",
+                "--submission-id",
+                submission_id,
+                "--prompt-version",
+                "2",
+                "--model",
+                "day3-replay-revised-v2",
+                "--maximum-calls",
+                "100",
+                "--shard-size",
+                "25",
+                "--provider-concurrency",
+                "2",
+                "--max-workers",
+                "1",
+                "--run-id-file",
+                str(origin_file),
+            ],
+            cwd=tmp_path,
+            env=environment,
+            text=True,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+        )
+        marker = tmp_path / "failpoints/evidence_persisted.paused"
+        deadline = time.monotonic() + 90
+        try:
+            while time.monotonic() < deadline and not marker.exists():
+                if process.poll() is not None:
+                    log_file.flush()
+                    pytest.fail(
+                        f"flow exited before the cancellation boundary:\n{log_path.read_text()}"
+                    )
+                time.sleep(0.05)
+            assert marker.exists()
+            control = _control(tmp_path)
+            control.cancel_submission(
+                submission_id,
+                actor="local-reviewer",
+                reason="runtime cancellation test",
+            )
+            (tmp_path / "failpoints/evidence_persisted.release").touch()
+            process.wait(timeout=30)
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=10)
+    output = log_path.read_text()
+
+    assert process.returncode != 0, output
+    control = _control(tmp_path)
+    submission = control.get_submission(submission_id)
+    assert submission["status"] == "Cancelled"
+    assert control.list_candidates() == []
+    tracking = MlflowTracking(f"sqlite:///{tmp_path / 'mlflow.db'}")
+    assert tracking.client.get_run(submission["mlflow_run_id"]).info.status == "FAILED"
+    store = LocalImmutableStore(tmp_path / "immutable")
+    assert store.get_reference(f"runs/{submission_id}/raw-response-index.json") is not None
 
 
 def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls(
@@ -357,8 +482,10 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
                 "100",
                 "--shard-size",
                 "25",
-                "--max-workers",
+                "--provider-concurrency",
                 "2",
+                "--max-workers",
+                "1",
                 "--run-id-file",
                 str(origin_file),
             ],
@@ -401,7 +528,7 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
             "--origin-run-id",
             origin_run_id,
             "--max-workers",
-            "2",
+            "1",
             "--run-id-file",
             str(tmp_path / "resume-run-id"),
         ],

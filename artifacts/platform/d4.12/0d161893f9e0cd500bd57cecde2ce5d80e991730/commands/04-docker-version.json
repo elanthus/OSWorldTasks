@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "docker",
+    "--version"
+  ],
+  "command": "docker --version",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.011585,
+  "ended_at_utc": "2026-08-18T19:10:38.026104+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Docker version 29.6.1, build 8900f1d\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T19:10:38.013343+00:00"
+}

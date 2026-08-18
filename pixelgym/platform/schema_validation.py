@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import threading
 from importlib import resources
 from importlib.resources.abc import Traversable
 from pathlib import Path
@@ -61,9 +62,7 @@ def _validate_strict_json(value: object, *, label: str, path: str = "$") -> None
         return
     if isinstance(value, float):
         if not math.isfinite(value):
-            raise ContractValidationError(
-                f"{label} contains a non-finite JSON number at {path}"
-            )
+            raise ContractValidationError(f"{label} contains a non-finite JSON number at {path}")
         return
     if isinstance(value, list):
         for index, item in enumerate(value):
@@ -77,9 +76,7 @@ def _validate_strict_json(value: object, *, label: str, path: str = "$") -> None
                 )
             _validate_strict_json(item, label=label, path=f"{path}.{key}")
         return
-    raise ContractValidationError(
-        f"{label} contains a non-JSON {type(value).__name__} at {path}"
-    )
+    raise ContractValidationError(f"{label} contains a non-JSON {type(value).__name__} at {path}")
 
 
 class PlatformSchemas:
@@ -99,24 +96,30 @@ class PlatformSchemas:
         self._schemas: dict[str, dict[str, Any]] = {}
         self._validators: dict[str, Draft202012Validator] = {}
         self._file_validators: dict[str, Draft202012Validator] = {}
+        self._cache_lock = threading.RLock()
         self._load_and_check_inventory()
 
     def _schema(self, filename: str) -> dict[str, Any]:
-        if filename not in self._schemas:
-            schema = _load_json_object(self.schema_root / filename)
-            try:
-                Draft202012Validator.check_schema(schema)
-            except SchemaError as exc:
-                raise ContractValidationError(f"invalid committed JSON Schema: {filename}") from exc
-            self._schemas[filename] = schema
-        return self._schemas[filename]
+        with self._cache_lock:
+            if filename not in self._schemas:
+                schema = _load_json_object(self.schema_root / filename)
+                try:
+                    Draft202012Validator.check_schema(schema)
+                except SchemaError as exc:
+                    raise ContractValidationError(
+                        f"invalid committed JSON Schema: {filename}"
+                    ) from exc
+                self._schemas[filename] = schema
+            return self._schemas[filename]
 
     def _load_and_check_inventory(self) -> None:
         registry = self._schema(REGISTRY_SCHEMA_FILE)
         try:
             versions = registry["properties"]["contracts"]["const"]
         except (KeyError, TypeError) as exc:
-            raise ContractValidationError("platform contract registry has no frozen inventory") from exc
+            raise ContractValidationError(
+                "platform contract registry has no frozen inventory"
+            ) from exc
         if not isinstance(versions, dict) or set(versions) != set(CONTRACT_SCHEMA_FILES):
             raise ContractValidationError("platform contract registry and schema inventory differ")
         for filename in {
@@ -134,23 +137,25 @@ class PlatformSchemas:
     def _validator(self, contract: str) -> Draft202012Validator:
         if contract not in CONTRACT_SCHEMA_FILES:
             raise KeyError(f"unknown platform contract: {contract}")
-        if contract not in self._validators:
-            root_schema = self._schema(CONTRACT_SCHEMA_FILES[contract])
-            definition = CONTROL_EVENT_DEFINITIONS.get(contract)
-            schema = root_schema if definition is None else root_schema["$defs"][definition]
-            self._validators[contract] = Draft202012Validator(
-                schema,
-                format_checker=FormatChecker(),
-            )
-        return self._validators[contract]
+        with self._cache_lock:
+            if contract not in self._validators:
+                root_schema = self._schema(CONTRACT_SCHEMA_FILES[contract])
+                definition = CONTROL_EVENT_DEFINITIONS.get(contract)
+                schema = root_schema if definition is None else root_schema["$defs"][definition]
+                self._validators[contract] = Draft202012Validator(
+                    schema,
+                    format_checker=FormatChecker(),
+                )
+            return self._validators[contract]
 
     def _file_validator(self, filename: str) -> Draft202012Validator:
-        if filename not in self._file_validators:
-            self._file_validators[filename] = Draft202012Validator(
-                self._schema(filename),
-                format_checker=FormatChecker(),
-            )
-        return self._file_validators[filename]
+        with self._cache_lock:
+            if filename not in self._file_validators:
+                self._file_validators[filename] = Draft202012Validator(
+                    self._schema(filename),
+                    format_checker=FormatChecker(),
+                )
+            return self._file_validators[filename]
 
     @staticmethod
     def _raise_first_error(
@@ -240,9 +245,7 @@ def load_policy_manifest(schemas: PlatformSchemas, value: object) -> PolicyManif
     try:
         policy = PolicyManifest(**current)
     except (TypeError, ValueError) as exc:
-        raise ContractValidationError(
-            "policy_package violates typed runtime invariants"
-        ) from exc
+        raise ContractValidationError("policy_package violates typed runtime invariants") from exc
     expected = "sha256:" + sha256_bytes(canonical_json_bytes(policy.identity_dict()))
     if policy.policy_id != expected:
         raise ContractValidationError("policy_package identity digest does not verify")

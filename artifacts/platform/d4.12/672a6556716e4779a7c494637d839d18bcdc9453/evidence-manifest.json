@@ -1,0 +1,1268 @@
+{
+  "checklist_items": [
+    {
+      "checklist_text": "Existing PixelGym fast suite still passes from the documented clean install.",
+      "evidence": [
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pip install -e '.[dev]'",
+          "duration_seconds": 11.241548,
+          "ended_at_utc": "2026-08-18T21:25:22.119585+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/07-install-dev.json",
+          "path": "commands/07-install-dev.json",
+          "sha256": "5b77558e6ddfdb28b589ca9714803462cd9358e6e25ad3f2957f12381944f43c",
+          "size": 17236,
+          "started_at_utc": "2026-08-18T21:25:10.876551+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest tests/ -q",
+          "duration_seconds": 88.195234,
+          "ended_at_utc": "2026-08-18T21:26:50.355108+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/08-fast-suite.json",
+          "observed_test_summary": {
+            "passed": 693,
+            "runtime": 87.59,
+            "skipped": 5,
+            "warnings": 3
+          },
+          "path": "commands/08-fast-suite.json",
+          "sha256": "ed00128bdeebd9191bde377924c4f4e1ebecfe278818e1fee9739dcc2a271b82",
+          "size": 2171,
+          "started_at_utc": "2026-08-18T21:25:22.158473+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -q tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend",
+          "duration_seconds": 0.388688,
+          "ended_at_utc": "2026-08-18T21:26:50.795443+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/09-environment-checker.json",
+          "observed_test_summary": {
+            "passed": 1,
+            "runtime": 0.05
+          },
+          "path": "commands/09-environment-checker.json",
+          "sha256": "793d1dd9e2469941958d296a4d5798a26115c4da45e42f01e4ac88a300c9a25a",
+          "size": 709,
+          "started_at_utc": "2026-08-18T21:26:50.405463+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python scripts/golden_trajectory.py check",
+          "duration_seconds": 2.565107,
+          "ended_at_utc": "2026-08-18T21:26:53.406120+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/10-golden-trajectory.json",
+          "path": "commands/10-golden-trajectory.json",
+          "sha256": "30070221570d984d51884a5eb173bfb1ba448e169130b442e491d93f23d74fc1",
+          "size": 861,
+          "started_at_utc": "2026-08-18T21:26:50.839506+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m ruff check .",
+          "duration_seconds": 0.550821,
+          "ended_at_utc": "2026-08-18T21:27:40.642934+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/13-ruff.json",
+          "path": "commands/13-ruff.json",
+          "sha256": "a30e1d2ad9b77ce6f81e264f4fb4d915070b7f5e6ff694163eab98599463c3ff",
+          "size": 455,
+          "started_at_utc": "2026-08-18T21:27:40.090983+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 1,
+      "observed_raw_result": "{\"environment_pytest\":{\"passed\":1,\"runtime\":0.05,\"skipped\":0,\"warnings\":0},\"fast_pytest\":{\"passed\":693,\"runtime\":87.59,\"skipped\":5,\"warnings\":3},\"golden_trajectory_output_contains_OK\":true,\"ruff_output_contains_all_checks_passed\":true}"
+    },
+    {
+      "checklist_text": "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
+      "evidence": [
+        {
+          "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 all_proxy=http://127.0.0.1:9 NO_PROXY=localhost,127.0.0.1,::1 no_proxy=localhost,127.0.0.1,::1 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
+          "duration_seconds": 46.475547,
+          "ended_at_utc": "2026-08-18T21:27:39.930597+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/11-platform-unit-boundaries.json",
+          "observed_test_summary": {
+            "passed": 314,
+            "runtime": 45.37,
+            "warnings": 3
+          },
+          "path": "commands/11-platform-unit-boundaries.json",
+          "sha256": "90569693195d7b0d1b563c3c4e1205cc87ca7f280d6be52fe4e7d2aa540160c5",
+          "size": 2560,
+          "started_at_utc": "2026-08-18T21:26:53.452551+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); [os.environ.__setitem__(n,'\"'\"'d412-harmless-sentinel'\"'\"') for n in names]; present=all(os.environ.get(n)=='\"'\"'d412-harmless-sentinel'\"'\"' for n in names); [os.environ.pop(n,None) for n in names]; print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present_before_sanitization='\"'\"'+str(present).lower()); print('\"'\"'provider_credentials_removed='\"'\"'+str(not any(os.environ.get(n) for n in names)).lower())'",
+          "duration_seconds": 0.027295,
+          "ended_at_utc": "2026-08-18T21:27:41.041150+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/15-boundary-inventory.json",
+          "path": "commands/15-boundary-inventory.json",
+          "sha256": "d73a1e4b21794e2ddcd4f0ce9d4bc2547c655a62f549b56ba48e678243a20cf3",
+          "size": 1770,
+          "started_at_utc": "2026-08-18T21:27:41.012647+00:00"
+        },
+        {
+          "command": "rg -n 'time\\.sleep|sleep\\(' tests/unit/platform",
+          "duration_seconds": 0.01639,
+          "ended_at_utc": "2026-08-18T21:27:41.104924+00:00",
+          "exit_status": 1,
+          "full_output_path": "commands/16-platform-sleep-scan.json",
+          "path": "commands/16-platform-sleep-scan.json",
+          "sha256": "dbdef22db008fb3f0abda52b74aaea02387e65c0c68445d46b9576ec48a95e23",
+          "size": 435,
+          "started_at_utc": "2026-08-18T21:27:41.087257+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 2,
+      "observed_raw_result": "{\"boundary_inventory\":[\"osworld_installed=false\",\"provider_credentials_present_before_sanitization=true\",\"provider_credentials_removed=true\"],\"platform_unit_pytest\":{\"passed\":314,\"runtime\":45.37,\"skipped\":0,\"warnings\":3},\"sleep_scan_exit_status\":1,\"sleep_scan_output\":\"\"}"
+    },
+    {
+      "checklist_text": "Marked platform integration tests pass against a fresh local stack.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/integration-venv/bin/python -c 'import json, subprocess\ndef lines(args):\n    return subprocess.run(args, text=True, capture_output=True, check=True).stdout.splitlines()\ndata = {\n    \"containers\": [x for x in lines([\"docker\", \"ps\", \"-a\", \"--filter\", \"label=com.docker.compose.project\", \"--format\", \"{{.Labels}}\"]) if \"com.docker.compose.project=pixelgym-it-\" in x],\n    \"volumes\": [x for x in lines([\"docker\", \"volume\", \"ls\", \"--format\", \"{{.Name}}\"]) if x.startswith(\"pixelgym-it-\")],\n    \"networks\": [x for x in lines([\"docker\", \"network\", \"ls\", \"--format\", \"{{.Name}}\"]) if x.startswith(\"pixelgym-it-\")],\n    \"images\": [x for x in lines([\"docker\", \"image\", \"ls\", \"--format\", \"{{.Repository}}:{{.Tag}}\"]) if x.startswith(\"pixelgym-it-\")],\n}\nprint(json.dumps(data, sort_keys=True))'",
+          "duration_seconds": 0.218147,
+          "ended_at_utc": "2026-08-18T21:34:37.670198+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/37-compose-cleanup-filtered.json",
+          "path": "commands/37-compose-cleanup-filtered.json",
+          "sha256": "686cf5da1e3a416d012f6e01a92d043e6b571bb60b259e3c78153ceb1392fa20",
+          "size": 2124,
+          "started_at_utc": "2026-08-18T21:34:37.450561+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 3,
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":131.93,\"skipped\":0,\"warnings\":0},\"post_run_docker_inventory\":{\"containers\":[],\"images\":[],\"networks\":[],\"volumes\":[]}}"
+    },
+    {
+      "checklist_text": "Metaflow resume tests prove no duplicate fixture-provider calls.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+          "duration_seconds": 207.419067,
+          "ended_at_utc": "2026-08-18T21:31:58.550777+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/27-platform-local-runtime.json",
+          "observed_test_summary": {
+            "passed": 10,
+            "runtime": 206.68
+          },
+          "path": "commands/27-platform-local-runtime.json",
+          "sha256": "b4bba3f0e19f18a37d56ecbc95cd8558718f8cb1c7709ab44ba2e9b858a435ca",
+          "size": 835,
+          "started_at_utc": "2026-08-18T21:28:31.129806+00:00"
+        },
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 16.633998,
+          "ended_at_utc": "2026-08-18T21:28:31.078437+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/26-integration-test-inventory.json",
+          "path": "commands/26-integration-test-inventory.json",
+          "sha256": "8c16244b474e9bc03e72facacfb23fd3d0eab8237e946b1f11893c3bbfb4516c",
+          "size": 2428,
+          "started_at_utc": "2026-08-18T21:28:14.442692+00:00"
+        },
+        {
+          "command": "<path-2>/integration-venv/bin/python scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+          "duration_seconds": 185.791414,
+          "ended_at_utc": "2026-08-18T21:37:43.714052+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/41-metaflow-resume-ledgers.json",
+          "path": "commands/41-metaflow-resume-ledgers.json",
+          "sha256": "7037e2fde7d41cd96190fecf54cc9a9db383a58cd5d2eab839e27e684d9332ab",
+          "size": 3608,
+          "started_at_utc": "2026-08-18T21:34:37.921079+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 4,
+      "observed_raw_result": "{\"boundary_names\":[\"candidate_registered\",\"evidence_persisted\",\"mlflow_finalized\",\"provider_response_received\",\"raw_responses_persisted\",\"run_linked\"],\"hard_kill_signal_recorded\":true,\"local_runtime_pytest\":{\"passed\":10,\"runtime\":206.68,\"skipped\":0,\"warnings\":0},\"normalized_evidence_equal\":{\"candidate_registered\":true,\"evidence_persisted\":true,\"hard_kill\":true,\"mlflow_finalized\":true,\"provider_response_received\":true,\"raw_responses_persisted\":true,\"run_linked\":true,\"uninterrupted\":true},\"provider_ledgers\":{\"candidate_registered\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"evidence_persisted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"hard_kill\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"mlflow_finalized\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"provider_response_received\":{\"active\":0,\"attempts\":101,\"billable_calls\":100,\"cache_hits\":1,\"max_active\":2,\"unique_request_ids\":100},\"raw_responses_persisted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"run_linked\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100},\"uninterrupted\":{\"active\":0,\"attempts\":100,\"billable_calls\":100,\"cache_hits\":0,\"max_active\":2,\"unique_request_ids\":100}}}"
+    },
+    {
+      "checklist_text": "MLflow contains the complete run contract and links back to Metaflow.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+          "duration_seconds": 207.419067,
+          "ended_at_utc": "2026-08-18T21:31:58.550777+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/27-platform-local-runtime.json",
+          "observed_test_summary": {
+            "passed": 10,
+            "runtime": 206.68
+          },
+          "path": "commands/27-platform-local-runtime.json",
+          "sha256": "b4bba3f0e19f18a37d56ecbc95cd8558718f8cb1c7709ab44ba2e9b858a435ca",
+          "size": 835,
+          "started_at_utc": "2026-08-18T21:28:31.129806+00:00"
+        },
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "path": "artifacts/platform/demo-mlflow-lineage.jsonl",
+          "sha256": "3c10f8270528e5415e9e3a8d05778a84537cf38bf1f4cbbd99cc1f006584fef7",
+          "size": 147213
+        }
+      ],
+      "missing_evidence": [],
+      "number": 5,
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":131.93,\"skipped\":0,\"warnings\":0},\"identity_matches\":true,\"local_runtime_pytest\":{\"passed\":10,\"runtime\":206.68,\"skipped\":0,\"warnings\":0},\"mlflow_lineage_records\":3,\"run_manifests\":3}"
+    },
+    {
+      "checklist_text": "Dataset and raw-response hashes verify from immutable storage.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "path": "artifacts/platform/immutable-artifact-verification.json",
+          "sha256": "b758deb738a5bc4297cd75a8a4ef57ac6210e9f7e1013259690c938d49ae6271",
+          "size": 165265
+        },
+        {
+          "path": "identity-reconciliation.json",
+          "sha256": "bd0cd02d23b9d8d879ce12d583753e1a3a0396fdfa185e9e1aca18cddbdd715c",
+          "size": 1915
+        }
+      ],
+      "missing_evidence": [],
+      "number": 6,
+      "observed_raw_result": "{\"immutable_failures\":0,\"immutable_verified\":310,\"manifest_artifact_union\":310,\"manifest_union_matches_verification\":true}"
+    },
+    {
+      "checklist_text": "Missing cost or latency blocks promotion.",
+      "evidence": [
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 7,
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":30,\"runtime\":4.38,\"skipped\":0,\"warnings\":3}}"
+    },
+    {
+      "checklist_text": "Gate failure blocks both UI and direct approval API.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        },
+        {
+          "path": "artifacts/platform/demo-api-transcript.jsonl",
+          "sha256": "a63a646d822b452060dd252c194183e29f20e3fe007cb61b6e4d4178f906c1d7",
+          "size": 3536
+        },
+        {
+          "path": "artifacts/platform/screenshots/02-candidate-a-gate-blocked.png",
+          "sha256": "409c7defe5675145bcde275bccc5d925d7431b7cf9111ff5a0a480afc6a966cd",
+          "size": 120492
+        }
+      ],
+      "missing_evidence": [],
+      "number": 8,
+      "observed_raw_result": "{\"blocked_approval_statuses\":[409],\"mechanical_pytest\":{\"passed\":30,\"runtime\":4.38,\"skipped\":0,\"warnings\":3},\"screenshot_hashes_and_sizes_match\":true,\"screenshot_identity_references_match\":true}"
+    },
+    {
+      "checklist_text": "Passing gates do not bypass human approval.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        },
+        {
+          "path": "artifacts/platform/demo-approval-events.jsonl",
+          "sha256": "cc266ed59cc569e07a262ac940284b4aeedd91d28202a358b51a8acf34f964da",
+          "size": 850
+        },
+        {
+          "path": "artifacts/platform/screenshots/06-candidate-b-eligible.png",
+          "sha256": "6b4793ebbf8e9f199be08f7f4465534412a142a065df3c9b32fd669dc4d86f9b",
+          "size": 136764
+        },
+        {
+          "path": "d411-human-confirmation.json",
+          "sha256": "83388e989c778e0118e86e71852b80ac7dbc3613ef8b1334973a9b41952547ba",
+          "size": 599
+        }
+      ],
+      "missing_evidence": [],
+      "number": 9,
+      "observed_raw_result": "{\"approval_events\":2,\"approval_tuples_match\":true,\"d411_confirmation_count\":4,\"d412_verdict\":null,\"failed_tuples_have_no_approval\":true}"
+    },
+    {
+      "checklist_text": "Serving rejects an unapproved exact version.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 10,
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":30,\"runtime\":4.38,\"skipped\":0,\"warnings\":3}}"
+    },
+    {
+      "checklist_text": "Failed deployment leaves the current version active.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 11,
+      "observed_raw_result": "{\"mechanical_pytest\":{\"passed\":30,\"runtime\":4.38,\"skipped\":0,\"warnings\":3}}"
+    },
+    {
+      "checklist_text": "Rollback restores the previous approved exact version.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "path": "artifacts/platform/demo-deployment-events.jsonl",
+          "sha256": "49f8bf654a18e5a533666dede0ac4446c9e47a99dbf5c88c646896dbebdf3b66",
+          "size": 1125
+        },
+        {
+          "path": "artifacts/platform/demo-api-transcript.jsonl",
+          "sha256": "a63a646d822b452060dd252c194183e29f20e3fe007cb61b6e4d4178f906c1d7",
+          "size": 3536
+        }
+      ],
+      "missing_evidence": [],
+      "number": 12,
+      "observed_raw_result": "{\"deployment_actions\":[\"deploy\",\"deploy\",\"rollback\"],\"deployment_generations\":[1,2,3],\"rollback_restores_generation_1_policy\":true}"
+    },
+    {
+      "checklist_text": "Concurrent transition tests produce one active deployment.",
+      "evidence": [
+        {
+          "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+          "duration_seconds": 132.506924,
+          "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+          "observed_test_summary": {
+            "passed": 2,
+            "runtime": 131.93
+          },
+          "path": "commands/30-compose-browser-sandbox-retry.json",
+          "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+          "size": 784,
+          "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+        },
+        {
+          "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+          "duration_seconds": 5.502862,
+          "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/31-mechanical-boundaries.json",
+          "observed_test_summary": {
+            "passed": 30,
+            "runtime": 4.38,
+            "warnings": 3
+          },
+          "path": "commands/31-mechanical-boundaries.json",
+          "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+          "size": 9519,
+          "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+        }
+      ],
+      "missing_evidence": [],
+      "number": 13,
+      "observed_raw_result": "{\"compose_pytest\":{\"passed\":2,\"runtime\":131.93,\"skipped\":0,\"warnings\":0},\"mechanical_pytest\":{\"passed\":30,\"runtime\":4.38,\"skipped\":0,\"warnings\":3}}"
+    },
+    {
+      "checklist_text": "Demo evidence clearly distinguishes scripted and real provider results.",
+      "evidence": [
+        {
+          "path": "artifacts/platform/EVIDENCE_REVIEW.md",
+          "sha256": "362633112aae1886cc41db4fb2b0aa980032b9148b786b49eece85a8bc866f40",
+          "size": 5627
+        },
+        {
+          "path": "artifacts/platform/rehearsal-environment.json",
+          "sha256": "fab8664516f360c056db3e8224dd2de2311ea4b2f4c77f3c4b65762a32dc2d00",
+          "size": 2394
+        },
+        {
+          "path": "artifacts/platform/demo-mlflow-lineage.jsonl",
+          "sha256": "3c10f8270528e5415e9e3a8d05778a84537cf38bf1f4cbbd99cc1f006584fef7",
+          "size": 147213
+        }
+      ],
+      "missing_evidence": [],
+      "number": 14,
+      "observed_raw_result": "{\"provider\":{\"external_deployment\":false,\"network_model_calls\":false,\"paid_calls\":0,\"type\":\"deterministic scripted replay\"}}"
+    },
+    {
+      "checklist_text": "No credentials, private payloads, or privileged benchmark data appear in artifacts.",
+      "evidence": [
+        {
+          "command": "<path-2>/dev-venv/bin/python -c 'import json, runpy; from pathlib import Path; scan=runpy.run_path('\"'\"'scripts/generate_d412_evidence_report.py'\"'\"')['\"'\"'_redaction_scan'\"'\"']; data=scan(Path('\"'\"'.'\"'\"'), Path('\"'\"'<path-1>'\"'\"')); print(json.dumps(data, sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data['\"'\"'finding_counts'\"'\"'].values()) else 1)'",
+          "duration_seconds": 0.095999,
+          "ended_at_utc": "2026-08-18T21:34:37.874789+00:00",
+          "exit_status": 0,
+          "full_output_path": "commands/40-redaction-scan.json",
+          "path": "commands/40-redaction-scan.json",
+          "sha256": "90d83d119db24724b2d61f8a8ce980b4c9675916909bf956e02f1ba09d026edf",
+          "size": 1416,
+          "started_at_utc": "2026-08-18T21:34:37.777340+00:00"
+        },
+        {
+          "path": "redaction-scan.json",
+          "sha256": "7ed0169bbeb3bed5f5f473d46cb17927b6ceb13b037ad2e499567bf753f0aca3",
+          "size": 421
+        },
+        {
+          "path": "artifacts/platform/screenshots/manifest.json",
+          "sha256": "309d96f4ffa1998896f5070c72c87c1c0319ef5fc1e0817b1b90e4d0fc2be62c",
+          "size": 6369
+        }
+      ],
+      "missing_evidence": [],
+      "number": 15,
+      "observed_raw_result": "{\"generated_final_deliverable_scan\":{\"files_scanned\":65,\"final_deliverables_scanned\":[\"REPORT.md\",\"evidence-manifest.json\"],\"finding_counts\":{\"aws_access_keys\":0,\"host_identity_paths_or_emails\":0,\"local_absolute_paths\":0,\"local_demo_credentials\":0,\"private_key_markers\":0,\"privileged_json_fields\":0,\"unredacted_image_payloads\":0},\"schema_version\":\"pixelgym-d412-redaction-scan-v1\"},\"pre_generation_scan\":{\"files_scanned\":60,\"final_deliverables_scanned\":[],\"finding_counts\":{\"aws_access_keys\":0,\"host_identity_paths_or_emails\":0,\"local_absolute_paths\":0,\"local_demo_credentials\":0,\"private_key_markers\":0,\"privileged_json_fields\":0,\"unredacted_image_payloads\":0},\"schema_version\":\"pixelgym-d412-redaction-scan-v1\"}}"
+    },
+    {
+      "checklist_text": "Retention, backup, recovery, and known limitations are documented.",
+      "evidence": [
+        {
+          "path": "deploy/README.md",
+          "sha256": "fa5c0f7b13cecf9158b8a5df8c27a0feeccb2d4cc0d9f098f1bec2a96718cc48",
+          "size": 8181
+        },
+        {
+          "path": "artifacts/platform/architecture.md",
+          "sha256": "344febf82e3e8608c068439a6fe4cda08441c0a0495bde942bf0483bbd3c71f8",
+          "size": 2870
+        },
+        {
+          "path": "artifacts/platform/known-limitations.md",
+          "sha256": "f9ec2d2c324f1cf90d9134bfd4fbea544ae8008e8ff6777b8553d31c81c6bbdc",
+          "size": 1403
+        }
+      ],
+      "missing_evidence": [],
+      "number": 16,
+      "observed_raw_result": "{\"indexed_documents\":[\"deploy/README.md\",\"artifacts/platform/architecture.md\",\"artifacts/platform/known-limitations.md\"]}"
+    }
+  ],
+  "command_records": [
+    {
+      "command": "git rev-parse HEAD",
+      "duration_seconds": 0.015924,
+      "ended_at_utc": "2026-08-18T21:25:09.037222+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/00-git-revision.json",
+      "path": "commands/00-git-revision.json",
+      "sha256": "2fde66a5626f94ac557a61a30a07085d35c84e1693134b47c30f3daa6460f2f3",
+      "size": 411,
+      "started_at_utc": "2026-08-18T21:25:09.020105+00:00"
+    },
+    {
+      "command": "git status --porcelain --untracked-files=all",
+      "duration_seconds": 0.031149,
+      "ended_at_utc": "2026-08-18T21:25:09.117775+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/01-worktree-status.json",
+      "path": "commands/01-worktree-status.json",
+      "sha256": "398bfdb3bcc381cc016ff8b15b2359a97ecbb032e187815454a4b64d0aa22cf3",
+      "size": 428,
+      "started_at_utc": "2026-08-18T21:25:09.085209+00:00"
+    },
+    {
+      "command": "python3.12 --version",
+      "duration_seconds": 0.011515,
+      "ended_at_utc": "2026-08-18T21:25:09.177379+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/02-python-version.json",
+      "path": "commands/02-python-version.json",
+      "sha256": "491cd356030e730e0799e03724f93f6068ef06142a8666e62c194d845af50bab",
+      "size": 382,
+      "started_at_utc": "2026-08-18T21:25:09.164586+00:00"
+    },
+    {
+      "command": "uname -srm",
+      "duration_seconds": 0.003743,
+      "ended_at_utc": "2026-08-18T21:25:09.228366+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/03-os-architecture.json",
+      "path": "commands/03-os-architecture.json",
+      "sha256": "68413ce1ebc703c314a08170d78b6faeb5b83479fd4f8d1cc74329d709a6acab",
+      "size": 367,
+      "started_at_utc": "2026-08-18T21:25:09.223471+00:00"
+    },
+    {
+      "command": "docker --version",
+      "duration_seconds": 0.01264,
+      "ended_at_utc": "2026-08-18T21:25:09.288981+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/04-docker-version.json",
+      "path": "commands/04-docker-version.json",
+      "sha256": "683fa436b59550db444e58f4191cc956d31e110f9010d946eb3517b029098cc9",
+      "size": 395,
+      "started_at_utc": "2026-08-18T21:25:09.274968+00:00"
+    },
+    {
+      "command": "docker compose version",
+      "duration_seconds": 0.080405,
+      "ended_at_utc": "2026-08-18T21:25:09.415635+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/05-compose-version.json",
+      "path": "commands/05-compose-version.json",
+      "sha256": "1cbe43662882570706fcaae7f99ebd21499558f5b03b898ac68819e734b51fb3",
+      "size": 408,
+      "started_at_utc": "2026-08-18T21:25:09.333982+00:00"
+    },
+    {
+      "command": "python3.12 -m venv <path-2>/dev-venv",
+      "duration_seconds": 1.366313,
+      "ended_at_utc": "2026-08-18T21:25:10.829520+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/06-create-dev-venv.json",
+      "path": "commands/06-create-dev-venv.json",
+      "sha256": "5ddfa0506230962cfea566df1d93cb6cf4bfdfbbc4f2b397acca20319a36a3c3",
+      "size": 412,
+      "started_at_utc": "2026-08-18T21:25:09.461906+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pip install -e '.[dev]'",
+      "duration_seconds": 11.241548,
+      "ended_at_utc": "2026-08-18T21:25:22.119585+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/07-install-dev.json",
+      "path": "commands/07-install-dev.json",
+      "sha256": "5b77558e6ddfdb28b589ca9714803462cd9358e6e25ad3f2957f12381944f43c",
+      "size": 17236,
+      "started_at_utc": "2026-08-18T21:25:10.876551+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pytest tests/ -q",
+      "duration_seconds": 88.195234,
+      "ended_at_utc": "2026-08-18T21:26:50.355108+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/08-fast-suite.json",
+      "observed_test_summary": {
+        "passed": 693,
+        "runtime": 87.59,
+        "skipped": 5,
+        "warnings": 3
+      },
+      "path": "commands/08-fast-suite.json",
+      "sha256": "ed00128bdeebd9191bde377924c4f4e1ebecfe278818e1fee9739dcc2a271b82",
+      "size": 2171,
+      "started_at_utc": "2026-08-18T21:25:22.158473+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pytest -q tests/unit/test_env.py::test_gymnasium_check_env_passes_against_the_reusable_fake_backend",
+      "duration_seconds": 0.388688,
+      "ended_at_utc": "2026-08-18T21:26:50.795443+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/09-environment-checker.json",
+      "observed_test_summary": {
+        "passed": 1,
+        "runtime": 0.05
+      },
+      "path": "commands/09-environment-checker.json",
+      "sha256": "793d1dd9e2469941958d296a4d5798a26115c4da45e42f01e4ac88a300c9a25a",
+      "size": 709,
+      "started_at_utc": "2026-08-18T21:26:50.405463+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python scripts/golden_trajectory.py check",
+      "duration_seconds": 2.565107,
+      "ended_at_utc": "2026-08-18T21:26:53.406120+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/10-golden-trajectory.json",
+      "path": "commands/10-golden-trajectory.json",
+      "sha256": "30070221570d984d51884a5eb173bfb1ba448e169130b442e491d93f23d74fc1",
+      "size": 861,
+      "started_at_utc": "2026-08-18T21:26:50.839506+00:00"
+    },
+    {
+      "command": "env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY HTTP_PROXY=http://127.0.0.1:9 http_proxy=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 https_proxy=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 all_proxy=http://127.0.0.1:9 NO_PROXY=localhost,127.0.0.1,::1 no_proxy=localhost,127.0.0.1,::1 <path-2>/dev-venv/bin/python -m pytest -q tests/unit/platform",
+      "duration_seconds": 46.475547,
+      "ended_at_utc": "2026-08-18T21:27:39.930597+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/11-platform-unit-boundaries.json",
+      "observed_test_summary": {
+        "passed": 314,
+        "runtime": 45.37,
+        "warnings": 3
+      },
+      "path": "commands/11-platform-unit-boundaries.json",
+      "sha256": "90569693195d7b0d1b563c3c4e1205cc87ca7f280d6be52fe4e7d2aa540160c5",
+      "size": 2560,
+      "started_at_utc": "2026-08-18T21:26:53.452551+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python pixelgym/platform/dependency_lock.py --repository-root .",
+      "duration_seconds": 0.053582,
+      "ended_at_utc": "2026-08-18T21:27:40.048428+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/12-dependency-lock-check.json",
+      "path": "commands/12-dependency-lock-check.json",
+      "sha256": "ee6d4625d1dee51412b47923719a4285a480e3f98c55e9b889d147e4a25ed903",
+      "size": 510,
+      "started_at_utc": "2026-08-18T21:27:39.993649+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m ruff check .",
+      "duration_seconds": 0.550821,
+      "ended_at_utc": "2026-08-18T21:27:40.642934+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/13-ruff.json",
+      "path": "commands/13-ruff.json",
+      "sha256": "a30e1d2ad9b77ce6f81e264f4fb4d915070b7f5e6ff694163eab98599463c3ff",
+      "size": 455,
+      "started_at_utc": "2026-08-18T21:27:40.090983+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pip check",
+      "duration_seconds": 0.278887,
+      "ended_at_utc": "2026-08-18T21:27:40.967047+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/14-pip-check.json",
+      "path": "commands/14-pip-check.json",
+      "sha256": "ee61318a0a529e650ff05aae0c16f18f598c0f1725e502e90703a97ff4a27ce9",
+      "size": 453,
+      "started_at_utc": "2026-08-18T21:27:40.686804+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.util, os; names=('\"'\"'OPENAI_API_KEY'\"'\"','\"'\"'ANTHROPIC_API_KEY'\"'\"','\"'\"'AWS_ACCESS_KEY_ID'\"'\"','\"'\"'AWS_SECRET_ACCESS_KEY'\"'\"'); [os.environ.__setitem__(n,'\"'\"'d412-harmless-sentinel'\"'\"') for n in names]; present=all(os.environ.get(n)=='\"'\"'d412-harmless-sentinel'\"'\"' for n in names); [os.environ.pop(n,None) for n in names]; print('\"'\"'osworld_installed='\"'\"'+str(importlib.util.find_spec('\"'\"'desktop_env'\"'\"') is not None).lower()); print('\"'\"'provider_credentials_present_before_sanitization='\"'\"'+str(present).lower()); print('\"'\"'provider_credentials_removed='\"'\"'+str(not any(os.environ.get(n) for n in names)).lower())'",
+      "duration_seconds": 0.027295,
+      "ended_at_utc": "2026-08-18T21:27:41.041150+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/15-boundary-inventory.json",
+      "path": "commands/15-boundary-inventory.json",
+      "sha256": "d73a1e4b21794e2ddcd4f0ce9d4bc2547c655a62f549b56ba48e678243a20cf3",
+      "size": 1770,
+      "started_at_utc": "2026-08-18T21:27:41.012647+00:00"
+    },
+    {
+      "command": "rg -n 'time\\.sleep|sleep\\(' tests/unit/platform",
+      "duration_seconds": 0.01639,
+      "ended_at_utc": "2026-08-18T21:27:41.104924+00:00",
+      "exit_status": 1,
+      "full_output_path": "commands/16-platform-sleep-scan.json",
+      "path": "commands/16-platform-sleep-scan.json",
+      "sha256": "dbdef22db008fb3f0abda52b74aaea02387e65c0c68445d46b9576ec48a95e23",
+      "size": 435,
+      "started_at_utc": "2026-08-18T21:27:41.087257+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -c 'from pathlib import Path; import json; from pixelgym.platform.source_provenance import generate_source_provenance; print(json.dumps(generate_source_provenance(Path('\"'\"'.'\"'\"')).to_dict(), sort_keys=True))'",
+      "duration_seconds": 0.148588,
+      "ended_at_utc": "2026-08-18T21:27:41.296390+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/17-source-provenance.json",
+      "path": "commands/17-source-provenance.json",
+      "sha256": "436878ad25ab5a7cb28d09a00d17d75071dbab35fd84fa84520e0248449da6af",
+      "size": 1114,
+      "started_at_utc": "2026-08-18T21:27:41.146626+00:00"
+    },
+    {
+      "command": "shasum -a 256 requirements/platform-py312.lock",
+      "duration_seconds": 0.033499,
+      "ended_at_utc": "2026-08-18T21:27:41.370877+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/18-lock-sha256.json",
+      "path": "commands/18-lock-sha256.json",
+      "sha256": "530337e790601967566d4d40e83c2ab14f76636f252c3834418e3a61e0ba646c",
+      "size": 532,
+      "started_at_utc": "2026-08-18T21:27:41.336210+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'pytest'\"'\"','\"'\"'ruff'\"'\"','\"'\"'gymnasium'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'mlflow'\"'\"'); available={d.metadata['\"'\"'Name'\"'\"'].lower() for d in m.distributions()}; print(json.dumps({n:(m.version(n) if n in available else None) for n in names}, sort_keys=True))'",
+      "duration_seconds": 0.089586,
+      "ended_at_utc": "2026-08-18T21:27:41.507492+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/19-dev-package-versions.json",
+      "path": "commands/19-dev-package-versions.json",
+      "sha256": "56aa502d94a8f3e1ae10797e0a77fadcdbe36a560c29d93a84d1136db3ba9579",
+      "size": 1165,
+      "started_at_utc": "2026-08-18T21:27:41.416556+00:00"
+    },
+    {
+      "command": "python3.12 -m venv <path-2>/integration-venv",
+      "duration_seconds": 1.34632,
+      "ended_at_utc": "2026-08-18T21:27:42.903262+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/20-create-integration-venv.json",
+      "path": "commands/20-create-integration-venv.json",
+      "sha256": "0d53d59d868870280021d67fbdf958422006a6244face704641a53ef102c5cfd",
+      "size": 427,
+      "started_at_utc": "2026-08-18T21:27:41.555537+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pip install --require-hashes -r requirements/platform-py312.lock",
+      "duration_seconds": 26.3264,
+      "ended_at_utc": "2026-08-18T21:28:09.279976+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/21-install-platform-lock.json",
+      "path": "commands/21-install-platform-lock.json",
+      "sha256": "8f050f695d2bbb2fda50e669b6c7714758c8bd63b2a4f92e75f37a53e0f65d48",
+      "size": 21320,
+      "started_at_utc": "2026-08-18T21:27:42.951624+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pip install --no-deps -e .",
+      "duration_seconds": 1.769621,
+      "ended_at_utc": "2026-08-18T21:28:11.114592+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/22-install-repository-no-deps.json",
+      "path": "commands/22-install-repository-no-deps.json",
+      "sha256": "f237b080e3fe8c9beb9d38d18bf130544f51a1a18f66731843369e544a20725e",
+      "size": 1780,
+      "started_at_utc": "2026-08-18T21:28:09.343175+00:00"
+    },
+    {
+      "command": "sh -c ''\"'\"'<path-2>/integration-venv/bin/python'\"'\"' -m pip install pytest playwright && '\"'\"'<path-2>/integration-venv/bin/python'\"'\"' -m playwright install chromium'",
+      "duration_seconds": 2.778942,
+      "ended_at_utc": "2026-08-18T21:28:13.940579+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/23-playwright-chromium.json",
+      "path": "commands/23-playwright-chromium.json",
+      "sha256": "a5103da0b38d2a9170cc20c389b6c25c0e890717f99bf45a5a5b0a9747b14215",
+      "size": 2388,
+      "started_at_utc": "2026-08-18T21:28:11.160327+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'mlflow'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'boto3'\"'\"','\"'\"'psycopg2-binary'\"'\"','\"'\"'playwright'\"'\"','\"'\"'pytest'\"'\"','\"'\"'greenlet'\"'\"','\"'\"'httpx2'\"'\"'); print(json.dumps({n:m.version(n) for n in names},sort_keys=True))'",
+      "duration_seconds": 0.073088,
+      "ended_at_utc": "2026-08-18T21:28:14.061444+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/24-integration-package-versions.json",
+      "path": "commands/24-integration-package-versions.json",
+      "sha256": "2152c9a6d63daff1a491e49fe8e6d1d32f1318576c47e63104264915149678ca",
+      "size": 1178,
+      "started_at_utc": "2026-08-18T21:28:13.986846+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pip check",
+      "duration_seconds": 0.288085,
+      "ended_at_utc": "2026-08-18T21:28:14.396373+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/25-integration-pip-check.json",
+      "path": "commands/25-integration-pip-check.json",
+      "sha256": "c66cbd17f179c1c8db69274f9b6b4a103a321f71caf5bb16a64e0427826a2b69",
+      "size": 469,
+      "started_at_utc": "2026-08-18T21:28:14.106878+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pytest --collect-only -q -m 'platform_integration or platform_compose_integration' tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py tests/integration/platform/test_compose_lifecycle.py",
+      "duration_seconds": 16.633998,
+      "ended_at_utc": "2026-08-18T21:28:31.078437+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/26-integration-test-inventory.json",
+      "path": "commands/26-integration-test-inventory.json",
+      "sha256": "8c16244b474e9bc03e72facacfb23fd3d0eab8237e946b1f11893c3bbfb4516c",
+      "size": 2428,
+      "started_at_utc": "2026-08-18T21:28:14.442692+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py",
+      "duration_seconds": 207.419067,
+      "ended_at_utc": "2026-08-18T21:31:58.550777+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/27-platform-local-runtime.json",
+      "observed_test_summary": {
+        "passed": 10,
+        "runtime": 206.68
+      },
+      "path": "commands/27-platform-local-runtime.json",
+      "sha256": "b4bba3f0e19f18a37d56ecbc95cd8558718f8cb1c7709ab44ba2e9b858a435ca",
+      "size": 835,
+      "started_at_utc": "2026-08-18T21:28:31.129806+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+      "duration_seconds": 2.095987,
+      "ended_at_utc": "2026-08-18T21:32:04.454965+00:00",
+      "exit_status": 1,
+      "full_output_path": "commands/29-compose-browser.json",
+      "path": "commands/29-compose-browser.json",
+      "sha256": "e0fe5b03d6196622ccdbf26d5448b4efe05e943a04c0ef7d722e45e22bc1ceef",
+      "size": 4220,
+      "started_at_utc": "2026-08-18T21:32:02.357351+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+      "duration_seconds": 132.506924,
+      "ended_at_utc": "2026-08-18T21:34:31.838891+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/30-compose-browser-sandbox-retry.json",
+      "observed_test_summary": {
+        "passed": 2,
+        "runtime": 131.93
+      },
+      "path": "commands/30-compose-browser-sandbox-retry.json",
+      "sha256": "7eff32efa937abf85e214c44ee78738e49c26f028d225a9ff0643651515bf831",
+      "size": 784,
+      "started_at_utc": "2026-08-18T21:32:19.330205+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -m pytest -vv tests/unit/platform/test_gates_policy_tracking.py::test_missing_and_nonfinite_gate_evidence_fails_closed tests/unit/platform/test_gates_policy_tracking.py::test_unpriced_or_insufficient_latency_counts_fail_closed tests/unit/platform/test_control_deployment.py::test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove tests/unit/platform/test_control_deployment.py::test_deployment_coordinator_rejects_unapproved_candidate_before_smoke tests/unit/platform/test_control_deployment.py::test_serving_restore_rejects_unapproved_or_gate_failed_active_policy tests/unit/platform/test_control_deployment.py::test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order tests/unit/platform/test_control_deployment.py::test_stale_compare_and_swap_loses_cleanly tests/unit/platform/test_service_web.py::test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_failure_finalizes_partial_run_and_never_registers_candidate tests/unit/platform/test_control_deployment.py::test_deploy_mirrors_champion_after_activation_and_records_alias_failure tests/unit/platform/test_control_deployment.py::test_reconcile_tracking_mirrors_authoritative_status_and_active_alias tests/unit/platform/test_service_web.py::test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure tests/unit/platform/test_service_web.py::test_compatible_run_api_uses_tracking_view_model tests/unit/platform/test_service_web.py::test_runs_filter_prompt_model_status_date_and_gate_result tests/unit/platform/test_grounding_evaluation_flow.py::test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence tests/unit/platform/test_service_web.py::test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled",
+      "duration_seconds": 5.502862,
+      "ended_at_utc": "2026-08-18T21:34:37.396260+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/31-mechanical-boundaries.json",
+      "observed_test_summary": {
+        "passed": 30,
+        "runtime": 4.38,
+        "warnings": 3
+      },
+      "path": "commands/31-mechanical-boundaries.json",
+      "sha256": "e3197a4f7b5cde5d590b481fa72c2911ea14d01b56191da1d2710604fa295476",
+      "size": 9519,
+      "started_at_utc": "2026-08-18T21:34:31.891099+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python -c 'import json, subprocess\ndef lines(args):\n    return subprocess.run(args, text=True, capture_output=True, check=True).stdout.splitlines()\ndata = {\n    \"containers\": [x for x in lines([\"docker\", \"ps\", \"-a\", \"--filter\", \"label=com.docker.compose.project\", \"--format\", \"{{.Labels}}\"]) if \"com.docker.compose.project=pixelgym-it-\" in x],\n    \"volumes\": [x for x in lines([\"docker\", \"volume\", \"ls\", \"--format\", \"{{.Name}}\"]) if x.startswith(\"pixelgym-it-\")],\n    \"networks\": [x for x in lines([\"docker\", \"network\", \"ls\", \"--format\", \"{{.Name}}\"]) if x.startswith(\"pixelgym-it-\")],\n    \"images\": [x for x in lines([\"docker\", \"image\", \"ls\", \"--format\", \"{{.Repository}}:{{.Tag}}\"]) if x.startswith(\"pixelgym-it-\")],\n}\nprint(json.dumps(data, sort_keys=True))'",
+      "duration_seconds": 0.218147,
+      "ended_at_utc": "2026-08-18T21:34:37.670198+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/37-compose-cleanup-filtered.json",
+      "path": "commands/37-compose-cleanup-filtered.json",
+      "sha256": "686cf5da1e3a416d012f6e01a92d043e6b571bb60b259e3c78153ceb1392fa20",
+      "size": 2124,
+      "started_at_utc": "2026-08-18T21:34:37.450561+00:00"
+    },
+    {
+      "command": "git branch --show-current",
+      "duration_seconds": 0.014647,
+      "ended_at_utc": "2026-08-18T21:34:37.735264+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/38-evidence-branch.json",
+      "path": "commands/38-evidence-branch.json",
+      "sha256": "4d4f7d3f52e3f970daaa6cf2cd6104ec91742f3819f3055b0d5ddbea07c92cec",
+      "size": 420,
+      "started_at_utc": "2026-08-18T21:34:37.719558+00:00"
+    },
+    {
+      "command": "<path-2>/dev-venv/bin/python -c 'import json, runpy; from pathlib import Path; scan=runpy.run_path('\"'\"'scripts/generate_d412_evidence_report.py'\"'\"')['\"'\"'_redaction_scan'\"'\"']; data=scan(Path('\"'\"'.'\"'\"'), Path('\"'\"'<path-1>'\"'\"')); print(json.dumps(data, sort_keys=True)); raise SystemExit(0 if all(value == 0 for value in data['\"'\"'finding_counts'\"'\"'].values()) else 1)'",
+      "duration_seconds": 0.095999,
+      "ended_at_utc": "2026-08-18T21:34:37.874789+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/40-redaction-scan.json",
+      "path": "commands/40-redaction-scan.json",
+      "sha256": "90d83d119db24724b2d61f8a8ce980b4c9675916909bf956e02f1ba09d026edf",
+      "size": 1416,
+      "started_at_utc": "2026-08-18T21:34:37.777340+00:00"
+    },
+    {
+      "command": "<path-2>/integration-venv/bin/python scripts/capture_d412_metaflow_resume.py --repository-root <path-0>",
+      "duration_seconds": 185.791414,
+      "ended_at_utc": "2026-08-18T21:37:43.714052+00:00",
+      "exit_status": 0,
+      "full_output_path": "commands/41-metaflow-resume-ledgers.json",
+      "path": "commands/41-metaflow-resume-ledgers.json",
+      "sha256": "7037e2fde7d41cd96190fecf54cc9a9db383a58cd5d2eab839e27e684d9332ab",
+      "size": 3608,
+      "started_at_utc": "2026-08-18T21:34:37.921079+00:00"
+    }
+  ],
+  "ended_at_utc": "2026-08-18T21:37:43.714052+00:00",
+  "evidence_branch": "agent/complete-d4-platform-contract",
+  "evidence_revision": "672a6556716e4779a7c494637d839d18bcdc9453",
+  "frozen_worktree_status": "",
+  "gate": "D4.12",
+  "identity_reconciliation": {
+    "approval_candidate_policy_gate_digest_tuples_match": true,
+    "deployment_actions": [
+      "deploy",
+      "deploy",
+      "rollback"
+    ],
+    "deployment_candidate_policy_tuples_are_approved": true,
+    "deployment_generations": [
+      1,
+      2,
+      3
+    ],
+    "expected_passing_approval_tuples": [
+      [
+        "candidate-ab125729e03ef236acbf1919",
+        "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
+        "d5b7c02b5bd1171e5868192ac0a453ec64650daa70fead125ccbbade6ede275e"
+      ],
+      [
+        "candidate-cb167e4e9cca9cd71885b809",
+        "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25",
+        "a1bd58f2d4552e0729e9c0b12b324a39af76899aff23aad41218577714f2bd1e"
+      ]
+    ],
+    "manifest_artifact_union_matches_immutable_verification": true,
+    "rollback_restores_generation_1_policy": true,
+    "run_manifest_mlflow_metaflow_policy_identity_matches": true,
+    "schema_version": "pixelgym-d412-identity-reconciliation-v1",
+    "screenshot_hashes_and_sizes_match": true,
+    "screenshot_identity_references_match": true,
+    "stored_approval_tuples": [
+      [
+        "candidate-ab125729e03ef236acbf1919",
+        "sha256:ab125729e03ef236acbf1919d9acbc4c18496fc40b795c0a8705591e1b4aceea",
+        "d5b7c02b5bd1171e5868192ac0a453ec64650daa70fead125ccbbade6ede275e"
+      ],
+      [
+        "candidate-cb167e4e9cca9cd71885b809",
+        "sha256:cb167e4e9cca9cd71885b8093660bb83df76cb6d1437e40c32e86ada0820fd25",
+        "a1bd58f2d4552e0729e9c0b12b324a39af76899aff23aad41218577714f2bd1e"
+      ]
+    ],
+    "stored_counts": {
+      "api_exchanges": 5,
+      "approval_events": 2,
+      "audit_events": 11,
+      "deployment_events": 3,
+      "gate_reports": 3,
+      "immutable_failures": 0,
+      "immutable_verified": 310,
+      "manifest_artifact_union": 310,
+      "mlflow_lineage_records": 3,
+      "run_manifests": 3,
+      "screenshots": 10
+    },
+    "stored_failed_candidate_policy_gate_digest_tuples_have_no_approval": true
+  },
+  "provider_environment": {
+    "external_deployment": false,
+    "network_model_calls": false,
+    "paid_calls": 0,
+    "type": "deterministic scripted replay"
+  },
+  "redaction_scan": {
+    "files_scanned": 65,
+    "final_deliverables_scanned": [
+      "REPORT.md",
+      "evidence-manifest.json"
+    ],
+    "finding_counts": {
+      "aws_access_keys": 0,
+      "host_identity_paths_or_emails": 0,
+      "local_absolute_paths": 0,
+      "local_demo_credentials": 0,
+      "private_key_markers": 0,
+      "privileged_json_fields": 0,
+      "unredacted_image_payloads": 0
+    },
+    "schema_version": "pixelgym-d412-redaction-scan-v1"
+  },
+  "schema_version": "pixelgym-d412-evidence-manifest-v1",
+  "source_tree_sha256": "4de1ba738a34bc149b301678f750efb9a7dacbf33aca2a83e4983d368613e54f",
+  "started_at_utc": "2026-08-18T21:25:09.020105+00:00",
+  "supporting_artifacts": [
+    {
+      "path": "artifacts/platform/EVIDENCE_REVIEW.md",
+      "sha256": "362633112aae1886cc41db4fb2b0aa980032b9148b786b49eece85a8bc866f40",
+      "size": 5627
+    },
+    {
+      "path": "artifacts/platform/architecture.md",
+      "sha256": "344febf82e3e8608c068439a6fe4cda08441c0a0495bde942bf0483bbd3c71f8",
+      "size": 2870
+    },
+    {
+      "path": "artifacts/platform/demo-api-transcript.jsonl",
+      "sha256": "a63a646d822b452060dd252c194183e29f20e3fe007cb61b6e4d4178f906c1d7",
+      "size": 3536
+    },
+    {
+      "path": "artifacts/platform/demo-approval-events.jsonl",
+      "sha256": "cc266ed59cc569e07a262ac940284b4aeedd91d28202a358b51a8acf34f964da",
+      "size": 850
+    },
+    {
+      "path": "artifacts/platform/demo-audit-events.jsonl",
+      "sha256": "59b0c4b9b0e2ecc0be950f8254063118d51bee370ef96d0c1d158c6e1be122b4",
+      "size": 6418
+    },
+    {
+      "path": "artifacts/platform/demo-comparison.json",
+      "sha256": "14a747b58f7ddb620784b6135cb61e71e8e3740dd297878fdaf360e0833ee3e8",
+      "size": 2065
+    },
+    {
+      "path": "artifacts/platform/demo-deployment-events.jsonl",
+      "sha256": "49f8bf654a18e5a533666dede0ac4446c9e47a99dbf5c88c646896dbebdf3b66",
+      "size": 1125
+    },
+    {
+      "path": "artifacts/platform/demo-gate-reports.jsonl",
+      "sha256": "7a78964ecf33737836e5156e4c5daf9ecef31011b390744556c52eaf1e5b30ec",
+      "size": 2229
+    },
+    {
+      "path": "artifacts/platform/demo-mlflow-lineage.jsonl",
+      "sha256": "3c10f8270528e5415e9e3a8d05778a84537cf38bf1f4cbbd99cc1f006584fef7",
+      "size": 147213
+    },
+    {
+      "path": "artifacts/platform/demo-run-manifests.jsonl",
+      "sha256": "0ed83c111336f5dfb96ec745dc6ddeccf2f0bad27aaa3825b3b21d48b8de65de",
+      "size": 147492
+    },
+    {
+      "path": "artifacts/platform/demo-script.md",
+      "sha256": "c8e10cfa828a30c369eb471be7cc2397e748290e639d9c787a56d5a60951fb4f",
+      "size": 3553
+    },
+    {
+      "path": "artifacts/platform/immutable-artifact-verification.json",
+      "sha256": "b758deb738a5bc4297cd75a8a4ef57ac6210e9f7e1013259690c938d49ae6271",
+      "size": 165265
+    },
+    {
+      "path": "artifacts/platform/known-limitations.md",
+      "sha256": "f9ec2d2c324f1cf90d9134bfd4fbea544ae8008e8ff6777b8553d31c81c6bbdc",
+      "size": 1403
+    },
+    {
+      "path": "artifacts/platform/rehearsal-environment.json",
+      "sha256": "fab8664516f360c056db3e8224dd2de2311ea4b2f4c77f3c4b65762a32dc2d00",
+      "size": 2394
+    },
+    {
+      "path": "artifacts/platform/screenshots/manifest.json",
+      "sha256": "309d96f4ffa1998896f5070c72c87c1c0319ef5fc1e0817b1b90e4d0fc2be62c",
+      "size": 6369
+    },
+    {
+      "path": "deploy/README.md",
+      "sha256": "fa5c0f7b13cecf9158b8a5df8c27a0feeccb2d4cc0d9f098f1bec2a96718cc48",
+      "size": 8181
+    },
+    {
+      "path": "artifacts/platform/screenshots/01-empty-run-history.png",
+      "sha256": "c426d7335c2a2526d7a5cd29f39394113c9a5896f4db1a6884a68ab3f5a2f371",
+      "size": 95061
+    },
+    {
+      "path": "artifacts/platform/screenshots/02-candidate-a-gate-blocked.png",
+      "sha256": "409c7defe5675145bcde275bccc5d925d7431b7cf9111ff5a0a480afc6a966cd",
+      "size": 120492
+    },
+    {
+      "path": "artifacts/platform/screenshots/03-compatible-comparison.png",
+      "sha256": "ec3cb529937c64452948f5324cbdeb7fac82a5875beee818e3cbd31b5c8f1c29",
+      "size": 139435
+    },
+    {
+      "path": "artifacts/platform/screenshots/04-mlflow-candidate-b-lineage.png",
+      "sha256": "1836001dca085da6612121cc69668bdbcf25c0bca229a2b60973067f111a6be0",
+      "size": 89426
+    },
+    {
+      "path": "artifacts/platform/screenshots/05-rollback-seed-deployed.png",
+      "sha256": "b9f3decb3983165fbae598e2e0a6fa20e6e8ec0437069cb5706c46f076f37f16",
+      "size": 97100
+    },
+    {
+      "path": "artifacts/platform/screenshots/06-candidate-b-eligible.png",
+      "sha256": "6b4793ebbf8e9f199be08f7f4465534412a142a065df3c9b32fd669dc4d86f9b",
+      "size": 136764
+    },
+    {
+      "path": "artifacts/platform/screenshots/07-candidate-b-approved.png",
+      "sha256": "63fd409b5fe112d4676a84957be68b24be84843fe6f1513815b534801a698966",
+      "size": 137344
+    },
+    {
+      "path": "artifacts/platform/screenshots/08-candidate-b-deployed.png",
+      "sha256": "e2f7ea21722fc6c095c5ec039b80af2475db31fa244598b02132b9fb6766123b",
+      "size": 111812
+    },
+    {
+      "path": "artifacts/platform/screenshots/09-rollback-restored-seed.png",
+      "sha256": "9af6e8519643629c669075e4598fc5881e2f20fe02df11d74c98aa832d2a5ff7",
+      "size": 115587
+    },
+    {
+      "path": "artifacts/platform/screenshots/10-rollback-restored-seed-viewport.png",
+      "sha256": "c1f50e8bce8230cf6cf0ff59edc87309b852a0efeffb2310a26fb08c6cbca11c",
+      "size": 67152
+    }
+  ],
+  "verdict": null,
+  "verdict_owner": "project owner"
+}

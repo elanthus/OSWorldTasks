@@ -119,6 +119,7 @@ def _new_flow(submission_id: str) -> FlowHarness:
         model="day3-replay-revised-v2",
         maximum_calls=100,
         shard_size=25,
+        provider_concurrency=1,
     )
 
 
@@ -129,6 +130,7 @@ def test_start_allows_only_frozen_scripted_pairings() -> None:
         model="day3-replay-revised-rollback-seed-v1",
         maximum_calls=100,
         shard_size=25,
+        provider_concurrency=1,
     )
     GroundingEvaluationFlow.start(rollback_seed)
     assert rollback_seed.transition == ("validate_and_freeze_inputs", {})
@@ -224,6 +226,36 @@ def _run_flow(
         raise RuntimeError("fixture interruption")
     GroundingEvaluationFlow.end(joined)
     return joined
+
+
+def test_graceful_cancellation_finalizes_tracking_and_preserves_raw_evidence(
+    monkeypatch: pytest.MonkeyPatch, repository_root: Path, tmp_path: Path
+) -> None:
+    store, tracking, provider, control, submission_id = _configure(
+        monkeypatch, repository_root, tmp_path
+    )
+    flow = _new_flow(submission_id)
+    GroundingEvaluationFlow.start(flow)
+    GroundingEvaluationFlow.validate_and_freeze_inputs(flow)
+    GroundingEvaluationFlow.create_or_recover_mlflow_run(flow)
+    GroundingEvaluationFlow.build_shards(flow)
+    first = _clone(flow, input=flow.shards[0])
+    GroundingEvaluationFlow.evaluate_shard(first)
+
+    control.cancel_submission(
+        submission_id,
+        actor="local-reviewer",
+        reason="operator requested cancellation",
+    )
+    second = _clone(flow, input=flow.shards[1])
+    with pytest.raises(RuntimeError, match="cancelled by the configured reviewer"):
+        GroundingEvaluationFlow.evaluate_shard(second)
+
+    assert len(provider.call_ids) == 25
+    assert len(list((store.root / "objects/raw-responses").glob("*.json"))) == 25
+    assert tracking.runs[flow.mlflow_run_id].status == "FAILED"
+    assert control.get_submission(submission_id)["status"] == "Cancelled"
+    assert control.list_candidates() == []
 
 
 def _final_bytes(store: LocalImmutableStore, submission_id: str) -> tuple[bytes, bytes]:

@@ -1,0 +1,15 @@
+{
+  "schema_version": "pixelgym-d411-human-confirmation-v1",
+  "recorded_at_utc": "2026-08-17T20:24:03Z",
+  "source": "project owner message in issue #47 implementation task",
+  "source_user_message": "ok, I confirm 4.11 items, all 4 of them",
+  "confirmed_items": [
+    "The failed candidate cannot be approved through the API.",
+    "Passing gates still require reviewer approval.",
+    "Deployment and rollback change the policy ID shown by /api/v1.",
+    "Immutable hashes verify after the demo."
+  ],
+  "confirmation_count": 4,
+  "d412_verdict": null,
+  "d412_verdict_owner": "project owner"
+}

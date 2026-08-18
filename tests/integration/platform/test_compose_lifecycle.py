@@ -45,9 +45,9 @@ def _submit(page, stack, *, prompt_version: str, model: str) -> None:
     page.select_option('select[name="prompt_version"]', prompt_version)
     page.select_option('select[name="model"]', model)
     page.get_by_role("button", name="Submit fixed evaluation").click()
-    page.wait_for_url(f"{stack.platform_url}/runs**")
-    assert "submitted=submission-" in page.url
-    playwright_api.expect(page.locator(".notice")).to_contain_text("accepted")
+    page.wait_for_url(f"{stack.platform_url}/submissions/submission-*")
+    playwright_api.expect(page.locator("h1")).to_contain_text("submission-")
+    playwright_api.expect(page.get_by_text("Metaflow pathspec", exact=True)).to_be_visible()
 
 
 def _candidate(page, stack, model: str, state: str) -> str:

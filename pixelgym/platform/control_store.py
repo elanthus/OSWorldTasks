@@ -560,14 +560,75 @@ class ControlStore:
             self._audit(connection, "submission.created", "system", submission_id, request)
         return submission_id
 
+    def get_submission(self, submission_id: str) -> dict[str, Any]:
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT * FROM submissions WHERE submission_id = ?", (submission_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(submission_id)
+            return {**dict(row), "request": json.loads(row["request_json"])}
+
+    def cancel_submission(self, submission_id: str, *, actor: str, reason: str) -> dict[str, Any]:
+        if actor != self.reviewer_identity:
+            raise AuthorizationError("only the configured reviewer may cancel")
+        if not reason.strip():
+            raise ValueError("cancellation reason is required")
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT status FROM submissions WHERE submission_id = ?", (submission_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(submission_id)
+            if row["status"] == "Cancelled":
+                return self.get_submission(submission_id)
+            if row["status"] not in {"Submitted", "Running"}:
+                raise TransitionError("only a submitted or running experiment can be cancelled")
+            connection.execute(
+                "UPDATE submissions SET status = 'Cancelled' WHERE submission_id = ?",
+                (submission_id,),
+            )
+            self._audit(
+                connection,
+                "submission.cancelled",
+                actor,
+                submission_id,
+                {"reason": reason.strip(), "previous_status": row["status"]},
+            )
+        return self.get_submission(submission_id)
+
+    def record_tracking_reconciliation(
+        self,
+        *,
+        subject_id: str,
+        operation: str,
+        error: str | None,
+        resolved: bool,
+    ) -> None:
+        event_type = (
+            "tracking.reconciliation_resolved"
+            if resolved
+            else "tracking.reconciliation_required"
+        )
+        with self.transaction() as connection:
+            self._audit(
+                connection,
+                event_type,
+                "system",
+                subject_id,
+                {"operation": operation, "error": error, "resolved": resolved},
+            )
+
     def link_run(self, submission_id: str, *, metaflow_pathspec: str, mlflow_run_id: str) -> None:
         with self.transaction() as connection:
             row = connection.execute(
-                "SELECT metaflow_pathspec, mlflow_run_id FROM submissions WHERE submission_id = ?",
+                "SELECT metaflow_pathspec, mlflow_run_id, status FROM submissions WHERE submission_id = ?",
                 (submission_id,),
             ).fetchone()
             if row is None:
                 raise KeyError(submission_id)
+            if row["status"] == "Cancelled":
+                raise TransitionError("a cancelled submission cannot be linked to a run")
             if row["metaflow_pathspec"] not in {None, metaflow_pathspec} or row[
                 "mlflow_run_id"
             ] not in {None, mlflow_run_id}:
@@ -587,10 +648,17 @@ class ControlStore:
             ]
 
     def mark_submission(self, submission_id: str, status: str) -> None:
-        allowed = {"Submitted", "Running", "Complete", "Failed", "Cancelled"}
+        allowed = {"Submitted", "Running", "Complete", "Failed"}
         if status not in allowed:
             raise ValueError("unknown submission status")
         with self.transaction() as connection:
+            current = connection.execute(
+                "SELECT status FROM submissions WHERE submission_id = ?", (submission_id,)
+            ).fetchone()
+            if current is None:
+                raise KeyError(submission_id)
+            if current["status"] == "Cancelled" and status != "Cancelled":
+                raise TransitionError("a cancelled submission is terminal")
             changed = connection.execute(
                 "UPDATE submissions SET status = ? WHERE submission_id = ?",
                 (status, submission_id),
@@ -682,11 +750,13 @@ class ControlStore:
                 )
             if submission_id is not None:
                 submission = connection.execute(
-                    "SELECT mlflow_run_id FROM submissions WHERE submission_id = ?",
+                    "SELECT mlflow_run_id, status FROM submissions WHERE submission_id = ?",
                     (submission_id,),
                 ).fetchone()
                 if submission is None:
                     raise KeyError(submission_id)
+                if submission["status"] == "Cancelled":
+                    raise TransitionError("a cancelled submission cannot register a candidate")
                 if submission["mlflow_run_id"] != source_run_id:
                     raise ConflictError("candidate run does not match submission lineage")
                 connection.execute(
