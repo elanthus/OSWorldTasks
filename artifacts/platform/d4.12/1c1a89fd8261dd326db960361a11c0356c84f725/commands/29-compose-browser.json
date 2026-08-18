@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-m",
+    "platform_compose_integration",
+    "tests/integration/platform/test_compose_lifecycle.py"
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 2.059682,
+  "ended_at_utc": "2026-08-18T18:42:32.112928+00:00",
+  "environment": {
+    "PIXELGYM_RUN_COMPOSE_TESTS": "1"
+  },
+  "exit_status": 1,
+  "output": "EE                                                                       [100%]\n==================================== ERRORS ====================================\n_ ERROR at setup of test_fresh_compose_browser_lifecycle_and_real_service_integrity _\n\n    @pytest.fixture(scope=\"session\")\n    def compose_stack() -> Iterator[ComposeStack]:\n        if os.environ.get(OPT_IN_ENV) != \"1\":\n            pytest.skip(f\"set {OPT_IN_ENV}=1 to run fresh-stack integration tests\")\n        repository_root = Path(__file__).parents[3]\n        status = subprocess.run(\n            [\"git\", \"status\", \"--porcelain\", \"--untracked-files=all\"],\n            cwd=repository_root,\n            text=True,\n            capture_output=True,\n            check=True,\n        ).stdout\n        if status:\n            pytest.fail(\"fresh-stack integration tests require a clean committed worktree\")\n>       ports = _free_ports(4)\n                ^^^^^^^^^^^^^^\n\ntests/integration/platform/conftest.py:174: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncount = 4\n\n    def _free_ports(count: int) -> list[int]:\n        \"\"\"Reserve distinct ephemeral ports until the full set has been selected.\"\"\"\n        if count <= 0:\n            raise ValueError(\"port count must be positive\")\n        listeners: list[socket.socket] = []\n        try:\n            for _ in range(count):\n                listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n>               listener.bind((\"127.0.0.1\", 0))\nE               PermissionError: [Errno 1] Operation not permitted\n\ntests/integration/platform/conftest.py:43: PermissionError\n_ ERROR at setup of test_compose_diagnostics_redact_credentials_and_host_paths _\n\n    @pytest.fixture(scope=\"session\")\n    def compose_stack() -> Iterator[ComposeStack]:\n        if os.environ.get(OPT_IN_ENV) != \"1\":\n            pytest.skip(f\"set {OPT_IN_ENV}=1 to run fresh-stack integration tests\")\n        repository_root = Path(__file__).parents[3]\n        status = subprocess.run(\n            [\"git\", \"status\", \"--porcelain\", \"--untracked-files=all\"],\n            cwd=repository_root,\n            text=True,\n            capture_output=True,\n            check=True,\n        ).stdout\n        if status:\n            pytest.fail(\"fresh-stack integration tests require a clean committed worktree\")\n>       ports = _free_ports(4)\n                ^^^^^^^^^^^^^^\n\ntests/integration/platform/conftest.py:174: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ncount = 4\n\n    def _free_ports(count: int) -> list[int]:\n        \"\"\"Reserve distinct ephemeral ports until the full set has been selected.\"\"\"\n        if count <= 0:\n            raise ValueError(\"port count must be positive\")\n        listeners: list[socket.socket] = []\n        try:\n            for _ in range(count):\n                listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n>               listener.bind((\"127.0.0.1\", 0))\nE               PermissionError: [Errno 1] Operation not permitted\n\ntests/integration/platform/conftest.py:43: PermissionError\n=========================== short test summary info ============================\nERROR tests/integration/platform/test_compose_lifecycle.py::test_fresh_compose_browser_lifecycle_and_real_service_integrity\nERROR tests/integration/platform/test_compose_lifecycle.py::test_compose_diagnostics_redact_credentials_and_host_paths\n2 errors in 1.55s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T18:42:30.051268+00:00"
+}
