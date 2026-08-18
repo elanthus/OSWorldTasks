@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "python3.12",
+    "-m",
+    "venv",
+    "<path-2>/integration-venv"
+  ],
+  "command": "python3.12 -m venv <path-2>/integration-venv",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.41023,
+  "ended_at_utc": "2026-08-18T20:22:56.385832+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T20:22:54.974170+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "from pathlib import Path; import json; from pixelgym.platform.source_provenance import generate_source_provenance; print(json.dumps(generate_source_provenance(Path('.')).to_dict(), sort_keys=True))"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'from pathlib import Path; import json; from pixelgym.platform.source_provenance import generate_source_provenance; print(json.dumps(generate_source_provenance(Path('\"'\"'.'\"'\"')).to_dict(), sort_keys=True))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.238377,
+  "ended_at_utc": "2026-08-18T20:22:54.719032+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"failure_reason\": null, \"revision\": \"421570dfbe78fca0d65f97968211c4e2d3f299d7\", \"schema_version\": \"pixelgym-source-provenance-v1\", \"source_tree_sha256\": \"3825392e1d73a8e3720c5b4dda755f1129cd71fbdd031b760283b26afaa04e90\", \"state\": \"clean\", \"verification_method\": \"git-build-inputs-v1\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-08-18T20:22:54.478275+00:00"
+}
