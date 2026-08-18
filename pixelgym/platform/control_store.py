@@ -622,11 +622,13 @@ class ControlStore:
     def link_run(self, submission_id: str, *, metaflow_pathspec: str, mlflow_run_id: str) -> None:
         with self.transaction() as connection:
             row = connection.execute(
-                "SELECT metaflow_pathspec, mlflow_run_id FROM submissions WHERE submission_id = ?",
+                "SELECT metaflow_pathspec, mlflow_run_id, status FROM submissions WHERE submission_id = ?",
                 (submission_id,),
             ).fetchone()
             if row is None:
                 raise KeyError(submission_id)
+            if row["status"] == "Cancelled":
+                raise TransitionError("a cancelled submission cannot be linked to a run")
             if row["metaflow_pathspec"] not in {None, metaflow_pathspec} or row[
                 "mlflow_run_id"
             ] not in {None, mlflow_run_id}:
@@ -650,6 +652,13 @@ class ControlStore:
         if status not in allowed:
             raise ValueError("unknown submission status")
         with self.transaction() as connection:
+            current = connection.execute(
+                "SELECT status FROM submissions WHERE submission_id = ?", (submission_id,)
+            ).fetchone()
+            if current is None:
+                raise KeyError(submission_id)
+            if current["status"] == "Cancelled" and status != "Cancelled":
+                raise TransitionError("a cancelled submission is terminal")
             changed = connection.execute(
                 "UPDATE submissions SET status = ? WHERE submission_id = ?",
                 (status, submission_id),
@@ -741,11 +750,13 @@ class ControlStore:
                 )
             if submission_id is not None:
                 submission = connection.execute(
-                    "SELECT mlflow_run_id FROM submissions WHERE submission_id = ?",
+                    "SELECT mlflow_run_id, status FROM submissions WHERE submission_id = ?",
                     (submission_id,),
                 ).fetchone()
                 if submission is None:
                     raise KeyError(submission_id)
+                if submission["status"] == "Cancelled":
+                    raise TransitionError("a cancelled submission cannot register a candidate")
                 if submission["mlflow_run_id"] != source_run_id:
                     raise ConflictError("candidate run does not match submission lineage")
                 connection.execute(

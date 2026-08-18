@@ -13,6 +13,7 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import asdict
+from datetime import UTC, datetime
 from functools import wraps
 from pathlib import Path
 from typing import Any
@@ -105,6 +106,7 @@ def _test_pause_once(name: str) -> None:
     marker_root = Path(state_root)
     marker_root.mkdir(parents=True, exist_ok=True)
     marker = marker_root / f"{name}.paused"
+    release = marker_root / f"{name}.release"
     try:
         descriptor = os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     except FileExistsError:
@@ -114,6 +116,8 @@ def _test_pause_once(name: str) -> None:
         os.environ.get("PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS", "60")
     )
     while time.monotonic() < deadline:
+        if release.exists():
+            return
         time.sleep(0.05)
     raise RuntimeError(f"test pause after {name} timed out before hard kill")
 
@@ -155,6 +159,7 @@ def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
         submission_id=flow.submission_id,
         metaflow_pathspec=flow.metaflow_pathspec,
         price_catalog_version=flow.price_catalog_version,
+        provider_concurrency=flow.provider_concurrency,
         provider_response_hook=(
             (lambda request_id: _test_fail_once("provider_response_received"))
             if os.environ.get(_TEST_HOOKS_ENV) == "1"
@@ -170,13 +175,17 @@ def _record_failure(flow: object) -> None:
             run_id=getattr(flow, "mlflow_run_id", None)
         )
     with contextlib.suppress(Exception):
-        _control().mark_submission(flow.submission_id, "Failed")
+        control = _control()
+        if control.get_submission(flow.submission_id)["status"] != "Cancelled":
+            control.mark_submission(flow.submission_id, "Failed")
 
 
 def _finalize_on_error(method: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(method)
     def wrapped(flow: object, *args: object, **kwargs: object) -> Any:
         try:
+            if _control().get_submission(flow.submission_id)["status"] == "Cancelled":
+                raise RuntimeError("evaluation cancelled by the configured reviewer")
             return method(flow, *args, **kwargs)
         except BaseException:
             _record_failure(flow)
@@ -191,6 +200,7 @@ class GroundingEvaluationFlow(FlowSpec):
     model = Parameter("model", required=True)
     maximum_calls = Parameter("maximum-calls", type=int, default=100)
     shard_size = Parameter("shard-size", type=int, default=25)
+    provider_concurrency = Parameter("provider-concurrency", type=int, default=1)
 
     @step
     def start(self) -> None:
@@ -200,6 +210,8 @@ class GroundingEvaluationFlow(FlowSpec):
             raise ValueError("the frozen flow requires exactly 100 maximum calls")
         if not 1 <= self.shard_size <= self.maximum_calls:
             raise ValueError("shard size must be between one and maximum calls")
+        if not 1 <= self.provider_concurrency <= self.maximum_calls:
+            raise ValueError("provider concurrency must be between one and maximum calls")
         self.next(self.validate_and_freeze_inputs)
 
     @step
@@ -266,6 +278,7 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def build_shards(self) -> None:
+        self.evaluation_started_at_utc = datetime.now(UTC).isoformat()
         self.shards = _runner(self).build_shards(
             shard_size=self.shard_size,
             max_calls=self.maximum_calls,
@@ -297,6 +310,7 @@ class GroundingEvaluationFlow(FlowSpec):
             "metaflow_pathspec",
             "mlflow_run_id",
             "price_catalog_version",
+            "evaluation_started_at_utc",
         ):
             setattr(self, name, getattr(source, name))
         self.raw_responses = _runner(self).canonical_join(
@@ -322,7 +336,13 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def aggregate_metrics(self) -> None:
-        summary = _runner(self).aggregate_metrics(self.records, run_id=self.mlflow_run_id)
+        started = datetime.fromisoformat(self.evaluation_started_at_utc)
+        duration_ms = (datetime.now(UTC) - started).total_seconds() * 1000
+        summary = _runner(self).aggregate_metrics(
+            self.records,
+            run_id=self.mlflow_run_id,
+            evaluation_end_to_end_duration_ms=duration_ms,
+        )
         self.summary = summary.to_dict()
         self.next(self.evaluate_gates)
 

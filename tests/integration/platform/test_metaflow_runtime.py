@@ -108,6 +108,8 @@ def _invoke(
     *,
     failpoint: str | None,
 ) -> subprocess.CompletedProcess[str]:
+    if arguments[:1] == ["run"] and "--provider-concurrency" not in arguments:
+        arguments = ["run", "--provider-concurrency", "2", *arguments[1:]]
     return subprocess.run(
         [
             sys.executable,
@@ -257,6 +259,7 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes]:
             placeholder = f"<run-bound-{run_bound_suffix}-sha256>"
             artifact["sha256"] = placeholder
             artifact["version_id"] = placeholder
+            artifact["size"] = f"<run-bound-{run_bound_suffix}-size>"
     canonical_candidate = canonical_json_bytes(
         {
             "candidate_id": candidate.candidate_id,
@@ -320,7 +323,10 @@ def test_metaflow_resume_at_each_side_effect_boundary(
         f"GroundingEvaluationFlow/{resumed.origin_run_id}"
     )
     tracking = MlflowTracking(f"sqlite:///{tmp_path / 'mlflow.db'}")
-    assert tracking.client.get_run(candidate.source_run_id).info.status == "FINISHED"
+    tracked = tracking.client.get_run(candidate.source_run_id)
+    assert tracked.info.status == "FINISHED"
+    assert tracked.data.params["concurrency"] == "2"
+    assert tracked.data.metrics["evaluation_end_to_end_duration_ms"] > 0
 
 
 def test_uninterrupted_runtime_enforces_worker_and_call_caps(
@@ -336,6 +342,78 @@ def test_uninterrupted_runtime_enforces_worker_and_call_caps(
         "billable_calls": 100,
     }
     assert len(_final_evidence(uninterrupted_runtime)[0].splitlines()) == 100
+
+
+def test_graceful_cancellation_finalizes_failed_tracking_without_candidate(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(__file__).parents[3]
+    submission_id = _prepare(tmp_path)
+    origin_file = tmp_path / "origin-run-id"
+    environment = _environment(repository_root, tmp_path, None)
+    environment.update(
+        {
+            "PIXELGYM_TEST_PAUSE_ONCE": "evidence_persisted",
+            "PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS": "90",
+        }
+    )
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            str(repository_root / "flows/grounding_evaluation_flow.py"),
+            "run",
+            "--submission-id",
+            submission_id,
+            "--prompt-version",
+            "2",
+            "--model",
+            "day3-replay-revised-v2",
+            "--maximum-calls",
+            "100",
+            "--shard-size",
+            "25",
+            "--provider-concurrency",
+            "2",
+            "--max-workers",
+            "2",
+            "--run-id-file",
+            str(origin_file),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    marker = tmp_path / "failpoints/evidence_persisted.paused"
+    deadline = time.monotonic() + 90
+    try:
+        while time.monotonic() < deadline and not marker.exists():
+            assert process.poll() is None, process.stdout.read() if process.stdout else ""
+            time.sleep(0.05)
+        assert marker.exists()
+        control = _control(tmp_path)
+        control.cancel_submission(
+            submission_id,
+            actor="local-reviewer",
+            reason="runtime cancellation test",
+        )
+        (tmp_path / "failpoints/evidence_persisted.release").touch()
+        output = process.communicate(timeout=30)[0]
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            process.wait(timeout=10)
+
+    assert process.returncode != 0, output
+    control = _control(tmp_path)
+    submission = control.get_submission(submission_id)
+    assert submission["status"] == "Cancelled"
+    assert control.list_candidates() == []
+    tracking = MlflowTracking(f"sqlite:///{tmp_path / 'mlflow.db'}")
+    assert tracking.client.get_run(submission["mlflow_run_id"]).info.status == "FAILED"
+    store = LocalImmutableStore(tmp_path / "immutable")
+    assert store.get_reference(f"runs/{submission_id}/raw-response-index.json") is not None
 
 
 def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls(
@@ -370,6 +448,8 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
                 "100",
                 "--shard-size",
                 "25",
+                "--provider-concurrency",
+                "2",
                 "--max-workers",
                 "2",
                 "--run-id-file",

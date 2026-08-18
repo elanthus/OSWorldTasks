@@ -81,6 +81,8 @@ def _hard_kill(
                 "100",
                 "--shard-size",
                 "25",
+                "--provider-concurrency",
+                "2",
                 "--max-workers",
                 "2",
                 "--run-id-file",

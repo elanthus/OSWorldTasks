@@ -130,6 +130,8 @@ def _run_flow(
         payload["model"],
         "--maximum-calls",
         payload["maximum_calls"],
+        "--provider-concurrency",
+        "1",
         "--max-workers",
         "1",
     ]
@@ -223,11 +225,6 @@ def create_app() -> FastAPI:
             if process is None:
                 return control.get_submission(submission_id)["status"] == "Submitted"
             cancelled_submissions.add(submission_id)
-            try:
-                process.terminate()
-            except OSError:
-                cancelled_submissions.discard(submission_id)
-                return False
             return True
 
     app = create_control_app(

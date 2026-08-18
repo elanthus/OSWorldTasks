@@ -70,7 +70,8 @@ def test_scripted_baseline_is_blocked_and_revised_is_only_eligible(
     assert revised_report.overall_passed
     assert revised_summary.provider_latency_p50_ms == 25.0
     assert revised_summary.provider_latency_max_ms == 25.0
-    assert revised_summary.evaluation_end_to_end_duration_ms == 2500.0
+    assert revised_summary.evaluation_end_to_end_duration_ms is not None
+    assert revised_summary.evaluation_end_to_end_duration_ms > 0
     assert revised_summary.total_cost_usd == 0.0
     assert revised_summary.cost_usd_per_example == 0.0
     tracking = revised.tracking

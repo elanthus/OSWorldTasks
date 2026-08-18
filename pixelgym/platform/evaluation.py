@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import platform
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -524,8 +525,22 @@ class EvaluationRunner:
             )
         return sorted(records, key=lambda row: (row["example_id"], row["condition"]))
 
-    def aggregate_metrics(self, records: list[dict[str, Any]], *, run_id: str) -> RunSummary:
+    def aggregate_metrics(
+        self,
+        records: list[dict[str, Any]],
+        *,
+        run_id: str,
+        evaluation_end_to_end_duration_ms: float | None = None,
+    ) -> RunSummary:
         examples, _ = self._inputs()
+        existing_summary = self.store.get_reference(
+            f"runs/{self.submission_id}/summary.json"
+        )
+        if existing_summary is not None:
+            stored_summary = json.loads(self.store.get_verified(existing_summary))
+            evaluation_end_to_end_duration_ms = stored_summary.get(
+                "evaluation_end_to_end_duration_ms"
+            )
         unique = {(row["example_id"], row["condition"]) for row in records}
         latency = [float(row["latency_ms"]) for row in records if row["latency_ms"] is not None]
         costs = [float(row["cost_usd"]) for row in records if row["cost_usd"] is not None]
@@ -552,9 +567,7 @@ class EvaluationRunner:
             latency_measured_count=len(latency),
             provider_latency_p50_ms=percentile_r7(latency, 0.50) if latency else None,
             provider_latency_max_ms=max(latency) if latency else None,
-            evaluation_end_to_end_duration_ms=(
-                sum(latency) if latency and self.provider_concurrency == 1 else None
-            ),
+            evaluation_end_to_end_duration_ms=evaluation_end_to_end_duration_ms,
             total_cost_usd=sum(costs) if len(costs) == len(records) else None,
             cost_usd_per_example=(
                 sum(costs) / len(records)
@@ -717,6 +730,7 @@ class EvaluationRunner:
 
     def _run_once(self, *, max_calls: int) -> tuple[RunSummary, Any, list[ArtifactRef]]:
         run_id = self.create_or_recover_run(max_calls=max_calls)
+        evaluation_started = time.perf_counter()
         # The compatibility runner keeps a one-example parse boundary so its interruption tests
         # remain maximally strict. The Metaflow graph uses larger deterministic fetch shards and
         # joins them before the explicit verification and offline parse steps.
@@ -729,7 +743,11 @@ class EvaluationRunner:
             records.extend(self.parse_and_score(verified, require_complete=False))
             raw_parts.append(part)
         raw = self.canonical_join(raw_parts)
-        summary = self.aggregate_metrics(records, run_id=run_id)
+        summary = self.aggregate_metrics(
+            records,
+            run_id=run_id,
+            evaluation_end_to_end_duration_ms=(time.perf_counter() - evaluation_started) * 1000,
+        )
         report = self.evaluate_gates(summary)
         references = self.persist_evidence(records, summary, report, raw)
         self.finalize_success(summary, report, references)
