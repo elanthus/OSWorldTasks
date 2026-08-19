@@ -32,9 +32,14 @@ generation is target-agnostic, overlays are deterministic, and proposal coverage
 separately from conditional mark-selection accuracy
 ([frozen dataset](artifacts/grounding-dataset.jsonl)).
 
-The frozen allocation perfectly aliases target identity with screen state: every target appears in
-only one state. Control-type breakdowns are therefore descriptive compositions, not independently
-identified control-type effects; the protocol and generated report disclose this design limitation.
+The frozen v1 allocation perfectly aliases target identity with screen state: every target appears
+in only one state. Control-type breakdowns for the stored v1 result are therefore descriptive
+compositions, not independently identified control-type effects. Benchmark v2 fixes that design
+for future evaluation with a separate 100-example crossed allocation: every target appears in every
+screen state with two seed replicates per target-by-state cell. V2 reuses the target-neutral v1
+captures and overlays, has not been run against a model, and does not change the reported v1 result
+([v2 protocol](artifacts/grounding-v2-protocol.md),
+[v2 manifest](artifacts/grounding-v2-manifest.json)).
 
 Using Codex CLI with `gpt-5.4-mini` on 2026-08-10, raw-coordinate accuracy was **56/100
 (56.0%)** and set-of-marks accuracy was **100/100 (100.0%)**. The paired difference was **+44.0
@@ -148,13 +153,15 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 
 ruff check .
-pytest -q tests/unit
+pytest -q -n auto tests/unit
 python scripts/golden_trajectory.py check
 python scripts/demo_fake_backend.py --seed 7
 ```
 
-The editable install is sufficient for the fast suite and lint. Re-capturing the frozen browser
-dataset additionally requires Playwright's Chromium binary, installed once with:
+The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
+run independent tests in parallel. Serial execution remains supported but is not the under-one-minute
+timing target. The editable install is sufficient for the fast suite and lint. Re-capturing the
+frozen browser dataset additionally requires Playwright's Chromium binary, installed once with:
 
 ```bash
 python -m playwright install chromium
@@ -167,6 +174,13 @@ known design limitations without launching a browser or rewriting capture assets
 
 ```bash
 python scripts/capture_grounding_dataset.py --summary-only
+```
+
+To deterministically rebuild the balanced v2 metadata and audit sheets from the checked-in,
+target-neutral v1 capture assets without any model calls, run:
+
+```bash
+python scripts/build_grounding_benchmark_v2.py
 ```
 
 The scripted incomplete-submit demo stays at reward `0.0`. The separate golden trajectory checks
@@ -232,8 +246,9 @@ known limitation, with the underlying evidence retained
 - The privileged state endpoint exists inside the guest. The bounded action interface cannot
   navigate to it, but browser/guest exploitation is outside the threat model.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
-- Target identity is perfectly aliased with screen state in the frozen grounding dataset, so
-  control-type slices cannot separate control-type and screen-state effects.
+- Target identity is perfectly aliased with screen state in the frozen v1 grounding dataset, so
+  v1 control-type slices cannot separate control-type and screen-state effects. The unrun v2
+  allocation crosses every target with every state, with only two seed replicates per cell.
 - The grounding experiment covers one model, prompt, resolution, synthetic application layout, and
   target-agnostic candidate generator; its result should not be generalized beyond that scope.
 
@@ -244,6 +259,8 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-protocol.md`](artifacts/grounding-protocol.md) — frozen experiment protocol
 - [`artifacts/grounding-dataset.jsonl`](artifacts/grounding-dataset.jsonl) — frozen 100-example dataset
 - [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
+- [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
+- [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
 
 ## Sprint plans
 

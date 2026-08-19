@@ -1,0 +1,93 @@
+{
+  "contact_sheet_path": "artifacts/grounding-v2/contact-sheet.png",
+  "design": "20 seeds x 5 screen states; one target per screenshot; two seed replicates per target-by-state cell",
+  "example_count": 100,
+  "marks_contact_sheet_path": "artifacts/grounding-v2/marks-contact-sheet.png",
+  "model_calls_performed": 0,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v2-candidates.jsonl",
+      "sha256": "fa47598932c6ad8e985f123a5f406d04d1f135fbdb0130e54a4b475b79cfee5a"
+    },
+    "contact_sheet": {
+      "path": "artifacts/grounding-v2/contact-sheet.png",
+      "sha256": "8d0a263f5c92e886cb76c054061df1cde00727367f6554e7516cc298497e24ea"
+    },
+    "dataset": {
+      "path": "artifacts/grounding-v2-dataset.jsonl",
+      "sha256": "57516b03314633737c866265a57728087230cc7ebc2072482d24d982efc0117b"
+    },
+    "marks_contact_sheet": {
+      "path": "artifacts/grounding-v2/marks-contact-sheet.png",
+      "sha256": "782e623a23009a2326ab26249d6fef1e7ea47f6c206ce07fff189528f3f4055d"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v2-overlays.jsonl",
+      "sha256": "97d4c07247eb8ca157b66d131bf5192ad9349b508c008ff1760d511ec5b50e40"
+    }
+  },
+  "paired_condition_call_count": 200,
+  "proposal_coverage_count": 100,
+  "protocol_version": "pixelgym-grounding-v2",
+  "schema_version": "pixelgym-grounding-benchmark-manifest-v2",
+  "screen_state_counts": {
+    "completed_review": 20,
+    "initial": 20,
+    "partially_completed": 20,
+    "text_field_focused": 20,
+    "validation_error": 20
+  },
+  "seed_counts": {
+    "0": 5,
+    "1": 5,
+    "10": 5,
+    "11": 5,
+    "12": 5,
+    "13": 5,
+    "14": 5,
+    "15": 5,
+    "16": 5,
+    "17": 5,
+    "18": 5,
+    "19": 5,
+    "2": 5,
+    "3": 5,
+    "4": 5,
+    "5": 5,
+    "6": 5,
+    "7": 5,
+    "8": 5,
+    "9": 5
+  },
+  "source_v1": {
+    "candidates": {
+      "path": "artifacts/grounding-candidates.jsonl",
+      "sha256": "81a9ca36ee6c0fba16a2c7b75f8cdb2bd02dd56ece9caa0eff706328c6441f6c"
+    },
+    "dataset": {
+      "path": "artifacts/grounding-dataset.jsonl",
+      "sha256": "683626579161e93cd631e30fc8212823be789fcf8046ab28c373564958409075"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-overlays.jsonl",
+      "sha256": "d083cff182ffa438ddaeed3ec045a3936f33c08e6cf4ead059181a808cfdd527"
+    }
+  },
+  "status": "dataset_ready_evaluation_not_run",
+  "target_counts": {
+    "company_name": 10,
+    "contact_email": 10,
+    "contact_phone": 10,
+    "country": 10,
+    "expedited_onboarding": 10,
+    "payment_terms_net_15": 10,
+    "payment_terms_net_30": 10,
+    "payment_terms_net_45": 10,
+    "submit": 10,
+    "tax_id": 10
+  },
+  "target_screen_state_fully_crossed": true,
+  "target_screen_state_perfect_aliasing": false,
+  "target_screen_state_replicates": 2,
+  "unique_screenshot_count": 100
+}
