@@ -14,7 +14,9 @@ from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
 
 
-def _valid(action_type=ActionType.NOOP, *, x=0, y=0, key=0):
+def _valid(
+    action_type: Any = ActionType.NOOP, *, x: Any = 0, y: Any = 0, key: Any = 0
+) -> dict[str, Any]:
     return {"action_type": action_type, "x": x, "y": y, "key": key}
 
 
@@ -22,7 +24,9 @@ def _calls(backend: FakeBackend) -> tuple[int, int, int]:
     return backend.noop_calls, len(backend.click_calls), len(backend.key_calls)
 
 
-def validate_space_integrity(golden_fixture: Path, *, sampled_action_count: int = 500):
+def validate_space_integrity(
+    golden_fixture: Path, *, sampled_action_count: int = 500
+) -> dict[str, Any]:
     checker_env = PixelGuiEnv(FakeBackend(width=64, height=48), max_episode_steps=200)
     check_env(checker_env, skip_render_check=True)
     checker_env.close()

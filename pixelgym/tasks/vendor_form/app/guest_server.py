@@ -22,7 +22,7 @@ import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote, urlsplit
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -110,13 +110,16 @@ class GuestTaskState:
         with self._lock:
             # JSON round-tripping gives callers a deep copy with exactly the
             # representation used across the guest/host boundary.
-            return json.loads(
+            value = json.loads(
                 json.dumps(
                     {"task": self._task, "submissions": self._submissions},
                     sort_keys=True,
                     separators=(",", ":"),
                 )
             )
+            if not isinstance(value, dict):  # pragma: no cover - JSON object is constructed above
+                raise TypeError("privileged state did not round-trip as an object")
+            return cast(dict[str, Any], value)
 
 
 class VendorFormRequestHandler(BaseHTTPRequestHandler):

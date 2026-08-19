@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeVar
 
 from pixelgym.platform.control_store import (
     CandidateRecord,
@@ -17,10 +16,8 @@ from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import Tracking, TrackingMirrorError
 from pixelgym.platform.policy import verify_policy_manifest
 
-PreparedCandidate = TypeVar("PreparedCandidate")
 
-
-class DeploymentCoordinator:
+class DeploymentCoordinator[PreparedCandidate]:
     def __init__(
         self,
         *,

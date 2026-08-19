@@ -34,6 +34,8 @@ dev = [
     "pytest>=8.0",
     "pytest-xdist>=3.8",
     "ruff>=0.4",
+    "mypy>=1.17,<2",
+    "types-jsonschema>=4.25",
     "build>=1.0",
     "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
@@ -69,3 +71,21 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["pixelgym"]
+strict = true
+show_error_codes = true
+pretty = true
+
+[[tool.mypy.overrides]]
+# Optional integrations are intentionally isolated from the core install and
+# do not publish complete typing information.
+module = [
+    "boto3",
+    "botocore.*",
+    "desktop_env.*",
+    "mlflow.*",
+]
+ignore_missing_imports = true

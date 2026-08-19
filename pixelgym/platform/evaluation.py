@@ -10,9 +10,15 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
-from pixelgym.grounding.evaluation import parse_prediction, prompt_for, schema_for, score_point
+from pixelgym.grounding.evaluation import (
+    Condition,
+    parse_prediction,
+    prompt_for,
+    schema_for,
+    score_point,
+)
 from pixelgym.platform.contracts import (
     ArtifactRef,
     GatePolicy,
@@ -306,7 +312,7 @@ class EvaluationRunner:
     def _request_material(
         self, example: dict[str, Any], overlay: dict[str, Any]
     ) -> tuple[str, str, str, dict[str, Any], Path]:
-        condition = self.policy.condition
+        condition = cast(Condition, self.policy.condition)
         prompt = prompt_for(example, condition)
         if self.policy.prompt_version > 1:
             prompt += " " + prompt_template(self.policy.prompt_version).replace(
@@ -441,7 +447,10 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in raw]
         if require_complete and identifiers != list(by_id):
             raise ValueError("raw artifact set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(
+        if not all(isinstance(identifier, str) for identifier in identifiers):
+            raise ValueError("raw artifact example IDs must be strings")
+        typed_identifiers = cast(list[str], identifiers)
+        if typed_identifiers != sorted(set(typed_identifiers)) or any(
             item not in by_id for item in identifiers
         ):
             raise ValueError("raw artifact set must be canonical, unique, and known")
@@ -488,7 +497,10 @@ class EvaluationRunner:
         identifiers = [item.get("example_id") for item in verified]
         if require_complete and identifiers != list(by_id):
             raise ValueError("verified response set is not the canonical complete dataset")
-        if identifiers != sorted(set(identifiers)) or any(
+        if not all(isinstance(identifier, str) for identifier in identifiers):
+            raise ValueError("verified response example IDs must be strings")
+        typed_identifiers = cast(list[str], identifiers)
+        if typed_identifiers != sorted(set(typed_identifiers)) or any(
             item not in by_id for item in identifiers
         ):
             raise ValueError("verified response set must be canonical, unique, and known")
@@ -515,7 +527,7 @@ class EvaluationRunner:
             else:
                 outcome = parse_prediction(
                     envelope["raw_response"],
-                    condition=self.policy.condition,
+                    condition=cast(Condition, self.policy.condition),
                     width=example["screen_width"],
                     height=example["screen_height"],
                     marks=overlay["marks"],

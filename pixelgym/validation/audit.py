@@ -65,6 +65,7 @@ def validate_reward_hacking(
         browser_boundary, repository_root
     )
     if browser_evidence_passed:
+        assert isinstance(browser_boundary, dict)
         browser_version = browser_boundary["browser"]["version"]
         browser_evidence = (
             f"Chromium {browser_version} returned HTTP 200, recorded exactly one empty "

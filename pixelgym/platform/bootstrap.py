@@ -10,10 +10,12 @@ import sys
 import threading
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 
-from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.contracts import PolicyManifest
+from pixelgym.platform.control_store import ControlStore, DeploymentRecord
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -48,7 +50,9 @@ class DemoReplayServingProvider:
             if row["condition"] == "marks"
         }
 
-    def ground(self, *, image_bytes: bytes, media_type: str, target: str, policy: object) -> tuple:
+    def ground(
+        self, *, image_bytes: bytes, media_type: str, target: str, policy: PolicyManifest
+    ) -> tuple[str | None, str, float | None, dict[str, Any] | None]:
         del media_type
         image_sha256 = hashlib.sha256(image_bytes).hexdigest()
         example_id = self.examples.get((image_sha256, target))
@@ -216,7 +220,7 @@ def create_app() -> FastAPI:
         FrozenSmokeFixture.load(repository_root), serving_provider
     )
 
-    def activate_runtime(deployment: object, prepared: object) -> None:
+    def activate_runtime(deployment: DeploymentRecord, prepared: LoadedPolicy | bool) -> None:
         if not isinstance(prepared, LoadedPolicy):
             raise TypeError("deployment activation did not receive a loaded candidate runtime")
         # The only mutation of the traffic runtime happens after the database CAS succeeds.

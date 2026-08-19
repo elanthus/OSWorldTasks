@@ -6,7 +6,7 @@ import hashlib
 import json
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pixelgym.evaluator import evaluate
 from pixelgym.grounding.schema import CSS_HEIGHT, CSS_WIDTH, DEVICE_SCALE_FACTOR
@@ -72,7 +72,10 @@ def _json_request(url: str, *, payload: dict[str, Any] | None = None) -> dict[st
         method="POST" if data is not None else "GET",
     )
     with urllib.request.urlopen(request, timeout=5.0) as response:
-        return json.load(response)
+        value = json.load(response)
+    if not isinstance(value, dict):
+        raise TypeError("browser boundary returned a non-object JSON response")
+    return cast(dict[str, Any], value)
 
 
 def browser_boundary_evidence_passed(evidence: dict[str, Any] | None) -> bool:
@@ -94,7 +97,12 @@ def browser_boundary_evidence_passed(evidence: dict[str, Any] | None) -> bool:
     ):
         return False
     browser = evidence.get("browser")
-    if not isinstance(browser, dict) or browser.get("engine") != "chromium":
+    if (
+        not isinstance(browser, dict)
+        or browser.get("engine") != "chromium"
+        or not isinstance(browser.get("version"), str)
+        or not browser["version"]
+    ):
         return False
     task_id = evidence.get("task_id")
     seed = evidence.get("seed")

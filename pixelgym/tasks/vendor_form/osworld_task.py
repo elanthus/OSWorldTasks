@@ -20,7 +20,7 @@ import hashlib
 import json
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pixelgym.env import DEFAULT_INSTRUCTION, DEFAULT_MAX_EPISODE_STEPS
 from pixelgym.evaluator import evaluate
@@ -82,6 +82,8 @@ def build_guest_bundle(task_record: dict[str, Any], destination: Path) -> str:
 class _VendorFormTaskSupport:
     """Implementation mixed into the installed release's ``BaseTask``."""
 
+    instruction: str
+
     def __init__(
         self,
         *,
@@ -91,7 +93,7 @@ class _VendorFormTaskSupport:
         instruction: str,
         max_episode_steps: int,
     ) -> None:
-        super().__init__(
+        super().__init__(  # type: ignore[call-arg]  # optional BaseTask is loaded dynamically
             id=record["task_id"],
             instruction=instruction,
             source="pixelgym-open-vendor-form",
@@ -380,7 +382,7 @@ class _VendorFormTaskSupport:
             raise OSWorldTaskError("privileged task state does not match the active host task")
         if not isinstance(state.get("submissions"), list):
             raise OSWorldTaskError("privileged submission state is not a list")
-        return state
+        return cast(dict[str, Any], state)
 
     def read_submissions(self, env: Any) -> list[Submission]:
         state = self.read_privileged_state(env)
@@ -418,7 +420,7 @@ def create_osworld_task(
             "OSWorld-V2 is not installed; install PixelGym's 'osworld' extra"
         ) from exc
 
-    class VendorFormOSWorldTask(_VendorFormTaskSupport, BaseTask):
+    class VendorFormOSWorldTask(_VendorFormTaskSupport, BaseTask):  # type: ignore[misc]
         """Release-native custom task created against OSWorld's public API."""
 
     VendorFormOSWorldTask.__name__ = "VendorFormOSWorldTask"

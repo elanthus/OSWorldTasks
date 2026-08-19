@@ -158,6 +158,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 
 ruff check .
+mypy pixelgym
 pytest -q -n auto tests/unit
 python scripts/golden_trajectory.py check
 python scripts/demo_fake_backend.py --seed 7
@@ -165,7 +166,8 @@ python scripts/demo_fake_backend.py --seed 7
 
 The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
 run independent tests in parallel. Serial execution remains supported but is not the under-one-minute
-timing target. The editable install is sufficient for the fast suite and lint. Re-capturing the
+timing target. The editable install is sufficient for the fast suite, lint, and strict static type
+check of the complete `pixelgym` package. Re-capturing the
 frozen browser dataset additionally requires Playwright's Chromium binary, installed once with:
 
 ```bash

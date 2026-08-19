@@ -7,7 +7,7 @@ import json
 import urllib.request
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -113,7 +113,10 @@ def _post_reset(base_url: str, seed: int) -> dict[str, Any]:
         method="POST",
     )
     with urllib.request.urlopen(request, timeout=5.0) as response:
-        return json.load(response)
+        value = json.load(response)
+    if not isinstance(value, dict):
+        raise TypeError("reset endpoint returned a non-object JSON response")
+    return cast(dict[str, Any], value)
 
 
 def _apply_state(page: Any, state: str, task: dict[str, Any]) -> None:
