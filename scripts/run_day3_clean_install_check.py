@@ -110,7 +110,7 @@ def main() -> None:
         "host": {
             "system": platform.system(),
             "machine": platform.machine(),
-            "python3_12_executable": python,
+            "python3_12_executable": _redact(python, redaction_paths),
             "python3_12_version": subprocess.run(
                 [python, "--version"], capture_output=True, text=True, check=True
             ).stdout.strip(),

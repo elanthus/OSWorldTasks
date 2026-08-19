@@ -22,6 +22,9 @@ def test_clean_install_redaction_uses_stable_path_placeholders(tmp_path: Path) -
         "repo=<path-0>; home=<path-1>/Library/Caches/pip; "
         "venv=<path-2>/run/.venv"
     )
+    assert _redact(
+        str(home / ".pyenv/shims/python3.12"), [repository, home, system_temporary]
+    ) == "<path-1>/.pyenv/shims/python3.12"
 
 
 def test_checked_in_day3_release_evidence_has_no_local_absolute_paths() -> None:
