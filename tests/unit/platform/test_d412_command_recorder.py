@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.record_d412_command import _redact
+from pixelgym.evidence_redaction import redact_evidence_text, standard_path_replacements
 
 
 def _record(
@@ -78,8 +78,13 @@ def test_redact_handles_literal_and_resolved_path_spellings(tmp_path: Path) -> N
     resolved = literal.resolve()
     assert resolved != literal
 
-    assert _redact(str(literal / "result.json"), [literal]) == "<path-0>/result.json"
-    assert _redact(str(resolved / "result.json"), [literal]) == "<path-0>/result.json"
+    replacements = standard_path_replacements([literal])
+    assert redact_evidence_text(str(literal / "result.json"), replacements) == (
+        "<path-0>/result.json"
+    )
+    assert redact_evidence_text(str(resolved / "result.json"), replacements) == (
+        "<path-0>/result.json"
+    )
 
 
 def test_recorder_redacts_public_environment_values(repository_root: Path, tmp_path: Path) -> None:

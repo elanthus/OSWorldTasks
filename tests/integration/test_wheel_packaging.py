@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+from email.parser import Parser
 from pathlib import Path
 
 import pytest
@@ -94,6 +95,21 @@ def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
     installed = {path.name for path in schemas.glob("*.schema.json")}
 
     assert installed == expected
+
+
+def test_apache_license_metadata_and_text_are_packaged(installed_wheel_site_dir):
+    dist_info_dirs = list(installed_wheel_site_dir.glob("pixelgym-*.dist-info"))
+    assert len(dist_info_dirs) == 1, dist_info_dirs
+    dist_info = dist_info_dirs[0]
+    metadata = Parser().parsestr((dist_info / "METADATA").read_text())
+
+    assert metadata["License-Expression"] == "Apache-2.0"
+    license_text = (dist_info / "licenses" / "LICENSE").read_text()
+    assert license_text.lstrip().startswith("Apache License\n")
+    assert "Version 2.0, January 2004" in license_text
+    assert (dist_info / "licenses" / "NOTICE").read_text() == (
+        "PixelGym-OSWorld\nCopyright 2026 Michael Swailes\n"
+    )
 
 
 def test_installed_wheel_serves_index_html_from_outside_the_source_checkout(
