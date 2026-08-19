@@ -82,6 +82,8 @@ def build_guest_bundle(task_record: dict[str, Any], destination: Path) -> str:
 class _VendorFormTaskSupport:
     """Implementation mixed into the installed release's ``BaseTask``."""
 
+    instruction: str
+
     def __init__(
         self,
         *,
@@ -101,7 +103,6 @@ class _VendorFormTaskSupport:
             intermediate_eval_safe=True,
         )
         self._record = json.loads(generator.canonical_json(record))
-        self.instruction = instruction
         self._bundle_path = Path(bundle_path)
         self._bundle_sha256 = bundle_sha256
         self._max_episode_steps = max_episode_steps

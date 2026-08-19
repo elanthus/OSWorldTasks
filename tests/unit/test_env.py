@@ -16,6 +16,7 @@ from typing import Self
 
 import numpy as np
 import pytest
+from gymnasium import Env
 from gymnasium.utils.env_checker import check_env
 
 from pixelgym.actions import KEY_ALLOWLIST, ActionType, build_action_space
@@ -24,6 +25,11 @@ from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import BackendContractError, PixelGuiEnv
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.ui import WidgetId
+
+
+def test_environment_declares_its_own_class_metadata() -> None:
+    assert PixelGuiEnv.metadata == {"render_modes": []}
+    assert PixelGuiEnv.metadata is not Env.metadata
 
 
 class _StatefulMapping(Mapping):

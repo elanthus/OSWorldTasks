@@ -66,9 +66,7 @@ def validate_reward_hacking(
     )
     if browser_evidence_passed:
         assert isinstance(browser_boundary, dict)
-        browser = browser_boundary.get("browser")
-        assert isinstance(browser, dict)
-        browser_version = browser.get("version")
+        browser_version = browser_boundary["browser"]["version"]
         browser_evidence = (
             f"Chromium {browser_version} returned HTTP 200, recorded exactly one empty "
             "privileged submission, preserved the settled validation message, and the host-side "

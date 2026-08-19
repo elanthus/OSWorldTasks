@@ -97,7 +97,12 @@ def browser_boundary_evidence_passed(evidence: dict[str, Any] | None) -> bool:
     ):
         return False
     browser = evidence.get("browser")
-    if not isinstance(browser, dict) or browser.get("engine") != "chromium":
+    if (
+        not isinstance(browser, dict)
+        or browser.get("engine") != "chromium"
+        or not isinstance(browser.get("version"), str)
+        or not browser["version"]
+    ):
         return False
     task_id = evidence.get("task_id")
     seed = evidence.get("seed")

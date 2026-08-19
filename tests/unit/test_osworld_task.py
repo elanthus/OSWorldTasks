@@ -29,13 +29,24 @@ class _FakeBaseTask(dict):
             self[name] = value
 
 
-def _install_fake_osworld(monkeypatch):
+def _install_fake_osworld(monkeypatch, base_task=_FakeBaseTask):
     desktop_env = types.ModuleType("desktop_env")
     task_base = types.ModuleType("desktop_env.task_base")
-    task_base.BaseTask = _FakeBaseTask
+    task_base.BaseTask = base_task
     desktop_env.task_base = task_base
     monkeypatch.setitem(sys.modules, "desktop_env", desktop_env)
     monkeypatch.setitem(sys.modules, "desktop_env.task_base", task_base)
+
+
+class _ReadOnlyInstructionBaseTask:
+    def __init__(self, *, instruction, **overrides):
+        self._instruction = instruction
+        for name, value in overrides.items():
+            setattr(self, name, value)
+
+    @property
+    def instruction(self):
+        return self._instruction
 
 
 def test_guest_bundle_is_byte_reproducible(tmp_path):
@@ -63,6 +74,14 @@ def test_runtime_task_derives_from_installed_base_task(monkeypatch, tmp_path):
     assert task.source == "pixelgym-open-vendor-form"
     assert task.bundle_sha256
     assert task._bundle_path.name.endswith(f"-{task.bundle_sha256[:16]}.zip")
+
+
+def test_runtime_task_preserves_read_only_base_instruction(monkeypatch, tmp_path):
+    _install_fake_osworld(monkeypatch, _ReadOnlyInstructionBaseTask)
+
+    task, _record = create_osworld_task(7, cache_dir=tmp_path, instruction="Read-only base value")
+
+    assert task.instruction == "Read-only base value"
 
 
 class _EvaluationController:

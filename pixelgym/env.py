@@ -66,6 +66,8 @@ class BackendContractError(RuntimeError):
 class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
     """A pixel-only GUI environment over one `Backend`-driven task application."""
 
+    metadata: dict[str, Any] = {"render_modes": []}  # noqa: RUF012
+
     def __init__(
         self,
         backend: Backend,
@@ -74,7 +76,6 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         max_episode_steps: int = DEFAULT_MAX_EPISODE_STEPS,
     ) -> None:
         super().__init__()
-        self.metadata = {"render_modes": []}
         if max_episode_steps <= 0:
             raise ValueError(f"max_episode_steps must be positive, got {max_episode_steps}")
 
