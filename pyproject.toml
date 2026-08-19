@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "PixelGym-OSWorld: a pixel-only GUI reinforcement-learning environment and grounding benchmark"
 readme = "README.md"
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.12"
 dependencies = [
     "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency

@@ -273,3 +273,8 @@ known limitation, with the underlying evidence retained
 - [`plans/sprint-2-osworld-integration-and-validation.md`](plans/sprint-2-osworld-integration-and-validation.md)
 - [`plans/sprint-3-grounding-and-portfolio.md`](plans/sprint-3-grounding-and-portfolio.md)
 - [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)
+
+## License
+
+Copyright 2026 Michael Swailes. Licensed under the Apache License, Version 2.0. See
+[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).

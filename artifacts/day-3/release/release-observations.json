@@ -66,6 +66,11 @@
       "python3_12_version": "Python 3.12.13",
       "system": "Darwin"
     },
+    "redaction": {
+      "path-0": "repository root",
+      "path-1": "home directory",
+      "path-2": "system temporary directory"
+    },
     "repository_commit": "6cbb618235a852bf6298d3096d513ac60c7834ba",
     "schema_version": "pixelgym-day3-clean-install-evidence-v1",
     "verdict": null,

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import re
+import subprocess
 from pathlib import Path
 
-from scripts.run_day3_clean_install_check import _redact
+from pixelgym.evidence_redaction import indexed_path_replacements, redact_evidence_text
+from scripts.run_day3_clean_install_check import REDACTION_LEGEND
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 LOCAL_PATH_PATTERN = re.compile(r"/(?:Users|home)/|/private/(?:tmp|var)/|/var/folders/")
@@ -18,19 +21,41 @@ def test_clean_install_redaction_uses_stable_path_placeholders(tmp_path: Path) -
         f"venv={system_temporary / 'run/.venv'}"
     )
 
-    assert _redact(value, [repository, home, system_temporary]) == (
+    replacements = indexed_path_replacements([repository, home, system_temporary])
+    assert redact_evidence_text(value, replacements) == (
         "repo=<path-0>; home=<path-1>/Library/Caches/pip; "
         "venv=<path-2>/run/.venv"
     )
-    assert _redact(
-        str(home / ".pyenv/shims/python3.12"), [repository, home, system_temporary]
-    ) == "<path-1>/.pyenv/shims/python3.12"
+    assert redact_evidence_text(str(home / ".pyenv/shims/python3.12"), replacements) == (
+        "<path-1>/.pyenv/shims/python3.12"
+    )
 
 
-def test_checked_in_day3_release_evidence_has_no_local_absolute_paths() -> None:
-    release_directory = REPOSITORY_ROOT / "artifacts/day-3/release"
-    evidence_paths = sorted(release_directory.glob("*.json"))
+def test_checked_in_text_artifacts_have_no_local_absolute_paths() -> None:
+    tracked = subprocess.run(
+        ["git", "grep", "-Il", "-e", "", "--", "artifacts"],
+        cwd=REPOSITORY_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    evidence_paths = [REPOSITORY_ROOT / relative for relative in tracked.stdout.splitlines()]
 
     assert evidence_paths
     for path in evidence_paths:
         assert LOCAL_PATH_PATTERN.search(path.read_text()) is None, path
+
+
+def test_day3_clean_install_evidence_explains_path_placeholders() -> None:
+    release_directory = REPOSITORY_ROOT / "artifacts/day-3/release"
+    evidence_paths = sorted(release_directory.glob("clean-install*.json"))
+
+    assert evidence_paths
+    for path in evidence_paths:
+        assert json.loads(path.read_text())["redaction"] == REDACTION_LEGEND
+    release_observations = json.loads(
+        (release_directory / "release-observations.json").read_text()
+    )
+    assert release_observations["clean_install_command_evidence"]["redaction"] == (
+        REDACTION_LEGEND
+    )

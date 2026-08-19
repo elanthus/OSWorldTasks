@@ -8,47 +8,17 @@ import json
 import os
 import shlex
 import subprocess
-import tempfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
 
+from pixelgym.evidence_redaction import redact_evidence_text, standard_path_replacements
+
 SCHEMA_VERSION = "pixelgym-d412-command-record-v1"
-_LOCAL_DEMO_SECRETS = (
-    "local_demo_postgres_only",
-    "local_demo_minio_only",
-    "local-demo-csrf-secret-change-before-any-shared-use",
-)
 
 
 def _timestamp() -> str:
     return datetime.now(UTC).isoformat()
-
-
-def _redact(value: str, paths: list[Path]) -> str:
-    redacted = value
-    replacements: list[tuple[str, str]] = []
-    try:
-        replacements.append((str(Path.home()), "<home>"))
-    except RuntimeError:
-        pass
-    temporary = Path(tempfile.gettempdir())
-    replacements.extend(
-        {
-            (str(temporary), "<system-temp>"),
-            (str(temporary.resolve()), "<system-temp>"),
-        }
-    )
-    for index, path in enumerate(paths):
-        replacement = f"<path-{index}>"
-        replacements.extend(
-            ((str(path), replacement), (str(path.resolve()), replacement))
-        )
-    for source, replacement in sorted(replacements, key=lambda item: len(item[0]), reverse=True):
-        redacted = redacted.replace(source, replacement)
-    for secret in _LOCAL_DEMO_SECRETS:
-        redacted = redacted.replace(secret, "<redacted-local-demo-secret>")
-    return redacted
 
 
 def main() -> None:
@@ -70,7 +40,7 @@ def main() -> None:
             parser.error(f"invalid --env assignment: {assignment!r}")
         environment[name] = value
         public_environment[name] = value
-    paths = [args.cwd, *args.redact_path]
+    path_replacements = standard_path_replacements([args.cwd, *args.redact_path])
     started_at = _timestamp()
     started = time.monotonic()
     completed = subprocess.run(
@@ -85,15 +55,18 @@ def main() -> None:
     duration = time.monotonic() - started
     record = {
         "schema_version": SCHEMA_VERSION,
-        "command": _redact(shlex.join(command), paths),
-        "argv": [_redact(argument, paths) for argument in command],
-        "cwd": _redact(str(args.cwd.resolve()), paths),
-        "environment": {name: _redact(value, paths) for name, value in public_environment.items()},
+        "command": redact_evidence_text(shlex.join(command), path_replacements),
+        "argv": [redact_evidence_text(argument, path_replacements) for argument in command],
+        "cwd": redact_evidence_text(str(args.cwd.resolve()), path_replacements),
+        "environment": {
+            name: redact_evidence_text(value, path_replacements)
+            for name, value in public_environment.items()
+        },
         "started_at_utc": started_at,
         "ended_at_utc": _timestamp(),
         "duration_seconds": round(duration, 6),
         "exit_status": completed.returncode,
-        "output": _redact(completed.stdout, paths),
+        "output": redact_evidence_text(completed.stdout, path_replacements),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
