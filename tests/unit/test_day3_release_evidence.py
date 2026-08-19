@@ -9,7 +9,9 @@ from pixelgym.evidence_redaction import indexed_path_replacements, redact_eviden
 from scripts.run_day3_clean_install_check import REDACTION_LEGEND
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-LOCAL_PATH_PATTERN = re.compile(r"/(?:Users|home)/|/private/(?:tmp|var)/|/var/folders/")
+LOCAL_PATH_PATTERN = re.compile(
+    r"/(?:Users|home|tmp)/|/private/(?:tmp|var)/|/var/(?:tmp|folders)/"
+)
 
 
 def test_clean_install_redaction_uses_stable_path_placeholders(tmp_path: Path) -> None:
@@ -50,7 +52,12 @@ def test_day3_clean_install_evidence_explains_path_placeholders() -> None:
     release_directory = REPOSITORY_ROOT / "artifacts/day-3/release"
     evidence_paths = sorted(release_directory.glob("clean-install*.json"))
 
-    assert evidence_paths
+    expected_names = {
+        "clean-install.json",
+        "clean-install-sandbox-attempt.json",
+        "clean-install-final-sandbox-attempt.json",
+    }
+    assert expected_names <= {path.name for path in evidence_paths}
     for path in evidence_paths:
         assert json.loads(path.read_text())["redaction"] == REDACTION_LEGEND
     release_observations = json.loads(
