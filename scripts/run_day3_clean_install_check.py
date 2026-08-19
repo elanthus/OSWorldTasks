@@ -16,7 +16,20 @@ from typing import Any
 SCHEMA_VERSION = "pixelgym-day3-clean-install-evidence-v1"
 
 
-def _run(command: list[str], *, cwd: Path) -> dict[str, Any]:
+def _redact(value: str, paths: list[Path]) -> str:
+    replacements: list[tuple[str, str]] = []
+    for index, path in enumerate(paths):
+        replacement = f"<path-{index}>"
+        replacements.extend(
+            ((str(path), replacement), (str(path.resolve()), replacement))
+        )
+    redacted = value
+    for source, replacement in sorted(replacements, key=lambda item: len(item[0]), reverse=True):
+        redacted = redacted.replace(source, replacement)
+    return redacted
+
+
+def _run(command: list[str], *, cwd: Path, redaction_paths: list[Path]) -> dict[str, Any]:
     started = time.monotonic()
     completed = subprocess.run(
         command,
@@ -28,10 +41,10 @@ def _run(command: list[str], *, cwd: Path) -> dict[str, Any]:
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )
     return {
-        "command": command,
+        "command": [_redact(argument, redaction_paths) for argument in command],
         "exit_code": completed.returncode,
         "duration_seconds": time.monotonic() - started,
-        "output": completed.stdout,
+        "output": _redact(completed.stdout, redaction_paths),
     }
 
 
@@ -57,14 +70,22 @@ def main() -> None:
     ).stdout
     records = []
     with tempfile.TemporaryDirectory(prefix="pixelgym-day3-release-") as temporary:
+        redaction_paths = [repository_root, Path.home(), Path(tempfile.gettempdir())]
         venv_path = Path(temporary) / ".venv"
-        records.append(_run([python, "-m", "venv", str(venv_path)], cwd=repository_root))
+        records.append(
+            _run(
+                [python, "-m", "venv", str(venv_path)],
+                cwd=repository_root,
+                redaction_paths=redaction_paths,
+            )
+        )
         venv_python = venv_path / "bin" / "python"
         if records[-1]["exit_code"] == 0:
             records.append(
                 _run(
                     [str(venv_python), "-m", "pip", "install", "-e", ".[dev]"],
                     cwd=repository_root,
+                    redaction_paths=redaction_paths,
                 )
             )
         commands = [
@@ -74,7 +95,9 @@ def main() -> None:
         ]
         if records and records[-1]["exit_code"] == 0:
             for command in commands:
-                records.append(_run(command, cwd=repository_root))
+                records.append(
+                    _run(command, cwd=repository_root, redaction_paths=redaction_paths)
+                )
                 if records[-1]["exit_code"] != 0:
                     break
     evidence = {

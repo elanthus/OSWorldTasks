@@ -3,6 +3,8 @@ name = "pixelgym"
 version = "0.1.0"
 description = "PixelGym-OSWorld: a pixel-only GUI reinforcement-learning environment and grounding benchmark"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency
@@ -38,11 +40,11 @@ dev = [
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
     "httpx>=0.27,<1",  # platform web tests directly import httpx.AsyncClient/ASGITransport
     "playwright>=1.52",  # deterministic grounding-dataset browser capture tooling
-    "setuptools>=68",  # the wheel-packaging test builds with --no-build-isolation
+    "setuptools>=77",  # supports SPDX license metadata and no-isolation wheel tests
 ]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
