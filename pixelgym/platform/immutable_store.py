@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import threading
+import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Protocol
@@ -23,6 +27,10 @@ class ImmutableStore(Protocol):
     def get_verified(self, reference: ArtifactRef) -> bytes: ...
 
 
+_ROOT_LOCKS_GUARD = threading.Lock()
+_ROOT_LOCKS: dict[Path, threading.RLock] = {}
+
+
 def _validate_key(key: str) -> tuple[str, ...]:
     parts = tuple(Path(key).parts)
     if not key or Path(key).is_absolute() or not parts or any(part in {"", ".", ".."} for part in parts):
@@ -39,7 +47,48 @@ class LocalImmutableStore:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self._lock = threading.RLock()
+        lock_key = root.resolve()
+        with _ROOT_LOCKS_GUARD:
+            self._lock = _ROOT_LOCKS.setdefault(lock_key, threading.RLock())
+
+    @contextmanager
+    def _filesystem_lock(self) -> Iterator[None]:
+        """Serialize one root across store instances, threads, and cooperating processes."""
+
+        with self._lock:
+            self.root.mkdir(parents=True, exist_ok=True)
+            descriptor = os.open(self.root / ".immutable-store.lock", os.O_RDWR | os.O_CREAT, 0o600)
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX)
+                yield
+            finally:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+                os.close(descriptor)
+
+    @staticmethod
+    def _stage_exclusive(destination: Path, content: bytes) -> Path:
+        """Write a unique staging inode that can never alias another writer's file."""
+
+        for _ in range(100):
+            temporary = destination.with_name(
+                f".{destination.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
+            )
+            try:
+                descriptor = os.open(
+                    temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
+                )
+            except FileExistsError:
+                continue
+            try:
+                with os.fdopen(descriptor, "wb") as handle:
+                    handle.write(content)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            except BaseException:
+                temporary.unlink(missing_ok=True)
+                raise
+            return temporary
+        raise ImmutableStoreError("could not allocate unique immutable staging file")
 
     def _paths(self, logical_key: str) -> tuple[Path, Path]:
         parts = _validate_key(logical_key)
@@ -64,48 +113,53 @@ class LocalImmutableStore:
             media_type=media_type,
             retention_status="application-put-once; no storage-enforced WORM retention",
         )
-        with self._lock:
+        with self._filesystem_lock():
             data_path.parent.mkdir(parents=True, exist_ok=True)
             metadata_path.parent.mkdir(parents=True, exist_ok=True)
-            if data_path.exists() or metadata_path.exists():
-                if not data_path.is_file() or not metadata_path.is_file():
-                    raise ImmutableStoreError("immutable object is incomplete")
-                existing = data_path.read_bytes()
+            data_exists = data_path.exists()
+            metadata_exists = metadata_path.exists()
+            if data_exists and not data_path.is_file():
+                raise ImmutableStoreError("immutable object data path is not a file")
+            if metadata_exists and not metadata_path.is_file():
+                raise ImmutableStoreError("immutable object metadata path is not a file")
+            if data_exists and data_path.read_bytes() != data:
+                raise ImmutableStoreError("refusing conflicting bytes at immutable key")
+            if metadata_exists:
                 metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-                if existing != data or metadata != reference.to_dict():
+                if metadata != reference.to_dict():
                     raise ImmutableStoreError("refusing conflicting bytes at immutable key")
-                self.get_verified(reference)
+            if data_exists and metadata_exists:
+                self._get_verified_unlocked(reference)
                 return reference
-            temporary_data = data_path.with_name(f".{data_path.name}.{os.getpid()}.tmp")
-            temporary_meta = metadata_path.with_name(f".{metadata_path.name}.{os.getpid()}.tmp")
-            linked_data = False
-            linked_metadata = False
+
+            temporary_data: Path | None = None
+            temporary_meta: Path | None = None
             try:
-                temporary_data.write_bytes(data)
-                temporary_meta.write_bytes(canonical_json_bytes(reference.to_dict()) + b"\n")
-                os.link(temporary_meta, metadata_path)
-                linked_metadata = True
-                os.link(temporary_data, data_path)
-                linked_data = True
+                if not data_exists:
+                    temporary_data = self._stage_exclusive(data_path, data)
+                    os.link(temporary_data, data_path)
+                if not metadata_exists:
+                    temporary_meta = self._stage_exclusive(
+                        metadata_path, canonical_json_bytes(reference.to_dict()) + b"\n"
+                    )
+                    # Metadata is the commit marker for a new key. If publication is interrupted,
+                    # the next identical put verifies the partial component and completes it.
+                    os.link(temporary_meta, metadata_path)
             except FileExistsError as exc:
-                if linked_data:
-                    data_path.unlink(missing_ok=True)
-                if linked_metadata:
-                    metadata_path.unlink(missing_ok=True)
                 raise ImmutableStoreError("concurrent immutable put conflict") from exc
-            except BaseException:
-                if linked_data:
-                    data_path.unlink(missing_ok=True)
-                if linked_metadata:
-                    metadata_path.unlink(missing_ok=True)
-                raise
             finally:
-                temporary_data.unlink(missing_ok=True)
-                temporary_meta.unlink(missing_ok=True)
-            self.get_verified(reference)
+                if temporary_data is not None:
+                    temporary_data.unlink(missing_ok=True)
+                if temporary_meta is not None:
+                    temporary_meta.unlink(missing_ok=True)
+            self._get_verified_unlocked(reference)
         return reference
 
     def get_verified(self, reference: ArtifactRef) -> bytes:
+        with self._filesystem_lock():
+            return self._get_verified_unlocked(reference)
+
+    def _get_verified_unlocked(self, reference: ArtifactRef) -> bytes:
         data_path, metadata_path = self._paths(reference.logical_key)
         if not data_path.is_file() or not metadata_path.is_file():
             raise ImmutableStoreError("immutable object or metadata is missing")
@@ -118,15 +172,16 @@ class LocalImmutableStore:
         return data
 
     def get_reference(self, logical_key: str) -> ArtifactRef | None:
-        data_path, metadata_path = self._paths(logical_key)
-        if not data_path.exists() and not metadata_path.exists():
-            return None
-        if not data_path.is_file() or not metadata_path.is_file():
-            raise ImmutableStoreError("immutable object is incomplete")
-        value = json.loads(metadata_path.read_text(encoding="utf-8"))
-        reference = ArtifactRef(**value)
-        self.get_verified(reference)
-        return reference
+        with self._filesystem_lock():
+            data_path, metadata_path = self._paths(logical_key)
+            if not data_path.exists() and not metadata_path.exists():
+                return None
+            if not data_path.is_file() or not metadata_path.is_file():
+                raise ImmutableStoreError("immutable object is incomplete")
+            value = json.loads(metadata_path.read_text(encoding="utf-8"))
+            reference = ArtifactRef(**value)
+            self._get_verified_unlocked(reference)
+            return reference
 
 
 class S3ImmutableStore:

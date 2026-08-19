@@ -42,6 +42,16 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
     assert "Do not invoke `docker compose`" in deploy_readme
 
 
+def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
+    compose = (REPOSITORY_ROOT / "deploy/compose.yaml").read_text()
+    root_readme = (REPOSITORY_ROOT / "README.md").read_text()
+
+    assert 'ports: ["127.0.0.1:${PIXELGYM_MLFLOW_PORT:-5500}:5000"]' in compose
+    assert 'ports: ["127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"]' in compose
+    assert "no caller authentication" in root_readme
+    assert "shared network" in root_readme
+
+
 def test_prepare_source_provenance_creates_a_missing_file(script, tmp_path, monkeypatch) -> None:
     written: list[Path] = []
     monkeypatch.setattr(script, "write_source_provenance", lambda root, path: written.append(path))

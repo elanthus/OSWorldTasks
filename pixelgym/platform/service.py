@@ -20,6 +20,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from pixelgym.grounding.evaluation import parse_prediction
 from pixelgym.platform.contracts import PolicyManifest
@@ -35,6 +36,9 @@ logger = logging.getLogger(__name__)
 
 API_SCHEMA_VERSION = "pixelgym-grounding-api-v1"
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
+MAX_ENCODED_IMAGE_CHARS = 4 * ((MAX_IMAGE_BYTES + 2) // 3)
+# Allow bounded JSON syntax and the other model fields without making the image allowance fuzzy.
+MAX_REQUEST_BODY_BYTES = MAX_ENCODED_IMAGE_CHARS + 16 * 1024
 MAX_DIMENSION = 4096
 ALLOWED_MEDIA_TYPES = {"image/png", "image/jpeg"}
 
@@ -67,7 +71,7 @@ class LoadedPolicy:
 
 class GroundRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
-    image_base64: str = Field(min_length=1)
+    image_base64: str = Field(min_length=1, max_length=MAX_ENCODED_IMAGE_CHARS)
     media_type: str = Field(min_length=1, max_length=64)
     target: str = Field(min_length=1, max_length=500)
 
@@ -111,6 +115,65 @@ class _OperationalContext:
 _operational_context: ContextVar[_OperationalContext | None] = ContextVar(
     "pixelgym_operational_context", default=None
 )
+
+
+class _RequestBodyLimitMiddleware:
+    """Reject oversized grounding bodies before Starlette buffers or parses them."""
+
+    def __init__(self, app: ASGIApp, *, max_body_bytes: int) -> None:
+        self.app = app
+        self.max_body_bytes = max_body_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope.get("path") != "/api/v1/ground":
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        content_length = headers.get(b"content-length")
+        if content_length is not None:
+            try:
+                declared_length = int(content_length)
+            except ValueError:
+                declared_length = 0
+            if declared_length > self.max_body_bytes:
+                await self._reject(scope, receive, send)
+                return
+
+        buffered = bytearray()
+        disconnected = False
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                disconnected = True
+                break
+            if message["type"] != "http.request":
+                continue
+            chunk = message.get("body", b"")
+            if len(buffered) + len(chunk) > self.max_body_bytes:
+                await self._reject(scope, receive, send)
+                return
+            buffered.extend(chunk)
+            if not message.get("more_body", False):
+                break
+
+        replayed = False
+
+        async def receive_buffered() -> Message:
+            nonlocal replayed
+            if replayed or disconnected:
+                return {"type": "http.disconnect"}
+            replayed = True
+            return {"type": "http.request", "body": bytes(buffered), "more_body": False}
+
+        await self.app(scope, receive_buffered, send)
+
+    @staticmethod
+    async def _reject(scope: Scope, receive: Receive, send: Send) -> None:
+        response = JSONResponse(
+            status_code=413, content={"detail": "request body exceeds the byte limit"}
+        )
+        await response(scope, receive, send)
 
 
 def _set_identity(loaded: LoadedPolicy) -> None:
@@ -161,6 +224,9 @@ def create_serving_app(
         raise ValueError("operational audit concurrency must be positive")
     app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None)
     app.state.operational_log = operational_log
+    # Install this before the audit middleware below so the audit wrapper remains outermost and
+    # records body-limit rejections without allowing request parsing to occur first.
+    app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
     # Audit I/O may wait for its configured storage deadline, but it must not occupy Starlette's
     # shared worker capacity while it does. Waiting here preserves the rule that no response is
     # released before its immutable evidence is verified.

@@ -3,6 +3,8 @@ from __future__ import annotations
 import io
 import json
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import ClassVar
 
@@ -94,30 +96,72 @@ def test_corrupt_or_missing_bytes_fail_verification(tmp_path: Path) -> None:
         store.get_verified(reference)
 
 
-def test_failed_second_link_does_not_wedge_local_immutable_key(
+def test_interrupted_commit_is_repaired_by_a_new_store_instance(
     tmp_path: Path, monkeypatch
 ) -> None:
-    store = LocalImmutableStore(tmp_path)
+    first_store = LocalImmutableStore(tmp_path)
     original_link = os.link
     failed = False
 
-    def fail_data_link_once(source, destination):
+    def fail_metadata_link_once(source, destination):
         nonlocal failed
-        if not failed and "objects" in Path(destination).parts:
+        if not failed and "metadata" in Path(destination).parts:
             failed = True
-            raise OSError("simulated data-link failure")
+            raise OSError("simulated interrupted commit")
         return original_link(source, destination)
 
-    monkeypatch.setattr(os, "link", fail_data_link_once)
-    with pytest.raises(OSError, match="data-link"):
-        store.put_once("raw/retry.json", b"evidence", media_type="application/json")
-    assert not (tmp_path / "objects/raw/retry.json").exists()
+    monkeypatch.setattr(os, "link", fail_metadata_link_once)
+    with pytest.raises(OSError, match="interrupted"):
+        first_store.put_once("raw/retry.json", b"evidence", media_type="application/json")
+    assert (tmp_path / "objects/raw/retry.json").read_bytes() == b"evidence"
     assert not (tmp_path / "metadata/raw/retry.json.metadata.json").exists()
 
-    reference = store.put_once(
+    second_store = LocalImmutableStore(tmp_path)
+    reference = second_store.put_once(
         "raw/retry.json", b"evidence", media_type="application/json"
     )
-    assert store.get_verified(reference) == b"evidence"
+    assert second_store.get_verified(reference) == b"evidence"
+
+
+def test_multiple_store_instances_serialize_same_key_without_inode_mutation(
+    tmp_path: Path, monkeypatch
+) -> None:
+    first_store = LocalImmutableStore(tmp_path)
+    second_store = LocalImmutableStore(tmp_path)
+    original_link = os.link
+    first_data_linked = threading.Event()
+    release_first = threading.Event()
+
+    def pause_first_data_publication(source, destination):
+        result = original_link(source, destination)
+        if "objects" in Path(destination).parts and not first_data_linked.is_set():
+            first_data_linked.set()
+            assert release_first.wait(timeout=2)
+        return result
+
+    monkeypatch.setattr(os, "link", pause_first_data_publication)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(
+            first_store.put_once,
+            "raw/shared.json",
+            b"first-writer",
+            media_type="application/json",
+        )
+        assert first_data_linked.wait(timeout=2)
+        second = executor.submit(
+            second_store.put_once,
+            "raw/shared.json",
+            b"second-writer",
+            media_type="application/json",
+        )
+        assert not second.done()
+        release_first.set()
+        reference = first.result(timeout=2)
+        with pytest.raises(ImmutableStoreError, match="conflicting"):
+            second.result(timeout=2)
+
+    assert LocalImmutableStore(tmp_path).get_verified(reference) == b"first-writer"
+    assert not list(tmp_path.rglob("*.tmp"))
 
 
 def test_canonical_json_rejects_nonfinite_numbers() -> None:

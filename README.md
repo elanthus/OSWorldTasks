@@ -128,6 +128,11 @@ stack while retaining its local evidence with:
 python3.12 scripts/platform_compose.py down
 ```
 
+Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
+protection but no caller authentication; it must not be exposed or proxied onto a shared network.
+Add authentication and authorization in front of both the control plane and MLflow before any
+shared deployment.
+
 Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
 derives and bind-mounts the source-provenance file required to verify the packaged source. If a
 previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
