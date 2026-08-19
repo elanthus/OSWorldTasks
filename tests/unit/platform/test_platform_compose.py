@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -40,6 +41,34 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
     assert documented_wrapper_commands(deploy_readme) == [expected[0], expected[1], *expected[::-1]]
     assert "docker compose --env-file deploy/.env.example -f deploy/compose.yaml up" not in root_readme
     assert "Do not invoke `docker compose`" in deploy_readme
+
+
+def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
+    compose = (REPOSITORY_ROOT / "deploy/compose.yaml").read_text()
+    root_readme = (REPOSITORY_ROOT / "README.md").read_text()
+
+    def service_ports(service: str) -> list[str]:
+        lines = compose.splitlines()
+        start = lines.index(f"  {service}:")
+        for line in lines[start + 1 :]:
+            if line.startswith("  ") and not line.startswith("    "):
+                break
+            if line.startswith("    ports: "):
+                return json.loads(line.removeprefix("    ports: "))
+        raise AssertionError(f"{service} has no published ports")
+
+    assert service_ports("mlflow") == [
+        "127.0.0.1:${PIXELGYM_MLFLOW_PORT:-5500}:5000"
+    ]
+    assert service_ports("platform") == [
+        "127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"
+    ]
+    warning = next(
+        paragraph for paragraph in root_readme.split("\n\n") if "shared deployment" in paragraph
+    )
+    assert "no caller authentication" in warning
+    assert "shared network" in warning
+    assert "control plane" in warning and "MLflow" in warning
 
 
 def test_prepare_source_provenance_creates_a_missing_file(script, tmp_path, monkeypatch) -> None:

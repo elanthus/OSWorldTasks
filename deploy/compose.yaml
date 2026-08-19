@@ -66,7 +66,7 @@ services:
       AWS_ACCESS_KEY_ID: ${PIXELGYM_MINIO_USER}
       AWS_SECRET_ACCESS_KEY: ${PIXELGYM_MINIO_PASSWORD}
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
-    ports: ["${PIXELGYM_MLFLOW_PORT:-5500}:5000"]
+    ports: ["127.0.0.1:${PIXELGYM_MLFLOW_PORT:-5500}:5000"]
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)"]
       interval: 5s
@@ -110,7 +110,7 @@ services:
     volumes:
       - control-data:/state
       - ../.cache/platform/source-provenance.json:/state/source-provenance.json:ro
-    ports: ["${PIXELGYM_PLATFORM_PORT:-5800}:8000"]
+    ports: ["127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"]
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=2)"]
       interval: 5s

@@ -35,6 +35,8 @@ from pixelgym.platform.operational_log import (
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
+    MAX_ENCODED_IMAGE_CHARS,
+    MAX_REQUEST_BODY_BYTES,
     LoadedPolicy,
     PolicyRuntime,
     ProviderFailure,
@@ -732,6 +734,86 @@ def test_invalid_requests_fail_before_provider(policy_factory, payload: dict) ->
     provider = ServingFake()
     client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
     assert client.post("/api/v1/ground", json=payload).status_code in {400, 415, 422}
+    assert provider.calls == 0
+
+
+def test_encoded_image_limit_rejects_before_base64_decode(
+    policy_factory, monkeypatch
+) -> None:
+    from pixelgym.platform import service as service_module
+
+    provider = ServingFake()
+    payload = {
+        "image_base64": "A" * (MAX_ENCODED_IMAGE_CHARS + 1),
+        "media_type": "image/png",
+        "target": "target",
+    }
+    decode_called = False
+
+    def unexpected_decode(*args, **kwargs):
+        nonlocal decode_called
+        decode_called = True
+        raise AssertionError("oversized encoded input must not be decoded")
+
+    monkeypatch.setattr(service_module.base64, "b64decode", unexpected_decode)
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
+
+    response = client.post("/api/v1/ground", json=payload)
+
+    assert response.status_code == 422
+    assert decode_called is False
+    assert provider.calls == 0
+
+
+def test_declared_oversized_body_is_rejected_before_json_parsing(policy_factory) -> None:
+    provider = ServingFake()
+    log = MemoryOperationalLog()
+    client = TestClient(
+        create_serving_app(
+            PolicyRuntime(_loaded(policy_factory(), provider)), operational_log=log
+        )
+    )
+
+    response = client.post(
+        "/api/v1/ground",
+        content=b"{}",
+        headers={
+            "content-type": "application/json",
+            "content-length": str(MAX_REQUEST_BODY_BYTES + 1),
+        },
+    )
+
+    assert response.status_code == 413
+    assert response.json() == {"detail": "request body exceeds the byte limit"}
+    assert provider.calls == 0
+    record = log.get(response.headers["x-pixelgym-request-id"])
+    assert record is not None and record.terminal_status == "request_rejected"
+
+
+def test_streamed_body_limit_does_not_require_content_length(policy_factory) -> None:
+    async def exercise() -> tuple[httpx.Response, ServingFake]:
+        provider = ServingFake()
+        app = _serving_app(PolicyRuntime(_loaded(policy_factory(), provider)))
+        transport = httpx.ASGITransport(app=app)
+        shared_chunk = b"x" * (1024 * 1024)
+
+        async def chunks():
+            yield b'{"image_base64":"'
+            for _ in range(8):
+                yield shared_chunk
+            yield b'","media_type":"image/png","target":"target"}'
+
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/ground",
+                content=chunks(),
+                headers={"content-type": "application/json"},
+            )
+        return response, provider
+
+    response, provider = asyncio.run(exercise())
+
+    assert response.status_code == 413
     assert provider.calls == 0
 
 
