@@ -20,8 +20,11 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
+import numpy.typing as npt
 
 from pixelgym.task_spec import Submission
+
+Frame = npt.NDArray[np.uint8]
 
 
 @runtime_checkable
@@ -64,7 +67,7 @@ class Backend(Protocol):
         """
         ...
 
-    def screenshot(self) -> np.ndarray:
+    def screenshot(self) -> Frame:
         """Return the current on-screen frame as an RGB array with shape
         `(height, width, 3)` and dtype `uint8`.
 

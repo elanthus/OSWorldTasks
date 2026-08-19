@@ -31,7 +31,7 @@ This module imports only `gymnasium`, `numpy`, and the rest of `pixelgym`
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, ClassVar
+from typing import Any
 
 import gymnasium as gym
 import numpy as np
@@ -44,7 +44,7 @@ from pixelgym.actions import (
     build_action_space,
     validate_action,
 )
-from pixelgym.backends.base import Backend
+from pixelgym.backends.base import Backend, Frame
 from pixelgym.evaluator import evaluate
 from pixelgym.task_spec import TaskSpec
 
@@ -63,10 +63,8 @@ class BackendContractError(RuntimeError):
     out-of-bounds values). Never silently cast, reshaped, or clipped."""
 
 
-class PixelGuiEnv(gym.Env):
+class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
     """A pixel-only GUI environment over one `Backend`-driven task application."""
-
-    metadata: ClassVar[dict[str, Any]] = {"render_modes": []}
 
     def __init__(
         self,
@@ -76,6 +74,7 @@ class PixelGuiEnv(gym.Env):
         max_episode_steps: int = DEFAULT_MAX_EPISODE_STEPS,
     ) -> None:
         super().__init__()
+        self.metadata = {"render_modes": []}
         if max_episode_steps <= 0:
             raise ValueError(f"max_episode_steps must be positive, got {max_episode_steps}")
 
@@ -83,10 +82,10 @@ class PixelGuiEnv(gym.Env):
         self._instruction = instruction
         self._max_episode_steps = max_episode_steps
 
-        self.observation_space = spaces.Box(
+        self.observation_space: spaces.Box = spaces.Box(
             low=0, high=255, shape=(backend.height, backend.width, 3), dtype=np.uint8
         )
-        self.action_space = build_action_space(backend.width, backend.height)
+        self.action_space: spaces.Dict = build_action_space(backend.width, backend.height)
 
         self._task: TaskSpec | None = None
         self._step_count = 0
@@ -96,8 +95,8 @@ class PixelGuiEnv(gym.Env):
         self,
         *,
         seed: int | None = None,
-        options: Mapping[str, Any] | None = None,
-    ) -> tuple[np.ndarray, dict[str, Any]]:
+        options: dict[str, Any] | None = None,
+    ) -> tuple[Frame, dict[str, Any]]:
         super().reset(seed=seed, options=options)
         task_seed = (
             seed if seed is not None else int(self.np_random.integers(_TASK_SEED_UPPER_BOUND))
@@ -119,7 +118,7 @@ class PixelGuiEnv(gym.Env):
 
     def step(
         self, action: Mapping[str, Any]
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+    ) -> tuple[Frame, float, bool, bool, dict[str, Any]]:
         if self._task is None or self._episode_ended:
             raise RuntimeError(
                 "step() called before reset() or after the episode already ended "
@@ -171,7 +170,7 @@ class PixelGuiEnv(gym.Env):
             return
         raise AssertionError(f"unhandled action type {action_type!r}")  # pragma: no cover
 
-    def _capture_observation(self) -> np.ndarray:
+    def _capture_observation(self) -> Frame:
         frame = self.backend.screenshot()
         space = self.observation_space
 

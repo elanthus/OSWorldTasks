@@ -8,7 +8,7 @@ import threading
 from importlib import resources
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import SchemaError
@@ -54,7 +54,7 @@ def _load_json_object(path: Path | Traversable) -> dict[str, Any]:
         raise ContractValidationError(f"configuration is not strict JSON: {path.name}") from exc
     if not isinstance(value, dict):
         raise ContractValidationError(f"configuration must be a JSON object: {path.name}")
-    return value
+    return cast(dict[str, Any], value)
 
 
 def _validate_strict_json(value: object, *, label: str, path: str = "$") -> None:

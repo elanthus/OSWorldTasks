@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -58,12 +59,12 @@ def _badge_position(
 ) -> list[int]:
     text = str(mark_id)
     text_box = draw.textbbox((0, 0), text, font=font)
-    badge_width = text_box[2] - text_box[0] + 6
-    badge_height = text_box[3] - text_box[1] + 4
+    badge_width = math.ceil(text_box[2] - text_box[0]) + 6
+    badge_height = math.ceil(text_box[3] - text_box[1]) + 4
     if badge_width > width or badge_height > height:
         raise ValueError("mark badge cannot fit inside the image")
     x0, y0, x1, y1 = bbox
-    positions = []
+    positions: list[tuple[int, int]] = []
     if element_type == "radio":
         positions.append((x0, y1 + 2))
     positions.extend(

@@ -68,39 +68,47 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
         <= summary.scored_count
     )
     expected_accuracy = summary.correct_count / summary.expected_count if count_evidence else None
+    accuracy = summary.accuracy
     accuracy_consistent = (
-        _finite(summary.accuracy)
+        accuracy is not None
+        and _finite(accuracy)
         and expected_accuracy is not None
-        and math.isclose(summary.accuracy, expected_accuracy, rel_tol=0.0, abs_tol=1e-12)
+        and math.isclose(accuracy, expected_accuracy, rel_tol=0.0, abs_tol=1e-12)
     )
     accuracy_passed = bool(
         count_evidence
         and accuracy_consistent
-        and summary.accuracy >= policy.minimum_accuracy
+        and accuracy is not None
+        and accuracy >= policy.minimum_accuracy
     )
     if not accuracy_passed:
         reasons.append("accuracy is missing, inconsistent with counts, non-finite, or below the minimum")
 
+    cost_usd_per_100 = summary.cost_usd_per_100
     cost_evidence = (
-        _finite(summary.cost_usd_per_100)
+        _finite(cost_usd_per_100)
         and summary.unpriced_call_count == 0
         and summary.priced_call_count == summary.scored_count
         and summary.priced_call_count + summary.unpriced_call_count == summary.scored_count
     )
     cost_passed = bool(
-        cost_evidence and summary.cost_usd_per_100 <= policy.maximum_cost_usd_per_100
+        cost_evidence
+        and cost_usd_per_100 is not None
+        and cost_usd_per_100 <= policy.maximum_cost_usd_per_100
     )
     if not cost_passed:
         reasons.append("cost is missing, unpriced, incomplete, or above the maximum")
 
+    provider_latency_p95_ms = summary.provider_latency_p95_ms
     latency_evidence = (
-        _finite(summary.provider_latency_p95_ms)
+        _finite(provider_latency_p95_ms)
         and summary.latency_measured_count >= policy.minimum_measured_count
         and summary.latency_measured_count == summary.scored_count
     )
     latency_passed = bool(
         latency_evidence
-        and summary.provider_latency_p95_ms <= policy.maximum_provider_latency_p95_ms
+        and provider_latency_p95_ms is not None
+        and provider_latency_p95_ms <= policy.maximum_provider_latency_p95_ms
     )
     if not latency_passed:
         reasons.append("latency evidence is missing, insufficient, non-finite, or above the maximum")

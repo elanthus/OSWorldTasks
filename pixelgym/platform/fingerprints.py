@@ -10,6 +10,8 @@ from typing import Any
 from pixelgym.grounding.schema import validate_example
 from pixelgym.serialization import canonical_json_bytes, load_jsonl
 
+__all__ = ["canonical_json_bytes"]
+
 DATASET_MANIFEST_SCHEMA = "pixelgym-grounding-dataset-manifest-v1"
 COORDINATE_CONVENTION = "zero-based screenshot pixels; half-open target boxes [x0,y0,x1,y1)"
 

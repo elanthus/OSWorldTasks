@@ -79,7 +79,7 @@ def mcnemar_exact(raw_only_correct: int, marks_only_correct: int) -> float:
         return 1.0
     smaller = min(raw_only_correct, marks_only_correct)
     lower_tail = sum(math.comb(discordant, k) for k in range(smaller + 1)) / (2**discordant)
-    return min(1.0, 2 * lower_tail)
+    return float(min(1.0, 2 * lower_tail))
 
 
 def _rate(numerator: int, denominator: int) -> float | None:
@@ -172,10 +172,16 @@ def _validate_and_pair(
             raise ValueError("prediction protocol version does not match")
         if record.get("prompt_version") != PROMPT_VERSION:
             raise ValueError("prediction prompt version does not match")
-        example_id = record.get("example_id")
+        example_id_value = record.get("example_id")
+        if not isinstance(example_id_value, str):
+            raise TypeError("prediction example_id must be a string")
+        example_id = example_id_value
         if example_id not in example_by_id:
             raise ValueError(f"prediction references unknown example {example_id!r}")
-        condition = record.get("condition")
+        condition_value = record.get("condition")
+        if not isinstance(condition_value, str):
+            raise TypeError("prediction condition must be a string")
+        condition = condition_value
         if condition not in {"raw", "marks"}:
             raise ValueError(f"unknown prediction condition {condition!r}")
         if condition in grouped[example_id]:

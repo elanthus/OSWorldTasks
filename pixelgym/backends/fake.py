@@ -41,8 +41,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-import numpy as np
-
+from pixelgym.backends.base import Frame
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form import generator, render, ui
 from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
@@ -63,7 +62,7 @@ class FakeBackend:
         self._layout: ui.Layout | None = None
         self._form: ui.FormState | None = None
         self._submissions: list[Submission] = []
-        self._frame: np.ndarray | None = None
+        self._frame: Frame | None = None
         self.click_calls: list[tuple[int, int]] = []
         self.key_calls: list[str] = []
         self.noop_calls = 0
@@ -99,7 +98,7 @@ class FakeBackend:
         self._frame = None
         return record
 
-    def screenshot(self) -> np.ndarray:
+    def screenshot(self) -> Frame:
         """The current frame, rendered from the task and form state.
 
         Cached until the next state change, and copied on the way out so a

@@ -10,6 +10,7 @@ import logging
 import time
 import traceback
 import uuid
+from collections.abc import Awaitable, Callable
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -233,7 +234,9 @@ def create_serving_app(
     audit_limiter = anyio.CapacityLimiter(operational_audit_concurrency)
 
     @app.middleware("http")
-    async def record_ground_operation(request: Request, call_next):
+    async def record_ground_operation(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         if request.url.path != "/api/v1/ground":
             return await call_next(request)
         context = _OperationalContext(

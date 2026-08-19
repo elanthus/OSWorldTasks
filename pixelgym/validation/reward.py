@@ -15,15 +15,17 @@ from pixelgym.tasks.vendor_form.ui import TEXT_WIDGETS, WidgetId
 _KEY_INDEX = {value: index for index, value in enumerate(KEY_ALLOWLIST)}
 
 
-def _action(action_type: ActionType, *, x: int = 0, y: int = 0, key: int = 0) -> dict:
+def _action(
+    action_type: ActionType, *, x: int = 0, y: int = 0, key: int = 0
+) -> dict[str, int]:
     return {"action_type": int(action_type), "x": x, "y": y, "key": key}
 
 
-def _click(point: tuple[int, int]) -> dict:
+def _click(point: tuple[int, int]) -> dict[str, int]:
     return _action(ActionType.CLICK, x=point[0], y=point[1])
 
 
-def _key(value: str) -> dict:
+def _key(value: str) -> dict[str, int]:
     return _action(ActionType.KEY, key=_KEY_INDEX[value])
 
 

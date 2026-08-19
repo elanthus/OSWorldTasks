@@ -152,7 +152,12 @@ def _validate_field(name: str, value: object, size: int) -> int:
             f"action[{name!r}] must be a canonical int (not bool, float, str, or "
             f"array), got {value!r} of type {type(value).__name__}"
         )
-    normalized = int(value)
+    # Repeat the positive shape as branches so the type checker can narrow
+    # the intentionally strict runtime predicate above.
+    if isinstance(value, (int, np.integer)):
+        normalized = int(value)
+    else:  # pragma: no cover - guarded by the predicate above
+        raise TypeError("canonical integral predicate did not narrow its input")
     if not (0 <= normalized < size):
         raise InvalidActionError(f"action[{name!r}]={normalized!r} is out of range [0, {size})")
     return normalized
@@ -186,8 +191,10 @@ def validate_action(action_space: spaces.Dict, action: Any) -> ValidatedAction:
             f"action must have exactly the keys {sorted(_REQUIRED_KEYS)}, got {sorted(action)}"
         )
 
-    normalized = {
-        name: _validate_field(name, action[name], action_space[name].n)
-        for name in ("action_type", "x", "y", "key")
-    }
+    normalized: dict[str, int] = {}
+    for name in ("action_type", "x", "y", "key"):
+        field_space = action_space[name]
+        if not isinstance(field_space, spaces.Discrete):
+            raise InvalidActionError(f"action space field {name!r} must be Discrete")
+        normalized[name] = _validate_field(name, action[name], int(field_space.n))
     return ValidatedAction(**normalized)

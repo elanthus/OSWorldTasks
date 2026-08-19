@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from pixelgym.serialization import canonical_json_text
 
@@ -20,7 +21,7 @@ def canonical_sha256(value: Any) -> str:
 
 
 def raw_pixel_difference(
-    reference: np.ndarray, candidate: np.ndarray
+    reference: npt.NDArray[np.uint8], candidate: npt.NDArray[np.uint8]
 ) -> dict[str, int | list[int] | None]:
     if reference.shape != candidate.shape or reference.dtype != candidate.dtype:
         raise ValueError("raw pixel comparison requires matching shapes and dtypes")
@@ -44,7 +45,9 @@ def raw_pixel_difference(
     }
 
 
-def _uniform_mean(values: np.ndarray, size: int = 11) -> np.ndarray:
+def _uniform_mean(
+    values: npt.NDArray[np.float64], size: int = 11
+) -> npt.NDArray[np.float64]:
     """Local mean through an edge-reflected square window and integral image."""
 
     pad = size // 2
@@ -57,10 +60,12 @@ def _uniform_mean(values: np.ndarray, size: int = 11) -> np.ndarray:
         - integral[size:, :-size]
         + integral[:-size, :-size]
     )
-    return total / (size * size)
+    return np.asarray(total / (size * size), dtype=np.float64)
 
 
-def structural_similarity(reference: np.ndarray, candidate: np.ndarray) -> float:
+def structural_similarity(
+    reference: npt.NDArray[np.uint8], candidate: npt.NDArray[np.uint8]
+) -> float:
     """11x11-window luminance SSIM, in ``[-1, 1]`` (identical is 1).
 
     Frames are converted to Rec. 601 luma. Local means and variances use an

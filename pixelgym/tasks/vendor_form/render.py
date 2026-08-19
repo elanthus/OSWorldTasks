@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.tasks.vendor_form.ui import (
@@ -140,7 +141,9 @@ class _Painter:
         self.text_in(rect, text, font=self.bold)
 
 
-def render(task_record: Mapping[str, Any], state: FormState, layout: Layout) -> np.ndarray:
+def render(
+    task_record: Mapping[str, Any], state: FormState, layout: Layout
+) -> npt.NDArray[np.uint8]:
     """Draw the current screen as an `(height, width, 3)` uint8 RGB array."""
     image = Image.new("RGB", (layout.width, layout.height), PAGE_BG)
     painter = _Painter(image, layout)

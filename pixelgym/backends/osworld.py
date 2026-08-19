@@ -16,11 +16,12 @@ import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image
 
+from pixelgym.backends.base import Frame
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form.osworld_task import APP_URL, create_osworld_task
 
@@ -212,7 +213,7 @@ class OSWorldBackend:
             self._close_after_failure()
             raise
 
-    def screenshot(self) -> np.ndarray:
+    def screenshot(self) -> Frame:
         env = self._require_active()
         started = time.monotonic()
         deadline = started + self.config.stabilization_timeout
@@ -306,7 +307,7 @@ class OSWorldBackend:
         env = self._require_active()
         if self._task is None:
             raise OSWorldBackendError("OSWorld task is not installed")
-        return self._task.read_privileged_state(env)
+        return cast(dict[str, Any], self._task.read_privileged_state(env))
 
     def read_guest_root_disk(self) -> dict[str, int]:
         """Validation-only root-volume evidence; never exposed to the agent."""
@@ -450,7 +451,7 @@ class OSWorldBackend:
             raise OSWorldBackendError(f"OSWorld screenshot must be bytes, got {type(raw).__name__}")
         return raw
 
-    def _decode_screenshot(self, raw: Any) -> np.ndarray:
+    def _decode_screenshot(self, raw: Any) -> Frame:
         if not isinstance(raw, bytes):
             raise OSWorldBackendError(
                 f"OSWorld controller screenshot must be bytes, got {type(raw).__name__}"

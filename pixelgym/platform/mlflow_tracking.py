@@ -496,7 +496,7 @@ class MlflowTracking:
             run = matches[0]
             if run.data.params != encoded:
                 raise ValueError("immutable run params changed on resume")
-            return run.info.run_id
+            return str(run.info.run_id)
         run = self.client.create_run(
             self.experiment_id,
             tags={
@@ -506,7 +506,7 @@ class MlflowTracking:
         )
         for key, value in encoded.items():
             self.client.log_param(run.info.run_id, key, value)
-        return run.info.run_id
+        return str(run.info.run_id)
 
     def log_dataset_input(self, run_id: str, dataset: DatasetInputContract) -> None:
         from mlflow.entities import Dataset, DatasetInput, InputTag

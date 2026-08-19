@@ -16,7 +16,7 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 CODEX_MODEL = "gpt-5.4-mini"
 CODEX_PARAMETERS: dict[str, Any] = {"reasoning_effort": "low", "temperature": None}
@@ -73,7 +73,7 @@ def _find_usage(events: list[dict[str, Any]]) -> dict[str, Any] | None:
             return usage
         item = event.get("item")
         if isinstance(item, dict) and isinstance(item.get("usage"), dict):
-            return item["usage"]
+            return cast(dict[str, Any], item["usage"])
     return None
 
 

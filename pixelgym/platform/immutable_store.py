@@ -7,11 +7,11 @@ import json
 import os
 import threading
 import uuid
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol, cast
 
 from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -25,6 +25,14 @@ class ImmutableStore(Protocol):
     def put_once(self, logical_key: str, data: bytes, *, media_type: str) -> ArtifactRef: ...
     def get_reference(self, logical_key: str) -> ArtifactRef | None: ...
     def get_verified(self, reference: ArtifactRef) -> bytes: ...
+
+
+class _S3Client(Protocol):
+    """Small structural surface used from boto3's dynamically typed client."""
+
+    def head_object(self, **kwargs: object) -> dict[str, Any]: ...
+    def put_object(self, **kwargs: object) -> dict[str, Any]: ...
+    def get_object(self, **kwargs: object) -> dict[str, Any]: ...
 
 
 _ROOT_LOCKS_GUARD = threading.Lock()
@@ -223,7 +231,7 @@ class S3ImmutableStore:
                     "mode": "standard",
                 }
             client = boto3.client("s3", config=Config(**config_arguments))
-        self.client = client
+        self.client = cast(_S3Client, client)
         self.bucket = bucket
         self.prefix = prefix.strip("/")
         self.object_lock = object_lock
@@ -236,7 +244,10 @@ class S3ImmutableStore:
         return f"{self.prefix}/{suffix}" if self.prefix else suffix
 
     def _from_head(self, logical_key: str, head: dict[str, object]) -> ArtifactRef:
-        metadata = head.get("Metadata") or {}
+        metadata_value = head.get("Metadata") or {}
+        if not isinstance(metadata_value, Mapping):
+            raise ImmutableStoreError("S3 immutable metadata is not a mapping")
+        metadata = metadata_value
         digest = str(metadata.get("sha256", ""))
         version_id = str(head.get("VersionId") or metadata.get("version-id") or "null")
         if self.object_lock:
@@ -248,12 +259,15 @@ class S3ImmutableStore:
             retention = f"object-lock-{mode.lower()}"
         else:
             retention = "application-put-once; Object Lock disabled"
+        size_value = head.get("ContentLength", -1)
+        if not isinstance(size_value, int) or isinstance(size_value, bool):
+            raise ImmutableStoreError("S3 immutable object size is not an integer")
         return ArtifactRef(
             logical_key=logical_key,
             uri=f"s3://{self.bucket}/{self._key(logical_key)}",
             version_id=version_id,
             sha256=digest,
-            size=int(head.get("ContentLength", -1)),
+            size=size_value,
             media_type=str(head.get("ContentType") or metadata.get("media-type") or ""),
             retention_status=retention,
         )
@@ -267,7 +281,7 @@ class S3ImmutableStore:
             if code in {"404", "NoSuchKey", "NotFound"}:
                 return None
             raise ImmutableStoreError("S3 immutable metadata lookup failed") from exc
-        reference = self._from_head(logical_key, head)
+        reference = self._from_head(logical_key, cast(dict[str, object], head))
         self.get_verified(reference)
         return reference
 
@@ -311,7 +325,7 @@ class S3ImmutableStore:
         if result.get("VersionId"):
             head_arguments["VersionId"] = result["VersionId"]
         head = self.client.head_object(**head_arguments)
-        reference = self._from_head(logical_key, head)
+        reference = self._from_head(logical_key, cast(dict[str, object], head))
         self.get_verified(reference)
         return reference
 
@@ -327,6 +341,8 @@ class S3ImmutableStore:
             data = result["Body"].read()
         except Exception as exc:
             raise ImmutableStoreError("pinned immutable S3 object is missing") from exc
+        if not isinstance(data, bytes):
+            raise ImmutableStoreError("S3 immutable object body did not return bytes")
         if len(data) != reference.size or sha256_bytes(data) != reference.sha256:
             raise ImmutableStoreError("immutable S3 object failed size or digest verification")
         return data

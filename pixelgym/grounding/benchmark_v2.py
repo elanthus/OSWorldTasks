@@ -20,6 +20,7 @@ from pixelgym.grounding.schema import (
     SCREEN_STATES,
     TARGET_SPECS,
     TASK_SEEDS,
+    TargetSpec,
     css_bbox_to_screenshot,
     validate_bbox,
     validate_candidate_set,
@@ -42,7 +43,7 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def target_for_seed_state(seed: int, screen_state: str):
+def target_for_seed_state(seed: int, screen_state: str) -> TargetSpec:
     """Return the preregistered balanced target for one seed/state capture.
 
     The cyclic shift makes every target-by-state cell contain seeds ``r`` and
@@ -56,6 +57,20 @@ def target_for_seed_state(seed: int, screen_state: str):
     except ValueError as exc:
         raise ValueError("screen state is outside the v2 allocation") from exc
     return TARGET_SPECS[(seed + state_index) % len(TARGET_SPECS)]
+
+
+def _index_by_example_id(
+    rows: list[dict[str, Any]], *, label: str
+) -> dict[str, dict[str, Any]]:
+    indexed: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        identifier = row.get("example_id")
+        if not isinstance(identifier, str) or not identifier:
+            raise ValueError(f"{label} example IDs must be nonempty strings")
+        if identifier in indexed:
+            raise ValueError(f"{label} contains duplicate example IDs")
+        indexed[identifier] = row
+    return indexed
 
 
 def _validate_source_grid(
@@ -77,8 +92,8 @@ def _validate_source_grid(
     ):
         raise ValueError("v1 example source has an unexpected version")
 
-    candidate_by_id = {row.get("example_id"): row for row in candidates}
-    overlay_by_id = {row.get("example_id"): row for row in overlays}
+    candidate_by_id = _index_by_example_id(candidates, label="v1 candidates")
+    overlay_by_id = _index_by_example_id(overlays, label="v1 overlays")
     if len(candidate_by_id) != expected_count or len(overlay_by_id) != expected_count:
         raise ValueError("v1 candidate or overlay source contains duplicate example IDs")
     expected_ids = {row["example_id"] for row in examples}
@@ -167,9 +182,11 @@ def validate_records(
     expected_count = len(TASK_SEEDS) * len(SCREEN_STATES)
     if not len(examples) == len(candidates) == len(overlays) == expected_count:
         raise ValueError("v2 benchmark must contain exactly 100 joined examples")
-    candidate_by_id = {row.get("example_id"): row for row in candidates}
-    overlay_by_id = {row.get("example_id"): row for row in overlays}
+    candidate_by_id = _index_by_example_id(candidates, label="v2 candidates")
+    overlay_by_id = _index_by_example_id(overlays, label="v2 overlays")
     ids = [row.get("example_id") for row in examples]
+    if not all(isinstance(identifier, str) and identifier for identifier in ids):
+        raise ValueError("v2 example IDs must be nonempty strings")
     if len(set(ids)) != expected_count or set(candidate_by_id) != set(ids) or set(overlay_by_id) != set(ids):
         raise ValueError("v2 examples, candidates, and overlays must join one-to-one")
 
@@ -185,6 +202,8 @@ def validate_records(
         ) != PROTOCOL_VERSION:
             raise ValueError("v2 example version does not match")
         seed, state = example.get("task_seed"), example.get("screen_state")
+        if type(seed) is not int or not isinstance(state, str):
+            raise ValueError("v2 seed and screen state have invalid types")
         target = target_for_seed_state(seed, state)
         if (
             example.get("target_id") != target.semantic_id
@@ -193,6 +212,8 @@ def validate_records(
         ):
             raise ValueError("v2 example target does not match the balanced allocation")
         width, height = example.get("screen_width"), example.get("screen_height")
+        if type(width) is not int or type(height) is not int:
+            raise ValueError("v2 screen dimensions must be integers")
         validate_bbox(example.get("bbox"), width=width, height=height)
         if example["bbox"] != css_bbox_to_screenshot(
             example["css_bbox"],
@@ -235,12 +256,16 @@ def validate_records(
         ):
             raise ValueError("v2 proposal coverage fields do not match the balanced target")
 
-        cell_counts[(example["target_id"], state)] += 1
-        target_counts[example["target_id"]] += 1
+        target_id = example.get("target_id")
+        image_path = example.get("image_path")
+        if not isinstance(target_id, str) or not isinstance(image_path, str):
+            raise TypeError("v2 target ID and image path must be strings")
+        cell_counts[(target_id, state)] += 1
+        target_counts[target_id] += 1
         state_counts[state] += 1
         seed_counts[seed] += 1
         seed_state_counts[(seed, state)] += 1
-        image_paths.add(example["image_path"])
+        image_paths.add(image_path)
 
     expected_targets = {target.semantic_id for target in TARGET_SPECS}
     expected_cells = {(target, state) for target in expected_targets for state in SCREEN_STATES}

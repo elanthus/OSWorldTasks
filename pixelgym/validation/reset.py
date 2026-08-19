@@ -7,10 +7,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from PIL import Image
 
-from pixelgym.backends.base import Backend
+from pixelgym.backends.base import Backend, Frame
 from pixelgym.env import PixelGuiEnv
 from pixelgym.validation.metrics import (
     privileged_hashes,
@@ -33,7 +32,7 @@ def validate_resets(
     env = PixelGuiEnv(backend)
     records: list[dict[str, Any]] = []
     backend_metadata: dict[str, Any] | None = None
-    reference: np.ndarray | None = None
+    reference: Frame | None = None
     reference_hashes: dict[str, str] | None = None
     if screenshot_dir is not None:
         screenshot_dir.mkdir(parents=True, exist_ok=True)

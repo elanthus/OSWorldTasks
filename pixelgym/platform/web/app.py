@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import asdict
 from datetime import date
 from difflib import HtmlDiff
+from numbers import Real
 from pathlib import Path
 from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlsplit
@@ -68,16 +69,22 @@ def _badge(label: str, tone: str = "neutral") -> str:
     return f'<span class="badge badge--{_escape(tone)}">{_escape(label)}</span>'
 
 
+def _numeric(value: object) -> float:
+    if isinstance(value, Real) and not isinstance(value, bool):
+        return float(value)
+    raise TypeError("metric value must be numeric")
+
+
 def _percentage(value: object) -> str:
-    return "missing" if value is None else f"{float(value):.1%}"
+    return "missing" if value is None else f"{_numeric(value):.1%}"
 
 
 def _money(value: object) -> str:
-    return "missing" if value is None else f"${float(value):.2f}"
+    return "missing" if value is None else f"${_numeric(value):.2f}"
 
 
 def _milliseconds(value: object) -> str:
-    return "missing" if value is None else f"{float(value):.1f} ms"
+    return "missing" if value is None else f"{_numeric(value):.1f} ms"
 
 
 def _layout(title: str, body: str, *, csrf: str = "") -> str:
@@ -185,7 +192,7 @@ def _evidence_links(candidate: Any, mlflow_base_url: str) -> str:
 def _delta(value: object, baseline: object, *, kind: str) -> str:
     if value is None or baseline is None:
         return "Δ unavailable"
-    difference = float(value) - float(baseline)
+    difference = _numeric(value) - _numeric(baseline)
     if kind == "accuracy":
         return f"Δ {difference * 100:+.1f} pp"
     if kind == "money":
@@ -202,7 +209,7 @@ def _comparison_card(candidate: Any, baseline: Any, mlflow_base_url: str) -> str
 def create_control_app(
     control: ControlStore,
     *,
-    coordinator: DeploymentCoordinator | None = None,
+    coordinator: DeploymentCoordinator[Any] | None = None,
     csrf_secret: str,
     submit_callback: Callable[[str, dict[str, str]], None] | None = None,
     cancel_callback: Callable[[str], bool] | None = None,
