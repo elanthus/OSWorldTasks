@@ -8,8 +8,8 @@
 - One synthetic vendor-form dataset cannot establish general GUI-grounding performance.
 - MinIO in Compose demonstrates versioning and Object Lock compatibility; production WORM posture
   still requires approved retention administration, backup, replication, and recovery testing.
-- The MVP uses one bounded Metaflow shard. Provider concurrency and paid-call caps require a new
-  human approval before expansion.
+- The default 100-example flow uses four bounded Metaflow shards of 25 examples each. Increasing
+  provider concurrency or paid-call caps requires a new human approval.
 - When enabled by a predeclared policy, the confidence gate uses a one-sided Wilson lower bound
   over every scored record. Invalid parses and request failures remain retained as incorrect
   observations; the bounded synthetic demo policy leaves this optional gate disabled.

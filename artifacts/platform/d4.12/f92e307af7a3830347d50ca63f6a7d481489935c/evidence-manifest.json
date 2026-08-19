@@ -618,8 +618,8 @@
         },
         {
           "path": "artifacts/platform/known-limitations.md",
-          "sha256": "f9ec2d2c324f1cf90d9134bfd4fbea544ae8008e8ff6777b8553d31c81c6bbdc",
-          "size": 1403
+          "sha256": "1698fa65daf5e462486ab1467bb4ade2cbfe8600b66e7af78717dd39a074aa51",
+          "size": 1440
         }
       ],
       "missing_evidence": [],
@@ -1194,8 +1194,8 @@
     },
     {
       "path": "artifacts/platform/known-limitations.md",
-      "sha256": "f9ec2d2c324f1cf90d9134bfd4fbea544ae8008e8ff6777b8553d31c81c6bbdc",
-      "size": 1403
+      "sha256": "1698fa65daf5e462486ab1467bb4ade2cbfe8600b66e7af78717dd39a074aa51",
+      "size": 1440
     },
     {
       "path": "artifacts/platform/rehearsal-environment.json",
