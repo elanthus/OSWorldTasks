@@ -1,0 +1,154 @@
+{
+  "calibration_example_count": 20,
+  "calibration_seeds": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "decision_history": [
+    {
+      "date": "2026-08-20",
+      "model": "claude-haiku-4-5-20251001",
+      "provider": "claude-code-cli",
+      "parameters": {"temperature": 0},
+      "calls": 40,
+      "raw_accuracy": "20/20",
+      "marks_accuracy": "20/20",
+      "parse_failures": 0,
+      "raw_mean_center_distance_norm": 0.0054,
+      "marks_mean_center_distance_norm": 0.0223,
+      "escalation": "m > 0.85: saturated even on harder variant",
+      "v3a_comparison": {
+        "raw_mean_center_distance_norm_v3a": 0.0061,
+        "marks_mean_center_distance_norm_v3a": 0.0056,
+        "marks_precision_degradation": "4x (0.0056 -> 0.0223)"
+      },
+      "predictions_path": "artifacts/grounding-v3b-calibration-predictions-claude-haiku-4.5.jsonl",
+      "decision": "100% accuracy; marks precision degraded 4x vs v3a but still within bbox"
+    },
+    {
+      "date": "2026-08-20",
+      "model": "google/gemini-3.7-flash",
+      "provider": "openrouter",
+      "parameters": {"temperature": 0, "seed": 20260809, "coordinate_rescale": "gemini-1000"},
+      "adapter": "GeminiCoordinateAdapter",
+      "calls": 40,
+      "raw_accuracy": "20/20",
+      "marks_accuracy": "20/20",
+      "parse_failures": 0,
+      "raw_mean_center_distance_norm": 0.0047,
+      "marks_mean_center_distance_norm": 0.0008,
+      "escalation": "m > 0.85: saturated even on harder variant",
+      "v3a_comparison": {
+        "raw_mean_center_distance_norm_v3a": 0.0057,
+        "marks_mean_center_distance_norm_v3a": 0.0003,
+        "marks_precision_degradation": "2.7x (0.0003 -> 0.0008)"
+      },
+      "predictions_path": "artifacts/grounding-v3b-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+      "decision": "100% accuracy; precision essentially unchanged vs v3a"
+    }
+  ],
+  "design": "4 calibration seeds x 5 screen states; crossed target allocation; one target per screenshot",
+  "difficulty_levers": [
+    "~38 candidates (vs 10 in v3a)",
+    "near-duplicate labels",
+    "18px controls (vs 30px)",
+    "header + sidebar occlusion"
+  ],
+  "escalation_rule": "0.60 <= m <= 0.85: freeze v3b; m > 0.85: report saturation and recommend harder variant or alternative; m < 0.60: floor check then report honestly",
+  "model_calls_performed": 80,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v3b-calibration-candidates.jsonl",
+      "sha256": "22296d3cf5141c5b3b3358f705a3317aed0822f57e55144f95b8f8a7fbfe7a1f"
+    },
+    "capture_evidence": {
+      "path": "artifacts/grounding-v3b-capture.json",
+      "sha256": "1b39636a882be19b5f30254d7bc4675f1b5ddd4a0a934884a34745dc224a71e0"
+    },
+    "contact_sheet": {
+      "path": "artifacts/grounding-v3b/contact-sheet.png",
+      "sha256": "f4ba9c73cd8b4e5937e2d4bbba87f5560157437db0351b33cfba45068255d4ba"
+    },
+    "dataset": {
+      "path": "artifacts/grounding-v3b-calibration-dataset.jsonl",
+      "sha256": "63503d8155e73281fe4a1055b08d0974f675f6f5dc3bc160358db7d99e3a7bfc"
+    },
+    "marks_contact_sheet": {
+      "path": "artifacts/grounding-v3b/marks-contact-sheet.png",
+      "sha256": "a675659fb6f6f34077150c534393cc1a9ab0d867a84c91af170bf0d4fe8dd957"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v3b-calibration-overlays.jsonl",
+      "sha256": "17ac5fea0001cc4b8749502d205bf11930c5766aa46c3d7ce7ecbd4a2d813e45"
+    },
+    "predictions_claude_haiku_4_5": {
+      "path": "artifacts/grounding-v3b-calibration-predictions-claude-haiku-4.5.jsonl",
+      "sha256": "cf54eb11ecda2fd2339de65e9c8a7b1591c5f0daa1c639a16e866a05b06f7363"
+    },
+    "predictions_gemini_3_7_flash_adapted": {
+      "path": "artifacts/grounding-v3b-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+      "sha256": "1ff8be9806f325e188447f65dfc54c95f718d469dd719108f7e40693c582dadf"
+    }
+  },
+  "parser_version": "pixelgym-grounding-parser-v2",
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v3b",
+  "schema_version": "pixelgym-grounding-v3b-manifest-v1",
+  "scored_example_count": 0,
+  "status": "calibration_complete_both_models_saturated",
+  "target_specs": [
+    {
+      "element_type": "text_input",
+      "instruction": "Click the Company legal name field",
+      "semantic_id": "company_legal_name"
+    },
+    {
+      "element_type": "text_input",
+      "instruction": "Click the Billing email field",
+      "semantic_id": "billing_email"
+    },
+    {
+      "element_type": "text_input",
+      "instruction": "Click the Office phone field",
+      "semantic_id": "office_phone"
+    },
+    {
+      "element_type": "text_input",
+      "instruction": "Click the VAT number field",
+      "semantic_id": "vat_number"
+    },
+    {
+      "element_type": "select",
+      "instruction": "Click the Region dropdown",
+      "semantic_id": "region"
+    },
+    {
+      "element_type": "select",
+      "instruction": "Click the Currency dropdown",
+      "semantic_id": "currency"
+    },
+    {
+      "element_type": "checkbox",
+      "instruction": "Click the Preferred vendor checkbox",
+      "semantic_id": "preferred_vendor"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Reports navigation link",
+      "semantic_id": "nav_reports"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Pending Review sidebar link",
+      "semantic_id": "sb_pending"
+    },
+    {
+      "element_type": "button",
+      "instruction": "Click the Save Draft button",
+      "semantic_id": "save_draft"
+    }
+  ],
+  "variant": "v3b"
+}

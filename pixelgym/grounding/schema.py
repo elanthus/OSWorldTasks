@@ -196,9 +196,16 @@ def validate_example(example: dict[str, Any]) -> None:
         raise ValueError("CSS-to-screenshot coordinate transformation does not match")
 
 
-def target_area_slice(example: dict[str, Any]) -> str:
+def target_area_ratio(example: dict[str, Any]) -> float:
+    """Return the target box area as a fraction of the full screenshot area."""
     x0, y0, x1, y1 = example["bbox"]
-    ratio = ((x1 - x0) * (y1 - y0)) / (example["screen_width"] * example["screen_height"])
+    return float((x1 - x0) * (y1 - y0)) / float(
+        example["screen_width"] * example["screen_height"]
+    )
+
+
+def target_area_slice(example: dict[str, Any]) -> str:
+    ratio = target_area_ratio(example)
     if ratio < TARGET_AREA_SMALL_BELOW:
         return "small"
     if ratio < TARGET_AREA_MEDIUM_BELOW:

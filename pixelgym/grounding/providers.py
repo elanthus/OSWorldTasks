@@ -21,6 +21,8 @@ from typing import Any, Protocol, cast
 CODEX_MODEL = "gpt-5.4-mini"
 CODEX_PARAMETERS: dict[str, Any] = {"reasoning_effort": "low", "temperature": None}
 OPENROUTER_PARAMETERS: dict[str, Any] = {"temperature": 0, "seed": 20260809}
+CLAUDE_MODEL = "claude-sonnet-5"
+CLAUDE_PARAMETERS: dict[str, Any] = {"temperature": 0}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -191,6 +193,125 @@ class CodexCLIProvider:
             )
 
 
+class ClaudeCodeCLIProvider:
+    name = "claude-code-cli"
+
+    def __init__(
+        self,
+        *,
+        model: str = CLAUDE_MODEL,
+        executable: str | None = None,
+        timeout_seconds: float = 180.0,
+        command_runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+    ) -> None:
+        self.model = model
+        self.parameters = dict(CLAUDE_PARAMETERS)
+        self.executable = executable or shutil.which("claude") or "claude"
+        self.timeout_seconds = timeout_seconds
+        self._run = command_runner
+
+    def _version(self) -> str:
+        try:
+            completed = self._run(
+                [self.executable, "--version"],
+                text=True,
+                capture_output=True,
+                timeout=10.0,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return "unknown"
+        return completed.stdout.strip() or "unknown"
+
+    def invoke(self, *, image_path: Path, prompt: str, schema: dict[str, Any]) -> ProviderResponse:
+        started_at = _timestamp()
+        start = time.monotonic()
+        full_prompt = (
+            f"Use the Read tool to view the screenshot image at "
+            f"{image_path.resolve()}. Then answer:\n\n{prompt}"
+        )
+        command = [
+            self.executable,
+            "--print",
+            "--model",
+            self.model,
+            "--output-format",
+            "json",
+            "--json-schema",
+            json.dumps(schema, sort_keys=True),
+            "--allowedTools",
+            "Read",
+            "--dangerously-skip-permissions",
+            full_prompt,
+        ]
+        try:
+            completed = self._run(
+                command,
+                text=True,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            return ProviderResponse(
+                timestamp_utc=started_at,
+                latency_ms=(time.monotonic() - start) * 1000,
+                raw_response=None,
+                usage=None,
+                provider_metadata={"cli_version": self._version(), "exit_code": None},
+                provider_trace=[],
+                request_failure=f"{type(exc).__name__}: provider process failed",
+            )
+        if completed.returncode != 0:
+            return ProviderResponse(
+                timestamp_utc=started_at,
+                latency_ms=(time.monotonic() - start) * 1000,
+                raw_response=None,
+                usage=None,
+                provider_metadata={
+                    "cli_version": self._version(),
+                    "exit_code": completed.returncode,
+                },
+                provider_trace=[],
+                request_failure=f"claude CLI exited with status {completed.returncode}",
+            )
+        try:
+            envelope = json.loads(completed.stdout)
+        except (json.JSONDecodeError, ValueError):
+            return ProviderResponse(
+                timestamp_utc=started_at,
+                latency_ms=(time.monotonic() - start) * 1000,
+                raw_response=None,
+                usage=None,
+                provider_metadata={
+                    "cli_version": self._version(),
+                    "exit_code": completed.returncode,
+                },
+                provider_trace=[],
+                request_failure="claude CLI produced unparseable output",
+            )
+        is_error = envelope.get("is_error", False)
+        raw_response = envelope.get("result") if not is_error else None
+        failure = "claude CLI reported an error result" if is_error else None
+        if not is_error and raw_response is None:
+            failure = "claude CLI produced no result text"
+        return ProviderResponse(
+            timestamp_utc=started_at,
+            latency_ms=(time.monotonic() - start) * 1000,
+            raw_response=raw_response if isinstance(raw_response, str) else None,
+            usage=None,
+            provider_metadata={
+                "cli_version": self._version(),
+                "exit_code": completed.returncode,
+                "cost_usd": envelope.get("cost_usd"),
+                "num_turns": envelope.get("num_turns"),
+                "session_id": envelope.get("session_id"),
+            },
+            provider_trace=[],
+            request_failure=failure,
+        )
+
+
 class OpenRouterProvider:
     name = "openrouter"
     endpoint = "https://openrouter.ai/api/v1/chat/completions"
@@ -286,6 +407,49 @@ class OpenRouterProvider:
             provider_metadata={"endpoint": self.endpoint},
             provider_trace=[],
             request_failure=failure,
+        )
+
+
+class GeminiCoordinateAdapter:
+    """Rescales coordinates from Gemini's internal grid to actual pixel dimensions.
+
+    Gemini vision models emit x/y in a ~1000×1000 coordinate space regardless of
+    the actual image dimensions stated in the prompt.  This wrapper rescales the
+    response coordinates to match the true image size.
+    """
+
+    def __init__(self, inner: GroundingProvider, *, grid_size: int = 1000) -> None:
+        self._inner = inner
+        self._grid_size = grid_size
+        self.name = inner.name
+        self.model = inner.model
+        self.parameters = {**inner.parameters, "coordinate_rescale": f"gemini-{grid_size}"}
+
+    def invoke(self, *, image_path: Path, prompt: str, schema: dict[str, Any]) -> ProviderResponse:
+        response = self._inner.invoke(image_path=image_path, prompt=prompt, schema=schema)
+        if response.raw_response is None or response.request_failure is not None:
+            return response
+        try:
+            parsed = json.loads(response.raw_response)
+        except (json.JSONDecodeError, ValueError):
+            return response
+        if not isinstance(parsed, dict) or "x" not in parsed or "y" not in parsed:
+            return response
+        from PIL import Image
+
+        with Image.open(image_path) as img:
+            width, height = img.size
+        rescaled = dict(parsed)
+        rescaled["x"] = round(parsed["x"] * width / self._grid_size)
+        rescaled["y"] = round(parsed["y"] * height / self._grid_size)
+        return dataclasses.replace(
+            response,
+            raw_response=json.dumps(rescaled, separators=(",", ":")),
+            provider_metadata={
+                **response.provider_metadata,
+                "coordinate_rescale": f"{self._grid_size}->{width}x{height}",
+                "original_response": response.raw_response,
+            },
         )
 
 

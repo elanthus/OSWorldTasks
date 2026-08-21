@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import math
 import random
 import statistics
@@ -9,18 +10,40 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable
 from typing import Any
 
-from pixelgym.grounding.evaluation import PREDICTION_SCHEMA_VERSION, PROMPT_VERSION
+from pixelgym.grounding.evaluation import (
+    PREDICTION_SCHEMA_VERSION,
+    PREDICTION_SCHEMA_VERSION_V2,
+    PROMPT_VERSION,
+    PROMPT_VERSION_V2,
+)
 from pixelgym.grounding.schema import (
     PROTOCOL_VERSION,
     TARGET_AREA_MEDIUM_BELOW,
     TARGET_AREA_SMALL_BELOW,
+    target_area_ratio,
     target_area_slice,
 )
 
-ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v2"
+ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v3"
 ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v2"
 DEFAULT_BOOTSTRAP_SAMPLES = 10_000
 DEFAULT_BOOTSTRAP_SEED = 20_260_809
+
+DISTANCE_THRESHOLD_METHOD = "normalized-center-distance-at-or-below-threshold-v1"
+DEFAULT_DISTANCE_THRESHOLDS = (
+    0.0,
+    0.005,
+    0.01,
+    0.02,
+    0.03,
+    0.05,
+    0.075,
+    0.1,
+    0.15,
+    0.2,
+    0.3,
+    0.5,
+)
 
 ERROR_CATEGORIES = (
     "wrong semantic element",
@@ -132,6 +155,114 @@ def _slice_summary(pairs: Iterable[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _validate_thresholds(thresholds: Iterable[float]) -> tuple[float, ...]:
+    values = tuple(float(value) for value in thresholds)
+    if not values:
+        raise ValueError("distance thresholds must be a nonempty sequence")
+    if any(not math.isfinite(value) or value < 0 for value in values):
+        raise ValueError("distance thresholds must be finite and nonnegative")
+    if any(later <= earlier for earlier, later in itertools.pairwise(values)):
+        raise ValueError("distance thresholds must be strictly increasing")
+    return values
+
+
+def distance_threshold_curve(
+    records: list[dict[str, Any]],
+    *,
+    thresholds: Iterable[float] = DEFAULT_DISTANCE_THRESHOLDS,
+) -> list[dict[str, Any]]:
+    """Return tolerance accuracy at each normalized-center-distance threshold.
+
+    A record counts as within-threshold when its stored normalized center distance is
+    less than or equal to the threshold, so ``observed == threshold`` passes. The
+    denominator is always the full record count: a record with no measurable distance
+    (an invalid output or a request failure) is retained and never counted as
+    within-threshold, matching the fail-closed scoring rule used elsewhere.
+
+    This is a diagnostic curve, not the scored benchmark metric. The benchmark's
+    ``correct`` field remains point-inside-half-open-box; a small distance to the box
+    centre does not make a miss into a hit.
+    """
+    values = _validate_thresholds(thresholds)
+    distances = [
+        float(record["normalized_center_distance"])
+        for record in records
+        if record["normalized_center_distance"] is not None
+    ]
+    curve = []
+    for threshold in values:
+        within = sum(distance <= threshold for distance in distances)
+        curve.append(
+            {
+                "threshold": threshold,
+                "within_count": within,
+                "record_count": len(records),
+                "measured_count": len(distances),
+                "missing_count": len(records) - len(distances),
+                "accuracy": _rate(within, len(records)),
+            }
+        )
+    return curve
+
+
+def _target_area_ratio_summary(pairs: list[dict[str, Any]]) -> dict[str, Any]:
+    ratios = sorted(pair["target_area_ratio"] for pair in pairs)
+    return {
+        "minimum": ratios[0] if ratios else None,
+        "median": statistics.median(ratios) if ratios else None,
+        "maximum": ratios[-1] if ratios else None,
+    }
+
+
+def distance_threshold_report(
+    pairs: list[dict[str, Any]],
+    *,
+    thresholds: Iterable[float] = DEFAULT_DISTANCE_THRESHOLDS,
+) -> dict[str, Any]:
+    """Build the threshold-sweep section, overall and split by frozen target size.
+
+    Gates read ``conditions.accuracy``; this section exists so a saturated
+    inside-the-box metric can still be inspected for residual discrimination.
+    """
+    values = _validate_thresholds(thresholds)
+    by_size: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
+    for pair in pairs:
+        by_size[pair["target_size"]].append(pair)
+
+    def _condition_curves(rows: list[dict[str, Any]]) -> dict[str, Any]:
+        return {
+            condition: {
+                "correct_count": sum(row[condition]["correct"] is True for row in rows),
+                "record_count": len(rows),
+                "strict_accuracy": _rate(
+                    sum(row[condition]["correct"] is True for row in rows), len(rows)
+                ),
+                "curve": distance_threshold_curve(
+                    [row[condition] for row in rows], thresholds=values
+                ),
+            }
+            for condition in ("raw", "marks")
+        }
+
+    return {
+        "method": DISTANCE_THRESHOLD_METHOD,
+        "normalization": "screenshot diagonal",
+        "comparison": "observed <= threshold",
+        "missing_distance_counted_as_incorrect": True,
+        "is_scored_benchmark_metric": False,
+        "thresholds": list(values),
+        "conditions": _condition_curves(pairs),
+        "by_target_size": {
+            size: {
+                "example_count": len(rows),
+                "target_area_ratio": _target_area_ratio_summary(rows),
+                "conditions": _condition_curves(rows),
+            }
+            for size, rows in sorted(by_size.items())
+        },
+    }
+
+
 def _latency_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     values = [float(row["latency_ms"]) for row in records if row.get("latency_ms") is not None]
     return {
@@ -156,6 +287,12 @@ def _usage_totals(records: list[dict[str, Any]]) -> dict[str, int | float]:
     return dict(sorted(totals.items()))
 
 
+_ACCEPTED_PREDICTION_VERSIONS = {
+    PREDICTION_SCHEMA_VERSION: PROMPT_VERSION,
+    PREDICTION_SCHEMA_VERSION_V2: PROMPT_VERSION_V2,
+}
+
+
 def _validate_and_pair(
     examples: list[dict[str, Any]], predictions: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -164,13 +301,18 @@ def _validate_and_pair(
     example_by_id = {row["example_id"]: row for row in examples}
     if len(example_by_id) != len(examples):
         raise ValueError("grounding dataset contains duplicate example IDs")
+    schema_versions = {record.get("schema_version") for record in predictions}
+    if len(schema_versions) > 1:
+        raise ValueError("prediction schema versions must not be mixed in one analysis")
     grouped: defaultdict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in predictions:
-        if record.get("schema_version") != PREDICTION_SCHEMA_VERSION:
+        schema_version = record.get("schema_version")
+        if schema_version not in _ACCEPTED_PREDICTION_VERSIONS:
             raise ValueError("prediction schema version does not match")
+        expected_prompt = _ACCEPTED_PREDICTION_VERSIONS[schema_version]
         if record.get("protocol_version") != PROTOCOL_VERSION:
             raise ValueError("prediction protocol version does not match")
-        if record.get("prompt_version") != PROMPT_VERSION:
+        if record.get("prompt_version") != expected_prompt:
             raise ValueError("prediction prompt version does not match")
         example_id_value = record.get("example_id")
         if not isinstance(example_id_value, str):
@@ -205,6 +347,7 @@ def _validate_and_pair(
                 "target": example["target"],
                 "element_type": example["element_type"],
                 "target_size": target_area_slice(example),
+                "target_area_ratio": target_area_ratio(example),
                 "screen_state": example["screen_state"],
                 "task_seed": example["task_seed"],
                 "bbox": example["bbox"],
@@ -405,6 +548,7 @@ def analyze_predictions(
     error_reviews: list[dict[str, Any]],
     bootstrap_samples: int = DEFAULT_BOOTSTRAP_SAMPLES,
     bootstrap_seed: int = DEFAULT_BOOTSTRAP_SEED,
+    distance_thresholds: Iterable[float] = DEFAULT_DISTANCE_THRESHOLDS,
 ) -> dict[str, Any]:
     """Analyze stored predictions without making provider calls."""
     pairs = _validate_and_pair(examples, predictions)
@@ -457,6 +601,7 @@ def analyze_predictions(
                 "target_id": pair["target_id"],
                 "element_type": pair["element_type"],
                 "target_size": pair["target_size"],
+                "target_area_ratio": pair["target_area_ratio"],
                 "screen_state": pair["screen_state"],
                 "task_seed": pair["task_seed"],
                 "bbox": pair["bbox"],
@@ -480,12 +625,14 @@ def analyze_predictions(
             }
         )
 
+    distance_threshold_section = distance_threshold_report(pairs, thresholds=distance_thresholds)
     review_status_counts = Counter(review["review_status"] for review in reviews)
     category_counts = Counter(category for review in reviews for category in review["categories"])
+    actual_prompt_version = predictions[0]["prompt_version"]
     return {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "protocol_version": PROTOCOL_VERSION,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": actual_prompt_version,
         "analysis_config": {
             "paired_bootstrap_samples": bootstrap_samples,
             "paired_bootstrap_seed": bootstrap_seed,
@@ -499,6 +646,8 @@ def analyze_predictions(
                 "small_below": TARGET_AREA_SMALL_BELOW,
                 "medium_below": TARGET_AREA_MEDIUM_BELOW,
             },
+            "distance_threshold_method": DISTANCE_THRESHOLD_METHOD,
+            "distance_thresholds": list(distance_threshold_section["thresholds"]),
         },
         "provider": providers[0],
         "model": models[0],
@@ -537,6 +686,7 @@ def analyze_predictions(
             },
             "target_size": {key: _slice_summary(value) for key, value in sorted(by_size.items())},
         },
+        "distance_threshold_accuracy": distance_threshold_section,
         "latency": {
             "all": _latency_summary(predictions),
             "raw": _latency_summary(raw_records),

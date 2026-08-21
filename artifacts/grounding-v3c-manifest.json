@@ -1,0 +1,167 @@
+{
+  "calibration_example_count": 20,
+  "calibration_seeds": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "decision_history": [
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "provider": "claude-code-cli",
+      "raw_accuracy": "19/20 = 95%",
+      "marks_accuracy": "20/20 = 100%",
+      "raw_mean_center_distance_norm": 0.0046,
+      "marks_mean_center_distance_norm": 0.0089,
+      "raw_invalid": 0,
+      "marks_invalid": 0,
+      "escalation_outcome": "m > 0.85 — saturated",
+      "raw_miss_targets": ["name_2"],
+      "v3b_comparison": "v3b was 100%/100%; v3c raw dropped to 95% (1 miss on name_2)"
+    },
+    {
+      "model": "google/gemini-3.7-flash",
+      "provider": "openrouter+gemini-coordinate-adapter",
+      "raw_accuracy": "20/20 = 100%",
+      "marks_accuracy": "20/20 = 100%",
+      "raw_mean_center_distance_norm": 0.0006,
+      "marks_mean_center_distance_norm": 0.0016,
+      "raw_invalid": 0,
+      "marks_invalid": 0,
+      "escalation_outcome": "m > 0.85 — saturated"
+    },
+    {
+      "model": "meta-llama/llama-4-scout",
+      "provider": "openrouter",
+      "raw_accuracy": "1/20 = 5%",
+      "marks_accuracy": "0/20 = 0%",
+      "raw_mean_center_distance_norm": 0.0730,
+      "marks_mean_center_distance_norm": 0.1110,
+      "raw_invalid": 0,
+      "marks_invalid": 0,
+      "escalation_outcome": "m < 0.60 — floor (weak model probe)"
+    },
+    {
+      "model": "google/gemma-3-27b-it",
+      "provider": "openrouter",
+      "raw_accuracy": "0/20 = 0%",
+      "marks_accuracy": "0/20 = 0%",
+      "raw_mean_center_distance_norm": 0.0706,
+      "marks_mean_center_distance_norm": 0.1563,
+      "raw_invalid": 0,
+      "marks_invalid": 0,
+      "escalation_outcome": "m < 0.60 — floor (weak model probe, no coordinate adapter)"
+    }
+  ],
+  "design": "4 calibration seeds x 5 screen states; crossed target allocation; one target per screenshot",
+  "difficulty_levers": [
+    "8 identical Edit buttons (row-context disambiguation)",
+    "8 identical Delete buttons (row-context disambiguation)",
+    "48 total candidates",
+    "header + sidebar occlusion"
+  ],
+  "escalation_rule": "0.60 <= m <= 0.85: freeze v3c; m > 0.85: report saturation; m < 0.60: floor check then report honestly",
+  "model_calls_performed": 160,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v3c-calibration-candidates.jsonl",
+      "sha256": "691b90c2589ea4508f152ad6a216a6ba096ad16e34d11b46073c9ccf331f5081"
+    },
+    "capture_evidence": {
+      "path": "artifacts/grounding-v3c-capture.json",
+      "sha256": "f973de16451270149c6f069ae23f06e8a3f280f771c1108897645e9e18202474"
+    },
+    "contact_sheet": {
+      "path": "artifacts/grounding-v3c/contact-sheet.png",
+      "sha256": "9796e1e7e291620839c3582c7fb4745b5a66c1e5ce47005dda1eac87584ae5f8"
+    },
+    "dataset": {
+      "path": "artifacts/grounding-v3c-calibration-dataset.jsonl",
+      "sha256": "c3eccbb2f8f98540fa85778bb4decf7e11e13e60fa6530c8add288f65c86d059"
+    },
+    "marks_contact_sheet": {
+      "path": "artifacts/grounding-v3c/marks-contact-sheet.png",
+      "sha256": "3da63e35f805f2cfff2b791fdf674e172b6c2dece0720f9f67e32c03d613ec1b"
+    },
+    "predictions_haiku": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl",
+      "sha256": "5946823e22ed68d281a606162488454e40f8672d51113ddb6891560340d62ec8"
+    },
+    "predictions_flash_adapted": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+      "sha256": "009dcce008706734ba48f58e1bf9c985271f0a5ecf8a315c70757ccf6083db8e"
+    },
+    "predictions_llama_scout": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-llama-4-scout.jsonl",
+      "sha256": "b8beed5c25d6a87d163d084fa3bba872a324aa50b4bbc7df5a1f7b1a3e38bcf0"
+    },
+    "predictions_gemma_27b": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-gemma-3-27b.jsonl",
+      "sha256": "ca42b4279e63249e91f363252e191ff8d8f319c82eb03cf079c9dbc05425120b"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v3c-calibration-overlays.jsonl",
+      "sha256": "0731c0931a5732c5d1b7aa48a2dc99f25b0a47047fb8a0f0d7fb492b8cc3896d"
+    }
+  },
+  "parser_version": "pixelgym-grounding-parser-v2",
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v3c",
+  "schema_version": "pixelgym-grounding-v3c-manifest-v1",
+  "scored_example_count": 0,
+  "status": "calibration_complete_frontier_saturated_mid_tier_floored",
+  "target_specs": [
+    {
+      "element_type": "button",
+      "instruction": "Click the Edit button for Acme Industries",
+      "semantic_id": "edit_1"
+    },
+    {
+      "element_type": "button",
+      "instruction": "Click the Edit button for Meridian Partners",
+      "semantic_id": "edit_5"
+    },
+    {
+      "element_type": "button",
+      "instruction": "Click the Delete button for Pacific Trading Co",
+      "semantic_id": "delete_3"
+    },
+    {
+      "element_type": "button",
+      "instruction": "Click the Delete button for Atlas Logistics",
+      "semantic_id": "delete_6"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the GlobalTech Solutions vendor name",
+      "semantic_id": "name_2"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Pinnacle Systems vendor name",
+      "semantic_id": "name_7"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Status column header to sort",
+      "semantic_id": "sort_status"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Country column header to sort",
+      "semantic_id": "sort_country"
+    },
+    {
+      "element_type": "link",
+      "instruction": "Click the Next page button",
+      "semantic_id": "page_next"
+    },
+    {
+      "element_type": "text_input",
+      "instruction": "Click the search input field",
+      "semantic_id": "search_input"
+    }
+  ],
+  "variant": "v3c"
+}

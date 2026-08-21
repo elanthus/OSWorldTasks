@@ -1,0 +1,76 @@
+{
+  "browser_engine": "chromium",
+  "browser_version": "151.0.7922.34",
+  "calibration_label": "CALIBRATION",
+  "calibration_seeds": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "candidate_record_count": 20,
+  "candidates_path": "artifacts/grounding-v3a-calibration-candidates.jsonl",
+  "capture_version": "pixelgym-browser-capture-v1",
+  "contact_sheet_path": "artifacts/grounding-v3a/contact-sheet.png",
+  "dataset_path": "artifacts/grounding-v3a-calibration-dataset.jsonl",
+  "example_count": 20,
+  "marks_contact_sheet_path": "artifacts/grounding-v3a/marks-contact-sheet.png",
+  "overlays_path": "artifacts/grounding-v3a-calibration-overlays.jsonl",
+  "protocol_version": "pixelgym-grounding-v3a",
+  "repeatability": {
+    "byte_identical_file_count": 20,
+    "candidate_aggregate_sha256": "2f105f0643732ac4e77aab220352548d7076722e923199ba071f476318cea417",
+    "candidate_label": "calibration-pass-2",
+    "comparison": "bitwise PNG bytes and decoded RGBA pixels",
+    "differing_file_count": 0,
+    "differing_pixel_bbox_xyxy": null,
+    "differing_pixel_count": 0,
+    "file_count": 20,
+    "mask_applied": false,
+    "max_channel_delta": 0,
+    "reference_aggregate_sha256": "2f105f0643732ac4e77aab220352548d7076722e923199ba071f476318cea417",
+    "reference_label": "calibration-pass-1",
+    "schema_version": "pixelgym-grounding-repeatability-v2",
+    "tolerance_applied": false
+  },
+  "schema_version": "pixelgym-grounding-calibration-capture-v1",
+  "screen_state_counts": {
+    "completed_review": 4,
+    "initial": 4,
+    "partially_completed": 4,
+    "text_field_focused": 4,
+    "validation_error": 4
+  },
+  "screen_states": [
+    "initial",
+    "text_field_focused",
+    "validation_error",
+    "partially_completed",
+    "completed_review"
+  ],
+  "seed_state_cell_count": 20,
+  "source_sha256": {
+    "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
+    "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+    "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
+    "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+    "pixelgym/tasks/vendor_form/app/static/fonts/DejaVuSans-Bold.ttf": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724",
+    "pixelgym/tasks/vendor_form/app/static/fonts/DejaVuSans.ttf": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954",
+    "pixelgym/tasks/vendor_form/app/static/fonts/LICENSE-DejaVu.txt": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
+    "pixelgym/tasks/vendor_form/app/static/index.html": "d36a455921165eae906d3bf052c14e211d75c72d97ff29d4e0d165af1f10f5cc",
+    "pixelgym/tasks/vendor_form/app/static/style.css": "ba5de15a817200d9fa1c0bb4a15f9d739fc2ea15668d46d4e9d4433822ebb7ec",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+    "pixelgym/tasks/vendor_form/ui.py": "03c4a8eef85b71e4902fbbf7eb617605f534ce5195f979c3c5e8b43b9ec58a29"
+  },
+  "target_counts": {
+    "company_name": 1,
+    "contact_email": 2,
+    "contact_phone": 3,
+    "country": 4,
+    "payment_terms_net_15": 3,
+    "payment_terms_net_30": 2,
+    "payment_terms_net_45": 1,
+    "tax_id": 4
+  },
+  "target_state_cell_count": 20
+}

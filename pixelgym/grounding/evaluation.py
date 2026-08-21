@@ -15,7 +15,11 @@ from pixelgym.serialization import canonical_json_text, load_jsonl
 
 Condition = Literal["raw", "marks"]
 PROMPT_VERSION = "pixelgym-grounding-prompt-v1"
+PROMPT_VERSION_V2 = "pixelgym-grounding-prompt-v2"
+PARSER_VERSION_V1 = "pixelgym-grounding-parser-v1"
+PARSER_VERSION_V2 = "pixelgym-grounding-parser-v2"
 PREDICTION_SCHEMA_VERSION = "pixelgym-grounding-prediction-v1"
+PREDICTION_SCHEMA_VERSION_V2 = "pixelgym-grounding-prediction-v2"
 
 RAW_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -35,7 +39,11 @@ def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def prompt_for(example: dict[str, Any], condition: Condition) -> str:
+def prompt_for(
+    example: dict[str, Any], condition: Condition, *, prompt_version: str = PROMPT_VERSION
+) -> str:
+    if prompt_version not in (PROMPT_VERSION, PROMPT_VERSION_V2):
+        raise ValueError(f"unknown prompt version {prompt_version!r}")
     common = (
         "Locate the requested control in the attached screenshot. "
         f"Target: {example['target']}. "
@@ -48,19 +56,29 @@ def prompt_for(example: dict[str, Any], condition: Condition) -> str:
             "The origin is the upper-left. Do not explain your answer and do not use tools."
         )
     if condition == "marks":
+        if prompt_version == PROMPT_VERSION:
+            return common + (
+                "Every candidate control is outlined and has a visible numbered badge. "
+                "Return only a JSON object with the integer mark_id of the requested control. "
+                "Do not explain your answer and do not use tools."
+            )
         return common + (
-            "Every candidate control is outlined and has a visible numbered badge. "
-            "Return only a JSON object with the integer mark_id of the requested control. "
-            "Do not explain your answer and do not use tools."
+            "Every candidate control is outlined and has a visible numbered badge to help "
+            "you locate controls. "
+            "Return only a JSON object with integer x and y screenshot-pixel coordinates "
+            "of the requested control. "
+            "The origin is the upper-left. Do not explain your answer and do not use tools."
         )
     raise ValueError(f"unknown condition {condition!r}")
 
 
-def schema_for(condition: Condition) -> dict[str, Any]:
+def schema_for(condition: Condition, *, parser_version: str = PARSER_VERSION_V1) -> dict[str, Any]:
+    if parser_version not in (PARSER_VERSION_V1, PARSER_VERSION_V2):
+        raise ValueError(f"unknown parser version {parser_version!r}")
     if condition == "raw":
         return RAW_SCHEMA
     if condition == "marks":
-        return MARKS_SCHEMA
+        return RAW_SCHEMA if parser_version == PARSER_VERSION_V2 else MARKS_SCHEMA
     raise ValueError(f"unknown condition {condition!r}")
 
 
@@ -71,13 +89,14 @@ def cache_key(
     prompt: str,
     image_sha256: str,
     schema: dict[str, Any],
+    prompt_version: str = PROMPT_VERSION,
 ) -> str:
     material = {
         "provider": provider.name,
         "model": provider.model,
         "parameters": provider.parameters,
         "protocol_version": PROTOCOL_VERSION,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": prompt_version,
         "condition": condition,
         "prompt": prompt,
         "image_sha256": image_sha256,
@@ -125,6 +144,19 @@ class ParsedPrediction:
     error: str | None
 
 
+def _parse_point(
+    value: dict[str, Any], *, width: int, height: int, keys_error: str
+) -> ParsedPrediction:
+    if set(value) != {"x", "y"}:
+        return ParsedPrediction("invalid", None, None, None, keys_error)
+    x, y = value["x"], value["y"]
+    if type(x) is not int or type(y) is not int:
+        return ParsedPrediction("invalid", None, None, None, "x and y must be integers")
+    if not (0 <= x < width and 0 <= y < height):
+        return ParsedPrediction("invalid", value, None, None, "point lies outside screenshot")
+    return ParsedPrediction("parsed", value, [float(x), float(y)], None, None)
+
+
 def parse_prediction(
     raw_response: str | None,
     *,
@@ -132,7 +164,10 @@ def parse_prediction(
     width: int,
     height: int,
     marks: list[dict[str, Any]],
+    parser_version: str = PARSER_VERSION_V1,
 ) -> ParsedPrediction:
+    if parser_version not in (PARSER_VERSION_V1, PARSER_VERSION_V2):
+        raise ValueError(f"unknown parser version {parser_version!r}")
     if raw_response is None:
         return ParsedPrediction("invalid", None, None, None, "response text is missing")
     try:
@@ -142,17 +177,17 @@ def parse_prediction(
     if not isinstance(value, dict):
         return ParsedPrediction("invalid", None, None, None, "response must be a JSON object")
     if condition == "raw":
-        if set(value) != {"x", "y"}:
-            return ParsedPrediction(
-                "invalid", None, None, None, "raw response keys must be x and y"
-            )
-        x, y = value["x"], value["y"]
-        if type(x) is not int or type(y) is not int:
-            return ParsedPrediction("invalid", None, None, None, "x and y must be integers")
-        if not (0 <= x < width and 0 <= y < height):
-            return ParsedPrediction("invalid", value, None, None, "point lies outside screenshot")
-        return ParsedPrediction("parsed", value, [float(x), float(y)], None, None)
+        return _parse_point(
+            value, width=width, height=height, keys_error="raw response keys must be x and y"
+        )
     if condition == "marks":
+        if parser_version == PARSER_VERSION_V2:
+            return _parse_point(
+                value,
+                width=width,
+                height=height,
+                keys_error="marks response keys must be x and y",
+            )
         if set(value) != {"mark_id"}:
             return ParsedPrediction(
                 "invalid", None, None, None, "marks response key must be mark_id"
@@ -195,9 +230,12 @@ def evaluate_one(
     condition: Condition,
     provider: GroundingProvider,
     cache: ResponseCache,
+    prompt_version: str = PROMPT_VERSION,
+    parser_version: str = PARSER_VERSION_V1,
+    prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
 ) -> tuple[dict[str, Any], bool]:
-    prompt = prompt_for(example, condition)
-    schema = schema_for(condition)
+    prompt = prompt_for(example, condition, prompt_version=prompt_version)
+    schema = schema_for(condition, parser_version=parser_version)
     if condition == "raw":
         image_relative = example["image_path"]
         image_sha256 = example["image_sha256"]
@@ -213,6 +251,7 @@ def evaluate_one(
         prompt=prompt,
         image_sha256=image_sha256,
         schema=schema,
+        prompt_version=prompt_version,
     )
     response = cache.get(key)
     cache_hit = response is not None
@@ -228,6 +267,7 @@ def evaluate_one(
             width=example["screen_width"],
             height=example["screen_height"],
             marks=overlay["marks"],
+            parser_version=parser_version,
         )
     correct, distance = score_point(
         parsed.point,
@@ -236,9 +276,9 @@ def evaluate_one(
         height=example["screen_height"],
     )
     record = {
-        "schema_version": PREDICTION_SCHEMA_VERSION,
+        "schema_version": prediction_schema_version,
         "protocol_version": PROTOCOL_VERSION,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": prompt_version,
         "example_id": example["example_id"],
         "condition": condition,
         "provider": provider.name,
@@ -293,6 +333,8 @@ def planned_new_calls(
     provider: GroundingProvider,
     cache: ResponseCache,
     pilot: bool,
+    prompt_version: str = PROMPT_VERSION,
+    parser_version: str = PARSER_VERSION_V1,
 ) -> dict[str, int]:
     examples, overlays = _load_inputs(repository_root)
     if pilot:
@@ -303,8 +345,8 @@ def planned_new_calls(
     for example in examples:
         overlay = overlays[example["example_id"]]
         for condition in ("raw", "marks"):
-            prompt = prompt_for(example, condition)
-            schema = schema_for(condition)
+            prompt = prompt_for(example, condition, prompt_version=prompt_version)
+            schema = schema_for(condition, parser_version=parser_version)
             image_sha = (
                 example["image_sha256"] if condition == "raw" else overlay["marked_image_sha256"]
             )
@@ -314,6 +356,7 @@ def planned_new_calls(
                 prompt=prompt,
                 image_sha256=image_sha,
                 schema=schema,
+                prompt_version=prompt_version,
             )
             total += 1
             cached += cache.get(key) is not None
@@ -328,10 +371,18 @@ def run_evaluation(
     pilot: bool,
     max_new_calls: int,
     cache_directory: Path | None = None,
+    prompt_version: str = PROMPT_VERSION,
+    parser_version: str = PARSER_VERSION_V1,
+    prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
 ) -> dict[str, Any]:
     cache = ResponseCache(cache_directory or repository_root / ".cache" / "grounding" / "responses")
     plan = planned_new_calls(
-        repository_root=repository_root, provider=provider, cache=cache, pilot=pilot
+        repository_root=repository_root,
+        provider=provider,
+        cache=cache,
+        pilot=pilot,
+        prompt_version=prompt_version,
+        parser_version=parser_version,
     )
     if plan["new_calls"] > max_new_calls:
         raise RuntimeError(
@@ -353,6 +404,9 @@ def run_evaluation(
                 condition=condition,
                 provider=provider,
                 cache=cache,
+                prompt_version=prompt_version,
+                parser_version=parser_version,
+                prediction_schema_version=prediction_schema_version,
             )
             records.append(record)
             cache_hits += cache_hit
@@ -363,7 +417,8 @@ def run_evaluation(
     output_path.write_text(encoded)
     return {
         "protocol_version": PROTOCOL_VERSION,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": prompt_version,
+        "prediction_schema_version": prediction_schema_version,
         "provider": provider.name,
         "model": provider.model,
         "pilot": pilot,

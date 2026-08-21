@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vendor Management — Vendor List</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <!-- Header: 5 nav links -->
+    <header id="app-header">
+      <span class="header-logo">VendorHub</span>
+      <nav class="header-nav">
+        <a href="#" class="nav-link active" id="nav-vendors">Vendors</a>
+        <a href="#" class="nav-link" id="nav-contracts">Contracts</a>
+        <a href="#" class="nav-link" id="nav-reports">Reports</a>
+        <a href="#" class="nav-link" id="nav-settings">Settings</a>
+        <a href="#" class="nav-link" id="nav-help">Help</a>
+      </nav>
+    </header>
+
+    <!-- Sidebar: 8 links -->
+    <aside id="sidebar">
+      <a href="#" class="sidebar-link" id="sb-dashboard">Dashboard</a>
+      <a href="#" class="sidebar-link" id="sb-new-vendor">New Vendor</a>
+      <a href="#" class="sidebar-link active" id="sb-vendor-list">Vendor List</a>
+      <a href="#" class="sidebar-link" id="sb-pending">Pending Review</a>
+      <a href="#" class="sidebar-link" id="sb-import">Import Data</a>
+      <a href="#" class="sidebar-link" id="sb-export">Export Data</a>
+      <a href="#" class="sidebar-link" id="sb-audit">Audit Log</a>
+      <a href="#" class="sidebar-link" id="sb-support">Support</a>
+    </aside>
+
+    <!-- Main content -->
+    <main id="main-content">
+      <div class="toolbar">
+        <h1>Vendor List</h1>
+        <div class="toolbar-actions">
+          <input type="text" id="search-input" placeholder="Search vendors..." />
+          <button type="button" id="add-vendor-button">Add New Vendor</button>
+        </div>
+      </div>
+
+      <table id="vendor-table">
+        <thead>
+          <tr>
+            <th><a href="#" class="sort-link" id="sort-name">Name</a></th>
+            <th><a href="#" class="sort-link" id="sort-status">Status</a></th>
+            <th><a href="#" class="sort-link" id="sort-email">Email</a></th>
+            <th><a href="#" class="sort-link" id="sort-country">Country</a></th>
+            <th class="actions-header">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-1">
+            <td><a href="#" class="vendor-name" id="name-1">Acme Industries</a></td>
+            <td><span class="status status-active">Active</span></td>
+            <td>contact@acme-ind.com</td>
+            <td>United States</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-1">Edit</button>
+              <button type="button" class="btn-delete" id="delete-1">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-2">
+            <td><a href="#" class="vendor-name" id="name-2">GlobalTech Solutions</a></td>
+            <td><span class="status status-pending">Pending</span></td>
+            <td>info@globaltech.com</td>
+            <td>Germany</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-2">Edit</button>
+              <button type="button" class="btn-delete" id="delete-2">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-3">
+            <td><a href="#" class="vendor-name" id="name-3">Pacific Trading Co</a></td>
+            <td><span class="status status-active">Active</span></td>
+            <td>sales@pacifictrading.com</td>
+            <td>Japan</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-3">Edit</button>
+              <button type="button" class="btn-delete" id="delete-3">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-4">
+            <td><a href="#" class="vendor-name" id="name-4">Nordic Supplies AB</a></td>
+            <td><span class="status status-inactive">Inactive</span></td>
+            <td>orders@nordic-supplies.se</td>
+            <td>Sweden</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-4">Edit</button>
+              <button type="button" class="btn-delete" id="delete-4">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-5">
+            <td><a href="#" class="vendor-name" id="name-5">Meridian Partners</a></td>
+            <td><span class="status status-active">Active</span></td>
+            <td>hello@meridian-partners.com</td>
+            <td>United Kingdom</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-5">Edit</button>
+              <button type="button" class="btn-delete" id="delete-5">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-6">
+            <td><a href="#" class="vendor-name" id="name-6">Atlas Logistics</a></td>
+            <td><span class="status status-pending">Pending</span></td>
+            <td>support@atlas-logistics.com</td>
+            <td>Brazil</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-6">Edit</button>
+              <button type="button" class="btn-delete" id="delete-6">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-7">
+            <td><a href="#" class="vendor-name" id="name-7">Pinnacle Systems</a></td>
+            <td><span class="status status-active">Active</span></td>
+            <td>admin@pinnacle-sys.com</td>
+            <td>Canada</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-7">Edit</button>
+              <button type="button" class="btn-delete" id="delete-7">Delete</button>
+            </td>
+          </tr>
+          <tr id="row-8">
+            <td><a href="#" class="vendor-name" id="name-8">Coastal Ventures</a></td>
+            <td><span class="status status-inactive">Inactive</span></td>
+            <td>team@coastal-ventures.com</td>
+            <td>Australia</td>
+            <td class="actions-cell">
+              <button type="button" class="btn-edit" id="edit-8">Edit</button>
+              <button type="button" class="btn-delete" id="delete-8">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <a href="#" class="page-link" id="page-prev">Previous</a>
+        <a href="#" class="page-link page-active" id="page-1">1</a>
+        <a href="#" class="page-link" id="page-2">2</a>
+        <a href="#" class="page-link" id="page-3">3</a>
+        <a href="#" class="page-link" id="page-next">Next</a>
+      </div>
+
+      <div id="status-message"></div>
+    </main>
+    <div id="ready-sentinel" data-ready="false" style="display:none"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
