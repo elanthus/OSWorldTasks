@@ -1,0 +1,122 @@
+{
+  "calibration_example_count": 10,
+  "calibration_seeds": [
+    30,
+    31
+  ],
+  "calibration_targets": {
+    "marks": "6-8/10",
+    "parse_failures": 0,
+    "raw": "5-7/10",
+    "request_failures": 0
+  },
+  "condition_call_cap": 20,
+  "decision_history": [],
+  "escalation_rule": "within target band: request Haiku ceiling-check approval; above 0.85: design separate multi-step v4b; below 0.50 or any transport/parse failure: floor audit first",
+  "family_counts": {
+    "cross_panel_policy": 3,
+    "recovery_state": 3,
+    "relational_table": 4
+  },
+  "model_calls_performed": 0,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v4-pilot-candidates.jsonl",
+      "sha256": "97f6203d165ee2c16cf7dafa0392953753adc069b7028a15027848b1dc298a5f"
+    },
+    "capture_evidence": {
+      "path": "artifacts/grounding-v4-pilot-capture.json",
+      "sha256": "6874d8267d268343622f7128d6a0534deeccb8e95085889ebfc72a61b14dcb24"
+    },
+    "contact_sheet": {
+      "path": "artifacts/grounding-v4-pilot/contact-sheet.png",
+      "sha256": "618e1c91dffa501334bedc9b97b4d59ebc9dcef96ce4f065f06ff34ff76405fe"
+    },
+    "dataset": {
+      "path": "artifacts/grounding-v4-pilot-dataset.jsonl",
+      "sha256": "81af55035770701d9bff8de60617beed16ab31da990306d8d5848c85c31b467f"
+    },
+    "marks_contact_sheet": {
+      "path": "artifacts/grounding-v4-pilot/marks-contact-sheet.png",
+      "sha256": "423f88ef03b44853cd19083426732a55b0110c8a0cc2c1f5972271f015ec52c8"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v4-pilot-overlays.jsonl",
+      "sha256": "91c0c0a484a1a79013873f3c8de1ba3df10e65a04885daa3c7f3e576bdc7fa94"
+    }
+  },
+  "parser_version": "pixelgym-grounding-parser-v2",
+  "primary_model": "gpt-5.6-luna",
+  "primary_parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v4-pilot",
+  "schema_version": "pixelgym-grounding-v4-manifest-v1",
+  "secondary_model": "claude-haiku-4-5-20251001",
+  "status": "calibration_captured_evaluation_not_run",
+  "target_specs": [
+    {
+      "element_type": "button",
+      "family": "relational_table",
+      "instruction": "Click Edit for the pending vendor with the highest annual spend",
+      "semantic_id": "edit_meridian"
+    },
+    {
+      "element_type": "button",
+      "family": "relational_table",
+      "instruction": "Click Deactivate for the only inactive vendor in the United States",
+      "semantic_id": "deactivate_harbor"
+    },
+    {
+      "element_type": "text_input",
+      "family": "recovery_state",
+      "instruction": "Click the field identified by the validation message",
+      "semantic_id": "billing_email"
+    },
+    {
+      "element_type": "button",
+      "family": "cross_panel_policy",
+      "instruction": "Apply the visible approval policy to the current request and click the required route",
+      "semantic_id": "route_compliance"
+    },
+    {
+      "element_type": "button",
+      "family": "cross_panel_policy",
+      "instruction": "Use the duplicate warning and request card to review the matching existing vendor",
+      "semantic_id": "review_existing_atlas"
+    },
+    {
+      "element_type": "button",
+      "family": "relational_table",
+      "instruction": "Click Edit for the pending vendor with the earliest renewal date",
+      "semantic_id": "edit_pacific"
+    },
+    {
+      "element_type": "button",
+      "family": "relational_table",
+      "instruction": "Click View for the verified active vendor with the lowest risk",
+      "semantic_id": "view_acme"
+    },
+    {
+      "element_type": "text_input",
+      "family": "recovery_state",
+      "instruction": "Click the field identified by the validation message",
+      "semantic_id": "vat_number"
+    },
+    {
+      "element_type": "button",
+      "family": "cross_panel_policy",
+      "instruction": "Apply the visible approval policy to the current request and click the required route",
+      "semantic_id": "route_finance"
+    },
+    {
+      "element_type": "button",
+      "family": "recovery_state",
+      "instruction": "The resolution message says the requested value is already set; click the safe action",
+      "semantic_id": "keep_current"
+    }
+  ],
+  "variant": "v4-pilot"
+}

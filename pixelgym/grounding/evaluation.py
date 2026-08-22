@@ -90,12 +90,13 @@ def cache_key(
     image_sha256: str,
     schema: dict[str, Any],
     prompt_version: str = PROMPT_VERSION,
+    protocol_version: str = PROTOCOL_VERSION,
 ) -> str:
     material = {
         "provider": provider.name,
         "model": provider.model,
         "parameters": provider.parameters,
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": protocol_version,
         "prompt_version": prompt_version,
         "condition": condition,
         "prompt": prompt,
@@ -233,6 +234,7 @@ def evaluate_one(
     prompt_version: str = PROMPT_VERSION,
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
+    protocol_version: str = PROTOCOL_VERSION,
 ) -> tuple[dict[str, Any], bool]:
     prompt = prompt_for(example, condition, prompt_version=prompt_version)
     schema = schema_for(condition, parser_version=parser_version)
@@ -252,6 +254,7 @@ def evaluate_one(
         image_sha256=image_sha256,
         schema=schema,
         prompt_version=prompt_version,
+        protocol_version=protocol_version,
     )
     response = cache.get(key)
     cache_hit = response is not None
@@ -277,7 +280,7 @@ def evaluate_one(
     )
     record = {
         "schema_version": prediction_schema_version,
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": protocol_version,
         "prompt_version": prompt_version,
         "example_id": example["example_id"],
         "condition": condition,

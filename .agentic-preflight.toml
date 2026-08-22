@@ -13,6 +13,7 @@ exclude = [
     "artifacts/day-2/**",
     "artifacts/day-3/**",
     "artifacts/grounding/**",
+    "artifacts/grounding-v4-pilot/**",
     "artifacts/grounding-*.json",
     "artifacts/grounding-*.jsonl",
     "artifacts/grounding-*.md",
