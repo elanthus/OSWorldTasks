@@ -142,11 +142,13 @@ _V4_CAPTURE_SOURCE_PATHS = (
     "pixelgym/grounding/calibration_v4.py",
     "pixelgym/grounding/capture.py",
     "pixelgym/grounding/determinism.py",
+    "pixelgym/grounding/evaluation.py",
     "pixelgym/grounding/overlays.py",
     "pixelgym/grounding/schema.py",
     "pixelgym/grounding/v4_protocol.py",
     "pixelgym/grounding/v4_server.py",
     "pixelgym/tasks/vendor_form/browser_contract.py",
+    "pixelgym/serialization.py",
     "pixelgym/grounding/v4_app/static/app.js",
     "pixelgym/grounding/v4_app/static/index.html",
     "pixelgym/grounding/v4_app/static/style.css",
@@ -367,12 +369,17 @@ def validate_v4_calibration_dataset(
 
 def require_v4_bitwise_repeatability(repeatability: dict[str, Any]) -> None:
     """Reject capture evidence unless every PNG and decoded pixel is identical."""
+    expected_file_count = len(V4_CALIBRATION_SEEDS) * len(SCREEN_STATES)
     if (
-        repeatability["byte_identical_file_count"] != repeatability["file_count"]
+        repeatability["file_count"] != expected_file_count
+        or repeatability["byte_identical_file_count"] != repeatability["file_count"]
         or repeatability["differing_file_count"] != 0
         or repeatability["differing_pixel_count"] != 0
     ):
-        raise RuntimeError("v4 calibration capture was not bitwise repeatable")
+        raise RuntimeError(
+            f"v4 calibration capture was not bitwise repeatable across all "
+            f"{expected_file_count} files"
+        )
 
 
 def _capture_one_pass(

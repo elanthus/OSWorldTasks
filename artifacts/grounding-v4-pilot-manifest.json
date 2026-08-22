@@ -26,7 +26,7 @@
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v4-pilot-capture.json",
-      "sha256": "25cceff40111f0b5f4e947ad2a8e6caaa3ca402fc6eca61e31d8e9c26bc7eabe"
+      "sha256": "38a8713ba2b66bb9aa0007ac6929bbad572a61b7463506cd9eecac14370f635a"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v4-pilot/contact-sheet.png",

@@ -211,6 +211,8 @@ def test_v4_repeatability_guard_fails_closed() -> None:
     require_v4_bitwise_repeatability(repeatability)
 
     for field, value in (
+        ("file_count", 0),
+        ("file_count", 9),
         ("byte_identical_file_count", 9),
         ("differing_file_count", 1),
         ("differing_pixel_count", 1),
