@@ -61,6 +61,35 @@ def test_overlay_bytes_dimensions_ids_and_mapping_are_deterministic() -> None:
     assert len({mark["semantic_id"] for mark in first_marks}) == len(candidates)
 
 
+def test_badges_do_not_overlap_any_candidate_or_prior_badge() -> None:
+    candidates = [
+        _candidate("left", [10, 30, 60, 50]),
+        _candidate("middle", [62, 30, 112, 50]),
+        _candidate("right", [114, 30, 164, 50]),
+    ]
+
+    _, marks = render_overlay(Image.new("RGB", (200, 100), "white"), candidates)
+
+    def overlaps(first: list[int], second: list[int]) -> bool:
+        return (
+            max(first[0], second[0]) < min(first[2], second[2])
+            and max(first[1], second[1]) < min(first[3], second[3])
+        )
+
+    candidate_boxes = [candidate["bbox"] for candidate in candidates]
+    badge_boxes = [mark["badge_bbox"] for mark in marks]
+    assert all(
+        not overlaps(badge, candidate)
+        for badge in badge_boxes
+        for candidate in candidate_boxes
+    )
+    assert all(
+        not overlaps(first, second)
+        for index, first in enumerate(badge_boxes)
+        for second in badge_boxes[index + 1 :]
+    )
+
+
 def test_proposal_coverage_is_separate_from_selection() -> None:
     _, marks = render_overlay(
         Image.new("RGB", (200, 100), "white"),

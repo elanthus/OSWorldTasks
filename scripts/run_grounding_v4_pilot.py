@@ -21,6 +21,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def default_output_path(repository_root: Path, provider_name: str) -> Path:
+    """Keep immutable prediction outputs separate for each provider."""
+    return (
+        repository_root
+        / "artifacts"
+        / f"grounding-v4-pilot-predictions-{provider_name}.jsonl"
+    )
+
+
 def main() -> None:
     args = parse_args()
     repository_root = Path(__file__).resolve().parents[1]
@@ -33,9 +42,7 @@ def main() -> None:
             cache=cache,
         )
     else:
-        output = args.output or (
-            repository_root / "artifacts" / "grounding-v4-pilot-predictions-luna.jsonl"
-        )
+        output = args.output or default_output_path(repository_root, args.provider)
         result = run_v4_evaluation(
             repository_root=repository_root,
             provider=provider,

@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pixelgym.grounding.calibration_v4 import V4_PROTOCOL_VERSION
 from pixelgym.grounding.evaluation import (
     PARSER_VERSION_V2,
     PREDICTION_SCHEMA_VERSION_V2,
@@ -18,10 +17,10 @@ from pixelgym.grounding.evaluation import (
     schema_for,
 )
 from pixelgym.grounding.providers import GroundingProvider
+from pixelgym.grounding.v4_protocol import V4_CONDITION_CALL_CAP, V4_PROTOCOL_VERSION
 from pixelgym.serialization import canonical_json_text, load_jsonl
 
 V4_CONDITIONS: tuple[Condition, Condition] = ("raw", "marks")
-V4_CONDITION_CALL_CAP = 20
 
 
 def load_v4_inputs(

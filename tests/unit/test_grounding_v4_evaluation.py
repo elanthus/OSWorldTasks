@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from pixelgym.grounding.calibration_v4 import V4_PROTOCOL_VERSION
-from pixelgym.grounding.evaluation import ResponseCache
+from pixelgym.grounding.evaluation import (
+    PARSER_VERSION_V2,
+    PROMPT_VERSION_V2,
+    ResponseCache,
+    cache_key,
+    schema_for,
+)
 from pixelgym.grounding.providers import MockProvider
+from pixelgym.grounding.schema import PROTOCOL_VERSION
 from pixelgym.grounding.v4_evaluation import planned_v4_calls, run_v4_evaluation
+from pixelgym.grounding.v4_protocol import V4_CONDITION_CALL_CAP, V4_PROTOCOL_VERSION
 
 
 def _write_inputs(root: Path, *, overlay_count: int = 10) -> None:
@@ -55,7 +63,11 @@ def test_planned_v4_calls_is_exactly_twenty_without_invoking_provider(tmp_path: 
         provider=provider,
         cache=ResponseCache(tmp_path / "cache"),
     )
-    assert plan == {"total_condition_records": 20, "cached_calls": 0, "new_calls": 20}
+    assert plan == {
+        "total_condition_records": V4_CONDITION_CALL_CAP,
+        "cached_calls": 0,
+        "new_calls": V4_CONDITION_CALL_CAP,
+    }
     assert provider.call_count == 0
 
 
@@ -95,12 +107,31 @@ def test_v4_planner_rejects_incomplete_overlay_set(tmp_path: Path) -> None:
 
 
 def test_v4_protocol_changes_cache_identity(tmp_path: Path) -> None:
-    _write_inputs(tmp_path)
     provider = MockProvider()
-    cache = ResponseCache(tmp_path / "cache")
-    first = planned_v4_calls(repository_root=tmp_path, provider=provider, cache=cache)
-    assert first["new_calls"] == 20
-    assert list((tmp_path / "cache").glob("*.json")) == []
+    material = {
+        "provider": provider,
+        "condition": "raw",
+        "prompt": "Locate the same target.",
+        "image_sha256": "a" * 64,
+        "schema": schema_for("raw", parser_version=PARSER_VERSION_V2),
+        "prompt_version": PROMPT_VERSION_V2,
+    }
+
+    default_key = cache_key(**material, protocol_version=PROTOCOL_VERSION)
+    v4_key = cache_key(**material, protocol_version=V4_PROTOCOL_VERSION)
+
+    assert default_key != v4_key
+
+
+def test_v4_evaluation_does_not_import_capture_instrumentation() -> None:
+    source_path = Path(__file__).parents[2] / "pixelgym" / "grounding" / "v4_evaluation.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+    assert "pixelgym.grounding.calibration_v4" not in imported_modules
 
 
 def test_fixture_contains_no_target_identity_in_overlays(tmp_path: Path) -> None:

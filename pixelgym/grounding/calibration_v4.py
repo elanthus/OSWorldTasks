@@ -25,10 +25,10 @@ from pixelgym.grounding.schema import (
     validate_bbox,
     validate_candidate_set,
 )
+from pixelgym.grounding.v4_protocol import V4_CONDITION_CALL_CAP, V4_PROTOCOL_VERSION
 from pixelgym.grounding.v4_server import V4_READY_SELECTOR, V4_SEEDS, local_v4_server
 from pixelgym.serialization import canonical_json_text
 
-V4_PROTOCOL_VERSION = "pixelgym-grounding-v4-pilot"
 V4_EXAMPLE_SCHEMA_VERSION = "pixelgym-grounding-v4-example-v1"
 V4_CANDIDATE_SCHEMA_VERSION = "pixelgym-grounding-v4-candidates-v1"
 V4_OVERLAY_SCHEMA_VERSION = "pixelgym-grounding-v4-overlay-v1"
@@ -36,6 +36,9 @@ V4_CAPTURE_SCHEMA_VERSION = "pixelgym-grounding-v4-capture-v1"
 V4_MANIFEST_SCHEMA_VERSION = "pixelgym-grounding-v4-manifest-v1"
 V4_CALIBRATION_SEEDS = V4_SEEDS
 V4_EXPECTED_CANDIDATE_COUNT = 39
+_V4_CANDIDATE_RECORD_FIELDS = frozenset(
+    {"schema_version", "protocol_version", "example_id", "candidates"}
+)
 
 V4_CANDIDATE_IDS = (
     "nav_queue",
@@ -137,7 +140,13 @@ def _sha256(data: bytes) -> str:
 
 _V4_CAPTURE_SOURCE_PATHS = (
     "pixelgym/grounding/calibration_v4.py",
+    "pixelgym/grounding/capture.py",
+    "pixelgym/grounding/determinism.py",
+    "pixelgym/grounding/overlays.py",
+    "pixelgym/grounding/schema.py",
+    "pixelgym/grounding/v4_protocol.py",
     "pixelgym/grounding/v4_server.py",
+    "pixelgym/tasks/vendor_form/browser_contract.py",
     "pixelgym/grounding/v4_app/static/app.js",
     "pixelgym/grounding/v4_app/static/index.html",
     "pixelgym/grounding/v4_app/static/style.css",
@@ -165,6 +174,19 @@ def v4_calibration_target(seed: int, screen_state: str) -> TargetSpec:
         raise ValueError("state is outside the frozen screen-state set") from exc
     seed_index = V4_CALIBRATION_SEEDS.index(seed)
     return V4_TARGET_SPECS[seed_index * len(SCREEN_STATES) + state_index]
+
+
+def v4_example_id(seed: int, screen_state: str) -> str:
+    """Return an opaque, deterministic join key for one frozen capture cell."""
+    if seed not in V4_CALIBRATION_SEEDS:
+        raise ValueError("seed is outside the v4 calibration seed set")
+    try:
+        state_index = SCREEN_STATES.index(screen_state)
+    except ValueError as exc:
+        raise ValueError("state is outside the frozen screen-state set") from exc
+    seed_index = V4_CALIBRATION_SEEDS.index(seed)
+    number = seed_index * len(SCREEN_STATES) + state_index + 1
+    return f"vendor-workbench-v4-{number:04d}"
 
 
 _V4_CANDIDATE_SCRIPT = """
@@ -242,6 +264,8 @@ def validate_v4_calibration_dataset(
 
     records_by_id: dict[str, dict[str, Any]] = {}
     for record in candidate_records:
+        if set(record) != _V4_CANDIDATE_RECORD_FIELDS:
+            raise ValueError("v4 candidate record fields do not match the frozen schema")
         if record.get("schema_version") != V4_CANDIDATE_SCHEMA_VERSION:
             raise ValueError("v4 candidate schema version does not match")
         if record.get("protocol_version") != V4_PROTOCOL_VERSION:
@@ -251,8 +275,6 @@ def validate_v4_calibration_dataset(
             raise ValueError("candidate example_id must be a nonempty string")
         if example_id in records_by_id:
             raise ValueError("duplicate candidate example_id")
-        if "target_id" in record or "target" in record:
-            raise ValueError("candidate records must not contain target identity")
         records_by_id[example_id] = record
 
     seen_examples: set[str] = set()
@@ -281,6 +303,8 @@ def validate_v4_calibration_dataset(
             raise ValueError("task_seed is outside the v4 calibration seed set")
         if not isinstance(state, str) or state not in SCREEN_STATES:
             raise ValueError("screen_state is outside the frozen state set")
+        if example_id != v4_example_id(seed, state):
+            raise ValueError("v4 example_id does not match its opaque capture cell")
         expected_target = v4_calibration_target(seed, state)
         if (
             example.get("target_id") != expected_target.semantic_id
@@ -339,6 +363,16 @@ def validate_v4_calibration_dataset(
         "variant": "v4-pilot",
         "expected_candidate_count": V4_EXPECTED_CANDIDATE_COUNT,
     }
+
+
+def require_v4_bitwise_repeatability(repeatability: dict[str, Any]) -> None:
+    """Reject capture evidence unless every PNG and decoded pixel is identical."""
+    if (
+        repeatability["byte_identical_file_count"] != repeatability["file_count"]
+        or repeatability["differing_file_count"] != 0
+        or repeatability["differing_pixel_count"] != 0
+    ):
+        raise RuntimeError("v4 calibration capture was not bitwise repeatable")
 
 
 def _capture_one_pass(
@@ -417,12 +451,19 @@ def _capture_one_pass(
                     )
                     target = v4_calibration_target(seed, state)
                     target_candidate = next(
-                        candidate
-                        for candidate in candidates
-                        if candidate["semantic_id"] == target.semantic_id
+                        (
+                            candidate
+                            for candidate in candidates
+                            if candidate["semantic_id"] == target.semantic_id
+                        ),
+                        None,
                     )
-                    slug = target.semantic_id.replace("_", "-")
-                    example_id = f"vendor-workbench-v4-{number:04d}-{slug}"
+                    if target_candidate is None:
+                        raise LookupError(
+                            f"v4 target {target.semantic_id!r} is missing from the captured "
+                            f"candidates for seed {seed} state {state!r}"
+                        )
+                    example_id = v4_example_id(seed, state)
                     relative_image = image_path.relative_to(repository_root).as_posix()
                     examples.append(
                         {
@@ -602,6 +643,7 @@ def capture_v4_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         reference_label="v4-pilot-pass-1",
         candidate_label="v4-pilot-pass-2",
     )
+    require_v4_bitwise_repeatability(repeatability)
     summary = validate_v4_calibration_dataset(examples, candidates)
     overlays = _generate_overlays(examples, candidates, repository_root=repository_root)
 
@@ -674,7 +716,7 @@ def capture_v4_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         "parser_version": PARSER_VERSION_V2,
         "calibration_seeds": list(V4_CALIBRATION_SEEDS),
         "calibration_example_count": summary["example_count"],
-        "condition_call_cap": 20,
+        "condition_call_cap": V4_CONDITION_CALL_CAP,
         "model_calls_performed": 0,
         "family_counts": summary["family_counts"],
         "target_specs": [

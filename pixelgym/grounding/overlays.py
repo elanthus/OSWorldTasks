@@ -47,6 +47,13 @@ def proposal_match(target_id: str, marks: list[dict[str, Any]]) -> tuple[bool, i
     return True, int(matches[0]["mark_id"])
 
 
+def _boxes_overlap(first: list[int], second: list[int]) -> bool:
+    return (
+        max(first[0], second[0]) < min(first[2], second[2])
+        and max(first[1], second[1]) < min(first[3], second[3])
+    )
+
+
 def _badge_position(
     draw: ImageDraw.ImageDraw,
     *,
@@ -56,6 +63,7 @@ def _badge_position(
     font: ImageFont.FreeTypeFont,
     width: int,
     height: int,
+    forbidden_bboxes: list[list[int]],
 ) -> list[int]:
     text = str(mark_id)
     text_box = draw.textbbox((0, 0), text, font=font)
@@ -65,28 +73,33 @@ def _badge_position(
         raise ValueError("mark badge cannot fit inside the image")
     x0, y0, x1, y1 = bbox
     positions: list[tuple[int, int]] = []
-    if element_type == "radio":
-        positions.append((x0, y1 + 2))
-    positions.extend(
-        (
-            (x1 + 2, y0),
-            (x0 - 2 - badge_width, y0),
-            (x0, y0 - 2 - badge_height),
-            (
-                min(max(x0 + 2, 0), width - badge_width),
-                min(max(y0 + 2, 0), height - badge_height),
-            ),
+    vertical_anchors = (y0, y1 - badge_height, (y0 + y1 - badge_height) // 2)
+    horizontal_anchors = (x0, x1 - badge_width, (x0 + x1 - badge_width) // 2)
+    for gap in range(2, 66, 2):
+        if element_type == "radio":
+            positions.extend((badge_x, y1 + gap) for badge_x in horizontal_anchors)
+        positions.extend((x1 + gap, badge_y) for badge_y in vertical_anchors)
+        positions.extend(
+            (x0 - gap - badge_width, badge_y) for badge_y in vertical_anchors
         )
-    )
+        positions.extend((badge_x, y0 - gap - badge_height) for badge_x in horizontal_anchors)
+        positions.extend((badge_x, y1 + gap) for badge_x in horizontal_anchors)
     for badge_x, badge_y in positions:
+        badge_bbox = [
+            badge_x,
+            badge_y,
+            badge_x + badge_width,
+            badge_y + badge_height,
+        ]
         if (
             0 <= badge_x
             and 0 <= badge_y
             and badge_x + badge_width <= width
             and badge_y + badge_height <= height
+            and not any(_boxes_overlap(badge_bbox, other) for other in forbidden_bboxes)
         ):
-            return [badge_x, badge_y, badge_x + badge_width, badge_y + badge_height]
-    raise ValueError("mark badge cannot be placed inside the image")
+            return badge_bbox
+    raise ValueError("mark badge cannot be placed without overlapping another box")
 
 
 def render_overlay(
@@ -103,7 +116,9 @@ def render_overlay(
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype(str(BOLD_FONT), 11)
     marks: list[dict[str, Any]] = []
-    for mark_id, candidate in enumerate(ordered_candidates(candidates), start=1):
+    ordered = ordered_candidates(candidates)
+    element_bboxes = [list(candidate["bbox"]) for candidate in ordered]
+    for mark_id, candidate in enumerate(ordered, start=1):
         bbox = list(candidate["bbox"])
         x0, y0, x1, y1 = bbox
         draw.rectangle((x0, y0, x1 - 1, y1 - 1), outline=_BOX_COLOR, width=2)
@@ -115,6 +130,8 @@ def render_overlay(
             font=font,
             width=width,
             height=height,
+            forbidden_bboxes=element_bboxes
+            + [list(mark["badge_bbox"]) for mark in marks],
         )
         bx0, by0, bx1, by1 = badge_bbox
         draw.rectangle((bx0, by0, bx1 - 1, by1 - 1), fill=_BADGE_COLOR)

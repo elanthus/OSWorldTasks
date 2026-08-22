@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections import Counter
 from typing import Any
 
@@ -13,13 +14,15 @@ from pixelgym.grounding.calibration_v4 import (
     V4_CANDIDATE_SCHEMA_VERSION,
     V4_EXAMPLE_SCHEMA_VERSION,
     V4_EXPECTED_CANDIDATE_COUNT,
-    V4_PROTOCOL_VERSION,
     V4_TARGET_FAMILIES,
     V4_TARGET_SPECS,
+    require_v4_bitwise_repeatability,
     v4_calibration_target,
+    v4_example_id,
     validate_v4_calibration_dataset,
 )
 from pixelgym.grounding.schema import SCREEN_STATES, TASK_SEEDS
+from pixelgym.grounding.v4_protocol import V4_PROTOCOL_VERSION
 
 
 def test_v4_has_ten_unique_targets_and_disjoint_calibration_seeds() -> None:
@@ -89,7 +92,7 @@ def _example(seed: int, state: str, number: int) -> dict[str, Any]:
     return {
         "schema_version": V4_EXAMPLE_SCHEMA_VERSION,
         "protocol_version": V4_PROTOCOL_VERSION,
-        "example_id": f"v4-{number:04d}-{target.semantic_id}",
+        "example_id": v4_example_id(seed, state),
         "image_path": f"artifacts/grounding-v4-pilot/images/raw/v4-{number:04d}.png",
         "image_sha256": "a" * 64,
         "target_id": target.semantic_id,
@@ -159,11 +162,31 @@ def test_validate_v4_rejects_wrong_allocation() -> None:
         validate_v4_calibration_dataset(examples, records)
 
 
-def test_validate_v4_rejects_target_leakage_in_candidate_record() -> None:
+def test_validate_v4_rejects_extra_candidate_record_fields() -> None:
     examples, records = _grid()
     records[0]["target_id"] = examples[0]["target_id"]
-    with pytest.raises(ValueError, match="must not contain target"):
+    with pytest.raises(ValueError, match="fields do not match"):
         validate_v4_calibration_dataset(examples, records)
+
+
+def test_candidate_record_join_ids_are_opaque_and_target_free() -> None:
+    examples, records = _grid()
+    validate_v4_calibration_dataset(examples, records)
+
+    for example, record in zip(examples, records, strict=True):
+        assert record["example_id"] == example["example_id"]
+        assert record["example_id"] == v4_example_id(
+            example["task_seed"], example["screen_state"]
+        )
+        top_level = {key: value for key, value in record.items() if key != "candidates"}
+        serialized_top_level = json.dumps(top_level, sort_keys=True)
+        assert example["target_id"] not in serialized_top_level
+        assert set(record) == {
+            "schema_version",
+            "protocol_version",
+            "example_id",
+            "candidates",
+        }
 
 
 def test_validate_v4_rejects_missing_or_extra_candidate() -> None:
@@ -176,6 +199,25 @@ def test_validate_v4_rejects_missing_or_extra_candidate() -> None:
     records[0]["candidates"][-1]["semantic_id"] = "unexpected_control"
     with pytest.raises(ValueError, match="frozen set"):
         validate_v4_calibration_dataset(examples, records)
+
+
+def test_v4_repeatability_guard_fails_closed() -> None:
+    repeatability = {
+        "file_count": 10,
+        "byte_identical_file_count": 10,
+        "differing_file_count": 0,
+        "differing_pixel_count": 0,
+    }
+    require_v4_bitwise_repeatability(repeatability)
+
+    for field, value in (
+        ("byte_identical_file_count", 9),
+        ("differing_file_count", 1),
+        ("differing_pixel_count", 1),
+    ):
+        changed = {**repeatability, field: value}
+        with pytest.raises(RuntimeError, match="not bitwise repeatable"):
+            require_v4_bitwise_repeatability(changed)
 
 
 def test_every_v4_target_is_in_target_independent_candidate_set() -> None:
