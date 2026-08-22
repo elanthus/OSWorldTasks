@@ -129,6 +129,13 @@ def test_validate_calibration_dataset_accepts_complete_grid() -> None:
     assert summary["calibration_label"] == "CALIBRATION"
 
 
+def test_validate_calibration_dataset_rejects_extra_candidate_record_fields() -> None:
+    examples, candidates = _build_full_calibration_grid()
+    candidates[0]["target_id"] = examples[0]["target_id"]
+    with pytest.raises(ValueError, match="candidate record fields"):
+        validate_calibration_dataset(examples, candidates)
+
+
 def test_validate_calibration_dataset_rejects_wrong_count() -> None:
     examples, candidates = _build_full_calibration_grid()
     with pytest.raises(ValueError, match="20"):

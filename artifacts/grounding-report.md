@@ -94,10 +94,10 @@ Flash marks achieves sub-pixel precision (mean 0.0004 normalized ≈ 0.5px) beca
 
 | Category | Haiku 4.5 | Flash (adapted) |
 |---|---|---|
-| invalid response format | 0 | 9 |
+| request_failure | 0 | 9 |
 | All other categories | 0 | 0 |
 
-All 9 Flash errors are `request_failure` (HTTP error before model output). No errors involve wrong semantic elements, near-miss coordinates, scaling errors, small targets, or ambiguous instructions. Review status: pending_visual_review (auto-classified; no model output exists to visually inspect).
+All 9 Flash errors have `parse_status: "request_failure"` (HTTP error before model output). The stored analysis retains the frozen taxonomy label `invalid response format`; the underlying parse status is the authoritative failure classification. No errors involve wrong semantic elements, near-miss coordinates, scaling errors, small targets, or ambiguous instructions.
 
 ## Calibration progression
 
@@ -117,6 +117,11 @@ Before the scored evaluation, three page variants of increasing difficulty were 
 | v3b | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) |
 | v3c | 19/20 (95%) | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) |
 
+The v3b allocation sampled only 8 of its 10 declared targets: `sb_pending` and
+`save_draft` are absent. Its 100% cells are retained as observed calibration evidence,
+but they do not support a full-target saturation claim. Correcting the allocation would
+require a newly approved paid pilot; no replacement calls were made for this review fix.
+
 ### Weaker model calibration results
 
 | Model | Parameters | v3c raw | v3c marks | v3a raw | v3a marks |
@@ -132,46 +137,44 @@ The calibration shows a binary capability cliff: frontier VLMs saturate at 95–
 |---|---|
 | v3a calibration (4 models) | 160 |
 | v3b calibration (2 models) | 80 |
-| v3c calibration (4 models) | 160 |
+| v3c calibration (6 models, including 80 failed requests) | 240 |
 | Scored evaluation — Haiku | 200 |
 | Scored evaluation — Flash | 200 |
-| **Total** | **800** |
+| **Total** | **880** |
 
-Excludes failed HTTP requests from models that do not support structured output (Qwen 2.5 VL 7B, Gemma 3 4B), which returned zero usable predictions.
+The total includes failed requests from Qwen 2.5 VL 7B and Gemma 3 4B. Those records are retained and scored incorrect; they are not hidden or retried.
 
 ## Limitations
 
-1. **Single task family.** Results are from one deterministic vendor-onboarding form at one resolution. They do not generalize to multi-page workflows, dynamic content, or other GUI layouts.
+1. **Single-task family.** Results are from one deterministic vendor-onboarding form at one resolution. They do not generalize to multi-page workflows, dynamic content, or other GUI layouts.
 2. **Two scored models.** The scored evaluation covers only Haiku 4.5 and Flash 3.7. Mid-tier models were tested in calibration only.
 3. **Confounded Flash delta.** The +9pp SoM lift for Flash is attributable to transient API failures, not grounding capability. The experiment cannot distinguish SoM benefit from provider reliability.
-4. **No retry logic.** Request failures score as incorrect per protocol. A production system with retries would likely achieve 100%/100% for both models in both conditions.
+4. **No retry logic.** Request failures score as incorrect per protocol. Retry handling could reduce the request-failure rate but was not measured.
 5. **Saturated metric.** Both models are at or near ceiling. The benchmark cannot discriminate fine-grained grounding quality differences between frontier VLMs.
 6. **Temporal ordering.** Conditions were evaluated sequentially (all raw, then all marks), not interleaved. This design enables temporal confounds.
 7. **Target-state aliasing.** Target identity is aliased with screen state in the frozen capture grid. Control-type slices are descriptive compositions; differences cannot be attributed independently to control type.
+8. **Historical Claude usage metadata.** The v3c Haiku records contain null usage and cost fields because the original adapter dropped those CLI envelope values. The adapter is fixed for future runs, but historical values were not reconstructed or invented.
 
 ## Offline reproduction
 
 Analysis regenerates from stored predictions without model or network calls:
 
 ```bash
-python -c "
-from pathlib import Path
-from pixelgym.serialization import load_jsonl
-from pixelgym.grounding.analysis import analyze_predictions, build_error_review_template
-import json
-
-root = Path('.')
-examples = load_jsonl(root / 'artifacts/grounding-dataset.jsonl')
-for tag in ['claude-haiku-4.5', 'gemini-3.7-flash-adapted']:
-    preds = load_jsonl(root / f'artifacts/grounding-v3a-scored-predictions-{tag}.jsonl')
-    reviews = build_error_review_template(examples, preds)
-    analysis = analyze_predictions(examples=examples, predictions=preds, error_reviews=reviews)
-    (root / f'artifacts/grounding-v3a-analysis-{tag}.json').write_text(
-        json.dumps(analysis, indent=2, sort_keys=True) + '\n')
-"
+.venv/bin/python scripts/generate_grounding_report.py \
+  --predictions artifacts/grounding-predictions.jsonl \
+  --error-review artifacts/grounding-error-review.jsonl \
+  --results .cache/pixelgym-grounding-results.json \
+  --report .cache/pixelgym-grounding-report.md
 ```
 
-## Artifact inventory
+The canonical entrypoint loads the persisted error-review artifact; it never creates a fresh review template or replaces completed classifications.
+
+## Key artifact inventory (not exhaustive)
+
+The v3 manifests are the complete path-and-checksum registries. This table lists the main
+human-facing inputs and outputs.
+
+### Scored evaluation
 
 | File | Description |
 |---|---|
@@ -182,6 +185,22 @@ for tag in ['claude-haiku-4.5', 'gemini-3.7-flash-adapted']:
 | `artifacts/grounding-v3a-analysis-claude-haiku-4.5.json` | Haiku full analysis |
 | `artifacts/grounding-v3a-analysis-gemini-3.7-flash-adapted.json` | Flash full analysis |
 | `artifacts/grounding-v3a-manifest.json` | Experiment manifest with decision history |
+
+### Calibration
+
+| File | Description |
+|---|---|
+| `artifacts/grounding-v3a-calibration-dataset.jsonl` | v3a calibration dataset (20 examples) |
+| `artifacts/grounding-v3a-calibration-candidates.jsonl` | v3a target-independent candidate records |
+| `artifacts/grounding-v3a-calibration-overlays.jsonl` | v3a set-of-marks overlay metadata |
+| `artifacts/grounding-v3a-capture.json` | v3a capture provenance and repeatability |
+| `artifacts/grounding-v3a-calibration-predictions-*.jsonl` | v3a calibration predictions |
 | `artifacts/grounding-v3b-manifest.json` | v3b calibration manifest |
+| `artifacts/grounding-v3b-calibration-dataset.jsonl` | v3b calibration dataset (20 examples) |
+| `artifacts/grounding-v3b-capture.json` | v3b capture provenance and repeatability |
+| `artifacts/grounding-v3b-calibration-predictions-*.jsonl` | v3b calibration predictions |
+| `artifacts/grounding-v3b-{semantic,ordinal}-predictions-claude-haiku-4.5.jsonl` | v3b instruction-mode probes, separately versioned from base predictions |
 | `artifacts/grounding-v3c-manifest.json` | v3c calibration manifest |
-| `artifacts/grounding-v3c-calibration-predictions-*.jsonl` | v3c calibration predictions (4 models) |
+| `artifacts/grounding-v3c-calibration-dataset.jsonl` | v3c calibration dataset (20 examples) |
+| `artifacts/grounding-v3c-capture.json` | v3c capture provenance and repeatability |
+| `artifacts/grounding-v3c-calibration-predictions-*.jsonl` | v3c calibration predictions (6 models) |

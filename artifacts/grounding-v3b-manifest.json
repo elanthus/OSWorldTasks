@@ -8,45 +8,51 @@
   ],
   "decision_history": [
     {
-      "date": "2026-08-20",
-      "model": "claude-haiku-4-5-20251001",
-      "provider": "claude-code-cli",
-      "parameters": {"temperature": 0},
       "calls": 40,
-      "raw_accuracy": "20/20",
+      "date": "2026-08-20",
+      "decision": "100% on the captured cells; no full-target saturation claim because sb_pending and save_draft were not sampled",
+      "escalation": "observed m > 0.85, but the allocation covers only 8 of 10 declared targets",
       "marks_accuracy": "20/20",
-      "parse_failures": 0,
-      "raw_mean_center_distance_norm": 0.0054,
       "marks_mean_center_distance_norm": 0.0223,
-      "escalation": "m > 0.85: saturated even on harder variant",
-      "v3a_comparison": {
-        "raw_mean_center_distance_norm_v3a": 0.0061,
-        "marks_mean_center_distance_norm_v3a": 0.0056,
-        "marks_precision_degradation": "4x (0.0056 -> 0.0223)"
+      "model": "claude-haiku-4-5-20251001",
+      "parameters": {
+        "temperature": 0
       },
+      "parse_failures": 0,
       "predictions_path": "artifacts/grounding-v3b-calibration-predictions-claude-haiku-4.5.jsonl",
-      "decision": "100% accuracy; marks precision degraded 4x vs v3a but still within bbox"
+      "provider": "claude-code-cli",
+      "raw_accuracy": "20/20",
+      "raw_mean_center_distance_norm": 0.0054,
+      "v3a_comparison": {
+        "marks_mean_center_distance_norm_v3a": 0.0056,
+        "marks_precision_degradation": "4x (0.0056 -> 0.0223)",
+        "raw_mean_center_distance_norm_v3a": 0.0061
+      }
     },
     {
-      "date": "2026-08-20",
-      "model": "google/gemini-3.7-flash",
-      "provider": "openrouter",
-      "parameters": {"temperature": 0, "seed": 20260809, "coordinate_rescale": "gemini-1000"},
       "adapter": "GeminiCoordinateAdapter",
       "calls": 40,
-      "raw_accuracy": "20/20",
+      "date": "2026-08-20",
+      "decision": "100% on the captured cells; no full-target saturation claim because sb_pending and save_draft were not sampled",
+      "escalation": "observed m > 0.85, but the allocation covers only 8 of 10 declared targets",
       "marks_accuracy": "20/20",
-      "parse_failures": 0,
-      "raw_mean_center_distance_norm": 0.0047,
       "marks_mean_center_distance_norm": 0.0008,
-      "escalation": "m > 0.85: saturated even on harder variant",
-      "v3a_comparison": {
-        "raw_mean_center_distance_norm_v3a": 0.0057,
-        "marks_mean_center_distance_norm_v3a": 0.0003,
-        "marks_precision_degradation": "2.7x (0.0003 -> 0.0008)"
+      "model": "google/gemini-3.7-flash",
+      "parameters": {
+        "coordinate_rescale": "gemini-1000",
+        "seed": 20260809,
+        "temperature": 0
       },
+      "parse_failures": 0,
       "predictions_path": "artifacts/grounding-v3b-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
-      "decision": "100% accuracy; precision essentially unchanged vs v3a"
+      "provider": "openrouter",
+      "raw_accuracy": "20/20",
+      "raw_mean_center_distance_norm": 0.0047,
+      "v3a_comparison": {
+        "marks_mean_center_distance_norm_v3a": 0.0003,
+        "marks_precision_degradation": "2.7x (0.0003 -> 0.0008)",
+        "raw_mean_center_distance_norm_v3a": 0.0057
+      }
     }
   ],
   "design": "4 calibration seeds x 5 screen states; crossed target allocation; one target per screenshot",
@@ -65,7 +71,7 @@
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v3b-capture.json",
-      "sha256": "1b39636a882be19b5f30254d7bc4675f1b5ddd4a0a934884a34745dc224a71e0"
+      "sha256": "0d0a77494769fa959537e6319db38e3504edd418933df590f320103e7b42a8da"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v3b/contact-sheet.png",
@@ -97,7 +103,16 @@
   "protocol_version": "pixelgym-grounding-v3b",
   "schema_version": "pixelgym-grounding-v3b-manifest-v1",
   "scored_example_count": 0,
-  "status": "calibration_complete_both_models_saturated",
+  "status": "calibration_complete_target_coverage_incomplete",
+  "target_coverage": {
+    "covered_target_count": 8,
+    "declared_target_count": 10,
+    "missing_target_ids": [
+      "save_draft",
+      "sb_pending"
+    ],
+    "requires_new_paid_pilot_for_full_target_claim": true
+  },
   "target_specs": [
     {
       "element_type": "text_input",

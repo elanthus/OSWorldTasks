@@ -50,7 +50,10 @@
   ],
   "seed_state_cell_count": 20,
   "source_sha256": {
+    "pixelgym/grounding/calibration_v3a.py": "f88f42012a738ba1fec922140917eaaf8ff518e1f44cfab5a3a897a91de20c94",
     "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
+    "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
+    "pixelgym/grounding/overlays.py": "9f9e0e7f1073ba9ad4673a75e137d9fe05134e61fb84d745f4ddc92f55ff6829",
     "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
     "pixelgym/tasks/vendor_form/app/server.py": "f6bff0cd47696b7babc4846f3d011fb9b7528a2203695830d61959882bd37d37",
     "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",

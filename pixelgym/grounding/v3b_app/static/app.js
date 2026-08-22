@@ -61,22 +61,16 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),
           })
-            .then(function (r) { return r.json(); })
-            .then(function (result) {
+            .then(function (r) {
+              return r.json().then(function (result) {
+                return { ok: r.ok, result: result };
+              });
+            })
+            .then(function (response) {
               var status = document.getElementById("submit-status");
-              if (result.submission_number) {
-                var missing = [];
-                ["company_name", "contact_email", "contact_phone", "tax_id", "country", "payment_terms"].forEach(function (f) {
-                  if (!formData[f]) missing.push(f);
-                });
-                // Synchronization: this message must match INCOMPLETE_SUBMISSION_MESSAGE
-                // in pixelgym/tasks/vendor_form/ui.py
-                if (missing.length > 0) {
-                  status.textContent = "Complete all required fields before submitting.";
-                } else {
-                  status.textContent = "Submission recorded.";
-                }
-              }
+              status.textContent = response.ok
+                ? "Submission recorded."
+                : response.result.detail;
             });
         });
       });

@@ -32,8 +32,8 @@
     "condition_record_count": 40,
     "example_count": 20,
     "excluded_example_count": 0,
-    "first_timestamp_utc": "2026-08-20T19:02:29.633784+00:00",
-    "last_timestamp_utc": "2026-08-20T19:10:10.674511+00:00",
+    "first_timestamp_utc": "2026-08-20T21:24:54.226040+00:00",
+    "last_timestamp_utc": "2026-08-20T21:26:24.464856+00:00",
     "timestamp_missing_count": 0,
     "timestamp_observed_count": 40
   },
@@ -44,11 +44,11 @@
       "invalid_output_count": 0,
       "invalid_output_rate": 0.0,
       "normalized_center_distance": {
-        "mean": 0.006241188460488907,
+        "mean": 0.00029200868397692687,
         "measured_count": 20,
-        "median": 0.00078125,
+        "median": 0.0,
         "missing_count": 0,
-        "p90": 0.01769962512476561,
+        "p90": 0.0008734640537108554,
         "record_count": 20
       },
       "parse_status_counts": {
@@ -64,11 +64,11 @@
       "invalid_output_count": 0,
       "invalid_output_rate": 0.0,
       "normalized_center_distance": {
-        "mean": 0.00581825933170513,
+        "mean": 0.005723928293608767,
         "measured_count": 20,
         "median": 0.00078125,
         "missing_count": 0,
-        "p90": 0.01797299542238647,
+        "p90": 0.01805110273704748,
         "record_count": 20
       },
       "parse_status_counts": {
@@ -87,12 +87,12 @@
             "correct_count": 14,
             "curve": [
               {
-                "accuracy": 0.0,
+                "accuracy": 0.8571428571428571,
                 "measured_count": 14,
                 "missing_count": 0,
                 "record_count": 14,
                 "threshold": 0.0,
-                "within_count": 0
+                "within_count": 12
               },
               {
                 "accuracy": 1.0,
@@ -190,12 +190,12 @@
             "correct_count": 14,
             "curve": [
               {
-                "accuracy": 0.07142857142857142,
+                "accuracy": 0.6428571428571429,
                 "measured_count": 14,
                 "missing_count": 0,
                 "record_count": 14,
                 "threshold": 0.0,
-                "within_count": 1
+                "within_count": 9
               },
               {
                 "accuracy": 1.0,
@@ -311,28 +311,28 @@
                 "within_count": 0
               },
               {
-                "accuracy": 0.0,
+                "accuracy": 1.0,
                 "measured_count": 6,
                 "missing_count": 0,
                 "record_count": 6,
                 "threshold": 0.005,
-                "within_count": 0
+                "within_count": 6
               },
               {
-                "accuracy": 0.0,
+                "accuracy": 1.0,
                 "measured_count": 6,
                 "missing_count": 0,
                 "record_count": 6,
                 "threshold": 0.01,
-                "within_count": 0
+                "within_count": 6
               },
               {
-                "accuracy": 0.8333333333333334,
+                "accuracy": 1.0,
                 "measured_count": 6,
                 "missing_count": 0,
                 "record_count": 6,
                 "threshold": 0.02,
-                "within_count": 5
+                "within_count": 6
               },
               {
                 "accuracy": 1.0,
@@ -520,36 +520,36 @@
         "correct_count": 20,
         "curve": [
           {
-            "accuracy": 0.0,
+            "accuracy": 0.6,
             "measured_count": 20,
             "missing_count": 0,
             "record_count": 20,
             "threshold": 0.0,
-            "within_count": 0
+            "within_count": 12
           },
           {
-            "accuracy": 0.7,
+            "accuracy": 1.0,
             "measured_count": 20,
             "missing_count": 0,
             "record_count": 20,
             "threshold": 0.005,
-            "within_count": 14
+            "within_count": 20
           },
           {
-            "accuracy": 0.7,
+            "accuracy": 1.0,
             "measured_count": 20,
             "missing_count": 0,
             "record_count": 20,
             "threshold": 0.01,
-            "within_count": 14
+            "within_count": 20
           },
           {
-            "accuracy": 0.95,
+            "accuracy": 1.0,
             "measured_count": 20,
             "missing_count": 0,
             "record_count": 20,
             "threshold": 0.02,
-            "within_count": 19
+            "within_count": 20
           },
           {
             "accuracy": 1.0,
@@ -623,12 +623,12 @@
         "correct_count": 20,
         "curve": [
           {
-            "accuracy": 0.05,
+            "accuracy": 0.45,
             "measured_count": 20,
             "missing_count": 0,
             "record_count": 20,
             "threshold": 0.0,
-            "within_count": 1
+            "within_count": 9
           },
           {
             "accuracy": 0.7,
@@ -751,37 +751,37 @@
   },
   "latency": {
     "all": {
-      "maximum_ms": 16106.527250027284,
-      "mean_ms": 11754.230590577936,
-      "median_ms": 11509.147291071713,
-      "minimum_ms": 9299.392499960959,
+      "maximum_ms": 5523.7859999760985,
+      "mean_ms": 2306.214360392187,
+      "median_ms": 2065.6032295664772,
+      "minimum_ms": 1445.7960838917643,
       "missing_count": 0,
       "observed_count": 40,
       "record_count": 40,
-      "total_ms": 470169.22362311743
+      "total_ms": 92248.57441568747
     },
     "marks": {
-      "maximum_ms": 16106.527250027284,
-      "mean_ms": 11286.74815618433,
-      "median_ms": 11268.987854011357,
-      "minimum_ms": 9299.392499960959,
+      "maximum_ms": 4365.263249957934,
+      "mean_ms": 2142.377772938926,
+      "median_ms": 2032.1524584433064,
+      "minimum_ms": 1445.7960838917643,
       "missing_count": 0,
       "observed_count": 20,
       "record_count": 20,
-      "total_ms": 225734.9631236866
+      "total_ms": 42847.555458778515
     },
     "raw": {
-      "maximum_ms": 14922.830708092079,
-      "mean_ms": 12221.713024971541,
-      "median_ms": 12075.734395417385,
-      "minimum_ms": 9374.451708048582,
+      "maximum_ms": 5523.7859999760985,
+      "mean_ms": 2470.050947845448,
+      "median_ms": 2226.4183959923685,
+      "minimum_ms": 1639.0462908893824,
       "missing_count": 0,
       "observed_count": 20,
       "record_count": 20,
-      "total_ms": 244434.26049943082
+      "total_ms": 49401.018956908956
     }
   },
-  "model": "claude-sonnet-5",
+  "model": "google/gemini-3.7-flash",
   "paired": {
     "bootstrap_95_ci_percentage_points": [
       0.0,
@@ -796,6 +796,8 @@
     "raw_only_correct_count": 0
   },
   "parameters": {
+    "coordinate_rescale": "gemini-1000",
+    "seed": 20260809,
     "temperature": 0
   },
   "per_example": [
@@ -809,26 +811,26 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0001-company-name",
       "marks": {
-        "cache_key": "ee57004fca08b8cddf61440c1fa5c5e164c4712d60dc7e977c0a3fee0c2eb2e4",
+        "cache_key": "5047ac83b7aa2f4cdeb7765bce118677857792d110f37838470b903191c11b96",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.0011048543456039805,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          93.0
+          768.0,
+          94.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "ce25f4c5f9e3220b7ac25110859bcbceb68c32b71e2b3661c228ae6a6ee43ca0",
+        "cache_key": "c6c2f1f0a71f1462007ef4f0a5288f215596faf24136fe30c7388d2377f06e7b",
         "correct": true,
-        "normalized_center_distance": 0.0011048543456039805,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          93.0
+          768.0,
+          94.0
         ]
       },
       "screen_state": "initial",
@@ -847,25 +849,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0002-contact-email",
       "marks": {
-        "cache_key": "72173a4a68bb9b057ae951c52f7b43f3845400fd9f057b945bbd5ee910d67a05",
+        "cache_key": "15748e11a251473941238ef82ca1f3b8fbac9bf68162bf1ae18ad81094ec4988",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           156.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "63d1e12d6092e26fc6c700d7cd7c9eeb996308050ffcd4a4b22a458d3441be10",
+        "cache_key": "db9dc599fb49bfb2b8ca3f57746bc309d7b09d844e11cd36accf8337608942dd",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           156.0
         ]
       },
@@ -885,7 +887,7 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0003-contact-phone",
       "marks": {
-        "cache_key": "6e8112fbbaf912d93dbbd45057ecad63d01ac35a52a280ce6a5522120992654a",
+        "cache_key": "f01034de08b1045613cd146de4713f775478379307c261b8b4e770d99531f009",
         "correct": true,
         "mark_id": null,
         "normalized_center_distance": 0.00078125,
@@ -898,7 +900,7 @@
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "cfef9c30fa4cc415394325c3644492f2e4dd0ff94e67382d9988dd809d4fc9cc",
+        "cache_key": "f014805f1bd3632c2a1f5e33412af3969bcf18912a555e012d803544cc6feea8",
         "correct": true,
         "normalized_center_distance": 0.00078125,
         "parse_status": "parsed",
@@ -923,25 +925,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0004-tax-id",
       "marks": {
-        "cache_key": "e8e7c7ddaf610e88e4c1ccddfcd9c4e01e1bc6798ae410b6cc7e0f954146ae04",
+        "cache_key": "f2d6d8e74fcbe7aecf9a8406a05bc25206cf2182022ff3e9bef9e7f8c711f03c",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.0011048543456039805,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          279.0
+          768.0,
+          280.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "896c01036dc56d53f710ffd22a8abb6f2c6084fb35631405bee52f449a89023a",
+        "cache_key": "f2cb558d9c4196d1f46d69fec764799285f1b9dc4733b5546b924ee703a5ddca",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           280.0
         ]
       },
@@ -961,20 +963,20 @@
       "element_type": "select",
       "example_id": "vendor-form-v3a-cal-0005-country",
       "marks": {
-        "cache_key": "27622046bf5e2f713b6d7f74bd4fde6065cf483e100183364419abde53c07ef8",
+        "cache_key": "6aab7b9975056b702948b8ee68b76cd9dbd0bfb4af2b4bc26701970d037ddedf",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           343.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "0abb742a47b35484d6e66c106e49c1c72579448dd22314f114e9408c48068ed8",
+        "cache_key": "2b7a05aa4c575e57fdc7e66c6a28e7911b33c9dee932e227297a6ae061f7505e",
         "correct": true,
         "normalized_center_distance": 0.00078125,
         "parse_status": "parsed",
@@ -999,25 +1001,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0006-contact-email",
       "marks": {
-        "cache_key": "4351e4cdfd737502d82083bb30f37e669f08b4d7c53be2a8073b4fefa2a03802",
+        "cache_key": "f2c9d83fc3c50705b966e65dcee6c71667819dac5e944884cf1180c51ca906b0",
         "correct": true,
         "mark_id": null,
         "normalized_center_distance": 0.00078125,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          156.0
+          768.0,
+          155.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "65f7b9fe1a55e76abe2c78c65418eb76d6c13779d94fd02009325d9c0f7c8c7e",
+        "cache_key": "9ea2c96d0fc1493ebff07ae68857e18ce65670a69020b51149a3df693d9f6b74",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           156.0
         ]
       },
@@ -1037,25 +1039,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0007-contact-phone",
       "marks": {
-        "cache_key": "a2d0b815d04784b3083746b4bbe02e85c7a5400bd09f770ed39c153b409f8e1c",
+        "cache_key": "203c9f141158c110752e10a2136f8d7d9f5b872f8412853bc1bc7ac219c3df95",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           218.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "2ab14612eaa597febf166a969dda4a51facf9bd059163aea3183757cd086c841",
+        "cache_key": "117c87f25fc8ba8814b81063230be3813058d22fe413e284e37a7be1ed7c51b1",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           218.0
         ]
       },
@@ -1075,20 +1077,20 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0008-tax-id",
       "marks": {
-        "cache_key": "2e0f24c278df5fad57b63fb85fdd62bc1133b485114d7087acd11783621a626c",
+        "cache_key": "2dbfe0f002ae2fc0f254f6789b14281107f940d4c0f58db1765b676762b3e678",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           280.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "b95f4b04513d32358cc0770f990aaa4990ca1717afd9371af4873b71030b0721",
+        "cache_key": "252171260c8097470c5c70cebff634b1f0bf227f2c3acd05f8826bd318fae786",
         "correct": true,
         "normalized_center_distance": 0.0,
         "parse_status": "parsed",
@@ -1113,20 +1115,20 @@
       "element_type": "select",
       "example_id": "vendor-form-v3a-cal-0009-country",
       "marks": {
-        "cache_key": "7d86edd5958eaf102265ed6f8fa451a3c5764ce8b01510725c0638179e71b5ff",
+        "cache_key": "8cc780938a669bda50ea901aae4b6ad9303169bb85001022b04e8440d1bf6003",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           343.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "8e79878c0643be849a2204767549a973fff2e72062c83963f3265f8bfddad071",
+        "cache_key": "4c0b31cfc713d34eee14be8a55799b72efb05283986afcaeb630c6097eea611a",
         "correct": true,
         "normalized_center_distance": 0.00078125,
         "parse_status": "parsed",
@@ -1151,26 +1153,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0010-payment-terms-net-15",
       "marks": {
-        "cache_key": "9ad265c55b63cda69d95e7036d74d68c23a4f8ea8a4b5fa961da694ee752d443",
+        "cache_key": "a5409e08074fdcd6362421c81d2751c92ed6eadb244660f8c6b1e5cf99652bda",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.018754068568996567,
+        "normalized_center_distance": 0.0008734640537108554,
         "parse_status": "parsed",
         "point": [
-          546.0,
-          401.0
+          569.0,
+          400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "fc5bfd1a6dfdaac94e564c58b92513f760aac7f3eab947842617436582c82923",
+        "cache_key": "648805f0d27bf29f30fc042e138524854d5b88a98f0d806971fd46048eed5198",
         "correct": true,
         "normalized_center_distance": 0.01797299542238647,
         "parse_status": "parsed",
         "point": [
           547.0,
-          401.0
+          400.0
         ]
       },
       "screen_state": "completed_review",
@@ -1189,25 +1191,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0011-contact-phone",
       "marks": {
-        "cache_key": "462d0c4184d0b5afb31fa06882af7ec0d2a25db1c5d97f907e58fbe912c23807",
+        "cache_key": "07a987dea113b719b2ab729333efd633536046217b0c76e1a8e20ab2d5063712",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           218.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "e2d65d5be6eaed4607052d7de34830c10eaa494c6c9af29f9ffdcb5f34475b76",
+        "cache_key": "6ab918cd8ba3b40b7076ae2cdb3db6a44e443ad1fbb0ead84357fe32d09d0477",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           218.0
         ]
       },
@@ -1227,20 +1229,20 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0012-tax-id",
       "marks": {
-        "cache_key": "74e16db8d81ac0f711e88f8cc574d636678759a2e9e969550bdd41983e712dbf",
+        "cache_key": "34ecf2032789978bb3fa01abd90f73ef8b456076680b1e07fc1d6b327546d7de",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           280.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "4adf7e3b07eca32bc8fffade93913ad32f68e9d4def932b930abb3e8d46c89cc",
+        "cache_key": "7c00787fa7309b0f3a82169cc04fb1b75db058c725bdd17d863df49a553dc970",
         "correct": true,
         "normalized_center_distance": 0.00078125,
         "parse_status": "parsed",
@@ -1265,25 +1267,25 @@
       "element_type": "select",
       "example_id": "vendor-form-v3a-cal-0013-country",
       "marks": {
-        "cache_key": "68b951d1a49ce4f5a29d0ab2d32d7c8e3f2029a1a65ba005cb4329ad0710dc4d",
+        "cache_key": "680094cf6fac00dad149aad7c51bf526a0f1bbd732129522104ae35a9a432ade",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           343.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "699d7d29b2515646b0273c1cbe9ac731281b37a4f1782c07f4669382186338fe",
+        "cache_key": "e3d966ffa26ca40797eb7b7dda6e2dc9a1f5a5a1f9612be06bcae6efe7aa07f4",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           343.0
         ]
       },
@@ -1303,26 +1305,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0014-payment-terms-net-15",
       "marks": {
-        "cache_key": "fd63c0e0e4ebe54e9a68c87a6cda18ce06e853cab90915e44196bdfdeb43fc5b",
+        "cache_key": "c84824931884db0652177a1ae71fc56a671851fe1517df0f81e4530a527acbf3",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.017191938347394832,
+        "normalized_center_distance": 0.0008734640537108554,
         "parse_status": "parsed",
         "point": [
-          548.0,
-          401.0
+          569.0,
+          400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "615fb410f1d1edefd5d49ab95986fcdd3ae141b21644f966a855f4abbf1df9e0",
+        "cache_key": "b88e53932c1db10eb64fe11a67af24cbe845c0004a76e2d0d556786f2ea286cd",
         "correct": true,
-        "normalized_center_distance": 0.01797299542238647,
+        "normalized_center_distance": 0.018754068568996567,
         "parse_status": "parsed",
         "point": [
-          547.0,
-          401.0
+          546.0,
+          400.0
         ]
       },
       "screen_state": "partially_completed",
@@ -1341,26 +1343,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0015-payment-terms-net-30",
       "marks": {
-        "cache_key": "07d389e5cad7c529d4a78956e7cd923eded77b8c67e5c7842917976e4a172ff4",
+        "cache_key": "4b0775cbb759ad45493aded0497ada62d928441949dffc16c49d647c7bbdec20",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.01680141653719263,
+        "normalized_center_distance": 0.0005524271728019902,
         "parse_status": "parsed",
         "point": [
-          628.0,
-          401.0
+          649.0,
+          400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "efb49d97a1f5c196aaa2cda939021be60d677f32567de2abf77b30d59d06d7da",
+        "cache_key": "6c1bfca2f0996473f29672e63d33c33852c12ba4dcdf262528812ba99b8e1283",
         "correct": true,
         "normalized_center_distance": 0.01758246474207328,
         "parse_status": "parsed",
         "point": [
           627.0,
-          401.0
+          400.0
         ]
       },
       "screen_state": "completed_review",
@@ -1379,25 +1381,25 @@
       "element_type": "text_input",
       "example_id": "vendor-form-v3a-cal-0016-tax-id",
       "marks": {
-        "cache_key": "362f70d88ca7eb90d719a9b052ffe7b2cba593f23e355d97a06dab8106ee0d85",
+        "cache_key": "d95d7707a66db6733e411f4459896aaba8315645016d85220755df5552350dfb",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.0011048543456039805,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          279.0
+          768.0,
+          280.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "bf84ed4b3b46e5f96eb498602ddaebf88d1b10512082fd505b798be185f953f5",
+        "cache_key": "39341a2c713488dda331ac95f88ba77d6ad0d0cd5a7c69d04431015be9f72080",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           280.0
         ]
       },
@@ -1417,26 +1419,26 @@
       "element_type": "select",
       "example_id": "vendor-form-v3a-cal-0017-country",
       "marks": {
-        "cache_key": "a1d85ee58e5fca134413643efd23394c7dd69a6c332b37605ed8ecc2a2196beb",
+        "cache_key": "1f8044a58ae02a1c3366608188b678c2ae5440406e3245bdcce4ab9a62d5a39c",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.0,
         "parse_status": "parsed",
         "point": [
-          767.0,
+          768.0,
           343.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "b50b24ce1987d6caeea0ba72618e29dafcb56437494d7d6200f58e8d8b437303",
+        "cache_key": "5fd8139ba19a2cc62fb50385895204897e0b8aded34c00744781940a2ac06a26",
         "correct": true,
-        "normalized_center_distance": 0.00078125,
+        "normalized_center_distance": 0.003125,
         "parse_status": "parsed",
         "point": [
-          767.0,
-          343.0
+          768.0,
+          339.0
         ]
       },
       "screen_state": "text_field_focused",
@@ -1455,26 +1457,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0018-payment-terms-net-15",
       "marks": {
-        "cache_key": "810104d831a74f8684a18392adbdbb6e65c7a95a9303e3a1b51fa8438bec6749",
+        "cache_key": "43fdd8438eb53f2cdb59c83c1fa0b8c7248cfd6a925062c857a60eab432ac20a",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.017191938347394832,
+        "normalized_center_distance": 0.0008734640537108554,
         "parse_status": "parsed",
         "point": [
-          548.0,
+          569.0,
           400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "8011372c495efe78904147c6ad8bc1e43a25ddc674153dce5ced3007db636a54",
+        "cache_key": "0927c65878468ab835cb3d128eaec758606d72136fc6cd9f39ed660ffb251763",
         "correct": true,
-        "normalized_center_distance": 0.01797299542238647,
+        "normalized_center_distance": 0.019535155859453104,
         "parse_status": "parsed",
         "point": [
-          547.0,
-          401.0
+          545.0,
+          400.0
         ]
       },
       "screen_state": "validation_error",
@@ -1493,26 +1495,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0019-payment-terms-net-30",
       "marks": {
-        "cache_key": "557ef68c12aa85c81d5c212792d31130ffe6ac8c99f52c6f942711b7f4d3151d",
+        "cache_key": "cbfffe1dd2139c97873fef33c4cb479c62195405db69d538ffb8a28fb8bc73a8",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.01758246474207328,
+        "normalized_center_distance": 0.0005524271728019902,
         "parse_status": "parsed",
         "point": [
-          627.0,
-          401.0
+          649.0,
+          400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "dc29c1885c6254ef47b884d7d926bd2d8e0b5f33e66cc4402b919864ba67b096",
+        "cache_key": "74eb9df94d53a8e4cdf17e84676e02fd0b4ed4ade5d58307dffdd6d85d21bc0d",
         "correct": true,
         "normalized_center_distance": 0.01758246474207328,
         "parse_status": "parsed",
         "point": [
           627.0,
-          401.0
+          400.0
         ]
       },
       "screen_state": "partially_completed",
@@ -1531,26 +1533,26 @@
       "element_type": "radio",
       "example_id": "vendor-form-v3a-cal-0020-payment-terms-net-45",
       "marks": {
-        "cache_key": "fb2f81584d1d523a624be6f8bcfded741bd80b69039fda14a089742bce032374",
+        "cache_key": "461fe68a286617cec635dfc2b52adcd539bc27b6a2b9b164ea6d0bd05c8f11af",
         "correct": true,
         "mark_id": null,
-        "normalized_center_distance": 0.025393629629914073,
+        "normalized_center_distance": 0.0005524271728019902,
         "parse_status": "parsed",
         "point": [
-          697.0,
-          401.0
+          729.0,
+          400.0
         ],
         "target_proposed": true
       },
       "paired_difference": 0,
       "raw": {
-        "cache_key": "177c7fb2724187fda03f4d567796dcce6669f5d475a0568d680f681581a4c8b1",
+        "cache_key": "cb6c874672013e2fdc6184c02c3f3b592dd7f48c0c664ebd9aedc9b64ed0e7d4",
         "correct": true,
         "normalized_center_distance": 0.01680141653719263,
         "parse_status": "parsed",
         "point": [
           708.0,
-          401.0
+          400.0
         ]
       },
       "screen_state": "completed_review",
@@ -1562,7 +1564,7 @@
   ],
   "prompt_version": "pixelgym-grounding-prompt-v2",
   "protocol_version": "pixelgym-grounding-v1",
-  "provider": "claude-code-cli",
+  "provider": "openrouter",
   "schema_version": "pixelgym-grounding-results-v3",
   "set_of_marks": {
     "conditional_selection_accuracy": 1.0,
@@ -1618,5 +1620,10 @@
       }
     }
   },
-  "usage_totals": {}
+  "usage_totals": {
+    "completion_tokens": 10393,
+    "cost": 0.07336875000000001,
+    "prompt_tokens": 45860,
+    "total_tokens": 56253
+  }
 }

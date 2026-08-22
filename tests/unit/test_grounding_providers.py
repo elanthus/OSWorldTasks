@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import io
 import json
 import subprocess
@@ -169,13 +170,13 @@ def _claude_json_result(text: str, *, cost: float = 0.01) -> str:
         {
             "type": "result",
             "result": text,
-            "cost_usd": cost,
             "duration_ms": 1234,
             "duration_api_ms": 1000,
             "num_turns": 1,
             "is_error": False,
             "session_id": "test-session",
             "total_cost_usd": cost,
+            "usage": {"input_tokens": 12, "output_tokens": 4},
         }
     )
 
@@ -204,7 +205,10 @@ def test_claude_provider_passes_print_model_schema_and_reads_image(tmp_path: Pat
     assert "--output-format" in command
     assert command[command.index("--output-format") + 1] == "json"
     assert "--json-schema" in command
-    assert "--dangerously-skip-permissions" in command
+    assert "--dangerously-skip-permissions" not in command
+    assert command[command.index("--permission-mode") + 1] == "dontAsk"
+    assert command[command.index("--setting-sources") + 1] == ""
+    assert Path(commands[0][1]["cwd"]).name.startswith("pixelgym-claude-grounding-")
     assert str(image_path.resolve()) in " ".join(command)
     assert response.raw_response == '{"x":42,"y":99}'
     assert response.request_failure is None
@@ -228,6 +232,7 @@ def test_claude_provider_extracts_usage_from_json_envelope(tmp_path: Path) -> No
 
     assert response.provider_metadata["cost_usd"] == 0.005
     assert response.provider_metadata["num_turns"] == 1
+    assert response.usage == {"input_tokens": 12, "output_tokens": 4}
 
 
 def test_claude_provider_handles_nonzero_exit(tmp_path: Path) -> None:
@@ -425,6 +430,42 @@ def test_gemini_adapter_passes_through_mark_id_responses(tmp_path: Path) -> None
     adapter = GeminiCoordinateAdapter(MarkProvider())
     result = adapter.invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
     assert json.loads(result.raw_response) == {"mark_id": 3}
+
+
+def test_gemini_adapter_passes_through_non_numeric_coordinates(tmp_path: Path) -> None:
+    image_path = tmp_path / "screenshot.png"
+    Image.new("RGB", (1024, 768), "white").save(image_path)
+
+    inner = MockProvider()
+    original_invoke = inner.invoke
+
+    def fixed_invoke(*, image_path: Path, prompt: str, schema: dict) -> ProviderResponse:
+        response = original_invoke(image_path=image_path, prompt=prompt, schema=schema)
+        return dataclasses.replace(response, raw_response='{"x":"640","y":null}')
+
+    inner.invoke = fixed_invoke  # type: ignore[assignment]
+    result = GeminiCoordinateAdapter(inner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
+    assert json.loads(result.raw_response) == {"x": "640", "y": None}
+
+
+def test_gemini_adapter_clamps_boundary_coordinates(tmp_path: Path) -> None:
+    image_path = tmp_path / "screenshot.png"
+    Image.new("RGB", (1024, 768), "white").save(image_path)
+
+    inner = MockProvider()
+    original_invoke = inner.invoke
+
+    def fixed_invoke(*, image_path: Path, prompt: str, schema: dict) -> ProviderResponse:
+        response = original_invoke(image_path=image_path, prompt=prompt, schema=schema)
+        return dataclasses.replace(response, raw_response='{"x":1000,"y":1000}')
+
+    inner.invoke = fixed_invoke  # type: ignore[assignment]
+    result = GeminiCoordinateAdapter(inner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
+    assert json.loads(result.raw_response) == {"x": 1023, "y": 767}
 
 
 def test_gemini_adapter_exposes_inner_identity() -> None:

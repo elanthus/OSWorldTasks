@@ -53,6 +53,9 @@ V3C_OVERLAY_SCHEMA_VERSION = "pixelgym-grounding-v3c-overlay-v1"
 V3C_CAPTURE_SCHEMA_VERSION = "pixelgym-grounding-v3c-capture-v1"
 V3C_MANIFEST_SCHEMA_VERSION = "pixelgym-grounding-v3c-manifest-v1"
 V3C_CALIBRATION_SEEDS = (20, 21, 22, 23)
+_V3C_CANDIDATE_RECORD_FIELDS = frozenset(
+    {"schema_version", "protocol_version", "example_id", "candidates"}
+)
 
 V3C_TARGET_SPECS = (
     TargetSpec("edit_1", "Click the Edit button for Acme Industries", "button"),
@@ -76,8 +79,12 @@ def _sha256(data: bytes) -> str:
 
 _V3C_CAPTURE_SOURCE_PATHS = (
     "pixelgym/grounding/calibration_v3c.py",
+    "pixelgym/grounding/capture.py",
+    "pixelgym/grounding/determinism.py",
+    "pixelgym/grounding/overlays.py",
     "pixelgym/grounding/v3_server.py",
     "pixelgym/grounding/schema.py",
+    "pixelgym/tasks/vendor_form/browser_contract.py",
 )
 _V3C_CAPTURE_STATIC_ROOT = Path("pixelgym/grounding/v3c_app/static")
 
@@ -203,6 +210,12 @@ def validate_v3c_calibration_dataset(
 
     candidates_by_id: dict[str, dict[str, Any]] = {}
     for record in candidate_records:
+        if set(record) != _V3C_CANDIDATE_RECORD_FIELDS:
+            raise ValueError("v3c candidate record fields do not match")
+        if record.get("schema_version") != V3C_CANDIDATE_SCHEMA_VERSION:
+            raise ValueError("v3c candidate schema version does not match")
+        if record.get("protocol_version") != V3C_PROTOCOL_VERSION:
+            raise ValueError("v3c candidate protocol version does not match")
         eid = record.get("example_id")
         if not isinstance(eid, str) or not eid:
             raise ValueError("candidate example_id must be a nonempty string")
@@ -491,6 +504,11 @@ def capture_v3c_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         reference_label="v3c-calibration-pass-1",
         candidate_label="v3c-calibration-pass-2",
     )
+    if (
+        repeatability["byte_identical_file_count"] != repeatability["file_count"]
+        or repeatability["differing_file_count"] != 0
+    ):
+        raise RuntimeError("v3c calibration capture was not bitwise repeatable")
 
     summary = validate_v3c_calibration_dataset(examples_1, candidates_1)
 

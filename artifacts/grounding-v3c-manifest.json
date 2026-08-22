@@ -8,50 +8,71 @@
   ],
   "decision_history": [
     {
+      "escalation_outcome": "m > 0.85 \u2014 saturated",
+      "marks_accuracy": "20/20 = 100%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.0089,
       "model": "claude-haiku-4-5-20251001",
       "provider": "claude-code-cli",
       "raw_accuracy": "19/20 = 95%",
-      "marks_accuracy": "20/20 = 100%",
-      "raw_mean_center_distance_norm": 0.0046,
-      "marks_mean_center_distance_norm": 0.0089,
       "raw_invalid": 0,
-      "marks_invalid": 0,
-      "escalation_outcome": "m > 0.85 — saturated",
-      "raw_miss_targets": ["name_2"],
+      "raw_mean_center_distance_norm": 0.0046,
+      "raw_miss_targets": [
+        "name_2"
+      ],
+      "usage_evidence": "not captured by the historical Claude adapter; not reconstructed retroactively",
       "v3b_comparison": "v3b was 100%/100%; v3c raw dropped to 95% (1 miss on name_2)"
     },
     {
+      "escalation_outcome": "m > 0.85 \u2014 saturated",
+      "marks_accuracy": "20/20 = 100%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.0016,
       "model": "google/gemini-3.7-flash",
       "provider": "openrouter+gemini-coordinate-adapter",
       "raw_accuracy": "20/20 = 100%",
-      "marks_accuracy": "20/20 = 100%",
-      "raw_mean_center_distance_norm": 0.0006,
-      "marks_mean_center_distance_norm": 0.0016,
       "raw_invalid": 0,
-      "marks_invalid": 0,
-      "escalation_outcome": "m > 0.85 — saturated"
+      "raw_mean_center_distance_norm": 0.0006
     },
     {
+      "escalation_outcome": "m < 0.60 \u2014 floor (weak model probe)",
+      "marks_accuracy": "0/20 = 0%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.111,
       "model": "meta-llama/llama-4-scout",
       "provider": "openrouter",
       "raw_accuracy": "1/20 = 5%",
-      "marks_accuracy": "0/20 = 0%",
-      "raw_mean_center_distance_norm": 0.0730,
-      "marks_mean_center_distance_norm": 0.1110,
       "raw_invalid": 0,
-      "marks_invalid": 0,
-      "escalation_outcome": "m < 0.60 — floor (weak model probe)"
+      "raw_mean_center_distance_norm": 0.073
     },
     {
+      "escalation_outcome": "m < 0.60 \u2014 floor (weak model probe, no coordinate adapter)",
+      "marks_accuracy": "0/20 = 0%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.1563,
       "model": "google/gemma-3-27b-it",
       "provider": "openrouter",
       "raw_accuracy": "0/20 = 0%",
-      "marks_accuracy": "0/20 = 0%",
-      "raw_mean_center_distance_norm": 0.0706,
-      "marks_mean_center_distance_norm": 0.1563,
       "raw_invalid": 0,
-      "marks_invalid": 0,
-      "escalation_outcome": "m < 0.60 — floor (weak model probe, no coordinate adapter)"
+      "raw_mean_center_distance_norm": 0.0706
+    },
+    {
+      "escalation_outcome": "all requests failed \u2014 structured JSON output unsupported by the selected route",
+      "marks_accuracy": "0/20 = 0%",
+      "marks_invalid": 20,
+      "model": "qwen/qwen-2.5-vl-7b-instruct",
+      "provider": "openrouter",
+      "raw_accuracy": "0/20 = 0%",
+      "raw_invalid": 20
+    },
+    {
+      "escalation_outcome": "all requests failed \u2014 structured JSON output unsupported by the selected route",
+      "marks_accuracy": "0/20 = 0%",
+      "marks_invalid": 20,
+      "model": "google/gemma-3-4b-it",
+      "provider": "openrouter",
+      "raw_accuracy": "0/20 = 0%",
+      "raw_invalid": 20
     }
   ],
   "design": "4 calibration seeds x 5 screen states; crossed target allocation; one target per screenshot",
@@ -62,7 +83,7 @@
     "header + sidebar occlusion"
   ],
   "escalation_rule": "0.60 <= m <= 0.85: freeze v3c; m > 0.85: report saturation; m < 0.60: floor check then report honestly",
-  "model_calls_performed": 160,
+  "model_calls_performed": 240,
   "outputs": {
     "candidates": {
       "path": "artifacts/grounding-v3c-calibration-candidates.jsonl",
@@ -70,7 +91,7 @@
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v3c-capture.json",
-      "sha256": "f973de16451270149c6f069ae23f06e8a3f280f771c1108897645e9e18202474"
+      "sha256": "5c4ae8587ddf28dbec72062e63c225bedad2cec8952fde27967d74aa760d3988"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v3c/contact-sheet.png",
@@ -78,31 +99,39 @@
     },
     "dataset": {
       "path": "artifacts/grounding-v3c-calibration-dataset.jsonl",
-      "sha256": "c3eccbb2f8f98540fa85778bb4decf7e11e13e60fa6530c8add288f65c86d059"
+      "sha256": "e6df43671c3d00592c8734398a2f2c517bfe0c86d48cbf411b584d895317ee59"
     },
     "marks_contact_sheet": {
       "path": "artifacts/grounding-v3c/marks-contact-sheet.png",
       "sha256": "3da63e35f805f2cfff2b791fdf674e172b6c2dece0720f9f67e32c03d613ec1b"
     },
-    "predictions_haiku": {
-      "path": "artifacts/grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl",
-      "sha256": "5946823e22ed68d281a606162488454e40f8672d51113ddb6891560340d62ec8"
+    "overlays": {
+      "path": "artifacts/grounding-v3c-calibration-overlays.jsonl",
+      "sha256": "0731c0931a5732c5d1b7aa48a2dc99f25b0a47047fb8a0f0d7fb492b8cc3896d"
     },
     "predictions_flash_adapted": {
       "path": "artifacts/grounding-v3c-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
       "sha256": "009dcce008706734ba48f58e1bf9c985271f0a5ecf8a315c70757ccf6083db8e"
     },
-    "predictions_llama_scout": {
-      "path": "artifacts/grounding-v3c-calibration-predictions-llama-4-scout.jsonl",
-      "sha256": "b8beed5c25d6a87d163d084fa3bba872a324aa50b4bbc7df5a1f7b1a3e38bcf0"
-    },
     "predictions_gemma_27b": {
       "path": "artifacts/grounding-v3c-calibration-predictions-gemma-3-27b.jsonl",
       "sha256": "ca42b4279e63249e91f363252e191ff8d8f319c82eb03cf079c9dbc05425120b"
     },
-    "overlays": {
-      "path": "artifacts/grounding-v3c-calibration-overlays.jsonl",
-      "sha256": "0731c0931a5732c5d1b7aa48a2dc99f25b0a47047fb8a0f0d7fb492b8cc3896d"
+    "predictions_gemma_4b": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-gemma-3-4b.jsonl",
+      "sha256": "a77b27f613ed630e4bcd187d4e4e0aeba666aad51255d1d0b61b291ff4ba38ee"
+    },
+    "predictions_haiku": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl",
+      "sha256": "5946823e22ed68d281a606162488454e40f8672d51113ddb6891560340d62ec8"
+    },
+    "predictions_llama_scout": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-llama-4-scout.jsonl",
+      "sha256": "b8beed5c25d6a87d163d084fa3bba872a324aa50b4bbc7df5a1f7b1a3e38bcf0"
+    },
+    "predictions_qwen_7b": {
+      "path": "artifacts/grounding-v3c-calibration-predictions-qwen-2.5-vl-7b.jsonl",
+      "sha256": "788b5c6790803609300893d42d9fd85a87ffe94b981a50acb45faf34003bd45b"
     }
   },
   "parser_version": "pixelgym-grounding-parser-v2",
