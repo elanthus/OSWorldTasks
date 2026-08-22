@@ -46,6 +46,7 @@ from pixelgym.grounding.schema import (
     validate_candidate_set,
 )
 from pixelgym.serialization import canonical_json_text
+from pixelgym.tasks.vendor_form import generator
 
 V3A_PROTOCOL_VERSION = "pixelgym-grounding-v3a"
 CALIBRATION_EXAMPLE_SCHEMA_VERSION = "pixelgym-grounding-calibration-example-v1"
@@ -94,6 +95,41 @@ def calibration_target(seed: int, screen_state: str) -> TargetSpec:
     except ValueError as exc:
         raise ValueError("screen state is outside the frozen state set") from exc
     return TARGET_SPECS[(seed + state_index) % len(TARGET_SPECS)]
+
+
+def compare_calibration_non_image_evidence(
+    reference: list[dict[str, Any]], candidate: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Compare canonical task and target-neutral candidate evidence across passes."""
+    reference_text = canonical_json_text(reference)
+    candidate_text = canonical_json_text(candidate)
+    reference_sha256 = _sha256(reference_text.encode("utf-8"))
+    candidate_sha256 = _sha256(candidate_text.encode("utf-8"))
+    if reference_text != candidate_text:
+        raise RuntimeError("v3a calibration non-image evidence was not repeatable")
+
+    task_evidence: dict[int, dict[str, Any]] = {}
+    candidate_records = []
+    for record in reference:
+        task_evidence[int(record["task_seed"])] = {
+            "task_id": record["task_id"],
+            "canonical_task_sha256": record["canonical_task_sha256"],
+        }
+        candidate_records.append(record["candidate_record"])
+    return {
+        "schema_version": "pixelgym-grounding-non-image-repeatability-v1",
+        "record_count": len(reference),
+        "matched": True,
+        "reference_aggregate_sha256": reference_sha256,
+        "candidate_aggregate_sha256": candidate_sha256,
+        "candidate_records_sha256": _sha256(
+            canonical_json_text(candidate_records).encode("utf-8")
+        ),
+        "tasks": [
+            {"task_seed": seed, **task_evidence[seed]}
+            for seed in sorted(task_evidence)
+        ],
+    }
 
 
 def validate_calibration_dataset(
@@ -191,10 +227,10 @@ def validate_calibration_dataset(
 def _capture_one_pass(
     repository_root: Path,
     image_dir: Path,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str, list[dict[str, Any]]]:
     """Run one full Playwright capture pass over calibration seeds.
 
-    Returns (examples, candidate_records, browser_version).
+    Returns (examples, candidate_records, browser_version, non_image_evidence).
     """
     try:
         from playwright.sync_api import Error as PlaywrightError
@@ -206,6 +242,7 @@ def _capture_one_pass(
 
     examples: list[dict[str, Any]] = []
     candidate_records: list[dict[str, Any]] = []
+    non_image_evidence: list[dict[str, Any]] = []
     browser_version = "unknown"
     image_dir.mkdir(parents=True, exist_ok=True)
 
@@ -246,6 +283,19 @@ def _capture_one_pass(
                     page.evaluate("() => document.fonts.ready")
                     task = page.evaluate(
                         "() => fetch('/api/task').then(response => response.json())"
+                    )
+                    expected_task = generator.generate_task(seed)
+                    observed_task = {
+                        "task_id": task["task_id"],
+                        "schema_version": expected_task["schema_version"],
+                        "seed": seed,
+                        "fields": task["fields"],
+                        "options": task["options"],
+                    }
+                    if observed_task != expected_task or reset["task_id"] != task["task_id"]:
+                        raise RuntimeError("capture server task does not match its canonical spec")
+                    canonical_task_json = generator.canonical_json(
+                        {key: value for key, value in observed_task.items() if key != "task_id"}
                     )
                     _apply_state(page, state, task)
                     if state == "initial":
@@ -317,19 +367,30 @@ def _capture_one_pass(
                         "capture_version": CAPTURE_VERSION,
                     }
                     examples.append(example)
-                    candidate_records.append(
+                    candidate_record = {
+                        "schema_version": CALIBRATION_CANDIDATE_SCHEMA_VERSION,
+                        "protocol_version": V3A_PROTOCOL_VERSION,
+                        "example_id": example_id,
+                        "candidates": candidates,
+                    }
+                    candidate_records.append(candidate_record)
+                    non_image_evidence.append(
                         {
-                            "schema_version": CALIBRATION_CANDIDATE_SCHEMA_VERSION,
-                            "protocol_version": V3A_PROTOCOL_VERSION,
                             "example_id": example_id,
-                            "candidates": candidates,
+                            "task_seed": seed,
+                            "task_id": task["task_id"],
+                            "canonical_task_json": canonical_task_json,
+                            "canonical_task_sha256": _sha256(
+                                canonical_task_json.encode("utf-8")
+                            ),
+                            "candidate_record": candidate_record,
                         }
                     )
         finally:
             context.close()
             browser.close()
 
-    return examples, candidate_records, browser_version
+    return examples, candidate_records, browser_version, non_image_evidence
 
 
 def _generate_calibration_overlays(
@@ -383,7 +444,9 @@ def _generate_calibration_overlays(
     return records
 
 
-def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
+def capture_calibration_dataset(
+    repository_root: Path, *, write_manifest: bool = True
+) -> dict[str, Any]:
     """Capture, verify, and write the v3a calibration dataset.
 
     Performs two independent capture passes and checks bitwise repeatability
@@ -393,10 +456,10 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
     primary_dir = artifact_root / "grounding-v3a" / "images" / "raw"
     repeat_dir = artifact_root / "grounding-v3a" / "images" / "raw-repeat"
 
-    examples_1, candidates_1, browser_version = _capture_one_pass(
+    examples_1, candidates_1, browser_version, non_image_1 = _capture_one_pass(
         repository_root, primary_dir
     )
-    _, _, _ = _capture_one_pass(repository_root, repeat_dir)
+    _, _, _, non_image_2 = _capture_one_pass(repository_root, repeat_dir)
 
     repeatability = compare_png_directories(
         primary_dir,
@@ -409,6 +472,9 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         or repeatability["differing_file_count"] != 0
     ):
         raise RuntimeError("v3a calibration capture was not bitwise repeatable")
+    non_image_repeatability = compare_calibration_non_image_evidence(
+        non_image_1, non_image_2
+    )
 
     summary = validate_calibration_dataset(examples_1, candidates_1)
 
@@ -459,6 +525,7 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         "screen_states": list(SCREEN_STATES),
         **summary,
         "repeatability": repeatability,
+        "non_image_repeatability": non_image_repeatability,
         "source_sha256": source_hashes,
         "dataset_path": dataset_path.relative_to(repository_root).as_posix(),
         "candidates_path": candidates_path.relative_to(repository_root).as_posix(),
@@ -535,8 +602,9 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         },
     }
     manifest_path = artifact_root / "grounding-v3a-manifest.json"
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    if write_manifest:
+        manifest_path.write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return manifest

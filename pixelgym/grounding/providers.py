@@ -295,6 +295,19 @@ class ClaudeCodeCLIProvider:
                 provider_trace=[],
                 request_failure="claude CLI produced unparseable output",
             )
+        if not isinstance(envelope, dict):
+            return ProviderResponse(
+                timestamp_utc=started_at,
+                latency_ms=(time.monotonic() - start) * 1000,
+                raw_response=None,
+                usage=None,
+                provider_metadata={
+                    "cli_version": self._version(),
+                    "exit_code": completed.returncode,
+                },
+                provider_trace=[],
+                request_failure="claude CLI produced non-object JSON output",
+            )
         is_error = envelope.get("is_error", False)
         raw_response = envelope.get("result") if not is_error else None
         failure = "claude CLI reported an error result" if is_error else None

@@ -113,9 +113,15 @@ Before the scored evaluation, three page variants of increasing difficulty were 
 
 | Variant | Haiku raw | Haiku marks | Flash raw | Flash marks |
 |---|---|---|---|---|
-| v3a | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) |
+| v3a | 20/20 captured cells (100%) | 20/20 captured cells (100%) | 20/20 captured cells (100%) | 20/20 captured cells (100%) |
 | v3b | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) |
 | v3c | 19/20 (95%) | 20/20 (100%) | 20/20 (100%) | 20/20 (100%) |
+
+The v3a allocation also sampled only 8 of its 10 declared targets: target-spec
+indices 8–9 (`expedited_onboarding` and `submit`) are absent. Its 20/20 results
+are observed captured-cell accuracy, not evidence of full-target saturation. A
+full-target claim requires a newly approved paid pilot; no replacement calls
+were made for this review fix.
 
 The v3b allocation sampled only 8 of its 10 declared targets: `sb_pending` and
 `save_draft` are absent. Its 100% cells are retained as observed calibration evidence,
@@ -129,7 +135,12 @@ require a newly approved paid pilot; no replacement calls were made for this rev
 | Llama 4 Scout | 17B active (MoE) | 1/20 (5%) | 0/20 (0%) | — | — |
 | Gemma 3 27B | 27B | 0/20 (0%) | 0/20 (0%) | 3/20 (15%) | 2/20 (10%) |
 
-The calibration shows a binary capability cliff: frontier VLMs saturate at 95–100% across all variants, while mid-tier models floor at 0–15%. No model occupies the 60–85% escalation band. The difficulty progression from v3a to v3c created measurable degradation for Gemma 27B (15% → 0% raw) but not for frontier models.
+The calibration shows a binary capability cliff on the observed captured cells:
+frontier VLMs score 95–100%, while mid-tier models floor at 0–15%. Because v3a
+and v3b each omit two declared targets, these results do not establish
+full-target saturation. No model occupies the 60–85% escalation band. The
+difficulty progression from v3a to v3c created measurable degradation for Gemma
+27B (15% → 0% raw) but not for frontier models on the captured cells.
 
 ## Total model calls
 

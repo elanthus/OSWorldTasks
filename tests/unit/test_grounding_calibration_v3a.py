@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections import Counter
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -13,9 +16,12 @@ from pixelgym.grounding.calibration_v3a import (
     CALIBRATION_SEEDS,
     V3A_PROTOCOL_VERSION,
     calibration_target,
+    compare_calibration_non_image_evidence,
     validate_calibration_dataset,
 )
 from pixelgym.grounding.schema import SCREEN_STATES, TARGET_SPECS, TASK_SEEDS
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_calibration_seeds_are_disjoint_from_frozen_task_seeds() -> None:
@@ -147,6 +153,68 @@ def test_validate_calibration_dataset_rejects_scored_seeds() -> None:
     examples[0]["task_seed"] = 0
     with pytest.raises(ValueError, match="calibration"):
         validate_calibration_dataset(examples, candidates)
+
+
+def test_non_image_repeatability_compares_tasks_and_candidates() -> None:
+    record = {
+        "example_id": "cell-1",
+        "task_seed": 20,
+        "task_id": "vf-test",
+        "canonical_task_json": '{"seed":20}',
+        "canonical_task_sha256": "a" * 64,
+        "candidate_record": {
+            "schema_version": CALIBRATION_CANDIDATE_SCHEMA_VERSION,
+            "protocol_version": V3A_PROTOCOL_VERSION,
+            "example_id": "cell-1",
+            "candidates": _candidate_list(),
+        },
+    }
+    summary = compare_calibration_non_image_evidence([record], [record])
+    assert summary["matched"] is True
+    assert summary["record_count"] == 1
+    assert summary["reference_aggregate_sha256"] == summary["candidate_aggregate_sha256"]
+
+    changed_task = [{**record, "task_id": "vf-other"}]
+    with pytest.raises(RuntimeError, match="non-image evidence"):
+        compare_calibration_non_image_evidence([record], changed_task)
+
+    changed_candidates = [
+        {
+            **record,
+            "candidate_record": {
+                **record["candidate_record"],
+                "candidates": record["candidate_record"]["candidates"][:-1],
+            },
+        }
+    ]
+    with pytest.raises(RuntimeError, match="non-image evidence"):
+        compare_calibration_non_image_evidence([record], changed_candidates)
+
+
+def test_checked_capture_artifact_attests_images_tasks_candidates_and_sources() -> None:
+    capture_path = REPOSITORY_ROOT / "artifacts/grounding-v3a-capture.json"
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+
+    assert capture["repeatability"]["file_count"] == 20
+    assert capture["repeatability"]["byte_identical_file_count"] == 20
+    assert capture["repeatability"]["differing_file_count"] == 0
+
+    non_image = capture["non_image_repeatability"]
+    assert non_image["matched"] is True
+    assert non_image["record_count"] == 20
+    assert non_image["reference_aggregate_sha256"] == non_image["candidate_aggregate_sha256"]
+    assert len(non_image["tasks"]) == len(CALIBRATION_SEEDS)
+    assert {task["task_seed"] for task in non_image["tasks"]} == set(CALIBRATION_SEEDS)
+
+    for relative_path, expected_sha256 in capture["source_sha256"].items():
+        actual_sha256 = hashlib.sha256((REPOSITORY_ROOT / relative_path).read_bytes()).hexdigest()
+        assert actual_sha256 == expected_sha256, relative_path
+
+    manifest = json.loads(
+        (REPOSITORY_ROOT / "artifacts/grounding-v3a-manifest.json").read_text(encoding="utf-8")
+    )
+    expected_capture_sha256 = manifest["outputs"]["capture_evidence"]["sha256"]
+    assert hashlib.sha256(capture_path.read_bytes()).hexdigest() == expected_capture_sha256
 
 
 def test_validate_calibration_dataset_rejects_wrong_target_allocation() -> None:

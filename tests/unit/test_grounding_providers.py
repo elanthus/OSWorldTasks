@@ -302,6 +302,26 @@ def test_claude_provider_handles_is_error_response(tmp_path: Path) -> None:
     assert response.raw_response is None
 
 
+@pytest.mark.parametrize("stdout", ["[]", '"scalar"', "42", "null"])
+def test_claude_provider_records_non_object_json_as_failure(
+    tmp_path: Path, stdout: str
+) -> None:
+    image_path = tmp_path / "image.png"
+    Image.new("RGB", (2, 2), "white").save(image_path)
+
+    def runner(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        if "--version" in command:
+            return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
+        return subprocess.CompletedProcess(command, 0, stdout, "")
+
+    response = ClaudeCodeCLIProvider(
+        executable="claude-test", command_runner=runner
+    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+
+    assert response.request_failure == "claude CLI produced non-object JSON output"
+    assert response.raw_response is None
+
+
 def test_claude_provider_does_not_leak_private_paths_in_cache(tmp_path: Path) -> None:
     image_path = tmp_path / "image.png"
     Image.new("RGB", (2, 2), "white").save(image_path)
