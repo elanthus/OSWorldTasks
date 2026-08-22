@@ -44,8 +44,8 @@
     {
       "calls": 40,
       "date": "2026-08-20",
-      "decision": "100% accuracy on calibration set; predictions within 1-2px of bbox center",
-      "escalation": "m > 0.85: report and request v3b entry",
+      "decision": "100% on the 20 captured calibration cells; no full-target claim because expedited_onboarding and submit were not sampled",
+      "escalation": "observed m > 0.85 on captured cells; a full-target claim requires a newly approved paid pilot",
       "marks_accuracy": "20/20",
       "marks_mean_center_distance_norm": 0.0056,
       "model": "claude-haiku-4-5-20251001",
@@ -62,8 +62,8 @@
       "adapter": "GeminiCoordinateAdapter",
       "calls": 40,
       "date": "2026-08-20",
-      "decision": "100% accuracy with coordinate adapter; marks sub-pixel precision",
-      "escalation": "m > 0.85: report and request v3b entry",
+      "decision": "100% on the 20 captured calibration cells with coordinate adapter; no full-target claim because expedited_onboarding and submit were not sampled",
+      "escalation": "observed m > 0.85 on captured cells; a full-target claim requires a newly approved paid pilot",
       "marks_accuracy": "20/20",
       "marks_mean_center_distance_norm": 0.0003,
       "model": "google/gemini-3.7-flash",
@@ -93,7 +93,7 @@
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v3a-capture.json",
-      "sha256": "515f42b2db7f899da1c9bcec58e17351dfddae66548c99e27c0f9209226c3c9b"
+      "sha256": "55799a43e8b25db72401178261f735de37c841ee995fa19c145db9b98c8164ea"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v3a/contact-sheet.png",
@@ -171,6 +171,16 @@
     }
   },
   "status": "scored_evaluation_complete",
+  "target_coverage": {
+    "covered_target_count": 8,
+    "declared_target_count": 10,
+    "missing_target_ids": [
+      "expedited_onboarding",
+      "submit"
+    ],
+    "observed_accuracy_scope": "20 captured seed-state cells only",
+    "requires_new_paid_pilot_for_full_target_claim": true
+  },
   "v3b_cross_reference": {
     "manifest_path": "artifacts/grounding-v3b-manifest.json",
     "outcome": "both models scored 100% on the 20 captured v3b cells, but the allocation omitted 2 of 10 declared targets; no full-target saturation claim is supported without a new paid pilot",

@@ -58,6 +58,7 @@ ERROR_CATEGORIES = (
     "ambiguous instruction",
     "mark omitted or illegible",
     "correct proposal, wrong mark selection",
+    "coordinate miss",
     "invalid response format",
 )
 REVIEW_STATUSES = ("pending_visual_review", "manual_visual_review")
@@ -435,10 +436,16 @@ def _suggest_error_category(
                 observation + "; target_proposed=False",
                 "Suggested because the candidate generator omitted the target.",
             )
+        if record["mark_id"] is not None:
+            return (
+                "correct proposal, wrong mark selection",
+                observation + f"; selected_mark_id={record['mark_id']}",
+                "Suggested because the target was proposed but the selected mark was incorrect.",
+            )
         return (
-            "correct proposal, wrong mark selection",
-            observation + f"; selected_mark_id={record['mark_id']}",
-            "Suggested because the target was proposed but the selected mark was incorrect.",
+            "coordinate miss",
+            observation,
+            "Suggested because an instruction-mode coordinate missed the target box.",
         )
     point = record["point"]
     if point is not None:

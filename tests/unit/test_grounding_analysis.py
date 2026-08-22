@@ -604,3 +604,28 @@ def test_analysis_accepts_separately_versioned_instruction_records() -> None:
         bootstrap_samples=10,
     )
     assert result["prompt_version"] == PROMPT_VERSION_V2
+
+
+def test_instruction_mode_marks_error_is_classified_as_coordinate_miss() -> None:
+    examples, predictions = _v2_fixture()
+    for record in predictions:
+        record.update(
+            {
+                "schema_version": INSTRUCTION_PREDICTION_SCHEMA_VERSION,
+                "parser_version": PARSER_VERSION_V2,
+                "instruction_mode": "semantic",
+                "original_target": examples[int(record["example_id"].split("-")[1])][
+                    "target"
+                ],
+            }
+        )
+
+    reviews = build_error_review_template(examples, predictions)
+    marks_review = next(
+        review
+        for review in reviews
+        if review["condition"] == "marks" and review["example_id"] == "example-1"
+    )
+
+    assert marks_review["categories"] == ["coordinate miss"]
+    assert "wrong mark selection" not in marks_review["inference"]

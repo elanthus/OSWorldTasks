@@ -15,6 +15,36 @@
   "dataset_path": "artifacts/grounding-v3a-calibration-dataset.jsonl",
   "example_count": 20,
   "marks_contact_sheet_path": "artifacts/grounding-v3a/marks-contact-sheet.png",
+  "non_image_repeatability": {
+    "candidate_aggregate_sha256": "09dd22f7ed44abd6bcb366e3e94c68b4ef538bd9eb943d7a629e90a1aa36c335",
+    "candidate_records_sha256": "4923cee85c48e9a46e4a81459d19ebe399360ef60ee865fd6312e2d6e7b74c5e",
+    "matched": true,
+    "record_count": 20,
+    "reference_aggregate_sha256": "09dd22f7ed44abd6bcb366e3e94c68b4ef538bd9eb943d7a629e90a1aa36c335",
+    "schema_version": "pixelgym-grounding-non-image-repeatability-v1",
+    "tasks": [
+      {
+        "canonical_task_sha256": "d33c635471348ae3e1e31000cee45fe30799860b47ec0d30dd43316bc0b35cc9",
+        "task_id": "vf-d33c635471348ae3",
+        "task_seed": 20
+      },
+      {
+        "canonical_task_sha256": "ecb3d8cc4b53410c9dd89d81f1045b16c725b38c2213d2e631fc1614dc50b498",
+        "task_id": "vf-ecb3d8cc4b53410c",
+        "task_seed": 21
+      },
+      {
+        "canonical_task_sha256": "e9eb7a0a3aa3e7a02accff997cf2077b1f7e38b12f56b84da814e18ca6d7b60c",
+        "task_id": "vf-e9eb7a0a3aa3e7a0",
+        "task_seed": 22
+      },
+      {
+        "canonical_task_sha256": "72ce4e26e23847f32ea0f899861fbda183321e5f022207953294f7cbfdfb1ff6",
+        "task_id": "vf-72ce4e26e23847f3",
+        "task_seed": 23
+      }
+    ]
+  },
   "overlays_path": "artifacts/grounding-v3a-calibration-overlays.jsonl",
   "protocol_version": "pixelgym-grounding-v3a",
   "repeatability": {
@@ -50,7 +80,7 @@
   ],
   "seed_state_cell_count": 20,
   "source_sha256": {
-    "pixelgym/grounding/calibration_v3a.py": "f88f42012a738ba1fec922140917eaaf8ff518e1f44cfab5a3a897a91de20c94",
+    "pixelgym/grounding/calibration_v3a.py": "3a0294fe6c35fc27c199a753627b08cee99084f752936710d00ee6a53b67bfcf",
     "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
     "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
     "pixelgym/grounding/overlays.py": "9f9e0e7f1073ba9ad4673a75e137d9fe05134e61fb84d745f4ddc92f55ff6829",
