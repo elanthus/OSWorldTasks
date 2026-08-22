@@ -8,76 +8,92 @@
   ],
   "decision_history": [
     {
-      "date": "2026-08-20",
-      "model": "google/gemini-3.7-flash",
-      "provider": "openrouter",
-      "parameters": {"temperature": 0, "seed": 20260809},
       "calls": 40,
-      "raw_accuracy": "0/20",
-      "marks_accuracy": "0/20",
-      "parse_failures": 0,
+      "date": "2026-08-20",
+      "decision": "null result preserved; trying google/gemini-2.5-pro next",
       "escalation": "m < 0.60: floor check performed",
       "floor_check": "systematic y-bias (mean +89.7px from bbox center, range 28-122px); model identifies elements but all 40 predictions fall below target bbox; not a pipeline bug",
+      "marks_accuracy": "0/20",
+      "model": "google/gemini-3.7-flash",
+      "parameters": {
+        "seed": 20260809,
+        "temperature": 0
+      },
+      "parse_failures": 0,
       "predictions_path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash.jsonl",
-      "decision": "null result preserved; trying google/gemini-2.5-pro next"
+      "provider": "openrouter",
+      "raw_accuracy": "0/20"
     },
     {
-      "date": "2026-08-20",
-      "model": "google/gemini-2.5-pro",
-      "provider": "openrouter",
-      "parameters": {"temperature": 0, "seed": 20260809},
       "calls": 40,
-      "raw_accuracy": "0/20",
-      "marks_accuracy": "0/20",
-      "parse_failures": 0,
+      "date": "2026-08-20",
+      "decision": "Gemini family confirmed as using internal 1000x1000 grid; need non-Gemini model for valid pixel-coordinate calibration",
       "escalation": "m < 0.60: floor check performed",
       "floor_check": "same Gemini-family 1000x1000 coordinate grid; noisier than Flash (y_ratio std 0.0563 vs 0.0022); after 1000->actual rescale raw=13/20 marks=16/20 (vs Flash 40/40)",
-      "predictions_path": "artifacts/grounding-v3a-calibration-predictions-gemini-2.5-pro.jsonl",
-      "decision": "Gemini family confirmed as using internal 1000x1000 grid; need non-Gemini model for valid pixel-coordinate calibration"
-    },
-    {
-      "date": "2026-08-20",
-      "model": "claude-haiku-4-5-20251001",
-      "provider": "claude-code-cli",
-      "parameters": {"temperature": 0},
-      "calls": 40,
-      "raw_accuracy": "20/20",
-      "marks_accuracy": "20/20",
+      "marks_accuracy": "0/20",
+      "model": "google/gemini-2.5-pro",
+      "parameters": {
+        "seed": 20260809,
+        "temperature": 0
+      },
       "parse_failures": 0,
-      "raw_mean_center_distance_norm": 0.0061,
-      "marks_mean_center_distance_norm": 0.0056,
-      "escalation": "m > 0.85: report and request v3b entry",
-      "predictions_path": "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl",
-      "decision": "100% accuracy on calibration set; predictions within 1-2px of bbox center"
+      "predictions_path": "artifacts/grounding-v3a-calibration-predictions-gemini-2.5-pro.jsonl",
+      "provider": "openrouter",
+      "raw_accuracy": "0/20"
     },
     {
+      "calls": 40,
       "date": "2026-08-20",
-      "model": "google/gemini-3.7-flash",
-      "provider": "openrouter",
-      "parameters": {"temperature": 0, "seed": 20260809, "coordinate_rescale": "gemini-1000"},
+      "decision": "100% accuracy on calibration set; predictions within 1-2px of bbox center",
+      "escalation": "m > 0.85: report and request v3b entry",
+      "marks_accuracy": "20/20",
+      "marks_mean_center_distance_norm": 0.0056,
+      "model": "claude-haiku-4-5-20251001",
+      "parameters": {
+        "temperature": 0
+      },
+      "parse_failures": 0,
+      "predictions_path": "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl",
+      "provider": "claude-code-cli",
+      "raw_accuracy": "20/20",
+      "raw_mean_center_distance_norm": 0.0061
+    },
+    {
       "adapter": "GeminiCoordinateAdapter",
       "calls": 40,
-      "raw_accuracy": "20/20",
-      "marks_accuracy": "20/20",
-      "parse_failures": 0,
-      "raw_mean_center_distance_norm": 0.0057,
-      "marks_mean_center_distance_norm": 0.0003,
+      "date": "2026-08-20",
+      "decision": "100% accuracy with coordinate adapter; marks sub-pixel precision",
       "escalation": "m > 0.85: report and request v3b entry",
+      "marks_accuracy": "20/20",
+      "marks_mean_center_distance_norm": 0.0003,
+      "model": "google/gemini-3.7-flash",
+      "parameters": {
+        "coordinate_rescale": "gemini-1000",
+        "seed": 20260809,
+        "temperature": 0
+      },
+      "parse_failures": 0,
       "predictions_path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
-      "decision": "100% accuracy with coordinate adapter; marks sub-pixel precision"
+      "provider": "openrouter",
+      "raw_accuracy": "20/20",
+      "raw_mean_center_distance_norm": 0.0057
     }
   ],
   "design": "4 calibration seeds x 5 screen states; crossed target allocation; one target per screenshot",
   "escalation_rule": "0.60 <= m <= 0.85: freeze v3a; m > 0.85: report and request v3b entry; m < 0.60: floor check then report honestly",
   "model_calls_performed": 560,
   "outputs": {
+    "calibration_analysis": {
+      "path": "artifacts/grounding-v3a-calibration-analysis.json",
+      "sha256": "d6ebbebe8e84ee9cfa29fc19c3742435c41a388065ddb50cd96df93dcfaaec80"
+    },
     "candidates": {
       "path": "artifacts/grounding-v3a-calibration-candidates.jsonl",
       "sha256": "4b6f324e77a3e39dddeda32a630e9333409c1fdf275a8506438a1105d41d4d5f"
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v3a-capture.json",
-      "sha256": "e9224269283e34b08c56883d7cd5f4d9b1a3b6e2b9bfa518598d9c564e9d6a7c"
+      "sha256": "515f42b2db7f899da1c9bcec58e17351dfddae66548c99e27c0f9209226c3c9b"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v3a/contact-sheet.png",
@@ -95,17 +111,17 @@
       "path": "artifacts/grounding-v3a-calibration-overlays.jsonl",
       "sha256": "bef5c655e929ec5d370b8031d00807cb1b2cddcb545663ec914789fb8675791b"
     },
-    "predictions_gemini_3_7_flash": {
-      "path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash.jsonl",
-      "sha256": "4d2f16894018450620bb1780825520463a93a45bda7d3b32f197ceb3fa2434fd"
+    "predictions_claude_haiku_4_5": {
+      "path": "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl",
+      "sha256": "cd1419292d8923ee19b3db0d0089481a5a520e6128630c91b8dce1ab1db8477d"
     },
     "predictions_gemini_2_5_pro": {
       "path": "artifacts/grounding-v3a-calibration-predictions-gemini-2.5-pro.jsonl",
       "sha256": "ad44a779d8b8fc78a17b2b43f5547424948b98e7ba249250aec1f71d3123f163"
     },
-    "predictions_claude_haiku_4_5": {
-      "path": "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl",
-      "sha256": "cd1419292d8923ee19b3db0d0089481a5a520e6128630c91b8dce1ab1db8477d"
+    "predictions_gemini_3_7_flash": {
+      "path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash.jsonl",
+      "sha256": "4d2f16894018450620bb1780825520463a93a45bda7d3b32f197ceb3fa2434fd"
     },
     "predictions_gemini_3_7_flash_adapted": {
       "path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
@@ -118,44 +134,46 @@
   "schema_version": "pixelgym-grounding-v3a-manifest-v1",
   "scored_example_count": 100,
   "scored_results": {
-    "haiku": {
-      "model": "claude-haiku-4-5-20251001",
-      "provider": "claude-code-cli",
-      "raw_accuracy": "100/100 = 100%",
-      "marks_accuracy": "100/100 = 100%",
-      "raw_invalid": 0,
-      "marks_invalid": 0,
-      "raw_mean_center_distance_norm": 0.0119,
-      "marks_mean_center_distance_norm": 0.0117,
-      "som_lift": 0,
-      "calls": 200,
-      "cache_hits": 20,
-      "new_calls": 180,
-      "predictions_path": "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl",
-      "predictions_sha256": "2ae837fc1d5a98756cbb9352f1b8e054500975d0c5fcf06ef2c53b4ff1f281c8"
-    },
     "flash_adapted": {
-      "model": "google/gemini-3.7-flash",
-      "provider": "openrouter+gemini-coordinate-adapter",
-      "raw_accuracy": "91/100 = 91%",
-      "marks_accuracy": "100/100 = 100%",
-      "raw_invalid": 9,
-      "marks_invalid": 0,
-      "raw_mean_center_distance_norm": 0.0125,
-      "marks_mean_center_distance_norm": 0.0004,
-      "som_lift": 9,
-      "som_lift_mechanism": "eliminated 9 invalid raw-coordinate responses",
-      "calls": 200,
       "cache_hits": 20,
+      "calls": 200,
+      "marks_accuracy": "100/100 = 100%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.0004,
+      "marks_request_failures": 0,
+      "model": "google/gemini-3.7-flash",
       "new_calls": 180,
       "predictions_path": "artifacts/grounding-v3a-scored-predictions-gemini-3.7-flash-adapted.jsonl",
-      "predictions_sha256": "5b9ab8309e819073a5bbdd2c57925314b8621d2da1c8612a9e29ef032ecbbc78"
+      "predictions_sha256": "5b9ab8309e819073a5bbdd2c57925314b8621d2da1c8612a9e29ef032ecbbc78",
+      "provider": "openrouter+gemini-coordinate-adapter",
+      "raw_accuracy": "91/100 = 91%",
+      "raw_invalid": 0,
+      "raw_mean_center_distance_norm": 0.0125,
+      "raw_request_failures": 9,
+      "som_lift": 9,
+      "som_lift_mechanism": "9 raw request failures scored as incorrect; marks pass had 0 request failures"
+    },
+    "haiku": {
+      "cache_hits": 20,
+      "calls": 200,
+      "marks_accuracy": "100/100 = 100%",
+      "marks_invalid": 0,
+      "marks_mean_center_distance_norm": 0.0117,
+      "model": "claude-haiku-4-5-20251001",
+      "new_calls": 180,
+      "predictions_path": "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl",
+      "predictions_sha256": "2ae837fc1d5a98756cbb9352f1b8e054500975d0c5fcf06ef2c53b4ff1f281c8",
+      "provider": "claude-code-cli",
+      "raw_accuracy": "100/100 = 100%",
+      "raw_invalid": 0,
+      "raw_mean_center_distance_norm": 0.0119,
+      "som_lift": 0
     }
   },
   "status": "scored_evaluation_complete",
   "v3b_cross_reference": {
     "manifest_path": "artifacts/grounding-v3b-manifest.json",
-    "outcome": "both models saturated on v3b (100% accuracy); v3b marks precision degraded for Haiku (4x) but not Flash; raw accuracy unaffected by difficulty levers",
+    "outcome": "both models scored 100% on the 20 captured v3b cells, but the allocation omitted 2 of 10 declared targets; no full-target saturation claim is supported without a new paid pilot",
     "total_v3b_calls": 80
   }
 }

@@ -1,9 +1,11 @@
-# PixelGym GUI Grounding Protocol v3 — Design (not built, not run)
+# PixelGym GUI Grounding Protocol v3
 
-**Status:** design only. No v3 capture exists, no v3 model output exists, and this document
-does not authorize a paid or otherwise externally metered model call.
-**Protocol identifiers (reserved):** `pixelgym-grounding-v3a` (primary),
-`pixelgym-grounding-v3b` (fallback, entered only by the escalation rule in §6).
+**Status:** v3a calibration and scored evaluation, v3b calibration, and v3c calibration
+have been executed. Stored outcomes and limitations are recorded in the corresponding
+manifests; this document still does not authorize additional paid model calls.
+**Protocol identifiers:** `pixelgym-grounding-v3a` (primary, scored),
+`pixelgym-grounding-v3b` (calibration only), and `pixelgym-grounding-v3c`
+(calibration only).
 **Supersedes:** nothing. v1 and v2 artifacts, including
 [`artifacts/grounding-dataset.jsonl`](grounding-dataset.jsonl),
 [`artifacts/grounding-v2-dataset.jsonl`](grounding-v2-dataset.jsonl), and
@@ -46,7 +48,9 @@ distance-threshold sweep (§7) can add discrimination only to the **raw** condit
 Raw accuracy of 56% shows the *task* is not saturated for pointing. Only the marks *measurement*
 is saturated, because the parser answers the pointing question on the model's behalf. v3
 therefore fixes the measurement first (v3a) and hardens the stimulus only if the fixed
-measurement still sits at the ceiling (v3b). Making the multiple choice harder without fixing
+measurement sat at the ceiling on the 20 captured v3b cells, though the executed allocation
+omitted 2 of 10 declared targets and therefore does not establish full-target saturation.
+Making the multiple choice harder without fixing
 the parser would leave the benchmark measuring selection — a skill that is not what the
 pixel-only environment deploys, since converting a `mark_id` to a click at serving time would
 require candidate boxes that exist only at build time (AGENTS.md invariant 14).
@@ -178,6 +182,11 @@ examples**, outside the frozen `TASK_SEEDS = range(20)`:
 | 3 | 200 calls | **YOU** (second, separate approval) | Scored run: 100 v2 examples × 2 conditions. |
 
 Worst case if v3b is never entered: **240 calls**. v3b, if entered, adds its own budget (§8).
+
+**Executed outcome (2026-08-20):** the human approved the recorded v3a calibration,
+v3b/v3c calibration escalation, and v3a scored run. Exact calls, provider failures,
+decisions, and retained artifacts are recorded in the three v3 manifests. This historical
+approval record does not authorize any additional model calls.
 
 ### 5.1 Evidence rules for calibration
 
@@ -337,7 +346,7 @@ to `mark_id`, so the parser circularity cannot return.
 
 ---
 
-## 10. Artifacts v3a will produce
+## 10. Artifact inventory
 
 | Path | Contents |
 |---|---|
@@ -348,15 +357,27 @@ to `mark_id`, so the parser circularity cannot return.
 | `artifacts/grounding-v3a-manifest.json` | prompt/parser versions, allocation, escalation-rule text, decision history |
 | `artifacts/grounding-v3a/contact-sheet.png` | raw visual audit sheet (calibration) |
 | `artifacts/grounding-v3a/marks-contact-sheet.png` | marked visual audit sheet (calibration) |
-| `artifacts/grounding-v3a-pilot-*.json` | every calibration pilot, retained including superseded ones |
+| `artifacts/grounding-v3a-calibration-predictions-*.jsonl` | every calibration pilot, retained including superseded ones |
+| `artifacts/grounding-v3a-scored-predictions-*.jsonl` | approved scored condition records |
+| `artifacts/grounding-v3a-analysis-*.json` | stored per-provider scored analyses |
+| `artifacts/grounding-v3b-calibration-{dataset,candidates,overlays}.jsonl` | v3b calibration inputs and overlays |
+| `artifacts/grounding-v3b-capture.json` | v3b capture provenance and repeatability evidence |
+| `artifacts/grounding-v3b-manifest.json` | v3b design, outputs, and retained decisions |
+| `artifacts/grounding-v3b-{semantic,ordinal}-predictions-claude-haiku-4.5.jsonl` | v3b instruction-mode probes with their own prediction schema |
+| `artifacts/grounding-v3c-calibration-{dataset,candidates,overlays}.jsonl` | v3c calibration inputs and overlays |
+| `artifacts/grounding-v3c-capture.json` | v3c capture provenance and repeatability evidence |
+| `artifacts/grounding-v3c-calibration-predictions-*.jsonl` | all six v3c provider runs, including request failures |
+| `artifacts/grounding-v3c-manifest.json` | v3c design, outputs, and retained decisions |
 
-The scored set needs no new dataset artifact — it is the frozen v2 dataset. No v3 prediction or
-result artifact is written until the Stage 3 approval in §5. v3b artifacts (its own dataset,
-manifest, and capture evidence) exist only if v3b is entered.
+The scored set reuses the frozen v2 dataset. Calibration artifacts remain explicitly separate
+from scored evidence.
 
 ---
 
-## 11. Open questions for the human gate
+## 11. Historical human-gate questions
+
+These questions governed the recorded run and are retained for audit history; the executed
+outcome is recorded in §5 and the manifests.
 
 1. Approve v3a Stage 0: the versioned prompt/parser change and the calibration capture of seeds
    20–23 with the unchanged pipeline. (No new page, no Sprint 1–2 file changes; scope impact is

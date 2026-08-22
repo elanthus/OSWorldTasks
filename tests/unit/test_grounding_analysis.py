@@ -19,6 +19,8 @@ from pixelgym.grounding.analysis import (
     paired_bootstrap_interval,
 )
 from pixelgym.grounding.evaluation import (
+    INSTRUCTION_PREDICTION_SCHEMA_VERSION,
+    PARSER_VERSION_V2,
     PREDICTION_SCHEMA_VERSION,
     PREDICTION_SCHEMA_VERSION_V2,
     PROMPT_VERSION,
@@ -318,6 +320,21 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert all(row["schema_version"] == ERROR_REVIEW_SCHEMA_VERSION for row in reviews)
 
 
+def test_report_refuses_to_replace_canonical_results_with_other_predictions(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "artifacts"
+    artifact_dir.mkdir()
+    with pytest.raises(ValueError, match="immutable v2"):
+        generate_results_package(
+            repository_root=tmp_path,
+            predictions_path=artifact_dir / "grounding-v3-predictions.jsonl",
+            error_review_path=artifact_dir / "grounding-error-review.jsonl",
+            results_path=artifact_dir / "grounding-results.json",
+            report_path=artifact_dir / "grounding-report.md",
+        )
+
+
 def _sized_example(index: int, bbox: list[int]) -> dict:
     example = _example(index % 4)
     example.update(
@@ -551,3 +568,39 @@ def test_analysis_rejects_mixed_v1_v2_prediction_schema_versions() -> None:
             error_reviews=reviews,
             bootstrap_samples=10,
         )
+
+
+def test_analysis_rejects_mismatched_schema_prompt_pairing() -> None:
+    examples, predictions = _v2_fixture()
+    reviews = _manual_reviews(examples, predictions)
+    predictions[0]["prompt_version"] = PROMPT_VERSION
+    with pytest.raises(ValueError, match="prediction prompt version does not match"):
+        analyze_predictions(
+            examples=examples,
+            predictions=predictions,
+            error_reviews=reviews,
+            bootstrap_samples=10,
+        )
+
+
+def test_analysis_accepts_separately_versioned_instruction_records() -> None:
+    examples, predictions = _v2_fixture()
+    for record in predictions:
+        record.update(
+            {
+                "schema_version": INSTRUCTION_PREDICTION_SCHEMA_VERSION,
+                "parser_version": PARSER_VERSION_V2,
+                "instruction_mode": "semantic",
+                "original_target": examples[int(record["example_id"].split("-")[1])][
+                    "target"
+                ],
+            }
+        )
+    reviews = _manual_reviews(examples, predictions)
+    result = analyze_predictions(
+        examples=examples,
+        predictions=predictions,
+        error_reviews=reviews,
+        bootstrap_samples=10,
+    )
+    assert result["prompt_version"] == PROMPT_VERSION_V2

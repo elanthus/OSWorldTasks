@@ -2,19 +2,14 @@
 
 from __future__ import annotations
 
-import json
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
 import pytest
-from PIL import Image
 
 from pixelgym.grounding.calibration_v3a import (
     CALIBRATION_CANDIDATE_SCHEMA_VERSION,
     CALIBRATION_EXAMPLE_SCHEMA_VERSION,
-    CALIBRATION_MANIFEST_SCHEMA_VERSION,
-    CALIBRATION_OVERLAY_SCHEMA_VERSION,
     CALIBRATION_SEEDS,
     V3A_PROTOCOL_VERSION,
     calibration_target,
@@ -132,6 +127,13 @@ def test_validate_calibration_dataset_accepts_complete_grid() -> None:
     assert summary["candidate_record_count"] == 20
     assert set(summary["screen_state_counts"].values()) == {4}
     assert summary["calibration_label"] == "CALIBRATION"
+
+
+def test_validate_calibration_dataset_rejects_extra_candidate_record_fields() -> None:
+    examples, candidates = _build_full_calibration_grid()
+    candidates[0]["target_id"] = examples[0]["target_id"]
+    with pytest.raises(ValueError, match="candidate record fields"):
+        validate_calibration_dataset(examples, candidates)
 
 
 def test_validate_calibration_dataset_rejects_wrong_count() -> None:

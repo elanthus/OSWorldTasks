@@ -12,7 +12,6 @@ from pixelgym.grounding.calibration_v3b import (
     V3B_CANDIDATE_SCHEMA_VERSION,
     V3B_EXAMPLE_SCHEMA_VERSION,
     V3B_EXPECTED_CANDIDATE_COUNT,
-    V3B_MANIFEST_SCHEMA_VERSION,
     V3B_PROTOCOL_VERSION,
     V3B_TARGET_SPECS,
     v3b_calibration_target,
@@ -216,6 +215,13 @@ def test_validate_v3b_calibration_dataset_accepts_complete_grid() -> None:
     assert summary["calibration_label"] == "CALIBRATION"
     assert summary["variant"] == "v3b"
     assert summary["expected_candidate_count"] == V3B_EXPECTED_CANDIDATE_COUNT
+
+
+def test_validate_v3b_dataset_rejects_extra_candidate_record_fields() -> None:
+    examples, candidates = _build_full_v3b_grid()
+    candidates[0]["target_id"] = examples[0]["target_id"]
+    with pytest.raises(ValueError, match="candidate record fields"):
+        validate_v3b_calibration_dataset(examples, candidates)
 
 
 def test_validate_v3b_dataset_rejects_wrong_count() -> None:

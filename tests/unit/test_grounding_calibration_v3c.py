@@ -13,7 +13,6 @@ from pixelgym.grounding.calibration_v3c import (
     V3C_CANDIDATE_SCHEMA_VERSION,
     V3C_EXAMPLE_SCHEMA_VERSION,
     V3C_EXPECTED_CANDIDATE_COUNT,
-    V3C_MANIFEST_SCHEMA_VERSION,
     V3C_PROTOCOL_VERSION,
     V3C_TARGET_SPECS,
     v3c_calibration_target,
@@ -241,6 +240,13 @@ def test_validate_v3c_calibration_dataset_accepts_complete_grid() -> None:
     assert summary["calibration_label"] == "CALIBRATION"
     assert summary["variant"] == "v3c"
     assert summary["expected_candidate_count"] == V3C_EXPECTED_CANDIDATE_COUNT
+
+
+def test_validate_v3c_dataset_rejects_extra_candidate_record_fields() -> None:
+    examples, candidates = _build_full_v3c_grid()
+    candidates[0]["target_id"] = examples[0]["target_id"]
+    with pytest.raises(ValueError, match="candidate record fields"):
+        validate_v3c_calibration_dataset(examples, candidates)
 
 
 def test_validate_v3c_dataset_rejects_wrong_count() -> None:

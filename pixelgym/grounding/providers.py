@@ -241,17 +241,22 @@ class ClaudeCodeCLIProvider:
             json.dumps(schema, sort_keys=True),
             "--allowedTools",
             "Read",
-            "--dangerously-skip-permissions",
+            "--permission-mode",
+            "dontAsk",
+            "--setting-sources",
+            "",
             full_prompt,
         ]
         try:
-            completed = self._run(
-                command,
-                text=True,
-                capture_output=True,
-                timeout=self.timeout_seconds,
-                check=False,
-            )
+            with tempfile.TemporaryDirectory(prefix="pixelgym-claude-grounding-") as temporary:
+                completed = self._run(
+                    command,
+                    text=True,
+                    capture_output=True,
+                    timeout=self.timeout_seconds,
+                    check=False,
+                    cwd=temporary,
+                )
         except (OSError, subprocess.SubprocessError) as exc:
             return ProviderResponse(
                 timestamp_utc=started_at,
@@ -295,15 +300,16 @@ class ClaudeCodeCLIProvider:
         failure = "claude CLI reported an error result" if is_error else None
         if not is_error and raw_response is None:
             failure = "claude CLI produced no result text"
+        usage = envelope.get("usage")
         return ProviderResponse(
             timestamp_utc=started_at,
             latency_ms=(time.monotonic() - start) * 1000,
             raw_response=raw_response if isinstance(raw_response, str) else None,
-            usage=None,
+            usage=usage if isinstance(usage, dict) else None,
             provider_metadata={
                 "cli_version": self._version(),
                 "exit_code": completed.returncode,
-                "cost_usd": envelope.get("cost_usd"),
+                "cost_usd": envelope.get("total_cost_usd"),
                 "num_turns": envelope.get("num_turns"),
                 "session_id": envelope.get("session_id"),
             },
@@ -435,13 +441,17 @@ class GeminiCoordinateAdapter:
             return response
         if not isinstance(parsed, dict) or "x" not in parsed or "y" not in parsed:
             return response
+        if not isinstance(parsed["x"], (int, float)) or isinstance(parsed["x"], bool):
+            return response
+        if not isinstance(parsed["y"], (int, float)) or isinstance(parsed["y"], bool):
+            return response
         from PIL import Image
 
         with Image.open(image_path) as img:
             width, height = img.size
         rescaled = dict(parsed)
-        rescaled["x"] = round(parsed["x"] * width / self._grid_size)
-        rescaled["y"] = round(parsed["y"] * height / self._grid_size)
+        rescaled["x"] = min(max(round(parsed["x"] * width / self._grid_size), 0), width - 1)
+        rescaled["y"] = min(max(round(parsed["y"] * height / self._grid_size), 0), height - 1)
         return dataclasses.replace(
             response,
             raw_response=json.dumps(rescaled, separators=(",", ":")),

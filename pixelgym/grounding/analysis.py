@@ -11,8 +11,12 @@ from collections.abc import Iterable
 from typing import Any
 
 from pixelgym.grounding.evaluation import (
+    INSTRUCTION_PREDICTION_SCHEMA_VERSION,
+    PARSER_VERSION_V1,
+    PARSER_VERSION_V2,
     PREDICTION_SCHEMA_VERSION,
     PREDICTION_SCHEMA_VERSION_V2,
+    PREDICTION_SCHEMA_VERSION_V3,
     PROMPT_VERSION,
     PROMPT_VERSION_V2,
 )
@@ -287,9 +291,58 @@ def _usage_totals(records: list[dict[str, Any]]) -> dict[str, int | float]:
     return dict(sorted(totals.items()))
 
 
-_ACCEPTED_PREDICTION_VERSIONS = {
-    PREDICTION_SCHEMA_VERSION: PROMPT_VERSION,
-    PREDICTION_SCHEMA_VERSION_V2: PROMPT_VERSION_V2,
+_BASE_PREDICTION_FIELDS = frozenset(
+    {
+        "cache_key",
+        "condition",
+        "correct",
+        "example_id",
+        "image_path",
+        "image_sha256",
+        "latency_ms",
+        "mark_id",
+        "model",
+        "normalized_center_distance",
+        "parameters",
+        "parse_error",
+        "parse_status",
+        "parsed_prediction",
+        "point",
+        "prompt_sha256",
+        "prompt_version",
+        "protocol_version",
+        "provider",
+        "provider_metadata",
+        "raw_response",
+        "request_failure",
+        "schema_version",
+        "target_proposed",
+        "timestamp_utc",
+        "usage",
+    }
+)
+_PREDICTION_CONTRACTS = {
+    PREDICTION_SCHEMA_VERSION: (
+        PROMPT_VERSION,
+        PARSER_VERSION_V1,
+        _BASE_PREDICTION_FIELDS,
+    ),
+    PREDICTION_SCHEMA_VERSION_V2: (
+        PROMPT_VERSION_V2,
+        PARSER_VERSION_V2,
+        _BASE_PREDICTION_FIELDS,
+    ),
+    PREDICTION_SCHEMA_VERSION_V3: (
+        PROMPT_VERSION_V2,
+        PARSER_VERSION_V2,
+        _BASE_PREDICTION_FIELDS | {"parser_version"},
+    ),
+    INSTRUCTION_PREDICTION_SCHEMA_VERSION: (
+        PROMPT_VERSION_V2,
+        PARSER_VERSION_V2,
+        _BASE_PREDICTION_FIELDS
+        | {"parser_version", "instruction_mode", "original_target"},
+    ),
 }
 
 
@@ -307,13 +360,20 @@ def _validate_and_pair(
     grouped: defaultdict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in predictions:
         schema_version = record.get("schema_version")
-        if schema_version not in _ACCEPTED_PREDICTION_VERSIONS:
+        if schema_version not in _PREDICTION_CONTRACTS:
             raise ValueError("prediction schema version does not match")
-        expected_prompt = _ACCEPTED_PREDICTION_VERSIONS[schema_version]
+        expected_prompt, expected_parser, expected_fields = _PREDICTION_CONTRACTS[
+            schema_version
+        ]
+        if set(record) != expected_fields:
+            raise ValueError("prediction fields do not match the declared schema")
         if record.get("protocol_version") != PROTOCOL_VERSION:
             raise ValueError("prediction protocol version does not match")
         if record.get("prompt_version") != expected_prompt:
             raise ValueError("prediction prompt version does not match")
+        parser_version = record.get("parser_version", expected_parser)
+        if parser_version != expected_parser:
+            raise ValueError("prediction parser version does not match")
         example_id_value = record.get("example_id")
         if not isinstance(example_id_value, str):
             raise TypeError("prediction example_id must be a string")

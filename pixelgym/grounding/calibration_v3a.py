@@ -1,6 +1,8 @@
 """v3a Stage 0 calibration capture — seeds 20–23 over the unchanged vendor-form app.
 
 This module is a parameterized entry point over the existing capture.py machinery.
+Its underscore-prefixed capture imports are an intentional build-time dependency pinned by
+the provenance hash; they are not part of the evaluation adapter.
 It does NOT modify TASK_SEEDS, any frozen v1/v2 artifact, or any Sprint 1–2 source
 file.  Calibration examples are labelled CALIBRATION and are never part of the scored
 100-example benchmark.
@@ -30,7 +32,6 @@ from pixelgym.grounding.overlays import (
     build_overlay_contact_sheet,
     proposal_match,
     render_overlay,
-    validate_marks,
 )
 from pixelgym.grounding.schema import (
     CAPTURE_VERSION,
@@ -53,10 +54,30 @@ CALIBRATION_OVERLAY_SCHEMA_VERSION = "pixelgym-grounding-calibration-overlay-v1"
 CALIBRATION_CAPTURE_SCHEMA_VERSION = "pixelgym-grounding-calibration-capture-v1"
 CALIBRATION_MANIFEST_SCHEMA_VERSION = "pixelgym-grounding-v3a-manifest-v1"
 CALIBRATION_SEEDS = (20, 21, 22, 23)
+_CALIBRATION_CANDIDATE_RECORD_FIELDS = frozenset(
+    {"schema_version", "protocol_version", "example_id", "candidates"}
+)
+_V3A_EXTRA_CAPTURE_SOURCE_PATHS = (
+    "pixelgym/grounding/calibration_v3a.py",
+    "pixelgym/grounding/determinism.py",
+    "pixelgym/grounding/overlays.py",
+)
 
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def calibration_capture_source_hashes(repository_root: Path) -> dict[str, str]:
+    """Include v3a orchestration and shared evidence code in capture provenance."""
+    hashes = capture_source_hashes(repository_root)
+    hashes.update(
+        {
+            relative: _sha256((repository_root / relative).read_bytes())
+            for relative in _V3A_EXTRA_CAPTURE_SOURCE_PATHS
+        }
+    )
+    return dict(sorted(hashes.items()))
 
 
 def calibration_target(seed: int, screen_state: str) -> TargetSpec:
@@ -86,6 +107,12 @@ def validate_calibration_dataset(
 
     candidates_by_id: dict[str, dict[str, Any]] = {}
     for record in candidate_records:
+        if set(record) != _CALIBRATION_CANDIDATE_RECORD_FIELDS:
+            raise ValueError("calibration candidate record fields do not match")
+        if record.get("schema_version") != CALIBRATION_CANDIDATE_SCHEMA_VERSION:
+            raise ValueError("calibration candidate schema version does not match")
+        if record.get("protocol_version") != V3A_PROTOCOL_VERSION:
+            raise ValueError("calibration candidate protocol version does not match")
         eid = record.get("example_id")
         if not isinstance(eid, str) or not eid:
             raise ValueError("candidate example_id must be a nonempty string")
@@ -195,15 +222,19 @@ def _capture_one_pass(
                 "`python -m playwright install chromium` after installing the dev extra"
             ) from exc
         browser_version = browser.version
-        context = browser.new_context(
-            viewport={"width": CSS_WIDTH, "height": CSS_HEIGHT},
-            device_scale_factor=DEVICE_SCALE_FACTOR,
-            locale="en-US",
-            timezone_id="UTC",
-            color_scheme="light",
-            reduced_motion="reduce",
-        )
-        page = context.new_page()
+        try:
+            context = browser.new_context(
+                viewport={"width": CSS_WIDTH, "height": CSS_HEIGHT},
+                device_scale_factor=DEVICE_SCALE_FACTOR,
+                locale="en-US",
+                timezone_id="UTC",
+                color_scheme="light",
+                reduced_motion="reduce",
+            )
+            page = context.new_page()
+        except BaseException:
+            browser.close()
+            raise
         number = 0
         try:
             for seed in CALIBRATION_SEEDS:
@@ -251,9 +282,13 @@ def _capture_one_pass(
 
                     target = calibration_target(seed, state)
                     target_candidate = next(
-                        c for c in candidates
-                        if c["semantic_id"] == target.semantic_id
+                        (c for c in candidates if c["semantic_id"] == target.semantic_id),
+                        None,
                     )
+                    if target_candidate is None:
+                        raise LookupError(
+                            f"missing calibration target candidate {target.semantic_id!r}"
+                        )
                     slug = target.semantic_id.replace("_", "-")
                     example_id = f"vendor-form-v3a-cal-{number:04d}-{slug}"
                     relative_image_path = image_path.relative_to(
@@ -369,6 +404,11 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         reference_label="calibration-pass-1",
         candidate_label="calibration-pass-2",
     )
+    if (
+        repeatability["byte_identical_file_count"] != repeatability["file_count"]
+        or repeatability["differing_file_count"] != 0
+    ):
+        raise RuntimeError("v3a calibration capture was not bitwise repeatable")
 
     summary = validate_calibration_dataset(examples_1, candidates_1)
 
@@ -407,7 +447,7 @@ def capture_calibration_dataset(repository_root: Path) -> dict[str, Any]:
         output_path=marks_contact_sheet_path,
     )
 
-    source_hashes = capture_source_hashes(repository_root)
+    source_hashes = calibration_capture_source_hashes(repository_root)
 
     capture_evidence = {
         "schema_version": CALIBRATION_CAPTURE_SCHEMA_VERSION,

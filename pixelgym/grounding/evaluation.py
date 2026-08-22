@@ -20,6 +20,14 @@ PARSER_VERSION_V1 = "pixelgym-grounding-parser-v1"
 PARSER_VERSION_V2 = "pixelgym-grounding-parser-v2"
 PREDICTION_SCHEMA_VERSION = "pixelgym-grounding-prediction-v1"
 PREDICTION_SCHEMA_VERSION_V2 = "pixelgym-grounding-prediction-v2"
+PREDICTION_SCHEMA_VERSION_V3 = "pixelgym-grounding-prediction-v3"
+INSTRUCTION_PREDICTION_SCHEMA_VERSION = "pixelgym-grounding-instruction-prediction-v1"
+
+_EVALUATION_VERSION_TRIPLES = {
+    (PROMPT_VERSION, PARSER_VERSION_V1, PREDICTION_SCHEMA_VERSION),
+    (PROMPT_VERSION_V2, PARSER_VERSION_V2, PREDICTION_SCHEMA_VERSION_V2),
+    (PROMPT_VERSION_V2, PARSER_VERSION_V2, PREDICTION_SCHEMA_VERSION_V3),
+}
 
 RAW_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -37,6 +45,18 @@ MARKS_SCHEMA: dict[str, Any] = {
 
 def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def validate_evaluation_versions(
+    *, prompt_version: str, parser_version: str, prediction_schema_version: str
+) -> None:
+    """Reject incompatible prompt/parser/record contracts before any provider call."""
+    triple = (prompt_version, parser_version, prediction_schema_version)
+    if triple not in _EVALUATION_VERSION_TRIPLES:
+        raise ValueError(
+            "prompt, parser, and prediction schema versions are incompatible: "
+            f"{triple!r}"
+        )
 
 
 def prompt_for(
@@ -234,6 +254,11 @@ def evaluate_one(
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
 ) -> tuple[dict[str, Any], bool]:
+    validate_evaluation_versions(
+        prompt_version=prompt_version,
+        parser_version=parser_version,
+        prediction_schema_version=prediction_schema_version,
+    )
     prompt = prompt_for(example, condition, prompt_version=prompt_version)
     schema = schema_for(condition, parser_version=parser_version)
     if condition == "raw":
@@ -303,6 +328,8 @@ def evaluate_one(
         "target_proposed": overlay["target_proposed"] if condition == "marks" else None,
         "request_failure": response.request_failure,
     }
+    if prediction_schema_version == PREDICTION_SCHEMA_VERSION_V3:
+        record["parser_version"] = parser_version
     return record, cache_hit
 
 
@@ -335,7 +362,13 @@ def planned_new_calls(
     pilot: bool,
     prompt_version: str = PROMPT_VERSION,
     parser_version: str = PARSER_VERSION_V1,
+    prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
 ) -> dict[str, int]:
+    validate_evaluation_versions(
+        prompt_version=prompt_version,
+        parser_version=parser_version,
+        prediction_schema_version=prediction_schema_version,
+    )
     examples, overlays = _load_inputs(repository_root)
     if pilot:
         selected = set(pilot_example_ids(examples))
@@ -375,6 +408,11 @@ def run_evaluation(
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
 ) -> dict[str, Any]:
+    validate_evaluation_versions(
+        prompt_version=prompt_version,
+        parser_version=parser_version,
+        prediction_schema_version=prediction_schema_version,
+    )
     cache = ResponseCache(cache_directory or repository_root / ".cache" / "grounding" / "responses")
     plan = planned_new_calls(
         repository_root=repository_root,
@@ -383,6 +421,7 @@ def run_evaluation(
         pilot=pilot,
         prompt_version=prompt_version,
         parser_version=parser_version,
+        prediction_schema_version=prediction_schema_version,
     )
     if plan["new_calls"] > max_new_calls:
         raise RuntimeError(

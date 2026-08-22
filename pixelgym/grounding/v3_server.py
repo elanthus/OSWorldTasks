@@ -7,6 +7,7 @@ These servers are NEVER mounted by the task app or the OSWorld adapter.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import socket
 import threading
 import time
@@ -21,8 +22,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from pixelgym.serialization import canonical_json_text
 from pixelgym.tasks.vendor_form import generator
-from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
+from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 V3B_STATIC_DIR = Path(__file__).parent / "v3b_app" / "static"
 V3C_STATIC_DIR = Path(__file__).parent / "v3c_app" / "static"
@@ -85,6 +87,16 @@ def create_v3b_app() -> FastAPI:
         task = state.require_task()
         if payload.task_id != task["task_id"]:
             raise HTTPException(status_code=409, detail="task_id mismatch")
+        required_values = (
+            payload.company_name,
+            payload.contact_email,
+            payload.contact_phone,
+            payload.tax_id,
+            payload.country,
+            payload.payment_terms,
+        )
+        if any(not value.strip() for value in required_values):
+            raise HTTPException(status_code=422, detail=INCOMPLETE_SUBMISSION_MESSAGE)
         state.submission_count += 1
         return {"submission_number": state.submission_count}
 
@@ -140,7 +152,14 @@ class _V3cState:
 
     def reset(self, seed: int) -> dict[str, Any]:
         self.seed = seed
-        self.task_id = f"v3c-{seed}"
+        static_hashes = {
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(V3C_STATIC_DIR.iterdir())
+            if path.is_file()
+        }
+        task_spec = {"variant": "vendor-list-v3c", "seed": seed, "static_sha256": static_hashes}
+        digest = hashlib.sha256(canonical_json_text(task_spec).encode("utf-8")).hexdigest()
+        self.task_id = f"v3c-{digest[:16]}"
         return {"task_id": self.task_id, "seed": seed}
 
 

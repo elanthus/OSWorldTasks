@@ -13,6 +13,7 @@ from pixelgym.grounding.evaluation import (
     PARSER_VERSION_V2,
     PREDICTION_SCHEMA_VERSION,
     PREDICTION_SCHEMA_VERSION_V2,
+    PREDICTION_SCHEMA_VERSION_V3,
     PROMPT_VERSION,
     PROMPT_VERSION_V2,
     RAW_SCHEMA,
@@ -409,6 +410,47 @@ def test_v3a_evaluate_one_stamps_prediction_schema_version_v2(tmp_path: Path) ->
     )
     assert record_v1["schema_version"] == PREDICTION_SCHEMA_VERSION
     assert record_v1["prompt_version"] == PROMPT_VERSION
+
+
+def test_v3_prediction_records_include_parser_version(tmp_path: Path) -> None:
+    raw_path = tmp_path / "raw.png"
+    Image.new("RGB", (100, 80), "white").save(raw_path)
+    example = {
+        **_example(),
+        "image_path": "raw.png",
+        "image_sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+    }
+    record, _ = evaluate_one(
+        repository_root=tmp_path,
+        example=example,
+        overlay={"marks": [], "target_proposed": True},
+        condition="raw",
+        provider=MockProvider(),
+        cache=ResponseCache(tmp_path / "cache"),
+        prompt_version=PROMPT_VERSION_V2,
+        parser_version=PARSER_VERSION_V2,
+        prediction_schema_version=PREDICTION_SCHEMA_VERSION_V3,
+    )
+    assert record["parser_version"] == PARSER_VERSION_V2
+
+
+def test_runner_rejects_incompatible_versions_before_planning_or_provider_call(
+    tmp_path: Path,
+) -> None:
+    _write_mock_inputs(tmp_path)
+    provider = MockProvider()
+    with pytest.raises(ValueError, match="versions are incompatible"):
+        run_evaluation(
+            repository_root=tmp_path,
+            provider=provider,
+            output_path=tmp_path / "predictions.jsonl",
+            pilot=True,
+            max_new_calls=20,
+            prompt_version=PROMPT_VERSION_V2,
+            parser_version=PARSER_VERSION_V1,
+            prediction_schema_version=PREDICTION_SCHEMA_VERSION_V2,
+        )
+    assert provider.call_count == 0
 
 
 def test_v3a_runner_stamps_v2_records_and_separates_cache(tmp_path: Path) -> None:
