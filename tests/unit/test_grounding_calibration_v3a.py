@@ -2,19 +2,14 @@
 
 from __future__ import annotations
 
-import json
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
 import pytest
-from PIL import Image
 
 from pixelgym.grounding.calibration_v3a import (
     CALIBRATION_CANDIDATE_SCHEMA_VERSION,
     CALIBRATION_EXAMPLE_SCHEMA_VERSION,
-    CALIBRATION_MANIFEST_SCHEMA_VERSION,
-    CALIBRATION_OVERLAY_SCHEMA_VERSION,
     CALIBRATION_SEEDS,
     V3A_PROTOCOL_VERSION,
     calibration_target,

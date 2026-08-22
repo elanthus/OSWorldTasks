@@ -4,7 +4,7 @@ import io
 import json
 import subprocess
 from pathlib import Path
-from typing import Self
+from typing import ClassVar, Self
 
 import pytest
 from PIL import Image
@@ -390,7 +390,7 @@ def test_gemini_adapter_passes_through_failures(tmp_path: Path) -> None:
     class FailProvider:
         name = "fail"
         model = "fail-model"
-        parameters: dict = {}
+        parameters: ClassVar[dict[str, object]] = {}
 
         def invoke(self, **kwargs: object) -> ProviderResponse:
             return failure
@@ -417,7 +417,7 @@ def test_gemini_adapter_passes_through_mark_id_responses(tmp_path: Path) -> None
     class MarkProvider:
         name = "mark"
         model = "mark-model"
-        parameters: dict = {}
+        parameters: ClassVar[dict[str, object]] = {}
 
         def invoke(self, **kwargs: object) -> ProviderResponse:
             return mark_response

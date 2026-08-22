@@ -13,7 +13,6 @@ from pixelgym.grounding.calibration_v3c import (
     V3C_CANDIDATE_SCHEMA_VERSION,
     V3C_EXAMPLE_SCHEMA_VERSION,
     V3C_EXPECTED_CANDIDATE_COUNT,
-    V3C_MANIFEST_SCHEMA_VERSION,
     V3C_PROTOCOL_VERSION,
     V3C_TARGET_SPECS,
     v3c_calibration_target,

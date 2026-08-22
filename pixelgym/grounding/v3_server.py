@@ -22,7 +22,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from pixelgym.tasks.vendor_form import generator
-from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
 
 V3B_STATIC_DIR = Path(__file__).parent / "v3b_app" / "static"
 V3C_STATIC_DIR = Path(__file__).parent / "v3c_app" / "static"

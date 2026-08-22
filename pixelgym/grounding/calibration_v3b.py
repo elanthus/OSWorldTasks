@@ -30,7 +30,6 @@ from pixelgym.grounding.overlays import (
     build_overlay_contact_sheet,
     proposal_match,
     render_overlay,
-    validate_marks,
 )
 from pixelgym.grounding.schema import (
     CAPTURE_VERSION,

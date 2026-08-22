@@ -12,7 +12,6 @@ from pixelgym.grounding.calibration_v3b import (
     V3B_CANDIDATE_SCHEMA_VERSION,
     V3B_EXAMPLE_SCHEMA_VERSION,
     V3B_EXPECTED_CANDIDATE_COUNT,
-    V3B_MANIFEST_SCHEMA_VERSION,
     V3B_PROTOCOL_VERSION,
     V3B_TARGET_SPECS,
     v3b_calibration_target,
