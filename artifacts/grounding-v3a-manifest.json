@@ -93,7 +93,7 @@
     },
     "capture_evidence": {
       "path": "artifacts/grounding-v3a-capture.json",
-      "sha256": "55799a43e8b25db72401178261f735de37c841ee995fa19c145db9b98c8164ea"
+      "sha256": "7c8d9a1bdad5e48029158309cefe55eddac7f9441ca9590deebd7ab3905995aa"
     },
     "contact_sheet": {
       "path": "artifacts/grounding-v3a/contact-sheet.png",

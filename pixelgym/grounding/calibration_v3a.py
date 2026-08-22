@@ -287,8 +287,8 @@ def _capture_one_pass(
                     expected_task = generator.generate_task(seed)
                     observed_task = {
                         "task_id": task["task_id"],
-                        "schema_version": expected_task["schema_version"],
-                        "seed": seed,
+                        "schema_version": task["schema_version"],
+                        "seed": task["seed"],
                         "fields": task["fields"],
                         "options": task["options"],
                     }

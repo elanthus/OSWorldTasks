@@ -137,6 +137,8 @@ def create_app() -> FastAPI:
         task = state.require_task()
         return {
             "task_id": task["task_id"],
+            "schema_version": task["schema_version"],
+            "seed": task["seed"],
             "fields": task["fields"],
             "options": task["options"],
         }
