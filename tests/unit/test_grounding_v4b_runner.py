@@ -54,6 +54,17 @@ def test_committed_haiku_result_matches_immutable_evidence() -> None:
     }
     assert result["failures"] == {}
     assert result["routing"]["decision"] == "design_longer_horizon_successor"
-    for key in ("predictions", "condition_summaries"):
+    expected_evidence = {
+        "predictions": {
+            "path": "artifacts/grounding-v4b-pilot-predictions-haiku.jsonl",
+            "sha256": "1fa6822d8595c730c2e5e81b3fced548547aa3686d62e754902ed63bdb8d1e80",
+        },
+        "condition_summaries": {
+            "path": "artifacts/grounding-v4b-pilot-conditions-haiku.jsonl",
+            "sha256": "4d936bbcb00f58b770cecea7b8d57dc74c8c7af71af27308dd893861ec131d99",
+        },
+    }
+    for key, expected in expected_evidence.items():
+        assert result[key] == expected
         evidence_path = REPOSITORY_ROOT / result[key]["path"]
         assert hashlib.sha256(evidence_path.read_bytes()).hexdigest() == result[key]["sha256"]
