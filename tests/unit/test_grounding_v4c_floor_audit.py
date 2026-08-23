@@ -53,6 +53,8 @@ def test_floor_audit_handles_zero_parsed_actions_and_rejects_unbound_results(
         report = audit(REPOSITORY_ROOT, predictions, results)
         assert report["coordinate_frame"]["observed_x_range"] is None
         assert report["coordinate_frame"]["observed_y_range"] is None
+        assert report["coordinate_frame"]["native_point_inside_correct_target_count"] == 0
+        assert report["coordinate_frame"]["normalized_point_inside_correct_target_count"] == 0
 
         value = json.loads(results.read_text())
         value["predictions"]["sha256"] = "0" * 64
