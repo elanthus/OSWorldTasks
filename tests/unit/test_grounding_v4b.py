@@ -23,6 +23,7 @@ from pixelgym.grounding.v4b_evaluation import (
     _state_for_observation,
     _target_center,
     planned_v4b_calls,
+    record_v4b_evaluation,
     run_v4b_evaluation,
     summarize_v4b_evaluation,
 )
@@ -359,3 +360,27 @@ def test_v4b_offline_summary_rejects_condition_prediction_counter_mismatch(
             predictions_path=predictions,
             conditions_path=conditions,
         )
+
+
+def test_v4b_offline_summary_rejects_aliased_evidence_paths(tmp_path: Path) -> None:
+    predictions, _ = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    with pytest.raises(ValueError, match="summary evidence paths must be distinct"):
+        summarize_v4b_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            conditions_path=predictions,
+        )
+
+
+def test_v4b_recorder_rejects_aliased_output_before_overwrite(tmp_path: Path) -> None:
+    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    original = predictions.read_bytes()
+    with pytest.raises(ValueError, match="result, and manifest paths must be distinct"):
+        record_v4b_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            results_path=predictions,
+            manifest_path=tmp_path / "artifacts" / "manifest.json",
+        )
+    assert predictions.read_bytes() == original

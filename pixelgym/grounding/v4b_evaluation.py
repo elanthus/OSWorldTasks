@@ -480,6 +480,8 @@ def summarize_v4b_evaluation(
         evidence_paths.extend((prior_predictions_path, prior_conditions_path))
     if any(not path.is_relative_to(root) for path in evidence_paths):
         raise ValueError("all v4b summary evidence paths must be inside the repository")
+    if len(set(evidence_paths)) != len(evidence_paths):
+        raise ValueError("v4b summary evidence paths must be distinct")
     predictions = load_jsonl(predictions_path)
     conditions = load_jsonl(conditions_path)
     expected = {(seed, condition) for seed in V4B_SEEDS for condition in V4B_CONDITIONS}
@@ -593,6 +595,8 @@ def record_v4b_evaluation(
     resolved = [path.resolve() for path in paths]
     if any(not path.is_relative_to(root) for path in resolved):
         raise ValueError("all v4b evidence paths must be inside the repository")
+    if len(set(resolved)) != len(resolved):
+        raise ValueError("v4b evidence, result, and manifest paths must be distinct")
     predictions_path, conditions_path, results_path, manifest_path = resolved[:4]
     resolved_prior_predictions = resolved[4] if prior_predictions_path is not None else None
     resolved_prior_conditions = resolved[-1] if prior_conditions_path is not None else None
