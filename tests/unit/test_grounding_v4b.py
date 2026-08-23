@@ -86,6 +86,12 @@ def test_v4b_evaluation_does_not_import_capture_instrumentation() -> None:
     assert "pixelgym.grounding.calibration_v4b" not in modules
 
 
+def test_v4b_capture_app_has_no_runtime_network_calls() -> None:
+    app_source = (REPOSITORY_ROOT / "pixelgym/grounding/v4b_app/static/app.js").read_text()
+    assert "fetch(" not in app_source
+    assert "XMLHttpRequest" not in app_source
+
+
 @pytest.mark.parametrize(
     "raw,error",
     [

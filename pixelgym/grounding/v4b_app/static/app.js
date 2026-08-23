@@ -1,9 +1,9 @@
 (() => {
   "use strict";
   const params = new URLSearchParams(window.location.search);
-  const seed = Number(params.get("seed"));
   const stageIndex = Number(params.get("stage") || "0");
   const recovery = params.get("recovery") === "1";
+  const episode = JSON.parse(document.getElementById("episode-data").textContent);
 
   function renderProgress(stage) {
     const labels = ["1 · Select", "2 · Decide", "3 · Confirm"];
@@ -16,9 +16,6 @@
   }
 
   async function render() {
-    const response = await fetch(`/api/episode/${seed}`, { cache: "no-store" });
-    if (!response.ok) throw new Error("invalid v4b seed");
-    const episode = await response.json();
     document.getElementById("task-ref").textContent = episode.title;
     renderProgress(Math.min(stageIndex, 2));
     const banner = document.getElementById("recovery-banner");
