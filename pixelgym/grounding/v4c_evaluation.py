@@ -1053,6 +1053,7 @@ def record_v4c_evaluation(
             raise FileNotFoundError(resolved_path)
         return resolved_path, _sha256(resolved_path.read_bytes())
 
+    plan_sha256: str | None
     if plan_path is not None:
         resolved_plan, plan_sha256 = validated_optional_input(plan_path, "plan")
     else:
