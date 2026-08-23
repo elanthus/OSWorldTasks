@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import json
+import re
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -1018,10 +1019,17 @@ def record_v4c_evaluation(
     attempts_path: Path,
     results_path: Path,
     manifest_path: Path,
+    artifact_label: str = "luna",
+    plan_path: Path | None = None,
+    audit_path: Path | None = None,
     prior_predictions_path: Path | None = None,
     prior_conditions_path: Path | None = None,
 ) -> dict[str, Any]:
     """Write an offline result and update the v4c manifest without provider calls."""
+    if re.fullmatch(r"[a-z0-9-]+", artifact_label) is None:
+        raise ValueError(
+            "v4c artifact label must contain only lowercase letters, digits, and hyphens"
+        )
     root = repository_root.resolve()
     paths = [predictions_path, conditions_path, attempts_path, results_path, manifest_path]
     if prior_predictions_path is not None:
@@ -1052,6 +1060,8 @@ def record_v4c_evaluation(
         raise ValueError("v4c manifest protocol version mismatch")
     if manifest.get("model") != results["model"]:
         raise ValueError("v4c manifest model does not match predictions")
+    if manifest.get("parameters") != results["parameters"]:
+        raise ValueError("v4c manifest parameters do not match predictions")
     history = manifest.get("decision_history")
     outputs = manifest.get("outputs")
     if not isinstance(history, list) or not isinstance(outputs, dict):
@@ -1081,22 +1091,70 @@ def record_v4c_evaluation(
     manifest["status"] = status_by_route[route]
     manifest["model_calls_performed"] = results["collection"]["cumulative_paid_call_count"]
     for name, path in (
-        ("predictions_luna", predictions_path),
-        ("conditions_luna", conditions_path),
-        ("attempts_luna", attempts_path),
-        ("results_luna", results_path),
+        (f"predictions_{artifact_label}", predictions_path),
+        (f"conditions_{artifact_label}", conditions_path),
+        (f"attempts_{artifact_label}", attempts_path),
+        (f"results_{artifact_label}", results_path),
     ):
         outputs[name] = {
             "path": path.relative_to(root).as_posix(),
             "sha256": _sha256(path.read_bytes()),
         }
-    plan_path = root / "artifacts" / "grounding-v4c-pilot-plan-luna.json"
-    if plan_path.is_file():
-        outputs["plan_luna"] = {
-            "path": plan_path.relative_to(root).as_posix(),
-            "sha256": _sha256(plan_path.read_bytes()),
+    resolved_plan = (
+        plan_path.resolve()
+        if plan_path is not None
+        else root / "artifacts" / "grounding-v4c-pilot-plan-luna.json"
+    )
+    if not resolved_plan.is_relative_to(root):
+        raise ValueError("v4c plan path must be inside the repository")
+    if resolved_plan.is_file():
+        outputs[f"plan_{artifact_label}"] = {
+            "path": resolved_plan.relative_to(root).as_posix(),
+            "sha256": _sha256(resolved_plan.read_bytes()),
+        }
+    if audit_path is not None:
+        resolved_audit = audit_path.resolve()
+        if not resolved_audit.is_relative_to(root):
+            raise ValueError("v4c audit path must be inside the repository")
+        outputs[f"floor_audit_{artifact_label}"] = {
+            "path": resolved_audit.relative_to(root).as_posix(),
+            "sha256": _sha256(resolved_audit.read_bytes()),
         }
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return results
+
+
+def initialize_v4c_model_manifest(
+    *,
+    template_path: Path,
+    manifest_path: Path,
+    model: str,
+    parameters: dict[str, Any],
+) -> None:
+    """Clone only frozen capture metadata for a separately approved model run."""
+    template = json.loads(template_path.read_text(encoding="utf-8"))
+    if template.get("protocol_version") != V4C_PROTOCOL_VERSION:
+        raise ValueError("v4c manifest template protocol version mismatch")
+    outputs = template.get("outputs")
+    if not isinstance(outputs, dict):
+        raise TypeError("v4c manifest template outputs must be structured")
+    frozen_outputs = {
+        name: value
+        for name, value in outputs.items()
+        if not name.startswith(("predictions_", "conditions_", "attempts_", "results_", "plan_"))
+    }
+    manifest = {
+        **template,
+        "model": model,
+        "parameters": parameters,
+        "model_calls_performed": 0,
+        "decision_history": [],
+        "status": "captured_awaiting_model_evaluation",
+        "outputs": frozen_outputs,
+    }
+    encoded = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    if manifest_path.is_file() and manifest_path.read_text(encoding="utf-8") != encoded:
+        raise ValueError("refusing to overwrite different immutable v4c model manifest")
+    manifest_path.write_text(encoded, encoding="utf-8")

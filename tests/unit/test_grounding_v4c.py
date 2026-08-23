@@ -35,6 +35,7 @@ from pixelgym.grounding.v4c_evaluation import (
     _state_for_observation,
     _state_identity,
     _target_center,
+    initialize_v4c_model_manifest,
     planned_v4c_calls,
     read_paid_call_ledger,
     record_v4c_evaluation,
@@ -854,3 +855,61 @@ def test_v4c_recorder_rejects_aliased_output_before_overwrite(evidence_dir: Path
             manifest_path=evidence_dir / "manifest.json",
         )
     assert predictions.read_bytes() == original
+
+
+def test_v4c_recorder_initializes_model_specific_manifest_and_output_keys(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    template = evidence_dir / "template.json"
+    manifest = evidence_dir / "manifest.json"
+    results = evidence_dir / "results.json"
+    plan = evidence_dir / "plan.json"
+    template.write_text(
+        json.dumps(
+            {
+                "protocol_version": V4C_PROTOCOL_VERSION,
+                "model": "old-model",
+                "parameters": {},
+                "status": "evaluated",
+                "model_calls_performed": 99,
+                "decision_history": [{"route": "old"}],
+                "outputs": {
+                    "capture": {"path": "capture.json", "sha256": "0" * 64},
+                    "predictions_luna": {"path": "old.jsonl", "sha256": "1" * 64},
+                },
+            }
+        )
+    )
+    plan.write_text("{}\n")
+    initialize_v4c_model_manifest(
+        template_path=template,
+        manifest_path=manifest,
+        model="gpt-5.6-luna",
+        parameters={"reasoning_effort": "low", "temperature": None},
+    )
+
+    record_v4c_evaluation(
+        repository_root=REPOSITORY_ROOT,
+        predictions_path=predictions,
+        conditions_path=conditions,
+        attempts_path=attempts,
+        results_path=results,
+        manifest_path=manifest,
+        artifact_label="alternate-model",
+        plan_path=plan,
+    )
+
+    recorded = json.loads(manifest.read_text())
+    assert recorded["model_calls_performed"] > 0
+    assert recorded["decision_history"][0]["route"] == "report_saturation_stop"
+    assert set(recorded["outputs"]) == {
+        "capture",
+        "predictions_alternate-model",
+        "conditions_alternate-model",
+        "attempts_alternate-model",
+        "results_alternate-model",
+        "plan_alternate-model",
+    }
