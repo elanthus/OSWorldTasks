@@ -11,14 +11,37 @@
     "request_failures": 0
   },
   "condition_call_cap": 20,
-  "decision_history": [],
+  "decision_history": [
+    {
+      "calls": 20,
+      "decision": "single-step v4 saturated; design a separate multi-step v4b pilot",
+      "escalation": "at least one condition scored above 85%",
+      "evaluation_window_utc": [
+        "2026-08-23T04:00:52.123439+00:00",
+        "2026-08-23T04:02:27.927089+00:00"
+      ],
+      "marks_accuracy": "9/10",
+      "model": "gpt-5.6-luna",
+      "parameters": {
+        "reasoning_effort": "low",
+        "temperature": null
+      },
+      "parse_failures": 0,
+      "predictions_path": "artifacts/grounding-v4-pilot-predictions-luna.jsonl",
+      "provider": "codex-cli",
+      "raw_accuracy": "9/10",
+      "request_failures": 0,
+      "results_path": "artifacts/grounding-v4-pilot-results-luna.json",
+      "route": "design_multi_step_v4b"
+    }
+  ],
   "escalation_rule": "within target band: request Haiku ceiling-check approval; above 0.85: design separate multi-step v4b; below 0.50 or any transport/parse failure: floor audit first",
   "family_counts": {
     "cross_panel_policy": 3,
     "recovery_state": 3,
     "relational_table": 4
   },
-  "model_calls_performed": 0,
+  "model_calls_performed": 20,
   "outputs": {
     "candidates": {
       "path": "artifacts/grounding-v4-pilot-candidates.jsonl",
@@ -43,6 +66,14 @@
     "overlays": {
       "path": "artifacts/grounding-v4-pilot-overlays.jsonl",
       "sha256": "0f36e90515c810aefe86d98dc33d44fdb2976aaaf40ef616118c12f2c65717de"
+    },
+    "predictions_luna": {
+      "path": "artifacts/grounding-v4-pilot-predictions-luna.jsonl",
+      "sha256": "c4dcb1feae05dc75f8cb119329723ff43a005e9437981f06b90a55a1d9ec0531"
+    },
+    "results_luna": {
+      "path": "artifacts/grounding-v4-pilot-results-luna.json",
+      "sha256": "46163e14c9bfc8e6826d827a2ff09cc2643ac0e06ca435811439bb857e1fbc63"
     }
   },
   "parser_version": "pixelgym-grounding-parser-v2",
@@ -55,7 +86,7 @@
   "protocol_version": "pixelgym-grounding-v4-pilot",
   "schema_version": "pixelgym-grounding-v4-manifest-v1",
   "secondary_model": "claude-haiku-4-5-20251001",
-  "status": "calibration_captured_evaluation_not_run",
+  "status": "calibration_evaluated_v4b_design_required",
   "target_specs": [
     {
       "element_type": "button",
