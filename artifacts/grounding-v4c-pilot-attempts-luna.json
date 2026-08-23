@@ -1,0 +1,10 @@
+{
+  "attempt_ledger_provenance": "backfilled-from-verified-response-cache",
+  "attempted_paid_calls": 138,
+  "conditions_sha256": "e45d1f1ac29271ec9ee738043c933b71097d3ea16bca95c07216cb4b93332d8c",
+  "model": "gpt-5.6-luna",
+  "predictions_sha256": "84d5d3a54f204e77e8c9bbdbce72147fd86b9354b473de0adddbf438e77de6ca",
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "provider": "codex-cli",
+  "schema_version": "pixelgym-grounding-v4c-attempts-v1"
+}
