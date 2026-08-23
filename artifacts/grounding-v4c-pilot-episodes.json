@@ -1,0 +1,1733 @@
+{
+  "episodes": [
+    {
+      "carrier": {
+        "label": "Pinned reference",
+        "value": "PO-6084"
+      },
+      "commit_stage": 0,
+      "consumer_stage": 4,
+      "family": "pin_traverse_apply",
+      "seed": 60,
+      "stages": [
+        {
+          "facts": [
+            "Incoming transfer notice from Harbor Optics.",
+            "Order reference: PO-6084.",
+            "The source notice closes when you leave this panel."
+          ],
+          "heading": "Capture the incoming reference",
+          "instruction": "Pin the incoming order reference so it stays available for later matching.",
+          "options": [
+            {
+              "label": "Pin reference PO-6084",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Dismiss the notice",
+              "semantic_id": "dismiss_notice"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The transfer requires the vendor's order list.",
+            "Queue position: 1 of 1."
+          ],
+          "heading": "Open the vendor workspace",
+          "instruction": "Open the vendor records workspace to continue the transfer.",
+          "options": [
+            {
+              "label": "Open vendor workspace",
+              "semantic_id": "open_vendor_workspace"
+            },
+            {
+              "label": "Open billing center",
+              "semantic_id": "open_billing_center"
+            },
+            {
+              "label": "Open audit log",
+              "semantic_id": "open_audit_log"
+            }
+          ],
+          "target": "open_vendor_workspace"
+        },
+        {
+          "facts": [
+            "Handling notice: transfers must be matched to an open order.",
+            "No values from this notice are required later."
+          ],
+          "heading": "Acknowledge the handling notice",
+          "instruction": "Acknowledge the routine handling notice to unlock the order list.",
+          "options": [
+            {
+              "label": "Acknowledge notice",
+              "semantic_id": "acknowledge_notice"
+            },
+            {
+              "label": "Snooze notice",
+              "semantic_id": "snooze_notice"
+            },
+            {
+              "label": "Forward to supervisor",
+              "semantic_id": "forward_notice"
+            }
+          ],
+          "target": "acknowledge_notice"
+        },
+        {
+          "facts": [
+            "Open orders are grouped under the orders tab.",
+            "Closed orders cannot receive transfers."
+          ],
+          "heading": "Open the order list",
+          "instruction": "Open the open-orders list for matching.",
+          "options": [
+            {
+              "label": "Open open-orders list",
+              "semantic_id": "open_order_list"
+            },
+            {
+              "label": "Open closed orders",
+              "semantic_id": "open_closed_orders"
+            },
+            {
+              "label": "Open draft orders",
+              "semantic_id": "open_draft_orders"
+            }
+          ],
+          "target": "open_order_list"
+        },
+        {
+          "facts": [
+            "Three open orders can receive this transfer.",
+            "Only the order matching the pinned reference may be selected."
+          ],
+          "heading": "Match the pinned reference",
+          "instruction": "Select the open order that matches the pinned reference.",
+          "options": [
+            {
+              "label": "Select order PO-6084",
+              "semantic_id": "select_order_a"
+            },
+            {
+              "label": "Select order PO-6048",
+              "semantic_id": "select_order_b"
+            },
+            {
+              "label": "Select order PO-6804",
+              "semantic_id": "select_order_c"
+            }
+          ],
+          "target": "select_order_a"
+        },
+        {
+          "facts": [
+            "The matched order is staged.",
+            "Confirmation records the transfer for host review."
+          ],
+          "heading": "Confirm the transfer",
+          "instruction": "Confirm the matched transfer now.",
+          "options": [
+            {
+              "label": "Confirm transfer",
+              "semantic_id": "confirm_transfer"
+            },
+            {
+              "label": "Discard the match",
+              "semantic_id": "discard_match"
+            },
+            {
+              "label": "Restart matching",
+              "semantic_id": "restart_matching"
+            }
+          ],
+          "target": "confirm_transfer"
+        }
+      ],
+      "title": "Transfer PO-6084"
+    },
+    {
+      "carrier": {
+        "label": "Pinned reference",
+        "value": "PO-6137"
+      },
+      "commit_stage": 0,
+      "consumer_stage": 4,
+      "family": "pin_traverse_apply",
+      "seed": 61,
+      "stages": [
+        {
+          "facts": [
+            "Incoming transfer notice from Cobalt Manufacturing.",
+            "Order reference: PO-6137.",
+            "The source notice closes when you leave this panel."
+          ],
+          "heading": "Capture the incoming reference",
+          "instruction": "Pin the incoming order reference so it stays available for later matching.",
+          "options": [
+            {
+              "label": "Pin reference PO-6137",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Dismiss the notice",
+              "semantic_id": "dismiss_notice"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The transfer requires the vendor's order list.",
+            "Queue position: 1 of 1."
+          ],
+          "heading": "Open the vendor workspace",
+          "instruction": "Open the vendor records workspace to continue the transfer.",
+          "options": [
+            {
+              "label": "Open vendor workspace",
+              "semantic_id": "open_vendor_workspace"
+            },
+            {
+              "label": "Open billing center",
+              "semantic_id": "open_billing_center"
+            },
+            {
+              "label": "Open audit log",
+              "semantic_id": "open_audit_log"
+            }
+          ],
+          "target": "open_vendor_workspace"
+        },
+        {
+          "facts": [
+            "Handling notice: transfers must be matched to an open order.",
+            "No values from this notice are required later."
+          ],
+          "heading": "Acknowledge the handling notice",
+          "instruction": "Acknowledge the routine handling notice to unlock the order list.",
+          "options": [
+            {
+              "label": "Acknowledge notice",
+              "semantic_id": "acknowledge_notice"
+            },
+            {
+              "label": "Snooze notice",
+              "semantic_id": "snooze_notice"
+            },
+            {
+              "label": "Forward to supervisor",
+              "semantic_id": "forward_notice"
+            }
+          ],
+          "target": "acknowledge_notice"
+        },
+        {
+          "facts": [
+            "Open orders are grouped under the orders tab.",
+            "Closed orders cannot receive transfers."
+          ],
+          "heading": "Open the order list",
+          "instruction": "Open the open-orders list for matching.",
+          "options": [
+            {
+              "label": "Open open-orders list",
+              "semantic_id": "open_order_list"
+            },
+            {
+              "label": "Open closed orders",
+              "semantic_id": "open_closed_orders"
+            },
+            {
+              "label": "Open draft orders",
+              "semantic_id": "open_draft_orders"
+            }
+          ],
+          "target": "open_order_list"
+        },
+        {
+          "facts": [
+            "Three open orders can receive this transfer.",
+            "Only the order matching the pinned reference may be selected."
+          ],
+          "heading": "Match the pinned reference",
+          "instruction": "Select the open order that matches the pinned reference.",
+          "options": [
+            {
+              "label": "Select order PO-6173",
+              "semantic_id": "select_order_a"
+            },
+            {
+              "label": "Select order PO-6137",
+              "semantic_id": "select_order_b"
+            },
+            {
+              "label": "Select order PO-6317",
+              "semantic_id": "select_order_c"
+            }
+          ],
+          "target": "select_order_b"
+        },
+        {
+          "facts": [
+            "The matched order is staged.",
+            "Confirmation records the transfer for host review."
+          ],
+          "heading": "Confirm the transfer",
+          "instruction": "Confirm the matched transfer now.",
+          "options": [
+            {
+              "label": "Confirm transfer",
+              "semantic_id": "confirm_transfer"
+            },
+            {
+              "label": "Discard the match",
+              "semantic_id": "discard_match"
+            },
+            {
+              "label": "Restart matching",
+              "semantic_id": "restart_matching"
+            }
+          ],
+          "target": "confirm_transfer"
+        }
+      ],
+      "title": "Transfer PO-6137"
+    },
+    {
+      "carrier": {
+        "label": "Pinned reference",
+        "value": "PO-6259"
+      },
+      "commit_stage": 0,
+      "consumer_stage": 4,
+      "family": "pin_traverse_apply",
+      "seed": 62,
+      "stages": [
+        {
+          "facts": [
+            "Incoming transfer notice from Juniper Freight.",
+            "Order reference: PO-6259.",
+            "The source notice closes when you leave this panel."
+          ],
+          "heading": "Capture the incoming reference",
+          "instruction": "Pin the incoming order reference so it stays available for later matching.",
+          "options": [
+            {
+              "label": "Pin reference PO-6259",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Dismiss the notice",
+              "semantic_id": "dismiss_notice"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The transfer requires the vendor's order list.",
+            "Queue position: 1 of 1."
+          ],
+          "heading": "Open the vendor workspace",
+          "instruction": "Open the vendor records workspace to continue the transfer.",
+          "options": [
+            {
+              "label": "Open vendor workspace",
+              "semantic_id": "open_vendor_workspace"
+            },
+            {
+              "label": "Open billing center",
+              "semantic_id": "open_billing_center"
+            },
+            {
+              "label": "Open audit log",
+              "semantic_id": "open_audit_log"
+            }
+          ],
+          "target": "open_vendor_workspace"
+        },
+        {
+          "facts": [
+            "Handling notice: transfers must be matched to an open order.",
+            "No values from this notice are required later."
+          ],
+          "heading": "Acknowledge the handling notice",
+          "instruction": "Acknowledge the routine handling notice to unlock the order list.",
+          "options": [
+            {
+              "label": "Acknowledge notice",
+              "semantic_id": "acknowledge_notice"
+            },
+            {
+              "label": "Snooze notice",
+              "semantic_id": "snooze_notice"
+            },
+            {
+              "label": "Forward to supervisor",
+              "semantic_id": "forward_notice"
+            }
+          ],
+          "target": "acknowledge_notice"
+        },
+        {
+          "facts": [
+            "Open orders are grouped under the orders tab.",
+            "Closed orders cannot receive transfers."
+          ],
+          "heading": "Open the order list",
+          "instruction": "Open the open-orders list for matching.",
+          "options": [
+            {
+              "label": "Open open-orders list",
+              "semantic_id": "open_order_list"
+            },
+            {
+              "label": "Open closed orders",
+              "semantic_id": "open_closed_orders"
+            },
+            {
+              "label": "Open draft orders",
+              "semantic_id": "open_draft_orders"
+            }
+          ],
+          "target": "open_order_list"
+        },
+        {
+          "facts": [
+            "Three open orders can receive this transfer.",
+            "Only the order matching the pinned reference may be selected."
+          ],
+          "heading": "Match the pinned reference",
+          "instruction": "Select the open order that matches the pinned reference.",
+          "options": [
+            {
+              "label": "Select order PO-6295",
+              "semantic_id": "select_order_a"
+            },
+            {
+              "label": "Select order PO-6529",
+              "semantic_id": "select_order_b"
+            },
+            {
+              "label": "Select order PO-6259",
+              "semantic_id": "select_order_c"
+            }
+          ],
+          "target": "select_order_c"
+        },
+        {
+          "facts": [
+            "The matched order is staged.",
+            "Confirmation records the transfer for host review."
+          ],
+          "heading": "Confirm the transfer",
+          "instruction": "Confirm the matched transfer now.",
+          "options": [
+            {
+              "label": "Confirm transfer",
+              "semantic_id": "confirm_transfer"
+            },
+            {
+              "label": "Discard the match",
+              "semantic_id": "discard_match"
+            },
+            {
+              "label": "Restart matching",
+              "semantic_id": "restart_matching"
+            }
+          ],
+          "target": "confirm_transfer"
+        }
+      ],
+      "title": "Transfer PO-6259"
+    },
+    {
+      "carrier": {
+        "label": "Pinned reference",
+        "value": "PO-6320"
+      },
+      "commit_stage": 0,
+      "consumer_stage": 4,
+      "family": "pin_traverse_apply",
+      "seed": 63,
+      "stages": [
+        {
+          "facts": [
+            "Incoming transfer notice from Meridian Paper.",
+            "Order reference: PO-6320.",
+            "The source notice closes when you leave this panel."
+          ],
+          "heading": "Capture the incoming reference",
+          "instruction": "Pin the incoming order reference so it stays available for later matching.",
+          "options": [
+            {
+              "label": "Pin reference PO-6320",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Dismiss the notice",
+              "semantic_id": "dismiss_notice"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The transfer requires the vendor's order list.",
+            "Queue position: 1 of 1."
+          ],
+          "heading": "Open the vendor workspace",
+          "instruction": "Open the vendor records workspace to continue the transfer.",
+          "options": [
+            {
+              "label": "Open vendor workspace",
+              "semantic_id": "open_vendor_workspace"
+            },
+            {
+              "label": "Open billing center",
+              "semantic_id": "open_billing_center"
+            },
+            {
+              "label": "Open audit log",
+              "semantic_id": "open_audit_log"
+            }
+          ],
+          "target": "open_vendor_workspace"
+        },
+        {
+          "facts": [
+            "Handling notice: transfers must be matched to an open order.",
+            "No values from this notice are required later."
+          ],
+          "heading": "Acknowledge the handling notice",
+          "instruction": "Acknowledge the routine handling notice to unlock the order list.",
+          "options": [
+            {
+              "label": "Acknowledge notice",
+              "semantic_id": "acknowledge_notice"
+            },
+            {
+              "label": "Snooze notice",
+              "semantic_id": "snooze_notice"
+            },
+            {
+              "label": "Forward to supervisor",
+              "semantic_id": "forward_notice"
+            }
+          ],
+          "target": "acknowledge_notice"
+        },
+        {
+          "facts": [
+            "Open orders are grouped under the orders tab.",
+            "Closed orders cannot receive transfers."
+          ],
+          "heading": "Open the order list",
+          "instruction": "Open the open-orders list for matching.",
+          "options": [
+            {
+              "label": "Open open-orders list",
+              "semantic_id": "open_order_list"
+            },
+            {
+              "label": "Open closed orders",
+              "semantic_id": "open_closed_orders"
+            },
+            {
+              "label": "Open draft orders",
+              "semantic_id": "open_draft_orders"
+            }
+          ],
+          "target": "open_order_list"
+        },
+        {
+          "facts": [
+            "Three open orders can receive this transfer.",
+            "Only the order matching the pinned reference may be selected."
+          ],
+          "heading": "Match the pinned reference",
+          "instruction": "Select the open order that matches the pinned reference.",
+          "options": [
+            {
+              "label": "Select order PO-6302",
+              "semantic_id": "select_order_a"
+            },
+            {
+              "label": "Select order PO-6320",
+              "semantic_id": "select_order_b"
+            },
+            {
+              "label": "Select order PO-6230",
+              "semantic_id": "select_order_c"
+            }
+          ],
+          "target": "select_order_b"
+        },
+        {
+          "facts": [
+            "The matched order is staged.",
+            "Confirmation records the transfer for host review."
+          ],
+          "heading": "Confirm the transfer",
+          "instruction": "Confirm the matched transfer now.",
+          "options": [
+            {
+              "label": "Confirm transfer",
+              "semantic_id": "confirm_transfer"
+            },
+            {
+              "label": "Discard the match",
+              "semantic_id": "discard_match"
+            },
+            {
+              "label": "Restart matching",
+              "semantic_id": "restart_matching"
+            }
+          ],
+          "target": "confirm_transfer"
+        }
+      ],
+      "title": "Transfer PO-6320"
+    },
+    {
+      "carrier": {
+        "label": "Pinned account ending",
+        "value": "2044"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 5,
+      "family": "reconcile_deferred_evidence",
+      "seed": 64,
+      "stages": [
+        {
+          "facts": [
+            "Incoming vendor: Granite Tooling.",
+            "Declared bank account ending: 2044.",
+            "Two stored records claim this vendor."
+          ],
+          "heading": "Review the incoming record",
+          "instruction": "Open the incoming vendor record for review.",
+          "options": [
+            {
+              "label": "Open incoming record",
+              "semantic_id": "open_incoming_record"
+            },
+            {
+              "label": "Open stored records",
+              "semantic_id": "open_stored_records"
+            },
+            {
+              "label": "Defer the review",
+              "semantic_id": "defer_review"
+            }
+          ],
+          "target": "open_incoming_record"
+        },
+        {
+          "facts": [
+            "Declared account ending: 2044.",
+            "The incoming record closes when review moves on."
+          ],
+          "heading": "Keep the declared account available",
+          "instruction": "Pin the declared account ending before leaving the incoming record.",
+          "options": [
+            {
+              "label": "Pin account ending 2044",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Print the record",
+              "semantic_id": "print_record"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "Two stored records require comparison.",
+            "Duplicates are listed under stored records."
+          ],
+          "heading": "Open the stored duplicates",
+          "instruction": "Open the stored duplicate list.",
+          "options": [
+            {
+              "label": "Open duplicate list",
+              "semantic_id": "open_duplicate_list"
+            },
+            {
+              "label": "Open change history",
+              "semantic_id": "open_change_history"
+            },
+            {
+              "label": "Open vendor contacts",
+              "semantic_id": "open_vendor_contacts"
+            }
+          ],
+          "target": "open_duplicate_list"
+        },
+        {
+          "facts": [
+            "Record A must be inspected before record B.",
+            "Inspection order is fixed by the review policy."
+          ],
+          "heading": "Inspect the first stored record",
+          "instruction": "Open stored record A for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record A",
+              "semantic_id": "inspect_record_a"
+            },
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Skip inspection",
+              "semantic_id": "skip_inspection"
+            }
+          ],
+          "target": "inspect_record_a"
+        },
+        {
+          "facts": [
+            "Record A has been inspected.",
+            "Record B is the remaining stored record."
+          ],
+          "heading": "Inspect the second stored record",
+          "instruction": "Open stored record B for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Reopen stored record A",
+              "semantic_id": "reopen_record_a"
+            },
+            {
+              "label": "Close the review",
+              "semantic_id": "close_review"
+            }
+          ],
+          "target": "inspect_record_b"
+        },
+        {
+          "facts": [
+            "Both stored records were inspected.",
+            "At most one stored record can match the pinned account ending."
+          ],
+          "heading": "Resolve against the pinned account",
+          "instruction": "Keep the stored record whose account ending matches the pinned value.",
+          "options": [
+            {
+              "label": "Keep record A \u2014 account ending 2044",
+              "semantic_id": "keep_record_a"
+            },
+            {
+              "label": "Keep record B \u2014 account ending 1180",
+              "semantic_id": "keep_record_b"
+            },
+            {
+              "label": "Keep neither record",
+              "semantic_id": "keep_neither_record"
+            }
+          ],
+          "target": "keep_record_a"
+        },
+        {
+          "facts": [
+            "The resolution is staged for host review.",
+            "No further inspection is required."
+          ],
+          "heading": "Confirm the resolution",
+          "instruction": "Confirm the recorded resolution.",
+          "options": [
+            {
+              "label": "Confirm resolution",
+              "semantic_id": "confirm_resolution"
+            },
+            {
+              "label": "Reopen the review",
+              "semantic_id": "reopen_review"
+            },
+            {
+              "label": "Escalate to registry",
+              "semantic_id": "escalate_review"
+            }
+          ],
+          "target": "confirm_resolution"
+        }
+      ],
+      "title": "Duplicate review Granite Tooling"
+    },
+    {
+      "carrier": {
+        "label": "Pinned account ending",
+        "value": "5137"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 5,
+      "family": "reconcile_deferred_evidence",
+      "seed": 65,
+      "stages": [
+        {
+          "facts": [
+            "Incoming vendor: Lakeshore Chemical.",
+            "Declared bank account ending: 5137.",
+            "Two stored records claim this vendor."
+          ],
+          "heading": "Review the incoming record",
+          "instruction": "Open the incoming vendor record for review.",
+          "options": [
+            {
+              "label": "Open incoming record",
+              "semantic_id": "open_incoming_record"
+            },
+            {
+              "label": "Open stored records",
+              "semantic_id": "open_stored_records"
+            },
+            {
+              "label": "Defer the review",
+              "semantic_id": "defer_review"
+            }
+          ],
+          "target": "open_incoming_record"
+        },
+        {
+          "facts": [
+            "Declared account ending: 5137.",
+            "The incoming record closes when review moves on."
+          ],
+          "heading": "Keep the declared account available",
+          "instruction": "Pin the declared account ending before leaving the incoming record.",
+          "options": [
+            {
+              "label": "Pin account ending 5137",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Print the record",
+              "semantic_id": "print_record"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "Two stored records require comparison.",
+            "Duplicates are listed under stored records."
+          ],
+          "heading": "Open the stored duplicates",
+          "instruction": "Open the stored duplicate list.",
+          "options": [
+            {
+              "label": "Open duplicate list",
+              "semantic_id": "open_duplicate_list"
+            },
+            {
+              "label": "Open change history",
+              "semantic_id": "open_change_history"
+            },
+            {
+              "label": "Open vendor contacts",
+              "semantic_id": "open_vendor_contacts"
+            }
+          ],
+          "target": "open_duplicate_list"
+        },
+        {
+          "facts": [
+            "Record A must be inspected before record B.",
+            "Inspection order is fixed by the review policy."
+          ],
+          "heading": "Inspect the first stored record",
+          "instruction": "Open stored record A for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record A",
+              "semantic_id": "inspect_record_a"
+            },
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Skip inspection",
+              "semantic_id": "skip_inspection"
+            }
+          ],
+          "target": "inspect_record_a"
+        },
+        {
+          "facts": [
+            "Record A has been inspected.",
+            "Record B is the remaining stored record."
+          ],
+          "heading": "Inspect the second stored record",
+          "instruction": "Open stored record B for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Reopen stored record A",
+              "semantic_id": "reopen_record_a"
+            },
+            {
+              "label": "Close the review",
+              "semantic_id": "close_review"
+            }
+          ],
+          "target": "inspect_record_b"
+        },
+        {
+          "facts": [
+            "Both stored records were inspected.",
+            "At most one stored record can match the pinned account ending."
+          ],
+          "heading": "Resolve against the pinned account",
+          "instruction": "Keep the stored record whose account ending matches the pinned value.",
+          "options": [
+            {
+              "label": "Keep record A \u2014 account ending 5731",
+              "semantic_id": "keep_record_a"
+            },
+            {
+              "label": "Keep record B \u2014 account ending 5137",
+              "semantic_id": "keep_record_b"
+            },
+            {
+              "label": "Keep neither record",
+              "semantic_id": "keep_neither_record"
+            }
+          ],
+          "target": "keep_record_b"
+        },
+        {
+          "facts": [
+            "The resolution is staged for host review.",
+            "No further inspection is required."
+          ],
+          "heading": "Confirm the resolution",
+          "instruction": "Confirm the recorded resolution.",
+          "options": [
+            {
+              "label": "Confirm resolution",
+              "semantic_id": "confirm_resolution"
+            },
+            {
+              "label": "Reopen the review",
+              "semantic_id": "reopen_review"
+            },
+            {
+              "label": "Escalate to registry",
+              "semantic_id": "escalate_review"
+            }
+          ],
+          "target": "confirm_resolution"
+        }
+      ],
+      "title": "Duplicate review Lakeshore Chemical"
+    },
+    {
+      "carrier": {
+        "label": "Pinned account ending",
+        "value": "9402"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 5,
+      "family": "reconcile_deferred_evidence",
+      "seed": 66,
+      "stages": [
+        {
+          "facts": [
+            "Incoming vendor: Pinnacle Logistics.",
+            "Declared bank account ending: 9402.",
+            "Two stored records claim this vendor."
+          ],
+          "heading": "Review the incoming record",
+          "instruction": "Open the incoming vendor record for review.",
+          "options": [
+            {
+              "label": "Open incoming record",
+              "semantic_id": "open_incoming_record"
+            },
+            {
+              "label": "Open stored records",
+              "semantic_id": "open_stored_records"
+            },
+            {
+              "label": "Defer the review",
+              "semantic_id": "defer_review"
+            }
+          ],
+          "target": "open_incoming_record"
+        },
+        {
+          "facts": [
+            "Declared account ending: 9402.",
+            "The incoming record closes when review moves on."
+          ],
+          "heading": "Keep the declared account available",
+          "instruction": "Pin the declared account ending before leaving the incoming record.",
+          "options": [
+            {
+              "label": "Pin account ending 9402",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Print the record",
+              "semantic_id": "print_record"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "Two stored records require comparison.",
+            "Duplicates are listed under stored records."
+          ],
+          "heading": "Open the stored duplicates",
+          "instruction": "Open the stored duplicate list.",
+          "options": [
+            {
+              "label": "Open duplicate list",
+              "semantic_id": "open_duplicate_list"
+            },
+            {
+              "label": "Open change history",
+              "semantic_id": "open_change_history"
+            },
+            {
+              "label": "Open vendor contacts",
+              "semantic_id": "open_vendor_contacts"
+            }
+          ],
+          "target": "open_duplicate_list"
+        },
+        {
+          "facts": [
+            "Record A must be inspected before record B.",
+            "Inspection order is fixed by the review policy."
+          ],
+          "heading": "Inspect the first stored record",
+          "instruction": "Open stored record A for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record A",
+              "semantic_id": "inspect_record_a"
+            },
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Skip inspection",
+              "semantic_id": "skip_inspection"
+            }
+          ],
+          "target": "inspect_record_a"
+        },
+        {
+          "facts": [
+            "Record A has been inspected.",
+            "Record B is the remaining stored record."
+          ],
+          "heading": "Inspect the second stored record",
+          "instruction": "Open stored record B for inspection.",
+          "options": [
+            {
+              "label": "Inspect stored record B",
+              "semantic_id": "inspect_record_b"
+            },
+            {
+              "label": "Reopen stored record A",
+              "semantic_id": "reopen_record_a"
+            },
+            {
+              "label": "Close the review",
+              "semantic_id": "close_review"
+            }
+          ],
+          "target": "inspect_record_b"
+        },
+        {
+          "facts": [
+            "Both stored records were inspected.",
+            "At most one stored record can match the pinned account ending."
+          ],
+          "heading": "Resolve against the pinned account",
+          "instruction": "Keep the stored record whose account ending matches the pinned value.",
+          "options": [
+            {
+              "label": "Keep record A \u2014 account ending 9420",
+              "semantic_id": "keep_record_a"
+            },
+            {
+              "label": "Keep record B \u2014 account ending 4902",
+              "semantic_id": "keep_record_b"
+            },
+            {
+              "label": "Keep neither record",
+              "semantic_id": "keep_neither_record"
+            }
+          ],
+          "target": "keep_neither_record"
+        },
+        {
+          "facts": [
+            "The resolution is staged for host review.",
+            "No further inspection is required."
+          ],
+          "heading": "Confirm the resolution",
+          "instruction": "Confirm the recorded resolution.",
+          "options": [
+            {
+              "label": "Confirm resolution",
+              "semantic_id": "confirm_resolution"
+            },
+            {
+              "label": "Reopen the review",
+              "semantic_id": "reopen_review"
+            },
+            {
+              "label": "Escalate to registry",
+              "semantic_id": "escalate_review"
+            }
+          ],
+          "target": "confirm_resolution"
+        }
+      ],
+      "title": "Duplicate review Pinnacle Logistics"
+    },
+    {
+      "carrier": {
+        "label": "Pinned constraint",
+        "value": "Net 30"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 6,
+      "family": "constraint_repair_chain",
+      "seed": 67,
+      "stages": [
+        {
+          "facts": [
+            "Submission VS-4067 was rejected by validation.",
+            "Contract constraint: payment terms Net 30.",
+            "The constraint sheet is only visible on this panel."
+          ],
+          "heading": "Open the rejected submission",
+          "instruction": "Open the rejected vendor submission.",
+          "options": [
+            {
+              "label": "Open rejected submission",
+              "semantic_id": "open_submission"
+            },
+            {
+              "label": "Open templates",
+              "semantic_id": "open_templates"
+            },
+            {
+              "label": "Open help center",
+              "semantic_id": "open_help_center"
+            }
+          ],
+          "target": "open_submission"
+        },
+        {
+          "facts": [
+            "Contract constraint: payment terms Net 30.",
+            "Editing closes the constraint sheet."
+          ],
+          "heading": "Keep the contract constraint available",
+          "instruction": "Pin the contract constraint before editing begins.",
+          "options": [
+            {
+              "label": "Pin constraint Net 30",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Download the sheet",
+              "semantic_id": "download_sheet"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The report lists one failing field.",
+            "Validation ran against the vendor contract."
+          ],
+          "heading": "Open the validation report",
+          "instruction": "Open the validation report for the rejection.",
+          "options": [
+            {
+              "label": "Open validation report",
+              "semantic_id": "open_validation_report"
+            },
+            {
+              "label": "Open activity feed",
+              "semantic_id": "open_activity_feed"
+            },
+            {
+              "label": "Open attachments",
+              "semantic_id": "open_attachments"
+            }
+          ],
+          "target": "open_validation_report"
+        },
+        {
+          "facts": [
+            "Failing field: payment terms.",
+            "All other fields passed validation."
+          ],
+          "heading": "Select the failing field",
+          "instruction": "Select the field identified by the validation report.",
+          "options": [
+            {
+              "label": "Payment terms",
+              "semantic_id": "select_payment_terms"
+            },
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_payment_terms"
+        },
+        {
+          "facts": [
+            "The failing field must be edited in the editor.",
+            "Direct list edits are disabled."
+          ],
+          "heading": "Open the field editor",
+          "instruction": "Open the editor for the failing field.",
+          "options": [
+            {
+              "label": "Open field editor",
+              "semantic_id": "open_field_editor"
+            },
+            {
+              "label": "Open bulk editor",
+              "semantic_id": "open_bulk_editor"
+            },
+            {
+              "label": "Open import tool",
+              "semantic_id": "open_import_tool"
+            }
+          ],
+          "target": "open_field_editor"
+        },
+        {
+          "facts": [
+            "The editor opens in read-only mode.",
+            "Unlocking applies only to the failing field."
+          ],
+          "heading": "Unlock editing",
+          "instruction": "Unlock editing to change the field.",
+          "options": [
+            {
+              "label": "Unlock editing",
+              "semantic_id": "unlock_editing"
+            },
+            {
+              "label": "Request edit access",
+              "semantic_id": "request_edit_access"
+            },
+            {
+              "label": "View field history",
+              "semantic_id": "view_field_history"
+            }
+          ],
+          "target": "unlock_editing"
+        },
+        {
+          "facts": [
+            "Three term presets are offered.",
+            "Only the preset matching the pinned constraint passes validation."
+          ],
+          "heading": "Apply the pinned constraint",
+          "instruction": "Set the payment terms to the pinned contract constraint.",
+          "options": [
+            {
+              "label": "Set terms Net 15",
+              "semantic_id": "set_terms_net15"
+            },
+            {
+              "label": "Set terms Net 30",
+              "semantic_id": "set_terms_net30"
+            },
+            {
+              "label": "Set terms Net 45",
+              "semantic_id": "set_terms_net45"
+            }
+          ],
+          "target": "set_terms_net30"
+        },
+        {
+          "facts": [
+            "The repaired submission is staged.",
+            "Resubmission sends it for host validation."
+          ],
+          "heading": "Resubmit the repaired submission",
+          "instruction": "Send the repaired submission for validation now.",
+          "options": [
+            {
+              "label": "Resubmit for validation",
+              "semantic_id": "resubmit_submission"
+            },
+            {
+              "label": "Save as draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Discard changes",
+              "semantic_id": "discard_changes"
+            }
+          ],
+          "target": "resubmit_submission"
+        }
+      ],
+      "title": "Submission repair VS-4067"
+    },
+    {
+      "carrier": {
+        "label": "Pinned constraint",
+        "value": "Net 45"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 6,
+      "family": "constraint_repair_chain",
+      "seed": 68,
+      "stages": [
+        {
+          "facts": [
+            "Submission VS-4068 was rejected by validation.",
+            "Contract constraint: payment terms Net 45.",
+            "The constraint sheet is only visible on this panel."
+          ],
+          "heading": "Open the rejected submission",
+          "instruction": "Open the rejected vendor submission.",
+          "options": [
+            {
+              "label": "Open rejected submission",
+              "semantic_id": "open_submission"
+            },
+            {
+              "label": "Open templates",
+              "semantic_id": "open_templates"
+            },
+            {
+              "label": "Open help center",
+              "semantic_id": "open_help_center"
+            }
+          ],
+          "target": "open_submission"
+        },
+        {
+          "facts": [
+            "Contract constraint: payment terms Net 45.",
+            "Editing closes the constraint sheet."
+          ],
+          "heading": "Keep the contract constraint available",
+          "instruction": "Pin the contract constraint before editing begins.",
+          "options": [
+            {
+              "label": "Pin constraint Net 45",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Download the sheet",
+              "semantic_id": "download_sheet"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The report lists one failing field.",
+            "Validation ran against the vendor contract."
+          ],
+          "heading": "Open the validation report",
+          "instruction": "Open the validation report for the rejection.",
+          "options": [
+            {
+              "label": "Open validation report",
+              "semantic_id": "open_validation_report"
+            },
+            {
+              "label": "Open activity feed",
+              "semantic_id": "open_activity_feed"
+            },
+            {
+              "label": "Open attachments",
+              "semantic_id": "open_attachments"
+            }
+          ],
+          "target": "open_validation_report"
+        },
+        {
+          "facts": [
+            "Failing field: payment terms.",
+            "All other fields passed validation."
+          ],
+          "heading": "Select the failing field",
+          "instruction": "Select the field identified by the validation report.",
+          "options": [
+            {
+              "label": "Payment terms",
+              "semantic_id": "select_payment_terms"
+            },
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_payment_terms"
+        },
+        {
+          "facts": [
+            "The failing field must be edited in the editor.",
+            "Direct list edits are disabled."
+          ],
+          "heading": "Open the field editor",
+          "instruction": "Open the editor for the failing field.",
+          "options": [
+            {
+              "label": "Open field editor",
+              "semantic_id": "open_field_editor"
+            },
+            {
+              "label": "Open bulk editor",
+              "semantic_id": "open_bulk_editor"
+            },
+            {
+              "label": "Open import tool",
+              "semantic_id": "open_import_tool"
+            }
+          ],
+          "target": "open_field_editor"
+        },
+        {
+          "facts": [
+            "The editor opens in read-only mode.",
+            "Unlocking applies only to the failing field."
+          ],
+          "heading": "Unlock editing",
+          "instruction": "Unlock editing to change the field.",
+          "options": [
+            {
+              "label": "Unlock editing",
+              "semantic_id": "unlock_editing"
+            },
+            {
+              "label": "Request edit access",
+              "semantic_id": "request_edit_access"
+            },
+            {
+              "label": "View field history",
+              "semantic_id": "view_field_history"
+            }
+          ],
+          "target": "unlock_editing"
+        },
+        {
+          "facts": [
+            "Three term presets are offered.",
+            "Only the preset matching the pinned constraint passes validation."
+          ],
+          "heading": "Apply the pinned constraint",
+          "instruction": "Set the payment terms to the pinned contract constraint.",
+          "options": [
+            {
+              "label": "Set terms Net 15",
+              "semantic_id": "set_terms_net15"
+            },
+            {
+              "label": "Set terms Net 30",
+              "semantic_id": "set_terms_net30"
+            },
+            {
+              "label": "Set terms Net 45",
+              "semantic_id": "set_terms_net45"
+            }
+          ],
+          "target": "set_terms_net45"
+        },
+        {
+          "facts": [
+            "The repaired submission is staged.",
+            "Resubmission sends it for host validation."
+          ],
+          "heading": "Resubmit the repaired submission",
+          "instruction": "Send the repaired submission for validation now.",
+          "options": [
+            {
+              "label": "Resubmit for validation",
+              "semantic_id": "resubmit_submission"
+            },
+            {
+              "label": "Save as draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Discard changes",
+              "semantic_id": "discard_changes"
+            }
+          ],
+          "target": "resubmit_submission"
+        }
+      ],
+      "title": "Submission repair VS-4068"
+    },
+    {
+      "carrier": {
+        "label": "Pinned constraint",
+        "value": "Net 15"
+      },
+      "commit_stage": 1,
+      "consumer_stage": 6,
+      "family": "constraint_repair_chain",
+      "seed": 69,
+      "stages": [
+        {
+          "facts": [
+            "Submission VS-4069 was rejected by validation.",
+            "Contract constraint: payment terms Net 15.",
+            "The constraint sheet is only visible on this panel."
+          ],
+          "heading": "Open the rejected submission",
+          "instruction": "Open the rejected vendor submission.",
+          "options": [
+            {
+              "label": "Open rejected submission",
+              "semantic_id": "open_submission"
+            },
+            {
+              "label": "Open templates",
+              "semantic_id": "open_templates"
+            },
+            {
+              "label": "Open help center",
+              "semantic_id": "open_help_center"
+            }
+          ],
+          "target": "open_submission"
+        },
+        {
+          "facts": [
+            "Contract constraint: payment terms Net 15.",
+            "Editing closes the constraint sheet."
+          ],
+          "heading": "Keep the contract constraint available",
+          "instruction": "Pin the contract constraint before editing begins.",
+          "options": [
+            {
+              "label": "Pin constraint Net 15",
+              "semantic_id": "pin_reference"
+            },
+            {
+              "label": "Continue without pinning",
+              "semantic_id": "continue_without_pin"
+            },
+            {
+              "label": "Download the sheet",
+              "semantic_id": "download_sheet"
+            }
+          ],
+          "target": "pin_reference"
+        },
+        {
+          "facts": [
+            "The report lists one failing field.",
+            "Validation ran against the vendor contract."
+          ],
+          "heading": "Open the validation report",
+          "instruction": "Open the validation report for the rejection.",
+          "options": [
+            {
+              "label": "Open validation report",
+              "semantic_id": "open_validation_report"
+            },
+            {
+              "label": "Open activity feed",
+              "semantic_id": "open_activity_feed"
+            },
+            {
+              "label": "Open attachments",
+              "semantic_id": "open_attachments"
+            }
+          ],
+          "target": "open_validation_report"
+        },
+        {
+          "facts": [
+            "Failing field: payment terms.",
+            "All other fields passed validation."
+          ],
+          "heading": "Select the failing field",
+          "instruction": "Select the field identified by the validation report.",
+          "options": [
+            {
+              "label": "Payment terms",
+              "semantic_id": "select_payment_terms"
+            },
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_payment_terms"
+        },
+        {
+          "facts": [
+            "The failing field must be edited in the editor.",
+            "Direct list edits are disabled."
+          ],
+          "heading": "Open the field editor",
+          "instruction": "Open the editor for the failing field.",
+          "options": [
+            {
+              "label": "Open field editor",
+              "semantic_id": "open_field_editor"
+            },
+            {
+              "label": "Open bulk editor",
+              "semantic_id": "open_bulk_editor"
+            },
+            {
+              "label": "Open import tool",
+              "semantic_id": "open_import_tool"
+            }
+          ],
+          "target": "open_field_editor"
+        },
+        {
+          "facts": [
+            "The editor opens in read-only mode.",
+            "Unlocking applies only to the failing field."
+          ],
+          "heading": "Unlock editing",
+          "instruction": "Unlock editing to change the field.",
+          "options": [
+            {
+              "label": "Unlock editing",
+              "semantic_id": "unlock_editing"
+            },
+            {
+              "label": "Request edit access",
+              "semantic_id": "request_edit_access"
+            },
+            {
+              "label": "View field history",
+              "semantic_id": "view_field_history"
+            }
+          ],
+          "target": "unlock_editing"
+        },
+        {
+          "facts": [
+            "Three term presets are offered.",
+            "Only the preset matching the pinned constraint passes validation."
+          ],
+          "heading": "Apply the pinned constraint",
+          "instruction": "Set the payment terms to the pinned contract constraint.",
+          "options": [
+            {
+              "label": "Set terms Net 15",
+              "semantic_id": "set_terms_net15"
+            },
+            {
+              "label": "Set terms Net 30",
+              "semantic_id": "set_terms_net30"
+            },
+            {
+              "label": "Set terms Net 45",
+              "semantic_id": "set_terms_net45"
+            }
+          ],
+          "target": "set_terms_net15"
+        },
+        {
+          "facts": [
+            "The repaired submission is staged.",
+            "Resubmission sends it for host validation."
+          ],
+          "heading": "Resubmit the repaired submission",
+          "instruction": "Send the repaired submission for validation now.",
+          "options": [
+            {
+              "label": "Resubmit for validation",
+              "semantic_id": "resubmit_submission"
+            },
+            {
+              "label": "Save as draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Discard changes",
+              "semantic_id": "discard_changes"
+            }
+          ],
+          "target": "resubmit_submission"
+        }
+      ],
+      "title": "Submission repair VS-4069"
+    }
+  ],
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "schema_version": "pixelgym-grounding-v4c-episodes-v1"
+}

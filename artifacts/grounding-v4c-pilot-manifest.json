@@ -1,0 +1,80 @@
+{
+  "approved_call_cap": 178,
+  "conditions": [
+    "raw",
+    "marks"
+  ],
+  "decision_history": [],
+  "family_counts": {
+    "constraint_repair_chain": 3,
+    "pin_traverse_apply": 4,
+    "reconcile_deferred_evidence": 3
+  },
+  "max_actions_per_condition": {
+    "60": 8,
+    "61": 8,
+    "62": 8,
+    "63": 8,
+    "64": 9,
+    "65": 9,
+    "66": 9,
+    "67": 10,
+    "68": 10,
+    "69": 10
+  },
+  "model": "gpt-5.6-luna",
+  "model_calls_performed": 0,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v4c-pilot-candidates.jsonl",
+      "sha256": "a13fff95858e3e521bf0f84c0fad35e28d1ad698ac77b53f2029844088cf553e"
+    },
+    "capture": {
+      "path": "artifacts/grounding-v4c-pilot-capture.json",
+      "sha256": "63b091cbb0227580666222d9e1e4eca8e10ab513460cd2f4a5e00f3c0dc0b599"
+    },
+    "episodes": {
+      "path": "artifacts/grounding-v4c-pilot-episodes.json",
+      "sha256": "8bb2fafe3a629f10311031bf875719dd7b9037997bfdb3f6e6fa194ffd52dd0e"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v4c-pilot-overlays.jsonl",
+      "sha256": "3a34e3cb4f2ef3af96376d2dadfe28d407f23eb208a2c23ed287bf91a5501fa1"
+    },
+    "states": {
+      "path": "artifacts/grounding-v4c-pilot-states.jsonl",
+      "sha256": "ddc87aee9f22625a545eda26fdc16accc6205cc18aba44ecf9dc370f28d90376"
+    }
+  },
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "schema_version": "pixelgym-grounding-v4c-manifest-v1",
+  "seeds": [
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+  ],
+  "status": "captured_evaluation_not_run",
+  "task_ids": {
+    "60": "v4c-4745560238f89c6f",
+    "61": "v4c-80ed0dfb123809f4",
+    "62": "v4c-a41cebbc6dd7f20b",
+    "63": "v4c-b627dc3b17091351",
+    "64": "v4c-2d03c2a54a8c1d63",
+    "65": "v4c-a295e248f01bc149",
+    "66": "v4c-356b858fe9019d58",
+    "67": "v4c-a89905c741b3839e",
+    "68": "v4c-71ab93e8aeb89ab1",
+    "69": "v4c-00b2d5d8ce887b6b"
+  }
+}

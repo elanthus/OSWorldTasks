@@ -1,0 +1,45 @@
+{
+  "actionable_state_count": 244,
+  "browser_engine": "chromium",
+  "browser_version": "151.0.7922.34",
+  "call_cap": 178,
+  "episode_count": 10,
+  "family_counts": {
+    "constraint_repair_chain": 3,
+    "pin_traverse_apply": 4,
+    "reconcile_deferred_evidence": 3
+  },
+  "proposal_covered_state_count": 244,
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "reachable_state_count": 264,
+  "repeatability": {
+    "byte_identical_file_count": 264,
+    "candidate_aggregate_sha256": "bc67067888aa741bcb124c30ac69b04cbf3c6fb94381480fd53c54e15ae0f45b",
+    "candidate_label": "v4c-pass-2",
+    "comparison": "bitwise PNG bytes and decoded RGBA pixels",
+    "differing_file_count": 0,
+    "differing_pixel_bbox_xyxy": null,
+    "differing_pixel_count": 0,
+    "file_count": 264,
+    "mask_applied": false,
+    "max_channel_delta": 0,
+    "reference_aggregate_sha256": "bc67067888aa741bcb124c30ac69b04cbf3c6fb94381480fd53c54e15ae0f45b",
+    "reference_label": "v4c-pass-1",
+    "schema_version": "pixelgym-grounding-repeatability-v2",
+    "tolerance_applied": false
+  },
+  "schema_version": "pixelgym-grounding-v4c-capture-v1",
+  "source_sha256": {
+    "pixelgym/grounding/calibration_v4c.py": "7d3cb6066d06552209439cd8de65149adcf941f56ef4b5995f50c8cfd6221971",
+    "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
+    "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
+    "pixelgym/grounding/overlays.py": "d0c956e7b09d768762df83d208b43928e1da7bb6eb04fac0e7c375d31a029ab3",
+    "pixelgym/grounding/v4c_app/static/app.js": "31f24ac50e5e2ebbac0886b5204b095fad93b2b47040119b18d62335717e0da0",
+    "pixelgym/grounding/v4c_app/static/index.html": "9cbb32a67079407dfa2f1cd925a9ceab9b4cfd20e6dfba39a22c60291917d72f",
+    "pixelgym/grounding/v4c_app/static/style.css": "e29c8465486d171841094be03126bf9f68cf43ca697edd885ed69306cb5c9f5e",
+    "pixelgym/grounding/v4c_protocol.py": "2f9b9568992e2729dca04dd64186b6f04cc63cd4a1176bdf9547fa8089a5e599",
+    "pixelgym/grounding/v4c_server.py": "ced554499401c2ec9b8ac7dc3032d64490aae07070a5673be8ea4a871e93b8bb",
+    "pixelgym/tasks/vendor_form/app/static/fonts/DejaVuSans-Bold.ttf": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724",
+    "pixelgym/tasks/vendor_form/app/static/fonts/DejaVuSans.ttf": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+  }
+}
