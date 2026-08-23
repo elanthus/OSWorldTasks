@@ -1044,6 +1044,27 @@ def record_v4c_evaluation(
     predictions_path, conditions_path, attempts_path, results_path, manifest_path = resolved[:5]
     resolved_prior_predictions = resolved[5] if prior_predictions_path is not None else None
     resolved_prior_conditions = resolved[-1] if prior_conditions_path is not None else None
+    resolved_plan = (
+        plan_path.resolve()
+        if plan_path is not None
+        else root / "artifacts" / "grounding-v4c-pilot-plan-luna.json"
+    )
+    if not resolved_plan.is_relative_to(root):
+        raise ValueError("v4c plan path must be inside the repository")
+    if plan_path is not None and not resolved_plan.is_file():
+        raise FileNotFoundError(resolved_plan)
+    resolved_audit = audit_path.resolve() if audit_path is not None else None
+    if resolved_audit is not None and not resolved_audit.is_relative_to(root):
+        raise ValueError("v4c audit path must be inside the repository")
+    if resolved_audit is not None and not resolved_audit.is_file():
+        raise FileNotFoundError(resolved_audit)
+    optional_inputs = [
+        path for path in (resolved_plan, resolved_audit) if path is not None and path.is_file()
+    ]
+    if set(optional_inputs) & set(resolved) or len(optional_inputs) != len(set(optional_inputs)):
+        raise ValueError("v4c evidence, result, manifest, plan, and audit paths must be distinct")
+    plan_sha256 = _sha256(resolved_plan.read_bytes()) if resolved_plan.is_file() else None
+    audit_sha256 = _sha256(resolved_audit.read_bytes()) if resolved_audit is not None else None
     results = summarize_v4c_evaluation(
         repository_root=root,
         predictions_path=predictions_path,
@@ -1100,25 +1121,15 @@ def record_v4c_evaluation(
             "path": path.relative_to(root).as_posix(),
             "sha256": _sha256(path.read_bytes()),
         }
-    resolved_plan = (
-        plan_path.resolve()
-        if plan_path is not None
-        else root / "artifacts" / "grounding-v4c-pilot-plan-luna.json"
-    )
-    if not resolved_plan.is_relative_to(root):
-        raise ValueError("v4c plan path must be inside the repository")
-    if resolved_plan.is_file():
+    if plan_sha256 is not None:
         outputs[f"plan_{artifact_label}"] = {
             "path": resolved_plan.relative_to(root).as_posix(),
-            "sha256": _sha256(resolved_plan.read_bytes()),
+            "sha256": plan_sha256,
         }
-    if audit_path is not None:
-        resolved_audit = audit_path.resolve()
-        if not resolved_audit.is_relative_to(root):
-            raise ValueError("v4c audit path must be inside the repository")
+    if resolved_audit is not None and audit_sha256 is not None:
         outputs[f"floor_audit_{artifact_label}"] = {
             "path": resolved_audit.relative_to(root).as_posix(),
-            "sha256": _sha256(resolved_audit.read_bytes()),
+            "sha256": audit_sha256,
         }
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -1143,7 +1154,9 @@ def initialize_v4c_model_manifest(
     frozen_outputs = {
         name: value
         for name, value in outputs.items()
-        if not name.startswith(("predictions_", "conditions_", "attempts_", "results_", "plan_"))
+        if not name.startswith(
+            ("predictions_", "conditions_", "attempts_", "results_", "plan_", "floor_audit_")
+        )
     }
     manifest = {
         **template,

@@ -35,6 +35,16 @@ def _nearest(candidates: list[dict[str, Any]], x: int, y: int) -> str:
 def audit(repository_root: Path, predictions_path: Path, results_path: Path) -> dict[str, Any]:
     predictions = load_jsonl(predictions_path)
     results = json.loads(results_path.read_text(encoding="utf-8"))
+    prediction_sha256 = _sha256(predictions_path)
+    prediction_reference = results.get("predictions")
+    expected_path = predictions_path.relative_to(repository_root).as_posix()
+    if not isinstance(prediction_reference, dict) or prediction_reference != {
+        "path": expected_path,
+        "sha256": prediction_sha256,
+    }:
+        raise ValueError("v4c floor audit results are not bound to the supplied predictions")
+    if results.get("collection", {}).get("action_record_count") != len(predictions):
+        raise ValueError("v4c floor audit result count does not match supplied predictions")
     inputs = _load_inputs(repository_root)
     states_by_image = {row["image_sha256"]: row for row in inputs["states"]}
     parse_counts: Counter[str] = Counter()
@@ -88,8 +98,8 @@ def audit(repository_root: Path, predictions_path: Path, results_path: Path) -> 
         "model": results["model"],
         "sources": {
             "predictions": {
-                "path": predictions_path.relative_to(repository_root).as_posix(),
-                "sha256": _sha256(predictions_path),
+                "path": expected_path,
+                "sha256": prediction_sha256,
             },
             "results": {
                 "path": results_path.relative_to(repository_root).as_posix(),
@@ -105,8 +115,8 @@ def audit(repository_root: Path, predictions_path: Path, results_path: Path) -> 
         },
         "coordinate_frame": {
             "native_screen": {"width": V4C_WIDTH, "height": V4C_HEIGHT},
-            "observed_x_range": [min(xs), max(xs)],
-            "observed_y_range": [min(ys), max(ys)],
+            "observed_x_range": [min(xs), max(xs)] if xs else None,
+            "observed_y_range": [min(ys), max(ys)] if ys else None,
             "tested_normalized_grid": {"width": 1000, "height": 1000},
             "native_point_inside_correct_target_count": native_inside_target,
             "normalized_point_inside_correct_target_count": normalized_inside_target,

@@ -1,3 +1,5 @@
+import hashlib
+import json
 from pathlib import Path
 
 from scripts.audit_grounding_v4c_floor import audit
@@ -23,3 +25,45 @@ def test_qwen_floor_audit_preserves_score_and_identifies_normalized_grid() -> No
     assert coordinate["native_point_inside_correct_target_count"] == 1
     assert coordinate["normalized_point_inside_correct_target_count"] == 177
     assert coordinate["normalized_semantic_nearest_target_count"] == 178
+
+
+def test_floor_audit_handles_zero_parsed_actions_and_rejects_unbound_results(
+    tmp_path: Path,
+) -> None:
+    evidence = REPOSITORY_ROOT / ".cache" / tmp_path.name
+    evidence.mkdir(parents=True, exist_ok=True)
+    predictions = evidence / "predictions.jsonl"
+    results = evidence / "results.json"
+    predictions.write_text("")
+    prediction_reference = {
+        "path": predictions.relative_to(REPOSITORY_ROOT).as_posix(),
+        "sha256": hashlib.sha256(b"").hexdigest(),
+    }
+    results.write_text(
+        json.dumps(
+            {
+                "protocol_version": "pixelgym-grounding-v4c-pilot",
+                "model": "test-model",
+                "predictions": prediction_reference,
+                "collection": {"action_record_count": 0, "new_call_count": 0},
+            }
+        )
+    )
+    try:
+        report = audit(REPOSITORY_ROOT, predictions, results)
+        assert report["coordinate_frame"]["observed_x_range"] is None
+        assert report["coordinate_frame"]["observed_y_range"] is None
+
+        value = json.loads(results.read_text())
+        value["predictions"]["sha256"] = "0" * 64
+        results.write_text(json.dumps(value))
+        try:
+            audit(REPOSITORY_ROOT, predictions, results)
+        except ValueError as error:
+            assert "not bound" in str(error)
+        else:
+            raise AssertionError("unbound result was accepted")
+    finally:
+        predictions.unlink(missing_ok=True)
+        results.unlink(missing_ok=True)
+        evidence.rmdir()

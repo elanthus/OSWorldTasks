@@ -879,6 +879,7 @@ def test_v4c_recorder_initializes_model_specific_manifest_and_output_keys(
                 "outputs": {
                     "capture": {"path": "capture.json", "sha256": "0" * 64},
                     "predictions_luna": {"path": "old.jsonl", "sha256": "1" * 64},
+                    "floor_audit_luna": {"path": "old-audit.json", "sha256": "2" * 64},
                 },
             }
         )
@@ -913,3 +914,37 @@ def test_v4c_recorder_initializes_model_specific_manifest_and_output_keys(
         "results_alternate-model",
         "plan_alternate-model",
     }
+
+
+def test_v4c_recorder_validates_optional_evidence_before_writing_result(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    manifest = evidence_dir / "manifest.json"
+    results = evidence_dir / "results.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol_version": V4C_PROTOCOL_VERSION,
+                "model": "gpt-5.6-luna",
+                "parameters": {"reasoning_effort": "low", "temperature": None},
+                "decision_history": [],
+                "outputs": {},
+            }
+        )
+    )
+
+    with pytest.raises(FileNotFoundError):
+        record_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+            results_path=results,
+            manifest_path=manifest,
+            audit_path=evidence_dir / "missing-audit.json",
+        )
+
+    assert not results.exists()
