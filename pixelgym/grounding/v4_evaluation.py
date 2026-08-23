@@ -295,6 +295,15 @@ def record_v4_evaluation(
     manifest_path: Path,
 ) -> dict[str, Any]:
     """Write deterministic results and update the v4 evidence manifest."""
+    evidence_paths = {
+        "predictions": predictions_path,
+        "results": results_path,
+        "manifest": manifest_path,
+    }
+    for label, path in evidence_paths.items():
+        if not path.is_relative_to(repository_root):
+            raise ValueError(f"v4 {label} path must be inside the repository")
+
     results = summarize_v4_evaluation(
         repository_root=repository_root,
         predictions_path=predictions_path,
@@ -302,7 +311,6 @@ def record_v4_evaluation(
     encoded_results = json.dumps(results, indent=2, sort_keys=True) + "\n"
     if results_path.is_file() and results_path.read_text(encoding="utf-8") != encoded_results:
         raise ValueError("refusing to overwrite different immutable v4 results")
-    results_path.write_text(encoded_results, encoding="utf-8")
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("protocol_version") != V4_PROTOCOL_VERSION:
@@ -361,6 +369,10 @@ def record_v4_evaluation(
         raise TypeError("v4 manifest decision history must be a list")
     if history and history[-1] != decision:
         raise ValueError("refusing to replace different v4 decision history")
+
+    # All validation that can fail deterministically is complete before either
+    # evidence file is changed, so a rejected manifest cannot leave an orphan result.
+    results_path.write_text(encoded_results, encoding="utf-8")
     if not history:
         history.append(decision)
 
