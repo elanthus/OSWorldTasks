@@ -1,0 +1,1629 @@
+{
+  "analysis_config": {
+    "bootstrap_interval": "percentile",
+    "confidence_level": 0.95,
+    "distance_normalization": "screenshot diagonal",
+    "distance_threshold_method": "normalized-center-distance-at-or-below-threshold-v1",
+    "distance_thresholds": [
+      0.0,
+      0.005,
+      0.01,
+      0.02,
+      0.03,
+      0.05,
+      0.075,
+      0.1,
+      0.15,
+      0.2,
+      0.3,
+      0.5
+    ],
+    "invalid_outputs_scored_incorrect": true,
+    "mcnemar_test": "two-sided exact binomial",
+    "paired_bootstrap_samples": 10000,
+    "paired_bootstrap_seed": 20260809,
+    "request_failures_scored_incorrect": true,
+    "target_size_thresholds_screen_area": {
+      "medium_below": 0.02,
+      "small_below": 0.005
+    }
+  },
+  "collection": {
+    "condition_record_count": 40,
+    "example_count": 20,
+    "excluded_example_count": 0,
+    "first_timestamp_utc": "2026-08-20T21:24:54.226040+00:00",
+    "last_timestamp_utc": "2026-08-20T21:26:24.464856+00:00",
+    "timestamp_missing_count": 0,
+    "timestamp_observed_count": 40
+  },
+  "conditions": {
+    "marks": {
+      "accuracy": 1.0,
+      "correct_count": 20,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.00029200868397692687,
+        "measured_count": 20,
+        "median": 0.0,
+        "missing_count": 0,
+        "p90": 0.0008734640537108554,
+        "record_count": 20
+      },
+      "parse_status_counts": {
+        "parsed": 20
+      },
+      "record_count": 20,
+      "request_failure_count": 0,
+      "request_failure_rate": 0.0
+    },
+    "raw": {
+      "accuracy": 1.0,
+      "correct_count": 20,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.005723928293608767,
+        "measured_count": 20,
+        "median": 0.00078125,
+        "missing_count": 0,
+        "p90": 0.01805110273704748,
+        "record_count": 20
+      },
+      "parse_status_counts": {
+        "parsed": 20
+      },
+      "record_count": 20,
+      "request_failure_count": 0,
+      "request_failure_rate": 0.0
+    }
+  },
+  "distance_threshold_accuracy": {
+    "by_target_size": {
+      "medium": {
+        "conditions": {
+          "marks": {
+            "correct_count": 14,
+            "curve": [
+              {
+                "accuracy": 0.8571428571428571,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.0,
+                "within_count": 12
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.005,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.01,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.02,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.03,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.05,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.075,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.1,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.15,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.2,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.3,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.5,
+                "within_count": 14
+              }
+            ],
+            "record_count": 14,
+            "strict_accuracy": 1.0
+          },
+          "raw": {
+            "correct_count": 14,
+            "curve": [
+              {
+                "accuracy": 0.6428571428571429,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.0,
+                "within_count": 9
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.005,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.01,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.02,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.03,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.05,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.075,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.1,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.15,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.2,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.3,
+                "within_count": 14
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 14,
+                "missing_count": 0,
+                "record_count": 14,
+                "threshold": 0.5,
+                "within_count": 14
+              }
+            ],
+            "record_count": 14,
+            "strict_accuracy": 1.0
+          }
+        },
+        "example_count": 14,
+        "target_area_ratio": {
+          "maximum": 0.018880208333333332,
+          "median": 0.0177001953125,
+          "minimum": 0.0177001953125
+        }
+      },
+      "small": {
+        "conditions": {
+          "marks": {
+            "correct_count": 6,
+            "curve": [
+              {
+                "accuracy": 0.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.0,
+                "within_count": 0
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.005,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.01,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.02,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.03,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.05,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.075,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.1,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.15,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.2,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.3,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.5,
+                "within_count": 6
+              }
+            ],
+            "record_count": 6,
+            "strict_accuracy": 1.0
+          },
+          "raw": {
+            "correct_count": 6,
+            "curve": [
+              {
+                "accuracy": 0.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.0,
+                "within_count": 0
+              },
+              {
+                "accuracy": 0.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.005,
+                "within_count": 0
+              },
+              {
+                "accuracy": 0.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.01,
+                "within_count": 0
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.02,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.03,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.05,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.075,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.1,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.15,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.2,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.3,
+                "within_count": 6
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 6,
+                "missing_count": 0,
+                "record_count": 6,
+                "threshold": 0.5,
+                "within_count": 6
+              }
+            ],
+            "record_count": 6,
+            "strict_accuracy": 1.0
+          }
+        },
+        "example_count": 6,
+        "target_area_ratio": {
+          "maximum": 0.001667022705078125,
+          "median": 0.001654942830403646,
+          "minimum": 0.0016428629557291667
+        }
+      }
+    },
+    "comparison": "observed <= threshold",
+    "conditions": {
+      "marks": {
+        "correct_count": 20,
+        "curve": [
+          {
+            "accuracy": 0.6,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.0,
+            "within_count": 12
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.005,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.01,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.02,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.03,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.05,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.075,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.1,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.15,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.2,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.3,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.5,
+            "within_count": 20
+          }
+        ],
+        "record_count": 20,
+        "strict_accuracy": 1.0
+      },
+      "raw": {
+        "correct_count": 20,
+        "curve": [
+          {
+            "accuracy": 0.45,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.0,
+            "within_count": 9
+          },
+          {
+            "accuracy": 0.7,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.005,
+            "within_count": 14
+          },
+          {
+            "accuracy": 0.7,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.01,
+            "within_count": 14
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.02,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.03,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.05,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.075,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.1,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.15,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.2,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.3,
+            "within_count": 20
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 20,
+            "missing_count": 0,
+            "record_count": 20,
+            "threshold": 0.5,
+            "within_count": 20
+          }
+        ],
+        "record_count": 20,
+        "strict_accuracy": 1.0
+      }
+    },
+    "is_scored_benchmark_metric": false,
+    "method": "normalized-center-distance-at-or-below-threshold-v1",
+    "missing_distance_counted_as_incorrect": true,
+    "normalization": "screenshot diagonal",
+    "thresholds": [
+      0.0,
+      0.005,
+      0.01,
+      0.02,
+      0.03,
+      0.05,
+      0.075,
+      0.1,
+      0.15,
+      0.2,
+      0.3,
+      0.5
+    ]
+  },
+  "error_taxonomy": {
+    "all_manually_reviewed": true,
+    "category_counts": {},
+    "error_record_count": 0,
+    "records": [],
+    "review_status_counts": {}
+  },
+  "latency": {
+    "all": {
+      "maximum_ms": 5523.7859999760985,
+      "mean_ms": 2306.214360392187,
+      "median_ms": 2065.6032295664772,
+      "minimum_ms": 1445.7960838917643,
+      "missing_count": 0,
+      "observed_count": 40,
+      "record_count": 40,
+      "total_ms": 92248.57441568747
+    },
+    "marks": {
+      "maximum_ms": 4365.263249957934,
+      "mean_ms": 2142.377772938926,
+      "median_ms": 2032.1524584433064,
+      "minimum_ms": 1445.7960838917643,
+      "missing_count": 0,
+      "observed_count": 20,
+      "record_count": 20,
+      "total_ms": 42847.555458778515
+    },
+    "raw": {
+      "maximum_ms": 5523.7859999760985,
+      "mean_ms": 2470.050947845448,
+      "median_ms": 2226.4183959923685,
+      "minimum_ms": 1639.0462908893824,
+      "missing_count": 0,
+      "observed_count": 20,
+      "record_count": 20,
+      "total_ms": 49401.018956908956
+    }
+  },
+  "model": "google/gemini-3.7-flash",
+  "paired": {
+    "bootstrap_95_ci_percentage_points": [
+      0.0,
+      0.0
+    ],
+    "both_correct_count": 20,
+    "both_incorrect_count": 0,
+    "delta_percentage_points": 0.0,
+    "discordant_pair_count": 0,
+    "marks_only_correct_count": 0,
+    "mcnemar_exact_p_value": 1.0,
+    "raw_only_correct_count": 0
+  },
+  "parameters": {
+    "coordinate_rescale": "gemini-1000",
+    "seed": 20260809,
+    "temperature": 0
+  },
+  "per_example": [
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0001-company-name",
+      "marks": {
+        "cache_key": "5047ac83b7aa2f4cdeb7765bce118677857792d110f37838470b903191c11b96",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c6c2f1f0a71f1462007ef4f0a5288f215596faf24136fe30c7388d2377f06e7b",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 20
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0002-contact-email",
+      "marks": {
+        "cache_key": "15748e11a251473941238ef82ca1f3b8fbac9bf68162bf1ae18ad81094ec4988",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "db9dc599fb49bfb2b8ca3f57746bc309d7b09d844e11cd36accf8337608942dd",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 20
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0003-contact-phone",
+      "marks": {
+        "cache_key": "f01034de08b1045613cd146de4713f775478379307c261b8b4e770d99531f009",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f014805f1bd3632c2a1f5e33412af3969bcf18912a555e012d803544cc6feea8",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 20
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0004-tax-id",
+      "marks": {
+        "cache_key": "f2d6d8e74fcbe7aecf9a8406a05bc25206cf2182022ff3e9bef9e7f8c711f03c",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f2cb558d9c4196d1f46d69fec764799285f1b9dc4733b5546b924ee703a5ddca",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 20
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-v3a-cal-0005-country",
+      "marks": {
+        "cache_key": "6aab7b9975056b702948b8ee68b76cd9dbd0bfb4af2b4bc26701970d037ddedf",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "2b7a05aa4c575e57fdc7e66c6a28e7911b33c9dee932e227297a6ae061f7505e",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 20
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0006-contact-email",
+      "marks": {
+        "cache_key": "f2c9d83fc3c50705b966e65dcee6c71667819dac5e944884cf1180c51ca906b0",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          155.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "9ea2c96d0fc1493ebff07ae68857e18ce65670a69020b51149a3df693d9f6b74",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 21
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0007-contact-phone",
+      "marks": {
+        "cache_key": "203c9f141158c110752e10a2136f8d7d9f5b872f8412853bc1bc7ac219c3df95",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "117c87f25fc8ba8814b81063230be3813058d22fe413e284e37a7be1ed7c51b1",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 21
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0008-tax-id",
+      "marks": {
+        "cache_key": "2dbfe0f002ae2fc0f254f6789b14281107f940d4c0f58db1765b676762b3e678",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "252171260c8097470c5c70cebff634b1f0bf227f2c3acd05f8826bd318fae786",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 21
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-v3a-cal-0009-country",
+      "marks": {
+        "cache_key": "8cc780938a669bda50ea901aae4b6ad9303169bb85001022b04e8440d1bf6003",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4c0b31cfc713d34eee14be8a55799b72efb05283986afcaeb630c6097eea611a",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          343.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 21
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0010-payment-terms-net-15",
+      "marks": {
+        "cache_key": "a5409e08074fdcd6362421c81d2751c92ed6eadb244660f8c6b1e5cf99652bda",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "648805f0d27bf29f30fc042e138524854d5b88a98f0d806971fd46048eed5198",
+        "correct": true,
+        "normalized_center_distance": 0.01797299542238647,
+        "parse_status": "parsed",
+        "point": [
+          547.0,
+          400.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 21
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0011-contact-phone",
+      "marks": {
+        "cache_key": "07a987dea113b719b2ab729333efd633536046217b0c76e1a8e20ab2d5063712",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6ab918cd8ba3b40b7076ae2cdb3db6a44e443ad1fbb0ead84357fe32d09d0477",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 22
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0012-tax-id",
+      "marks": {
+        "cache_key": "34ecf2032789978bb3fa01abd90f73ef8b456076680b1e07fc1d6b327546d7de",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "7c00787fa7309b0f3a82169cc04fb1b75db058c725bdd17d863df49a553dc970",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          280.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 22
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-v3a-cal-0013-country",
+      "marks": {
+        "cache_key": "680094cf6fac00dad149aad7c51bf526a0f1bbd732129522104ae35a9a432ade",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "e3d966ffa26ca40797eb7b7dda6e2dc9a1f5a5a1f9612be06bcae6efe7aa07f4",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 22
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0014-payment-terms-net-15",
+      "marks": {
+        "cache_key": "c84824931884db0652177a1ae71fc56a671851fe1517df0f81e4530a527acbf3",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b88e53932c1db10eb64fe11a67af24cbe845c0004a76e2d0d556786f2ea286cd",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 22
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0015-payment-terms-net-30",
+      "marks": {
+        "cache_key": "4b0775cbb759ad45493aded0497ada62d928441949dffc16c49d647c7bbdec20",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6c1bfca2f0996473f29672e63d33c33852c12ba4dcdf262528812ba99b8e1283",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 22
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-v3a-cal-0016-tax-id",
+      "marks": {
+        "cache_key": "d95d7707a66db6733e411f4459896aaba8315645016d85220755df5552350dfb",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "39341a2c713488dda331ac95f88ba77d6ad0d0cd5a7c69d04431015be9f72080",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 23
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-v3a-cal-0017-country",
+      "marks": {
+        "cache_key": "1f8044a58ae02a1c3366608188b678c2ae5440406e3245bdcce4ab9a62d5a39c",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5fd8139ba19a2cc62fb50385895204897e0b8aded34c00744781940a2ac06a26",
+        "correct": true,
+        "normalized_center_distance": 0.003125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          339.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 23
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0018-payment-terms-net-15",
+      "marks": {
+        "cache_key": "43fdd8438eb53f2cdb59c83c1fa0b8c7248cfd6a925062c857a60eab432ac20a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0927c65878468ab835cb3d128eaec758606d72136fc6cd9f39ed660ffb251763",
+        "correct": true,
+        "normalized_center_distance": 0.019535155859453104,
+        "parse_status": "parsed",
+        "point": [
+          545.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 23
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0019-payment-terms-net-30",
+      "marks": {
+        "cache_key": "cbfffe1dd2139c97873fef33c4cb479c62195405db69d538ffb8a28fb8bc73a8",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "74eb9df94d53a8e4cdf17e84676e02fd0b4ed4ade5d58307dffdd6d85d21bc0d",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 23
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-v3a-cal-0020-payment-terms-net-45",
+      "marks": {
+        "cache_key": "461fe68a286617cec635dfc2b52adcd539bc27b6a2b9b164ea6d0bd05c8f11af",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "cb6c874672013e2fdc6184c02c3f3b592dd7f48c0c664ebd9aedc9b64ed0e7d4",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 23
+    }
+  ],
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v1",
+  "provider": "openrouter",
+  "schema_version": "pixelgym-grounding-results-v3",
+  "set_of_marks": {
+    "conditional_selection_accuracy": 1.0,
+    "conditional_selection_correct_count": 20,
+    "conditional_selection_total_count": 20,
+    "proposal_coverage": 1.0,
+    "proposal_covered_count": 20,
+    "proposal_total_count": 20
+  },
+  "slices": {
+    "element_type": {
+      "radio": {
+        "example_count": 6,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 6,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 6
+      },
+      "select": {
+        "example_count": 4,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 4,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 4
+      },
+      "text_input": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 10
+      }
+    },
+    "target_size": {
+      "medium": {
+        "example_count": 14,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 14,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 14
+      },
+      "small": {
+        "example_count": 6,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 6,
+        "paired_delta_percentage_points": 0.0,
+        "raw_accuracy": 1.0,
+        "raw_correct_count": 6
+      }
+    }
+  },
+  "usage_totals": {
+    "completion_tokens": 10393,
+    "cost": 0.07336875000000001,
+    "prompt_tokens": 45860,
+    "total_tokens": 56253
+  }
+}

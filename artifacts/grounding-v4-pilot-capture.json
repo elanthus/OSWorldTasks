@@ -1,0 +1,81 @@
+{
+  "browser_engine": "chromium",
+  "browser_version": "151.0.7922.34",
+  "calibration_label": "CALIBRATION",
+  "calibration_seeds": [
+    30,
+    31
+  ],
+  "candidate_record_count": 10,
+  "capture_version": "pixelgym-browser-capture-v1",
+  "example_count": 10,
+  "expected_candidate_count": 39,
+  "family_counts": {
+    "cross_panel_policy": 3,
+    "recovery_state": 3,
+    "relational_table": 4
+  },
+  "protocol_version": "pixelgym-grounding-v4-pilot",
+  "repeatability": {
+    "byte_identical_file_count": 10,
+    "candidate_aggregate_sha256": "ee34cd2fa2751d24b713b6418d23e4f5eb7abf839c3294f039a66011d1452ddd",
+    "candidate_label": "v4-pilot-pass-2",
+    "comparison": "bitwise PNG bytes and decoded RGBA pixels",
+    "differing_file_count": 0,
+    "differing_pixel_bbox_xyxy": null,
+    "differing_pixel_count": 0,
+    "file_count": 10,
+    "mask_applied": false,
+    "max_channel_delta": 0,
+    "reference_aggregate_sha256": "ee34cd2fa2751d24b713b6418d23e4f5eb7abf839c3294f039a66011d1452ddd",
+    "reference_label": "v4-pilot-pass-1",
+    "schema_version": "pixelgym-grounding-repeatability-v2",
+    "tolerance_applied": false
+  },
+  "schema_version": "pixelgym-grounding-v4-capture-v1",
+  "screen_state_counts": {
+    "completed_review": 2,
+    "initial": 2,
+    "partially_completed": 2,
+    "text_field_focused": 2,
+    "validation_error": 2
+  },
+  "screen_states": [
+    "initial",
+    "text_field_focused",
+    "validation_error",
+    "partially_completed",
+    "completed_review"
+  ],
+  "seed_state_cell_count": 10,
+  "source_sha256": {
+    "pixelgym/grounding/calibration_v4.py": "ba57d321d17ccde9003fd3677aef99535fa00365d124db356d1e57d8ef6fefd9",
+    "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
+    "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
+    "pixelgym/grounding/evaluation.py": "cfd02db068eb10cddab930087114aec93016ac18a8b51aa3761747063423e7ca",
+    "pixelgym/grounding/overlays.py": "d0c956e7b09d768762df83d208b43928e1da7bb6eb04fac0e7c375d31a029ab3",
+    "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+    "pixelgym/grounding/v3c_app/static/fonts/DejaVuSans-Bold.ttf": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724",
+    "pixelgym/grounding/v3c_app/static/fonts/DejaVuSans.ttf": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954",
+    "pixelgym/grounding/v4_app/static/app.js": "b9e98e578e0452646aeecd02466beec014dc6b8ae666c039a8fcafcc363a81f0",
+    "pixelgym/grounding/v4_app/static/index.html": "cafce479c0eb842da1189a313461649bbb081556440ad8ff4a23562d0a398ac8",
+    "pixelgym/grounding/v4_app/static/style.css": "d4ab61dc90d5f114748bd739d1c5e72ad3a56b46eee3213d4a7a6d156398bcde",
+    "pixelgym/grounding/v4_protocol.py": "86d68c69e4023320ab10d48b04aa30c59833a6b5c1d7a859503944a31c027668",
+    "pixelgym/grounding/v4_server.py": "6f0e24c4e0a202c8edcda17d9558a13b130fa7db52bc06d6784212ac2b888c79",
+    "pixelgym/serialization.py": "5026e8df223e810622201876db8eb6238fbad97fe13250f8a6dd54b662174eac",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e"
+  },
+  "target_counts": {
+    "billing_email": 1,
+    "deactivate_harbor": 1,
+    "edit_meridian": 1,
+    "edit_pacific": 1,
+    "keep_current": 1,
+    "review_existing_atlas": 1,
+    "route_compliance": 1,
+    "route_finance": 1,
+    "vat_number": 1,
+    "view_acme": 1
+  },
+  "variant": "v4-pilot"
+}

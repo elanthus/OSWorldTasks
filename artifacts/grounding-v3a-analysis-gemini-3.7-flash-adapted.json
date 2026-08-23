@@ -1,0 +1,4772 @@
+{
+  "analysis_config": {
+    "bootstrap_interval": "percentile",
+    "confidence_level": 0.95,
+    "distance_normalization": "screenshot diagonal",
+    "distance_threshold_method": "normalized-center-distance-at-or-below-threshold-v1",
+    "distance_thresholds": [
+      0.0,
+      0.005,
+      0.01,
+      0.02,
+      0.03,
+      0.05,
+      0.075,
+      0.1,
+      0.15,
+      0.2,
+      0.3,
+      0.5
+    ],
+    "invalid_outputs_scored_incorrect": true,
+    "mcnemar_test": "two-sided exact binomial",
+    "paired_bootstrap_samples": 10000,
+    "paired_bootstrap_seed": 20260809,
+    "request_failures_scored_incorrect": true,
+    "target_size_thresholds_screen_area": {
+      "medium_below": 0.02,
+      "small_below": 0.005
+    }
+  },
+  "collection": {
+    "condition_record_count": 200,
+    "example_count": 100,
+    "excluded_example_count": 0,
+    "first_timestamp_utc": "2026-08-21T05:07:20.932839+00:00",
+    "last_timestamp_utc": "2026-08-21T08:41:00.079959+00:00",
+    "timestamp_missing_count": 0,
+    "timestamp_observed_count": 200
+  },
+  "conditions": {
+    "marks": {
+      "accuracy": 1.0,
+      "correct_count": 100,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.0003927154325936955,
+        "measured_count": 100,
+        "median": 0.0005524271728019902,
+        "missing_count": 0,
+        "p90": 0.0008734640537108554,
+        "record_count": 100
+      },
+      "parse_status_counts": {
+        "parsed": 100
+      },
+      "record_count": 100,
+      "request_failure_count": 0,
+      "request_failure_rate": 0.0
+    },
+    "raw": {
+      "accuracy": 0.91,
+      "correct_count": 91,
+      "invalid_output_count": 0,
+      "invalid_output_rate": 0.0,
+      "normalized_center_distance": {
+        "mean": 0.012485735675751345,
+        "measured_count": 91,
+        "median": 0.00078125,
+        "missing_count": 9,
+        "p90": 0.06211060336835611,
+        "record_count": 100
+      },
+      "parse_status_counts": {
+        "parsed": 91,
+        "request_failure": 9
+      },
+      "record_count": 100,
+      "request_failure_count": 9,
+      "request_failure_rate": 0.09
+    }
+  },
+  "distance_threshold_accuracy": {
+    "by_target_size": {
+      "medium": {
+        "conditions": {
+          "marks": {
+            "correct_count": 50,
+            "curve": [
+              {
+                "accuracy": 0.8,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.0,
+                "within_count": 40
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.005,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.01,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.02,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.03,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.05,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.075,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.1,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.15,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.2,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.3,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.5,
+                "within_count": 50
+              }
+            ],
+            "record_count": 50,
+            "strict_accuracy": 1.0
+          },
+          "raw": {
+            "correct_count": 46,
+            "curve": [
+              {
+                "accuracy": 0.6,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.0,
+                "within_count": 30
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.005,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.01,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.02,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.03,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.05,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.075,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.92,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.1,
+                "within_count": 46
+              },
+              {
+                "accuracy": 0.92,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.15,
+                "within_count": 46
+              },
+              {
+                "accuracy": 0.92,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.2,
+                "within_count": 46
+              },
+              {
+                "accuracy": 0.92,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.3,
+                "within_count": 46
+              },
+              {
+                "accuracy": 0.92,
+                "measured_count": 46,
+                "missing_count": 4,
+                "record_count": 50,
+                "threshold": 0.5,
+                "within_count": 46
+              }
+            ],
+            "record_count": 50,
+            "strict_accuracy": 0.92
+          }
+        },
+        "example_count": 50,
+        "target_area_ratio": {
+          "maximum": 0.018880208333333332,
+          "median": 0.0177001953125,
+          "minimum": 0.0177001953125
+        }
+      },
+      "small": {
+        "conditions": {
+          "marks": {
+            "correct_count": 50,
+            "curve": [
+              {
+                "accuracy": 0.06,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.0,
+                "within_count": 3
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.005,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.01,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.02,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.03,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.05,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.075,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.1,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.15,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.2,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.3,
+                "within_count": 50
+              },
+              {
+                "accuracy": 1.0,
+                "measured_count": 50,
+                "missing_count": 0,
+                "record_count": 50,
+                "threshold": 0.5,
+                "within_count": 50
+              }
+            ],
+            "record_count": 50,
+            "strict_accuracy": 1.0
+          },
+          "raw": {
+            "correct_count": 45,
+            "curve": [
+              {
+                "accuracy": 0.06,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.0,
+                "within_count": 3
+              },
+              {
+                "accuracy": 0.18,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.005,
+                "within_count": 9
+              },
+              {
+                "accuracy": 0.18,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.01,
+                "within_count": 9
+              },
+              {
+                "accuracy": 0.72,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.02,
+                "within_count": 36
+              },
+              {
+                "accuracy": 0.72,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.03,
+                "within_count": 36
+              },
+              {
+                "accuracy": 0.72,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.05,
+                "within_count": 36
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.075,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.1,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.15,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.2,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.3,
+                "within_count": 45
+              },
+              {
+                "accuracy": 0.9,
+                "measured_count": 45,
+                "missing_count": 5,
+                "record_count": 50,
+                "threshold": 0.5,
+                "within_count": 45
+              }
+            ],
+            "record_count": 50,
+            "strict_accuracy": 0.9
+          }
+        },
+        "example_count": 50,
+        "target_area_ratio": {
+          "maximum": 0.004324595133463542,
+          "median": 0.001667022705078125,
+          "minimum": 0.0016428629557291667
+        }
+      }
+    },
+    "comparison": "observed <= threshold",
+    "conditions": {
+      "marks": {
+        "correct_count": 100,
+        "curve": [
+          {
+            "accuracy": 0.43,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.0,
+            "within_count": 43
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.005,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.01,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.02,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.03,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.05,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.075,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.1,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.15,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.2,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.3,
+            "within_count": 100
+          },
+          {
+            "accuracy": 1.0,
+            "measured_count": 100,
+            "missing_count": 0,
+            "record_count": 100,
+            "threshold": 0.5,
+            "within_count": 100
+          }
+        ],
+        "record_count": 100,
+        "strict_accuracy": 1.0
+      },
+      "raw": {
+        "correct_count": 91,
+        "curve": [
+          {
+            "accuracy": 0.33,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.0,
+            "within_count": 33
+          },
+          {
+            "accuracy": 0.54,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.005,
+            "within_count": 54
+          },
+          {
+            "accuracy": 0.54,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.01,
+            "within_count": 54
+          },
+          {
+            "accuracy": 0.81,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.02,
+            "within_count": 81
+          },
+          {
+            "accuracy": 0.81,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.03,
+            "within_count": 81
+          },
+          {
+            "accuracy": 0.81,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.05,
+            "within_count": 81
+          },
+          {
+            "accuracy": 0.9,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.075,
+            "within_count": 90
+          },
+          {
+            "accuracy": 0.91,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.1,
+            "within_count": 91
+          },
+          {
+            "accuracy": 0.91,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.15,
+            "within_count": 91
+          },
+          {
+            "accuracy": 0.91,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.2,
+            "within_count": 91
+          },
+          {
+            "accuracy": 0.91,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.3,
+            "within_count": 91
+          },
+          {
+            "accuracy": 0.91,
+            "measured_count": 91,
+            "missing_count": 9,
+            "record_count": 100,
+            "threshold": 0.5,
+            "within_count": 91
+          }
+        ],
+        "record_count": 100,
+        "strict_accuracy": 0.91
+      }
+    },
+    "is_scored_benchmark_metric": false,
+    "method": "normalized-center-distance-at-or-below-threshold-v1",
+    "missing_distance_counted_as_incorrect": true,
+    "normalization": "screenshot diagonal",
+    "thresholds": [
+      0.0,
+      0.005,
+      0.01,
+      0.02,
+      0.03,
+      0.05,
+      0.075,
+      0.1,
+      0.15,
+      0.2,
+      0.3,
+      0.5
+    ]
+  },
+  "error_taxonomy": {
+    "all_manually_reviewed": false,
+    "category_counts": {
+      "invalid response format": 9
+    },
+    "error_record_count": 9,
+    "records": [
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0028-payment-terms-net-45",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0028-payment-terms-net-45-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0029-expedited-onboarding",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 426, 715, 445]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0029-expedited-onboarding-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0030-submit",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 469, 620, 503]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0030-submit-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0031-company-name",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 79, 1000, 109]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0031-company-name-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0032-contact-email",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 141, 1000, 171]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0032-contact-email-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0033-contact-phone",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 203, 1000, 233]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0033-contact-phone-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0035-country",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 327, 1000, 359]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0035-country-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0036-payment-terms-net-15",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[536, 391, 604, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0036-payment-terms-net-15-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      },
+      {
+        "categories": [
+          "invalid response format"
+        ],
+        "condition": "raw",
+        "example_id": "vendor-form-0038-payment-terms-net-45",
+        "inference": "Suggested from parser status.",
+        "observation": "parse_status=request_failure; point=None; target_bbox=[695, 391, 764, 410]; correct=False",
+        "review_image_path": "artifacts/grounding/gallery/errors/vendor-form-0038-payment-terms-net-45-raw.png",
+        "review_status": "pending_visual_review",
+        "schema_version": "pixelgym-grounding-error-review-v2"
+      }
+    ],
+    "review_status_counts": {
+      "pending_visual_review": 9
+    }
+  },
+  "latency": {
+    "all": {
+      "maximum_ms": 20466.25966602005,
+      "mean_ms": 3195.040445808554,
+      "median_ms": 2845.992499962449,
+      "minimum_ms": 752.9847910627723,
+      "missing_count": 0,
+      "observed_count": 200,
+      "record_count": 200,
+      "total_ms": 639008.0891617108
+    },
+    "marks": {
+      "maximum_ms": 7187.4297498725355,
+      "mean_ms": 3190.840755791869,
+      "median_ms": 2804.189874907024,
+      "minimum_ms": 2009.7383339889348,
+      "missing_count": 0,
+      "observed_count": 100,
+      "record_count": 100,
+      "total_ms": 319084.0755791869
+    },
+    "raw": {
+      "maximum_ms": 20466.25966602005,
+      "mean_ms": 3199.240135825239,
+      "median_ms": 2871.1246664170176,
+      "minimum_ms": 752.9847910627723,
+      "missing_count": 0,
+      "observed_count": 100,
+      "record_count": 100,
+      "total_ms": 319924.0135825239
+    }
+  },
+  "model": "google/gemini-3.7-flash",
+  "paired": {
+    "bootstrap_95_ci_percentage_points": [
+      4.0,
+      15.0
+    ],
+    "both_correct_count": 91,
+    "both_incorrect_count": 0,
+    "delta_percentage_points": 9.0,
+    "discordant_pair_count": 9,
+    "marks_only_correct_count": 9,
+    "mcnemar_exact_p_value": 0.00390625,
+    "raw_only_correct_count": 0
+  },
+  "parameters": {
+    "coordinate_rescale": "gemini-1000",
+    "seed": 20260809,
+    "temperature": 0
+  },
+  "per_example": [
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0001-company-name",
+      "marks": {
+        "cache_key": "e5fb616165ea5de7d4579c8a0262949766e1a90c2acc14e8e319642ac7096c31",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "27ba901436c79bdb43c231f7f042775a4ae5c303cf8f4b4f016e7b85afd746fb",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0002-contact-email",
+      "marks": {
+        "cache_key": "8c4f11b254cf080073f67f5f225b1efd29189ebf56817b5a6dd932331fec605c",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "88ea86d9173adf43d1d146a89ca1637a268472097a8c90cca328c0b5d0bfefcd",
+        "correct": true,
+        "normalized_center_distance": 0.0011048543456039805,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          155.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0003-contact-phone",
+      "marks": {
+        "cache_key": "d7c40e23f62dbe7cbbd569ac2a2af1ab1502b25a0d3f85789f8a1d6fc41d2fb5",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "ac8d1c56f97bdb056d9f8fbd47935aea4afedb0e1ee235733bbab209ba1b31db",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0004-tax-id",
+      "marks": {
+        "cache_key": "822aa26e817317e4e1fbd2d8d0ab0b6379a14b3cda923c13b30ef875b9524dee",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "495bea16bc392019957f587fb2b052e42629628cff6adcf560aa78308de0fb51",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0005-country",
+      "marks": {
+        "cache_key": "b465ceeef99ecfad96bbcf362e6aa35f0bc78540df2aa1fe81352eed4fda1e46",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "a7f856b4f9f6dec6cd3865896d8ee932b7804e7a7606cc8a682c0fed3ca31fe6",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 0
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0006-payment-terms-net-15",
+      "marks": {
+        "cache_key": "f46098fa74a55ed77e8c0123b40e571279c7b932a10aa536a5a6acaaaf8abd5a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          401.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fb99adbcbb2cda36850e4cef2023b9e15d82cf150359b18d9f19cd0d7f6c5a12",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0007-payment-terms-net-30",
+      "marks": {
+        "cache_key": "e7996aa2967029b0dc8bf44e3b4090e407ecbe9c0b38d58a267f26f0afbe9ef1",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "55f0ebcf30095fe4c23a9c5e82569b5b8ec70b54d7ff98e069cd5a47795ecde7",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          401.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0008-payment-terms-net-45",
+      "marks": {
+        "cache_key": "898694917daad31e1b5e5df6db58340bc4db1f23facd3c708dbe105362677d6e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4717e6516b08e34037cd6d68a3a7c1edd5528c23bb1c1c4f57f2e29ce264970a",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0009-expedited-onboarding",
+      "marks": {
+        "cache_key": "36d69b82a687a3150b55ae22a8366bbcdefc055206454a2928a10849df1f9816",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4f2bfd46654171b9950423aa271e5fc828c63e9719bee29f4cb24fdf621069dc",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0010-submit",
+      "marks": {
+        "cache_key": "425a2caaee3da82cfd009954f553adfa6814da8a4c15fe7725d77f345c89c9bb",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "353b1527e83c3628ad1dfc7e98efa5838657967c8d6795ce0521b5cd33d0f31f",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 1
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0011-company-name",
+      "marks": {
+        "cache_key": "e76adb98226d8cd81820f74e5b7ebf72fcc1e3e968fd16faa5f986e7d63676e9",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "3fd8ea7b8cda9ba8f5c09a89c1d493a8356896b8c70878e6bacc59e510c75f18",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0012-contact-email",
+      "marks": {
+        "cache_key": "d097c78dbfd59ea096c74b1087916d3d6d2d9cb86cc01a7bb1842e8aba86510c",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c6b33ef5f98fa677f63494d598b39bc37c3119cb652135dda78d3ec507a59963",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0013-contact-phone",
+      "marks": {
+        "cache_key": "a196758f7f96b28c6f485d4ea301b244a2bdc9350aa69b11e3dc8d6cb9873c69",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          219.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "3c3776dd1ada604629ae68add498dd7ca5fa75cd711e4bdfd3216c1e5c404202",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0014-tax-id",
+      "marks": {
+        "cache_key": "dca73a74659fba2751299181af873adf8435b41899e9afb064415cfdcff106ca",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6916b855417b9e23744becf4eeb50b5ab653133a8e4c2aa96a802864831c09d0",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0015-country",
+      "marks": {
+        "cache_key": "d89beba894033980f1e4110bda883bbd66ff167d82633e92c7a4ec4462ef279b",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "81c0f82b163241f7baab74a74eddf9f657759ae5b4f225732bb7f42ded58a117",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 2
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0016-payment-terms-net-15",
+      "marks": {
+        "cache_key": "fa549f041b305d7545b4622501c81aaab698c6851d337997b1961372f004c3b7",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6c2693217e054837f72f6a6d6dcfc28dd1d53e8514a02a4920acc227dfce253a",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0017-payment-terms-net-30",
+      "marks": {
+        "cache_key": "e382602056e1b6914c800450a1b4c720a0e26be38d68cc128e3ddf95fdad78e8",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "82c0eb0f49cbcaac8ededd63bf9e6c1546f06d9e1f8acf4a17f6972209df7f83",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0018-payment-terms-net-45",
+      "marks": {
+        "cache_key": "9df09243a16e7ebd9efdb93280e3d498e97c85cd86040f66823f50436c9cbe3e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "105ec699fdfe18d3c0eb75ff6f7c5e59a7d643888c4a23ce0335dcc096ba7d87",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0019-expedited-onboarding",
+      "marks": {
+        "cache_key": "16ca9ab8bafe8748af4ce77c7200deb6851e8ce530209d4a7e014d7b71cdb04f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5ddefd10bdf816c14844f181f1ce35ab9a4c8b3d040d84856b350091492a89e4",
+        "correct": true,
+        "normalized_center_distance": 0.06212042944077455,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          434.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0020-submit",
+      "marks": {
+        "cache_key": "bdde8ad913eb3c662c1f1729604b94aa10af223f6c746453e7a892794d5bacc9",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "ba3ae12f387c89a0b18087e36b3429e48b01e81cf7c7605ccd8057cb73faa085",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 3
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0021-company-name",
+      "marks": {
+        "cache_key": "dd365c667a7218fe0208ab31189927b843f67ed91463ddcfde462ee816695e28",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "78810a5de0f11397ceb6e9803c5ed43b8d917b54bcabf9377ef32090d8eeb18a",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0022-contact-email",
+      "marks": {
+        "cache_key": "64b078bbb07a5c87166116070137ea24de483a2aecf77710d85fac6f66ff17d1",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "e28b0c754ac072926f713a7c5e93ae1ab685f1af3ac79348704f189eaa5b342c",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0023-contact-phone",
+      "marks": {
+        "cache_key": "6e7fbdad4c1d9e14caa495cc521fe6fdda3d9bd5481f5dff7c874eb1d5827240",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bf0700bebacd3a95f6c76d16d8223e16b581e4e4781f9db432cecc14c2789336",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0024-tax-id",
+      "marks": {
+        "cache_key": "bbd0701c90fb44aff65fe6ce4ff7db48f0b8b2d4f2c656dbd114af4ba3835745",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "e47b130e2e5d32fca978b1f868ea403114416f28e65c352cc4f0c8275d0022a1",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0025-country",
+      "marks": {
+        "cache_key": "456551a32e84f56bb3b3536f53c2ee43937ef675d247ae96de6606703f983b0e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c015484f948d4f4c388ac5696011d0a4212d901870c8ab93fd04f28f8231ceb3",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 4
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0026-payment-terms-net-15",
+      "marks": {
+        "cache_key": "8348e23c61bd1b1361d8b6d68249f8559bbabe8615cb9174244e8a3604f0bb71",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0387346ef368d8ff6c96c5c4c71a50f117be4ffdc461868c8972c4cbe27b8491",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0027-payment-terms-net-30",
+      "marks": {
+        "cache_key": "3946c0be7cae4d0ef0e46daf0df40e730afc1ec696d4a055cf645988f738bbbd",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0012352647110032732,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          399.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c3d0427c121791912b87410a430155ccf81e22a5fbb4cf606c151f83a5a6990c",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          401.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0028-payment-terms-net-45",
+      "marks": {
+        "cache_key": "340b46f0ed40af185f99c0b700c563831267c31ad31118407668ca0d9ac54e56",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "41eb9c563b81c147665d1df9bd3959adf75246dc50c40252eca05de3c94d791a",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0029-expedited-onboarding",
+      "marks": {
+        "cache_key": "35b8c62e1708fb31741694fb5edf5d075dec00d2d408f47cc1779b28c153f87a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          625.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "81f8235d6d06790e4af014a553f8abcd87deebdccd934a4b7127391f3d4111b4",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0030-submit",
+      "marks": {
+        "cache_key": "b02b357e10ad205eebeb1d470923376762b1896cc060ecfe5e61b2ba9fd45d8a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "653f90e18d5f545c8b23e2679f025aa52e8deb10ffe971a19647aaf3077be265",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 5
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0031-company-name",
+      "marks": {
+        "cache_key": "be2bd6868af6b31de56d5d6b7277a2b04a7ffb5d7845f012f10f254aa020c543",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "b382c996d88b58525ebcb2d8421cc1091e7d2e57f51af169a45bb8007a422fd2",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0032-contact-email",
+      "marks": {
+        "cache_key": "4f2bc8639b091518421268e1f1f1279dc9a46f8503b04fe23acd5d66d21ddda2",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "cdeccd07df72b1105d4e8372483ed811a383b712379bac1c358a5b30bfcfec7c",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0033-contact-phone",
+      "marks": {
+        "cache_key": "6cb11a6d218447074d7ce24e5d24e40d9e078150eba16412d082e9349a5656f5",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "7f75224ae0e8fa88dfcfded7e13bd9c90c3ec55c7f6167b0b3e424d02601899d",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0034-tax-id",
+      "marks": {
+        "cache_key": "1d11a8ca27fe983d6050c6b46c2539c94d48273cba2216334fd099ef0a3366f8",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "93893bcded4923ac0d6d1ba8ae1b1fb8ead85a022a13310cc5742c55a288ad79",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0035-country",
+      "marks": {
+        "cache_key": "21414deb9df9766d1af99c954b5b0139f915799b35dd3b7d822697146bf50f3f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "e2e2e5d4ce60444e036b58b67cecb44d70379fb98ab025969666bfda0b6653c7",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 6
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0036-payment-terms-net-15",
+      "marks": {
+        "cache_key": "7fb5a18dfaaafa7787d5574550652a8159a8cbe67bc1377ffc7fd53325c6c76f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "69bd1aa9171456aa57b9b02ecaf3c28e5400a570060e092bda45b08b5460b8ab",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0037-payment-terms-net-30",
+      "marks": {
+        "cache_key": "1d07c1a86079596b8e28b9fd025d16d0ea0d3999955b9fb915796fd075cbd94f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1fe5c0519900820a415e4056dcc2d8d7b1739b92d3a0e8f71fb8d761858d9ffc",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0038-payment-terms-net-45",
+      "marks": {
+        "cache_key": "abceaf6f64052c2dae8896b3f5c8241838ed5df4ffff253efa179071896776b9",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          730.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 1,
+      "raw": {
+        "cache_key": "833d6d832db068a5526e2f31071cf714d677a4d86af659ed0861a540e5070b02",
+        "correct": false,
+        "normalized_center_distance": null,
+        "parse_status": "request_failure",
+        "point": null
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0039-expedited-onboarding",
+      "marks": {
+        "cache_key": "2aa0acc00f330992ffb26cd3a229e8ca7abc2dbb5b2f8d36f671c4834caa14dd",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5e8320c647668d70467fa4dc6e001fe7567a9ecdf83355c7d1a8443e6184d3be",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0040-submit",
+      "marks": {
+        "cache_key": "c1e0b28755e917792d5ce3b3174a8ab3c89b2d20c8419f6f84e638c124002070",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "df2cf1dc7b02330bf3b15b7c669068c4c3d0150c3c1f14ab541ef6aafce83722",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 7
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0041-company-name",
+      "marks": {
+        "cache_key": "839ed4c5553579814d1d7ae7a5fde18a73b85ca22612a202a2dd30fe563b5427",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          93.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fe5f39cb2116c847899b6e06f520d6b70486c8ba8242d0a74a831d33fc3f26cb",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0042-contact-email",
+      "marks": {
+        "cache_key": "9197e55fb41595c62b0dddd14dc638dc23e6ccbd36944a199b715080c9af6f75",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "ea38f24d9bd8d9550ab660906524e91920d3de7756e9a44999f1753f89afa754",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0043-contact-phone",
+      "marks": {
+        "cache_key": "2424b41f1ecdc9afe7fe4d341711942167aa9551084c78354961f4c757c8b3d5",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "e38eb779fcd208a19edf29e2f83ae1fee3dfba721dc360915358e0cc3f6af955",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0044-tax-id",
+      "marks": {
+        "cache_key": "7cdf53c79d84e896fbc3d249f5eea48cfcf0c67fc8664da2d3ecd1b3df52f5ef",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "94df798039f903bb41e967fd334193609e7840c0642a30617d87e2dcc6a13188",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0045-country",
+      "marks": {
+        "cache_key": "22482bf8469f402cf7b9413bb25d246ba2beeabfd10bd2823760040670d27dcf",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "3ec82495a9360990a01350d6d54c3d0ad6c46a09cadae48c8ead908e3c3b5c48",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 8
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0046-payment-terms-net-15",
+      "marks": {
+        "cache_key": "3314191fda3b0999c95abc5145d1c7f47aae79ca0ee4d09555024e8c4876cdba",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "31bf1b7e0ba00210f51a0e5408567092737e41ee7c9a5d4687d78eed54cb2a9e",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0047-payment-terms-net-30",
+      "marks": {
+        "cache_key": "03fd2b195564b18b31abe1d08aa3abe245e27b3dd4946e47164e64ef98a83a6d",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "efc0d2ba633c55775a2c495be78375187857dd472480860ab82d6bad952db3ba",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0048-payment-terms-net-45",
+      "marks": {
+        "cache_key": "a3a591ef92cf1ee8acadcbb2333159a85db24f6b3fd0ba6e3818e7624f0878ab",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "29d7226d589d3f5491ca5b2b2b92f703cf14d65ac3fe6ea5ab6ffda56b1e2181",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0049-expedited-onboarding",
+      "marks": {
+        "cache_key": "39d6a26a7f998f1aac2b5ea9c09405afc07ee029ec6fda551a14057e5faee94d",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          625.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0c3e5b46c6cbbc9ed6fa8b173ae8c049915d450398290a51f3f9f94b380cc8f7",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0050-submit",
+      "marks": {
+        "cache_key": "1de343543d6a0551e2a097bbf624ee04eba93a3ebb924d083828f53ea44d2a95",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "195ff3539d9618c0d2a4af360af087329b7b109f80eb594465129d9133de800a",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 9
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0051-company-name",
+      "marks": {
+        "cache_key": "edb3c354c3460f87b954b81e9acd11d3a666f9dc903d73dff348e479cd13d75b",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "79b74d59169584807a0dcb78c49dc45d8763d48471516d4c869963337c1a8977",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0052-contact-email",
+      "marks": {
+        "cache_key": "5a4889bb7065f44955fcdbaa8b36c01e0e714afc0c69469460253a10e183dc79",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4306d41c51ede82a1561b42218fb7a5933e58f4dd5aed789db1711581cbcb3fd",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0053-contact-phone",
+      "marks": {
+        "cache_key": "0589e5122744cf18cca137bbba994fee2f6e65e431d58387a9c6a2ebf97735ef",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "89e142d95542fac9c6c383d6ea2429f6a84aca382f18816a8a49dd8860974444",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0054-tax-id",
+      "marks": {
+        "cache_key": "7183c3220adb9393f0d6ceabe32c091b152c3d51722e17f374d1c7430482662a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bce08916b29fd12e2efe53be7384779afc94f17f162908a61e259af793cfb520",
+        "correct": true,
+        "normalized_center_distance": 0.0017469281074217109,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          278.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0055-country",
+      "marks": {
+        "cache_key": "07a7d57a48cd8540637fa03bc213906307aa7fcb432f5e73fe9a8ac6f4ec0685",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4b9f0acff3373a430b49ea900bf3085821494aa2c0487e8cc2ff3e18e94f48cd",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 10
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0056-payment-terms-net-15",
+      "marks": {
+        "cache_key": "8bef61263f995b3896e8936b756461c484cc0c71049f43ae7eaa412f5c8dede3",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "60f403328ab6d4d087129bea328b89abaa892b6ecc48822efc7515130605d0c3",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0057-payment-terms-net-30",
+      "marks": {
+        "cache_key": "0323dca88abecc7ee3dd1e86a791a12f6acb2b7408fa12d333aae6c177e1c049",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "60f8faa5fa2ad1b4a968e4e96d843f1f9f69a2b979461d842ce3cbb4d5e82e8b",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0058-payment-terms-net-45",
+      "marks": {
+        "cache_key": "8bf538c997f1da2f42883c1b4da089df28c9264f2dbed3971923338d2c40e19f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "7769d318fc9ec8f2f226c1b9c341b7c2fb1c3ce9924227ab2172967f987e17ad",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0059-expedited-onboarding",
+      "marks": {
+        "cache_key": "4a287ca42dc8bce7b7cc08635b1683f76fd86722149fc15d0108d150a23144b3",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fa9a6eb2c3c93ecfed14b97269f56b979dfdfa5820ff9eb415b7d3ce83ad2c17",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0060-submit",
+      "marks": {
+        "cache_key": "bcb7fc245b2056a57916244330a8ffe2e923e68d2a317ff949e639175c62b985",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "40022aa0bc6e355517525b654cd395added29cc30d5f7c1718a78aa9f2a633fe",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 11
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0061-company-name",
+      "marks": {
+        "cache_key": "e5fbe2982b75c359590856b3433d3039e6cf2601e9436a6ce107f86ffaf05eb9",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "7316b8ec8bf70ed15f25d4b95ecd6bb5f0b693241be49f7589402419a576e513",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0062-contact-email",
+      "marks": {
+        "cache_key": "84a9fa0ae079f3e57b2ba65c424948100ec393423dd65ad8a2f1b2c262e13143",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5af4b1cc202911846702cb09afa150e2e1e7ee3624b89548e5833fda61f1bcdf",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0063-contact-phone",
+      "marks": {
+        "cache_key": "87982ba1bc05ac48c0e8b1f3d16fb08fc8ec8dc907f234842d3e0333ec81a2f8",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f9a382f168a79384758de6770748e5a56ed517a32eb27c8191170f2be705a358",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0064-tax-id",
+      "marks": {
+        "cache_key": "2b5405e4956b356a95782edb0f7499137e54d50d1d9e3bbbe07a1e3bd2e8a37b",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bff4ba1ce63d404c8fb5f6687592c5dd1f8ff6526589cae2ccf5ee0d1f99b919",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0065-country",
+      "marks": {
+        "cache_key": "ff6ed8e8a75622a566a70d389689e001efb6cf52b762ade51d9b7af53e694918",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fc8ad2cd9354e7b0cdd87e184ceaee07982a44070dc6ab3bbbcf2257e50c6ee5",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 12
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0066-payment-terms-net-15",
+      "marks": {
+        "cache_key": "31f71a8272f607a1453542e3fa42bf482b0e0be113e5a5d0f2c3bf9e26c5cbc2",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "92d78829fc845a69a8cf2b47439e92ae2a1fb63ad12aea959138ae1d1fa6fab0",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0067-payment-terms-net-30",
+      "marks": {
+        "cache_key": "9a21d410729781aff9b5c50ec1b58c031df3f60feebf3679054e5e6e091daed7",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "4e04cde93dbcc7345b077810b45ac836b96bf993bcb290ce397671361589558e",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0068-payment-terms-net-45",
+      "marks": {
+        "cache_key": "d57972833f31451345f0511fed89bed0ae5785ff0355601da747ae5395c43273",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fa4b6a188a944f3c1bdb39ce63a9e2ce4d8c1a684e5ad46fd09d6fe724976726",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0069-expedited-onboarding",
+      "marks": {
+        "cache_key": "eef4e52e2446ceecc48287e73aec6c9a5ef2d3f15b23218add6486b5d38c5994",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "01e41db95beacbf5cdb447b9634cef13371cfd2a061353025b4e6a02e36b9171",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0070-submit",
+      "marks": {
+        "cache_key": "4cedcc86446a2695788f2daee76d3f9ef33f39c822c9686e24ce9a7a368afb1e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "942871772fa544e32e867b24568558a42c5cc35b00c2caf0696001c0430b7303",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 13
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0071-company-name",
+      "marks": {
+        "cache_key": "2e20cd329f53101de5807b80a8a0b730c9fe7b3c4e34272657c7664b6110fe7e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "93a615b9ec1911569dc54af1a91fd0871f41b9f561f9b2dd4653d200ece41673",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0072-contact-email",
+      "marks": {
+        "cache_key": "8d9e997cee16ad9bd32dea253d7722a852b060cadc9f5fbe38450031e198d14a",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          157.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "acecf54371d8ef92335416fd3af4060bffda572f923fadae2e65969413920af3",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0073-contact-phone",
+      "marks": {
+        "cache_key": "f2e667792c2b4d7f5e5095b0a880769fa567495c7a221704402c7feaedd1e0e7",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "e3745436db38bcdacf7aae5e99ac18a9a593041c5d5fea4371bc31ae560bc831",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0074-tax-id",
+      "marks": {
+        "cache_key": "5ab3ce46f8a7e2c99d4dbdb14c1203b37d18957242d5f9f75fc0b594fd0990c2",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bb013e47bed781e9903ac397040ba93115c83b64cd6d5a6e09fa9c8ccd13dc41",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0075-country",
+      "marks": {
+        "cache_key": "b248b2b6520f128bb2b354891e5fc1faf8c70afac5f9fa7874fa3a2e2aa80f21",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0023c2f914cc8ecfe1118b158dc5d885cbc2df0cd596467208579260bbb2fba9",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 14
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0076-payment-terms-net-15",
+      "marks": {
+        "cache_key": "df163ef972cc7b1558a60144ca09276e58924310af5f7bde6c9f33f29c14f439",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          401.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "d2205fc529d1c8272a3749aaf5466597a247d52be433fb31c225b562babc0af2",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0077-payment-terms-net-30",
+      "marks": {
+        "cache_key": "3342b6cba99de4da7bf48a5d5b14eab7a7415c19cc0caec25f2a4d50a20cb1ec",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "7abcde5f4f40e3139ec214b8737fbbec910dff797054999d405351add7efd95f",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0078-payment-terms-net-45",
+      "marks": {
+        "cache_key": "1c4636f388689daeeb68d8b579b276a17abbeb892bffa96ed1cdeef61970a27f",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "0d13f9b52e2ffc90aeaa2e29f80e866e49d1903d08e197c5a54ea171e7a94ff4",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0079-expedited-onboarding",
+      "marks": {
+        "cache_key": "491063449e07d1a2cc811cb8517d45d955654b0ab8fd567b69a1081866161c19",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "5e15f02ae0725492061b7df333c5857f2e96c47e05680b7cfe0cc883cc18ea0d",
+        "correct": true,
+        "normalized_center_distance": 0.06289183810941806,
+        "parse_status": "parsed",
+        "point": [
+          545.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0080-submit",
+      "marks": {
+        "cache_key": "91f5734839eb21bb53e191f645bf7a98990f3617411ce536e19069af948a2f9c",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "99e928b9ac5710262a1dc9bf5206e2b51701b24fa3705f231cc45b04038889de",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 15
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0081-company-name",
+      "marks": {
+        "cache_key": "d738a0dec084a9281772a1dde97bec01bcc92dc6dedf6cd91c29d3ab6cbad0f1",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "65d852a2b6c8d8e50ee34cb75015b97dd9985acb0deba708bfda304ed93a6d08",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0082-contact-email",
+      "marks": {
+        "cache_key": "e3734fb46d8c7e017678541a625c32992b5353d288befb69b786774dc36036e2",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b950915c0164914ea57234d64a1f5aa7348a1ddd05f932c2ffdc6bc693df4fb0",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0083-contact-phone",
+      "marks": {
+        "cache_key": "cad167504b62ec0c0e5bf8547f065833f5bc35b581b929782219ba4dd7af4b45",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "a4f763a615acf872154c1513c74bcf46cab23fffa2712155d865ce8abb685ead",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0084-tax-id",
+      "marks": {
+        "cache_key": "0654e2c41bc30abc9ee3f6cb3fbc17e39b1edef5943c2a3561e55d44ff440728",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          280.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "38ec3fc8cfad203c27a4df580616c22e91252362d8762768283cc25631f841ac",
+        "correct": true,
+        "normalized_center_distance": 0.0796875,
+        "parse_status": "parsed",
+        "point": [
+          666.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0085-country",
+      "marks": {
+        "cache_key": "b4420e90292be916e15f8a40baf21b61389c96b68d7cb478312f00ba23194492",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c8cdb714c0db985801e1106c67272b42909686ce26a7f9976343d0dabea38b8a",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 16
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0086-payment-terms-net-15",
+      "marks": {
+        "cache_key": "fa546e1722b47bb668996ae3517a661c877c4eb3ea5f99f628c6827de168056b",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "22dd741003a44006f6c6ad505e8a9ef30f5a56457b9223f1fa120912ba19e580",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0087-payment-terms-net-30",
+      "marks": {
+        "cache_key": "43083fae6e3ea3ade5c573b75b92025322dc9af98d1ed2bb89a41c82da83f9a1",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "63122ef590e48991c717299083c9f8e101266320598439f4c5adc84bcc236c5e",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0088-payment-terms-net-45",
+      "marks": {
+        "cache_key": "6c2c87a84116ca106c1ad57534002fab1ed2b0a6c5f670f9a46c761e7ab4d6e6",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          401.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "bb6a433c128d4c9a3c56cf18779546574a3f943a1e8cdc54c7ece8fa1cfb3c0c",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0089-expedited-onboarding",
+      "marks": {
+        "cache_key": "4a5011e507459fd15f6ea48cc3c8a5429a14cbacef63d781257155ae04732e3d",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          626.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "b0c96e9f78b03f227a5393eef81145d06fa35e4a659182d6ea7b629609c77210",
+        "correct": true,
+        "normalized_center_distance": 0.06212042944077455,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          434.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0090-submit",
+      "marks": {
+        "cache_key": "550e855d9faa9eb2d805d066bd32c22a2a14061594e37c415cbc0284f38bdabd",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          486.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "569713305cb2cd9a5a27cb8baea6d8e1ff77d5fa8b9eb311a86ec2888ee944dd",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 17
+    },
+    {
+      "bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0091-company-name",
+      "marks": {
+        "cache_key": "4757e5012368dd7b5b1362235554e526da884c0a2ef14898cbdc5568d8bd2038",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          94.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "df0ddf2424f3bb5e2b657e3c648ff5909fb848f77a04d0b6022350c938d083a3",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          94.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "company_name",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0092-contact-email",
+      "marks": {
+        "cache_key": "47f4455d0a6150d65f5cfaf0ebd38dcde60828b351c7c8ce2cdacc56569b3359",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          156.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "6b1d743f9156735ae7e5594f4af9abbb3f670ac651b20c85a7191be187e8b1e0",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          767.0,
+          156.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_email",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0093-contact-phone",
+      "marks": {
+        "cache_key": "b9930a60549563617aa0ea24d91845ef1e9f095256c41f5f7420ba63d35ef709",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          219.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "f47f795cae3b6614bf38cba96fd7a96c8be421a527d3a98f338d9b441359cf98",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          218.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "contact_phone",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        265,
+        1000,
+        295
+      ],
+      "element_type": "text_input",
+      "example_id": "vendor-form-0094-tax-id",
+      "marks": {
+        "cache_key": "5987efa7d54ac0e99291f7d21ff1a951e42a04024c2540dd9e2536509dfa5d66",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          279.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "32cb5170729221b6002b01c8bc24498050854b2730d661dd9370334cdfb79780",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          280.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.0177001953125,
+      "target_id": "tax_id",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        327,
+        1000,
+        359
+      ],
+      "element_type": "select",
+      "example_id": "vendor-form-0095-country",
+      "marks": {
+        "cache_key": "2aa75f8a6a17d5dfc445c82fbf7e98286bc6cd782ff9c7ba3ccbb0028bd315be",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "c2892706d3888cae8c3b953cf4530e75ed201d44536a1bd5a98de66253786e64",
+        "correct": true,
+        "normalized_center_distance": 0.0,
+        "parse_status": "parsed",
+        "point": [
+          768.0,
+          343.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.018880208333333332,
+      "target_id": "country",
+      "target_size": "medium",
+      "task_seed": 18
+    },
+    {
+      "bbox": [
+        536,
+        391,
+        604,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0096-payment-terms-net-15",
+      "marks": {
+        "cache_key": "eda9defc41a58938962948fba654e64f6d441bd19bcf444767d4ad7eb04fea01",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0008734640537108554,
+        "parse_status": "parsed",
+        "point": [
+          569.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "fd839aaa04961a52f39e79a9c29ddc5e55d83e05d36ea3eed97a7ade032d0dba",
+        "correct": true,
+        "normalized_center_distance": 0.018754068568996567,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          400.0
+        ]
+      },
+      "screen_state": "initial",
+      "target_area_ratio": 0.0016428629557291667,
+      "target_id": "payment_terms_net_15",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        615,
+        391,
+        684,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0097-payment-terms-net-30",
+      "marks": {
+        "cache_key": "3fb5635f2b091efee5ebe73aa8883b7796f72bdd996b88d10afc9eb030183e1e",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          649.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "640bb7ca04ed2308256727eaa756e9e2331e729cc55be9a988e1d054968fa6c2",
+        "correct": true,
+        "normalized_center_distance": 0.01758246474207328,
+        "parse_status": "parsed",
+        "point": [
+          627.0,
+          400.0
+        ]
+      },
+      "screen_state": "text_field_focused",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_30",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        695,
+        391,
+        764,
+        410
+      ],
+      "element_type": "radio",
+      "example_id": "vendor-form-0098-payment-terms-net-45",
+      "marks": {
+        "cache_key": "70de91e9f6502e77527812cf11f104c4de91bd1b6b928ca2330d8d8134b51df7",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          729.0,
+          400.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "1b4b3df60a1e11f4373b29e0d5944ac28d0ed01a48a48118217a0d0d1690ab76",
+        "correct": true,
+        "normalized_center_distance": 0.01680141653719263,
+        "parse_status": "parsed",
+        "point": [
+          708.0,
+          400.0
+        ]
+      },
+      "screen_state": "validation_error",
+      "target_area_ratio": 0.001667022705078125,
+      "target_id": "payment_terms_net_45",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        536,
+        426,
+        715,
+        445
+      ],
+      "element_type": "checkbox",
+      "example_id": "vendor-form-0099-expedited-onboarding",
+      "marks": {
+        "cache_key": "a0690a9f665786c9ca4d4ebb8e8d52215c5caa70de5a3a06344608bb0c6e7c88",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.0005524271728019902,
+        "parse_status": "parsed",
+        "point": [
+          625.0,
+          435.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "86ff052fa2abf6eb0c90aba858a15763a523b427c3d03348b640a08b6543e453",
+        "correct": true,
+        "normalized_center_distance": 0.06211060336835611,
+        "parse_status": "parsed",
+        "point": [
+          546.0,
+          435.0
+        ]
+      },
+      "screen_state": "partially_completed",
+      "target_area_ratio": 0.004324595133463542,
+      "target_id": "expedited_onboarding",
+      "target_size": "small",
+      "task_seed": 19
+    },
+    {
+      "bbox": [
+        536,
+        469,
+        620,
+        503
+      ],
+      "element_type": "button",
+      "example_id": "vendor-form-0100-submit",
+      "marks": {
+        "cache_key": "90638e2c141c4a66d3823080060c6cd7e2ef13b3a0316eb7a84a58056e7c5418",
+        "correct": true,
+        "mark_id": null,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ],
+        "target_proposed": true
+      },
+      "paired_difference": 0,
+      "raw": {
+        "cache_key": "2132de0ee0329ee9670ee0decfc985ce51d0bf767735875209201919fc9741ad",
+        "correct": true,
+        "normalized_center_distance": 0.00078125,
+        "parse_status": "parsed",
+        "point": [
+          578.0,
+          485.0
+        ]
+      },
+      "screen_state": "completed_review",
+      "target_area_ratio": 0.003631591796875,
+      "target_id": "submit",
+      "target_size": "small",
+      "task_seed": 19
+    }
+  ],
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v1",
+  "provider": "openrouter",
+  "schema_version": "pixelgym-grounding-results-v3",
+  "set_of_marks": {
+    "conditional_selection_accuracy": 1.0,
+    "conditional_selection_correct_count": 100,
+    "conditional_selection_total_count": 100,
+    "proposal_coverage": 1.0,
+    "proposal_covered_count": 100,
+    "proposal_total_count": 100
+  },
+  "slices": {
+    "element_type": {
+      "button": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 10.0,
+        "raw_accuracy": 0.9,
+        "raw_correct_count": 9
+      },
+      "checkbox": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 10.0,
+        "raw_accuracy": 0.9,
+        "raw_correct_count": 9
+      },
+      "radio": {
+        "example_count": 30,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 30,
+        "paired_delta_percentage_points": 10.0,
+        "raw_accuracy": 0.9,
+        "raw_correct_count": 27
+      },
+      "select": {
+        "example_count": 10,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 10,
+        "paired_delta_percentage_points": 10.0,
+        "raw_accuracy": 0.9,
+        "raw_correct_count": 9
+      },
+      "text_input": {
+        "example_count": 40,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 40,
+        "paired_delta_percentage_points": 7.5,
+        "raw_accuracy": 0.925,
+        "raw_correct_count": 37
+      }
+    },
+    "target_size": {
+      "medium": {
+        "example_count": 50,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 50,
+        "paired_delta_percentage_points": 8.0,
+        "raw_accuracy": 0.92,
+        "raw_correct_count": 46
+      },
+      "small": {
+        "example_count": 50,
+        "marks_accuracy": 1.0,
+        "marks_correct_count": 50,
+        "paired_delta_percentage_points": 10.0,
+        "raw_accuracy": 0.9,
+        "raw_correct_count": 45
+      }
+    }
+  },
+  "usage_totals": {
+    "completion_tokens": 50076,
+    "cost": 0.35210549999999985,
+    "prompt_tokens": 219094,
+    "total_tokens": 269170
+  }
+}

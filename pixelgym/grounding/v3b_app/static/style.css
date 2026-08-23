@@ -1,0 +1,231 @@
+/* v3b variant: denser layout, smaller controls, partial occlusion.
+   Fixed layout, no animation/transition rules: pixel frames must be stable. */
+
+@font-face {
+  font-family: "PixelGym Sans";
+  src: url("/static/fonts/DejaVuSans.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "PixelGym Sans";
+  src: url("/static/fonts/DejaVuSans-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 1024px;
+  height: 768px;
+  overflow: hidden;
+  background: #f4f5f7;
+  font-family: "PixelGym Sans";
+  font-size: 11px;
+  color: #1c1e21;
+}
+
+/* ── Sticky header (occluder, 36px tall) ── */
+
+#app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1024px;
+  height: 36px;
+  background: #2c3e50;
+  color: #ecf0f1;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  z-index: 100;
+}
+
+.header-logo {
+  font-weight: bold;
+  font-size: 13px;
+  margin-right: 24px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 2px;
+}
+
+.nav-link {
+  color: #bdc3c7;
+  text-decoration: none;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+.nav-link.active {
+  background: #34495e;
+  color: #ffffff;
+}
+
+/* ── Sidebar drawer (occluder, 140px wide) ── */
+
+#sidebar {
+  position: fixed;
+  top: 36px;
+  left: 0;
+  width: 140px;
+  height: 732px;
+  background: #ecf0f1;
+  border-right: 1px solid #bdc3c7;
+  padding: 8px 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 6px 12px;
+  color: #2c3e50;
+  text-decoration: none;
+  font-size: 11px;
+}
+
+.sidebar-link.active {
+  background: #d5dbdf;
+  font-weight: bold;
+}
+
+/* ── Main content (form area, offset by header + sidebar) ── */
+
+#main-content {
+  position: absolute;
+  top: 36px;
+  left: 140px;
+  width: 884px;
+  height: 732px;
+  padding: 10px 16px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+#main-content h1 {
+  font-size: 13px;
+  margin: 0 0 8px 0;
+}
+
+/* ── Form sections ── */
+
+.form-section {
+  border: 1px solid #dcdfe3;
+  padding: 6px 10px 4px;
+  margin-bottom: 6px;
+}
+
+.form-section legend {
+  font-size: 10px;
+  font-weight: bold;
+  color: #5a6270;
+  padding: 0 4px;
+}
+
+.field-row {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-row label {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 10px;
+  width: 120px;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* ── Smaller controls (18px height) ── */
+
+input[type="text"],
+input[type="email"],
+select {
+  flex: 1;
+  height: 18px;
+  padding: 1px 4px;
+  border: 1px solid #94a0b3;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 10px;
+  caret-color: transparent;
+}
+
+.radio-group {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.radio-group label,
+.checkbox-row label {
+  display: inline-flex;
+  align-items: center;
+  font-weight: normal;
+  font-size: 10px;
+  gap: 2px;
+}
+
+.checkbox-row label {
+  width: auto;
+  text-align: left;
+}
+
+.radio-group input[type="radio"],
+.checkbox-row input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+}
+
+/* ── Form actions ── */
+
+.form-actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.form-actions button {
+  height: 22px;
+  padding: 2px 12px;
+  border: 1px solid #94a0b3;
+  background: #eef1f6;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: default;
+}
+
+#submit-button {
+  border-color: #2f6f4f;
+  background: #3c8c5f;
+  color: #ffffff;
+}
+
+#cancel-button {
+  border-color: #a04040;
+  background: #eef1f6;
+  color: #a04040;
+}
+
+#submit-status {
+  margin-top: 4px;
+  min-height: 14px;
+  font-size: 10px;
+}

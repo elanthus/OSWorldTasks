@@ -1,0 +1,81 @@
+{
+  "browser_engine": "chromium",
+  "browser_version": "151.0.7922.34",
+  "calibration_label": "CALIBRATION",
+  "calibration_seeds": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "candidate_record_count": 20,
+  "candidates_path": "artifacts/grounding-v3b-calibration-candidates.jsonl",
+  "capture_version": "pixelgym-browser-capture-v1",
+  "contact_sheet_path": "artifacts/grounding-v3b/contact-sheet.png",
+  "dataset_path": "artifacts/grounding-v3b-calibration-dataset.jsonl",
+  "example_count": 20,
+  "expected_candidate_count": 38,
+  "marks_contact_sheet_path": "artifacts/grounding-v3b/marks-contact-sheet.png",
+  "overlays_path": "artifacts/grounding-v3b-calibration-overlays.jsonl",
+  "protocol_version": "pixelgym-grounding-v3b",
+  "repeatability": {
+    "byte_identical_file_count": 20,
+    "candidate_aggregate_sha256": "62171a4066f9556b82ed553a4d7238417f68869e413de5690087c3a8ca592eff",
+    "candidate_label": "v3b-calibration-pass-2",
+    "comparison": "bitwise PNG bytes and decoded RGBA pixels",
+    "differing_file_count": 0,
+    "differing_pixel_bbox_xyxy": null,
+    "differing_pixel_count": 0,
+    "file_count": 20,
+    "mask_applied": false,
+    "max_channel_delta": 0,
+    "reference_aggregate_sha256": "62171a4066f9556b82ed553a4d7238417f68869e413de5690087c3a8ca592eff",
+    "reference_label": "v3b-calibration-pass-1",
+    "schema_version": "pixelgym-grounding-repeatability-v2",
+    "tolerance_applied": false
+  },
+  "schema_version": "pixelgym-grounding-v3b-capture-v1",
+  "screen_state_counts": {
+    "completed_review": 4,
+    "initial": 4,
+    "partially_completed": 4,
+    "text_field_focused": 4,
+    "validation_error": 4
+  },
+  "screen_states": [
+    "initial",
+    "text_field_focused",
+    "validation_error",
+    "partially_completed",
+    "completed_review"
+  ],
+  "seed_state_cell_count": 20,
+  "source_sha256": {
+    "pixelgym/grounding/calibration_v3b.py": "c94a8683813e2b950a69238d8c1712f4b9587b872f8f0c6d75379007d775ef08",
+    "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
+    "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
+    "pixelgym/grounding/overlays.py": "9f9e0e7f1073ba9ad4673a75e137d9fe05134e61fb84d745f4ddc92f55ff6829",
+    "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+    "pixelgym/grounding/v3_server.py": "1a7be4ce74edd721dda02f5b0a5ab2f9f2a06e532282a0f18121528b568ce751",
+    "pixelgym/grounding/v3b_app/static/app.js": "0d896c3e8be21b3904a95bf199a5ff7d71d73d0999e7009be433f4567ee8beaa",
+    "pixelgym/grounding/v3b_app/static/fonts/DejaVuSans-Bold.ttf": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724",
+    "pixelgym/grounding/v3b_app/static/fonts/DejaVuSans.ttf": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954",
+    "pixelgym/grounding/v3b_app/static/fonts/LICENSE-DejaVu.txt": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
+    "pixelgym/grounding/v3b_app/static/index.html": "9ce74ce53161adcc966fab1b5687491131d0d63e0868494b21649b6b1a4317f3",
+    "pixelgym/grounding/v3b_app/static/style.css": "372feaece7feedd402505b569fccb2a102aea1f0f116af29d4b8cd4838d9c0bf",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "ef1711de4a41ab6a73604d76a3b0bd590b5d98c8eda03944a72712d4e69cb37e",
+    "pixelgym/tasks/vendor_form/generator.py": "4f8b72195b9e09fd2f014d059c1de154901c978b5e33577ce5c077a406c37126",
+    "pixelgym/tasks/vendor_form/ui.py": "03c4a8eef85b71e4902fbbf7eb617605f534ce5195f979c3c5e8b43b9ec58a29"
+  },
+  "target_counts": {
+    "billing_email": 2,
+    "company_legal_name": 1,
+    "currency": 3,
+    "nav_reports": 1,
+    "office_phone": 3,
+    "preferred_vendor": 2,
+    "region": 4,
+    "vat_number": 4
+  },
+  "variant": "v3b"
+}

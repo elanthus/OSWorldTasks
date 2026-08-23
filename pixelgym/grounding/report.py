@@ -10,7 +10,6 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.analysis import analyze_predictions
-from pixelgym.grounding.evaluation import PROMPT_VERSION
 from pixelgym.grounding.schema import PROTOCOL_VERSION
 from pixelgym.serialization import load_jsonl, resolve_repository_output
 from pixelgym.tasks.vendor_form.render import BOLD_FONT, REGULAR_FONT
@@ -344,7 +343,7 @@ def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> 
         "# PixelGym Grounding Experiment",
         "",
         f"- Protocol: `{PROTOCOL_VERSION}`",
-        f"- Prompt: `{PROMPT_VERSION}`",
+        f"- Prompt: `{results['prompt_version']}`",
         f"- Provider/model: `{results['provider']}` / `{results['model']}`",
         (
             f"- Collection window: {results['collection']['first_timestamp_utc'] or 'missing'} "
@@ -549,6 +548,15 @@ def generate_results_package(
     protocol_path = repository_root / "artifacts" / "grounding-protocol.md"
     dataset_path = repository_root / "artifacts" / "grounding-dataset.jsonl"
     overlays_path = repository_root / "artifacts" / "grounding-overlays.jsonl"
+    canonical_predictions = repository_root / "artifacts" / "grounding-predictions.jsonl"
+    canonical_results = repository_root / "artifacts" / "grounding-results.json"
+    if (
+        results_path.resolve() == canonical_results.resolve()
+        and predictions_path.resolve() != canonical_predictions.resolve()
+    ):
+        raise ValueError(
+            "refusing to overwrite immutable v2 grounding-results.json with other predictions"
+        )
     examples = load_jsonl(dataset_path)
     predictions = load_jsonl(predictions_path)
     error_reviews = load_jsonl(error_review_path)
