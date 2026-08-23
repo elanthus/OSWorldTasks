@@ -30,7 +30,7 @@
   },
   "schema_version": "pixelgym-grounding-v4b-capture-v1",
   "source_sha256": {
-    "pixelgym/grounding/calibration_v4b.py": "5370e4795777bcb0bbb13f54150f9d3a77170f7142acf188a931429f4a3f700a",
+    "pixelgym/grounding/calibration_v4b.py": "ff86302433814bb70785b5ff38591167547a5bb55a01475d890575e63dd89a01",
     "pixelgym/grounding/capture.py": "2515fe7ffaca2e69736bd84ffcaaea6947ea5ddb2b6da2e04d86f35b8751d4eb",
     "pixelgym/grounding/determinism.py": "0d1e31baa856a83d085cc674d4b7b0cf08e49d7b591ef8ebaae05e82ca638bcf",
     "pixelgym/grounding/overlays.py": "d0c956e7b09d768762df83d208b43928e1da7bb6eb04fac0e7c375d31a029ab3",

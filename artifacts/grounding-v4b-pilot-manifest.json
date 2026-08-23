@@ -31,7 +31,7 @@
     },
     "capture": {
       "path": "artifacts/grounding-v4b-pilot-capture.json",
-      "sha256": "5a50201debcb55f94e8c6a558686126e7c670955ff3e31617146b509b8954a01"
+      "sha256": "c202c0e2c5e7aae7041e51f8ddf06078364f8c468eac9499fcfa752e9df085f4"
     },
     "conditions_luna": {
       "path": "artifacts/grounding-v4b-pilot-conditions-luna.jsonl",

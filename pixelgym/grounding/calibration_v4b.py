@@ -307,10 +307,13 @@ def capture_v4b_pilot(repository_root: Path) -> dict[str, Any]:
             indent=2,
             sort_keys=True,
         )
-        + "\n"
+        + "\n",
+        encoding="utf-8",
     )
     for key, rows in (("states", states), ("candidates", candidates), ("overlays", overlays)):
-        outputs[key].write_text("".join(canonical_json_text(row) + "\n" for row in rows))
+        outputs[key].write_text(
+            "".join(canonical_json_text(row) + "\n" for row in rows), encoding="utf-8"
+        )
     capture = {
         "schema_version": V4B_CAPTURE_SCHEMA_VERSION,
         "protocol_version": V4B_PROTOCOL_VERSION,
@@ -320,7 +323,9 @@ def capture_v4b_pilot(repository_root: Path) -> dict[str, Any]:
         "repeatability": repeatability,
         "source_sha256": v4b_capture_source_hashes(repository_root),
     }
-    outputs["capture"].write_text(json.dumps(capture, indent=2, sort_keys=True) + "\n")
+    outputs["capture"].write_text(
+        json.dumps(capture, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     manifest = {
         "schema_version": V4B_MANIFEST_SCHEMA_VERSION,
         "protocol_version": V4B_PROTOCOL_VERSION,
@@ -344,5 +349,7 @@ def capture_v4b_pilot(repository_root: Path) -> dict[str, Any]:
         },
     }
     manifest_path = artifact_root / "grounding-v4b-pilot-manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return manifest
