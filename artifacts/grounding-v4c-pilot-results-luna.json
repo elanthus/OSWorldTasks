@@ -1,0 +1,70 @@
+{
+  "collection": {
+    "action_record_count": 140,
+    "cache_hit_count": 2,
+    "condition_record_count": 20,
+    "cumulative_paid_call_count": 138,
+    "episode_count": 10,
+    "new_call_count": 138,
+    "prior_paid_call_count": 0
+  },
+  "condition_summaries": {
+    "path": "artifacts/grounding-v4c-pilot-conditions-luna.jsonl",
+    "sha256": "e45d1f1ac29271ec9ee738043c933b71097d3ea16bca95c07216cb4b93332d8c"
+  },
+  "conditions": {
+    "marks": {
+      "episode_count": 10,
+      "success_count": 9
+    },
+    "raw": {
+      "episode_count": 10,
+      "success_count": 10
+    }
+  },
+  "diagnostics": {
+    "action_count_histogram": {
+      "6": 8,
+      "7": 5,
+      "8": 6,
+      "9": 1
+    },
+    "carrier_utilization": {
+      "pinned_consumer_correct": 19,
+      "pinned_consumer_faced": 20,
+      "unpinned_consumer_correct": 0,
+      "unpinned_consumer_faced": 0
+    },
+    "checkpoint_histogram": {
+      "5": 1,
+      "6": 8,
+      "7": 5,
+      "8": 6
+    },
+    "commit_counts": {
+      "marks": 10,
+      "raw": 10
+    }
+  },
+  "failures": {},
+  "model": "gpt-5.6-luna",
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "predictions": {
+    "path": "artifacts/grounding-v4c-pilot-predictions-luna.jsonl",
+    "sha256": "84d5d3a54f204e77e8c9bbdbce72147fd86b9354b473de0adddbf438e77de6ca"
+  },
+  "prior_collection": null,
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "routing": {
+    "decision": "report_saturation_stop",
+    "rationale": "at least one condition scored 9-10/10; any successor design requires a new explicit human scope decision"
+  },
+  "schema_version": "pixelgym-grounding-v4c-results-v1",
+  "set_of_marks": {
+    "proposal_covered_state_count": 244,
+    "proposal_total_state_count": 244
+  }
+}

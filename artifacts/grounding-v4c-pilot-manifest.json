@@ -4,7 +4,18 @@
     "raw",
     "marks"
   ],
-  "decision_history": [],
+  "decision_history": [
+    {
+      "cache_hits": 2,
+      "cumulative_paid_calls": 138,
+      "failures": {},
+      "incremental_new_calls": 138,
+      "marks_success": 9,
+      "rationale": "at least one condition scored 9-10/10; any successor design requires a new explicit human scope decision",
+      "raw_success": 10,
+      "route": "report_saturation_stop"
+    }
+  ],
   "family_counts": {
     "constraint_repair_chain": 3,
     "pin_traverse_apply": 4,
@@ -23,7 +34,7 @@
     "69": 10
   },
   "model": "gpt-5.6-luna",
-  "model_calls_performed": 0,
+  "model_calls_performed": 138,
   "outputs": {
     "candidates": {
       "path": "artifacts/grounding-v4c-pilot-candidates.jsonl",
@@ -33,6 +44,10 @@
       "path": "artifacts/grounding-v4c-pilot-capture.json",
       "sha256": "63b091cbb0227580666222d9e1e4eca8e10ab513460cd2f4a5e00f3c0dc0b599"
     },
+    "conditions_luna": {
+      "path": "artifacts/grounding-v4c-pilot-conditions-luna.jsonl",
+      "sha256": "e45d1f1ac29271ec9ee738043c933b71097d3ea16bca95c07216cb4b93332d8c"
+    },
     "episodes": {
       "path": "artifacts/grounding-v4c-pilot-episodes.json",
       "sha256": "8bb2fafe3a629f10311031bf875719dd7b9037997bfdb3f6e6fa194ffd52dd0e"
@@ -40,6 +55,18 @@
     "overlays": {
       "path": "artifacts/grounding-v4c-pilot-overlays.jsonl",
       "sha256": "3a34e3cb4f2ef3af96376d2dadfe28d407f23eb208a2c23ed287bf91a5501fa1"
+    },
+    "plan_luna": {
+      "path": "artifacts/grounding-v4c-pilot-plan-luna.json",
+      "sha256": "5e73bc156d6526dae70c44a28282b7ab484e7ba2c229b371192aedcfdb2a0f14"
+    },
+    "predictions_luna": {
+      "path": "artifacts/grounding-v4c-pilot-predictions-luna.jsonl",
+      "sha256": "84d5d3a54f204e77e8c9bbdbce72147fd86b9354b473de0adddbf438e77de6ca"
+    },
+    "results_luna": {
+      "path": "artifacts/grounding-v4c-pilot-results-luna.json",
+      "sha256": "45a9c5634a4fb56758c57e6d9c5f78936bf41a13b958a5538db0b85811f19e39"
     },
     "states": {
       "path": "artifacts/grounding-v4c-pilot-states.jsonl",
@@ -64,7 +91,7 @@
     68,
     69
   ],
-  "status": "captured_evaluation_not_run",
+  "status": "evaluated_saturation_reported_human_scope_decision_required",
   "task_ids": {
     "60": "v4c-4745560238f89c6f",
     "61": "v4c-80ed0dfb123809f4",
