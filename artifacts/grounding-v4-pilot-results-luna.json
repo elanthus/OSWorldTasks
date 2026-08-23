@@ -1,0 +1,52 @@
+{
+  "collection": {
+    "condition_record_count": 20,
+    "example_count": 10,
+    "first_timestamp_utc": "2026-08-23T04:00:52.123439+00:00",
+    "last_timestamp_utc": "2026-08-23T04:02:27.927089+00:00"
+  },
+  "conditions": {
+    "marks": {
+      "correct_count": 9,
+      "record_count": 10
+    },
+    "raw": {
+      "correct_count": 9,
+      "record_count": 10
+    }
+  },
+  "failures": {
+    "parse_failure_count": 0,
+    "request_failure_count": 0
+  },
+  "model": "gpt-5.6-luna",
+  "paired": {
+    "both_correct_count": 9,
+    "both_incorrect_count": 1,
+    "marks_only_correct_count": 0,
+    "raw_only_correct_count": 0
+  },
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "prediction_schema_version": "pixelgym-grounding-prediction-v2",
+  "predictions": {
+    "path": "artifacts/grounding-v4-pilot-predictions-luna.jsonl",
+    "sha256": "c4dcb1feae05dc75f8cb119329723ff43a005e9437981f06b90a55a1d9ec0531"
+  },
+  "prompt_version": "pixelgym-grounding-prompt-v2",
+  "protocol_version": "pixelgym-grounding-v4-pilot",
+  "provider": "codex-cli",
+  "routing": {
+    "decision": "design_multi_step_v4b",
+    "rationale": "at least one condition scored above 85%"
+  },
+  "schema_version": "pixelgym-grounding-v4-results-v1",
+  "set_of_marks": {
+    "conditional_selection_correct_count": 9,
+    "conditional_selection_total_count": 10,
+    "proposal_covered_count": 10,
+    "proposal_total_count": 10
+  }
+}

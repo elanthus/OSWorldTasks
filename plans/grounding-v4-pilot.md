@@ -1,7 +1,9 @@
 # Grounding v4 Pilot — Compositional Calibration
 
-**Status:** implementation and capture complete; no model evaluation authorized or run  
-**Primary calibration model:** `gpt-5.6-luna`  
+**Status:** Luna evaluation complete; saturated result routed to a separate v4b design
+
+**Primary calibration model:** `gpt-5.6-luna`
+
 **Secondary ceiling check:** `claude-haiku-4-5-20251001`  
 **Protocol identifier:** `pixelgym-grounding-v4-pilot`
 
@@ -21,6 +23,13 @@ lands in a useful improvement band:
 
 These are pilot routing thresholds, not public benchmark claims. A ten-example result has coarse
 ten-point resolution and is not a final estimate.
+
+**Executed outcome:** after explicit human approval, the capped Luna run made 20 condition calls
+and scored 9/10 raw and 9/10 marks, with zero request and parse failures. The stored result therefore
+routes to the separate [v4b multi-step pilot design](grounding-v4b-multistep-pilot.md). See the
+[offline results](../artifacts/grounding-v4-pilot-results-luna.json) and retained
+[predictions](../artifacts/grounding-v4-pilot-predictions-luna.jsonl). No Haiku call is authorized
+by this route.
 
 ## 2. Why v4 differs from v3
 
@@ -67,9 +76,9 @@ target. Target identity is joined only after the complete candidate set is captu
 - Conditions: ten raw and ten marked requests, exactly twenty condition calls.
 - No hidden retry. Transport, refusal, and parsing failures remain incorrect records.
 
-The implementation may plan and validate these calls without credentials. Making any paid request
-requires explicit human approval. Execution must stop after the twenty-call pilot and requires a
-second approval before any expansion or Haiku comparison.
+The implementation may plan and validate these calls without credentials. The initial twenty-call
+pilot was explicitly approved and is now complete. Any expansion, rerun that needs a new call, or
+Haiku comparison requires a new explicit human approval.
 
 ### Haiku ceiling check
 
