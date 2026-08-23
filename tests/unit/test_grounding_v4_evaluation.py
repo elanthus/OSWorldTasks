@@ -306,6 +306,26 @@ def test_record_v4_evaluation_rejects_external_result_before_writing(tmp_path: P
     assert not external_results.exists()
 
 
+def test_record_v4_evaluation_rejects_parent_traversal_before_writing(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    predictions = _write_predictions(tmp_path)
+    manifest_path = tmp_path / "artifacts" / "grounding-v4-pilot-manifest.json"
+    manifest_path.write_text("{}")
+    external_results = tmp_path / ".." / f"{tmp_path.name}-traversal-results.json"
+
+    with pytest.raises(ValueError, match="results path must be inside"):
+        record_v4_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            results_path=external_results,
+            manifest_path=manifest_path,
+        )
+
+    assert not external_results.resolve().exists()
+
+
 def test_record_v4_evaluation_validates_manifest_before_writing_result(
     tmp_path: Path,
 ) -> None:
@@ -316,6 +336,35 @@ def test_record_v4_evaluation_validates_manifest_before_writing_result(
     results_path = tmp_path / "artifacts" / "results.json"
 
     with pytest.raises(ValueError, match="manifest protocol"):
+        record_v4_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            results_path=results_path,
+            manifest_path=manifest_path,
+        )
+
+    assert not results_path.exists()
+
+
+def test_record_v4_evaluation_validates_outputs_before_writing_result(
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    predictions = _write_predictions(tmp_path)
+    manifest_path = tmp_path / "artifacts" / "grounding-v4-pilot-manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "protocol_version": V4_PROTOCOL_VERSION,
+                "primary_model": "gpt-5.6-luna",
+                "primary_parameters": {"reasoning_effort": "low", "temperature": None},
+                "decision_history": [],
+            }
+        )
+    )
+    results_path = tmp_path / "artifacts" / "results.json"
+
+    with pytest.raises(TypeError, match="manifest outputs"):
         record_v4_evaluation(
             repository_root=tmp_path,
             predictions_path=predictions,

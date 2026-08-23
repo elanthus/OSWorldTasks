@@ -295,6 +295,10 @@ def record_v4_evaluation(
     manifest_path: Path,
 ) -> dict[str, Any]:
     """Write deterministic results and update the v4 evidence manifest."""
+    repository_root = repository_root.resolve()
+    predictions_path = predictions_path.resolve()
+    results_path = results_path.resolve()
+    manifest_path = manifest_path.resolve()
     evidence_paths = {
         "predictions": predictions_path,
         "results": results_path,
@@ -367,6 +371,9 @@ def record_v4_evaluation(
     history = manifest.get("decision_history")
     if not isinstance(history, list):
         raise TypeError("v4 manifest decision history must be a list")
+    outputs = manifest.get("outputs")
+    if not isinstance(outputs, dict):
+        raise TypeError("v4 manifest outputs must be an object")
     if history and history[-1] != decision:
         raise ValueError("refusing to replace different v4 decision history")
 
@@ -378,8 +385,8 @@ def record_v4_evaluation(
 
     manifest["status"] = status
     manifest["model_calls_performed"] = results["collection"]["condition_record_count"]
-    manifest["outputs"]["predictions_luna"] = results["predictions"]
-    manifest["outputs"]["results_luna"] = {
+    outputs["predictions_luna"] = results["predictions"]
+    outputs["results_luna"] = {
         "path": results_path.relative_to(repository_root).as_posix(),
         "sha256": _sha256(results_path),
     }
