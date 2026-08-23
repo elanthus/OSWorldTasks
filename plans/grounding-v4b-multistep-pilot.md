@@ -129,8 +129,12 @@ run must dispatch model actions through the normal backend/environment boundary.
 
 The human explicitly authorized implementation, capture, and up to 80 Luna calls. The free
 planner reported an 80-call upper bound, zero cached reachable-state requests, and 60/60 proposal
-coverage before collection. The capped run then stored 63 action records: 62 new provider calls
-and one same-state cache reuse. It used no hidden retry and remained below the approved ceiling.
+coverage before collection. The initial collection stored 63 action records using 62 new provider
+calls and one same-state cache reuse. Review then found an inconsistent amount in two captured
+triage scenarios. The original evidence is retained with `-pre-review` filenames; after correcting
+and recapturing those scenarios, the canonical rerun used 59 cached responses and four new calls.
+The cumulative paid-call count was therefore 66, with no hidden retry and below the approved
+80-call ceiling.
 
 The offline-generated result records raw success of 9/10 and marks success of 10/10, with no
 request, parse, or invalid-action failure. All 60 actionable states had marks proposal coverage.

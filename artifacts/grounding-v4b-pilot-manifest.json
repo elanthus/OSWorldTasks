@@ -6,10 +6,11 @@
   ],
   "decision_history": [
     {
-      "cache_hits": 1,
+      "cache_hits": 59,
+      "cumulative_paid_calls": 66,
       "failures": {},
+      "incremental_new_calls": 4,
       "marks_success": 10,
-      "new_calls": 62,
       "rationale": "at least one condition scored 9-10/10",
       "raw_success": 9,
       "route": "design_longer_horizon_successor"
@@ -22,27 +23,31 @@
   },
   "max_actions_per_condition": 4,
   "model": "gpt-5.6-luna",
-  "model_calls_performed": 62,
+  "model_calls_performed": 66,
   "outputs": {
     "candidates": {
       "path": "artifacts/grounding-v4b-pilot-candidates.jsonl",
-      "sha256": "b34c3e4196ce7ac0e59d95703586fb5e426d398be86d0bf57bb4a93251f42c10"
+      "sha256": "2924dc6e07e86e90a89748dc5a93a683e9106aeb846bc6b88b40730de4bb9453"
     },
     "capture": {
       "path": "artifacts/grounding-v4b-pilot-capture.json",
-      "sha256": "bd071c3881f9e3ab41bfd38b7cdf6b9164f696dbfbef0a748ddbf8b52ec8aa7d"
+      "sha256": "5a50201debcb55f94e8c6a558686126e7c670955ff3e31617146b509b8954a01"
     },
     "conditions_luna": {
       "path": "artifacts/grounding-v4b-pilot-conditions-luna.jsonl",
+      "sha256": "d4609a9e7b00f18f3dd74c6b25571cf67ce253327a67d95a31db8dc40abb53db"
+    },
+    "conditions_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-conditions-luna-pre-review.jsonl",
       "sha256": "9f6f22df1f4ad36e6bfc8c57b5465e7ef6e3b46527afc796939c9b12343e0258"
     },
     "episodes": {
       "path": "artifacts/grounding-v4b-pilot-episodes.json",
-      "sha256": "28aa56275d40b99e488818c74f941c2458e7228d8f9f789488902ea43eef87dd"
+      "sha256": "dead6babda95be2f430e7bf210565c64a4334dff8076e23f79513747df971ffa"
     },
     "overlays": {
       "path": "artifacts/grounding-v4b-pilot-overlays.jsonl",
-      "sha256": "6de53af117a1924c17627cf56c9dbe38194b1952bcab80369e18d67775045cae"
+      "sha256": "bad8ded7f2288cdc1478155504d2cb229921ab250fd10b7ca3e2c641e223e028"
     },
     "plan_luna": {
       "path": "artifacts/grounding-v4b-pilot-plan-luna.json",
@@ -50,15 +55,23 @@
     },
     "predictions_luna": {
       "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
+      "sha256": "900917802b962585c0a5098d8a8a15e079a4ea67e903a4f43fe14790310c616e"
+    },
+    "predictions_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl",
       "sha256": "e16342d57669e58df59265d89f2e90552324f8c3b8d54430116b9a2b1effdc01"
     },
     "results_luna": {
       "path": "artifacts/grounding-v4b-pilot-results-luna.json",
+      "sha256": "3e9968c7efc8e41e30ab93619b870a82434995bdcbc4001e365b23cd95baaea9"
+    },
+    "results_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-results-luna-pre-review.json",
       "sha256": "0f61bfff3d5eecd0ac677331f4ac7edad8df557575f425b0194f5218d3a0d205"
     },
     "states": {
       "path": "artifacts/grounding-v4b-pilot-states.jsonl",
-      "sha256": "2993b62f6eb9139dab6883226d23a5340c1f2d33b70e970ff8ea0920836d7bb7"
+      "sha256": "5e8a9c73d32867403a39e39f7210fc0a11999c33cd31d3fb490566a7fc18da41"
     }
   },
   "parameters": {
@@ -83,8 +96,8 @@
   "task_ids": {
     "40": "v4b-d6c01f06da9fbfd4",
     "41": "v4b-073db179618fbc47",
-    "42": "v4b-971ad34a58c4882d",
-    "43": "v4b-3826cb5e34921063",
+    "42": "v4b-279634c3a16d1611",
+    "43": "v4b-83fe04ca37c3c971",
     "44": "v4b-2429c11e3694cc94",
     "45": "v4b-a5453601005e2157",
     "46": "v4b-f47a4d53313dc836",

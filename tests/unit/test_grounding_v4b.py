@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -72,24 +73,55 @@ def test_v4b_evaluation_fails_closed_on_unknown_screenshot_pixels() -> None:
 def test_v4b_candidate_and_overlay_artifacts_contain_no_target_identity() -> None:
     rows = load_jsonl(REPOSITORY_ROOT / "artifacts/grounding-v4b-pilot-candidates.jsonl")
     rows += load_jsonl(REPOSITORY_ROOT / "artifacts/grounding-v4b-pilot-overlays.jsonl")
-    assert all("target" not in row and "target_id" not in row for row in rows)
+
+    def keys(value: Any) -> set[str]:
+        if isinstance(value, dict):
+            return set(value).union(*(keys(child) for child in value.values()))
+        if isinstance(value, list):
+            return set().union(*(keys(child) for child in value))
+        return set()
+
+    assert all(not ({"target", "target_id"} & keys(row)) for row in rows)
+
+
+def test_v4b_capture_validator_rejects_nested_target_leak() -> None:
+    states = load_jsonl(REPOSITORY_ROOT / "artifacts/grounding-v4b-pilot-states.jsonl")
+    candidates = load_jsonl(REPOSITORY_ROOT / "artifacts/grounding-v4b-pilot-candidates.jsonl")
+    overlays = load_jsonl(REPOSITORY_ROOT / "artifacts/grounding-v4b-pilot-overlays.jsonl")
+    candidates[0]["candidates"][0]["target"] = "leaked"
+    with pytest.raises(ValueError, match="must not leak targets"):
+        validate_v4b_capture(states, candidates, overlays)
 
 
 def test_v4b_evaluation_does_not_import_capture_instrumentation() -> None:
     source = REPOSITORY_ROOT / "pixelgym/grounding/v4b_evaluation.py"
     tree = ast.parse(source.read_text())
-    modules = {
+    from_modules = {
         node.module
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom) and node.module is not None
     }
-    assert "pixelgym.grounding.calibration_v4b" not in modules
+    imported_modules = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    forbidden = "pixelgym.grounding.calibration_v4b"
+    assert forbidden not in from_modules
+    assert forbidden not in imported_modules
 
 
 def test_v4b_capture_app_has_no_runtime_network_calls() -> None:
     app_source = (REPOSITORY_ROOT / "pixelgym/grounding/v4b_app/static/app.js").read_text()
-    assert "fetch(" not in app_source
-    assert "XMLHttpRequest" not in app_source
+    prohibited = (
+        r"\bfetch\s*\(",
+        r"\bXMLHttpRequest\b",
+        r"\bnavigator\s*\.\s*sendBeacon\s*\(",
+        r"\bWebSocket\s*\(",
+        r"\bEventSource\s*\(",
+    )
+    assert all(re.search(pattern, app_source) is None for pattern in prohibited)
 
 
 @pytest.mark.parametrize(
@@ -130,6 +162,19 @@ def test_v4b_environment_has_no_premature_reward_and_visible_recovery() -> None:
         env.close()
 
 
+def test_v4b_step_limit_truncates_without_reward() -> None:
+    backend = V4BReplayBackend(REPOSITORY_ROOT)
+    env = PixelGuiEnv(backend, instruction="Complete workflow", max_episode_steps=1)
+    try:
+        env.reset(seed=40)
+        _, reward, terminated, truncated, _ = env.step(_click(5, 740))
+        assert (reward, terminated, truncated) == (0.0, False, True)
+        with pytest.raises(RuntimeError, match="after the episode already ended"):
+            env.step(_click(5, 740))
+    finally:
+        env.close()
+
+
 def test_v4b_free_plan_reports_exact_upper_bound_without_provider_calls(tmp_path: Path) -> None:
     provider = MockProvider()
     plan = planned_v4b_calls(
@@ -149,9 +194,39 @@ def test_v4b_runner_enforces_cap_before_first_uncached_call(tmp_path: Path) -> N
         run_v4b_evaluation(
             repository_root=REPOSITORY_ROOT,
             provider=provider,
-            predictions_path=tmp_path / "predictions.jsonl",
-            conditions_path=tmp_path / "conditions.jsonl",
+            predictions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-predictions.jsonl",
+            conditions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-conditions.jsonl",
             max_new_calls=0,
+            cache_directory=tmp_path / "cache",
+        )
+    assert provider.call_count == 0
+
+
+@pytest.mark.parametrize("case", ["same", "outside", "existing"])
+def test_v4b_runner_preflights_immutable_output_paths_before_inputs(
+    tmp_path: Path, case: str
+) -> None:
+    root = tmp_path / "repository"
+    root.mkdir()
+    first = root / "predictions.jsonl"
+    second = root / "conditions.jsonl"
+    expected = "fresh immutable"
+    if case == "same":
+        second = first
+        expected = "must differ"
+    elif case == "outside":
+        second = tmp_path / "outside.jsonl"
+        expected = "inside the repository"
+    else:
+        first.write_text("occupied")
+    provider = MockProvider()
+    with pytest.raises(ValueError, match=expected):
+        run_v4b_evaluation(
+            repository_root=root,
+            provider=provider,
+            predictions_path=first,
+            conditions_path=second,
+            max_new_calls=80,
             cache_directory=tmp_path / "cache",
         )
     assert provider.call_count == 0
@@ -217,3 +292,26 @@ def test_v4b_offline_routing(
         conditions_path=conditions,
     )
     assert results["routing"]["decision"] == route
+
+
+def test_v4b_offline_summary_tracks_and_enforces_cumulative_paid_calls(
+    tmp_path: Path,
+) -> None:
+    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    results = summarize_v4b_evaluation(
+        repository_root=tmp_path,
+        predictions_path=predictions,
+        conditions_path=conditions,
+        prior_paid_calls=20,
+    )
+    assert results["collection"]["new_call_count"] == 60
+    assert results["collection"]["prior_paid_call_count"] == 20
+    assert results["collection"]["cumulative_paid_call_count"] == 80
+
+    with pytest.raises(ValueError, match="cumulative paid calls"):
+        summarize_v4b_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            prior_paid_calls=21,
+        )

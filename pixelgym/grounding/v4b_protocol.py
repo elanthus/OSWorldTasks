@@ -33,11 +33,12 @@ def _stage(
 
 
 def _triage(seed: int, request: str, amount: str, risk: str, route: str) -> dict[str, Any]:
+    summit_amount = "$14,900" if amount == "$24,600" else "$42,900"
     requests = [
         ("open_northstar", "Open Northstar Paper — Pending — $18,200"),
-        ("open_redwood", "Open Redwood Labs — Pending — $74,600"),
+        ("open_redwood", f"Open Redwood Labs — Pending — {amount}"),
         ("open_kinetic", "Open Kinetic Freight — Approved — $91,300"),
-        ("open_summit", "Open Summit Health — Pending — $42,900"),
+        ("open_summit", f"Open Summit Health — Pending — {summit_amount}"),
     ]
     route_options = [
         ("route_standard", "Route: Standard"),

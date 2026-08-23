@@ -20,6 +20,7 @@ def main() -> None:
         type=Path,
         default=Path("artifacts/grounding-v4b-pilot-manifest.json"),
     )
+    parser.add_argument("--prior-paid-calls", type=int, default=0)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     results = record_v4b_evaluation(
@@ -30,6 +31,7 @@ def main() -> None:
         manifest_path=(root / args.manifest).resolve()
         if not args.manifest.is_absolute()
         else args.manifest.resolve(),
+        prior_paid_calls=args.prior_paid_calls,
     )
     print(json.dumps(results, indent=2, sort_keys=True))
 

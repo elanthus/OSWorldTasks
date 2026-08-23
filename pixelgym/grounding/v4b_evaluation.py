@@ -257,6 +257,15 @@ def run_v4b_evaluation(
 ) -> dict[str, Any]:
     if not 0 <= max_new_calls <= V4B_CALL_CAP:
         raise ValueError("v4b max_new_calls must be between 0 and 80")
+    root = repository_root.resolve()
+    predictions_path = predictions_path.resolve()
+    conditions_path = conditions_path.resolve()
+    if predictions_path == conditions_path:
+        raise ValueError("v4b prediction and condition paths must differ")
+    if any(not path.is_relative_to(root) for path in (predictions_path, conditions_path)):
+        raise ValueError("v4b evidence paths must be inside the repository")
+    if predictions_path.exists() or conditions_path.exists():
+        raise ValueError("v4b evaluation requires fresh immutable output paths")
     cache = ResponseCache(
         cache_directory or repository_root / ".cache" / "grounding-v4b" / "responses"
     )
@@ -414,8 +423,16 @@ def run_v4b_evaluation(
 
 
 def summarize_v4b_evaluation(
-    *, repository_root: Path, predictions_path: Path, conditions_path: Path
+    *,
+    repository_root: Path,
+    predictions_path: Path,
+    conditions_path: Path,
+    prior_paid_calls: int = 0,
 ) -> dict[str, Any]:
+    if isinstance(prior_paid_calls, bool) or not isinstance(prior_paid_calls, int):
+        raise TypeError("v4b prior_paid_calls must be an integer")
+    if not 0 <= prior_paid_calls <= V4B_CALL_CAP:
+        raise ValueError("v4b prior_paid_calls must be between 0 and 80")
     predictions = load_jsonl(predictions_path)
     conditions = load_jsonl(conditions_path)
     expected = {(seed, condition) for seed in V4B_SEEDS for condition in V4B_CONDITIONS}
@@ -447,6 +464,10 @@ def summarize_v4b_evaluation(
     else:
         route = "human_review"
         rationale = "result does not match a preregistered automatic routing cell"
+    incremental_new_calls = sum(row.get("new_calls", 0) for row in conditions)
+    cumulative_paid_calls = prior_paid_calls + incremental_new_calls
+    if cumulative_paid_calls > V4B_CALL_CAP:
+        raise ValueError("v4b cumulative paid calls exceed the approved 80-call cap")
     return {
         "schema_version": V4B_RESULTS_SCHEMA_VERSION,
         "protocol_version": V4B_PROTOCOL_VERSION,
@@ -456,7 +477,9 @@ def summarize_v4b_evaluation(
             "episode_count": len(V4B_EPISODES),
             "condition_record_count": len(conditions),
             "action_record_count": len(predictions),
-            "new_call_count": sum(row.get("new_calls", 0) for row in conditions),
+            "new_call_count": incremental_new_calls,
+            "prior_paid_call_count": prior_paid_calls,
+            "cumulative_paid_call_count": cumulative_paid_calls,
             "cache_hit_count": sum(row.get("cache_hits", 0) for row in conditions),
         },
         "conditions": {
@@ -495,6 +518,7 @@ def record_v4b_evaluation(
     conditions_path: Path,
     results_path: Path,
     manifest_path: Path,
+    prior_paid_calls: int = 0,
 ) -> dict[str, Any]:
     """Write an offline result and update the v4b manifest without provider calls."""
     root = repository_root.resolve()
@@ -507,6 +531,7 @@ def record_v4b_evaluation(
         repository_root=root,
         predictions_path=predictions_path,
         conditions_path=conditions_path,
+        prior_paid_calls=prior_paid_calls,
     )
     encoded_results = json.dumps(results, indent=2, sort_keys=True) + "\n"
     if results_path.is_file() and results_path.read_text() != encoded_results:
@@ -532,7 +557,8 @@ def record_v4b_evaluation(
         "rationale": results["routing"]["rationale"],
         "raw_success": results["conditions"]["raw"]["success_count"],
         "marks_success": results["conditions"]["marks"]["success_count"],
-        "new_calls": results["collection"]["new_call_count"],
+        "incremental_new_calls": results["collection"]["new_call_count"],
+        "cumulative_paid_calls": results["collection"]["cumulative_paid_call_count"],
         "cache_hits": results["collection"]["cache_hit_count"],
         "failures": results["failures"],
     }
@@ -542,7 +568,7 @@ def record_v4b_evaluation(
     if not history:
         history.append(decision)
     manifest["status"] = status_by_route[route]
-    manifest["model_calls_performed"] = results["collection"]["new_call_count"]
+    manifest["model_calls_performed"] = results["collection"]["cumulative_paid_call_count"]
     for name, path in (
         ("predictions_luna", predictions_path),
         ("conditions_luna", conditions_path),
@@ -558,5 +584,14 @@ def record_v4b_evaluation(
             "path": plan_path.relative_to(root).as_posix(),
             "sha256": _sha256(plan_path.read_bytes()),
         }
+    for name in ("predictions", "conditions", "results"):
+        pre_review = root / "artifacts" / f"grounding-v4b-pilot-{name}-luna-pre-review.jsonl"
+        if name == "results":
+            pre_review = pre_review.with_suffix(".json")
+        if pre_review.is_file():
+            outputs[f"{name}_luna_pre_review"] = {
+                "path": pre_review.relative_to(root).as_posix(),
+                "sha256": _sha256(pre_review.read_bytes()),
+            }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return results

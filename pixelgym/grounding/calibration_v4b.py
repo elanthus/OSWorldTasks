@@ -244,7 +244,7 @@ def validate_v4b_capture(
     overlay_ids = [row.get("state_id") for row in overlays]
     if len(overlay_ids) != len(set(overlay_ids)) or set(overlay_ids) != action_states:
         raise ValueError("v4b overlays do not cover every actionable state")
-    if any("target" in row or "target_id" in row for row in candidates + overlays):
+    if any(_contains_target_key(row) for row in candidates + overlays):
         raise ValueError("v4b candidate and overlay records must not leak targets")
     if any(row.get("proposal_coverage") is not True for row in overlays):
         raise ValueError("v4b proposal coverage must be 100%")
@@ -256,6 +256,16 @@ def validate_v4b_capture(
         "proposal_covered_state_count": len(overlays),
         "family_counts": dict(sorted(family_counts.items())),
     }
+
+
+def _contains_target_key(value: Any) -> bool:
+    if isinstance(value, dict):
+        return bool({"target", "target_id"} & set(value)) or any(
+            _contains_target_key(child) for child in value.values()
+        )
+    if isinstance(value, list):
+        return any(_contains_target_key(child) for child in value)
+    return False
 
 
 def capture_v4b_pilot(repository_root: Path) -> dict[str, Any]:
