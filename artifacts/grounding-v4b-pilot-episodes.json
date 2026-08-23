@@ -1,0 +1,786 @@
+{
+  "episodes": [
+    {
+      "family": "triage_route_confirm",
+      "seed": 40,
+      "stages": [
+        {
+          "facts": [
+            "Ignore approved requests.",
+            "Compare the visible pending amounts."
+          ],
+          "heading": "Triage the queue",
+          "instruction": "Open the pending request with the highest amount.",
+          "options": [
+            {
+              "label": "Open Northstar Paper \u2014 Pending \u2014 $18,200",
+              "semantic_id": "open_northstar"
+            },
+            {
+              "label": "Open Redwood Labs \u2014 Pending \u2014 $74,600",
+              "semantic_id": "open_redwood"
+            },
+            {
+              "label": "Open Kinetic Freight \u2014 Approved \u2014 $91,300",
+              "semantic_id": "open_kinetic"
+            },
+            {
+              "label": "Open Summit Health \u2014 Pending \u2014 $42,900",
+              "semantic_id": "open_summit"
+            }
+          ],
+          "target": "open_redwood"
+        },
+        {
+          "facts": [
+            "Opened: Redwood Labs \u00b7 $74,600 \u00b7 medium risk",
+            "Policy: high risk \u2192 Compliance",
+            "Otherwise amount over $25,000 \u2192 Finance; all others \u2192 Standard"
+          ],
+          "heading": "Apply the approval policy",
+          "instruction": "Choose the required route for the opened request.",
+          "options": [
+            {
+              "label": "Route: Standard",
+              "semantic_id": "route_standard"
+            },
+            {
+              "label": "Route: Finance",
+              "semantic_id": "route_finance"
+            },
+            {
+              "label": "Route: Compliance",
+              "semantic_id": "route_compliance"
+            }
+          ],
+          "target": "route_finance"
+        },
+        {
+          "facts": [
+            "Request: Redwood Labs",
+            "Selected route: Finance"
+          ],
+          "heading": "Confirm the routing decision",
+          "instruction": "Confirm the displayed Finance route.",
+          "options": [
+            {
+              "label": "Confirm route",
+              "semantic_id": "confirm_route"
+            },
+            {
+              "label": "Return to queue",
+              "semantic_id": "return_to_queue"
+            },
+            {
+              "label": "Escalate for review",
+              "semantic_id": "escalate_request"
+            }
+          ],
+          "target": "confirm_route"
+        }
+      ],
+      "title": "Request VR-3040"
+    },
+    {
+      "family": "triage_route_confirm",
+      "seed": 41,
+      "stages": [
+        {
+          "facts": [
+            "Ignore approved requests.",
+            "Compare the visible pending amounts."
+          ],
+          "heading": "Triage the queue",
+          "instruction": "Open the pending request with the highest amount.",
+          "options": [
+            {
+              "label": "Open Northstar Paper \u2014 Pending \u2014 $18,200",
+              "semantic_id": "open_northstar"
+            },
+            {
+              "label": "Open Redwood Labs \u2014 Pending \u2014 $74,600",
+              "semantic_id": "open_redwood"
+            },
+            {
+              "label": "Open Kinetic Freight \u2014 Approved \u2014 $91,300",
+              "semantic_id": "open_kinetic"
+            },
+            {
+              "label": "Open Summit Health \u2014 Pending \u2014 $42,900",
+              "semantic_id": "open_summit"
+            }
+          ],
+          "target": "open_redwood"
+        },
+        {
+          "facts": [
+            "Opened: Redwood Labs \u00b7 $74,600 \u00b7 high risk",
+            "Policy: high risk \u2192 Compliance",
+            "Otherwise amount over $25,000 \u2192 Finance; all others \u2192 Standard"
+          ],
+          "heading": "Apply the approval policy",
+          "instruction": "Choose the required route for the opened request.",
+          "options": [
+            {
+              "label": "Route: Standard",
+              "semantic_id": "route_standard"
+            },
+            {
+              "label": "Route: Finance",
+              "semantic_id": "route_finance"
+            },
+            {
+              "label": "Route: Compliance",
+              "semantic_id": "route_compliance"
+            }
+          ],
+          "target": "route_compliance"
+        },
+        {
+          "facts": [
+            "Request: Redwood Labs",
+            "Selected route: Compliance"
+          ],
+          "heading": "Confirm the routing decision",
+          "instruction": "Confirm the displayed Compliance route.",
+          "options": [
+            {
+              "label": "Confirm route",
+              "semantic_id": "confirm_route"
+            },
+            {
+              "label": "Return to queue",
+              "semantic_id": "return_to_queue"
+            },
+            {
+              "label": "Escalate for review",
+              "semantic_id": "escalate_request"
+            }
+          ],
+          "target": "confirm_route"
+        }
+      ],
+      "title": "Request VR-3041"
+    },
+    {
+      "family": "triage_route_confirm",
+      "seed": 42,
+      "stages": [
+        {
+          "facts": [
+            "Ignore approved requests.",
+            "Compare the visible pending amounts."
+          ],
+          "heading": "Triage the queue",
+          "instruction": "Open the pending request with the highest amount.",
+          "options": [
+            {
+              "label": "Open Northstar Paper \u2014 Pending \u2014 $18,200",
+              "semantic_id": "open_northstar"
+            },
+            {
+              "label": "Open Redwood Labs \u2014 Pending \u2014 $24,600",
+              "semantic_id": "open_redwood"
+            },
+            {
+              "label": "Open Kinetic Freight \u2014 Approved \u2014 $91,300",
+              "semantic_id": "open_kinetic"
+            },
+            {
+              "label": "Open Summit Health \u2014 Pending \u2014 $14,900",
+              "semantic_id": "open_summit"
+            }
+          ],
+          "target": "open_redwood"
+        },
+        {
+          "facts": [
+            "Opened: Redwood Labs \u00b7 $24,600 \u00b7 low risk",
+            "Policy: high risk \u2192 Compliance",
+            "Otherwise amount over $25,000 \u2192 Finance; all others \u2192 Standard"
+          ],
+          "heading": "Apply the approval policy",
+          "instruction": "Choose the required route for the opened request.",
+          "options": [
+            {
+              "label": "Route: Standard",
+              "semantic_id": "route_standard"
+            },
+            {
+              "label": "Route: Finance",
+              "semantic_id": "route_finance"
+            },
+            {
+              "label": "Route: Compliance",
+              "semantic_id": "route_compliance"
+            }
+          ],
+          "target": "route_standard"
+        },
+        {
+          "facts": [
+            "Request: Redwood Labs",
+            "Selected route: Standard"
+          ],
+          "heading": "Confirm the routing decision",
+          "instruction": "Confirm the displayed Standard route.",
+          "options": [
+            {
+              "label": "Confirm route",
+              "semantic_id": "confirm_route"
+            },
+            {
+              "label": "Return to queue",
+              "semantic_id": "return_to_queue"
+            },
+            {
+              "label": "Escalate for review",
+              "semantic_id": "escalate_request"
+            }
+          ],
+          "target": "confirm_route"
+        }
+      ],
+      "title": "Request VR-3042"
+    },
+    {
+      "family": "triage_route_confirm",
+      "seed": 43,
+      "stages": [
+        {
+          "facts": [
+            "Ignore approved requests.",
+            "Compare the visible pending amounts."
+          ],
+          "heading": "Triage the queue",
+          "instruction": "Open the pending request with the highest amount.",
+          "options": [
+            {
+              "label": "Open Northstar Paper \u2014 Pending \u2014 $18,200",
+              "semantic_id": "open_northstar"
+            },
+            {
+              "label": "Open Redwood Labs \u2014 Pending \u2014 $54,600",
+              "semantic_id": "open_redwood"
+            },
+            {
+              "label": "Open Kinetic Freight \u2014 Approved \u2014 $91,300",
+              "semantic_id": "open_kinetic"
+            },
+            {
+              "label": "Open Summit Health \u2014 Pending \u2014 $42,900",
+              "semantic_id": "open_summit"
+            }
+          ],
+          "target": "open_redwood"
+        },
+        {
+          "facts": [
+            "Opened: Redwood Labs \u00b7 $54,600 \u00b7 medium risk",
+            "Policy: high risk \u2192 Compliance",
+            "Otherwise amount over $25,000 \u2192 Finance; all others \u2192 Standard"
+          ],
+          "heading": "Apply the approval policy",
+          "instruction": "Choose the required route for the opened request.",
+          "options": [
+            {
+              "label": "Route: Standard",
+              "semantic_id": "route_standard"
+            },
+            {
+              "label": "Route: Finance",
+              "semantic_id": "route_finance"
+            },
+            {
+              "label": "Route: Compliance",
+              "semantic_id": "route_compliance"
+            }
+          ],
+          "target": "route_finance"
+        },
+        {
+          "facts": [
+            "Request: Redwood Labs",
+            "Selected route: Finance"
+          ],
+          "heading": "Confirm the routing decision",
+          "instruction": "Confirm the displayed Finance route.",
+          "options": [
+            {
+              "label": "Confirm route",
+              "semantic_id": "confirm_route"
+            },
+            {
+              "label": "Return to queue",
+              "semantic_id": "return_to_queue"
+            },
+            {
+              "label": "Escalate for review",
+              "semantic_id": "escalate_request"
+            }
+          ],
+          "target": "confirm_route"
+        }
+      ],
+      "title": "Request VR-3043"
+    },
+    {
+      "family": "reconcile_inspect_resolve",
+      "seed": 44,
+      "stages": [
+        {
+          "facts": [
+            "Incoming: tax ID GB-77109 \u00b7 bank ending 2044",
+            "Atlas Supply: GB-77109 \u00b7 bank ending 2044",
+            "Atlas Services: GB-77019 \u00b7 bank ending 1180",
+            "Atlassian Parts: IE-77109 \u00b7 bank ending 6021"
+          ],
+          "heading": "Reconcile matching records",
+          "instruction": "Inspect the record whose tax ID matches the incoming request.",
+          "options": [
+            {
+              "label": "Inspect Atlas Supply",
+              "semantic_id": "inspect_atlas_supply"
+            },
+            {
+              "label": "Inspect Atlas Services",
+              "semantic_id": "inspect_atlas_services"
+            },
+            {
+              "label": "Inspect Atlassian Parts",
+              "semantic_id": "inspect_atlassian_parts"
+            }
+          ],
+          "target": "inspect_atlas_supply"
+        },
+        {
+          "facts": [
+            "Selected: Atlas Supply \u00b7 bank conflict",
+            "Conflict notice: verify the view audit trail before resolving."
+          ],
+          "heading": "Inspect the conflict",
+          "instruction": "Use the evidence named by the conflict notice.",
+          "options": [
+            {
+              "label": "View source document",
+              "semantic_id": "view_source_document"
+            },
+            {
+              "label": "View audit trail",
+              "semantic_id": "view_audit_trail"
+            },
+            {
+              "label": "Compare fields",
+              "semantic_id": "compare_fields"
+            }
+          ],
+          "target": "view_audit_trail"
+        },
+        {
+          "facts": [
+            "Evidence: keep current is required.",
+            "No changes have been applied yet."
+          ],
+          "heading": "Resolve the conflict",
+          "instruction": "Choose the safe resolution described by the inspected evidence.",
+          "options": [
+            {
+              "label": "Keep current record",
+              "semantic_id": "keep_current"
+            },
+            {
+              "label": "Apply requested values",
+              "semantic_id": "apply_requested"
+            },
+            {
+              "label": "Merge verified fields",
+              "semantic_id": "merge_verified"
+            }
+          ],
+          "target": "keep_current"
+        }
+      ],
+      "title": "Duplicate review bank conflict"
+    },
+    {
+      "family": "reconcile_inspect_resolve",
+      "seed": 45,
+      "stages": [
+        {
+          "facts": [
+            "Incoming: tax ID GB-77109 \u00b7 bank ending 2044",
+            "Atlas Supply: GB-77109 \u00b7 bank ending 2044",
+            "Atlas Services: GB-77019 \u00b7 bank ending 1180",
+            "Atlassian Parts: IE-77109 \u00b7 bank ending 6021"
+          ],
+          "heading": "Reconcile matching records",
+          "instruction": "Inspect the record whose tax ID matches the incoming request.",
+          "options": [
+            {
+              "label": "Inspect Atlas Supply",
+              "semantic_id": "inspect_atlas_supply"
+            },
+            {
+              "label": "Inspect Atlas Services",
+              "semantic_id": "inspect_atlas_services"
+            },
+            {
+              "label": "Inspect Atlassian Parts",
+              "semantic_id": "inspect_atlassian_parts"
+            }
+          ],
+          "target": "inspect_atlas_supply"
+        },
+        {
+          "facts": [
+            "Selected: Atlas Supply \u00b7 address conflict",
+            "Conflict notice: verify the view source document before resolving."
+          ],
+          "heading": "Inspect the conflict",
+          "instruction": "Use the evidence named by the conflict notice.",
+          "options": [
+            {
+              "label": "View source document",
+              "semantic_id": "view_source_document"
+            },
+            {
+              "label": "View audit trail",
+              "semantic_id": "view_audit_trail"
+            },
+            {
+              "label": "Compare fields",
+              "semantic_id": "compare_fields"
+            }
+          ],
+          "target": "view_source_document"
+        },
+        {
+          "facts": [
+            "Evidence: apply requested is required.",
+            "No changes have been applied yet."
+          ],
+          "heading": "Resolve the conflict",
+          "instruction": "Choose the safe resolution described by the inspected evidence.",
+          "options": [
+            {
+              "label": "Keep current record",
+              "semantic_id": "keep_current"
+            },
+            {
+              "label": "Apply requested values",
+              "semantic_id": "apply_requested"
+            },
+            {
+              "label": "Merge verified fields",
+              "semantic_id": "merge_verified"
+            }
+          ],
+          "target": "apply_requested"
+        }
+      ],
+      "title": "Duplicate review address conflict"
+    },
+    {
+      "family": "reconcile_inspect_resolve",
+      "seed": 46,
+      "stages": [
+        {
+          "facts": [
+            "Incoming: tax ID GB-77109 \u00b7 bank ending 2044",
+            "Atlas Supply: GB-77109 \u00b7 bank ending 2044",
+            "Atlas Services: GB-77019 \u00b7 bank ending 1180",
+            "Atlassian Parts: IE-77109 \u00b7 bank ending 6021"
+          ],
+          "heading": "Reconcile matching records",
+          "instruction": "Inspect the record whose tax ID matches the incoming request.",
+          "options": [
+            {
+              "label": "Inspect Atlas Supply",
+              "semantic_id": "inspect_atlas_supply"
+            },
+            {
+              "label": "Inspect Atlas Services",
+              "semantic_id": "inspect_atlas_services"
+            },
+            {
+              "label": "Inspect Atlassian Parts",
+              "semantic_id": "inspect_atlassian_parts"
+            }
+          ],
+          "target": "inspect_atlas_supply"
+        },
+        {
+          "facts": [
+            "Selected: Atlas Supply \u00b7 mixed conflict",
+            "Conflict notice: verify the compare fields before resolving."
+          ],
+          "heading": "Inspect the conflict",
+          "instruction": "Use the evidence named by the conflict notice.",
+          "options": [
+            {
+              "label": "View source document",
+              "semantic_id": "view_source_document"
+            },
+            {
+              "label": "View audit trail",
+              "semantic_id": "view_audit_trail"
+            },
+            {
+              "label": "Compare fields",
+              "semantic_id": "compare_fields"
+            }
+          ],
+          "target": "compare_fields"
+        },
+        {
+          "facts": [
+            "Evidence: merge verified is required.",
+            "No changes have been applied yet."
+          ],
+          "heading": "Resolve the conflict",
+          "instruction": "Choose the safe resolution described by the inspected evidence.",
+          "options": [
+            {
+              "label": "Keep current record",
+              "semantic_id": "keep_current"
+            },
+            {
+              "label": "Apply requested values",
+              "semantic_id": "apply_requested"
+            },
+            {
+              "label": "Merge verified fields",
+              "semantic_id": "merge_verified"
+            }
+          ],
+          "target": "merge_verified"
+        }
+      ],
+      "title": "Duplicate review mixed conflict"
+    },
+    {
+      "family": "diagnose_repair_resubmit",
+      "seed": 47,
+      "stages": [
+        {
+          "facts": [
+            "Validation failed: Billing email has an invalid format."
+          ],
+          "heading": "Diagnose the failed submission",
+          "instruction": "Select the field identified by the validation message.",
+          "options": [
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "VAT number",
+              "semantic_id": "select_vat_number"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_billing_email"
+        },
+        {
+          "facts": [
+            "Recommended repair: replace invalid value."
+          ],
+          "heading": "Apply the offered repair",
+          "instruction": "Choose the repair explicitly recommended below.",
+          "options": [
+            {
+              "label": "Replace invalid value",
+              "semantic_id": "replace_invalid_value"
+            },
+            {
+              "label": "Clear the field",
+              "semantic_id": "clear_field"
+            },
+            {
+              "label": "Request an exemption",
+              "semantic_id": "request_exemption"
+            }
+          ],
+          "target": "replace_invalid_value"
+        },
+        {
+          "facts": [
+            "Repair preview: valid",
+            "No other validation messages remain."
+          ],
+          "heading": "Submit the repaired request",
+          "instruction": "Send the repaired request for validation now.",
+          "options": [
+            {
+              "label": "Resubmit request",
+              "semantic_id": "resubmit_request"
+            },
+            {
+              "label": "Save draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Cancel changes",
+              "semantic_id": "cancel_changes"
+            }
+          ],
+          "target": "resubmit_request"
+        }
+      ],
+      "title": "Submission repair 47"
+    },
+    {
+      "family": "diagnose_repair_resubmit",
+      "seed": 48,
+      "stages": [
+        {
+          "facts": [
+            "Validation failed: VAT number has an invalid format."
+          ],
+          "heading": "Diagnose the failed submission",
+          "instruction": "Select the field identified by the validation message.",
+          "options": [
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "VAT number",
+              "semantic_id": "select_vat_number"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_vat_number"
+        },
+        {
+          "facts": [
+            "Recommended repair: clear field."
+          ],
+          "heading": "Apply the offered repair",
+          "instruction": "Choose the repair explicitly recommended below.",
+          "options": [
+            {
+              "label": "Replace invalid value",
+              "semantic_id": "replace_invalid_value"
+            },
+            {
+              "label": "Clear the field",
+              "semantic_id": "clear_field"
+            },
+            {
+              "label": "Request an exemption",
+              "semantic_id": "request_exemption"
+            }
+          ],
+          "target": "clear_field"
+        },
+        {
+          "facts": [
+            "Repair preview: valid",
+            "No other validation messages remain."
+          ],
+          "heading": "Submit the repaired request",
+          "instruction": "Send the repaired request for validation now.",
+          "options": [
+            {
+              "label": "Resubmit request",
+              "semantic_id": "resubmit_request"
+            },
+            {
+              "label": "Save draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Cancel changes",
+              "semantic_id": "cancel_changes"
+            }
+          ],
+          "target": "resubmit_request"
+        }
+      ],
+      "title": "Submission repair 48"
+    },
+    {
+      "family": "diagnose_repair_resubmit",
+      "seed": 49,
+      "stages": [
+        {
+          "facts": [
+            "Validation failed: Bank account has an invalid format."
+          ],
+          "heading": "Diagnose the failed submission",
+          "instruction": "Select the field identified by the validation message.",
+          "options": [
+            {
+              "label": "Billing email",
+              "semantic_id": "select_billing_email"
+            },
+            {
+              "label": "VAT number",
+              "semantic_id": "select_vat_number"
+            },
+            {
+              "label": "Bank account",
+              "semantic_id": "select_bank_account"
+            }
+          ],
+          "target": "select_bank_account"
+        },
+        {
+          "facts": [
+            "Recommended repair: request exemption."
+          ],
+          "heading": "Apply the offered repair",
+          "instruction": "Choose the repair explicitly recommended below.",
+          "options": [
+            {
+              "label": "Replace invalid value",
+              "semantic_id": "replace_invalid_value"
+            },
+            {
+              "label": "Clear the field",
+              "semantic_id": "clear_field"
+            },
+            {
+              "label": "Request an exemption",
+              "semantic_id": "request_exemption"
+            }
+          ],
+          "target": "request_exemption"
+        },
+        {
+          "facts": [
+            "Repair preview: valid",
+            "No other validation messages remain."
+          ],
+          "heading": "Submit the repaired request",
+          "instruction": "Send the repaired request for validation now.",
+          "options": [
+            {
+              "label": "Resubmit request",
+              "semantic_id": "resubmit_request"
+            },
+            {
+              "label": "Save draft",
+              "semantic_id": "save_draft"
+            },
+            {
+              "label": "Cancel changes",
+              "semantic_id": "cancel_changes"
+            }
+          ],
+          "target": "resubmit_request"
+        }
+      ],
+      "title": "Submission repair 49"
+    }
+  ],
+  "protocol_version": "pixelgym-grounding-v4b-pilot",
+  "schema_version": "pixelgym-grounding-v4b-episodes-v1"
+}

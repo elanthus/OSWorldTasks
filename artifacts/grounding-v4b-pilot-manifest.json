@@ -1,0 +1,108 @@
+{
+  "approved_call_cap": 80,
+  "conditions": [
+    "raw",
+    "marks"
+  ],
+  "decision_history": [
+    {
+      "cache_hits": 59,
+      "cumulative_paid_calls": 66,
+      "failures": {},
+      "incremental_new_calls": 4,
+      "marks_success": 10,
+      "rationale": "at least one condition scored 9-10/10",
+      "raw_success": 9,
+      "route": "design_longer_horizon_successor"
+    }
+  ],
+  "family_counts": {
+    "diagnose_repair_resubmit": 3,
+    "reconcile_inspect_resolve": 3,
+    "triage_route_confirm": 4
+  },
+  "max_actions_per_condition": 4,
+  "model": "gpt-5.6-luna",
+  "model_calls_performed": 66,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v4b-pilot-candidates.jsonl",
+      "sha256": "2924dc6e07e86e90a89748dc5a93a683e9106aeb846bc6b88b40730de4bb9453"
+    },
+    "capture": {
+      "path": "artifacts/grounding-v4b-pilot-capture.json",
+      "sha256": "c202c0e2c5e7aae7041e51f8ddf06078364f8c468eac9499fcfa752e9df085f4"
+    },
+    "conditions_luna": {
+      "path": "artifacts/grounding-v4b-pilot-conditions-luna.jsonl",
+      "sha256": "d4609a9e7b00f18f3dd74c6b25571cf67ce253327a67d95a31db8dc40abb53db"
+    },
+    "conditions_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-conditions-luna-pre-review.jsonl",
+      "sha256": "9f6f22df1f4ad36e6bfc8c57b5465e7ef6e3b46527afc796939c9b12343e0258"
+    },
+    "episodes": {
+      "path": "artifacts/grounding-v4b-pilot-episodes.json",
+      "sha256": "dead6babda95be2f430e7bf210565c64a4334dff8076e23f79513747df971ffa"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v4b-pilot-overlays.jsonl",
+      "sha256": "bad8ded7f2288cdc1478155504d2cb229921ab250fd10b7ca3e2c641e223e028"
+    },
+    "plan_luna": {
+      "path": "artifacts/grounding-v4b-pilot-plan-luna.json",
+      "sha256": "273692960931d5ec97ec3e407289ec65ba2dbd5c1a2f1c44435001e6cedb2ed7"
+    },
+    "predictions_luna": {
+      "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
+      "sha256": "900917802b962585c0a5098d8a8a15e079a4ea67e903a4f43fe14790310c616e"
+    },
+    "predictions_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl",
+      "sha256": "e16342d57669e58df59265d89f2e90552324f8c3b8d54430116b9a2b1effdc01"
+    },
+    "results_luna": {
+      "path": "artifacts/grounding-v4b-pilot-results-luna.json",
+      "sha256": "53d9773431b087a0a942a98b88866020d593d7666b6a3ddce86c9c4ba1bbf86d"
+    },
+    "results_luna_pre_review": {
+      "path": "artifacts/grounding-v4b-pilot-results-luna-pre-review.json",
+      "sha256": "23fe4bc8fc828d3628ef4f089fee52d751557a03da9c25def76bb0f7e013aea2"
+    },
+    "states": {
+      "path": "artifacts/grounding-v4b-pilot-states.jsonl",
+      "sha256": "5e8a9c73d32867403a39e39f7210fc0a11999c33cd31d3fb490566a7fc18da41"
+    }
+  },
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "protocol_version": "pixelgym-grounding-v4b-pilot",
+  "schema_version": "pixelgym-grounding-v4b-manifest-v1",
+  "seeds": [
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49
+  ],
+  "status": "evaluated_successor_design_required",
+  "task_ids": {
+    "40": "v4b-d6c01f06da9fbfd4",
+    "41": "v4b-073db179618fbc47",
+    "42": "v4b-279634c3a16d1611",
+    "43": "v4b-83fe04ca37c3c971",
+    "44": "v4b-2429c11e3694cc94",
+    "45": "v4b-a5453601005e2157",
+    "46": "v4b-f47a4d53313dc836",
+    "47": "v4b-aa8a0d12d1c57edb",
+    "48": "v4b-c97e2dff6bafd299",
+    "49": "v4b-b01951f7b625fb97"
+  }
+}
