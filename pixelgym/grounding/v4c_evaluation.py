@@ -118,11 +118,17 @@ def _image_for_condition(
     condition: Condition,
 ) -> tuple[Path, str]:
     if condition == "raw":
-        return repository_root / state["image_path"], state["image_sha256"]
-    overlay = inputs["overlay_by_raw"].get(state["image_sha256"])
-    if overlay is None:
-        raise ValueError(f"unknown v4c raw screenshot hash {state['image_sha256']}")
-    return repository_root / overlay["marked_image_path"], overlay["marked_image_sha256"]
+        image_path = repository_root / state["image_path"]
+        image_sha256 = state["image_sha256"]
+    else:
+        overlay = inputs["overlay_by_raw"].get(state["image_sha256"])
+        if overlay is None:
+            raise ValueError(f"unknown v4c raw screenshot hash {state['image_sha256']}")
+        image_path = repository_root / overlay["marked_image_path"]
+        image_sha256 = overlay["marked_image_sha256"]
+    if _sha256(image_path.read_bytes()) != image_sha256:
+        raise ValueError("v4c request image digest mismatch")
+    return image_path, image_sha256
 
 
 def _parse_action(raw_response: str | None) -> tuple[dict[str, int] | None, str | None]:
@@ -141,6 +147,35 @@ def _parse_action(raw_response: str | None) -> tuple[dict[str, int] | None, str 
     if not (0 <= value["x"] < V4C_WIDTH and 0 <= value["y"] < V4C_HEIGHT):
         return None, "click coordinates lie outside the screenshot"
     return value, None
+
+
+def _paid_call_ledger_path(cache: ResponseCache, provider: GroundingProvider) -> Path:
+    return cache.directory / f"paid-call-ledger-{provider.name}-{provider.model}.json"
+
+
+def read_paid_call_ledger(cache: ResponseCache, provider: GroundingProvider) -> int:
+    """Total provider invocations ever attempted for this cache and provider.
+
+    The ledger is incremented before each invocation, so an interrupted in-flight
+    request still counts toward the protocol cap instead of silently becoming a
+    free cache miss on a rerun.
+    """
+    path = _paid_call_ledger_path(cache, provider)
+    if not path.is_file():
+        return 0
+    value = json.loads(path.read_text())
+    attempted = value.get("attempted_paid_calls")
+    if type(attempted) is not int or attempted < 0:
+        raise ValueError("v4c paid-call ledger is corrupt")
+    return attempted
+
+
+def _record_attempted_paid_call(cache: ResponseCache, provider: GroundingProvider) -> int:
+    attempted = read_paid_call_ledger(cache, provider) + 1
+    path = _paid_call_ledger_path(cache, provider)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"attempted_paid_calls": attempted}) + "\n", encoding="utf-8")
+    return attempted
 
 
 def _cache_identity(
@@ -298,9 +333,7 @@ def planned_v4c_calls(
             continue
         for raw_condition in V4C_CONDITIONS:
             condition: Condition = raw_condition  # type: ignore[assignment]
-            image_path, image_sha = _image_for_condition(repository_root, inputs, state, condition)
-            if _sha256(image_path.read_bytes()) != image_sha:
-                raise ValueError("v4c request image digest mismatch")
+            _, image_sha = _image_for_condition(repository_root, inputs, state, condition)
             prompt = prompt_for_v4c(condition)
             key = _cache_identity(provider, condition, prompt, image_sha)
             reachable_requests += 1
@@ -347,6 +380,7 @@ def run_v4c_evaluation(
         cache_directory or repository_root / ".cache" / "grounding-v4c" / "responses"
     )
     inputs = _load_inputs(repository_root)
+    prior_attempted_paid_calls = read_paid_call_ledger(cache, provider)
     new_calls = 0
     cache_hits = 0
     predictions: list[dict[str, Any]] = []
@@ -390,6 +424,12 @@ def run_v4c_evaluation(
                             raise RuntimeError(
                                 f"v4c evaluation reached the approved cap of {max_new_calls} new calls"
                             )
+                        if read_paid_call_ledger(cache, provider) >= V4C_CALL_CAP:
+                            raise RuntimeError(
+                                "v4c cumulative attempted paid calls reached the "
+                                f"protocol cap of {V4C_CALL_CAP}"
+                            )
+                        _record_attempted_paid_call(cache, provider)
                         response = provider.invoke(
                             image_path=image_path,
                             prompt=prompt,
@@ -508,10 +548,75 @@ def run_v4c_evaluation(
         "approved_upper_bound_calls": V4C_CALL_CAP,
         "new_calls": new_calls,
         "cache_hits": cache_hits,
+        "prior_attempted_paid_calls": prior_attempted_paid_calls,
+        "cumulative_attempted_paid_calls": read_paid_call_ledger(cache, provider),
         "action_record_count": len(predictions),
         "condition_record_count": len(condition_rows),
         "predictions_path": predictions_path.relative_to(repository_root).as_posix(),
         "conditions_path": conditions_path.relative_to(repository_root).as_posix(),
+    }
+
+
+_FAILURE_BY_PARSE_STATUS = {
+    "request_failure": "request_failure",
+    "invalid": "parse_failure",
+    "invalid_action": "invalid_action_failure",
+}
+
+
+def _derived_condition_outcome(
+    rows: list[dict[str, Any]], episode: dict[str, Any]
+) -> dict[str, Any]:
+    """Recompute a condition summary purely from its stored prediction records."""
+    ordered = sorted(rows, key=lambda row: row.get("action_index", 0))
+    if [row.get("action_index") for row in ordered] != list(range(1, len(ordered) + 1)):
+        raise ValueError("v4c prediction action indices are not contiguous from one")
+    consumer_stage = episode["consumer_stage"]
+    failures: list[str] = []
+    checkpoint = 0
+    committed = False
+    consumer_pinned: bool | None = None
+    consumer_correct: bool | None = None
+    success = False
+    terminated = False
+    truncated = False
+    before_stage = 0
+    before_pinned = False
+    for index, row in enumerate(ordered):
+        final = index == len(ordered) - 1
+        status = row.get("parse_status")
+        reward = row.get("reward")
+        terminated = row.get("terminated") is True
+        truncated = row.get("truncated") is True
+        after_stage = row.get("checkpoint_after")
+        after_pinned = row.get("pinned_after") is True
+        if type(after_stage) is not int:
+            raise TypeError("v4c prediction checkpoint_after must be an integer")
+        if status in _FAILURE_BY_PARSE_STATUS:
+            failures.append(_FAILURE_BY_PARSE_STATUS[status])
+        elif status != "parsed":
+            raise ValueError(f"unknown v4c parse status {status!r}")
+        else:
+            if before_stage == consumer_stage and consumer_pinned is None:
+                consumer_pinned = before_pinned
+                consumer_correct = after_stage == before_stage + 1
+            checkpoint = max(checkpoint, after_stage)
+            committed = committed or after_pinned
+            success = reward == 1.0 and terminated
+            if reward not in (0.0, 1.0) or (reward == 1.0 and not (terminated and final)):
+                raise ValueError("v4c prediction rewards violate the one-shot terminal contract")
+        if (failures or terminated or truncated) and not final:
+            raise ValueError("v4c episode-ending prediction is not the final recorded action")
+        before_stage, before_pinned = after_stage, after_pinned
+    return {
+        "success": success,
+        "terminated": terminated,
+        "truncated": truncated,
+        "checkpoint_count": checkpoint,
+        "committed": committed,
+        "consumer_pinned": consumer_pinned,
+        "consumer_correct": consumer_correct,
+        "failures": failures,
     }
 
 
@@ -546,6 +651,9 @@ def _validate_v4c_collection(
             or condition.get("cache_hits") != cache_hits
         ):
             raise ValueError("v4c condition counters do not match prediction records")
+        derived = _derived_condition_outcome(rows, episode_for_seed(condition["seed"]))
+        if any(condition.get(field) != value for field, value in derived.items()):
+            raise ValueError("v4c condition summaries do not match prediction records")
     return {
         "action_records": len(predictions),
         "new_calls": sum(row["cache_hit"] is False for row in predictions),

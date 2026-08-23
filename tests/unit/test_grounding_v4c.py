@@ -6,8 +6,10 @@ import ast
 import copy
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import numpy as np
 import pytest
@@ -20,11 +22,14 @@ from pixelgym.grounding.providers import MockProvider
 from pixelgym.grounding.v4c_backend import V4CReplayBackend
 from pixelgym.grounding.v4c_evaluation import (
     _candidate_center,
+    _image_for_condition,
     _load_inputs,
+    _paid_call_ledger_path,
     _parse_action,
     _state_for_observation,
     _target_center,
     planned_v4c_calls,
+    read_paid_call_ledger,
     record_v4c_evaluation,
     run_v4c_evaluation,
     summarize_v4c_evaluation,
@@ -328,6 +333,99 @@ def test_v4c_runner_preflights_immutable_output_paths_before_inputs(
     assert provider.call_count == 0
 
 
+def _fixture_condition(
+    seed: int, condition: str, *, success: bool, parse_failure: bool, cached: bool
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    episode = episode_for_seed(seed)
+    decisions = len(episode["stages"])
+    commit = episode["commit_stage"]
+    consumer = episode["consumer_stage"]
+    base = {
+        "seed": seed,
+        "condition": condition,
+        "cache_hit": cached,
+        "parse_status": "parsed",
+        "reward": 0.0,
+        "terminated": False,
+        "truncated": False,
+        "model": "gpt-5.6-luna",
+        "parameters": {"reasoning_effort": "low", "temperature": None},
+    }
+    if parse_failure:
+        rows = [
+            {
+                **base,
+                "action_index": 1,
+                "parse_status": "invalid",
+                "checkpoint_after": 0,
+                "pinned_after": False,
+            }
+        ]
+        derived: dict[str, Any] = {
+            "success": False,
+            "terminated": False,
+            "truncated": False,
+            "checkpoint_count": 0,
+            "committed": False,
+            "consumer_pinned": None,
+            "consumer_correct": None,
+            "failures": ["parse_failure"],
+        }
+    elif success:
+        rows = [
+            {
+                **base,
+                "action_index": index,
+                "checkpoint_after": index,
+                "pinned_after": index > commit,
+                "reward": 1.0 if index == decisions else 0.0,
+                "terminated": index == decisions,
+            }
+            for index in range(1, decisions + 1)
+        ]
+        derived = {
+            "success": True,
+            "terminated": True,
+            "truncated": False,
+            "checkpoint_count": decisions,
+            "committed": True,
+            "consumer_pinned": consumer > commit,
+            "consumer_correct": True,
+            "failures": [],
+        }
+    else:
+        limit = episode_max_actions(seed)
+        rows = [
+            {
+                **base,
+                "action_index": index,
+                "checkpoint_after": 0,
+                "pinned_after": False,
+                "truncated": index == limit,
+            }
+            for index in range(1, limit + 1)
+        ]
+        derived = {
+            "success": False,
+            "terminated": False,
+            "truncated": True,
+            "checkpoint_count": 0,
+            "committed": False,
+            "consumer_pinned": None,
+            "consumer_correct": None,
+            "failures": [],
+        }
+    summary = {
+        "seed": seed,
+        "condition": condition,
+        "action_count": len(rows),
+        "new_calls": 0 if cached else len(rows),
+        "cache_hits": len(rows) if cached else 0,
+        **derived,
+    }
+    return rows, summary
+
+
 def _write_summary_fixture(
     root: Path,
     *,
@@ -335,7 +433,7 @@ def _write_summary_fixture(
     marks_success: int,
     failure: str | None = None,
     prefix: str = "",
-    action_count: int = 6,
+    cached: bool = False,
 ) -> tuple[Path, Path]:
     artifacts = root / "artifacts"
     artifacts.mkdir(exist_ok=True)
@@ -347,32 +445,16 @@ def _write_summary_fixture(
     for seed in range(60, 70):
         for condition in ("raw", "marks"):
             success_count = raw_success if condition == "raw" else marks_success
-            success = seed - 60 < success_count
-            predictions.extend(
-                {
-                    "seed": seed,
-                    "condition": condition,
-                    "cache_hit": False,
-                    "model": "gpt-5.6-luna",
-                    "parameters": {"reasoning_effort": "low", "temperature": None},
-                }
-                for _ in range(action_count)
+            parse_failure = bool(failure) and seed == 60 and condition == "raw"
+            rows, summary = _fixture_condition(
+                seed,
+                condition,
+                success=seed - 60 < success_count and not parse_failure,
+                parse_failure=parse_failure,
+                cached=cached,
             )
-            conditions.append(
-                {
-                    "seed": seed,
-                    "condition": condition,
-                    "success": success,
-                    "checkpoint_count": 6 if success else 4,
-                    "action_count": action_count,
-                    "committed": success,
-                    "consumer_pinned": success if success else None,
-                    "consumer_correct": success if success else None,
-                    "new_calls": action_count,
-                    "cache_hits": 0,
-                    "failures": [failure] if failure and seed == 60 and condition == "raw" else [],
-                }
-            )
+            predictions.extend(rows)
+            conditions.append(summary)
     predictions_path = artifacts / f"{prefix}predictions.jsonl"
     conditions_path = artifacts / f"{prefix}conditions.jsonl"
     predictions_path.write_text("".join(json.dumps(row) + "\n" for row in predictions))
@@ -427,14 +509,11 @@ def test_v4c_offline_summary_tracks_and_enforces_cumulative_paid_calls(
     tmp_path: Path,
 ) -> None:
     prior_predictions, prior_conditions = _write_summary_fixture(
-        tmp_path,
-        raw_success=9,
-        marks_success=10,
-        prefix="prior-",
-        action_count=2,
+        tmp_path, raw_success=9, marks_success=10, prefix="prior-"
     )
+    prior_new_calls = sum(1 for row in load_jsonl(prior_predictions) if row["cache_hit"] is False)
     predictions, conditions = _write_summary_fixture(
-        tmp_path, raw_success=9, marks_success=10, prefix="current-"
+        tmp_path, raw_success=9, marks_success=10, prefix="current-", cached=True
     )
     results = summarize_v4c_evaluation(
         repository_root=tmp_path,
@@ -443,25 +522,22 @@ def test_v4c_offline_summary_tracks_and_enforces_cumulative_paid_calls(
         prior_predictions_path=prior_predictions,
         prior_conditions_path=prior_conditions,
     )
-    assert results["collection"]["new_call_count"] == 120
-    assert results["collection"]["prior_paid_call_count"] == 40
-    assert results["collection"]["cumulative_paid_call_count"] == 160
-    assert results["prior_collection"]["new_call_count"] == 40
+    assert prior_new_calls == 140
+    assert results["collection"]["new_call_count"] == 0
+    assert results["collection"]["prior_paid_call_count"] == prior_new_calls
+    assert results["collection"]["cumulative_paid_call_count"] == prior_new_calls
+    assert results["prior_collection"]["new_call_count"] == prior_new_calls
 
     excess_predictions, excess_conditions = _write_summary_fixture(
-        tmp_path,
-        raw_success=9,
-        marks_success=10,
-        prefix="excess-",
-        action_count=3,
+        tmp_path, raw_success=9, marks_success=10, prefix="excess-"
     )
     with pytest.raises(ValueError, match="cumulative paid calls"):
         summarize_v4c_evaluation(
             repository_root=tmp_path,
-            predictions_path=predictions,
-            conditions_path=conditions,
-            prior_predictions_path=excess_predictions,
-            prior_conditions_path=excess_conditions,
+            predictions_path=excess_predictions,
+            conditions_path=excess_conditions,
+            prior_predictions_path=prior_predictions,
+            prior_conditions_path=prior_conditions,
         )
 
 
@@ -487,6 +563,86 @@ def test_v4c_offline_summary_rejects_aliased_evidence_paths(tmp_path: Path) -> N
             repository_root=tmp_path,
             predictions_path=predictions,
             conditions_path=predictions,
+        )
+
+
+def test_v4c_runner_enforces_cumulative_ledger_across_invocations(tmp_path: Path) -> None:
+    provider = MockProvider()
+    cache = ResponseCache(tmp_path / "cache")
+    ledger = _paid_call_ledger_path(cache, provider)
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text(json.dumps({"attempted_paid_calls": V4C_CALL_CAP}) + "\n")
+    with pytest.raises(RuntimeError, match="cumulative attempted paid calls"):
+        run_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            provider=provider,
+            predictions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-l-predictions.jsonl",
+            conditions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-l-conditions.jsonl",
+            max_new_calls=V4C_CALL_CAP,
+            cache_directory=cache.directory,
+        )
+    assert provider.call_count == 0
+    assert read_paid_call_ledger(cache, provider) == V4C_CALL_CAP
+
+
+def test_v4c_runner_ledger_counts_every_attempted_paid_call(tmp_path: Path) -> None:
+    provider = MockProvider()
+    cache = ResponseCache(tmp_path / "cache")
+    # Evidence paths must live inside the repository, so use a unique throwaway
+    # directory under the ignored .cache tree and remove it afterwards.
+    output_dir = REPOSITORY_ROOT / ".cache" / f"test-run-{uuid4().hex}"
+    try:
+        result = run_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            provider=provider,
+            predictions_path=output_dir / "predictions.jsonl",
+            conditions_path=output_dir / "conditions.jsonl",
+            max_new_calls=V4C_CALL_CAP,
+            cache_directory=cache.directory,
+        )
+    finally:
+        shutil.rmtree(output_dir, ignore_errors=True)
+    assert result["new_calls"] == provider.call_count == 20
+    assert result["prior_attempted_paid_calls"] == 0
+    assert result["cumulative_attempted_paid_calls"] == 20
+    assert read_paid_call_ledger(cache, provider) == 20
+
+
+def test_v4c_image_for_condition_rejects_tampered_bytes(tmp_path: Path) -> None:
+    (tmp_path / "marked.png").write_bytes(b"tampered marked bytes")
+    (tmp_path / "raw.png").write_bytes(b"tampered raw bytes")
+    inputs = {
+        "overlay_by_raw": {
+            "raw-digest": {
+                "marked_image_path": "marked.png",
+                "marked_image_sha256": "0" * 64,
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="request image digest mismatch"):
+        _image_for_condition(tmp_path, inputs, {"image_sha256": "raw-digest"}, "marks")
+    with pytest.raises(ValueError, match="request image digest mismatch"):
+        _image_for_condition(
+            tmp_path,
+            inputs,
+            {"image_path": "raw.png", "image_sha256": "0" * 64},
+            "raw",
+        )
+
+
+@pytest.mark.parametrize("field,value", [("success", False), ("checkpoint_count", 3)])
+def test_v4c_offline_summary_rejects_edited_condition_outcomes(
+    tmp_path: Path, field: str, value: Any
+) -> None:
+    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    rows = load_jsonl(conditions)
+    rows[0][field] = value
+    conditions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    with pytest.raises(ValueError, match="summaries do not match prediction records"):
+        summarize_v4c_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            conditions_path=conditions,
         )
 
 
