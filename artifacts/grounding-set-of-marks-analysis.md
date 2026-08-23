@@ -27,9 +27,16 @@ the raw screenshot — and for which models?
 | v3c calibration | gemma-3-4b, qwen-2.5-vl-7b | 20 | 0 | 0 | **transport confound — no model evidence, see below** | 0 | per-model `grounding-v3c-calibration-predictions-*.jsonl` |
 | v4 pilot (10 single-click examples) | `gpt-5.6-luna` (low) | 10 | 9 | 9 | 0 discordant; 1 example incorrect in both | 0 | `grounding-v4-pilot-results-luna.json` |
 | v4b pilot (10 closed-loop episodes) | `gpt-5.6-luna` (low) | 10 | 9 | 10 | 1 discordant episode | 1 | `grounding-v4b-pilot-results-luna.json` |
+| v4b pilot (10 closed-loop episodes) | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) | 10 | 10 | 10 | 0 discordant episodes | 0 | `grounding-v4b-pilot-results-haiku.json` |
 
 All denominators keep request failures and invalid outputs as incorrect; no run in this table
 excluded an example. Small-n rows (10–20) have coarse resolution and support no delta estimate.
+
+The Haiku v4b run is a single fresh collection (no prior collection, no cache reuse): 60 new
+paid model calls, and all 60 stored action records parsed with zero request failures, zero
+parse failures, and zero invalid actions (per-episode `failures` lists are all empty). Under
+the routing thresholds fixed in advance it records the same `design_longer_horizon_successor`
+decision as the Luna run.
 
 **Flash confound (disclosed in `grounding-report.md`):** all 9 Flash raw failures are HTTP
 request failures clustered in a single ~10-second burst during the sequential raw pass,
@@ -51,7 +58,7 @@ with in-bounds click coordinates, so their scores are genuine model results.
 | v1 scored (both dates) | 100/100 targets proposed | 100/100 when proposed |
 | v3c calibration | 20/20 marks records per model (`target_proposed`) | Haiku 20/20; Flash 20/20; gemma-3-27b 0/20; llama-4-scout 0/20 |
 | v4 pilot | 10/10 | 9/10 |
-| v4b pilot | 60/60 reachable actionable states | not separable from episode success at this n |
+| v4b pilot (Luna and Haiku) | 60/60 reachable actionable states in each run | not separable from episode success at this n |
 
 In every run with recorded per-example coverage, the candidate generator proposed the target,
 so no marks miss in those runs is attributable to a proposal failure. The v4b number is
@@ -77,7 +84,10 @@ uniformly positive:
    in v4 and one discordant episode in v4b. That v4b episode's raw failure is a visible-policy
    application error with correct localization throughout (see
    `grounding-v4b-error-review.md`); marks do not target that failure class, and n = 1 supports
-   no attribution.
+   no attribution. Haiku 4.5 on the same v4b pilot is at ceiling in both conditions (10/10 raw,
+   10/10 marks, zero discordant episodes), extending its v1 ceiling result to the closed-loop
+   pilot and strengthening the ceiling finding: across the two frontier models on v4b, the only
+   discordant episode remains Luna's single visible-policy error.
 3. **Floor band: no rescue observed.** The two floor models with valid outputs (gemma-3-27b,
    llama-4-scout) followed the coordinate contract — every response parsed, every click
    in-bounds — yet scored 0–1/20 raw and 0/20 marks. For these models the overlay changed
