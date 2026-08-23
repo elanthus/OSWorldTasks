@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan or run the preregistered capped v4b Luna evaluation."""
+"""Plan or run a preregistered capped v4b provider evaluation."""
 
 from __future__ import annotations
 
@@ -8,13 +8,29 @@ import json
 from pathlib import Path
 
 from pixelgym.grounding.evaluation import ResponseCache
-from pixelgym.grounding.providers import CodexCLIProvider, MockProvider
+from pixelgym.grounding.providers import (
+    CLAUDE_HAIKU_MODEL,
+    ClaudeCodeCLIProvider,
+    CodexCLIProvider,
+    GroundingProvider,
+    MockProvider,
+)
 from pixelgym.grounding.v4b_evaluation import planned_v4b_calls, run_v4b_evaluation
+
+
+def provider_for_name(name: str) -> GroundingProvider:
+    if name == "luna":
+        return CodexCLIProvider(model="gpt-5.6-luna")
+    if name == "haiku":
+        return ClaudeCodeCLIProvider(model=CLAUDE_HAIKU_MODEL)
+    if name == "mock":
+        return MockProvider()
+    raise ValueError(f"unsupported provider: {name}")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", choices=("luna", "mock"), required=True)
+    parser.add_argument("--provider", choices=("luna", "haiku", "mock"), required=True)
     parser.add_argument("--max-new-calls", type=int, required=True)
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--predictions", type=Path)
@@ -27,7 +43,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     root = Path(__file__).resolve().parents[1]
-    provider = CodexCLIProvider(model="gpt-5.6-luna") if args.provider == "luna" else MockProvider()
+    provider = provider_for_name(args.provider)
     cache_dir = args.cache_directory or root / ".cache" / "grounding-v4b" / "responses"
     if args.plan_only:
         result = planned_v4b_calls(
@@ -37,10 +53,13 @@ def main() -> None:
         )
         if args.plan_output is not None:
             encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
-            if args.plan_output.is_file() and args.plan_output.read_text() != encoded:
+            if (
+                args.plan_output.is_file()
+                and args.plan_output.read_text(encoding="utf-8") != encoded
+            ):
                 raise ValueError("refusing to overwrite different immutable v4b plan")
             args.plan_output.parent.mkdir(parents=True, exist_ok=True)
-            args.plan_output.write_text(encoded)
+            args.plan_output.write_text(encoded, encoding="utf-8")
     else:
         result = run_v4b_evaluation(
             repository_root=root,

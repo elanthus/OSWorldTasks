@@ -22,6 +22,7 @@ CODEX_MODEL = "gpt-5.4-mini"
 CODEX_PARAMETERS: dict[str, Any] = {"reasoning_effort": "low", "temperature": None}
 OPENROUTER_PARAMETERS: dict[str, Any] = {"temperature": 0, "seed": 20260809}
 CLAUDE_MODEL = "claude-sonnet-5"
+CLAUDE_HAIKU_MODEL = "claude-haiku-4-5-20251001"
 CLAUDE_PARAMETERS: dict[str, Any] = {"temperature": 0}
 
 
