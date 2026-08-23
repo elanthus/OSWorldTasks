@@ -233,10 +233,16 @@ def test_v4b_runner_preflights_immutable_output_paths_before_inputs(
 
 
 def _write_summary_fixture(
-    root: Path, *, raw_success: int, marks_success: int, failure: str | None = None
+    root: Path,
+    *,
+    raw_success: int,
+    marks_success: int,
+    failure: str | None = None,
+    prefix: str = "",
+    action_count: int = 3,
 ) -> tuple[Path, Path]:
     artifacts = root / "artifacts"
-    artifacts.mkdir()
+    artifacts.mkdir(exist_ok=True)
     (artifacts / "grounding-v4b-pilot-capture.json").write_text(
         json.dumps({"proposal_covered_state_count": 60, "actionable_state_count": 60})
     )
@@ -245,11 +251,15 @@ def _write_summary_fixture(
     for seed in range(40, 50):
         for condition in ("raw", "marks"):
             success_count = raw_success if condition == "raw" else marks_success
-            predictions.append(
+            predictions.extend(
                 {
+                    "seed": seed,
+                    "condition": condition,
+                    "cache_hit": False,
                     "model": "gpt-5.6-luna",
                     "parameters": {"reasoning_effort": "low", "temperature": None},
                 }
+                for _ in range(action_count)
             )
             conditions.append(
                 {
@@ -257,14 +267,14 @@ def _write_summary_fixture(
                     "condition": condition,
                     "success": seed - 40 < success_count,
                     "checkpoint_count": 3 if seed - 40 < success_count else 2,
-                    "action_count": 3,
-                    "new_calls": 3,
+                    "action_count": action_count,
+                    "new_calls": action_count,
                     "cache_hits": 0,
                     "failures": [failure] if failure and seed == 40 and condition == "raw" else [],
                 }
             )
-    predictions_path = artifacts / "predictions.jsonl"
-    conditions_path = artifacts / "conditions.jsonl"
+    predictions_path = artifacts / f"{prefix}predictions.jsonl"
+    conditions_path = artifacts / f"{prefix}conditions.jsonl"
     predictions_path.write_text("".join(json.dumps(row) + "\n" for row in predictions))
     conditions_path.write_text("".join(json.dumps(row) + "\n" for row in conditions))
     return predictions_path, conditions_path
@@ -297,21 +307,55 @@ def test_v4b_offline_routing(
 def test_v4b_offline_summary_tracks_and_enforces_cumulative_paid_calls(
     tmp_path: Path,
 ) -> None:
-    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    prior_predictions, prior_conditions = _write_summary_fixture(
+        tmp_path,
+        raw_success=9,
+        marks_success=10,
+        prefix="prior-",
+        action_count=1,
+    )
+    predictions, conditions = _write_summary_fixture(
+        tmp_path, raw_success=9, marks_success=10, prefix="current-"
+    )
     results = summarize_v4b_evaluation(
         repository_root=tmp_path,
         predictions_path=predictions,
         conditions_path=conditions,
-        prior_paid_calls=20,
+        prior_predictions_path=prior_predictions,
+        prior_conditions_path=prior_conditions,
     )
     assert results["collection"]["new_call_count"] == 60
     assert results["collection"]["prior_paid_call_count"] == 20
     assert results["collection"]["cumulative_paid_call_count"] == 80
+    assert results["prior_collection"]["new_call_count"] == 20
 
+    excess_predictions, excess_conditions = _write_summary_fixture(
+        tmp_path,
+        raw_success=9,
+        marks_success=10,
+        prefix="excess-",
+        action_count=2,
+    )
     with pytest.raises(ValueError, match="cumulative paid calls"):
         summarize_v4b_evaluation(
             repository_root=tmp_path,
             predictions_path=predictions,
             conditions_path=conditions,
-            prior_paid_calls=21,
+            prior_predictions_path=excess_predictions,
+            prior_conditions_path=excess_conditions,
+        )
+
+
+def test_v4b_offline_summary_rejects_condition_prediction_counter_mismatch(
+    tmp_path: Path,
+) -> None:
+    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    rows = load_jsonl(conditions)
+    rows[0]["new_calls"] -= 1
+    conditions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    with pytest.raises(ValueError, match="counters do not match"):
+        summarize_v4b_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+            conditions_path=conditions,
         )

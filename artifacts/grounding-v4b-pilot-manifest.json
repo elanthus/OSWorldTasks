@@ -63,11 +63,11 @@
     },
     "results_luna": {
       "path": "artifacts/grounding-v4b-pilot-results-luna.json",
-      "sha256": "3e9968c7efc8e41e30ab93619b870a82434995bdcbc4001e365b23cd95baaea9"
+      "sha256": "53d9773431b087a0a942a98b88866020d593d7666b6a3ddce86c9c4ba1bbf86d"
     },
     "results_luna_pre_review": {
       "path": "artifacts/grounding-v4b-pilot-results-luna-pre-review.json",
-      "sha256": "0f61bfff3d5eecd0ac677331f4ac7edad8df557575f425b0194f5218d3a0d205"
+      "sha256": "23fe4bc8fc828d3628ef4f089fee52d751557a03da9c25def76bb0f7e013aea2"
     },
     "states": {
       "path": "artifacts/grounding-v4b-pilot-states.jsonl",

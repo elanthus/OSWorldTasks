@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -422,25 +422,86 @@ def run_v4b_evaluation(
     }
 
 
-def summarize_v4b_evaluation(
-    *,
-    repository_root: Path,
-    predictions_path: Path,
-    conditions_path: Path,
-    prior_paid_calls: int = 0,
-) -> dict[str, Any]:
-    if isinstance(prior_paid_calls, bool) or not isinstance(prior_paid_calls, int):
-        raise TypeError("v4b prior_paid_calls must be an integer")
-    if not 0 <= prior_paid_calls <= V4B_CALL_CAP:
-        raise ValueError("v4b prior_paid_calls must be between 0 and 80")
-    predictions = load_jsonl(predictions_path)
-    conditions = load_jsonl(conditions_path)
-    expected = {(seed, condition) for seed in V4B_SEEDS for condition in V4B_CONDITIONS}
+def _validate_v4b_collection(
+    predictions: list[dict[str, Any]],
+    conditions: list[dict[str, Any]],
+    expected: set[tuple[int, str]],
+) -> dict[str, int]:
     actual = [(row.get("seed"), row.get("condition")) for row in conditions]
     if len(actual) != len(set(actual)) or set(actual) != expected:
         raise ValueError("v4b condition summaries do not match the frozen 10x2 grid")
     if len(predictions) > V4B_CALL_CAP:
         raise ValueError("v4b predictions exceed the 80-call cap")
+    grouped: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
+    for prediction in predictions:
+        key = (prediction.get("seed"), prediction.get("condition"))
+        if key not in expected:
+            raise ValueError("v4b prediction does not match the frozen 10x2 grid")
+        if not isinstance(prediction.get("cache_hit"), bool):
+            raise TypeError("v4b prediction cache_hit must be boolean")
+        grouped[key].append(prediction)
+    if set(grouped) != expected:
+        raise ValueError("v4b predictions do not cover the frozen 10x2 grid")
+    for condition in conditions:
+        key = (condition["seed"], condition["condition"])
+        rows = grouped[key]
+        cache_hits = sum(row["cache_hit"] is True for row in rows)
+        new_calls = len(rows) - cache_hits
+        if (
+            condition.get("action_count") != len(rows)
+            or condition.get("new_calls") != new_calls
+            or condition.get("cache_hits") != cache_hits
+        ):
+            raise ValueError("v4b condition counters do not match prediction records")
+    return {
+        "action_records": len(predictions),
+        "new_calls": sum(row["cache_hit"] is False for row in predictions),
+        "cache_hits": sum(row["cache_hit"] is True for row in predictions),
+    }
+
+
+def summarize_v4b_evaluation(
+    *,
+    repository_root: Path,
+    predictions_path: Path,
+    conditions_path: Path,
+    prior_predictions_path: Path | None = None,
+    prior_conditions_path: Path | None = None,
+) -> dict[str, Any]:
+    root = repository_root.resolve()
+    predictions_path = predictions_path.resolve()
+    conditions_path = conditions_path.resolve()
+    if (prior_predictions_path is None) != (prior_conditions_path is None):
+        raise ValueError("v4b prior prediction and condition evidence must be supplied together")
+    evidence_paths = [predictions_path, conditions_path]
+    if prior_predictions_path is not None and prior_conditions_path is not None:
+        prior_predictions_path = prior_predictions_path.resolve()
+        prior_conditions_path = prior_conditions_path.resolve()
+        evidence_paths.extend((prior_predictions_path, prior_conditions_path))
+    if any(not path.is_relative_to(root) for path in evidence_paths):
+        raise ValueError("all v4b summary evidence paths must be inside the repository")
+    predictions = load_jsonl(predictions_path)
+    conditions = load_jsonl(conditions_path)
+    expected = {(seed, condition) for seed in V4B_SEEDS for condition in V4B_CONDITIONS}
+    collection = _validate_v4b_collection(predictions, conditions, expected)
+    prior_paid_calls = 0
+    prior_collection = None
+    if prior_predictions_path is not None and prior_conditions_path is not None:
+        prior_predictions = load_jsonl(prior_predictions_path)
+        prior_conditions = load_jsonl(prior_conditions_path)
+        prior_counts = _validate_v4b_collection(prior_predictions, prior_conditions, expected)
+        prior_paid_calls = prior_counts["new_calls"]
+        prior_collection = {
+            "new_call_count": prior_paid_calls,
+            "predictions": {
+                "path": prior_predictions_path.relative_to(root).as_posix(),
+                "sha256": _sha256(prior_predictions_path.read_bytes()),
+            },
+            "condition_summaries": {
+                "path": prior_conditions_path.relative_to(root).as_posix(),
+                "sha256": _sha256(prior_conditions_path.read_bytes()),
+            },
+        }
     raw_success = sum(row["success"] is True for row in conditions if row["condition"] == "raw")
     marks_success = sum(row["success"] is True for row in conditions if row["condition"] == "marks")
     failures = Counter(failure for row in conditions for failure in row.get("failures", []))
@@ -464,7 +525,7 @@ def summarize_v4b_evaluation(
     else:
         route = "human_review"
         rationale = "result does not match a preregistered automatic routing cell"
-    incremental_new_calls = sum(row.get("new_calls", 0) for row in conditions)
+    incremental_new_calls = collection["new_calls"]
     cumulative_paid_calls = prior_paid_calls + incremental_new_calls
     if cumulative_paid_calls > V4B_CALL_CAP:
         raise ValueError("v4b cumulative paid calls exceed the approved 80-call cap")
@@ -480,8 +541,9 @@ def summarize_v4b_evaluation(
             "new_call_count": incremental_new_calls,
             "prior_paid_call_count": prior_paid_calls,
             "cumulative_paid_call_count": cumulative_paid_calls,
-            "cache_hit_count": sum(row.get("cache_hits", 0) for row in conditions),
+            "cache_hit_count": collection["cache_hits"],
         },
+        "prior_collection": prior_collection,
         "conditions": {
             "raw": {"success_count": raw_success, "episode_count": 10},
             "marks": {"success_count": marks_success, "episode_count": 10},
@@ -501,11 +563,11 @@ def summarize_v4b_evaluation(
         },
         "routing": {"decision": route, "rationale": rationale},
         "predictions": {
-            "path": predictions_path.relative_to(repository_root).as_posix(),
+            "path": predictions_path.relative_to(root).as_posix(),
             "sha256": _sha256(predictions_path.read_bytes()),
         },
         "condition_summaries": {
-            "path": conditions_path.relative_to(repository_root).as_posix(),
+            "path": conditions_path.relative_to(root).as_posix(),
             "sha256": _sha256(conditions_path.read_bytes()),
         },
     }
@@ -518,20 +580,28 @@ def record_v4b_evaluation(
     conditions_path: Path,
     results_path: Path,
     manifest_path: Path,
-    prior_paid_calls: int = 0,
+    prior_predictions_path: Path | None = None,
+    prior_conditions_path: Path | None = None,
 ) -> dict[str, Any]:
     """Write an offline result and update the v4b manifest without provider calls."""
     root = repository_root.resolve()
     paths = [predictions_path, conditions_path, results_path, manifest_path]
+    if prior_predictions_path is not None:
+        paths.append(prior_predictions_path)
+    if prior_conditions_path is not None:
+        paths.append(prior_conditions_path)
     resolved = [path.resolve() for path in paths]
     if any(not path.is_relative_to(root) for path in resolved):
         raise ValueError("all v4b evidence paths must be inside the repository")
-    predictions_path, conditions_path, results_path, manifest_path = resolved
+    predictions_path, conditions_path, results_path, manifest_path = resolved[:4]
+    resolved_prior_predictions = resolved[4] if prior_predictions_path is not None else None
+    resolved_prior_conditions = resolved[-1] if prior_conditions_path is not None else None
     results = summarize_v4b_evaluation(
         repository_root=root,
         predictions_path=predictions_path,
         conditions_path=conditions_path,
-        prior_paid_calls=prior_paid_calls,
+        prior_predictions_path=resolved_prior_predictions,
+        prior_conditions_path=resolved_prior_conditions,
     )
     encoded_results = json.dumps(results, indent=2, sort_keys=True) + "\n"
     if results_path.is_file() and results_path.read_text() != encoded_results:
@@ -564,7 +634,7 @@ def record_v4b_evaluation(
     }
     if history and history[-1] != decision:
         raise ValueError("refusing to replace different v4b decision history")
-    results_path.write_text(encoded_results)
+    results_path.write_text(encoded_results, encoding="utf-8")
     if not history:
         history.append(decision)
     manifest["status"] = status_by_route[route]
@@ -593,5 +663,7 @@ def record_v4b_evaluation(
                 "path": pre_review.relative_to(root).as_posix(),
                 "sha256": _sha256(pre_review.read_bytes()),
             }
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return results

@@ -42,6 +42,17 @@
     "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
     "sha256": "900917802b962585c0a5098d8a8a15e079a4ea67e903a4f43fe14790310c616e"
   },
+  "prior_collection": {
+    "condition_summaries": {
+      "path": "artifacts/grounding-v4b-pilot-conditions-luna-pre-review.jsonl",
+      "sha256": "9f6f22df1f4ad36e6bfc8c57b5465e7ef6e3b46527afc796939c9b12343e0258"
+    },
+    "new_call_count": 62,
+    "predictions": {
+      "path": "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl",
+      "sha256": "e16342d57669e58df59265d89f2e90552324f8c3b8d54430116b9a2b1effdc01"
+    }
+  },
   "protocol_version": "pixelgym-grounding-v4b-pilot",
   "routing": {
     "decision": "design_longer_horizon_successor",

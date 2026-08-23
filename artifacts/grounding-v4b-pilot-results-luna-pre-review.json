@@ -3,11 +3,13 @@
     "action_record_count": 63,
     "cache_hit_count": 1,
     "condition_record_count": 20,
+    "cumulative_paid_call_count": 62,
     "episode_count": 10,
-    "new_call_count": 62
+    "new_call_count": 62,
+    "prior_paid_call_count": 0
   },
   "condition_summaries": {
-    "path": "artifacts/grounding-v4b-pilot-conditions-luna.jsonl",
+    "path": "artifacts/grounding-v4b-pilot-conditions-luna-pre-review.jsonl",
     "sha256": "9f6f22df1f4ad36e6bfc8c57b5465e7ef6e3b46527afc796939c9b12343e0258"
   },
   "conditions": {
@@ -37,9 +39,10 @@
     "temperature": null
   },
   "predictions": {
-    "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
+    "path": "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl",
     "sha256": "e16342d57669e58df59265d89f2e90552324f8c3b8d54430116b9a2b1effdc01"
   },
+  "prior_collection": null,
   "protocol_version": "pixelgym-grounding-v4b-pilot",
   "routing": {
     "decision": "design_longer_horizon_successor",
