@@ -423,6 +423,26 @@ def v4c_task_id(seed: int) -> str:
     return "v4c-" + hashlib.sha256(canonical_json_bytes(episode)).hexdigest()[:16]
 
 
+def apply_v4c_click(
+    episode: dict[str, Any], stage: int, pinned: bool, clicked_id: str | None
+) -> tuple[int, bool, bool]:
+    """The single frozen transition rule: (stage, pinned, recovery) after one click.
+
+    Shared by the replay backend and the offline evidence replayer so the two can
+    never drift apart.
+    """
+    stage_spec = episode["stages"][stage]
+    if clicked_id == stage_spec["target"]:
+        if stage == episode["commit_stage"]:
+            pinned = True
+        return stage + 1, pinned, False
+    if stage == episode["commit_stage"] and clicked_id == V4C_SKIP_ID:
+        # The preregistered progressing non-target: the workflow continues but
+        # the carrier value never reaches the pinned chip.
+        return stage + 1, pinned, False
+    return stage, pinned, True
+
+
 def _validate_deferred_dependency(episode: dict[str, Any]) -> None:
     commit = episode["commit_stage"]
     consumer = episode["consumer_stage"]
@@ -445,6 +465,8 @@ def _validate_deferred_dependency(episode: dict[str, Any]) -> None:
             continue
         if any(value in fact for fact in stage["facts"]):
             raise ValueError("v4c carrier value leaked into a post-commit stage's facts")
+        if value in stage["heading"] or value in stage["instruction"]:
+            raise ValueError("v4c carrier value leaked into a post-commit stage's text")
         if index != consumer and any(value in row["label"] for row in stage["options"]):
             raise ValueError("v4c carrier value leaked into a non-consumer stage's options")
         if index != commit and V4C_SKIP_ID in {row["semantic_id"] for row in stage["options"]}:

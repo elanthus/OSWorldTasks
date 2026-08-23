@@ -17,6 +17,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--predictions", type=Path, required=True)
     parser.add_argument("--conditions", type=Path, required=True)
+    parser.add_argument("--attempts", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--manifest",
@@ -32,6 +33,7 @@ def main() -> None:
         "repository_root": root,
         "predictions_path": args.predictions.resolve(),
         "conditions_path": args.conditions.resolve(),
+        "attempts_path": args.attempts.resolve(),
         "prior_predictions_path": args.prior_predictions.resolve()
         if args.prior_predictions is not None
         else None,

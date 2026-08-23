@@ -1,6 +1,12 @@
 {
+  "attempts": {
+    "path": "artifacts/grounding-v4c-pilot-attempts-luna.json",
+    "sha256": "0767ca8723e49bb743e47bd9fea40a301f74d6e1390b6035ea0d3a7a2f5207da"
+  },
   "collection": {
     "action_record_count": 140,
+    "attempt_ledger_provenance": "backfilled-from-verified-response-cache",
+    "attempted_paid_call_count": 138,
     "cache_hit_count": 2,
     "condition_record_count": 20,
     "cumulative_paid_call_count": 138,
@@ -62,7 +68,7 @@
     "decision": "report_saturation_stop",
     "rationale": "at least one condition scored 9-10/10; any successor design requires a new explicit human scope decision"
   },
-  "schema_version": "pixelgym-grounding-v4c-results-v1",
+  "schema_version": "pixelgym-grounding-v4c-results-v2",
   "set_of_marks": {
     "proposal_covered_state_count": 244,
     "proposal_total_state_count": 244

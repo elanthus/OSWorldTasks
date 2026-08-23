@@ -13,13 +13,22 @@ from pixelgym.backends.base import Frame
 from pixelgym.grounding.v4c_protocol import (
     V4C_HEIGHT,
     V4C_SEEDS,
-    V4C_SKIP_ID,
     V4C_WIDTH,
+    apply_v4c_click,
     episode_for_seed,
     v4c_task_id,
 )
 from pixelgym.serialization import load_jsonl
 from pixelgym.task_spec import Submission
+
+
+def clicked_candidate_id(candidates: list[dict[str, Any]], x: int, y: int) -> str | None:
+    """Map a screenshot-pixel click to the candidate control it lands on, if any."""
+    for candidate in candidates:
+        x0, y0, x1, y1 = candidate["bbox"]
+        if x0 <= x < x1 and y0 <= y < y1:
+            return str(candidate["semantic_id"])
+    return None
 
 
 class V4CReplayBackend:
@@ -123,24 +132,13 @@ class V4CReplayBackend:
         if self._seed is None or self._stage >= self._decisions:
             raise RuntimeError("click outside an active v4c episode")
         self._action_count += 1
-        clicked_id = None
-        for candidate in self._candidates[self.state_id]:
-            x0, y0, x1, y1 = candidate["bbox"]
-            if x0 <= x < x1 and y0 <= y < y1:
-                clicked_id = candidate["semantic_id"]
-                break
+        clicked_id = clicked_candidate_id(self._candidates[self.state_id], x, y)
         episode = episode_for_seed(self._seed)
-        stage_spec = episode["stages"][self._stage]
-        if clicked_id == stage_spec["target"]:
-            if self._stage == episode["commit_stage"]:
-                self._pinned = True
+        stage, pinned, recovery = apply_v4c_click(episode, self._stage, self._pinned, clicked_id)
+        self._pinned = pinned
+        self._recovery = recovery
+        if stage != self._stage:
             self._advance()
-        elif self._stage == episode["commit_stage"] and clicked_id == V4C_SKIP_ID:
-            # The preregistered progressing non-target: the workflow continues but
-            # the carrier value never reaches the pinned chip.
-            self._advance()
-        else:
-            self._recovery = True
 
     def read_submissions(self) -> Sequence[Submission]:
         return tuple(self._submissions)

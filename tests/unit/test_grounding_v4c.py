@@ -7,6 +7,7 @@ import copy
 import json
 import re
 import shutil
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -21,25 +22,34 @@ from pixelgym.grounding.evaluation import ResponseCache
 from pixelgym.grounding.providers import MockProvider
 from pixelgym.grounding.v4c_backend import V4CReplayBackend
 from pixelgym.grounding.v4c_evaluation import (
+    V4C_ACTION_SCHEMA_VERSION,
+    V4C_PARSER_VERSION,
+    V4C_PREDICTION_SCHEMA_VERSION,
+    V4C_PROMPT_VERSION,
     _candidate_center,
     _image_for_condition,
     _load_inputs,
     _paid_call_ledger_path,
     _parse_action,
+    _replayed_condition_outcome,
     _state_for_observation,
+    _state_identity,
     _target_center,
     planned_v4c_calls,
     read_paid_call_ledger,
     record_v4c_evaluation,
     run_v4c_evaluation,
     summarize_v4c_evaluation,
+    write_v4c_attempts_snapshot,
 )
 from pixelgym.grounding.v4c_protocol import (
     V4C_CALL_CAP,
     V4C_EPISODES,
+    V4C_PROTOCOL_VERSION,
     V4C_SEEDS,
     V4C_SKIP_ID,
     _validate_deferred_dependency,
+    apply_v4c_click,
     episode_for_seed,
     episode_max_actions,
     validate_v4c_protocol,
@@ -291,15 +301,21 @@ def test_v4c_free_plan_reports_exact_upper_bound_without_provider_calls(tmp_path
 
 def test_v4c_runner_enforces_cap_before_first_uncached_call(tmp_path: Path) -> None:
     provider = MockProvider()
-    with pytest.raises(RuntimeError, match="approved cap of 0"):
-        run_v4c_evaluation(
-            repository_root=REPOSITORY_ROOT,
-            provider=provider,
-            predictions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-predictions.jsonl",
-            conditions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-conditions.jsonl",
-            max_new_calls=0,
-            cache_directory=tmp_path / "cache",
-        )
+    output_dir = REPOSITORY_ROOT / ".cache" / f"test-run-{uuid4().hex}"
+    try:
+        with pytest.raises(RuntimeError, match="approved cap of 0"):
+            run_v4c_evaluation(
+                repository_root=REPOSITORY_ROOT,
+                provider=provider,
+                predictions_path=output_dir / "predictions.jsonl",
+                conditions_path=output_dir / "conditions.jsonl",
+                attempts_path=output_dir / "attempts.json",
+                max_new_calls=0,
+                cache_directory=tmp_path / "cache",
+                ledger_directory=tmp_path / "ledgers",
+            )
+    finally:
+        shutil.rmtree(output_dir, ignore_errors=True)
     assert provider.call_count == 0
 
 
@@ -327,119 +343,152 @@ def test_v4c_runner_preflights_immutable_output_paths_before_inputs(
             provider=provider,
             predictions_path=first,
             conditions_path=second,
+            attempts_path=root / "attempts.json",
             max_new_calls=V4C_CALL_CAP,
             cache_directory=tmp_path / "cache",
+            ledger_directory=tmp_path / "ledgers",
         )
     assert provider.call_count == 0
+
+
+_FIXTURE_INPUTS: dict[str, Any] | None = None
+
+
+def _real_inputs() -> dict[str, Any]:
+    global _FIXTURE_INPUTS
+    if _FIXTURE_INPUTS is None:
+        _FIXTURE_INPUTS = _load_inputs(REPOSITORY_ROOT)
+    return _FIXTURE_INPUTS
 
 
 def _fixture_condition(
     seed: int, condition: str, *, success: bool, parse_failure: bool, cached: bool
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Build a prediction sequence consistent with the real captured state graph."""
+    inputs = _real_inputs()
     episode = episode_for_seed(seed)
     decisions = len(episode["stages"])
-    commit = episode["commit_stage"]
-    consumer = episode["consumer_stage"]
+    max_actions = episode_max_actions(seed)
     base = {
+        "schema_version": V4C_PREDICTION_SCHEMA_VERSION,
+        "protocol_version": V4C_PROTOCOL_VERSION,
+        "prompt_version": V4C_PROMPT_VERSION,
+        "parser_version": V4C_PARSER_VERSION,
+        "action_schema_version": V4C_ACTION_SCHEMA_VERSION,
         "seed": seed,
+        "family": episode["family"],
         "condition": condition,
-        "cache_hit": cached,
-        "parse_status": "parsed",
-        "reward": 0.0,
-        "terminated": False,
-        "truncated": False,
+        "provider": "mock-fixture",
         "model": "gpt-5.6-luna",
         "parameters": {"reasoning_effort": "low", "temperature": None},
+        "cache_hit": cached,
+        "request_failure": None,
     }
-    if parse_failure:
-        rows = [
-            {
-                **base,
-                "action_index": 1,
-                "parse_status": "invalid",
-                "checkpoint_after": 0,
-                "pinned_after": False,
-            }
-        ]
-        derived: dict[str, Any] = {
-            "success": False,
-            "terminated": False,
-            "truncated": False,
-            "checkpoint_count": 0,
-            "committed": False,
-            "consumer_pinned": None,
-            "consumer_correct": None,
-            "failures": ["parse_failure"],
+    rows: list[dict[str, Any]] = []
+    stage, pinned, recovery = 0, False, False
+    parsed_steps = 0
+    while True:
+        state = inputs["state_by_id"][_state_identity(seed, stage, pinned, recovery)]
+        if condition == "raw":
+            condition_image = state["image_sha256"]
+        else:
+            condition_image = inputs["overlay_by_raw"][state["image_sha256"]]["marked_image_sha256"]
+        step = {
+            **base,
+            "action_index": len(rows) + 1,
+            "observation_sha256": state["image_sha256"],
+            "condition_image_sha256": condition_image,
         }
-    elif success:
-        rows = [
-            {
-                **base,
-                "action_index": index,
-                "checkpoint_after": index,
-                "pinned_after": index > commit,
-                "reward": 1.0 if index == decisions else 0.0,
-                "terminated": index == decisions,
-            }
-            for index in range(1, decisions + 1)
+        if parse_failure:
+            rows.append(
+                {
+                    **step,
+                    "parse_status": "invalid",
+                    "raw_response": "not json",
+                    "parsed_action": None,
+                    "reward": 0.0,
+                    "terminated": False,
+                    "truncated": False,
+                    "post_observation_sha256": state["image_sha256"],
+                    "checkpoint_after": stage,
+                    "pinned_after": pinned,
+                    "recovery_after": recovery,
+                }
+            )
+            break
+        if success:
+            x, y = _target_center(inputs, seed, stage, pinned, recovery)
+            clicked: str | None = episode["stages"][stage]["target"]
+        else:
+            x, y = 5, 400
+            clicked = None
+        after_stage, after_pinned, after_recovery = apply_v4c_click(episode, stage, pinned, clicked)
+        parsed_steps += 1
+        reward = 1.0 if after_stage == decisions else 0.0
+        terminated = reward == 1.0
+        truncated = not terminated and parsed_steps >= max_actions
+        after = inputs["state_by_id"][
+            _state_identity(seed, after_stage, after_pinned, after_recovery)
         ]
-        derived = {
-            "success": True,
-            "terminated": True,
-            "truncated": False,
-            "checkpoint_count": decisions,
-            "committed": True,
-            "consumer_pinned": consumer > commit,
-            "consumer_correct": True,
-            "failures": [],
-        }
-    else:
-        limit = episode_max_actions(seed)
-        rows = [
+        action = {"action_type": 1, "x": x, "y": y, "key": 0}
+        rows.append(
             {
-                **base,
-                "action_index": index,
-                "checkpoint_after": 0,
-                "pinned_after": False,
-                "truncated": index == limit,
+                **step,
+                "parse_status": "parsed",
+                "raw_response": json.dumps(action),
+                "parsed_action": action,
+                "reward": reward,
+                "terminated": terminated,
+                "truncated": truncated,
+                "post_observation_sha256": after["image_sha256"],
+                "checkpoint_after": after_stage,
+                "pinned_after": after_pinned,
+                "recovery_after": after_recovery,
             }
-            for index in range(1, limit + 1)
-        ]
-        derived = {
-            "success": False,
-            "terminated": False,
-            "truncated": True,
-            "checkpoint_count": 0,
-            "committed": False,
-            "consumer_pinned": None,
-            "consumer_correct": None,
-            "failures": [],
-        }
+        )
+        stage, pinned, recovery = after_stage, after_pinned, after_recovery
+        if terminated or truncated:
+            break
     summary = {
         "seed": seed,
         "condition": condition,
         "action_count": len(rows),
         "new_calls": 0 if cached else len(rows),
         "cache_hits": len(rows) if cached else 0,
-        **derived,
+        **_replayed_condition_outcome(inputs, rows, seed, condition),
     }
     return rows, summary
 
 
+def _rebind_attempts(
+    attempts_path: Path,
+    predictions_path: Path,
+    conditions_path: Path,
+    attempted: int | None = None,
+) -> None:
+    snapshot = json.loads(attempts_path.read_text())
+    attempts_path.unlink()
+    write_v4c_attempts_snapshot(
+        provider_name=snapshot["provider"],
+        model=snapshot["model"],
+        attempted_paid_calls=snapshot["attempted_paid_calls"] if attempted is None else attempted,
+        provenance=snapshot["attempt_ledger_provenance"],
+        predictions_path=predictions_path,
+        conditions_path=conditions_path,
+        attempts_path=attempts_path,
+    )
+
+
 def _write_summary_fixture(
-    root: Path,
+    evidence_dir: Path,
     *,
     raw_success: int,
     marks_success: int,
     failure: str | None = None,
     prefix: str = "",
     cached: bool = False,
-) -> tuple[Path, Path]:
-    artifacts = root / "artifacts"
-    artifacts.mkdir(exist_ok=True)
-    (artifacts / "grounding-v4c-pilot-capture.json").write_text(
-        json.dumps({"proposal_covered_state_count": 244, "actionable_state_count": 244})
-    )
+    attempted: int | None = None,
+) -> tuple[Path, Path, Path]:
     predictions: list[dict[str, Any]] = []
     conditions = []
     for seed in range(60, 70):
@@ -455,11 +504,30 @@ def _write_summary_fixture(
             )
             predictions.extend(rows)
             conditions.append(summary)
-    predictions_path = artifacts / f"{prefix}predictions.jsonl"
-    conditions_path = artifacts / f"{prefix}conditions.jsonl"
+    predictions_path = evidence_dir / f"{prefix}predictions.jsonl"
+    conditions_path = evidence_dir / f"{prefix}conditions.jsonl"
+    attempts_path = evidence_dir / f"{prefix}attempts.json"
     predictions_path.write_text("".join(json.dumps(row) + "\n" for row in predictions))
     conditions_path.write_text("".join(json.dumps(row) + "\n" for row in conditions))
-    return predictions_path, conditions_path
+    new_calls = sum(row["cache_hit"] is False for row in predictions)
+    write_v4c_attempts_snapshot(
+        provider_name="mock-fixture",
+        model="gpt-5.6-luna",
+        attempted_paid_calls=new_calls if attempted is None else attempted,
+        provenance="test-fixture",
+        predictions_path=predictions_path,
+        conditions_path=conditions_path,
+        attempts_path=attempts_path,
+    )
+    return predictions_path, conditions_path, attempts_path
+
+
+@pytest.fixture
+def evidence_dir() -> Iterator[Path]:
+    path = REPOSITORY_ROOT / ".cache" / f"test-evidence-{uuid4().hex}"
+    path.mkdir(parents=True)
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
 
 
 @pytest.mark.parametrize(
@@ -475,25 +543,31 @@ def _write_summary_fixture(
     ],
 )
 def test_v4c_offline_routing(
-    tmp_path: Path, raw: int, marks: int, failure: str | None, route: str
+    evidence_dir: Path, raw: int, marks: int, failure: str | None, route: str
 ) -> None:
-    predictions, conditions = _write_summary_fixture(
-        tmp_path, raw_success=raw, marks_success=marks, failure=failure
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=raw, marks_success=marks, failure=failure
     )
     results = summarize_v4c_evaluation(
-        repository_root=tmp_path,
+        repository_root=REPOSITORY_ROOT,
         predictions_path=predictions,
         conditions_path=conditions,
+        attempts_path=attempts,
     )
     assert results["routing"]["decision"] == route
 
 
-def test_v4c_offline_summary_reports_commitment_and_carrier_utilization(tmp_path: Path) -> None:
-    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=5, marks_success=6)
+def test_v4c_offline_summary_reports_commitment_and_carrier_utilization(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=5, marks_success=6
+    )
     results = summarize_v4c_evaluation(
-        repository_root=tmp_path,
+        repository_root=REPOSITORY_ROOT,
         predictions_path=predictions,
         conditions_path=conditions,
+        attempts_path=attempts,
     )
     diagnostics = results["diagnostics"]
     assert diagnostics["commit_counts"] == {"raw": 5, "marks": 6}
@@ -506,19 +580,25 @@ def test_v4c_offline_summary_reports_commitment_and_carrier_utilization(tmp_path
 
 
 def test_v4c_offline_summary_tracks_and_enforces_cumulative_paid_calls(
-    tmp_path: Path,
+    evidence_dir: Path,
 ) -> None:
-    prior_predictions, prior_conditions = _write_summary_fixture(
-        tmp_path, raw_success=9, marks_success=10, prefix="prior-"
+    prior_predictions, prior_conditions, _ = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10, prefix="prior-"
     )
     prior_new_calls = sum(1 for row in load_jsonl(prior_predictions) if row["cache_hit"] is False)
-    predictions, conditions = _write_summary_fixture(
-        tmp_path, raw_success=9, marks_success=10, prefix="current-", cached=True
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir,
+        raw_success=9,
+        marks_success=10,
+        prefix="current-",
+        cached=True,
+        attempted=prior_new_calls,
     )
     results = summarize_v4c_evaluation(
-        repository_root=tmp_path,
+        repository_root=REPOSITORY_ROOT,
         predictions_path=predictions,
         conditions_path=conditions,
+        attempts_path=attempts,
         prior_predictions_path=prior_predictions,
         prior_conditions_path=prior_conditions,
     )
@@ -526,68 +606,104 @@ def test_v4c_offline_summary_tracks_and_enforces_cumulative_paid_calls(
     assert results["collection"]["new_call_count"] == 0
     assert results["collection"]["prior_paid_call_count"] == prior_new_calls
     assert results["collection"]["cumulative_paid_call_count"] == prior_new_calls
-    assert results["prior_collection"]["new_call_count"] == prior_new_calls
+    assert results["collection"]["attempted_paid_call_count"] == prior_new_calls
 
-    excess_predictions, excess_conditions = _write_summary_fixture(
-        tmp_path, raw_success=9, marks_success=10, prefix="excess-"
+    excess_predictions, excess_conditions, excess_attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10, prefix="excess-"
     )
     with pytest.raises(ValueError, match="cumulative paid calls"):
         summarize_v4c_evaluation(
-            repository_root=tmp_path,
+            repository_root=REPOSITORY_ROOT,
             predictions_path=excess_predictions,
             conditions_path=excess_conditions,
+            attempts_path=excess_attempts,
             prior_predictions_path=prior_predictions,
             prior_conditions_path=prior_conditions,
         )
 
 
 def test_v4c_offline_summary_rejects_condition_prediction_counter_mismatch(
-    tmp_path: Path,
+    evidence_dir: Path,
 ) -> None:
-    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
     rows = load_jsonl(conditions)
     rows[0]["new_calls"] -= 1
     conditions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    _rebind_attempts(attempts, predictions, conditions)
     with pytest.raises(ValueError, match="counters do not match"):
         summarize_v4c_evaluation(
-            repository_root=tmp_path,
+            repository_root=REPOSITORY_ROOT,
             predictions_path=predictions,
             conditions_path=conditions,
+            attempts_path=attempts,
         )
 
 
-def test_v4c_offline_summary_rejects_aliased_evidence_paths(tmp_path: Path) -> None:
-    predictions, _ = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+def test_v4c_offline_summary_rejects_aliased_evidence_paths(evidence_dir: Path) -> None:
+    predictions, _, attempts = _write_summary_fixture(evidence_dir, raw_success=9, marks_success=10)
     with pytest.raises(ValueError, match="summary evidence paths must be distinct"):
         summarize_v4c_evaluation(
-            repository_root=tmp_path,
+            repository_root=REPOSITORY_ROOT,
             predictions_path=predictions,
             conditions_path=predictions,
+            attempts_path=attempts,
         )
 
 
 def test_v4c_runner_enforces_cumulative_ledger_across_invocations(tmp_path: Path) -> None:
     provider = MockProvider()
-    cache = ResponseCache(tmp_path / "cache")
-    ledger = _paid_call_ledger_path(cache, provider)
+    ledger_dir = tmp_path / "ledgers"
+    ledger = _paid_call_ledger_path(ledger_dir, provider)
     ledger.parent.mkdir(parents=True, exist_ok=True)
-    ledger.write_text(json.dumps({"attempted_paid_calls": V4C_CALL_CAP}) + "\n")
-    with pytest.raises(RuntimeError, match="cumulative attempted paid calls"):
-        run_v4c_evaluation(
-            repository_root=REPOSITORY_ROOT,
-            provider=provider,
-            predictions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-l-predictions.jsonl",
-            conditions_path=REPOSITORY_ROOT / ".cache" / f"{tmp_path.name}-l-conditions.jsonl",
-            max_new_calls=V4C_CALL_CAP,
-            cache_directory=cache.directory,
-        )
+    ledger.write_text('{"provenance": "test"}\n' * V4C_CALL_CAP)
+    output_dir = REPOSITORY_ROOT / ".cache" / f"test-run-{uuid4().hex}"
+    try:
+        with pytest.raises(RuntimeError, match="cumulative attempted paid calls"):
+            run_v4c_evaluation(
+                repository_root=REPOSITORY_ROOT,
+                provider=provider,
+                predictions_path=output_dir / "predictions.jsonl",
+                conditions_path=output_dir / "conditions.jsonl",
+                attempts_path=output_dir / "attempts.json",
+                max_new_calls=V4C_CALL_CAP,
+                cache_directory=tmp_path / "cache",
+                ledger_directory=ledger_dir,
+            )
+    finally:
+        shutil.rmtree(output_dir, ignore_errors=True)
     assert provider.call_count == 0
-    assert read_paid_call_ledger(cache, provider) == V4C_CALL_CAP
+    assert read_paid_call_ledger(ledger_dir, provider) == V4C_CALL_CAP
+
+
+def test_v4c_runner_ledger_is_not_reset_by_a_fresh_cache_directory(tmp_path: Path) -> None:
+    provider = MockProvider()
+    ledger_dir = tmp_path / "ledgers"
+    ledger = _paid_call_ledger_path(ledger_dir, provider)
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text('{"provenance": "test"}\n' * V4C_CALL_CAP)
+    output_dir = REPOSITORY_ROOT / ".cache" / f"test-run-{uuid4().hex}"
+    try:
+        with pytest.raises(RuntimeError, match="cumulative attempted paid calls"):
+            run_v4c_evaluation(
+                repository_root=REPOSITORY_ROOT,
+                provider=provider,
+                predictions_path=output_dir / "predictions.jsonl",
+                conditions_path=output_dir / "conditions.jsonl",
+                attempts_path=output_dir / "attempts.json",
+                max_new_calls=V4C_CALL_CAP,
+                cache_directory=tmp_path / "second-fresh-cache",
+                ledger_directory=ledger_dir,
+            )
+    finally:
+        shutil.rmtree(output_dir, ignore_errors=True)
+    assert provider.call_count == 0
 
 
 def test_v4c_runner_ledger_counts_every_attempted_paid_call(tmp_path: Path) -> None:
     provider = MockProvider()
-    cache = ResponseCache(tmp_path / "cache")
+    ledger_dir = tmp_path / "ledgers"
     # Evidence paths must live inside the repository, so use a unique throwaway
     # directory under the ignored .cache tree and remove it afterwards.
     output_dir = REPOSITORY_ROOT / ".cache" / f"test-run-{uuid4().hex}"
@@ -597,15 +713,20 @@ def test_v4c_runner_ledger_counts_every_attempted_paid_call(tmp_path: Path) -> N
             provider=provider,
             predictions_path=output_dir / "predictions.jsonl",
             conditions_path=output_dir / "conditions.jsonl",
+            attempts_path=output_dir / "attempts.json",
             max_new_calls=V4C_CALL_CAP,
-            cache_directory=cache.directory,
+            cache_directory=tmp_path / "cache",
+            ledger_directory=ledger_dir,
         )
+        snapshot = json.loads((output_dir / "attempts.json").read_text())
     finally:
         shutil.rmtree(output_dir, ignore_errors=True)
     assert result["new_calls"] == provider.call_count == 20
     assert result["prior_attempted_paid_calls"] == 0
     assert result["cumulative_attempted_paid_calls"] == 20
-    assert read_paid_call_ledger(cache, provider) == 20
+    assert read_paid_call_ledger(ledger_dir, provider) == 20
+    assert snapshot["attempted_paid_calls"] == 20
+    assert snapshot["attempt_ledger_provenance"] == "runtime-ledger"
 
 
 def test_v4c_image_for_condition_rejects_tampered_bytes(tmp_path: Path) -> None:
@@ -632,29 +753,104 @@ def test_v4c_image_for_condition_rejects_tampered_bytes(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("field,value", [("success", False), ("checkpoint_count", 3)])
 def test_v4c_offline_summary_rejects_edited_condition_outcomes(
-    tmp_path: Path, field: str, value: Any
+    evidence_dir: Path, field: str, value: Any
 ) -> None:
-    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
     rows = load_jsonl(conditions)
     rows[0][field] = value
     conditions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    _rebind_attempts(attempts, predictions, conditions)
     with pytest.raises(ValueError, match="summaries do not match prediction records"):
         summarize_v4c_evaluation(
-            repository_root=tmp_path,
+            repository_root=REPOSITORY_ROOT,
             predictions_path=predictions,
             conditions_path=conditions,
+            attempts_path=attempts,
         )
 
 
-def test_v4c_recorder_rejects_aliased_output_before_overwrite(tmp_path: Path) -> None:
-    predictions, conditions = _write_summary_fixture(tmp_path, raw_success=9, marks_success=10)
+def test_v4c_offline_summary_replays_and_rejects_tampered_predictions(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    rows = load_jsonl(predictions)
+    action = json.dumps({"action_type": 1, "x": 0, "y": 0, "key": 0})
+    rows[0]["raw_response"] = action
+    rows[0]["parsed_action"] = json.loads(action)
+    rows[0]["observation_sha256"] = "0" * 64
+    rows[0]["post_observation_sha256"] = "1" * 64
+    predictions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    _rebind_attempts(attempts, predictions, conditions)
+    with pytest.raises(ValueError, match="does not match the replayed state"):
+        summarize_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+        )
+
+
+def test_v4c_offline_summary_rejects_fabricated_terminal_reward(evidence_dir: Path) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    rows = load_jsonl(predictions)
+    failing = [row for row in rows if row["seed"] == 69 and row["condition"] == "raw"]
+    final = failing[-1]
+    final["reward"] = 1.0
+    final["terminated"] = True
+    final["truncated"] = False
+    predictions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    _rebind_attempts(attempts, predictions, conditions)
+    with pytest.raises(ValueError, match="does not match the replayed transition"):
+        summarize_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+        )
+
+
+def test_v4c_offline_summary_rejects_unbound_or_deflated_attempts(evidence_dir: Path) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    _rebind_attempts(attempts, predictions, conditions, attempted=1)
+    with pytest.raises(ValueError, match="below the verified stored responses"):
+        summarize_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+        )
+    _rebind_attempts(attempts, predictions, conditions)
+    rows = load_jsonl(predictions)
+    predictions.write_text("".join(json.dumps(row) + "\n" for row in rows) + "\n")
+    with pytest.raises(ValueError, match="not bound to this evidence"):
+        summarize_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+        )
+
+
+def test_v4c_recorder_rejects_aliased_output_before_overwrite(evidence_dir: Path) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
     original = predictions.read_bytes()
     with pytest.raises(ValueError, match="result, and manifest paths must be distinct"):
         record_v4c_evaluation(
-            repository_root=tmp_path,
+            repository_root=REPOSITORY_ROOT,
             predictions_path=predictions,
             conditions_path=conditions,
+            attempts_path=attempts,
             results_path=predictions,
-            manifest_path=tmp_path / "artifacts" / "manifest.json",
+            manifest_path=evidence_dir / "manifest.json",
         )
     assert predictions.read_bytes() == original

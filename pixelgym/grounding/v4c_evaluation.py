@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 from collections import Counter, defaultdict
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -12,7 +14,7 @@ from pixelgym.actions import ActionType, InvalidActionError
 from pixelgym.env import PixelGuiEnv
 from pixelgym.grounding.evaluation import ResponseCache, cache_key
 from pixelgym.grounding.providers import GroundingProvider
-from pixelgym.grounding.v4c_backend import V4CReplayBackend
+from pixelgym.grounding.v4c_backend import V4CReplayBackend, clicked_candidate_id
 from pixelgym.grounding.v4c_protocol import (
     V4C_CALL_CAP,
     V4C_CONDITIONS,
@@ -22,6 +24,7 @@ from pixelgym.grounding.v4c_protocol import (
     V4C_SEEDS,
     V4C_SKIP_ID,
     V4C_WIDTH,
+    apply_v4c_click,
     episode_decisions,
     episode_for_seed,
     episode_max_actions,
@@ -34,7 +37,8 @@ V4C_PARSER_VERSION = "pixelgym-grounding-v4c-parser-v1"
 V4C_ACTION_SCHEMA_VERSION = "pixelgym-grounding-v4c-action-v1"
 V4C_PREDICTION_SCHEMA_VERSION = "pixelgym-grounding-v4c-prediction-v1"
 V4C_CONDITION_SCHEMA_VERSION = "pixelgym-grounding-v4c-condition-v1"
-V4C_RESULTS_SCHEMA_VERSION = "pixelgym-grounding-v4c-results-v1"
+V4C_RESULTS_SCHEMA_VERSION = "pixelgym-grounding-v4c-results-v2"
+V4C_ATTEMPTS_SCHEMA_VERSION = "pixelgym-grounding-v4c-attempts-v1"
 V4C_REACHABLE_STATE_COUNT = 264
 V4C_ACTIONABLE_STATE_COUNT = 244
 Condition = Literal["raw", "marks"]
@@ -149,33 +153,118 @@ def _parse_action(raw_response: str | None) -> tuple[dict[str, int] | None, str 
     return value, None
 
 
-def _paid_call_ledger_path(cache: ResponseCache, provider: GroundingProvider) -> Path:
-    return cache.directory / f"paid-call-ledger-{provider.name}-{provider.model}.json"
+def default_ledger_directory(repository_root: Path) -> Path:
+    """The fixed protocol-wide ledger location.
 
-
-def read_paid_call_ledger(cache: ResponseCache, provider: GroundingProvider) -> int:
-    """Total provider invocations ever attempted for this cache and provider.
-
-    The ledger is incremented before each invocation, so an interrupted in-flight
-    request still counts toward the protocol cap instead of silently becoming a
-    free cache miss on a rerun.
+    Deliberately independent of the selectable response-cache directory: pointing
+    the runner at a fresh cache must not reset the paid-call accounting.
     """
-    path = _paid_call_ledger_path(cache, provider)
+    return repository_root / ".cache" / "grounding-v4c" / "ledgers"
+
+
+def _paid_call_ledger_path(ledger_directory: Path, provider: GroundingProvider) -> Path:
+    return ledger_directory / f"{provider.name}-{provider.model}.jsonl"
+
+
+def _count_ledger_lines(text: str) -> int:
+    return sum(1 for line in text.splitlines() if line.strip())
+
+
+def read_paid_call_ledger(ledger_directory: Path, provider: GroundingProvider) -> int:
+    """Total provider invocations ever attempted for this ledger and provider.
+
+    One appended line per attempt, written before the invocation, so an
+    interrupted in-flight request still counts toward the protocol cap instead of
+    silently becoming a free cache miss on a rerun.
+    """
+    path = _paid_call_ledger_path(ledger_directory, provider)
     if not path.is_file():
         return 0
-    value = json.loads(path.read_text())
-    attempted = value.get("attempted_paid_calls")
-    if type(attempted) is not int or attempted < 0:
-        raise ValueError("v4c paid-call ledger is corrupt")
-    return attempted
+    return _count_ledger_lines(path.read_text(encoding="utf-8"))
 
 
-def _record_attempted_paid_call(cache: ResponseCache, provider: GroundingProvider) -> int:
-    attempted = read_paid_call_ledger(cache, provider) + 1
-    path = _paid_call_ledger_path(cache, provider)
+def _record_attempted_paid_call(
+    ledger_directory: Path, provider: GroundingProvider, cap: int
+) -> int:
+    """Append one attempt under an exclusive lock, refusing at the protocol cap."""
+    path = _paid_call_ledger_path(ledger_directory, provider)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"attempted_paid_calls": attempted}) + "\n", encoding="utf-8")
-    return attempted
+    with open(path, "a+", encoding="utf-8") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        try:
+            handle.seek(0)
+            attempted = _count_ledger_lines(handle.read())
+            if attempted >= cap:
+                raise RuntimeError(
+                    f"v4c cumulative attempted paid calls reached the protocol cap of {cap}"
+                )
+            handle.write(
+                json.dumps(
+                    {
+                        "timestamp_utc": datetime.now(UTC).isoformat(),
+                        "provenance": "runtime-ledger",
+                    }
+                )
+                + "\n"
+            )
+            handle.flush()
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
+    return attempted + 1
+
+
+def write_v4c_attempts_snapshot(
+    *,
+    provider_name: str,
+    model: str,
+    attempted_paid_calls: int,
+    provenance: str,
+    predictions_path: Path,
+    conditions_path: Path,
+    attempts_path: Path,
+) -> dict[str, Any]:
+    """Persist the attempted-paid-call total as immutable evidence bound to a run.
+
+    The snapshot binds the ledger total to the evidence files by digest so the
+    offline summary can publish attempted calls, not only stored responses.
+    """
+    snapshot = {
+        "schema_version": V4C_ATTEMPTS_SCHEMA_VERSION,
+        "protocol_version": V4C_PROTOCOL_VERSION,
+        "provider": provider_name,
+        "model": model,
+        "attempted_paid_calls": attempted_paid_calls,
+        "attempt_ledger_provenance": provenance,
+        "predictions_sha256": _sha256(predictions_path.read_bytes()),
+        "conditions_sha256": _sha256(conditions_path.read_bytes()),
+    }
+    encoded = json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    if attempts_path.is_file() and attempts_path.read_text(encoding="utf-8") != encoded:
+        raise ValueError("refusing to overwrite different immutable v4c attempts snapshot")
+    attempts_path.parent.mkdir(parents=True, exist_ok=True)
+    attempts_path.write_text(encoded, encoding="utf-8")
+    return snapshot
+
+
+def _load_attempts_snapshot(
+    attempts_path: Path, predictions_path: Path, conditions_path: Path
+) -> dict[str, Any]:
+    snapshot = json.loads(attempts_path.read_text(encoding="utf-8"))
+    if snapshot.get("schema_version") != V4C_ATTEMPTS_SCHEMA_VERSION:
+        raise ValueError("v4c attempts snapshot schema version mismatch")
+    if snapshot.get("protocol_version") != V4C_PROTOCOL_VERSION:
+        raise ValueError("v4c attempts snapshot protocol version mismatch")
+    attempted = snapshot.get("attempted_paid_calls")
+    if type(attempted) is not int or attempted < 0:
+        raise ValueError("v4c attempts snapshot attempted_paid_calls must be a count")
+    provenance = snapshot.get("attempt_ledger_provenance")
+    if not isinstance(provenance, str) or not provenance:
+        raise ValueError("v4c attempts snapshot must state its ledger provenance")
+    if snapshot.get("predictions_sha256") != _sha256(predictions_path.read_bytes()) or snapshot.get(
+        "conditions_sha256"
+    ) != _sha256(conditions_path.read_bytes()):
+        raise ValueError("v4c attempts snapshot is not bound to this evidence")
+    return cast(dict[str, Any], snapshot)
 
 
 def _cache_identity(
@@ -362,25 +451,30 @@ def run_v4c_evaluation(
     provider: GroundingProvider,
     predictions_path: Path,
     conditions_path: Path,
+    attempts_path: Path,
     max_new_calls: int,
     cache_directory: Path | None = None,
+    ledger_directory: Path | None = None,
 ) -> dict[str, Any]:
     if not 0 <= max_new_calls <= V4C_CALL_CAP:
         raise ValueError("v4c max_new_calls must be between 0 and 178")
     root = repository_root.resolve()
     predictions_path = predictions_path.resolve()
     conditions_path = conditions_path.resolve()
-    if predictions_path == conditions_path:
-        raise ValueError("v4c prediction and condition paths must differ")
-    if any(not path.is_relative_to(root) for path in (predictions_path, conditions_path)):
+    attempts_path = attempts_path.resolve()
+    output_paths = (predictions_path, conditions_path, attempts_path)
+    if len(set(output_paths)) != len(output_paths):
+        raise ValueError("v4c prediction, condition, and attempts paths must differ")
+    if any(not path.is_relative_to(root) for path in output_paths):
         raise ValueError("v4c evidence paths must be inside the repository")
-    if predictions_path.exists() or conditions_path.exists():
+    if any(path.exists() for path in output_paths):
         raise ValueError("v4c evaluation requires fresh immutable output paths")
     cache = ResponseCache(
         cache_directory or repository_root / ".cache" / "grounding-v4c" / "responses"
     )
+    ledger = (ledger_directory or default_ledger_directory(root)).resolve()
     inputs = _load_inputs(repository_root)
-    prior_attempted_paid_calls = read_paid_call_ledger(cache, provider)
+    prior_attempted_paid_calls = read_paid_call_ledger(ledger, provider)
     new_calls = 0
     cache_hits = 0
     predictions: list[dict[str, Any]] = []
@@ -424,12 +518,7 @@ def run_v4c_evaluation(
                             raise RuntimeError(
                                 f"v4c evaluation reached the approved cap of {max_new_calls} new calls"
                             )
-                        if read_paid_call_ledger(cache, provider) >= V4C_CALL_CAP:
-                            raise RuntimeError(
-                                "v4c cumulative attempted paid calls reached the "
-                                f"protocol cap of {V4C_CALL_CAP}"
-                            )
-                        _record_attempted_paid_call(cache, provider)
+                        _record_attempted_paid_call(ledger, provider, V4C_CALL_CAP)
                         response = provider.invoke(
                             image_path=image_path,
                             prompt=prompt,
@@ -541,6 +630,16 @@ def run_v4c_evaluation(
         if path.is_file() and path.read_text() != encoded:
             raise ValueError(f"refusing to overwrite different immutable v4c {path.name}")
         path.write_text(encoded)
+    cumulative_attempted = read_paid_call_ledger(ledger, provider)
+    write_v4c_attempts_snapshot(
+        provider_name=provider.name,
+        model=provider.model,
+        attempted_paid_calls=cumulative_attempted,
+        provenance="runtime-ledger",
+        predictions_path=predictions_path,
+        conditions_path=conditions_path,
+        attempts_path=attempts_path,
+    )
     return {
         "protocol_version": V4C_PROTOCOL_VERSION,
         "provider": provider.name,
@@ -549,11 +648,12 @@ def run_v4c_evaluation(
         "new_calls": new_calls,
         "cache_hits": cache_hits,
         "prior_attempted_paid_calls": prior_attempted_paid_calls,
-        "cumulative_attempted_paid_calls": read_paid_call_ledger(cache, provider),
+        "cumulative_attempted_paid_calls": cumulative_attempted,
         "action_record_count": len(predictions),
         "condition_record_count": len(condition_rows),
         "predictions_path": predictions_path.relative_to(repository_root).as_posix(),
         "conditions_path": conditions_path.relative_to(repository_root).as_posix(),
+        "attempts_path": attempts_path.relative_to(repository_root).as_posix(),
     }
 
 
@@ -564,50 +664,120 @@ _FAILURE_BY_PARSE_STATUS = {
 }
 
 
-def _derived_condition_outcome(
-    rows: list[dict[str, Any]], episode: dict[str, Any]
+_PREDICTION_VERSION_FIELDS = {
+    "schema_version": V4C_PREDICTION_SCHEMA_VERSION,
+    "protocol_version": V4C_PROTOCOL_VERSION,
+    "prompt_version": V4C_PROMPT_VERSION,
+    "parser_version": V4C_PARSER_VERSION,
+    "action_schema_version": V4C_ACTION_SCHEMA_VERSION,
+}
+
+
+def _replayed_condition_outcome(
+    inputs: dict[str, Any], rows: list[dict[str, Any]], seed: int, condition: str
 ) -> dict[str, Any]:
-    """Recompute a condition summary purely from its stored prediction records."""
+    """Replay stored parsed actions through the frozen transition rule.
+
+    Every outcome field is recomputed from the replay — the recorded state
+    hashes, transitions, rewards, and termination flags must all match, so an
+    edited prediction or condition record cannot survive summarization.
+    """
+    episode = episode_for_seed(seed)
+    decisions = len(episode["stages"])
+    consumer_stage = episode["consumer_stage"]
+    max_actions = episode_max_actions(seed)
     ordered = sorted(rows, key=lambda row: row.get("action_index", 0))
     if [row.get("action_index") for row in ordered] != list(range(1, len(ordered) + 1)):
         raise ValueError("v4c prediction action indices are not contiguous from one")
-    consumer_stage = episode["consumer_stage"]
+    if len(ordered) > max_actions:
+        raise ValueError("v4c prediction records exceed the episode's action limit")
     failures: list[str] = []
     checkpoint = 0
     committed = False
     consumer_pinned: bool | None = None
     consumer_correct: bool | None = None
     success = False
+    stage, pinned, recovery = 0, False, False
+    parsed_steps = 0
     terminated = False
     truncated = False
-    before_stage = 0
-    before_pinned = False
     for index, row in enumerate(ordered):
         final = index == len(ordered) - 1
-        status = row.get("parse_status")
-        reward = row.get("reward")
-        terminated = row.get("terminated") is True
-        truncated = row.get("truncated") is True
-        after_stage = row.get("checkpoint_after")
-        after_pinned = row.get("pinned_after") is True
-        if type(after_stage) is not int:
-            raise TypeError("v4c prediction checkpoint_after must be an integer")
-        if status in _FAILURE_BY_PARSE_STATUS:
-            failures.append(_FAILURE_BY_PARSE_STATUS[status])
-        elif status != "parsed":
-            raise ValueError(f"unknown v4c parse status {status!r}")
+        for field, expected_version in _PREDICTION_VERSION_FIELDS.items():
+            if row.get(field) != expected_version:
+                raise ValueError(f"v4c prediction {field} does not match the frozen protocol")
+        state = inputs["state_by_id"].get(_state_identity(seed, stage, pinned, recovery))
+        if state is None:
+            raise ValueError("v4c replay reached a state missing from the captured graph")
+        if row.get("observation_sha256") != state["image_sha256"]:
+            raise ValueError("v4c recorded observation does not match the replayed state")
+        if condition == "raw":
+            expected_image = state["image_sha256"]
         else:
-            if before_stage == consumer_stage and consumer_pinned is None:
-                consumer_pinned = before_pinned
-                consumer_correct = after_stage == before_stage + 1
+            overlay = inputs["overlay_by_raw"].get(state["image_sha256"])
+            if overlay is None:
+                raise ValueError("v4c replayed state has no marks overlay")
+            expected_image = overlay["marked_image_sha256"]
+        if row.get("condition_image_sha256") != expected_image:
+            raise ValueError("v4c recorded condition image does not match the replayed state")
+        status = row.get("parse_status")
+        expected_reward = 0.0
+        expected_terminated = False
+        expected_truncated = False
+        after_stage, after_pinned, after_recovery = stage, pinned, recovery
+        if status == "parsed":
+            parsed_action, parse_error = _parse_action(row.get("raw_response"))
+            if parsed_action is None or parse_error is not None:
+                raise ValueError("v4c recorded parse does not match its raw response")
+            if parsed_action != row.get("parsed_action"):
+                raise ValueError("v4c recorded parse does not match its raw response")
+            clicked = clicked_candidate_id(
+                inputs["candidate_by_id"][state["state_id"]],
+                parsed_action["x"],
+                parsed_action["y"],
+            )
+            after_stage, after_pinned, after_recovery = apply_v4c_click(
+                episode, stage, pinned, clicked
+            )
+            parsed_steps += 1
+            if after_stage == decisions:
+                expected_reward, expected_terminated = 1.0, True
+            expected_truncated = not expected_terminated and parsed_steps >= max_actions
+            if stage == consumer_stage and consumer_pinned is None:
+                consumer_pinned = pinned
+                consumer_correct = after_stage == stage + 1
             checkpoint = max(checkpoint, after_stage)
             committed = committed or after_pinned
-            success = reward == 1.0 and terminated
-            if reward not in (0.0, 1.0) or (reward == 1.0 and not (terminated and final)):
-                raise ValueError("v4c prediction rewards violate the one-shot terminal contract")
-        if (failures or terminated or truncated) and not final:
-            raise ValueError("v4c episode-ending prediction is not the final recorded action")
-        before_stage, before_pinned = after_stage, after_pinned
+            success = expected_reward == 1.0 and expected_terminated
+        elif status in _FAILURE_BY_PARSE_STATUS:
+            if status == "request_failure" and row.get("request_failure") is None:
+                raise ValueError("v4c request_failure record carries no failure detail")
+            if status == "invalid" and _parse_action(row.get("raw_response"))[0] is not None:
+                raise ValueError("v4c invalid record actually parses")
+            failures.append(_FAILURE_BY_PARSE_STATUS[status])
+        else:
+            raise ValueError(f"unknown v4c parse status {status!r}")
+        after_state = inputs["state_by_id"].get(
+            _state_identity(seed, after_stage, after_pinned, after_recovery)
+        )
+        if after_state is None:
+            raise ValueError("v4c replay reached a state missing from the captured graph")
+        if (
+            row.get("reward") != expected_reward
+            or row.get("terminated") is not expected_terminated
+            or row.get("truncated") is not expected_truncated
+            or row.get("post_observation_sha256") != after_state["image_sha256"]
+            or row.get("checkpoint_after") != after_stage
+            or row.get("pinned_after") is not after_pinned
+            or row.get("recovery_after") is not after_recovery
+        ):
+            raise ValueError("v4c recorded outcome does not match the replayed transition")
+        terminated = expected_terminated
+        truncated = expected_truncated
+        ended = bool(failures) or terminated or truncated
+        if ended is not final:
+            raise ValueError("v4c episode record does not end exactly at its final action")
+        stage, pinned, recovery = after_stage, after_pinned, after_recovery
     return {
         "success": success,
         "terminated": terminated,
@@ -621,6 +791,7 @@ def _derived_condition_outcome(
 
 
 def _validate_v4c_collection(
+    inputs: dict[str, Any],
     predictions: list[dict[str, Any]],
     conditions: list[dict[str, Any]],
     expected: set[tuple[int, str]],
@@ -630,6 +801,16 @@ def _validate_v4c_collection(
         raise ValueError("v4c condition summaries do not match the frozen 10x2 grid")
     if len(predictions) > V4C_CALL_CAP:
         raise ValueError("v4c predictions exceed the 178-call cap")
+    identities = {
+        (
+            row.get("provider"),
+            row.get("model"),
+            canonical_json_text(row.get("parameters")),
+        )
+        for row in predictions
+    }
+    if len(identities) != 1:
+        raise ValueError("v4c predictions must share one provider, model, and parameter set")
     grouped: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
     for prediction in predictions:
         key = (prediction.get("seed"), prediction.get("condition"))
@@ -651,8 +832,10 @@ def _validate_v4c_collection(
             or condition.get("cache_hits") != cache_hits
         ):
             raise ValueError("v4c condition counters do not match prediction records")
-        derived = _derived_condition_outcome(rows, episode_for_seed(condition["seed"]))
-        if any(condition.get(field) != value for field, value in derived.items()):
+        replayed = _replayed_condition_outcome(
+            inputs, rows, condition["seed"], condition["condition"]
+        )
+        if any(condition.get(field) != value for field, value in replayed.items()):
             raise ValueError("v4c condition summaries do not match prediction records")
     return {
         "action_records": len(predictions),
@@ -683,15 +866,17 @@ def summarize_v4c_evaluation(
     repository_root: Path,
     predictions_path: Path,
     conditions_path: Path,
+    attempts_path: Path,
     prior_predictions_path: Path | None = None,
     prior_conditions_path: Path | None = None,
 ) -> dict[str, Any]:
     root = repository_root.resolve()
     predictions_path = predictions_path.resolve()
     conditions_path = conditions_path.resolve()
+    attempts_path = attempts_path.resolve()
     if (prior_predictions_path is None) != (prior_conditions_path is None):
         raise ValueError("v4c prior prediction and condition evidence must be supplied together")
-    evidence_paths = [predictions_path, conditions_path]
+    evidence_paths = [predictions_path, conditions_path, attempts_path]
     if prior_predictions_path is not None and prior_conditions_path is not None:
         prior_predictions_path = prior_predictions_path.resolve()
         prior_conditions_path = prior_conditions_path.resolve()
@@ -700,16 +885,25 @@ def summarize_v4c_evaluation(
         raise ValueError("all v4c summary evidence paths must be inside the repository")
     if len(set(evidence_paths)) != len(evidence_paths):
         raise ValueError("v4c summary evidence paths must be distinct")
+    inputs = _load_inputs(repository_root)
     predictions = load_jsonl(predictions_path)
     conditions = load_jsonl(conditions_path)
+    attempts = _load_attempts_snapshot(attempts_path, predictions_path, conditions_path)
     expected = {(seed, condition) for seed in V4C_SEEDS for condition in V4C_CONDITIONS}
-    collection = _validate_v4c_collection(predictions, conditions, expected)
+    collection = _validate_v4c_collection(inputs, predictions, conditions, expected)
+    if predictions and (
+        attempts.get("provider") != predictions[0].get("provider")
+        or attempts.get("model") != predictions[0].get("model")
+    ):
+        raise ValueError("v4c attempts snapshot provider identity does not match predictions")
     prior_paid_calls = 0
     prior_collection = None
     if prior_predictions_path is not None and prior_conditions_path is not None:
         prior_predictions = load_jsonl(prior_predictions_path)
         prior_conditions = load_jsonl(prior_conditions_path)
-        prior_counts = _validate_v4c_collection(prior_predictions, prior_conditions, expected)
+        prior_counts = _validate_v4c_collection(
+            inputs, prior_predictions, prior_conditions, expected
+        )
         prior_paid_calls = prior_counts["new_calls"]
         prior_collection = {
             "new_call_count": prior_paid_calls,
@@ -752,6 +946,11 @@ def summarize_v4c_evaluation(
     cumulative_paid_calls = prior_paid_calls + incremental_new_calls
     if cumulative_paid_calls > V4C_CALL_CAP:
         raise ValueError("v4c cumulative paid calls exceed the approved 178-call cap")
+    attempted_paid_calls = attempts["attempted_paid_calls"]
+    if attempted_paid_calls < cumulative_paid_calls:
+        raise ValueError("v4c attempted paid calls are below the verified stored responses")
+    if attempted_paid_calls > V4C_CALL_CAP:
+        raise ValueError("v4c attempted paid calls exceed the approved 178-call cap")
     return {
         "schema_version": V4C_RESULTS_SCHEMA_VERSION,
         "protocol_version": V4C_PROTOCOL_VERSION,
@@ -764,6 +963,8 @@ def summarize_v4c_evaluation(
             "new_call_count": incremental_new_calls,
             "prior_paid_call_count": prior_paid_calls,
             "cumulative_paid_call_count": cumulative_paid_calls,
+            "attempted_paid_call_count": attempted_paid_calls,
+            "attempt_ledger_provenance": attempts["attempt_ledger_provenance"],
             "cache_hit_count": collection["cache_hits"],
         },
         "prior_collection": prior_collection,
@@ -802,6 +1003,10 @@ def summarize_v4c_evaluation(
             "path": conditions_path.relative_to(root).as_posix(),
             "sha256": _sha256(conditions_path.read_bytes()),
         },
+        "attempts": {
+            "path": attempts_path.relative_to(root).as_posix(),
+            "sha256": _sha256(attempts_path.read_bytes()),
+        },
     }
 
 
@@ -810,6 +1015,7 @@ def record_v4c_evaluation(
     repository_root: Path,
     predictions_path: Path,
     conditions_path: Path,
+    attempts_path: Path,
     results_path: Path,
     manifest_path: Path,
     prior_predictions_path: Path | None = None,
@@ -817,7 +1023,7 @@ def record_v4c_evaluation(
 ) -> dict[str, Any]:
     """Write an offline result and update the v4c manifest without provider calls."""
     root = repository_root.resolve()
-    paths = [predictions_path, conditions_path, results_path, manifest_path]
+    paths = [predictions_path, conditions_path, attempts_path, results_path, manifest_path]
     if prior_predictions_path is not None:
         paths.append(prior_predictions_path)
     if prior_conditions_path is not None:
@@ -827,13 +1033,14 @@ def record_v4c_evaluation(
         raise ValueError("all v4c evidence paths must be inside the repository")
     if len(set(resolved)) != len(resolved):
         raise ValueError("v4c evidence, result, and manifest paths must be distinct")
-    predictions_path, conditions_path, results_path, manifest_path = resolved[:4]
-    resolved_prior_predictions = resolved[4] if prior_predictions_path is not None else None
+    predictions_path, conditions_path, attempts_path, results_path, manifest_path = resolved[:5]
+    resolved_prior_predictions = resolved[5] if prior_predictions_path is not None else None
     resolved_prior_conditions = resolved[-1] if prior_conditions_path is not None else None
     results = summarize_v4c_evaluation(
         repository_root=root,
         predictions_path=predictions_path,
         conditions_path=conditions_path,
+        attempts_path=attempts_path,
         prior_predictions_path=resolved_prior_predictions,
         prior_conditions_path=resolved_prior_conditions,
     )
@@ -876,6 +1083,7 @@ def record_v4c_evaluation(
     for name, path in (
         ("predictions_luna", predictions_path),
         ("conditions_luna", conditions_path),
+        ("attempts_luna", attempts_path),
         ("results_luna", results_path),
     ):
         outputs[name] = {

@@ -35,6 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--predictions", type=Path)
     parser.add_argument("--conditions", type=Path)
+    parser.add_argument("--attempts", type=Path)
     parser.add_argument("--cache-directory", type=Path)
     parser.add_argument("--plan-output", type=Path)
     return parser.parse_args()
@@ -68,6 +69,8 @@ def main() -> None:
             or root / "artifacts" / f"grounding-v4c-pilot-predictions-{args.provider}.jsonl",
             conditions_path=args.conditions
             or root / "artifacts" / f"grounding-v4c-pilot-conditions-{args.provider}.jsonl",
+            attempts_path=args.attempts
+            or root / "artifacts" / f"grounding-v4c-pilot-attempts-{args.provider}.json",
             max_new_calls=args.max_new_calls,
             cache_directory=cache_dir,
         )
