@@ -1,0 +1,95 @@
+{
+  "approved_call_cap": 80,
+  "conditions": [
+    "raw",
+    "marks"
+  ],
+  "decision_history": [
+    {
+      "cache_hits": 1,
+      "failures": {},
+      "marks_success": 10,
+      "new_calls": 62,
+      "rationale": "at least one condition scored 9-10/10",
+      "raw_success": 9,
+      "route": "design_longer_horizon_successor"
+    }
+  ],
+  "family_counts": {
+    "diagnose_repair_resubmit": 3,
+    "reconcile_inspect_resolve": 3,
+    "triage_route_confirm": 4
+  },
+  "max_actions_per_condition": 4,
+  "model": "gpt-5.6-luna",
+  "model_calls_performed": 62,
+  "outputs": {
+    "candidates": {
+      "path": "artifacts/grounding-v4b-pilot-candidates.jsonl",
+      "sha256": "b34c3e4196ce7ac0e59d95703586fb5e426d398be86d0bf57bb4a93251f42c10"
+    },
+    "capture": {
+      "path": "artifacts/grounding-v4b-pilot-capture.json",
+      "sha256": "3b7f60f4e31ee04e40a23044fc1bb110c904b16be3da61c979ac3b73fce5b4e9"
+    },
+    "conditions_luna": {
+      "path": "artifacts/grounding-v4b-pilot-conditions-luna.jsonl",
+      "sha256": "9f6f22df1f4ad36e6bfc8c57b5465e7ef6e3b46527afc796939c9b12343e0258"
+    },
+    "episodes": {
+      "path": "artifacts/grounding-v4b-pilot-episodes.json",
+      "sha256": "28aa56275d40b99e488818c74f941c2458e7228d8f9f789488902ea43eef87dd"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v4b-pilot-overlays.jsonl",
+      "sha256": "6de53af117a1924c17627cf56c9dbe38194b1952bcab80369e18d67775045cae"
+    },
+    "plan_luna": {
+      "path": "artifacts/grounding-v4b-pilot-plan-luna.json",
+      "sha256": "273692960931d5ec97ec3e407289ec65ba2dbd5c1a2f1c44435001e6cedb2ed7"
+    },
+    "predictions_luna": {
+      "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
+      "sha256": "e16342d57669e58df59265d89f2e90552324f8c3b8d54430116b9a2b1effdc01"
+    },
+    "results_luna": {
+      "path": "artifacts/grounding-v4b-pilot-results-luna.json",
+      "sha256": "0f61bfff3d5eecd0ac677331f4ac7edad8df557575f425b0194f5218d3a0d205"
+    },
+    "states": {
+      "path": "artifacts/grounding-v4b-pilot-states.jsonl",
+      "sha256": "2993b62f6eb9139dab6883226d23a5340c1f2d33b70e970ff8ea0920836d7bb7"
+    }
+  },
+  "parameters": {
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "protocol_version": "pixelgym-grounding-v4b-pilot",
+  "schema_version": "pixelgym-grounding-v4b-manifest-v1",
+  "seeds": [
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49
+  ],
+  "status": "evaluated_successor_design_required",
+  "task_ids": {
+    "40": "v4b-d6c01f06da9fbfd4",
+    "41": "v4b-073db179618fbc47",
+    "42": "v4b-971ad34a58c4882d",
+    "43": "v4b-3826cb5e34921063",
+    "44": "v4b-2429c11e3694cc94",
+    "45": "v4b-a5453601005e2157",
+    "46": "v4b-f47a4d53313dc836",
+    "47": "v4b-aa8a0d12d1c57edb",
+    "48": "v4b-c97e2dff6bafd299",
+    "49": "v4b-b01951f7b625fb97"
+  }
+}

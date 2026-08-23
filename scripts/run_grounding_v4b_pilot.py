@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Plan or run the preregistered capped v4b Luna evaluation."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from pixelgym.grounding.evaluation import ResponseCache
+from pixelgym.grounding.providers import CodexCLIProvider, MockProvider
+from pixelgym.grounding.v4b_evaluation import planned_v4b_calls, run_v4b_evaluation
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provider", choices=("luna", "mock"), required=True)
+    parser.add_argument("--max-new-calls", type=int, required=True)
+    parser.add_argument("--plan-only", action="store_true")
+    parser.add_argument("--predictions", type=Path)
+    parser.add_argument("--conditions", type=Path)
+    parser.add_argument("--cache-directory", type=Path)
+    parser.add_argument("--plan-output", type=Path)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    root = Path(__file__).resolve().parents[1]
+    provider = CodexCLIProvider(model="gpt-5.6-luna") if args.provider == "luna" else MockProvider()
+    cache_dir = args.cache_directory or root / ".cache" / "grounding-v4b" / "responses"
+    if args.plan_only:
+        result = planned_v4b_calls(
+            repository_root=root,
+            provider=provider,
+            cache=ResponseCache(cache_dir),
+        )
+        if args.plan_output is not None:
+            encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
+            if args.plan_output.is_file() and args.plan_output.read_text() != encoded:
+                raise ValueError("refusing to overwrite different immutable v4b plan")
+            args.plan_output.parent.mkdir(parents=True, exist_ok=True)
+            args.plan_output.write_text(encoded)
+    else:
+        result = run_v4b_evaluation(
+            repository_root=root,
+            provider=provider,
+            predictions_path=args.predictions
+            or root / "artifacts" / f"grounding-v4b-pilot-predictions-{args.provider}.jsonl",
+            conditions_path=args.conditions
+            or root / "artifacts" / f"grounding-v4b-pilot-conditions-{args.provider}.jsonl",
+            max_new_calls=args.max_new_calls,
+            cache_directory=cache_dir,
+        )
+    print(json.dumps(result, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
