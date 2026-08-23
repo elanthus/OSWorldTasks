@@ -24,6 +24,10 @@ def _contains(bbox: list[int], x: int, y: int) -> bool:
     return left <= x < right and top <= y < bottom
 
 
+def _observed_range(values: list[int]) -> list[int] | None:
+    return [min(values), max(values)] if values else None
+
+
 def _nearest(candidates: list[dict[str, Any]], x: int, y: int) -> str:
     def distance(candidate: dict[str, Any]) -> float:
         left, top, right, bottom = candidate["bbox"]
@@ -115,8 +119,8 @@ def audit(repository_root: Path, predictions_path: Path, results_path: Path) -> 
         },
         "coordinate_frame": {
             "native_screen": {"width": V4C_WIDTH, "height": V4C_HEIGHT},
-            "observed_x_range": [min(xs), max(xs)] if xs else None,
-            "observed_y_range": [min(ys), max(ys)] if ys else None,
+            "observed_x_range": _observed_range(xs),
+            "observed_y_range": _observed_range(ys),
             "tested_normalized_grid": {"width": 1000, "height": 1000},
             "native_point_inside_correct_target_count": native_inside_target,
             "normalized_point_inside_correct_target_count": normalized_inside_target,
