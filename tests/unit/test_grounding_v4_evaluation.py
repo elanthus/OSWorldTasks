@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -246,6 +247,20 @@ def test_v4_results_reject_duplicate_condition_record(tmp_path: Path) -> None:
         )
 
 
+def test_v4_results_reject_unknown_example_id(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    predictions = _write_predictions(tmp_path)
+    rows = [json.loads(line) for line in predictions.read_text().splitlines()]
+    rows[-1]["example_id"] = "v4-99"
+    predictions.write_text("".join(json.dumps(row) + "\n" for row in rows))
+
+    with pytest.raises(ValueError, match="frozen example/condition grid"):
+        summarize_v4_evaluation(
+            repository_root=tmp_path,
+            predictions_path=predictions,
+        )
+
+
 def test_record_v4_evaluation_updates_manifest_and_hashes_outputs(tmp_path: Path) -> None:
     _write_inputs(tmp_path)
     predictions = _write_predictions(tmp_path)
@@ -284,8 +299,14 @@ def test_record_v4_evaluation_updates_manifest_and_hashes_outputs(tmp_path: Path
     assert manifest["status"] == "calibration_evaluated_v4b_design_required"
     assert len(manifest["decision_history"]) == 1
     assert manifest["decision_history"][0]["route"] == "design_multi_step_v4b"
-    assert manifest["outputs"]["predictions_luna"]["sha256"]
-    assert manifest["outputs"]["results_luna"]["sha256"]
+    assert (
+        manifest["outputs"]["predictions_luna"]["sha256"]
+        == hashlib.sha256(predictions.read_bytes()).hexdigest()
+    )
+    assert (
+        manifest["outputs"]["results_luna"]["sha256"]
+        == hashlib.sha256(results_path.read_bytes()).hexdigest()
+    )
 
 
 def test_record_v4_evaluation_rejects_external_result_before_writing(tmp_path: Path) -> None:
