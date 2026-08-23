@@ -22,8 +22,9 @@ the raw screenshot — and for which models?
 | v1 scored, prompt v2, 2026-08-21 | Gemini 3.7 Flash (adapted) | 100 | 91 | 100 | +9.0pp, p = 0.0039 — **transport confound, see below** | 9, all marks-only | `grounding-v3a-analysis-gemini-3.7-flash-adapted.json` |
 | v3c calibration | Claude Haiku 4.5 | 20 | 19 | 20 | 1 discordant pair | 1 | `grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl` |
 | v3c calibration | Gemini 3.7 Flash (adapted) | 20 | 20 | 20 | 0 | 0 | `grounding-v3c-calibration-predictions-gemini-3.7-flash-adapted.jsonl` |
-| v3c calibration | gemma-3-4b / gemma-3-27b / qwen-2.5-vl-7b | 20 | 0 | 0 | none measurable at floor | 0 | per-model `grounding-v3c-calibration-predictions-*.jsonl` |
+| v3c calibration | gemma-3-27b | 20 | 0 | 0 | none measurable at floor | 0 | `grounding-v3c-calibration-predictions-gemma-3-27b.jsonl` |
 | v3c calibration | llama-4-scout | 20 | 1 | 0 | 1 raw-only pair | 1 | `grounding-v3c-calibration-predictions-llama-4-scout.jsonl` |
+| v3c calibration | gemma-3-4b, qwen-2.5-vl-7b | 20 | 0 | 0 | **transport confound — no model evidence, see below** | 0 | per-model `grounding-v3c-calibration-predictions-*.jsonl` |
 | v4 pilot (10 single-click examples) | `gpt-5.6-luna` (low) | 10 | 9 | 9 | 0 discordant; 1 example incorrect in both | 0 | `grounding-v4-pilot-results-luna.json` |
 | v4b pilot (10 closed-loop episodes) | `gpt-5.6-luna` (low) | 10 | 9 | 10 | 1 discordant episode | 1 | `grounding-v4b-pilot-results-luna.json` |
 
@@ -36,16 +37,25 @@ consistent with a transient provider outage; the marks pass ran outside that win
 completed requests Flash scored 91/91 raw. The +9.0pp delta measures API availability, not a
 grounding effect, and is excluded from the interpretation below.
 
+**gemma-3-4b and qwen-2.5-vl-7b confound:** every one of the 40 stored records for each of
+these two models, in both conditions, is a provider request failure (`HTTPError: provider
+request failed`). No model output was ever observed. Their 0/20 rows measure provider
+availability only and carry no evidence about the models; they are excluded from the
+interpretation below. By contrast, gemma-3-27b and llama-4-scout have 40/40 parsed responses
+with in-bounds click coordinates, so their scores are genuine model results.
+
 ## Proposal coverage, reported separately from selection
 
 | Run | Proposal coverage | Conditional selection (marks) |
 |---|---|---|
 | v1 scored (both dates) | 100/100 targets proposed | 100/100 when proposed |
+| v3c calibration | 20/20 marks records per model (`target_proposed`) | Haiku 20/20; Flash 20/20; gemma-3-27b 0/20; llama-4-scout 0/20 |
 | v4 pilot | 10/10 | 9/10 |
 | v4b pilot | 60/60 reachable actionable states | not separable from episode success at this n |
 
-Coverage never absorbed a selection failure: in every run the candidate generator proposed the
-target, so marks accuracy reflects selection, not proposal luck.
+In every run with recorded per-example coverage, the candidate generator proposed the target,
+so no marks miss in those runs is attributable to a proposal failure. The v4b number is
+coverage-only: episode success does not isolate conditional selection.
 
 ## Interpretation
 
@@ -57,23 +67,29 @@ uniformly positive:
    repository. The manual review of those 44 raw errors
    (`grounding-error-review-decisions.json`; categories overlap, so counts exceed 44) assigned:
    wrong semantic element 31, small target 14, crowded/overlapping controls 14, coordinate
-   scaling 7, correct region but point just outside the box 6. These are exactly the error
-   classes that numbered candidate boxes bypass: the model no longer has to produce precise
-   coordinates, only pick a labeled region.
+   scaling 7, correct region but point just outside the box 6. These labels describe the raw
+   errors; they do not establish per-pair cause for the marks successes. The pattern is
+   *consistent with* the overlay's design — mark selection removes the need to produce precise
+   coordinates — but a causal mechanism claim would need per-example evidence this repository
+   does not store.
 2. **Frontier band: no measurable headroom.** Haiku 4.5 is at ceiling in both conditions on
    the scored v1 dataset (delta 0.0pp on 100 paired examples). Luna shows no discordant pair
    in v4 and one discordant episode in v4b. That v4b episode's raw failure is a visible-policy
    application error with correct localization throughout (see
    `grounding-v4b-error-review.md`); marks do not target that failure class, and n = 1 supports
    no attribution.
-3. **Floor band: no rescue.** Models at 0–1/20 on the v3c calibration (gemma-3-4b, gemma-3-27b,
-   qwen-2.5-vl-7b, llama-4-scout) score 0–1/20 with marks as well. When a model cannot follow
-   the coordinate output contract at all, converting localization into selection does not help.
+3. **Floor band: no rescue observed.** The two floor models with valid outputs (gemma-3-27b,
+   llama-4-scout) followed the coordinate contract — every response parsed, every click
+   in-bounds — yet scored 0–1/20 raw and 0/20 marks. For these models the overlay changed
+   nothing measurable: numbered candidates did not enable correct selection where free
+   coordinate production also failed. Why is not determinable from the stored records.
+   gemma-3-4b and qwen-2.5-vl-7b contribute no evidence here (all records are provider
+   request failures).
 
 A one-sentence summary consistent with all stored evidence: **on this workload, set-of-marks
-overlays convert coordinate-production failures into candidate-selection successes for a model
-in the middle capability band, and measurably change nothing at the frontier ceiling or the
-open-model floor.**
+overlays produced a large paired accuracy gain for the one mid-capability model measured,
+consistent with replacing coordinate production by candidate selection, and no measurable
+change at the frontier ceiling or for the two evaluable floor models.**
 
 ## Limitations
 
@@ -85,6 +101,9 @@ open-model floor.**
   carry a prompt-version difference.
 - v3c, v4, and v4b use 10–20 examples per condition by design; they route decisions and cannot
   estimate effect sizes.
+- Two of the four small open models (gemma-3-4b, qwen-2.5-vl-7b) were never actually
+  evaluated: all 40 stored records per model are provider request failures, so the floor-band
+  observation rests on gemma-3-27b and llama-4-scout only.
 - Luna results are at reasoning effort `low` only.
 
 ## What would strengthen this
