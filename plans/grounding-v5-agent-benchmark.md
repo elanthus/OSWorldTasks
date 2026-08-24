@@ -160,17 +160,23 @@ terminal record may be reconciled only through the frozen provider mechanism und
 attempt identity. If the exact outcome cannot be recovered, the episode receives an infrastructure
 failure; the runner does not issue another request or silently reinterpret the attempt.
 
-The frozen parser runs once against completed attempt records. If parsing fails, the runner seals an
-unsuccessful action result containing the raw-attempt references, parser version, sanitized failure
-code and reason, and policy-state checkpoint. It dispatches no environment action, performs no
-retry, and retains that result as report input. On parse success, the runner persists a
-reconstructable post-parse action-boundary policy-state checkpoint and validates the returned action
-candidate. Invalid candidates produce the same kind of sealed unsuccessful result with the action
-schema version and validation reason. Valid candidates produce one sealed action intent that links
-the exact attempt identities, parser version, checkpoint and digest, and returned action. This
-post-parse checkpoint, rather than the pre-call checkpoint, is restored before resuming a sealed
-intent or beginning the next `act`. `PixelGuiEnv.step` may run only after the valid intent and
-checkpoint are durable.
+The frozen parser is a pure deterministic function of the completed attempt records, parser
+version, and pre-call policy-state checkpoint. Uninterrupted execution invokes it once. If the
+process stops before a parse outcome is durable, recovery may evaluate that same function again;
+tests must prove byte-identical output, and this is not a provider retry. A parse failure atomically
+seals an unsuccessful action result containing the raw-attempt references, parser version,
+sanitized failure code and reason, and policy-state checkpoint. It dispatches no environment
+action, performs no provider retry, and retains that result as report input.
+
+On parse success, the runner atomically writes a `parsed_action_candidate` record containing the
+candidate, exact attempt identities, parser version, and reconstructable post-parse action-boundary
+policy-state checkpoint with its digest. Validation reads only that durable record. Invalid
+candidates produce a sealed unsuccessful result with the action-schema version and validation
+reason. Valid candidates produce one sealed action intent linked to the candidate record. If
+recovery finds a candidate record with neither result nor intent, it reruns only deterministic
+validation and seals the appropriate outcome; it never reruns the parser or dispatches before the
+intent is durable. The post-parse checkpoint, rather than the pre-call checkpoint, is restored
+before resuming a sealed intent or beginning the next `act`.
 
 The journal then records dispatch-started and dispatch-committed states, with the latter binding the
 action intent to the resulting screenshot, reward, and termination state. Resume may reuse a stored
@@ -379,11 +385,12 @@ For each policy and task, the runner:
    its provider-call boundary.
 5. Writes `attempt_started` before each request, then writes exactly one completed, failed, or
    reconciled terminal attempt record before parsing or starting another attempt.
-6. Parses once. A failure seals an unsuccessful action result and ends the episode without retry or
-   dispatch; a success persists the post-parse policy-state checkpoint.
-7. Validates the action candidate through the existing PixelGym action contract. An invalid
+6. Runs the pure parser and atomically persists either a sealed failure or a
+   `parsed_action_candidate` containing the post-parse checkpoint.
+7. Validates the durable candidate through the existing PixelGym action contract. An invalid
    candidate seals an unsuccessful result; a valid candidate seals the action intent and forms the
-   supported pre-dispatch resume boundary.
+   supported pre-dispatch resume boundary. Recovery from an unconsumed candidate repeats only this
+   deterministic validation step.
 8. Writes dispatch-started immediately before dispatching the valid action once, then writes its
    dispatch-committed record with the resulting screenshot and privileged host-side diagnostic
    event. The runner restores the linked post-parse checkpoint before the next `act`.
@@ -482,7 +489,8 @@ The v5 run must preserve and content-bind:
 - golden, recovery, near-miss, robustness, and mutation traces used for admission;
 - policy manifest, source/package digest, prompts, parser, memory policy, adapter, and parameters;
 - provider attempt-started and terminal-record journal, pre-call and post-parse policy-state
-  checkpoint index, raw-response index, and sealed unsuccessful action results;
+  checkpoint index, raw-response index, parsed-action-candidate and sealed-action-intent indexes,
+  and sealed unsuccessful action results;
 - ordered environment actions, screenshot digests, rewards, termination/truncation states, and
   privileged diagnostic events;
 - task-level scores, summary metrics, paired comparisons, uncertainty estimates, and exploratory
@@ -563,7 +571,7 @@ the approved cap is reached; incomplete tasks remain incomplete evidence.
 | ID | Owner | Deliverable | Stop condition |
 |---|---|---|---|
 | D5.1 | **YOU / PAIR** | Approve the end-to-end policy construct, raw primary condition, scope, and sequencing relative to D4.12 | No implementation before explicit approval |
-| D5.2 | **AGENT · high** | Freeze task, generator, policy, trace, attempt-journal, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface and security-boundary review required before application work |
+| D5.2 | **AGENT · high** | Freeze task, generator, policy, trace, attempt-journal, parsed-candidate, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface and security-boundary review required before application work |
 | D5.3 | **AGENT · high** | Implement six deterministic generator families, versioned app states, evaluator fixtures, and golden policies | Stop if a core PixelGym invariant would need to change |
 | D5.4 | **AGENT · high** | Build no-cost determinism, mutation, reward-hacking, replay, and admission evidence | Human inspects the development sample |
 | D5.5 | **AGENT · high** | Implement the stateful policy harness, raw-response persistence, resume boundaries, call caps, and no-cost fake policies | No real provider call |
@@ -603,14 +611,17 @@ Browser integration tests replay every development trace twice against the deter
 and compare the corresponding screenshots bitwise. A smaller pytest-marked integration set
 exercises the stateful flow with a no-cost policy, forced interruptions at each supported
 side-effect boundary—including after attempt-started, after provider receipt but before response
-persistence, after every terminal provider-attempt record, after parser failure, after post-parse
-state persistence, and immediately before action dispatch—and proof that resume does not duplicate
-provider calls or actions. The stateful fake policy must prove that resume after intent sealing or a
-dispatch commit reconstructs the exact post-parse state before the next `act`. Interruption after a
-sealed intent but before dispatch-started must resume from that intent; interruption after
-dispatch-started without a proven idempotent backend transaction must remain an infrastructure
-failure. An unresolved post-send provider attempt must reconcile under the frozen fake mechanism or
-remain an infrastructure failure without another request.
+persistence, after every terminal provider-attempt record, during pure parsing before outcome
+persistence, after `parsed_action_candidate` but before result or intent sealing, after parser
+failure, and immediately before action dispatch—and proof that resume does not duplicate provider
+calls or actions. The parser-recovery test requires byte-identical output. Candidate-record recovery
+must seal the result or intent without invoking the parser. The stateful fake policy must prove that
+resume after candidate or intent sealing, or after a dispatch commit, reconstructs the exact
+post-parse state before the next `act`. Interruption after a sealed intent but before
+dispatch-started must resume from that intent; interruption after dispatch-started without a proven
+idempotent backend transaction must remain an infrastructure failure. An unresolved post-send
+provider attempt must reconcile under the frozen fake mechanism or remain an infrastructure
+failure without another request.
 
 Any real provider smoke or calibration call is excluded from automated tests and remains a human
 gate.
@@ -686,9 +697,10 @@ principle without making Item Response Theory an automatic gate; see
 - [ ] Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking
   mutations remain at `0.0`.
 - [ ] Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt
-  reconciliation, sealed parser failure, post-parse state reconstruction, pre-dispatch
-  interruption, invalid output, call caps, resume, authoritative replay, redaction binding, and
-  evidence integrity have no-cost failure-path tests.
+  reconciliation, pure-parser recovery, atomic candidate/checkpoint persistence, sealed parser
+  failure, post-parse state reconstruction, pre-dispatch interruption, invalid output, call caps,
+  resume, authoritative replay, redaction binding, and evidence integrity have no-cost failure-path
+  tests.
 - [ ] The documented fast suite passes without browser, network, OSWorld, provider credentials, or
   model calls.
 - [ ] A free plan-only command reports exact action and provider-call caps for each approved phase.
