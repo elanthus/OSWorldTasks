@@ -15,6 +15,7 @@ from pixelgym.grounding.providers import (
     GroundingProvider,
     MockProvider,
     OpenRouterProvider,
+    QwenNormalizedCoordinateAdapter,
 )
 from pixelgym.grounding.v4c_evaluation import planned_v4c_calls, run_v4c_evaluation
 
@@ -26,6 +27,8 @@ def provider_for_name(name: str) -> GroundingProvider:
         return ClaudeCodeCLIProvider(model=CLAUDE_HAIKU_MODEL)
     if name == "openrouter":
         return OpenRouterProvider()
+    if name == "openrouter-qwen-1000":
+        return QwenNormalizedCoordinateAdapter(OpenRouterProvider())
     if name == "mock":
         return MockProvider()
     raise ValueError(f"unsupported provider: {name}")
@@ -34,7 +37,9 @@ def provider_for_name(name: str) -> GroundingProvider:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--provider", choices=("luna", "haiku", "openrouter", "mock"), required=True
+        "--provider",
+        choices=("luna", "haiku", "openrouter", "openrouter-qwen-1000", "mock"),
+        required=True,
     )
     parser.add_argument("--max-new-calls", type=int, required=True)
     parser.add_argument("--plan-only", action="store_true")

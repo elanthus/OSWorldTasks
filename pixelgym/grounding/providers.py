@@ -477,6 +477,24 @@ class GeminiCoordinateAdapter:
         )
 
 
+class QwenNormalizedCoordinateAdapter(GeminiCoordinateAdapter):
+    """Interpret Qwen x/y outputs on a square normalized coordinate grid.
+
+    The adapter has a distinct provider identity so its response cache and v4c
+    paid-call ledger cannot be confused with unadapted OpenRouter evidence.
+    """
+
+    def __init__(self, inner: GroundingProvider, *, grid_size: int = 1000) -> None:
+        if grid_size <= 0:
+            raise ValueError("grid_size must be positive")
+        super().__init__(inner, grid_size=grid_size)
+        self.name = f"{inner.name}-qwen-normalized-{grid_size}x{grid_size}"
+        self.parameters = {
+            **inner.parameters,
+            "coordinate_rescale": f"qwen-{grid_size}x{grid_size}",
+        }
+
+
 class MockProvider:
     name = "mock"
     model = "pixelgym-deterministic-mock-v1"
