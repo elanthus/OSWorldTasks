@@ -118,7 +118,7 @@ already bounded:
 
 - `reset` creates fresh episode-local policy state. No state, provider conversation, response
   cache entry that contains task-specific conclusions, or self-authored memory may cross an
-  episode boundary.
+  episode boundary. `reset` and `close` make no provider requests; only `act` may call a provider.
 - `act` receives the current screenshot. The policy retains the task instruction, previous
   screenshots, its own actions, provider messages, and self-authored memory only if its versioned
   implementation chooses to retain them.
@@ -134,7 +134,8 @@ already bounded:
 - Provider access is the only evaluation-time network use. External search, browser inspection,
   shell access, DOM queries, knowledge tools, and communication with another policy are forbidden.
 - A response-producing provider call is final. A transport failure before a response may be
-  retried only under a predeclared, versioned rule; every attempt remains in the attempt ledger.
+  retried only under a predeclared, versioned rule; every attempt remains in the attempt ledger and
+  counts toward `max_provider_calls_per_action`.
 
 The benchmark evaluates a policy system, not an unnamed base model. Results must use the complete
 policy identity.
@@ -233,6 +234,10 @@ The design targets three disjoint partitions:
 | Development | 24 | 4 per workflow family | Public implementation, golden-path, mutation, and reviewer inspection fixtures |
 | Calibration | 60 | 10 per workflow family | Difficulty analysis and generator-level revision; never a final benchmark score |
 | Confirmatory | 96 | 16 per workflow family | Frozen evaluation after the final generator, policy, thresholds, and call caps are approved |
+
+The calibration set contains twelve logical robustness pairs, two per family. Those pairs produce
+24 episodes; the other 36 calibration episodes are unpaired. This allocation lets calibration
+measure robustness-pair consistency before the final generator is frozen.
 
 The confirmatory set contains 24 logical robustness pairs, four per family. Each pair renders the
 same task semantics through two target-independent wording/order/layout variants, producing 48
@@ -360,7 +365,7 @@ incomplete.
 
 | Diagnostic | Definition |
 |---|---|
-| First-attempt critical-decision accuracy | Fraction of declared critical decisions whose first state-changing action takes the correct transition |
+| First-attempt critical-decision accuracy | Fraction of declared critical decisions whose first dispatched action after state entry takes the correct transition; invalid and non-progressing actions are incorrect |
 | Dependency retention | Fraction of declared deferred consumers resolved correctly before entering a recovery state |
 | Recovery success | Fraction of entered visible recovery states that later reach exact terminal success within the frozen budget |
 | Irreversible-error rate | Fraction of episodes that execute a wrong final or otherwise irreversible synthetic commit |
