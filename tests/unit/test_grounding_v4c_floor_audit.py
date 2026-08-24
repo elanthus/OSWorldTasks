@@ -27,17 +27,27 @@ def test_qwen_floor_audit_preserves_score_and_identifies_normalized_grid() -> No
     assert coordinate["normalized_semantic_nearest_target_count"] == 178
 
 
-def test_floor_audit_handles_zero_parsed_actions_and_rejects_unbound_results(
+def test_floor_audit_ignores_invalid_action_dict_and_rejects_unbound_results(
     tmp_path: Path,
 ) -> None:
     evidence = REPOSITORY_ROOT / ".cache" / tmp_path.name
     evidence.mkdir(parents=True, exist_ok=True)
     predictions = evidence / "predictions.jsonl"
     results = evidence / "results.json"
-    predictions.write_text("")
+    predictions.write_text(
+        json.dumps(
+            {
+                "parse_status": "invalid",
+                "parsed_action": {"action_type": 1, "x": 10, "y": 20, "key": 0},
+                "request_failure": None,
+                "cache_hit": True,
+            }
+        )
+        + "\n"
+    )
     prediction_reference = {
         "path": predictions.relative_to(REPOSITORY_ROOT).as_posix(),
-        "sha256": hashlib.sha256(b"").hexdigest(),
+        "sha256": hashlib.sha256(predictions.read_bytes()).hexdigest(),
     }
     results.write_text(
         json.dumps(
@@ -45,12 +55,14 @@ def test_floor_audit_handles_zero_parsed_actions_and_rejects_unbound_results(
                 "protocol_version": "pixelgym-grounding-v4c-pilot",
                 "model": "test-model",
                 "predictions": prediction_reference,
-                "collection": {"action_record_count": 0, "new_call_count": 0},
+                "collection": {"action_record_count": 1, "new_call_count": 0},
             }
         )
     )
     try:
         report = audit(REPOSITORY_ROOT, predictions, results)
+        assert report["stored_response_checks"]["parsed_action_count"] == 0
+        assert report["stored_response_checks"]["parse_status_counts"] == {"invalid": 1}
         assert report["coordinate_frame"]["observed_x_range"] is None
         assert report["coordinate_frame"]["observed_y_range"] is None
         assert report["coordinate_frame"]["native_point_inside_correct_target_count"] == 0

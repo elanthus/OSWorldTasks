@@ -1056,6 +1056,8 @@ def record_v4c_evaluation(
     plan_sha256: str | None
     if plan_path is not None:
         resolved_plan, plan_sha256 = validated_optional_input(plan_path, "plan")
+    elif artifact_label != "luna":
+        raise ValueError("non-Luna v4c artifacts require an explicit plan path")
     else:
         resolved_plan = root / "artifacts" / "grounding-v4c-pilot-plan-luna.json"
         plan_sha256 = _sha256(resolved_plan.read_bytes()) if resolved_plan.is_file() else None
@@ -1109,31 +1111,40 @@ def record_v4c_evaluation(
     }
     if history and history[-1] != decision:
         raise ValueError("refusing to replace different v4c decision history")
+    desired_outputs: dict[str, dict[str, str]] = {}
+    for name, path, digest in (
+        (f"predictions_{artifact_label}", predictions_path, None),
+        (f"conditions_{artifact_label}", conditions_path, None),
+        (f"attempts_{artifact_label}", attempts_path, None),
+        (
+            f"results_{artifact_label}",
+            results_path,
+            _sha256(encoded_results.encode("utf-8")),
+        ),
+    ):
+        desired_outputs[name] = {
+            "path": path.relative_to(root).as_posix(),
+            "sha256": digest if digest is not None else _sha256(path.read_bytes()),
+        }
+    if plan_sha256 is not None:
+        desired_outputs[f"plan_{artifact_label}"] = {
+            "path": resolved_plan.relative_to(root).as_posix(),
+            "sha256": plan_sha256,
+        }
+    if resolved_audit is not None and audit_sha256 is not None:
+        desired_outputs[f"floor_audit_{artifact_label}"] = {
+            "path": resolved_audit.relative_to(root).as_posix(),
+            "sha256": audit_sha256,
+        }
+    for name, binding in desired_outputs.items():
+        if name in outputs and outputs[name] != binding:
+            raise ValueError(f"refusing to replace different v4c output binding: {name}")
     results_path.write_text(encoded_results, encoding="utf-8")
     if not history:
         history.append(decision)
     manifest["status"] = status_by_route[route]
     manifest["model_calls_performed"] = results["collection"]["cumulative_paid_call_count"]
-    for name, path in (
-        (f"predictions_{artifact_label}", predictions_path),
-        (f"conditions_{artifact_label}", conditions_path),
-        (f"attempts_{artifact_label}", attempts_path),
-        (f"results_{artifact_label}", results_path),
-    ):
-        outputs[name] = {
-            "path": path.relative_to(root).as_posix(),
-            "sha256": _sha256(path.read_bytes()),
-        }
-    if plan_sha256 is not None:
-        outputs[f"plan_{artifact_label}"] = {
-            "path": resolved_plan.relative_to(root).as_posix(),
-            "sha256": plan_sha256,
-        }
-    if resolved_audit is not None and audit_sha256 is not None:
-        outputs[f"floor_audit_{artifact_label}"] = {
-            "path": resolved_audit.relative_to(root).as_posix(),
-            "sha256": audit_sha256,
-        }
+    outputs.update(desired_outputs)
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

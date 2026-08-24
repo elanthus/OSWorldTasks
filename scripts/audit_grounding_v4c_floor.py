@@ -74,7 +74,7 @@ def audit(repository_root: Path, predictions_path: Path, results_path: Path) -> 
             paid_prompt_tokens += int(usage.get("prompt_tokens", 0))
             paid_completion_tokens += int(usage.get("completion_tokens", 0))
         action = row.get("parsed_action")
-        if not isinstance(action, dict):
+        if row.get("parse_status") != "parsed" or not isinstance(action, dict):
             continue
         parsed_rows += 1
         x, y = int(action["x"]), int(action["y"])
