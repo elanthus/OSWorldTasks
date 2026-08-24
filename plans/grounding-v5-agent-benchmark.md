@@ -474,12 +474,15 @@ relevant evidence check rather than receiving an estimate.
 The evidence store keeps access-controlled authoritative objects for raw provider records,
 policy-state checkpoints, `TaskSpec` records, and environment manifests. Authoritative task and
 environment objects preserve `Backend.app_url` and every other launch value required for replay and
-integrity verification; they are the only inputs to replay. A deterministic redaction transform
-produces a publishable derivative that removes secrets, hostnames, usernames, account IDs, and
-private provider or policy-state fields. A relation record binds the authoritative digest,
-derivative digest, and redaction-policy version. Only the derivative and relation record enter
-publishable or checked-in evidence; access to the authoritative object is separately controlled.
-D5.2 must freeze these schemas, access rules, redaction transform, and content-binding procedure
+integrity verification; they are the only inputs to replay. Credentials, API keys, authorization
+headers, and secret-manager values are excluded at the capture boundary and never enter an
+authoritative object, derivative, log, or manifest. Provider adapters retain only sanitized request
+and response fields required by the frozen evidence schema. A deterministic redaction transform
+produces a publishable derivative that removes hostnames, usernames, account IDs, and private
+provider or policy-state fields. A relation record binds the authoritative digest, derivative
+digest, and redaction-policy version. Only the derivative and relation record enter publishable or
+checked-in evidence; access to the authoritative object is separately controlled. D5.2 must freeze
+these schemas, capture exclusions, access rules, redaction transform, and content-binding procedure
 before any real provider response, policy-state checkpoint, or runtime launch record is stored.
 
 ## Platform boundary
