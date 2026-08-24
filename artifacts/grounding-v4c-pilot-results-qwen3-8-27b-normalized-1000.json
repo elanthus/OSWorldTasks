@@ -1,0 +1,78 @@
+{
+  "attempts": {
+    "path": "artifacts/grounding-v4c-pilot-attempts-qwen3-8-27b-normalized-1000.json",
+    "sha256": "d1f6e2c89cad931a969db5ed6e0ebe308c5e58bb419c01854140aa56e0c30f50"
+  },
+  "collection": {
+    "action_record_count": 146,
+    "attempt_ledger_provenance": "runtime-ledger",
+    "attempted_paid_call_count": 146,
+    "cache_hit_count": 0,
+    "condition_record_count": 20,
+    "cumulative_paid_call_count": 146,
+    "episode_count": 10,
+    "new_call_count": 146,
+    "prior_paid_call_count": 0
+  },
+  "condition_summaries": {
+    "path": "artifacts/grounding-v4c-pilot-conditions-qwen3-8-27b-normalized-1000.jsonl",
+    "sha256": "be02f7b6db90135b2d505b76550ece5b55bd398695005878aa71f0ce77b0b89a"
+  },
+  "conditions": {
+    "marks": {
+      "episode_count": 10,
+      "success_count": 8
+    },
+    "raw": {
+      "episode_count": 10,
+      "success_count": 10
+    }
+  },
+  "diagnostics": {
+    "action_count_histogram": {
+      "10": 1,
+      "6": 4,
+      "7": 9,
+      "8": 5,
+      "9": 1
+    },
+    "carrier_utilization": {
+      "pinned_consumer_correct": 15,
+      "pinned_consumer_faced": 20,
+      "unpinned_consumer_correct": 0,
+      "unpinned_consumer_faced": 0
+    },
+    "checkpoint_histogram": {
+      "5": 1,
+      "6": 7,
+      "7": 7,
+      "8": 5
+    },
+    "commit_counts": {
+      "marks": 10,
+      "raw": 10
+    }
+  },
+  "failures": {},
+  "model": "qwen/qwen3.8-27b",
+  "parameters": {
+    "coordinate_rescale": "qwen-1000x1000",
+    "seed": 20260809,
+    "temperature": 0
+  },
+  "predictions": {
+    "path": "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b-normalized-1000.jsonl",
+    "sha256": "1d033119d073075b50ef58cb9e2f273f4e063d919c1c0144742d9ee058551860"
+  },
+  "prior_collection": null,
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "routing": {
+    "decision": "report_saturation_stop",
+    "rationale": "at least one condition scored 9-10/10; any successor design requires a new explicit human scope decision"
+  },
+  "schema_version": "pixelgym-grounding-v4c-results-v2",
+  "set_of_marks": {
+    "proposal_covered_state_count": 244,
+    "proposal_total_state_count": 244
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "attempt_ledger_provenance": "runtime-ledger",
+  "attempted_paid_calls": 146,
+  "conditions_sha256": "be02f7b6db90135b2d505b76550ece5b55bd398695005878aa71f0ce77b0b89a",
+  "model": "qwen/qwen3.8-27b",
+  "predictions_sha256": "1d033119d073075b50ef58cb9e2f273f4e063d919c1c0144742d9ee058551860",
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "provider": "openrouter-qwen-normalized-1000x1000",
+  "schema_version": "pixelgym-grounding-v4c-attempts-v1"
+}
