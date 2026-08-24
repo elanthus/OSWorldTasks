@@ -153,20 +153,31 @@ idempotency key or reconciliation mode, call-cap reservation, and an access-cont
 reconstructable pre-call policy-state checkpoint with its digest. The provider request may start
 only after this record is durable.
 
-After receiving a response and before exposing it to the parser or starting another attempt, the
-journal atomically writes `attempt_completed` with the raw response, usage, and completion status,
-or writes a terminal transport-failure record. On resume, an `attempt_started` record without a
-terminal record may be reconciled only through the frozen provider mechanism under the same
-attempt identity. If the exact outcome cannot be recovered, the episode receives an infrastructure
-failure; the runner does not issue another request or silently reinterpret the attempt.
+After receiving a response, the provider adapter excludes credentials and normalizes the allowed
+provider fields into one versioned, capture-scrubbed canonical response record. The journal persists
+those exact bytes and their digest before exposing them to policy logic, the parser, or another
+attempt. Unscrubbed provider bytes are never an artifact or log input. A frozen pure state reducer
+then derives a reconstructable post-attempt policy-state checkpoint from the pre-call checkpoint and
+the canonical response bytes. `attempt_completed` atomically links the canonical response digest,
+usage, completion status, and post-attempt checkpoint digest; a terminal transport-failure record
+links the deterministic failure-state checkpoint instead. The next attempt's pre-call checkpoint
+must equal the preceding terminal attempt's post-attempt checkpoint.
 
-The frozen parser is a pure deterministic function of the completed attempt records, parser
-version, and pre-call policy-state checkpoint. Uninterrupted execution invokes it once. If the
-process stops before a parse outcome is durable, recovery may evaluate that same function again;
-tests must prove byte-identical output, and this is not a provider retry. A parse failure atomically
-seals an unsuccessful action result containing the raw-attempt references, parser version,
-sanitized failure code and reason, and policy-state checkpoint. It dispatches no environment
-action, performs no provider retry, and retains that result as report input.
+If execution stops after canonical response persistence but before `attempt_completed`, recovery
+reruns only the frozen state reducer against the same bytes and must reproduce the checkpoint
+bitwise. On resume, an `attempt_started` record without a canonical response or terminal record may
+be reconciled only through the frozen provider mechanism under the same attempt identity. If the
+exact outcome cannot be recovered, the episode receives an infrastructure failure; the runner does
+not issue another request or silently reinterpret the attempt.
+
+The frozen parser is a pure deterministic function of the exact canonical response bytes referenced
+by the completed attempt records, parser version, and latest post-attempt policy-state checkpoint.
+It never reads an unscrubbed response or a publishable derivative. Uninterrupted execution invokes
+it once. If the process stops before a parse outcome is durable, recovery may evaluate that same
+function again; tests must prove byte-identical output, and this is not a provider retry. A parse
+failure atomically seals an unsuccessful action result containing the canonical-attempt references,
+parser version, sanitized failure code and reason, and policy-state checkpoint. It dispatches no
+environment action, performs no provider retry, and retains that result as report input.
 
 On parse success, the runner atomically writes a `parsed_action_candidate` record containing the
 candidate, exact attempt identities, parser version, and reconstructable post-parse action-boundary
@@ -179,12 +190,24 @@ intent is durable. The post-parse checkpoint, rather than the pre-call checkpoin
 before resuming a sealed intent or beginning the next `act`.
 
 The journal then records dispatch-started and dispatch-committed states, with the latter binding the
-action intent to the resulting screenshot, reward, and termination state. Resume may reuse a stored
-response without another provider request and may dispatch an intent only when no dispatch-started
-record exists. An uncommitted dispatch-started record is an infrastructure failure unless the
-backend supplies a separately proven idempotent transaction; it is never blindly redispatched.
-Policy implementations may wrap the journal behind their conceptual `act` interface, but may not
-replace it with private, non-durable bookkeeping.
+action intent to the resulting screenshot, reward, and termination state. Dispatch commit also
+stores a deterministic post-dispatch policy-state checkpoint derived from the post-parse checkpoint,
+committed action, and result; that checkpoint becomes the state before the next screenshot is
+supplied to `act`. Resume may reuse a stored response without another provider request and may
+dispatch an intent only when no dispatch-started record exists. An uncommitted dispatch-started
+record is an infrastructure failure unless the backend supplies a separately proven idempotent
+transaction; it is never blindly redispatched. Policy implementations may wrap the journal behind
+their conceptual `act` interface, but may not replace it with private, non-durable bookkeeping.
+
+A sealed intent is a pre-dispatch resume boundary only when it binds a versioned
+`EnvironmentResumeRecord` for the exact current backend state. D5.2 must freeze a runner-facing v5
+backend extension that provides either content-addressed checkpoint/restore or a stable session
+identity with a proven liveness and reconnect guarantee. The resume record binds task identity,
+backend/session identity, step count, current screenshot digest, privileged application-state
+digest, and the selected restore or reconnect mechanism. Recovery must restore or reconnect and
+verify every binding before writing dispatch-started. If the backend cannot prove the same state,
+the episode ends as an infrastructure failure without dispatch. This extension adds no policy
+observation or action and does not change `PixelGuiEnv` reward or termination semantics.
 
 The benchmark evaluates a policy system, not an unnamed base model. Results must use the complete
 policy identity.
@@ -196,7 +219,8 @@ Before the first task, the harness resolves an immutable policy manifest contain
 - policy ID and schema version;
 - model provider, exact snapshot when available, and disclosed alias otherwise;
 - agent-harness source digest and dependency lock digest;
-- system prompt, task-prompt renderer, parser, and memory-policy versions;
+- system prompt, task-prompt renderer, provider-response capture schema, state reducer, parser, and
+  memory-policy versions;
 - coordinate-adapter name, source digest, input convention, and output convention;
 - inference parameters, context limits, internal provider-call limit, and transport-retry rule;
 - screenshot dimensions, action-schema version, and key-allowlist version;
@@ -383,17 +407,20 @@ For each policy and task, the runner:
 3. Stores the initial screenshot and its digest before the first policy action.
 4. Calls the policy with the current screenshot and the runner-owned attempt journal injected into
    its provider-call boundary.
-5. Writes `attempt_started` before each request, then writes exactly one completed, failed, or
-   reconciled terminal attempt record before parsing or starting another attempt.
+5. Writes `attempt_started` before each request, persists the capture-scrubbed canonical response
+   bytes before policy consumption, and writes exactly one completed, failed, or reconciled terminal
+   attempt record with its post-attempt state before parsing or starting another attempt.
 6. Runs the pure parser and atomically persists either a sealed failure or a
    `parsed_action_candidate` containing the post-parse checkpoint.
 7. Validates the durable candidate through the existing PixelGym action contract. An invalid
-   candidate seals an unsuccessful result; a valid candidate seals the action intent and forms the
-   supported pre-dispatch resume boundary. Recovery from an unconsumed candidate repeats only this
-   deterministic validation step.
-8. Writes dispatch-started immediately before dispatching the valid action once, then writes its
-   dispatch-committed record with the resulting screenshot and privileged host-side diagnostic
-   event. The runner restores the linked post-parse checkpoint before the next `act`.
+   candidate seals an unsuccessful result; a valid candidate binds the current
+   `EnvironmentResumeRecord`, seals the action intent, and forms a supported pre-dispatch resume
+   boundary only when backend restore or reconnect has been proven. Recovery from an unconsumed
+   candidate repeats only this deterministic validation step.
+8. On recovery, restores or reconnects and verifies the bound environment state. It then writes
+   dispatch-started immediately before dispatching the valid action once and writes
+   dispatch-committed with the resulting screenshot, privileged host-side diagnostic event, and
+   post-dispatch policy-state checkpoint.
 9. Seals the per-step trace, final submission evidence, usage, cost, latency, and policy-local
    metadata under content hashes.
 10. Aggregates results only from the sealed records. Report generation never reruns the policy or
@@ -488,9 +515,10 @@ The v5 run must preserve and content-bind:
 - initial screenshots and every screenshot observed in evaluated traces;
 - golden, recovery, near-miss, robustness, and mutation traces used for admission;
 - policy manifest, source/package digest, prompts, parser, memory policy, adapter, and parameters;
-- provider attempt-started and terminal-record journal, pre-call and post-parse policy-state
-  checkpoint index, raw-response index, parsed-action-candidate and sealed-action-intent indexes,
-  and sealed unsuccessful action results;
+- provider attempt-started, canonical-response, and terminal-record journal; pre-call,
+  post-attempt, post-parse, and post-dispatch policy-state checkpoint indexes;
+- parsed-action-candidate, environment-resume, sealed-action-intent, and sealed unsuccessful-result
+  indexes;
 - ordered environment actions, screenshot digests, rewards, termination/truncation states, and
   privileged diagnostic events;
 - task-level scores, summary metrics, paired comparisons, uncertainty estimates, and exploratory
@@ -503,19 +531,23 @@ The manifest distinguishes model calls from environment actions and provider att
 completed responses. Unknown usage, price, latency, source identity, or artifact digest fails the
 relevant evidence check rather than receiving an estimate.
 
-The evidence store keeps access-controlled authoritative objects for raw provider records,
-policy-state checkpoints, `TaskSpec` records, and environment manifests. Authoritative task and
-environment objects preserve `Backend.app_url` and every other launch value required for replay and
-integrity verification; they are the only inputs to replay. Credentials, API keys, authorization
-headers, and secret-manager values are excluded at the capture boundary and never enter an
-authoritative object, derivative, log, or manifest. Provider adapters retain only sanitized request
-and response fields required by the frozen evidence schema. A deterministic redaction transform
-produces a publishable derivative that removes hostnames, usernames, account IDs, and private
-provider or policy-state fields. A relation record binds the authoritative digest, derivative
-digest, and redaction-policy version. Only the derivative and relation record enter publishable or
-checked-in evidence; access to the authoritative object is separately controlled. D5.2 must freeze
-these schemas, capture exclusions, access rules, redaction transform, and content-binding procedure
-before any real provider response, policy-state checkpoint, or runtime launch record is stored.
+The evidence store keeps access-controlled authoritative objects for capture-scrubbed canonical
+provider records, policy-state checkpoints, `TaskSpec` records, environment-resume records, and
+environment manifests. The canonical attempt record is the sole parser and recovery input; initial
+execution and recovery read the same versioned bytes. Authoritative task and environment objects
+preserve `Backend.app_url` and every other launch value required for replay and integrity
+verification; they are the only inputs to replay. Credentials, API keys, authorization headers, and
+secret-manager values are excluded at the capture boundary and never enter an authoritative object,
+derivative, log, or manifest. Provider adapters retain only the canonical request and response
+fields required by the frozen evidence schema.
+
+A deterministic redaction transform produces a publishable derivative that removes hostnames,
+usernames, account IDs, and private provider or policy-state fields. A relation record binds the
+canonical authoritative digest, derivative digest, and redaction-policy version. Only the
+derivative and relation record enter publishable or checked-in evidence; access to the authoritative
+object is separately controlled. D5.2 must freeze these schemas, canonical serialization, capture
+exclusions, access rules, redaction transform, and content-binding procedure before any real
+provider response, policy-state checkpoint, or runtime launch record is stored.
 
 ## Platform boundary
 
@@ -571,10 +603,10 @@ the approved cap is reached; incomplete tasks remain incomplete evidence.
 | ID | Owner | Deliverable | Stop condition |
 |---|---|---|---|
 | D5.1 | **YOU / PAIR** | Approve the end-to-end policy construct, raw primary condition, scope, and sequencing relative to D4.12 | No implementation before explicit approval |
-| D5.2 | **AGENT · high** | Freeze task, generator, policy, trace, attempt-journal, parsed-candidate, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface and security-boundary review required before application work |
+| D5.2 | **AGENT · high** | Freeze task, generator, policy, canonical provider-response, state-reducer, trace, attempt-journal, parsed-candidate, environment-resume, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface, security-boundary, and backend-resume review required before application work |
 | D5.3 | **AGENT · high** | Implement six deterministic generator families, versioned app states, evaluator fixtures, and golden policies | Stop if a core PixelGym invariant would need to change |
 | D5.4 | **AGENT · high** | Build no-cost determinism, mutation, reward-hacking, replay, and admission evidence | Human inspects the development sample |
-| D5.5 | **AGENT · high** | Implement the stateful policy harness, raw-response persistence, resume boundaries, call caps, and no-cost fake policies | No real provider call |
+| D5.5 | **AGENT · high** | Implement the stateful policy harness, canonical-response persistence, exact policy-state recovery, v5 checkpoint/restore or reconnect support for FakeBackend and OSWorldBackend, resume boundaries, call caps, and no-cost fake policies | No real provider call; stop if exact backend-state recovery cannot be proven |
 | D5.6 | **PAIR** | Freeze the calibration policy panel, prompts, adapters, prices, retry rules, call caps, and routing | Explicit paid-call approval required |
 | D5.7 | **AGENT · high** | Run only the approved calibration and generate immutable calibration evidence | Stop at approved cap and await human review |
 | D5.8 | **YOU / PAIR** | Approve generator revisions, item-band targets, minimum relevant difference, power target, final seeds, policy candidates, and confirmatory cap | Second explicit paid-call approval required |
@@ -589,8 +621,8 @@ provider credentials, or model calls. They cover:
 - generator determinism, canonical identity, split disjointness, family allocation, difficulty
   bounds, typed-character limits, and robustness-pair semantic identity;
 - policy-state reset, absence of cross-episode memory, action schema validation, internal call
-  caps, pre-send attempt persistence, unknown-outcome reconciliation, attempt identity, and no
-  hidden retry;
+  caps, pre-send attempt persistence, unknown-outcome reconciliation, post-attempt and post-dispatch
+  state reconstruction, attempt identity, and no hidden retry;
 - policy-sandbox denial of external search and arbitrary URLs, browser/DOM inspection, shell
   execution, shared or cross-policy channels, and all policy egress except the configured fake or
   provider endpoint, while required backend application and controller traffic remains available;
@@ -599,10 +631,12 @@ provider credentials, or model calls. They cover:
 - golden, recovery, near-miss, mutation, and replay trace validation;
 - coordinate adapters, normalized-grid transforms, boundary rejection, and distinct policy
   identity;
-- task and policy manifest hashing, attempt-started-before-send, raw-before-parse and
-  raw-before-next-attempt ordering, sealed parser failures and action intents, post-parse state
-  reconstruction, resume idempotency, authoritative replay, authoritative-to-redacted content
-  binding, integrity verification, redaction boundaries, and missing-evidence failure;
+- task and policy manifest hashing, attempt-started-before-send, canonical-response-before-policy
+  ordering, byte-identical canonical parser input during initial execution and recovery, sealed
+  parser failures and action intents, state reconstruction at every attempt/action boundary, resume
+  idempotency, authoritative replay, authoritative-to-redacted content binding, integrity
+  verification, secret-sentinel exclusion from every persisted artifact and log, redaction
+  boundaries, and missing-evidence failure;
 - metric denominators, Wilson intervals, paired tables, exact McNemar calculations, clustered
   bootstrap reproducibility, reliability separation, and display rounding; and
 - call-cap formulas for every phase and policy configuration.
@@ -611,17 +645,22 @@ Browser integration tests replay every development trace twice against the deter
 and compare the corresponding screenshots bitwise. A smaller pytest-marked integration set
 exercises the stateful flow with a no-cost policy, forced interruptions at each supported
 side-effect boundary—including after attempt-started, after provider receipt but before response
-persistence, after every terminal provider-attempt record, during pure parsing before outcome
-persistence, after `parsed_action_candidate` but before result or intent sealing, after parser
-failure, and immediately before action dispatch—and proof that resume does not duplicate provider
-calls or actions. The parser-recovery test requires byte-identical output. Candidate-record recovery
-must seal the result or intent without invoking the parser. The stateful fake policy must prove that
-resume after candidate or intent sealing, or after a dispatch commit, reconstructs the exact
-post-parse state before the next `act`. Interruption after a sealed intent but before
-dispatch-started must resume from that intent; interruption after dispatch-started without a proven
-idempotent backend transaction must remain an infrastructure failure. An unresolved post-send
-provider attempt must reconcile under the frozen fake mechanism or remain an infrastructure
-failure without another request.
+persistence, after canonical response persistence but before the post-attempt checkpoint, after
+every terminal provider-attempt record, during pure parsing before outcome persistence, after
+`parsed_action_candidate` but before result or intent sealing, after parser failure, and immediately
+before action dispatch—and proof that resume does not duplicate provider calls or actions. Every
+terminal-attempt interruption must restore byte-identical policy state before another attempt or the
+parser runs. The parser-recovery test requires byte-identical canonical input and output.
+Candidate-record recovery must seal the result or intent without invoking the parser.
+
+The stateful fake policy must prove that resume after attempt, candidate, intent, or dispatch commit
+reconstructs the exact policy state for the next operation. A process-restart test must restore or
+reconnect the bound FakeBackend state after intent sealing, verify identical task, step,
+application-state, and screenshot digests, and execute the stored action exactly once. Equivalent
+pytest-marked OSWorldBackend restart/reconnect evidence is required before any real provider run.
+Interruption after dispatch-started without a proven idempotent backend transaction must remain an
+infrastructure failure. An unresolved post-send provider attempt must reconcile under the frozen
+fake mechanism or remain an infrastructure failure without another request.
 
 Any real provider smoke or calibration call is excluded from automated tests and remains a human
 gate.
@@ -638,7 +677,7 @@ gate.
 | Policy-dependent paths prevent exhaustive screenshot enumeration | Require deterministic replay for declared valid and adversarial traces plus property tests; arbitrary wrong paths remain outside exhaustive visual capture |
 | Robustness twins reduce statistical independence | Cluster paired variants in resampling and report their consistency separately |
 | Synthetic tasks invite shortcut learning | Use held-out parameter combinations, target-independent variants, and diagnostic mutation policies; one synthetic app cannot establish broad GUI competence |
-| Stateful resume can duplicate side effects or lose private memory | Resume only at proven idempotent boundaries with reconstructable policy state; otherwise retain an infrastructure failure |
+| Stateful resume can duplicate side effects or lose policy/backend state | Bind canonical attempt bytes, exact policy checkpoints, and verified backend restore/reconnect state at every supported boundary; otherwise retain an infrastructure failure without another request or action |
 | Agent-side pixel processing blurs architecture comparisons | Treat all screenshot-derived internal processing as part of the policy identity and forbid non-pixel environment channels |
 
 ## Alternatives considered
@@ -697,10 +736,10 @@ principle without making Item Response Theory an automatic gate; see
 - [ ] Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking
   mutations remain at `0.0`.
 - [ ] Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt
-  reconciliation, pure-parser recovery, atomic candidate/checkpoint persistence, sealed parser
-  failure, post-parse state reconstruction, pre-dispatch interruption, invalid output, call caps,
-  resume, authoritative replay, redaction binding, and evidence integrity have no-cost failure-path
-  tests.
+  reconciliation, post-attempt and post-dispatch state reconstruction, canonical parser-input
+  recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state
+  restore or reconnect, pre-dispatch interruption, invalid output, call caps, resume, authoritative
+  replay, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.
 - [ ] The documented fast suite passes without browser, network, OSWorld, provider credentials, or
   model calls.
 - [ ] A free plan-only command reports exact action and provider-call caps for each approved phase.
