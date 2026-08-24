@@ -1,0 +1,22 @@
+{
+  "cached_reachable_state_requests": 0,
+  "condition_count": 2,
+  "episode_count": 10,
+  "max_actions_per_condition": {
+    "60": 8,
+    "61": 8,
+    "62": 8,
+    "63": 8,
+    "64": 9,
+    "65": 9,
+    "66": 9,
+    "67": 10,
+    "68": 10,
+    "69": 10
+  },
+  "proposal_covered_states": 244,
+  "proposal_total_states": 244,
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "reachable_actionable_state_requests": 488,
+  "upper_bound_calls": 178
+}

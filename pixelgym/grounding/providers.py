@@ -340,12 +340,13 @@ class OpenRouterProvider:
         self,
         *,
         environment: Mapping[str, str] = os.environ,
+        require_api_key: bool = True,
         timeout_seconds: float = 180.0,
         urlopen: Callable[..., Any] = urllib.request.urlopen,
     ) -> None:
         api_key = environment.get("OPENROUTER_API_KEY")
         model = environment.get("OPENROUTER_MODEL")
-        if not api_key:
+        if require_api_key and not api_key:
             raise RuntimeError("OPENROUTER_API_KEY is not set")
         if not model:
             raise RuntimeError("OPENROUTER_MODEL is not set")
@@ -356,6 +357,8 @@ class OpenRouterProvider:
         self._urlopen = urlopen
 
     def invoke(self, *, image_path: Path, prompt: str, schema: dict[str, Any]) -> ProviderResponse:
+        if not self._api_key:
+            raise RuntimeError("OPENROUTER_API_KEY is not set")
         started_at = _timestamp()
         start = time.monotonic()
         mime_type = "image/png" if image_path.suffix.lower() == ".png" else "image/jpeg"
@@ -464,8 +467,9 @@ class GeminiCoordinateAdapter:
         with Image.open(image_path) as img:
             width, height = img.size
         rescaled = dict(parsed)
-        rescaled["x"] = min(max(round(parsed["x"] * width / self._grid_size), 0), width - 1)
-        rescaled["y"] = min(max(round(parsed["y"] * height / self._grid_size), 0), height - 1)
+        rescaled["x"], rescaled["y"] = self._rescale_coordinates(
+            parsed["x"], parsed["y"], width, height
+        )
         return dataclasses.replace(
             response,
             raw_response=json.dumps(rescaled, separators=(",", ":")),
@@ -475,6 +479,44 @@ class GeminiCoordinateAdapter:
                 "original_response": response.raw_response,
             },
         )
+
+    def _rescale_coordinates(
+        self, x: float, y: float, width: int, height: int
+    ) -> tuple[float, float]:
+        return (
+            min(max(round(x * width / self._grid_size), 0), width - 1),
+            min(max(round(y * height / self._grid_size), 0), height - 1),
+        )
+
+
+class QwenNormalizedCoordinateAdapter(GeminiCoordinateAdapter):
+    """Interpret Qwen x/y outputs on a square normalized coordinate grid.
+
+    The adapter has a distinct provider identity so its response cache and v4c
+    paid-call ledger cannot be confused with unadapted OpenRouter evidence.
+    """
+
+    def __init__(self, inner: GroundingProvider, *, grid_size: int = 1000) -> None:
+        if grid_size <= 0:
+            raise ValueError("grid_size must be positive")
+        super().__init__(inner, grid_size=grid_size)
+        self.name = f"{inner.name}-qwen-normalized-{grid_size}x{grid_size}"
+        self.parameters = {
+            **inner.parameters,
+            "coordinate_rescale": f"qwen-{grid_size}x{grid_size}",
+        }
+
+    def _rescale_coordinates(
+        self, x: float, y: float, width: int, height: int
+    ) -> tuple[float, float]:
+        if type(x) is not int or type(y) is not int:
+            return x, y
+        if not (0 <= x <= self._grid_size and 0 <= y <= self._grid_size):
+            return (
+                round(x * width / self._grid_size),
+                round(y * height / self._grid_size),
+            )
+        return super()._rescale_coordinates(x, y, width, height)
 
 
 class MockProvider:

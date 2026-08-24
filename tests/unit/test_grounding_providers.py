@@ -18,7 +18,9 @@ from pixelgym.grounding.providers import (
     MockProvider,
     OpenRouterProvider,
     ProviderResponse,
+    QwenNormalizedCoordinateAdapter,
 )
+from pixelgym.grounding.v4c_evaluation import _parse_action
 
 
 def test_codex_provider_uses_ephemeral_read_only_image_and_schema_flags(tmp_path: Path) -> None:
@@ -495,3 +497,75 @@ def test_gemini_adapter_exposes_inner_identity() -> None:
     assert adapter.model == inner.model
     assert "coordinate_rescale" in adapter.parameters
     assert adapter.parameters["coordinate_rescale"] == "gemini-1000"
+
+
+def test_qwen_adapter_rescales_1000x1000_and_uses_distinct_identity(
+    tmp_path: Path,
+) -> None:
+    image_path = tmp_path / "screenshot.png"
+    Image.new("RGB", (1024, 768), "white").save(image_path)
+    inner = MockProvider()
+    original_invoke = inner.invoke
+
+    def fixed_invoke(*, image_path: Path, prompt: str, schema: dict) -> ProviderResponse:
+        response = original_invoke(image_path=image_path, prompt=prompt, schema=schema)
+        return dataclasses.replace(
+            response,
+            raw_response='{"action_type":1,"x":750,"y":500,"key":0}',
+        )
+
+    inner.invoke = fixed_invoke  # type: ignore[assignment]
+    adapter = QwenNormalizedCoordinateAdapter(inner)
+
+    response = adapter.invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+
+    assert json.loads(response.raw_response) == {
+        "action_type": 1,
+        "x": round(750 * 1024 / 1000),
+        "y": round(500 * 768 / 1000),
+        "key": 0,
+    }
+    assert adapter.name == "mock-qwen-normalized-1000x1000"
+    assert adapter.model == inner.model
+    assert adapter.parameters["coordinate_rescale"] == "qwen-1000x1000"
+    assert response.provider_metadata["coordinate_rescale"] == "1000->1024x768"
+    assert response.provider_metadata["original_response"] == (
+        '{"action_type":1,"x":750,"y":500,"key":0}'
+    )
+
+
+def test_qwen_adapter_rejects_nonpositive_grid_size() -> None:
+    with pytest.raises(ValueError, match="grid_size must be positive"):
+        QwenNormalizedCoordinateAdapter(MockProvider(), grid_size=0)
+
+
+@pytest.mark.parametrize(
+    "raw_response",
+    (
+        '{"action_type":1,"x":1001,"y":500,"key":0}',
+        '{"action_type":1,"x":-1,"y":500,"key":0}',
+        '{"action_type":1,"x":1.5,"y":500,"key":0}',
+    ),
+)
+def test_qwen_adapter_keeps_invalid_grid_coordinates_rejectable(
+    tmp_path: Path, raw_response: str
+) -> None:
+    image_path = tmp_path / "screenshot.png"
+    Image.new("RGB", (1024, 768), "white").save(image_path)
+    inner = MockProvider()
+    original_invoke = inner.invoke
+
+    def fixed_invoke(*, image_path: Path, prompt: str, schema: dict) -> ProviderResponse:
+        response = original_invoke(image_path=image_path, prompt=prompt, schema=schema)
+        return dataclasses.replace(response, raw_response=raw_response)
+
+    inner.invoke = fixed_invoke  # type: ignore[assignment]
+
+    response = QwenNormalizedCoordinateAdapter(inner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
+    action, error = _parse_action(response.raw_response)
+
+    assert action is None
+    assert error is not None
+    assert response.provider_metadata["original_response"] == raw_response

@@ -1,0 +1,53 @@
+{
+  "coordinate_frame": {
+    "native_point_inside_correct_target_count": 1,
+    "native_screen": {
+      "height": 768,
+      "width": 1024
+    },
+    "native_semantic_nearest_target_count": 1,
+    "normalized_point_inside_correct_target_count": 177,
+    "normalized_semantic_nearest_target_count": 178,
+    "observed_x_range": [
+      421,
+      430
+    ],
+    "observed_y_range": [
+      452,
+      584
+    ],
+    "tested_normalized_grid": {
+      "height": 1000,
+      "width": 1000
+    }
+  },
+  "interpretation": "The frozen observed score remains unchanged. The 1000x1000 transform is an offline diagnostic indicating a coordinate-frame mismatch; applying it in a future scored run would require a new frozen adapter protocol and explicit paid-call approval.",
+  "model": "qwen/qwen3.8-27b",
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "provider_usage": {
+    "completion_tokens": 13792,
+    "paid_request_count": 42,
+    "prompt_tokens": 38694,
+    "reported_cost_usd": 0.05728782
+  },
+  "schema_version": "pixelgym-grounding-v4c-floor-audit-v1",
+  "sources": {
+    "predictions": {
+      "path": "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b.jsonl",
+      "sha256": "2fc85ff084302d6e21d8ffcab9403205ea5ba5b73faab9c180db1a1601903744"
+    },
+    "results": {
+      "path": "artifacts/grounding-v4c-pilot-results-qwen3-8-27b.json",
+      "sha256": "8479a71eaaa20c93d89320c87c948265b1679d75cca636e0a27697dcaeb29868"
+    }
+  },
+  "stored_response_checks": {
+    "parse_status_counts": {
+      "parsed": 178
+    },
+    "parsed_action_count": 178,
+    "record_count": 178,
+    "request_failure_count": 0,
+    "unknown_observation_hash_count": 0
+  }
+}

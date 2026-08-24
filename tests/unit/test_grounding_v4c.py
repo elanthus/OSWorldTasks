@@ -35,6 +35,7 @@ from pixelgym.grounding.v4c_evaluation import (
     _state_for_observation,
     _state_identity,
     _target_center,
+    initialize_v4c_model_manifest,
     planned_v4c_calls,
     read_paid_call_ledger,
     record_v4c_evaluation,
@@ -854,3 +855,170 @@ def test_v4c_recorder_rejects_aliased_output_before_overwrite(evidence_dir: Path
             manifest_path=evidence_dir / "manifest.json",
         )
     assert predictions.read_bytes() == original
+
+
+def test_v4c_recorder_initializes_model_specific_manifest_and_output_keys(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    template = evidence_dir / "template.json"
+    manifest = evidence_dir / "manifest.json"
+    results = evidence_dir / "results.json"
+    plan = evidence_dir / "plan.json"
+    template.write_text(
+        json.dumps(
+            {
+                "protocol_version": V4C_PROTOCOL_VERSION,
+                "model": "old-model",
+                "parameters": {},
+                "status": "evaluated",
+                "model_calls_performed": 99,
+                "decision_history": [{"route": "old"}],
+                "outputs": {
+                    "capture": {"path": "capture.json", "sha256": "0" * 64},
+                    "predictions_luna": {"path": "old.jsonl", "sha256": "1" * 64},
+                    "floor_audit_luna": {"path": "old-audit.json", "sha256": "2" * 64},
+                },
+            }
+        )
+    )
+    plan.write_text("{}\n")
+    initialize_v4c_model_manifest(
+        template_path=template,
+        manifest_path=manifest,
+        model="gpt-5.6-luna",
+        parameters={"reasoning_effort": "low", "temperature": None},
+    )
+
+    record_v4c_evaluation(
+        repository_root=REPOSITORY_ROOT,
+        predictions_path=predictions,
+        conditions_path=conditions,
+        attempts_path=attempts,
+        results_path=results,
+        manifest_path=manifest,
+        artifact_label="alternate-model",
+        plan_path=plan,
+    )
+
+    recorded = json.loads(manifest.read_text())
+    assert recorded["model_calls_performed"] > 0
+    assert recorded["decision_history"][0]["route"] == "report_saturation_stop"
+    assert set(recorded["outputs"]) == {
+        "capture",
+        "predictions_alternate-model",
+        "conditions_alternate-model",
+        "attempts_alternate-model",
+        "results_alternate-model",
+        "plan_alternate-model",
+    }
+
+
+def test_v4c_recorder_validates_optional_evidence_before_writing_result(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    manifest = evidence_dir / "manifest.json"
+    results = evidence_dir / "results.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "protocol_version": V4C_PROTOCOL_VERSION,
+                "model": "gpt-5.6-luna",
+                "parameters": {"reasoning_effort": "low", "temperature": None},
+                "decision_history": [],
+                "outputs": {},
+            }
+        )
+    )
+
+    with pytest.raises(FileNotFoundError):
+        record_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+            results_path=results,
+            manifest_path=manifest,
+            audit_path=evidence_dir / "missing-audit.json",
+        )
+
+    assert not results.exists()
+
+
+def test_v4c_recorder_requires_explicit_plan_for_non_luna_label(
+    evidence_dir: Path,
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    results = evidence_dir / "results.json"
+
+    with pytest.raises(ValueError, match="require an explicit plan path"):
+        record_v4c_evaluation(
+            repository_root=REPOSITORY_ROOT,
+            predictions_path=predictions,
+            conditions_path=conditions,
+            attempts_path=attempts,
+            results_path=results,
+            manifest_path=evidence_dir / "manifest.json",
+            artifact_label="alternate-model",
+        )
+
+    assert not results.exists()
+
+
+@pytest.mark.parametrize("changed_binding", ("plan", "audit"))
+def test_v4c_recorder_preserves_existing_optional_bindings(
+    evidence_dir: Path, changed_binding: str
+) -> None:
+    predictions, conditions, attempts = _write_summary_fixture(
+        evidence_dir, raw_success=9, marks_success=10
+    )
+    template = evidence_dir / "template.json"
+    manifest = evidence_dir / "manifest.json"
+    results = evidence_dir / "results.json"
+    plan = evidence_dir / "plan.json"
+    audit = evidence_dir / "audit.json"
+    replacement_plan = evidence_dir / "replacement-plan.json"
+    replacement_audit = evidence_dir / "replacement-audit.json"
+    template.write_text(json.dumps({"protocol_version": V4C_PROTOCOL_VERSION, "outputs": {}}))
+    for path, content in (
+        (plan, "plan\n"),
+        (audit, "audit\n"),
+        (replacement_plan, "replacement plan\n"),
+        (replacement_audit, "replacement audit\n"),
+    ):
+        path.write_text(content)
+    initialize_v4c_model_manifest(
+        template_path=template,
+        manifest_path=manifest,
+        model="gpt-5.6-luna",
+        parameters={"reasoning_effort": "low", "temperature": None},
+    )
+    common = {
+        "repository_root": REPOSITORY_ROOT,
+        "predictions_path": predictions,
+        "conditions_path": conditions,
+        "attempts_path": attempts,
+        "results_path": results,
+        "manifest_path": manifest,
+        "artifact_label": "alternate-model",
+    }
+    record_v4c_evaluation(**common, plan_path=plan, audit_path=audit)
+    original_results = results.read_bytes()
+    original_manifest = manifest.read_bytes()
+
+    with pytest.raises(ValueError, match="refusing to replace different v4c output binding"):
+        record_v4c_evaluation(
+            **common,
+            plan_path=replacement_plan if changed_binding == "plan" else plan,
+            audit_path=replacement_audit if changed_binding == "audit" else audit,
+        )
+
+    assert results.read_bytes() == original_results
+    assert manifest.read_bytes() == original_manifest

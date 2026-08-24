@@ -1,0 +1,115 @@
+{
+  "approved_call_cap": 178,
+  "conditions": [
+    "raw",
+    "marks"
+  ],
+  "decision_history": [
+    {
+      "cache_hits": 136,
+      "cumulative_paid_calls": 42,
+      "failures": {},
+      "incremental_new_calls": 42,
+      "marks_success": 0,
+      "rationale": "failure observed or at least one condition scored below 4/10",
+      "raw_success": 0,
+      "route": "floor_transport_audit"
+    }
+  ],
+  "family_counts": {
+    "constraint_repair_chain": 3,
+    "pin_traverse_apply": 4,
+    "reconcile_deferred_evidence": 3
+  },
+  "max_actions_per_condition": {
+    "60": 8,
+    "61": 8,
+    "62": 8,
+    "63": 8,
+    "64": 9,
+    "65": 9,
+    "66": 9,
+    "67": 10,
+    "68": 10,
+    "69": 10
+  },
+  "model": "qwen/qwen3.8-27b",
+  "model_calls_performed": 42,
+  "outputs": {
+    "attempts_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-attempts-qwen3-8-27b.json",
+      "sha256": "e9fb13a862537a48388aa8ebdbe9a79c3c6ed6ff6108e0973ba8f5e9e30fe3aa"
+    },
+    "candidates": {
+      "path": "artifacts/grounding-v4c-pilot-candidates.jsonl",
+      "sha256": "a13fff95858e3e521bf0f84c0fad35e28d1ad698ac77b53f2029844088cf553e"
+    },
+    "capture": {
+      "path": "artifacts/grounding-v4c-pilot-capture.json",
+      "sha256": "63b091cbb0227580666222d9e1e4eca8e10ab513460cd2f4a5e00f3c0dc0b599"
+    },
+    "conditions_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-conditions-qwen3-8-27b.jsonl",
+      "sha256": "aea59091c3bfd3c10cd0f769609c83c23c5a0feda94e729707cb970e46f26005"
+    },
+    "episodes": {
+      "path": "artifacts/grounding-v4c-pilot-episodes.json",
+      "sha256": "8bb2fafe3a629f10311031bf875719dd7b9037997bfdb3f6e6fa194ffd52dd0e"
+    },
+    "floor_audit_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-floor-audit-qwen3-8-27b.json",
+      "sha256": "e4bc70445f5a491eddd2f84d76e3a550cdf6260cffe215049c6b5bf73f3880ee"
+    },
+    "overlays": {
+      "path": "artifacts/grounding-v4c-pilot-overlays.jsonl",
+      "sha256": "3a34e3cb4f2ef3af96376d2dadfe28d407f23eb208a2c23ed287bf91a5501fa1"
+    },
+    "plan_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-plan-qwen3-8-27b.json",
+      "sha256": "5e73bc156d6526dae70c44a28282b7ab484e7ba2c229b371192aedcfdb2a0f14"
+    },
+    "predictions_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b.jsonl",
+      "sha256": "2fc85ff084302d6e21d8ffcab9403205ea5ba5b73faab9c180db1a1601903744"
+    },
+    "results_qwen3-8-27b": {
+      "path": "artifacts/grounding-v4c-pilot-results-qwen3-8-27b.json",
+      "sha256": "8479a71eaaa20c93d89320c87c948265b1679d75cca636e0a27697dcaeb29868"
+    },
+    "states": {
+      "path": "artifacts/grounding-v4c-pilot-states.jsonl",
+      "sha256": "ddc87aee9f22625a545eda26fdc16accc6205cc18aba44ecf9dc370f28d90376"
+    }
+  },
+  "parameters": {
+    "seed": 20260809,
+    "temperature": 0
+  },
+  "protocol_version": "pixelgym-grounding-v4c-pilot",
+  "schema_version": "pixelgym-grounding-v4c-manifest-v1",
+  "seeds": [
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+  ],
+  "status": "evaluated_floor_transport_audit_required",
+  "task_ids": {
+    "60": "v4c-4745560238f89c6f",
+    "61": "v4c-80ed0dfb123809f4",
+    "62": "v4c-a41cebbc6dd7f20b",
+    "63": "v4c-b627dc3b17091351",
+    "64": "v4c-2d03c2a54a8c1d63",
+    "65": "v4c-a295e248f01bc149",
+    "66": "v4c-356b858fe9019d58",
+    "67": "v4c-a89905c741b3839e",
+    "68": "v4c-71ab93e8aeb89ab1",
+    "69": "v4c-00b2d5d8ce887b6b"
+  }
+}

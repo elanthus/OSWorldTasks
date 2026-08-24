@@ -14,15 +14,23 @@ from pixelgym.grounding.providers import (
     CodexCLIProvider,
     GroundingProvider,
     MockProvider,
+    OpenRouterProvider,
+    QwenNormalizedCoordinateAdapter,
 )
 from pixelgym.grounding.v4c_evaluation import planned_v4c_calls, run_v4c_evaluation
 
 
-def provider_for_name(name: str) -> GroundingProvider:
+def provider_for_name(name: str, *, plan_only: bool = False) -> GroundingProvider:
     if name == "luna":
         return CodexCLIProvider(model="gpt-5.6-luna")
     if name == "haiku":
         return ClaudeCodeCLIProvider(model=CLAUDE_HAIKU_MODEL)
+    if name == "openrouter":
+        return OpenRouterProvider(require_api_key=not plan_only)
+    if name == "openrouter-qwen-1000":
+        return QwenNormalizedCoordinateAdapter(
+            OpenRouterProvider(require_api_key=not plan_only)
+        )
     if name == "mock":
         return MockProvider()
     raise ValueError(f"unsupported provider: {name}")
@@ -30,7 +38,11 @@ def provider_for_name(name: str) -> GroundingProvider:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", choices=("luna", "haiku", "mock"), required=True)
+    parser.add_argument(
+        "--provider",
+        choices=("luna", "haiku", "openrouter", "openrouter-qwen-1000", "mock"),
+        required=True,
+    )
     parser.add_argument("--max-new-calls", type=int, required=True)
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--predictions", type=Path)
@@ -44,7 +56,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     root = Path(__file__).resolve().parents[1]
-    provider = provider_for_name(args.provider)
+    provider = provider_for_name(args.provider, plan_only=args.plan_only)
     cache_dir = args.cache_directory or root / ".cache" / "grounding-v4c" / "responses"
     if args.plan_only:
         result = planned_v4c_calls(
