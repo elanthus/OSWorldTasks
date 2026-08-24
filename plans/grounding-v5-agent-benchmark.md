@@ -131,11 +131,34 @@ already bounded:
   action only when that behavior and its internal call cap are frozen in the policy package.
   Every request and response remains attributable. Environment-action count and provider-call
   count are reported separately.
-- Provider access is the only evaluation-time network use. External search, browser inspection,
-  shell access, DOM queries, knowledge tools, and communication with another policy are forbidden.
+- Provider access is the only outbound network use permitted from the policy execution sandbox.
+  The runner and backend execute outside that sandbox and retain only the application-launch,
+  screenshot, input, and controller channels required by the existing backend protocol; this
+  required environment traffic is not policy egress and is never exposed as a policy capability.
+  The sandbox allowlists the configured provider endpoint for a paid policy, or no endpoint for a
+  no-cost fake policy. External search, arbitrary URLs, browser or DOM inspection, shell execution,
+  knowledge tools, inbound listeners, shared storage, and direct or indirect communication with
+  another policy are denied.
 - A response-producing provider call is final. A transport failure before a response may be
-  retried only under a predeclared, versioned rule; every attempt remains in the attempt ledger and
+  retried only under a predeclared, versioned rule; every attempt remains in the attempt journal and
   counts toward `max_provider_calls_per_action`.
+
+D5.2 must freeze a runner-owned, injected attempt journal before implementing a provider-backed
+policy. The journal is not a policy observation or tool. It is the only provider-call boundary and
+uses deterministic trial, step, and attempt identities. Before a response is available to the
+parser or another attempt can start, the journal atomically stores the request digest, raw response
+or transport failure, usage, completion status, and an access-controlled reconstructable
+policy-state checkpoint with its digest. After parsing, the runner seals one action intent that
+links the exact attempt identities, parser version, policy-state checkpoint, and returned action.
+`PixelGuiEnv.step` may run only after that intent is durable.
+
+The journal then records dispatch-started and dispatch-committed states, with the latter binding the
+action intent to the resulting screenshot, reward, and termination state. Resume may reuse a stored
+response without another provider request and may dispatch an intent only when no dispatch-started
+record exists. An uncommitted dispatch-started record is an infrastructure failure unless the
+backend supplies a separately proven idempotent transaction; it is never blindly redispatched.
+Policy implementations may wrap the journal behind their conceptual `act` interface, but may not
+replace it with private, non-durable bookkeeping.
 
 The benchmark evaluates a policy system, not an unnamed base model. Results must use the complete
 policy identity.
@@ -332,10 +355,14 @@ For each policy and task, the runner:
    manifests.
 2. Resets the environment and policy independently. Cross-episode policy state is empty.
 3. Stores the initial screenshot and its digest before the first policy action.
-4. Calls the policy with the current screenshot.
-5. Durably records every provider attempt and response before parsing or action dispatch.
-6. Validates the one returned action through the existing PixelGym action contract.
-7. Dispatches a valid action, stores the resulting screenshot and privileged host-side diagnostic
+4. Calls the policy with the current screenshot and the runner-owned attempt journal injected into
+   its provider-call boundary.
+5. Atomically records each provider attempt and required policy-state checkpoint before parsing,
+   starting another attempt, or sealing an action intent.
+6. Validates and seals the action intent through the existing PixelGym action contract. This is the
+   supported pre-dispatch resume boundary.
+7. Writes dispatch-started immediately before dispatching the valid action once, then writes its
+   dispatch-committed record with the resulting screenshot and privileged host-side diagnostic
    event, and repeats until termination, truncation, or a recorded failure.
 8. Seals the per-step trace, final submission evidence, usage, cost, latency, and policy-local
    metadata under content hashes.
@@ -431,7 +458,7 @@ The v5 run must preserve and content-bind:
 - initial screenshots and every screenshot observed in evaluated traces;
 - golden, recovery, near-miss, robustness, and mutation traces used for admission;
 - policy manifest, source/package digest, prompts, parser, memory policy, adapter, and parameters;
-- provider attempt ledger and raw-response index;
+- provider attempt journal, policy-state checkpoint index, and raw-response index;
 - ordered environment actions, screenshot digests, rewards, termination/truncation states, and
   privileged diagnostic events;
 - task-level scores, summary metrics, paired comparisons, uncertainty estimates, and exploratory
@@ -444,9 +471,16 @@ The manifest distinguishes model calls from environment actions and provider att
 completed responses. Unknown usage, price, latency, source identity, or artifact digest fails the
 relevant evidence check rather than receiving an estimate.
 
-Secrets, hostnames, usernames, account IDs, and private provider payload fields are redacted before
-evidence is committed. D5.2 must freeze how an authoritative private object is content-bound to a
-publishable redacted record before any real provider response is stored.
+The evidence store keeps access-controlled authoritative objects for raw provider records,
+policy-state checkpoints, `TaskSpec` records, and environment manifests. Authoritative task and
+environment objects preserve `Backend.app_url` and every other launch value required for replay and
+integrity verification; they are the only inputs to replay. A deterministic redaction transform
+produces a publishable derivative that removes secrets, hostnames, usernames, account IDs, and
+private provider or policy-state fields. A relation record binds the authoritative digest,
+derivative digest, and redaction-policy version. Only the derivative and relation record enter
+publishable or checked-in evidence; access to the authoritative object is separately controlled.
+D5.2 must freeze these schemas, access rules, redaction transform, and content-binding procedure
+before any real provider response, policy-state checkpoint, or runtime launch record is stored.
 
 ## Platform boundary
 
@@ -502,7 +536,7 @@ the approved cap is reached; incomplete tasks remain incomplete evidence.
 | ID | Owner | Deliverable | Stop condition |
 |---|---|---|---|
 | D5.1 | **YOU / PAIR** | Approve the end-to-end policy construct, raw primary condition, scope, and sequencing relative to D4.12 | No implementation before explicit approval |
-| D5.2 | **AGENT · high** | Freeze task, generator, policy, trace, attempt-ledger, metric, and manifest schemas plus explicit seed lists | Interface review required before application work |
+| D5.2 | **AGENT · high** | Freeze task, generator, policy, trace, attempt-journal, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface and security-boundary review required before application work |
 | D5.3 | **AGENT · high** | Implement six deterministic generator families, versioned app states, evaluator fixtures, and golden policies | Stop if a core PixelGym invariant would need to change |
 | D5.4 | **AGENT · high** | Build no-cost determinism, mutation, reward-hacking, replay, and admission evidence | Human inspects the development sample |
 | D5.5 | **AGENT · high** | Implement the stateful policy harness, raw-response persistence, resume boundaries, call caps, and no-cost fake policies | No real provider call |
@@ -521,13 +555,17 @@ provider credentials, or model calls. They cover:
   bounds, typed-character limits, and robustness-pair semantic identity;
 - policy-state reset, absence of cross-episode memory, action schema validation, internal call
   caps, attempt identity, and no hidden retry;
+- policy-sandbox denial of external search and arbitrary URLs, browser/DOM inspection, shell
+  execution, shared or cross-policy channels, and all policy egress except the configured fake or
+  provider endpoint, while required backend application and controller traffic remains available;
 - exact reward timing, premature and wrong commits, repeated submissions, step-after-end behavior,
   termination versus truncation, and privileged diagnostic isolation;
 - golden, recovery, near-miss, mutation, and replay trace validation;
 - coordinate adapters, normalized-grid transforms, boundary rejection, and distinct policy
   identity;
-- task and policy manifest hashing, raw-before-parse ordering, resume idempotency, integrity
-  verification, redaction boundaries, and missing-evidence failure;
+- task and policy manifest hashing, raw-before-parse and raw-before-next-attempt ordering, sealed
+  action intents, resume idempotency, authoritative replay, authoritative-to-redacted content
+  binding, integrity verification, redaction boundaries, and missing-evidence failure;
 - metric denominators, Wilson intervals, paired tables, exact McNemar calculations, clustered
   bootstrap reproducibility, reliability separation, and display rounding; and
 - call-cap formulas for every phase and policy configuration.
@@ -535,7 +573,11 @@ provider credentials, or model calls. They cover:
 Browser integration tests replay every development trace twice against the deterministic task app
 and compare the corresponding screenshots bitwise. A smaller pytest-marked integration set
 exercises the stateful flow with a no-cost policy, forced interruptions at each supported
-side-effect boundary, and proof that resume does not duplicate provider calls or actions.
+side-effect boundary—including after every provider attempt and immediately before action
+dispatch—and proof that resume does not duplicate provider calls or actions. Interruption after a
+sealed intent but before dispatch-started must resume from that intent; interruption after
+dispatch-started without a proven idempotent backend transaction must remain an infrastructure
+failure.
 
 Any real provider smoke or calibration call is excluded from automated tests and remains a human
 gate.
@@ -610,8 +652,9 @@ principle without making Item Response Theory an automatic gate; see
   bitwise-identical corresponding screenshots.
 - [ ] Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking
   mutations remain at `0.0`.
-- [ ] Stateful policy reset, attempt persistence, invalid output, call caps, resume, and evidence
-  integrity have no-cost failure-path tests.
+- [ ] Stateful policy reset, policy-egress isolation, attempt persistence, pre-dispatch
+  interruption, invalid output, call caps, resume, authoritative replay, redaction binding, and
+  evidence integrity have no-cost failure-path tests.
 - [ ] The documented fast suite passes without browser, network, OSWorld, provider credentials, or
   model calls.
 - [ ] A free plan-only command reports exact action and provider-call caps for each approved phase.
