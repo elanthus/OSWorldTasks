@@ -129,29 +129,38 @@ already bounded:
   unsuccessful; the harness does not ask again.
 - A policy may make zero, one, or multiple provider requests while producing one environment
   action only when that behavior and its internal call cap are frozen in the policy package.
-  Every request and response remains attributable. Environment-action count and provider-call
-  count are reported separately.
+  Every request and response remains attributable. Environment actions, model attempts, provider
+  control requests, and total wire requests are reported separately.
 - Provider access is the only outbound network use permitted from the policy execution sandbox.
   The runner and backend execute outside that sandbox and retain only the application-launch,
   screenshot, input, and controller channels required by the existing backend protocol; this
   required environment traffic is not policy egress and is never exposed as a policy capability.
-  The sandbox allowlists the configured provider endpoint for a paid policy, or no endpoint for a
-  no-cost fake policy. External search, arbitrary URLs, browser or DOM inspection, shell execution,
-  knowledge tools, inbound listeners, shared storage, and direct or indirect communication with
-  another policy are denied.
+  The sandbox allowlists only the configured provider endpoint; no-cost tests use a local fake
+  endpoint or no endpoint for an in-process fake. External search, arbitrary URLs, browser or DOM
+  inspection, shell execution, knowledge tools, inbound listeners, shared storage, and direct or
+  indirect communication with another policy are denied.
 - A response-producing provider call is final. A pre-send transport failure, or a failure for which
   the provider's idempotency or reconciliation API proves that no response was produced, may be
   retried only under a predeclared, versioned rule. An attempt with an unknown post-send outcome is
   not retried. Every request attempt remains in the attempt journal and counts toward
-  `max_provider_calls_per_action`.
+  `max_model_attempts_per_action`.
 
 D5.2 must freeze a runner-owned, injected attempt journal before implementing a provider-backed
 policy. The journal is not a policy observation or tool. It is the only provider-call boundary and
 uses deterministic trial, step, and attempt identities. Before sending a request, it durably writes
 `attempt_started` with that identity, provider-endpoint identity, request digest, frozen
-idempotency key or reconciliation mode, call-cap reservation, and an access-controlled
-reconstructable pre-call policy-state checkpoint with its digest. The provider request may start
-only after this record is durable.
+idempotency key or reconciliation mode, model-attempt and worst-case control-request cap
+reservations, and an access-controlled reconstructable pre-call policy-state checkpoint with its
+digest. The provider request may start only after this record is durable.
+
+Every attempt has a runner-owned request deadline, cancellation mode, and bounded reconciliation
+deadline frozen in the policy manifest. Provider SDK, proxy, and transport auto-retries are disabled;
+the journaled runner is the only retry authority. At request deadline the runner issues the frozen
+cancellation exactly once. It then seals exactly one terminal record: confirmed cancellation,
+confirmed no-response timeout, reconciled response, or unknown-outcome infrastructure failure. A
+hung or cancellation-resistant call cannot extend beyond the combined frozen deadlines, start
+another request, or create multiple terminal records. Every request that reaches the transport
+counts toward its applicable model-attempt or provider-control cap regardless of terminal state.
 
 After receiving a response, the provider adapter excludes credentials and normalizes the allowed
 provider fields into one versioned, capture-scrubbed canonical response record. The journal persists
@@ -189,7 +198,8 @@ validation and seals the appropriate outcome; it never reruns the parser or disp
 intent is durable. The post-parse checkpoint, rather than the pre-call checkpoint, is restored
 before resuming a sealed intent or beginning the next `act`.
 
-The journal then records dispatch-started and dispatch-committed states, with the latter binding the
+The runner durably commits dispatch-started and receives storage acknowledgement before invoking the
+backend action method; the backend may not accept the action first. Dispatch-committed then binds the
 action intent to the resulting screenshot, reward, and termination state. Dispatch commit also
 stores a deterministic post-dispatch policy-state checkpoint derived from the post-parse checkpoint,
 committed action, and result; that checkpoint becomes the state before the next screenshot is
@@ -221,8 +231,12 @@ Before the first task, the harness resolves an immutable policy manifest contain
 - agent-harness source digest and dependency lock digest;
 - system prompt, task-prompt renderer, provider-response capture schema, state reducer, parser, and
   memory-policy versions;
+- resolved policy-sandbox runtime/image digest, network-policy version, credential-free provider
+  endpoint identity, exact endpoint-allowlist digest, and proxy/SDK retry settings;
 - coordinate-adapter name, source digest, input convention, and output convention;
-- inference parameters, context limits, internal provider-call limit, and transport-retry rule;
+- inference parameters, context limits, internal model-attempt limit, transport-retry rule, request
+  deadline, cancellation mode, reconciliation deadline, and maximum cancellation/reconciliation
+  control requests per attempt;
 - screenshot dimensions, action-schema version, and key-allowlist version;
 - cross-episode cache policy, which defaults to disabled; and
 - code revision and dirty-worktree policy.
@@ -417,10 +431,10 @@ For each policy and task, the runner:
    `EnvironmentResumeRecord`, seals the action intent, and forms a supported pre-dispatch resume
    boundary only when backend restore or reconnect has been proven. Recovery from an unconsumed
    candidate repeats only this deterministic validation step.
-8. On recovery, restores or reconnects and verifies the bound environment state. It then writes
-   dispatch-started immediately before dispatching the valid action once and writes
-   dispatch-committed with the resulting screenshot, privileged host-side diagnostic event, and
-   post-dispatch policy-state checkpoint.
+8. On recovery, restores or reconnects and verifies the bound environment state. It then durably
+   commits dispatch-started before invoking the backend exactly once and writes dispatch-committed
+   with the resulting screenshot, privileged host-side diagnostic event, and post-dispatch
+   policy-state checkpoint.
 9. Seals the per-step trace, final submission evidence, usage, cost, latency, and policy-local
    metadata under content hashes.
 10. Aggregates results only from the sealed records. Report generation never reruns the policy or
@@ -456,10 +470,10 @@ incomplete.
 | Path overhead | Actual environment actions minus golden optimal actions, reported separately for successful and unsuccessful episodes |
 | Loop rate | Fraction of episodes containing a repeated observation/action cycle under the frozen loop definition |
 | Invalid-output rate | Fraction of policy decisions that fail parsing or canonical action validation |
-| Request-failure rate | Failed provider requests divided by all attempted provider requests, with retry attempts retained |
+| Request-failure rate | Failed model attempts divided by all model attempts, plus separately reported cancellation/reconciliation request failures; every retry is retained |
 | Robustness consistency | Fraction of logical robustness pairs with identical binary success outcomes, plus the signed variant delta |
 | Termination profile | Counts of success termination, step-limit truncation, invalid output, request failure, and infrastructure failure |
-| Resource use | Provider calls, environment actions, prompt/completion tokens, attributed cost, and p50/p95/max latency |
+| Resource use | Model attempts, provider control and total wire requests, environment actions, prompt/completion tokens, attributed cost, and p50/p95/max latency |
 
 Critical-decision and recovery annotations are privileged offline diagnostics. They never affect
 reward or cross into policy-visible state.
@@ -519,17 +533,29 @@ The v5 run must preserve and content-bind:
   post-attempt, post-parse, and post-dispatch policy-state checkpoint indexes;
 - parsed-action-candidate, environment-resume, sealed-action-intent, and sealed unsuccessful-result
   indexes;
+- dispatch-started and dispatch-committed records, their sealed-intent relation, backend acceptance
+  status, and committed action/result binding;
 - ordered environment actions, screenshot digests, rewards, termination/truncation states, and
   privileged diagnostic events;
 - task-level scores, summary metrics, paired comparisons, uncertainty estimates, and exploratory
   analyses;
 - environment, dependency, code-revision, price-catalog, and screen manifests;
-- call-cap plan, actual provider calls, tokens, attributed cost, and latency; and
+- call-cap plan, actual model attempts, provider control and total wire requests, tokens, attributed
+  cost, and latency; and
 - an integrity report that rereads and verifies every referenced byte.
 
-The manifest distinguishes model calls from environment actions and provider attempts from
-completed responses. Unknown usage, price, latency, source identity, or artifact digest fails the
-relevant evidence check rather than receiving an estimate.
+The manifest distinguishes environment actions, model attempts, cancellation/reconciliation control
+requests, and completed provider responses. Unknown usage, price, latency, source identity, or
+artifact digest fails the relevant evidence check rather than receiving an estimate.
+
+A credential-free validator runs before task launch, screenshot capture, prompt construction, or
+policy reset. It rejects credential-bearing URL userinfo or parameters, credential-shaped task or
+manifest fields, and any value derived from runtime secret handles. Provider credentials come only
+from ignored environment variables and are injected directly into the adapter transport after the
+canonical request bytes are sealed; they are never interpolated into instructions, prompts, URLs,
+screenshots, policy state, or evidence. The task application and backend/controller processes do
+not receive provider-secret environment variables. Validation failure stops before any policy input
+or artifact is created and reports only the failing field class, never the candidate secret value.
 
 The evidence store keeps access-controlled authoritative objects for capture-scrubbed canonical
 provider records, policy-state checkpoints, `TaskSpec` records, environment-resume records, and
@@ -549,11 +575,16 @@ object is separately controlled. D5.2 must freeze these schemas, canonical seria
 exclusions, access rules, redaction transform, and content-binding procedure before any real
 provider response, policy-state checkpoint, or runtime launch record is stored.
 
+Authoritative dispatch records and their publishable derivatives retain the dispatch state,
+sealed-intent digest, environment-resume digest, backend-acceptance classification, and commit-result
+digest. The integrity report must distinguish never-dispatched, dispatch-started/interrupted,
+reconciled, and exactly-once committed intents without inferring status from a missing record.
+
 ## Platform boundary
 
 The implemented Milestone 4 flow evaluates the frozen single-step grounding workload. It does not
-currently establish stateful policy execution, sequential policy-state resume, or per-action raw
-response lineage for v5. V5 therefore needs a separate versioned flow and schemas after the
+currently establish stateful policy execution, sequential policy-state resume, or per-action
+canonical-response lineage for v5. V5 therefore needs a separate versioned flow and schemas after the
 Milestone 4 human gate or an explicit human sequencing exception.
 
 V5 work must not modify frozen Sprint 3 evidence, reinterpret existing platform runs, or change the
@@ -568,12 +599,17 @@ command must compute, per policy and phase:
 
 ```text
 environment_action_cap = sum(task.max_episode_steps)
-provider_call_cap = sum(task.max_episode_steps * policy.max_provider_calls_per_action)
+model_attempt_cap = sum(task.max_episode_steps * policy.max_model_attempts_per_action)
+provider_control_request_cap = model_attempt_cap *
+    (policy.max_cancellation_requests_per_attempt + policy.max_reconciliation_requests_per_attempt)
+provider_wire_request_cap = model_attempt_cap + provider_control_request_cap
 ```
 
-The plan reports separate caps for calibration, confirmatory primary evaluation, stateless
-ablation, and reliability repeats. It also reports known deterministic cache reuse without
-subtracting uncertain future hits from the approved cap.
+The plan reports separate model-attempt, provider-control, total wire-request, and environment-action
+caps for calibration, confirmatory primary evaluation, stateless ablation, and reliability repeats.
+Cancellation and reconciliation requests are retained even when the provider does not bill them.
+Known deterministic cache reuse is reported without subtracting uncertain future hits from an
+approved cap.
 
 Every provider, model/snapshot or alias, policy package, phase, and cap requires explicit human
 approval. Calibration approval does not authorize confirmatory calls. Calls stop immediately when
@@ -603,10 +639,10 @@ the approved cap is reached; incomplete tasks remain incomplete evidence.
 | ID | Owner | Deliverable | Stop condition |
 |---|---|---|---|
 | D5.1 | **YOU / PAIR** | Approve the end-to-end policy construct, raw primary condition, scope, and sequencing relative to D4.12 | No implementation before explicit approval |
-| D5.2 | **AGENT · high** | Freeze task, generator, policy, canonical provider-response, state-reducer, trace, attempt-journal, parsed-candidate, environment-resume, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox, metric, and explicit seed-list contracts | Interface, security-boundary, and backend-resume review required before application work |
+| D5.2 | **AGENT · high** | Freeze task, generator, policy, canonical provider-response, state-reducer, request deadline/cancellation, trace, attempt-journal, parsed-candidate, environment-resume, action-intent, dispatch, authoritative/redacted manifest, policy-sandbox identity, metric, and explicit seed-list contracts | Interface, security-boundary, and backend-resume review required before application work |
 | D5.3 | **AGENT · high** | Implement six deterministic generator families, versioned app states, evaluator fixtures, and golden policies | Stop if a core PixelGym invariant would need to change |
 | D5.4 | **AGENT · high** | Build no-cost determinism, mutation, reward-hacking, replay, and admission evidence | Human inspects the development sample |
-| D5.5 | **AGENT · high** | Implement the stateful policy harness, canonical-response persistence, exact policy-state recovery, v5 checkpoint/restore or reconnect support for FakeBackend and OSWorldBackend, resume boundaries, call caps, and no-cost fake policies | No real provider call; stop if exact backend-state recovery cannot be proven |
+| D5.5 | **AGENT · high** | Implement the stateful policy harness, credential-free input validation, canonical-response and dispatch persistence, bounded request settlement, exact policy-state recovery, v5 checkpoint/restore or reconnect support for FakeBackend and OSWorldBackend, OS-level sandbox enforcement, resume boundaries, call caps, and no-cost fake policies | No real provider call; stop if exact backend-state recovery or sandbox enforcement cannot be proven |
 | D5.6 | **PAIR** | Freeze the calibration policy panel, prompts, adapters, prices, retry rules, call caps, and routing | Explicit paid-call approval required |
 | D5.7 | **AGENT · high** | Run only the approved calibration and generate immutable calibration evidence | Stop at approved cap and await human review |
 | D5.8 | **YOU / PAIR** | Approve generator revisions, item-band targets, minimum relevant difference, power target, final seeds, policy candidates, and confirmatory cap | Second explicit paid-call approval required |
@@ -623,9 +659,10 @@ provider credentials, or model calls. They cover:
 - policy-state reset, absence of cross-episode memory, action schema validation, internal call
   caps, pre-send attempt persistence, unknown-outcome reconciliation, post-attempt and post-dispatch
   state reconstruction, attempt identity, and no hidden retry;
-- policy-sandbox denial of external search and arbitrary URLs, browser/DOM inspection, shell
-  execution, shared or cross-policy channels, and all policy egress except the configured fake or
-  provider endpoint, while required backend application and controller traffic remains available;
+- policy-sandbox manifest identity, endpoint-allowlist hashing, and capability-contract rejection of
+  external-search, browser/DOM, shell, shared-storage, listener, and cross-policy handles;
+- injected-clock and fake-transport deadline/cancellation behavior, including a hanging provider
+  that reaches bounded terminal settlement with one request, one terminal record, and no retry;
 - exact reward timing, premature and wrong commits, repeated submissions, step-after-end behavior,
   termination versus truncation, and privileged diagnostic isolation;
 - golden, recovery, near-miss, mutation, and replay trace validation;
@@ -635,7 +672,8 @@ provider credentials, or model calls. They cover:
   ordering, byte-identical canonical parser input during initial execution and recovery, sealed
   parser failures and action intents, state reconstruction at every attempt/action boundary, resume
   idempotency, authoritative replay, authoritative-to-redacted content binding, integrity
-  verification, secret-sentinel exclusion from every persisted artifact and log, redaction
+  verification, dispatch-started/committed lineage, credential-bearing URL rejection, and
+  secret-sentinel exclusion from policy inputs and every persisted artifact or log, redaction
   boundaries, and missing-evidence failure;
 - metric denominators, Wilson intervals, paired tables, exact McNemar calculations, clustered
   bootstrap reproducibility, reliability separation, and display rounding; and
@@ -658,9 +696,17 @@ reconstructs the exact policy state for the next operation. A process-restart te
 reconnect the bound FakeBackend state after intent sealing, verify identical task, step,
 application-state, and screenshot digests, and execute the stored action exactly once. Equivalent
 pytest-marked OSWorldBackend restart/reconnect evidence is required before any real provider run.
-Interruption after dispatch-started without a proven idempotent backend transaction must remain an
-infrastructure failure. An unresolved post-send provider attempt must reconcile under the frozen
-fake mechanism or remain an infrastructure failure without another request.
+An interruption injected after backend acceptance but before dispatch-committed must find the
+durable dispatch-started record and must not redispatch; without a proven idempotent reconciliation
+mechanism it remains an infrastructure failure. An unresolved post-send provider attempt must
+reconcile under the frozen fake mechanism or remain an infrastructure failure without another
+request.
+
+A separate no-cost OS-level integration suite launches the policy sandbox with local fake endpoints.
+It proves that the configured fake-provider endpoint is reachable, unauthorized DNS/IP/URL egress,
+listeners, and cross-policy channels are denied, and the runner/backend application and controller
+traffic outside the sandbox continues to work. These enforcement tests do not enter the fast suite
+and make no internet or real-provider calls.
 
 Any real provider smoke or calibration call is excluded from automated tests and remains a human
 gate.
@@ -736,13 +782,17 @@ principle without making Item Response Theory an automatic gate; see
 - [ ] Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking
   mutations remain at `0.0`.
 - [ ] Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt
-  reconciliation, post-attempt and post-dispatch state reconstruction, canonical parser-input
-  recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state
-  restore or reconnect, pre-dispatch interruption, invalid output, call caps, resume, authoritative
-  replay, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.
+  reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state
+  reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed
+  parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid
+  output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion,
+  redaction binding, and evidence integrity have no-cost failure-path tests.
+- [ ] No-cost OS-level integration evidence denies unauthorized policy egress and preserves required
+  provider-fake, backend, application, and controller traffic without internet or real-provider calls.
 - [ ] The documented fast suite passes without browser, network, OSWorld, provider credentials, or
   model calls.
-- [ ] A free plan-only command reports exact action and provider-call caps for each approved phase.
+- [ ] A free plan-only command reports exact environment-action, model-attempt, provider-control,
+  and total wire-request caps for each approved phase.
 - [ ] The agent stops for explicit calibration approval and again for explicit confirmatory
   approval.
 - [ ] The confirmatory report is generated only from sealed evidence, retains every failure, and
