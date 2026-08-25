@@ -25,10 +25,15 @@ def write_fresh_outputs(outputs: tuple[tuple[Path, bytes], ...]) -> None:
             with path.open("xb") as handle:
                 created.append(path)
                 handle.write(data)
-    except BaseException:
-        for path in reversed(created):
-            path.unlink(missing_ok=True)
-        raise
+    except BaseException as exc:
+        # A pathname can be replaced after its exclusive open.  There is no
+        # ownership-safe way to unlink it during rollback, so preserve every
+        # published path and report the incomplete set for manual inspection.
+        preserved = ", ".join(str(path) for path in created) or "none"
+        raise RuntimeError(
+            "scripted policy output set is incomplete; "
+            f"preserved published paths: {preserved}"
+        ) from exc
 
 
 def main() -> None:
