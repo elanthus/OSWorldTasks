@@ -275,6 +275,7 @@ known limitation, with the underlying evidence retained
 - [`plans/sprint-2-osworld-integration-and-validation.md`](plans/sprint-2-osworld-integration-and-validation.md)
 - [`plans/sprint-3-grounding-and-portfolio.md`](plans/sprint-3-grounding-and-portfolio.md)
 - [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)
+- [`plans/grounding-v5-agent-benchmark.md`](plans/grounding-v5-agent-benchmark.md)
 
 ## License
 
