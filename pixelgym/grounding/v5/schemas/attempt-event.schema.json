@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/pixelgym-agent-v5-attempt-event-v1.json",
+  "title": "PixelGym Agent v5 Journal Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sequence", "event_key", "kind", "trial_id", "step_index",
+    "attempt_index", "payload"
+  ],
+  "properties": {
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_key": {"type": "string", "minLength": 1},
+    "kind": {"type": "string", "minLength": 1},
+    "trial_id": {"type": "string", "minLength": 1},
+    "step_index": {"type": "integer", "minimum": 0},
+    "attempt_index": {"type": ["integer", "null"], "minimum": 0},
+    "payload": {"type": "object"}
+  }
+}

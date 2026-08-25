@@ -147,6 +147,31 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         info = {"task_id": self._task.task_id}
         return observation, reward, terminated, truncated, info
 
+    def restore_episode(self, task: TaskSpec, *, step_count: int) -> None:
+        """Restore host-verified episode bookkeeping without resetting the backend.
+
+        The caller must restore and verify the backend checkpoint first. This
+        method owns the environment-side invariants so recovery never writes
+        private fields or clears an already-ended episode guard.
+        """
+
+        if not isinstance(task, TaskSpec):
+            raise TypeError("restored task must be a TaskSpec")
+        if isinstance(step_count, bool) or not isinstance(step_count, int):
+            raise TypeError("restored step_count must be a plain int")
+        if step_count < 0 or step_count > task.max_episode_steps:
+            raise ValueError("restored step_count is outside the task episode bound")
+        if task.instruction != self._instruction:
+            raise ValueError("restored task instruction does not match the environment")
+        if task.app_url != self.backend.app_url:
+            raise ValueError("restored task app URL does not match the backend")
+        if task.max_episode_steps != self._max_episode_steps:
+            raise ValueError("restored task step limit does not match the environment")
+        self._task = task
+        self._step_count = step_count
+        result = evaluate(task, self.backend.read_submissions())
+        self._episode_ended = result.success or step_count >= task.max_episode_steps
+
     def close(self) -> None:
         self.backend.close()
 

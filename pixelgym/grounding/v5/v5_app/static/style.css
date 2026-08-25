@@ -1,0 +1,26 @@
+@font-face {
+  font-family: DejaVu;
+  src: url("/fonts/DejaVuSans.ttf") format("truetype");
+}
+@font-face {
+  font-family: DejaVu;
+  src: url("/fonts/DejaVuSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+* { box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 768px; margin: 0; overflow: hidden;
+  font-family: DejaVu, sans-serif; color: #17253d; background: #f4f6fa;
+}
+header { height: 82px; padding: 24px 42px; color: white; background: #17253d; font-size: 27px; font-weight: 700; }
+main { position: absolute; left: 54px; top: 112px; width: 916px; height: 602px; padding: 22px 30px; border: 2px solid #cbd3df; border-radius: 12px; background: white; }
+h1 { margin: 0 0 20px; font-size: 27px; }
+h2 { margin: 0 0 18px; color: #334155; font-size: 18px; font-weight: 400; }
+p { margin: 0 0 14px; font-size: 18px; }
+ul { margin: 0; padding-left: 24px; color: #354153; font-size: 15px; line-height: 28px; }
+.error { position: absolute; left: 30px; right: 30px; top: 246px; min-height: 52px; padding: 14px 18px; border: 1px solid #b4232c; border-radius: 8px; color: #8a1820; background: #fff0f0; font-size: 15px; }
+.controls { position: absolute; left: 134px; right: 134px; top: 316px; }
+button, input { width: 100%; height: 58px; margin-bottom: 14px; padding: 0 18px; border: 2px solid #486284; border-radius: 7px; color: #17253d; background: #f8fafc; font: 18px DejaVu, sans-serif; text-align: left; }
+input { background: #eef4ff; }
+button[data-role="continue"] { text-align: center; }
+footer { position: absolute; left: 70px; bottom: 20px; color: #65748a; font-size: 15px; }

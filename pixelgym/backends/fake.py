@@ -38,10 +38,13 @@ interaction can produce).
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from pixelgym.backends.base import Frame
+from pixelgym.grounding.v5.contracts import EnvironmentResumeRecord, content_digest, sha256_bytes
+from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form import generator, render, ui
 from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
@@ -152,6 +155,109 @@ class FakeBackend:
                 for submission in self._submissions
             ],
         }
+
+    def checkpoint(self) -> bytes:
+        """Content-addressable v5 checkpoint for the in-process backend."""
+
+        record, _layout, form = self._require_task()
+        return canonical_json_bytes(
+            {
+                "schema_version": "pixelgym-core-fake-checkpoint-v1",
+                "width": self.width,
+                "height": self.height,
+                "seed": record["seed"],
+                "task_id": record["task_id"],
+                "text": {widget.value: form.text[widget] for widget in ui.TEXT_WIDGETS},
+                "country_index": form.country_index,
+                "payment_index": form.payment_index,
+                "expedited": form.expedited,
+                "focus": None if form.focus is None else form.focus.value,
+                "country_open": form.country_open,
+                "status": form.status,
+                "submissions": [
+                    {
+                        "task_id": submission.task_id,
+                        "seed": submission.seed,
+                        "values": dict(submission.values),
+                        "submitted_at_step": submission.submitted_at_step,
+                        "final": submission.final,
+                    }
+                    for submission in self._submissions
+                ],
+                "click_calls": [list(call) for call in self.click_calls],
+                "key_calls": self.key_calls,
+                "noop_calls": self.noop_calls,
+            }
+        )
+
+    def restore(self, checkpoint: bytes) -> None:
+        try:
+            value = json.loads(checkpoint)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError("invalid core fake-backend checkpoint") from exc
+        if not isinstance(value, dict):
+            raise ValueError(  # noqa: TRY004 - malformed serialized checkpoint value
+                "core fake-backend checkpoint must be an object"
+            )
+        if value.get("schema_version") != "pixelgym-core-fake-checkpoint-v1":
+            raise ValueError("unsupported core fake-backend checkpoint schema")
+        required = {
+            "width",
+            "height",
+            "seed",
+            "task_id",
+            "text",
+            "country_index",
+            "payment_index",
+            "expedited",
+            "focus",
+            "country_open",
+            "status",
+            "submissions",
+            "click_calls",
+            "key_calls",
+            "noop_calls",
+        }
+        if not required <= value.keys():
+            raise ValueError("core fake-backend checkpoint is missing required fields")
+        if (value["width"], value["height"]) != (self.width, self.height):
+            raise ValueError("fake-backend checkpoint screen mismatch")
+        self.closed = False
+        record = self.reset(value["seed"])
+        if record["task_id"] != value["task_id"]:
+            raise ValueError("fake-backend checkpoint task mismatch")
+        _record, _layout, form = self._require_task()
+        form.text = {ui.WidgetId(name): text for name, text in value["text"].items()}
+        form.country_index = value["country_index"]
+        form.payment_index = value["payment_index"]
+        form.expedited = value["expedited"]
+        form.focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
+        form.country_open = value["country_open"]
+        form.status = value["status"]
+        self._submissions = [Submission.from_record(row) for row in value["submissions"]]
+        self.click_calls = [tuple(call) for call in value["click_calls"]]
+        self.key_calls = list(value["key_calls"])
+        self.noop_calls = value["noop_calls"]
+        self._frame = None
+
+    def environment_resume_record(self, *, step_count: int) -> EnvironmentResumeRecord:
+        record, _layout, _form = self._require_task()
+        checkpoint = self.checkpoint()
+        return EnvironmentResumeRecord(
+            task_id=record["task_id"],
+            backend_identity=f"pixelgym-core-fake-{self.width}x{self.height}-v1",
+            step_count=step_count,
+            screenshot_digest="sha256:" + sha256_bytes(self.screenshot().tobytes()),
+            application_state_digest=content_digest(json.loads(checkpoint)),
+            mechanism="checkpoint_restore",
+            checkpoint_digest="sha256:" + sha256_bytes(checkpoint),
+        )
+
+    def verify_resume_record(
+        self, resume_record: EnvironmentResumeRecord, *, step_count: int
+    ) -> None:
+        if self.environment_resume_record(step_count=step_count) != resume_record:
+            raise RuntimeError("core fake-backend resume binding mismatch")
 
     def close(self) -> None:
         self.closed = True

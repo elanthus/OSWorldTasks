@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/pixelgym-agent-v5-task-v1.json",
+  "title": "PixelGym Agent v5 Task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "protocol_version", "generator_version", "seed_record",
+    "instruction", "title", "stages", "optimal_low_level_actions",
+    "correction_slack", "max_episode_steps", "expected_result",
+    "semantic_digest", "task_id"
+  ],
+  "properties": {
+    "schema_version": {"const": "pixelgym-agent-v5-task-v1"},
+    "protocol_version": {"const": "pixelgym-agent-v5"},
+    "generator_version": {"const": "pixelgym-agent-v5-generator-v1"},
+    "seed_record": {"type": "object"},
+    "instruction": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "stages": {"type": "array", "minItems": 8, "maxItems": 14},
+    "optimal_low_level_actions": {"type": "integer", "minimum": 18, "maximum": 40},
+    "correction_slack": {"type": "integer", "minimum": 6},
+    "max_episode_steps": {"type": "integer", "minimum": 24},
+    "expected_result": {"type": "string"},
+    "semantic_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "task_id": {"type": "string", "pattern": "^v5-[0-9a-f]{24}$"}
+  }
+}

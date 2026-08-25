@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/pixelgym-agent-v5-policy-v1.json",
+  "title": "PixelGym Agent v5 Policy Manifest",
+  "type": "object",
+  "required": [
+    "policy_id", "provider", "model", "exact_snapshot", "harness_digest",
+    "dependency_lock_digest", "system_prompt_digest", "task_renderer_version",
+    "response_schema_version", "state_reducer_version", "parser_version",
+    "memory_policy_version", "coordinate_adapter", "coordinate_adapter_digest",
+    "coordinate_input_convention", "max_model_attempts_per_action",
+    "max_cancellation_requests_per_attempt", "max_reconciliation_requests_per_attempt",
+    "request_deadline_seconds", "cancellation_mode", "reconciliation_deadline_seconds",
+    "sandbox", "code_revision", "dirty_worktree_policy", "cross_episode_cache",
+    "inference_parameters", "context_limit", "transport_retry_rule",
+    "provider_sdk_auto_retries", "proxy_auto_retries"
+  ],
+  "properties": {
+    "policy_id": {"type": "string", "pattern": "^policy-[0-9a-f]{20}$"},
+    "provider": {"type": "string", "minLength": 1},
+    "model": {"type": "string", "minLength": 1},
+    "exact_snapshot": {"type": "boolean"},
+    "max_model_attempts_per_action": {"type": "integer", "minimum": 1},
+    "max_cancellation_requests_per_attempt": {"type": "integer", "minimum": 0},
+    "max_reconciliation_requests_per_attempt": {"type": "integer", "minimum": 0},
+    "request_deadline_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "reconciliation_deadline_seconds": {"type": "number", "minimum": 0},
+    "cross_episode_cache": {"const": "disabled"},
+    "inference_parameters": {"type": "array"},
+    "context_limit": {"type": "integer", "minimum": 1},
+    "transport_retry_rule": {"type": "string", "minLength": 1},
+    "provider_sdk_auto_retries": {"const": false},
+    "proxy_auto_retries": {"const": false},
+    "sandbox": {"type": "object"}
+  },
+  "additionalProperties": true
+}
