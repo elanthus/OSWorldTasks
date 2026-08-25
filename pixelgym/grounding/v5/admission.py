@@ -8,6 +8,7 @@ from typing import Any
 
 from pixelgym.actions import KEY_ALLOWLIST
 from pixelgym.env import PixelGuiEnv
+from pixelgym.evaluator import evaluate
 from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
     Partition,
@@ -25,6 +26,7 @@ from pixelgym.grounding.v5.policies import (
     key_action,
     mutation_trace,
 )
+from pixelgym.task_spec import TaskSpec
 
 
 @dataclass(frozen=True)
@@ -35,6 +37,7 @@ class ReplayOutcome:
     screenshot_digests: tuple[str, ...]
     semantic_state_digests: tuple[str, ...]
     diagnostic_events: tuple[str, ...]
+    stale_submission_validation: tuple[bool, bool, bool] | None
 
     @property
     def success(self) -> bool:
@@ -59,6 +62,7 @@ def replay_actions(
     diagnostics: list[str] = []
     terminated = False
     truncated = False
+    stale_validation: tuple[bool, bool, bool] | None = None
     try:
         observation, _info = env.reset(seed=task.seed)
         if stale_submission:
@@ -66,6 +70,18 @@ def replay_actions(
                 {"workflow_result": task.expected_result},
                 task_id="v5-stale-task",
                 seed=task.seed - 1,
+            )
+            task_spec = TaskSpec.from_generated(
+                task.generated_record(),
+                instruction=task.instruction,
+                app_url=backend.app_url,
+                max_episode_steps=task.max_episode_steps,
+            )
+            validation = evaluate(task_spec, backend.read_submissions())
+            stale_validation = (
+                validation.submitted,
+                validation.task_id_matches,
+                validation.success,
             )
         screenshots.append("sha256:" + sha256_bytes(observation.tobytes()))
         states.append("sha256:" + sha256_bytes(backend.checkpoint()))
@@ -87,6 +103,7 @@ def replay_actions(
         screenshot_digests=tuple(screenshots),
         semantic_state_digests=tuple(states),
         diagnostic_events=tuple(diagnostics),
+        stale_submission_validation=stale_validation,
     )
 
 
@@ -186,11 +203,24 @@ def validate_task_admission(task: V5Task) -> dict[str, Any]:
             raise ValueError(f"mutation {mutation.value} is nondeterministic")
         if any(first.rewards) or first.terminated or not first.truncated:
             raise ValueError(f"mutation {mutation.value} did not fail through truncation")
+        if stale_submission and first.stale_submission_validation != (True, False, False):
+            raise ValueError("stale-task submission was not explicitly rejected by evaluator")
+        validation = first.stale_submission_validation
         mutations[mutation.value] = {
             "action_count": len(first.rewards),
             "expected_route": trace.expected_route,
             "terminal_classification": "step_limit_truncation",
             "last_diagnostic_event": first.diagnostic_events[-1],
+            "stale_submission_validation": (
+                None
+                if validation is None
+                else {
+                    "submitted": validation[0],
+                    "task_id_matches": validation[1],
+                    "success": validation[2],
+                    "rejected": validation == (True, False, False),
+                }
+            ),
             "trace_digest": content_digest(
                 {
                     "schema_version": "pixelgym-agent-v5-mutation-trace-binding-v1",

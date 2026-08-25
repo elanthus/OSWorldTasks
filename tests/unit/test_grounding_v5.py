@@ -245,6 +245,17 @@ def test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor() -> No
         record["mutations"][Mutation.STALE_TASK_SUBMISSION.value]["trace_digest"]
         != record["mutations"][Mutation.STEP_BUDGET_EXHAUSTION.value]["trace_digest"]
     )
+    assert record["mutations"][Mutation.STALE_TASK_SUBMISSION.value][
+        "stale_submission_validation"
+    ] == {
+        "submitted": True,
+        "task_id_matches": False,
+        "success": False,
+        "rejected": True,
+    }
+    assert record["mutations"][Mutation.STEP_BUDGET_EXHAUSTION.value][
+        "stale_submission_validation"
+    ] is None
     assert record["random_floor_reward_sum"] == 0.0
 
 
