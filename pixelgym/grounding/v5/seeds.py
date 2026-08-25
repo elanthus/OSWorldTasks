@@ -42,12 +42,25 @@ CONFIRMATORY_SEEDS = (
 )
 
 
-def _band(index: int) -> DifficultyBand:
-    position = index % 5
-    if position == 0:
-        return DifficultyBand.REGRESSION
-    if position == 4:
-        return DifficultyBand.CEILING
+def _band(partition: Partition, logical_index: int) -> DifficultyBand:
+    # Logical robustness twins have weight two while unpaired items have
+    # weight one. These partition-specific assignments account for that
+    # multiplicity and freeze 20%/60%/20% across the complete 180 episodes.
+    if partition is Partition.DEVELOPMENT:
+        if logical_index == 0:
+            return DifficultyBand.REGRESSION
+        if logical_index == 3:
+            return DifficultyBand.CEILING
+    elif partition is Partition.CALIBRATION:
+        if logical_index == 0:
+            return DifficultyBand.REGRESSION
+        if logical_index in {6, 7}:
+            return DifficultyBand.CEILING
+    else:
+        if logical_index in {0, 4}:
+            return DifficultyBand.REGRESSION
+        if logical_index in {3, 11}:
+            return DifficultyBand.CEILING
     return DifficultyBand.FRONTIER
 
 
@@ -82,7 +95,7 @@ def _partition_records(
                         f"{partition.value}-{family.value}-logical-{logical_index:02d}"
                     ),
                     variant=variant,
-                    difficulty_band=_band(logical_index),
+                    difficulty_band=_band(partition, logical_index),
                 )
             )
     return tuple(records)
@@ -126,8 +139,25 @@ def validate_seed_contract() -> dict[str, object]:
         pair_episodes[partition.value] = sum(record.robustness_pair for record in selected)
     if pair_episodes != {"development": 0, "calibration": 24, "confirmatory": 48}:
         raise ValueError("v5 robustness-pair allocation changed")
+    band_counts = {
+        band.value: sum(record.difficulty_band is band for record in SEED_RECORDS)
+        for band in DifficultyBand
+    }
+    if band_counts != {
+        "regression_canary": 36,
+        "frontier": 108,
+        "ceiling_probe": 36,
+    }:
+        raise ValueError("v5 complete-set difficulty-band allocation changed")
+    if any(
+        not any(record.family is family and record.difficulty_band is band for record in SEED_RECORDS)
+        for family in WorkflowFamily
+        for band in DifficultyBand
+    ):
+        raise ValueError("every v5 family must be represented in every difficulty band")
     return {
         "partition_counts": {key.value: value for key, value in expected.items()},
         "family_counts": family_counts,
         "robustness_pair_episode_counts": pair_episodes,
+        "difficulty_band_counts": band_counts,
     }

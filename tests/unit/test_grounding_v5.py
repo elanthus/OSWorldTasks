@@ -45,10 +45,16 @@ def _nested_keys(value: object) -> set[str]:
 
 
 def test_v5_seed_and_generator_contract_freezes_allocations() -> None:
-    assert validate_seed_contract()["partition_counts"] == {
+    seed_summary = validate_seed_contract()
+    assert seed_summary["partition_counts"] == {
         "development": 24,
         "calibration": 60,
         "confirmatory": 96,
+    }
+    assert seed_summary["difficulty_band_counts"] == {
+        "regression_canary": 36,
+        "frontier": 108,
+        "ceiling_probe": 36,
     }
     summary = validate_generator()
     assert summary["task_count"] == 180
