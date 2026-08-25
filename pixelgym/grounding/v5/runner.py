@@ -846,7 +846,29 @@ class V5Runner:
                     terminal.payload["post_attempt_checkpoint_digest"],
                     expected_kind="policy_checkpoint",
                 )
-            candidate = self.policy.parse(response_bytes, post_state)
+            try:
+                candidate = self.policy.parse(response_bytes, post_state)
+            except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+                identity = AttemptIdentity(trial_id, step_index, 0)
+                self.journal.append_event(
+                    event_key=f"{identity.key}/sealed_parser_failure",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=0,
+                    payload={
+                        "failure_code": "parse_failure",
+                        "sanitized_reason": type(exc).__name__,
+                        "parser_version": self.manifest.parser_version,
+                        "policy_checkpoint_digest": "sha256:" + sha256_bytes(post_state),
+                    },
+                )
+                self._boundary("parser_failure")
+                return {
+                    "classification": "invalid_output",
+                    "state": post_state,
+                    "redispatched": False,
+                }
             post_parse_state = self.policy.post_parse_state(post_state, candidate)
             candidate_digest = self.journal.put_object(
                 "parsed_action_candidate", canonical_json_bytes(candidate)

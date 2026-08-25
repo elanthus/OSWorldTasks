@@ -18,6 +18,19 @@ def fresh_output_paths(manifest: Path, plan: Path) -> tuple[Path, Path]:
     return manifest_path, plan_path
 
 
+def write_fresh_outputs(outputs: tuple[tuple[Path, bytes], ...]) -> None:
+    created: list[Path] = []
+    try:
+        for path, data in outputs:
+            with path.open("xb") as handle:
+                created.append(path)
+                handle.write(data)
+    except BaseException:
+        for path in reversed(created):
+            path.unlink(missing_ok=True)
+        raise
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
@@ -27,8 +40,12 @@ def main() -> None:
     manifest = scripted_policy_manifest()
     for path in (manifest_path, plan_path):
         path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_bytes(canonical_json_bytes(manifest.to_dict()) + b"\n")
-    plan_path.write_bytes(canonical_json_bytes(call_cap_plan(manifest)) + b"\n")
+    write_fresh_outputs(
+        (
+            (manifest_path, canonical_json_bytes(manifest.to_dict()) + b"\n"),
+            (plan_path, canonical_json_bytes(call_cap_plan(manifest)) + b"\n"),
+        )
+    )
 
 
 if __name__ == "__main__":

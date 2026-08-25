@@ -236,6 +236,50 @@ def test_v5_parse_failure_seals_failure_without_dispatch(tmp_path: Path) -> None
     assert "dispatch_started" not in kinds
 
 
+def test_v5_recovery_seals_parse_failure_without_dispatch(tmp_path: Path) -> None:
+    seed = 5000
+    response = {
+        "response_id": "malformed-recovery",
+        "model": "no-cost-scripted-policy",
+        "content": "not-json",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+    }
+    journal = V5AttemptJournal(tmp_path / "recovery-parse.sqlite")
+    transport = ScriptedTransport([TransportOutcome("response", response)])
+    trial_id = "trial-recovery-parse"
+    with pytest.raises(InjectedInterruption, match="canonical_response_persisted"):
+        V5Runner(
+            journal=journal,
+            manifest=policy_manifest(),
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=episode_caps(seed),
+            interrupt_after="canonical_response_persisted",
+        ).run(trial_id=trial_id, task=generate_task(seed))
+
+    backend = V5FakeBackend()
+    recovered = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=backend,
+    )
+    assert recovered["classification"] == "invalid_output"
+    assert recovered["redispatched"] is False
+    assert backend.action_count == 0
+    assert [event.kind for event in journal.events(trial_id)][-1] == (
+        "sealed_unsuccessful_result"
+    )
+    assert len(transport.model_requests) == 1
+
+
 def test_v5_journal_enforces_one_terminal_record_and_verified_objects(tmp_path: Path) -> None:
     journal = V5AttemptJournal(tmp_path / "journal.sqlite")
     identity = AttemptIdentity("trial", 0, 0)

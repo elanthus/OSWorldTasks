@@ -25,6 +25,10 @@ class SandboxProbeResult:
     returncode: int
 
 
+def _escaped_sbpl_path(path: Path) -> str:
+    return str(path.resolve()).replace("\\", "\\\\").replace('"', '\\"')
+
+
 def darwin_profile(
     *,
     provider_port: int,
@@ -36,11 +40,11 @@ def darwin_profile(
 ) -> str:
     if not 1 <= provider_port <= 65535:
         raise ValueError("provider port must be in [1, 65535]")
-    escaped_peer = str(peer_path.resolve()).replace('"', '\\"')
-    escaped_runner = str(runner_storage_path.resolve()).replace('"', '\\"')
-    escaped_runtime_root = str(runtime_root.resolve()).replace('"', '\\"')
-    escaped_runtime_executable = str(runtime_executable.resolve()).replace('"', '\\"')
-    escaped_workspace = str(policy_workspace.resolve()).replace('"', '\\"')
+    escaped_peer = _escaped_sbpl_path(peer_path)
+    escaped_runner = _escaped_sbpl_path(runner_storage_path)
+    escaped_runtime_root = _escaped_sbpl_path(runtime_root)
+    escaped_runtime_executable = _escaped_sbpl_path(runtime_executable)
+    escaped_workspace = _escaped_sbpl_path(policy_workspace)
     return "\n".join(
         (
             f";; {SANDBOX_POLICY_VERSION}",

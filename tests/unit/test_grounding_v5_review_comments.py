@@ -12,10 +12,17 @@ import pytest
 from pixelgym.grounding.v5 import os_sandbox
 from pixelgym.grounding.v5.contracts import Partition, WorkflowFamily
 from pixelgym.grounding.v5.generator import tasks_for_partition
-from pixelgym.grounding.v5.os_sandbox import _decode_probe_result, darwin_profile
+from pixelgym.grounding.v5.os_sandbox import (
+    _decode_probe_result,
+    _escaped_sbpl_path,
+    darwin_profile,
+)
 from pixelgym.grounding.v5.planning import _family_stratified_subset
 from pixelgym.grounding.v5.resume import decode_resume_record
-from scripts.freeze_grounding_v5_scripted_policy import fresh_output_paths
+from scripts.freeze_grounding_v5_scripted_policy import (
+    fresh_output_paths,
+    write_fresh_outputs,
+)
 
 
 @pytest.mark.parametrize("payload", [b"[]", b"null", b'"record"', b"1"])
@@ -38,6 +45,26 @@ def test_scripted_policy_outputs_reject_resolved_path_aliases(tmp_path: Path) ->
     alias = output.parent / ".." / "outputs" / output.name
     with pytest.raises(RuntimeError, match="distinct fresh paths"):
         fresh_output_paths(output, alias)
+
+
+def test_scripted_policy_output_creation_is_exclusive_and_rolls_back_pair(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "manifest.json"
+    plan = tmp_path / "plan.json"
+    manifest_path, plan_path = fresh_output_paths(manifest, plan)
+    plan_path.write_bytes(b"concurrent-writer")
+
+    with pytest.raises(FileExistsError):
+        write_fresh_outputs(((manifest_path, b"manifest"), (plan_path, b"plan")))
+
+    assert not manifest_path.exists()
+    assert plan_path.read_bytes() == b"concurrent-writer"
+
+
+def test_sbpl_path_escaping_handles_backslashes_before_quotes() -> None:
+    escaped = _escaped_sbpl_path(Path('/tmp/pixelgym\\"quoted'))
+    assert escaped.endswith('pixelgym\\\\\\"quoted')
 
 
 def test_os_sandbox_profile_is_deny_by_default_and_runtime_scoped(tmp_path: Path) -> None:
