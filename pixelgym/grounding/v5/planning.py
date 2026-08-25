@@ -4,15 +4,35 @@ from __future__ import annotations
 
 from typing import Any
 
-from pixelgym.grounding.v5.contracts import CallCaps, Partition, PolicyManifest
+from pixelgym.grounding.v5.contracts import (
+    CallCaps,
+    Partition,
+    PolicyManifest,
+    V5Task,
+    WorkflowFamily,
+)
 from pixelgym.grounding.v5.generator import tasks_for_partition
+
+
+def _family_stratified_subset(tasks: tuple[V5Task, ...], *, per_family: int) -> tuple[V5Task, ...]:
+    subset = tuple(
+        task
+        for family in WorkflowFamily
+        for task in tuple(candidate for candidate in tasks if candidate.family is family)[
+            :per_family
+        ]
+    )
+    expected = len(WorkflowFamily) * per_family
+    if len(subset) != expected:
+        raise ValueError("confirmatory partition does not contain the required family allocation")
+    return subset
 
 
 def call_cap_plan(manifest: PolicyManifest) -> dict[str, Any]:
     calibration = tasks_for_partition(Partition.CALIBRATION)
     confirmatory = tasks_for_partition(Partition.CONFIRMATORY)
-    stateless_subset = confirmatory[:24]
-    reliability_subset = confirmatory[:12]
+    stateless_subset = _family_stratified_subset(confirmatory, per_family=4)
+    reliability_subset = _family_stratified_subset(confirmatory, per_family=2)
 
     def calculate(tasks: tuple[Any, ...], *, repetitions: int = 1) -> dict[str, int]:
         steps = tuple(

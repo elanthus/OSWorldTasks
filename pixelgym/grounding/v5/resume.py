@@ -19,5 +19,12 @@ class ResumableV5Backend(Protocol):
 
 
 def decode_resume_record(data: bytes) -> EnvironmentResumeRecord:
-    value: dict[str, Any] = json.loads(data)
-    return EnvironmentResumeRecord(**value)
+    value: Any = json.loads(data)
+    if not isinstance(value, dict):
+        raise ValueError(  # noqa: TRY004 - malformed serialized record value
+            "environment resume record must be an object"
+        )
+    try:
+        return EnvironmentResumeRecord(**value)
+    except TypeError as exc:
+        raise ValueError("environment resume record has invalid fields") from exc

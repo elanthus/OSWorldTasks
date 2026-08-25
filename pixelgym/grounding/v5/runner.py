@@ -14,7 +14,6 @@ from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
     AttemptIdentity,
     CallCaps,
-    EnvironmentResumeRecord,
     PolicyManifest,
     V5Task,
     content_digest,
@@ -26,6 +25,7 @@ from pixelgym.grounding.v5.journal import (
     TerminalAttemptKind,
     V5AttemptJournal,
 )
+from pixelgym.grounding.v5.resume import decode_resume_record
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import TaskSpec
 
@@ -729,12 +729,10 @@ class V5Runner:
                 expected_kind="environment_checkpoint",
             )
             backend.restore(checkpoint)
-            resume_record = EnvironmentResumeRecord(
-                **json.loads(
-                    self.journal.get_object(
-                        intent.payload["environment_resume_digest"],
-                        expected_kind="environment_resume_record",
-                    )
+            resume_record = decode_resume_record(
+                self.journal.get_object(
+                    intent.payload["environment_resume_digest"],
+                    expected_kind="environment_resume_record",
                 )
             )
             backend.verify_resume_record(resume_record, step_count=step_index)
@@ -951,12 +949,10 @@ class V5Runner:
             expected_kind="environment_checkpoint",
         )
         backend.restore(checkpoint)
-        resume_record = EnvironmentResumeRecord(
-            **json.loads(
-                self.journal.get_object(
-                    event.payload["environment_resume_digest"],
-                    expected_kind="environment_resume_record",
-                )
+        resume_record = decode_resume_record(
+            self.journal.get_object(
+                event.payload["environment_resume_digest"],
+                expected_kind="environment_resume_record",
             )
         )
         backend.verify_resume_record(resume_record, step_count=step_index)

@@ -757,7 +757,9 @@ def test_restore_episode_initializes_bookkeeping_without_resetting_backend():
         app_url=backend.app_url,
         max_episode_steps=200,
     )
+    checkpoint = backend.checkpoint()
     env.restore_episode(task, step_count=0)
+    assert backend.checkpoint() == checkpoint
     _observation, reward, terminated, truncated, info = env.step(_noop())
     assert (reward, terminated, truncated) == (0.0, False, False)
     assert info == {"task_id": task.task_id}

@@ -62,8 +62,6 @@ def golden_actions(task: V5Task, backend: V5FakeBackend) -> tuple[Action, ...]:
 
 
 def mutation_trace(task: V5Task, mutation: Mutation) -> ScriptedTrace:
-    backend = V5FakeBackend()
-    backend.reset(task.seed)
     if mutation is Mutation.STEP_BUDGET_EXHAUSTION or mutation is Mutation.STALE_TASK_SUBMISSION:
         actions = tuple(noop_action() for _ in range(task.max_episode_steps))
     else:
@@ -104,7 +102,6 @@ def mutation_trace(task: V5Task, mutation: Mutation) -> ScriptedTrace:
             noop_action() for _ in range(max(0, task.max_episode_steps - len(prefix)))
         )
         planner.close()
-    backend.close()
     return ScriptedTrace(mutation.value, actions, False, mutation.value)
 
 

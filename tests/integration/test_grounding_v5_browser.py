@@ -32,29 +32,34 @@ def _browser_trace(page: object, task: object, *, recovery: bool) -> tuple[tuple
     screenshot: Callable[..., bytes] = page.screenshot
     evaluate: Callable[..., object] = page.evaluate
     locator: Callable[..., object] = page.locator
-    trace: list[tuple[str, str]] = [
-        (_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode()))
-    ]
+
+    def sample() -> tuple[str, str]:
+        state = json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True)
+        return _digest(screenshot()), _digest(state.encode())
+
+    trace: list[tuple[str, str]] = [sample()]
     if recovery:
         first = task.stages[0]
-        wrong = next(control for control in first.controls if control.control_id != first.target_control_id)
+        wrong = next(
+            control for control in first.controls if control.control_id != first.target_control_id
+        )
         locator(f'[data-control-id="{wrong.control_id}"]').click()
-        trace.append((_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode())))
+        trace.append(sample())
     for stage in task.stages:
         if stage.kind.value == "text":
             field = locator('[data-control-id="text_input"]')
             field.click()
-            trace.append((_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode())))
+            trace.append(sample())
             for character in stage.required_text:
                 page.keyboard.type(character)
-                trace.append((_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode())))
+                trace.append(sample())
             locator('[data-control-id="continue"]').click()
         else:
             locator(f'[data-control-id="{stage.target_control_id}"]').click()
             if stage.recovery_stage:
-                trace.append((_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode())))
+                trace.append(sample())
                 locator('[data-control-id="repair_implicated"]').click()
-        trace.append((_digest(screenshot()), _digest(json.dumps(evaluate("window.__pixelgymV5State()"), sort_keys=True).encode())))
+        trace.append(sample())
     return tuple(trace)
 
 

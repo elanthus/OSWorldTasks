@@ -7,7 +7,7 @@ from pixelgym.grounding.v5.contracts import (
     sandbox_endpoint_allowlist_digest,
 )
 
-SANDBOX_POLICY_VERSION = "pixelgym-agent-v5-sandbox-v1"
+SANDBOX_POLICY_VERSION = "pixelgym-agent-v5-sandbox-v2"
 DENIED_CAPABILITIES = tuple(sorted(SandboxManifest.REQUIRED_DENIALS))
 
 

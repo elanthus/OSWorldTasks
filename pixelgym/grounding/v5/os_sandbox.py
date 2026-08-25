@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import platform
 import subprocess
+import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -19,21 +21,36 @@ class SandboxProbeResult:
     listener_denied: bool
     cross_policy_file_denied: bool
     runner_storage_denied: bool
+    shell_denied: bool
     returncode: int
 
 
 def darwin_profile(
-    *, provider_port: int, peer_path: Path, runner_storage_path: Path
+    *,
+    provider_port: int,
+    peer_path: Path,
+    runner_storage_path: Path,
+    runtime_root: Path,
+    runtime_executable: Path,
+    policy_workspace: Path,
 ) -> str:
     if not 1 <= provider_port <= 65535:
         raise ValueError("provider port must be in [1, 65535]")
     escaped_peer = str(peer_path.resolve()).replace('"', '\\"')
     escaped_runner = str(runner_storage_path.resolve()).replace('"', '\\"')
+    escaped_runtime_root = str(runtime_root.resolve()).replace('"', '\\"')
+    escaped_runtime_executable = str(runtime_executable.resolve()).replace('"', '\\"')
+    escaped_workspace = str(policy_workspace.resolve()).replace('"', '\\"')
     return "\n".join(
         (
             f";; {SANDBOX_POLICY_VERSION}",
             "(version 1)",
-            "(allow default)",
+            "(deny default)",
+            '(import "system.sb")',
+            "(allow process-info*)",
+            f'(allow process-exec (literal "{escaped_runtime_executable}"))',
+            f'(allow file-read* file-map-executable (subpath "{escaped_runtime_root}"))',
+            f'(allow file-read* file-write* (subpath "{escaped_workspace}"))',
             "(deny network*)",
             f'(allow network-outbound (remote ip "localhost:{provider_port}"))',
             "(deny network-bind)",
@@ -44,7 +61,7 @@ def darwin_profile(
 
 
 _PROBE = r"""
-import json, socket, sys, urllib.request
+import json, socket, subprocess, sys, urllib.request
 provider, denied_url, peer, runner_storage = sys.argv[1:]
 result = {}
 try:
@@ -75,8 +92,71 @@ try:
     result['runner_storage_denied'] = False
 except Exception:
     result['runner_storage_denied'] = True
+try:
+    subprocess.run(['/bin/sh', '-c', 'true'], check=False)
+    result['shell_denied'] = False
+except Exception:
+    result['shell_denied'] = True
 print(json.dumps(result, sort_keys=True))
 """
+
+
+def _sandbox_runtime(python_executable: Path) -> tuple[Path, Path]:
+    discovery = subprocess.run(
+        [str(python_executable), "-I", "-B", "-c", "import sys; print(sys.executable)"],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    if discovery.returncode != 0:
+        raise RuntimeError(
+            "could not resolve the sandbox Python runtime: "
+            f"exit {discovery.returncode}: {discovery.stderr.strip()}"
+        )
+    resolved = Path(discovery.stdout.strip()).resolve()
+    if not resolved.is_file():
+        raise RuntimeError("resolved sandbox Python executable is missing")
+    framework_root = next(
+        (parent for parent in resolved.parents if parent.name.endswith(".framework")),
+        None,
+    )
+    if framework_root is None:
+        return resolved, resolved.parent.parent
+    version_root = next(
+        (parent for parent in resolved.parents if parent.parent.name == "Versions"),
+        None,
+    )
+    if version_root is None:
+        raise RuntimeError("resolved framework Python version root is missing")
+    executable = version_root / "Resources/Python.app/Contents/MacOS/Python"
+    if not executable.is_file():
+        raise RuntimeError("resolved framework Python runtime executable is missing")
+    return executable, framework_root
+
+
+def _decode_probe_result(stdout: str, *, returncode: int) -> SandboxProbeResult:
+    try:
+        value = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"OS sandbox probe emitted non-JSON output: {stdout!r}") from exc
+    if not isinstance(value, Mapping):
+        raise RuntimeError(  # noqa: TRY004 - malformed subprocess output
+            "OS sandbox probe result must be an object"
+        )
+    expected = {
+        "provider_reachable",
+        "unauthorized_egress_denied",
+        "listener_denied",
+        "cross_policy_file_denied",
+        "runner_storage_denied",
+        "shell_denied",
+    }
+    if set(value) != expected:
+        raise RuntimeError(f"OS sandbox probe returned unexpected keys: {sorted(value)}")
+    if any(type(value[key]) is not bool for key in expected):
+        raise RuntimeError("OS sandbox probe result fields must be booleans")
+    return SandboxProbeResult(returncode=returncode, **value)
 
 
 def run_darwin_probe(
@@ -91,33 +171,40 @@ def run_darwin_probe(
     parts = urlsplit(provider_url)
     if parts.hostname not in {"127.0.0.1", "localhost"} or parts.port is None:
         raise ValueError("sandbox probe provider must be an explicit loopback endpoint")
-    profile = darwin_profile(
-        provider_port=parts.port,
-        peer_path=peer_path,
-        runner_storage_path=runner_storage_path,
-    )
-    completed = subprocess.run(
-        [
-            "/usr/bin/sandbox-exec",
-            "-p",
-            profile,
-            str(python_executable.resolve()),
-            "-c",
-            _PROBE,
-            provider_url,
-            "http://203.0.113.1/denied",
-            str(peer_path.resolve()),
-            str(runner_storage_path.resolve()),
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    runtime_executable, runtime_root = _sandbox_runtime(python_executable)
+    with tempfile.TemporaryDirectory(prefix="pixelgym-v5-policy-") as workspace:
+        profile = darwin_profile(
+            provider_port=parts.port,
+            peer_path=peer_path,
+            runner_storage_path=runner_storage_path,
+            runtime_root=runtime_root,
+            runtime_executable=runtime_executable,
+            policy_workspace=Path(workspace),
+        )
+        completed = subprocess.run(
+            [
+                "/usr/bin/sandbox-exec",
+                "-p",
+                profile,
+                str(runtime_executable),
+                "-I",
+                "-B",
+                "-c",
+                _PROBE,
+                provider_url,
+                "http://203.0.113.1/denied",
+                str(peer_path.resolve()),
+                str(runner_storage_path.resolve()),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=workspace,
+        )
     if completed.returncode != 0:
         raise RuntimeError(
             "OS sandbox probe could not execute; run outside a parent process sandbox: "
-            f"exit {completed.returncode}"
+            f"exit {completed.returncode}: {completed.stderr.strip()}"
         )
-    value = json.loads(completed.stdout)
-    return SandboxProbeResult(returncode=completed.returncode, **value)
+    return _decode_probe_result(completed.stdout, returncode=completed.returncode)

@@ -57,19 +57,31 @@ def create_v5_capture_app() -> FastAPI:
     return app
 
 
-def _free_local_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
+def _bound_local_socket() -> socket.socket:
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(2048)
+    except BaseException:
+        listener.close()
+        raise
+    return listener
 
 
 @contextlib.contextmanager
 def local_v5_server() -> Iterator[str]:
-    port = _free_local_port()
+    listener = _bound_local_socket()
+    port = int(listener.getsockname()[1])
     server = uvicorn.Server(
         uvicorn.Config(create_v5_capture_app(), host="127.0.0.1", port=port, log_level="warning")
     )
-    thread = threading.Thread(target=server.run, name="v5-capture-server", daemon=True)
+    thread = threading.Thread(
+        target=server.run,
+        kwargs={"sockets": [listener]},
+        name="v5-capture-server",
+        daemon=True,
+    )
     thread.start()
     health_url = f"http://127.0.0.1:{port}/health"
     deadline = time.monotonic() + 10
@@ -78,15 +90,20 @@ def local_v5_server() -> Iterator[str]:
             urllib.request.urlopen(health_url, timeout=0.2).close()
             break
         except OSError:
+            if not thread.is_alive():
+                listener.close()
+                raise RuntimeError("v5 capture server stopped before becoming ready")
             time.sleep(0.02)
     else:
         server.should_exit = True
         thread.join(timeout=2)
+        listener.close()
         raise RuntimeError("v5 capture server did not become ready")
     try:
         yield f"http://127.0.0.1:{port}"
     finally:
         server.should_exit = True
         thread.join(timeout=5)
+        listener.close()
         if thread.is_alive():
             raise RuntimeError("v5 capture server did not shut down")

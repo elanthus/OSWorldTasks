@@ -23,6 +23,17 @@ pytestmark = [
 ]
 
 
+class _ProviderStub(http.server.BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        self.send_response(200)
+        self.send_header("Content-Length", "2")
+        self.end_headers()
+        self.wfile.write(b"ok")
+
+    def log_message(self, format: str, *args: object) -> None:
+        del format, args
+
+
 def test_v5_os_sandbox_allows_fake_provider_and_denies_other_channels(tmp_path: Path) -> None:
     peer = tmp_path / "peer-policy"
     peer.mkdir()
@@ -30,7 +41,7 @@ def test_v5_os_sandbox_allows_fake_provider_and_denies_other_channels(tmp_path: 
     peer_file.write_text("not-visible")
     runner_file = tmp_path / "runner-private-state"
     runner_file.write_text("not-visible-to-policy")
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), http.server.SimpleHTTPRequestHandler)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _ProviderStub)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -53,6 +64,7 @@ def test_v5_os_sandbox_allows_fake_provider_and_denies_other_channels(tmp_path: 
     assert result.listener_denied
     assert result.cross_policy_file_denied
     assert result.runner_storage_denied
+    assert result.shell_denied
     # The runner/application side remains outside the policy sandbox and keeps
     # its required local channels after the policy probe exits.
     backend = V5FakeBackend()

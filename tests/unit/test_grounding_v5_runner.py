@@ -82,6 +82,24 @@ def scripted_policy(seed: int) -> ScriptedStatefulPolicy:
     return ScriptedStatefulPolicy(actions)
 
 
+def reserve_prior_attempt(
+    journal: V5AttemptJournal,
+    identity: AttemptIdentity,
+    *,
+    request_digest: str,
+    idempotency_key: str,
+) -> None:
+    journal.record_attempt_started(
+        identity,
+        provider_endpoint_identity="http://127.0.0.1:9999",
+        request_digest=request_digest,
+        idempotency_key=idempotency_key,
+        model_attempt_reservation=1,
+        control_request_reservation=1,
+        pre_call_checkpoint=b"{}",
+    )
+
+
 def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_path: Path) -> None:
     seed = 5000
     task = generate_task(seed)
@@ -334,14 +352,11 @@ def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(
     task = generate_task(seed)
     journal = V5AttemptJournal(tmp_path / "restart-cap.sqlite")
     identity = AttemptIdentity("prior-process", 0, 0)
-    journal.record_attempt_started(
+    reserve_prior_attempt(
+        journal,
         identity,
-        provider_endpoint_identity="http://127.0.0.1:9999",
         request_digest="sha256:" + "a" * 64,
         idempotency_key="prior-model-attempt",
-        model_attempt_reservation=1,
-        control_request_reservation=1,
-        pre_call_checkpoint=b"{}",
     )
     journal.record_control_request_reserved(identity, request_kind="reconcile")
 
@@ -351,7 +366,7 @@ def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(
         manifest=policy_manifest(),
         transport=transport,
         policy=scripted_policy(seed),
-        approved_caps=CallCaps(task.max_episode_steps, 1, 1, 2),
+        approved_caps=CallCaps(task.max_episode_steps, 1, 2, 4),
     )
     assert restarted.model_attempts == 1
     assert restarted.control_requests == 1
@@ -367,14 +382,11 @@ def test_v5_restart_never_reissues_durably_reserved_control_request(tmp_path: Pa
     seed = 5000
     journal = V5AttemptJournal(tmp_path / "restart-control.sqlite")
     identity = AttemptIdentity("interrupted-control", 0, 0)
-    journal.record_attempt_started(
+    reserve_prior_attempt(
+        journal,
         identity,
-        provider_endpoint_identity="http://127.0.0.1:9999",
         request_digest="sha256:" + "a" * 64,
         idempotency_key="unknown-control-outcome",
-        model_attempt_reservation=1,
-        control_request_reservation=1,
-        pre_call_checkpoint=b"{}",
     )
     journal.record_control_request_reserved(identity, request_kind="reconcile")
     transport = ScriptedTransport()
@@ -402,25 +414,19 @@ def test_v5_restart_enforces_durable_control_request_cap(tmp_path: Path) -> None
     seed = 5000
     journal = V5AttemptJournal(tmp_path / "restart-control-cap.sqlite")
     prior = AttemptIdentity("prior-control", 0, 0)
-    journal.record_attempt_started(
+    reserve_prior_attempt(
+        journal,
         prior,
-        provider_endpoint_identity="http://127.0.0.1:9999",
         request_digest="sha256:" + "a" * 64,
         idempotency_key="prior-control",
-        model_attempt_reservation=1,
-        control_request_reservation=1,
-        pre_call_checkpoint=b"{}",
     )
     journal.record_control_request_reserved(prior, request_kind="cancel")
     current = AttemptIdentity("current-control", 0, 0)
-    journal.record_attempt_started(
+    reserve_prior_attempt(
+        journal,
         current,
-        provider_endpoint_identity="http://127.0.0.1:9999",
         request_digest="sha256:" + "b" * 64,
         idempotency_key="current-control",
-        model_attempt_reservation=1,
-        control_request_reservation=1,
-        pre_call_checkpoint=b"{}",
     )
     transport = ScriptedTransport()
     runner = V5Runner(
@@ -428,7 +434,7 @@ def test_v5_restart_enforces_durable_control_request_cap(tmp_path: Path) -> None
         manifest=policy_manifest(),
         transport=transport,
         policy=scripted_policy(seed),
-        approved_caps=CallCaps(40, 2, 1, 3),
+        approved_caps=CallCaps(40, 3, 1, 5),
     )
     with pytest.raises(RuntimeError, match="provider-control-request cap"):
         runner.recover_step(
@@ -446,14 +452,11 @@ def test_v5_restart_enforces_durable_total_wire_cap(tmp_path: Path) -> None:
     task = generate_task(seed)
     journal = V5AttemptJournal(tmp_path / "restart-wire-cap.sqlite")
     identity = AttemptIdentity("prior-wire", 0, 0)
-    journal.record_attempt_started(
+    reserve_prior_attempt(
+        journal,
         identity,
-        provider_endpoint_identity="http://127.0.0.1:9999",
         request_digest="sha256:" + "a" * 64,
         idempotency_key="prior-wire",
-        model_attempt_reservation=1,
-        control_request_reservation=1,
-        pre_call_checkpoint=b"{}",
     )
     journal.record_control_request_reserved(identity, request_kind="reconcile")
     transport = ScriptedTransport()
