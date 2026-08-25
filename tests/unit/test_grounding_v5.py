@@ -237,6 +237,14 @@ def test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor() -> No
     assert record["golden"]["reward_sum"] == 1.0
     assert record["recovery"]["reward_sum"] == 1.0
     assert set(record["mutations"]) == {mutation.value for mutation in Mutation}
+    mutation_digests = {
+        mutation["trace_digest"] for mutation in record["mutations"].values()
+    }
+    assert len(mutation_digests) == len(Mutation)
+    assert (
+        record["mutations"][Mutation.STALE_TASK_SUBMISSION.value]["trace_digest"]
+        != record["mutations"][Mutation.STEP_BUDGET_EXHAUSTION.value]["trace_digest"]
+    )
     assert record["random_floor_reward_sum"] == 0.0
 
 

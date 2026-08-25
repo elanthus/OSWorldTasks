@@ -171,15 +171,16 @@ def validate_task_admission(task: V5Task) -> dict[str, Any]:
     mutations: dict[str, Any] = {}
     for mutation in Mutation:
         trace = mutation_trace(task, mutation)
+        stale_submission = mutation is Mutation.STALE_TASK_SUBMISSION
         first = replay_actions(
             task,
             trace.actions,
-            stale_submission=mutation is Mutation.STALE_TASK_SUBMISSION,
+            stale_submission=stale_submission,
         )
         second = replay_actions(
             task,
             trace.actions,
-            stale_submission=mutation is Mutation.STALE_TASK_SUBMISSION,
+            stale_submission=stale_submission,
         )
         if first != second:
             raise ValueError(f"mutation {mutation.value} is nondeterministic")
@@ -190,7 +191,20 @@ def validate_task_admission(task: V5Task) -> dict[str, Any]:
             "expected_route": trace.expected_route,
             "terminal_classification": "step_limit_truncation",
             "last_diagnostic_event": first.diagnostic_events[-1],
-            "trace_digest": content_digest(trace.actions),
+            "trace_digest": content_digest(
+                {
+                    "schema_version": "pixelgym-agent-v5-mutation-trace-binding-v1",
+                    "task_id": task.task_id,
+                    "mutation": mutation.value,
+                    "expected_route": trace.expected_route,
+                    "replay_parameters": {
+                        "seed": task.seed,
+                        "max_episode_steps": task.max_episode_steps,
+                        "stale_submission": stale_submission,
+                    },
+                    "actions": trace.actions,
+                }
+            ),
         }
     floor = replay_actions(task, random_floor_actions(task, seed=task.seed ^ 0x5A5A))
     if any(floor.rewards):
