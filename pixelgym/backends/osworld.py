@@ -10,6 +10,7 @@ cross this adapter.
 from __future__ import annotations
 
 import io
+import json
 import platform
 import socket
 import time
@@ -22,6 +23,8 @@ import numpy as np
 from PIL import Image
 
 from pixelgym.backends.base import Frame
+from pixelgym.grounding.v5.contracts import EnvironmentResumeRecord, content_digest, sha256_bytes
+from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form.osworld_task import APP_URL, create_osworld_task
 
@@ -364,6 +367,74 @@ class OSWorldBackend:
                 else "upstream-psutil"
             ),
         }
+
+    def checkpoint(self) -> bytes:
+        """Seal the live-session reconnect state used by the v5 runner.
+
+        OSWorld does not expose a content-addressed VM snapshot per action, so
+        this checkpoint supports only a proven live reconnect to this exact
+        session.  A process restart without the live session fails closed.
+        """
+
+        if self._task_record is None:
+            raise OSWorldBackendError("OSWorld task is not installed")
+        screenshot = self.screenshot()
+        privileged = self.read_privileged_state()
+        return canonical_json_bytes(
+            {
+                "schema_version": "pixelgym-osworld-live-reconnect-v1",
+                "task_id": self._task_record["task_id"],
+                "seed": self._task_record["seed"],
+                "backend_identity": self._v5_backend_identity(),
+                "structured_action_count": self._structured_action_count,
+                "screenshot_digest": "sha256:" + sha256_bytes(screenshot.tobytes()),
+                "application_state_digest": content_digest(privileged),
+            }
+        )
+
+    def restore(self, checkpoint: bytes) -> None:
+        """Verify reconnect to the exact still-live OSWorld session."""
+
+        try:
+            value = json.loads(checkpoint)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise OSWorldBackendError("invalid OSWorld reconnect checkpoint") from exc
+        if value.get("schema_version") != "pixelgym-osworld-live-reconnect-v1":
+            raise OSWorldBackendError("unsupported OSWorld reconnect checkpoint schema")
+        current = json.loads(self.checkpoint())
+        if current != value:
+            raise OSWorldBackendError("OSWorld live session cannot prove the sealed state")
+
+    def environment_resume_record(self, *, step_count: int) -> EnvironmentResumeRecord:
+        checkpoint = self.checkpoint()
+        value = json.loads(checkpoint)
+        return EnvironmentResumeRecord(
+            task_id=value["task_id"],
+            backend_identity=value["backend_identity"],
+            step_count=step_count,
+            screenshot_digest=value["screenshot_digest"],
+            application_state_digest=value["application_state_digest"],
+            mechanism="live_reconnect",
+            checkpoint_digest="sha256:" + sha256_bytes(checkpoint),
+        )
+
+    def verify_resume_record(
+        self, resume_record: EnvironmentResumeRecord, *, step_count: int
+    ) -> None:
+        if self.environment_resume_record(step_count=step_count) != resume_record:
+            raise OSWorldBackendError("OSWorld reconnect binding mismatch")
+
+    def _v5_backend_identity(self) -> str:
+        if self._task_record is None:
+            raise OSWorldBackendError("OSWorld task is not installed")
+        return content_digest(
+            {
+                "runtime_image": self.config.runtime_image_reference,
+                "guest_image": str(self.config.guest_image_path.resolve()),
+                "task_id": self._task_record["task_id"],
+                "seed": self._task_record["seed"],
+            }
+        )
 
     def close(self) -> None:
         env, self._env = self._env, None

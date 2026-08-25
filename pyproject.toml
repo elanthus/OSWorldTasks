@@ -58,6 +58,8 @@ include = ["pixelgym*"]
 "pixelgym.platform.schemas" = ["*.json"]
 "pixelgym.grounding.v4b_app" = ["static/*"]
 "pixelgym.grounding.v4c_app" = ["static/*"]
+"pixelgym.grounding.v5.schemas" = ["*.json"]
+"pixelgym.grounding.v5.v5_app" = ["static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -68,6 +70,7 @@ markers = [
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
     "platform_compose_integration: provisions an isolated Docker Compose platform stack",
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
+    "v5_sandbox_integration: requires Darwin sandbox-exec outside a parent process sandbox",
 ]
 
 [tool.ruff]

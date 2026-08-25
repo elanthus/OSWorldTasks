@@ -17,6 +17,7 @@ from pixelgym.backends.osworld import (
     RUNTIME_IMAGE_REFERENCE,
     OSWorldBackend,
     OSWorldBackendConfig,
+    OSWorldBackendError,
     _portable_docker_available_port,
 )
 from pixelgym.env import PixelGuiEnv
@@ -124,6 +125,20 @@ def test_public_environment_reset_returns_only_pixels_and_task_id(backend):
     assert created[0].kwargs["require_a11y_tree"] is False
     assert created[0].kwargs["require_terminal"] is False
     assert created[0].kwargs["volume_size"] == 50
+
+
+def test_v5_live_reconnect_checkpoint_verifies_exact_osworld_session_state(backend):
+    osworld, _task, _created = backend
+    osworld.reset(7)
+    checkpoint = osworld.checkpoint()
+    record = osworld.environment_resume_record(step_count=0)
+
+    osworld.restore(checkpoint)
+    osworld.verify_resume_record(record, step_count=0)
+
+    osworld.click(1, 1)
+    with pytest.raises(OSWorldBackendError, match="cannot prove|binding mismatch"):
+        osworld.restore(checkpoint)
 
 
 def test_actions_translate_only_to_bounded_structured_actions(backend):
