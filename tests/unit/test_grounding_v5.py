@@ -28,6 +28,7 @@ from pixelgym.grounding.v5.evidence import (
     validate_credential_free,
 )
 from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition, validate_generator
+from pixelgym.grounding.v5.manifests import partition_manifest
 from pixelgym.grounding.v5.metrics import (
     clustered_bootstrap_difference,
     exact_mcnemar_pvalue,
@@ -42,6 +43,7 @@ from pixelgym.grounding.v5.sandbox import (
     build_sandbox_manifest,
 )
 from pixelgym.grounding.v5.seeds import SEED_RECORDS, validate_seed_contract
+from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
 
@@ -70,6 +72,14 @@ def test_v5_seed_and_generator_contract_freezes_allocations() -> None:
     assert summary["task_count"] == 180
     assert summary["family_counts"] == {family.value: 30 for family in WorkflowFamily}
     assert len({record.seed for record in SEED_RECORDS}) == 180
+
+
+@pytest.mark.parametrize("partition", tuple(Partition))
+def test_v5_checked_in_partition_manifests_match_current_sources(
+    partition: Partition,
+) -> None:
+    stored = ROOT / "artifacts/grounding-v5-manifests" / f"{partition.value}.json"
+    assert stored.read_bytes() == canonical_json_bytes(partition_manifest(partition)) + b"\n"
 
 
 def test_v5_generated_difficulty_bounds_and_exact_slack() -> None:

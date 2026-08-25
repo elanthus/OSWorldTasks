@@ -129,3 +129,8 @@ Before D5.6, the owner should review:
 
 No real provider call is part of the implementation or its automated tests. D5.6 remains the next
 human-owned stop.
+
+Use the [D5.6 calibration approval packet](grounding-v5-d56-calibration-approval.md) to freeze the
+policy panel, prices, retry rules, routing, and numeric caps. Use the
+[real-provider smoke-test runbook](grounding-v5-real-provider-smoke-runbook.md) only after the
+candidate adapters and policy manifests are implemented and a separate smoke cap is approved.
