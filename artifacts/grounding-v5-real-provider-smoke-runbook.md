@@ -39,7 +39,9 @@ Use two bounded stages per policy. The approval may authorize stage 1 alone.
   action validates and dispatches, the next screenshot.
 - At most the manifest's declared cancellation and reconciliation requests for those two attempts.
 - Stop on transport failure, unknown outcome, canonical capture failure, parser failure, invalid
-  action, sandbox denial, missing usage, missing price, or evidence-integrity failure.
+  action, sandbox denial, missing usage, missing price, or evidence-integrity failure. The sole
+  exception is the frozen retry rule for a pre-send failure proven to have produced no response;
+  that retry must remain within every approved cap.
 
 Stage 1 does not claim episode success. Its purpose is to exercise the provider boundary and one
 state transition without exposing calibration items.
@@ -84,7 +86,10 @@ path and a numeric approved cap; a different existing output must fail closed.
 2. Generate and review the no-call smoke plan. Confirm that all assigned seeds are development
    seeds and that every count is within the signed approval.
 3. Start the policy sandbox and run its no-cost endpoint/egress probe against the exact runtime.
-4. Inject the provider credential directly into the transport process without echoing it.
+4. Run credential-boundary validation before task reset or screenshot creation. If it passes,
+   reset the assigned task, create the screenshot, and seal the canonical request bytes without a
+   credential. Only then inject the credential directly into the transport at the send boundary,
+   without echoing it. Fail closed and do not inject the credential if either gate is incomplete.
 5. Run stage 1 for one policy at a time. Do not run policies concurrently during the initial
    provider integration check.
 6. Seal and verify the attempt journal, canonical response, parser result, action validation,
@@ -103,17 +108,19 @@ summary includes, per policy:
 - exact policy, provider, model, runtime, source, prompt, parser, adapter, and price identities;
 - assigned development seed and task ID;
 - environment actions, model attempts, provider control requests, and total wire requests;
-- canonical response, parsed candidate, action intent, and dispatch lineage;
-- usage, attributed cost, and request latency without estimates;
+- canonical response, parsed candidate, action intent, and dispatch lineage when each was
+  produced; otherwise its explicit absence, the failure phase, and the failure code;
+- usage, attributed cost, and request latency without estimates when produced; otherwise their
+  explicit absence, the failure phase, and the failure code;
 - terminal classification and every failure code; and
-- provider and backend cleanup status.
+- provider and backend cleanup status, including cleanup evidence after every failure.
 
 ## Failure routing
 
 | Observation | Required action |
 |---|---|
-| Pre-send failure proven to have produced no response | Apply only the frozen retry rule and remain inside the approved cap |
-| Unknown post-send outcome | Seal infrastructure failure; do not retry |
+| Pre-send failure proven to have produced no response | Apply only the frozen retry rule and remain inside every approved cap |
+| Unknown outcome, including any outcome not proven pre-send/no-response | Seal infrastructure failure; do not retry |
 | Parse or action-validation failure | Retain the response and failure; audit without another call |
 | Coordinate mismatch | Stop that policy; create and test a new adapter identity before requesting new approval |
 | Missing usage or price | Fail evidence validation; do not estimate cost |

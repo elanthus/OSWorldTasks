@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import math
 import os
 import signal
+import time
 from pathlib import Path
 
 import pytest
@@ -33,8 +35,9 @@ def test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state(
     def stop_loss(_signum: int, _frame: object) -> None:
         raise TimeoutError("v5 OSWorld live-reconnect test exceeded the 90-minute stop-loss")
 
+    alarm_started_at = time.monotonic()
     previous_handler = signal.signal(signal.SIGALRM, stop_loss)
-    signal.alarm(90 * 60)
+    previous_alarm_seconds = signal.alarm(90 * 60)
     backend: OSWorldBackend | None = None
     try:
         backend = OSWorldBackend(OSWorldBackendConfig(guest_image_path=GUEST_IMAGE))
@@ -65,3 +68,6 @@ def test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state(
         finally:
             signal.alarm(0)
             signal.signal(signal.SIGALRM, previous_handler)
+            if previous_alarm_seconds > 0:
+                elapsed_seconds = math.ceil(time.monotonic() - alarm_started_at)
+                signal.alarm(max(1, previous_alarm_seconds - elapsed_seconds))

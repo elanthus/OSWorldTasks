@@ -25,7 +25,8 @@ The owner should approve calibration only after recording evidence for every row
 
 | Precondition | Required evidence | Current status |
 |---|---|---|
-| D4.12 sequencing and D5.1 scope | Explicit owner decision | Awaiting recorded interpretation of the owner's approval |
+| D4.12 milestone gate | Human verdict | Deliberately unpassed; the verdict remains null |
+| D5.1 scope and sequencing | Explicit owner decision | Approved to proceed with v5 readiness work while D4.12 remains null |
 | Frozen task partitions | Byte-reproducible development, calibration, and confirmatory manifests | Implemented; checked-in reproduction test added |
 | Development usability review | Six-family review of legibility, instruction sufficiency, screenshot-only solvability, and leakage | Owner decision required |
 | Fake-backend recovery | Interruption tests for every supported durable boundary | Implemented in the v5 unit suite |
@@ -110,7 +111,9 @@ Before calls, freeze the decisions that follow calibration outcomes:
 - **Low discrimination:** revise generator distributions rather than editing individual tasks
   around one model's output.
 - **Infrastructure, transport, parse, adapter, price, or integrity failure:** freeze the run and
-  perform a no-call audit. Do not silently retry or alter task difficulty.
+  perform a no-call audit. The only permitted retry is the frozen retry rule for a pre-send
+  failure proven to have produced no response, within every approved cap. Never retry an unknown
+  outcome, silently retry another failure, or alter task difficulty.
 - **Mixed informative outcomes:** retain the complete matrix and proceed to the D5.8 power and
   final-freeze review.
 
@@ -124,7 +127,10 @@ The owner should provide one explicit record containing all of the following:
 ```text
 D5.6 calibration package: APPROVED or NOT APPROVED
 Approved policy IDs: <exact list>
+Approved policy-manifest digests: <exact list>
 Approved provider/model identities: <exact list>
+Approved frozen partition-manifest digests (development, calibration, confirmatory): <exact list>
+Approved calibration partition-manifest digest: <exact digest>
 Approved price-record digests: <exact list>
 Approved calibration cap-plan digests: <exact list>
 Approved maximum attributed spend: <amount and currency>
@@ -133,5 +139,11 @@ Approval timestamp: <UTC timestamp>
 Approved by: <project owner>
 ```
 
-An approval with missing identities, caps, prices, or smoke evidence is incomplete and authorizes
-zero calibration calls.
+Before accepting the approval, canonicalize and verify each referenced policy manifest and confirm
+that its digest binds the approved provider endpoint, system-prompt digest, parser version, and
+transport retry rule. Verify all three frozen partition-manifest digests, and confirm that every
+approved calibration cap plan reproduces byte-for-byte from one approved policy manifest and the
+exact approved calibration partition manifest.
+
+An approval with a missing binding, identity, cap, price, partition, policy manifest, or smoke
+evidence digest is incomplete and authorizes zero calibration calls.
