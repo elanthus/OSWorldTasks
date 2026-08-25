@@ -60,6 +60,7 @@ class V5FakeBackend:
         self._focused = False
         self._text_value = ""
         self._visible_error: str | None = None
+        self._repair_pending = False
         self._intentional_errors_entered: set[int] = set()
         self._irreversible_failure = False
         self._submissions: list[Submission] = []
@@ -94,6 +95,7 @@ class V5FakeBackend:
         self._focused = False
         self._text_value = ""
         self._visible_error = None
+        self._repair_pending = False
         self._intentional_errors_entered = set()
         self._irreversible_failure = False
         self._submissions = []
@@ -112,24 +114,24 @@ class V5FakeBackend:
         task = self._require_active()
         if self._irreversible_failure or self._stage_index >= len(task.stages):
             return ()
-        if self._visible_error and task.stages[self._stage_index].recovery_stage:
+        if self._repair_pending:
             return (
                 VisibleControl(
                     "repair_implicated",
                     "Repair the implicated verification selection",
-                    (190, 590, 834, 650),
+                    (190, 430, 834, 488),
                 ),
             )
         stage = task.stages[self._stage_index]
         controls: list[VisibleControl] = []
-        if stage.kind is StageKind.TEXT:
-            controls.append(VisibleControl("text_input", "Short code", (190, 440, 834, 500)))
-            controls.append(VisibleControl("continue", "Continue", (674, 590, 834, 650)))
-            return tuple(controls)
         top = 430
         for index, control in enumerate(stage.controls):
             controls.append(
-                VisibleControl(control.control_id, control.label, (190, top + index * 72, 834, top + 58 + index * 72))
+                VisibleControl(
+                    control.control_id,
+                    control.label,
+                    (190, top + index * 72, 834, top + 58 + index * 72),
+                )
             )
         return tuple(controls)
 
@@ -162,6 +164,10 @@ class V5FakeBackend:
             self._error("The click did not land on an actionable control.", "missed_control")
             return
         if clicked == "repair_implicated":
+            if not self._repair_pending:
+                self._error("No declared recovery is pending.", "unexpected_repair")
+                return
+            self._repair_pending = False
             self._visible_error = None
             self._advance("visible_error_repaired")
             return
@@ -191,6 +197,7 @@ class V5FakeBackend:
             return
         if stage.recovery_stage and self._stage_index not in self._intentional_errors_entered:
             self._intentional_errors_entered.add(self._stage_index)
+            self._repair_pending = True
             self._error(
                 "Verification rejected this selection: repair the implicated reference only.",
                 "entered_declared_recovery",
@@ -263,6 +270,7 @@ class V5FakeBackend:
             "focused": self._focused,
             "text_value": self._text_value,
             "visible_error": self._visible_error,
+            "repair_pending": self._repair_pending,
             "intentional_errors_entered": sorted(self._intentional_errors_entered),
             "irreversible_failure": self._irreversible_failure,
             "submissions": [
@@ -285,8 +293,28 @@ class V5FakeBackend:
             value = json.loads(checkpoint)
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise ValueError("invalid v5 fake-backend checkpoint") from exc
+        if not isinstance(value, dict):
+            raise ValueError(  # noqa: TRY004 - malformed serialized checkpoint value
+                "v5 fake-backend checkpoint must be an object"
+            )
         if value.get("schema_version") != "pixelgym-v5-fake-checkpoint-v1":
             raise ValueError("unsupported v5 fake-backend checkpoint schema")
+        required = {
+            "seed",
+            "task_id",
+            "stage_index",
+            "focused",
+            "text_value",
+            "visible_error",
+            "repair_pending",
+            "intentional_errors_entered",
+            "irreversible_failure",
+            "submissions",
+            "action_count",
+            "last_diagnostic",
+        }
+        if not required <= value.keys():
+            raise ValueError("v5 fake-backend checkpoint is missing required fields")
         task = generate_task(value["seed"])
         if task.task_id != value.get("task_id"):
             raise ValueError("checkpoint task identity mismatch")
@@ -296,6 +324,7 @@ class V5FakeBackend:
         self._focused = value["focused"]
         self._text_value = value["text_value"]
         self._visible_error = value["visible_error"]
+        self._repair_pending = value["repair_pending"]
         self._intentional_errors_entered = set(value["intentional_errors_entered"])
         self._irreversible_failure = value["irreversible_failure"]
         self._submissions = [Submission.from_record(row) for row in value["submissions"]]
@@ -337,6 +366,7 @@ class V5FakeBackend:
         self._focused = False
         self._text_value = ""
         self._visible_error = None
+        self._repair_pending = False
         self._last_diagnostic = diagnostic
         self._frame = None
         if stage.kind is StageKind.COMMIT:

@@ -141,6 +141,13 @@ def test_v5_live_reconnect_checkpoint_verifies_exact_osworld_session_state(backe
         osworld.restore(checkpoint)
 
 
+def test_v5_live_reconnect_checkpoint_rejects_non_object_json(backend):
+    osworld, _task, _created = backend
+    osworld.reset(7)
+    with pytest.raises(OSWorldBackendError, match="must be an object"):
+        osworld.restore(b"[]")
+
+
 def test_actions_translate_only_to_bounded_structured_actions(backend):
     osworld, _task, created = backend
     env = PixelGuiEnv(osworld)

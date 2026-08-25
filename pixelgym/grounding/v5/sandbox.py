@@ -2,26 +2,20 @@
 
 from __future__ import annotations
 
-from urllib.parse import urlsplit
-
-from pixelgym.grounding.v5.contracts import SandboxManifest, content_digest
-from pixelgym.grounding.v5.evidence import validate_credential_free
+from pixelgym.grounding.v5.contracts import (
+    SandboxManifest,
+    sandbox_endpoint_allowlist_digest,
+)
 
 SANDBOX_POLICY_VERSION = "pixelgym-agent-v5-sandbox-v1"
 DENIED_CAPABILITIES = tuple(sorted(SandboxManifest.REQUIRED_DENIALS))
 
 
 def endpoint_allowlist_digest(endpoint: str) -> str:
-    validate_credential_free({"provider_url": endpoint})
-    parts = urlsplit(endpoint)
-    if parts.scheme not in {"http", "https"} or not parts.hostname:
-        raise ValueError("provider endpoint must be an absolute HTTP(S) URL")
-    if parts.path not in {"", "/"} or parts.query or parts.fragment:
-        raise ValueError("provider endpoint identity must contain only scheme, host, and port")
-    normalized = f"{parts.scheme}://{parts.hostname.lower()}"
-    if parts.port is not None:
-        normalized += f":{parts.port}"
-    return content_digest({"policy": SANDBOX_POLICY_VERSION, "allowed_origins": [normalized]})
+    return sandbox_endpoint_allowlist_digest(
+        endpoint,
+        policy_version=SANDBOX_POLICY_VERSION,
+    )
 
 
 def build_sandbox_manifest(*, runtime_digest: str, provider_endpoint: str) -> SandboxManifest:

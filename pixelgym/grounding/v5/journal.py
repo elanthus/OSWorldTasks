@@ -5,11 +5,18 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-from pixelgym.grounding.v5.contracts import AttemptIdentity, content_digest, sha256_bytes
+from pixelgym.grounding.v5.contracts import (
+    AttemptIdentity,
+    CallCaps,
+    content_digest,
+    sha256_bytes,
+)
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.serialization import canonical_json_bytes
 
@@ -117,20 +124,8 @@ class V5AttemptJournal:
         if not isinstance(data, bytes):
             raise TypeError("journal object must be bytes")
         digest = "sha256:" + sha256_bytes(data)
-        with self._lock, self._connection:
-            existing = self._connection.execute(
-                "SELECT kind, data FROM objects WHERE digest = ?", (digest,)
-            ).fetchone()
-            if existing is not None and existing[1] != data:
-                raise JournalConflictError("content digest collision")
-            self._connection.execute(
-                "INSERT OR IGNORE INTO objects(digest, kind, data) VALUES (?, ?, ?)",
-                (digest, kind, data),
-            )
-            self._connection.execute(
-                "INSERT OR IGNORE INTO object_roles(digest, kind) VALUES (?, ?)",
-                (digest, kind),
-            )
+        with self._write_transaction():
+            self._put_object_locked(digest=digest, kind=kind, data=data)
         return digest
 
     def get_object(self, digest: str, *, expected_kind: str | None = None) -> bytes:
@@ -239,6 +234,73 @@ class V5AttemptJournal:
             },
         )
 
+    def reserve_attempt_started(
+        self,
+        identity: AttemptIdentity,
+        *,
+        provider_endpoint_identity: str,
+        request_digest: str,
+        idempotency_key: str,
+        model_attempt_reservation: int,
+        control_request_reservation: int,
+        pre_call_checkpoint: bytes,
+        approved_caps: CallCaps,
+    ) -> tuple[JournalEvent, bool]:
+        """Atomically enforce caps and reserve a model attempt before the wire."""
+
+        checkpoint_digest = "sha256:" + sha256_bytes(pre_call_checkpoint)
+        payload = {
+            "identity": identity.key,
+            "provider_endpoint_identity": provider_endpoint_identity,
+            "request_digest": request_digest,
+            "idempotency_key": idempotency_key,
+            "model_attempt_reservation": model_attempt_reservation,
+            "control_request_reservation": control_request_reservation,
+            "pre_call_checkpoint_digest": checkpoint_digest,
+        }
+        validate_credential_free(payload)
+        with self._write_transaction():
+            self._put_object_locked(
+                digest=checkpoint_digest,
+                kind="policy_checkpoint",
+                data=pre_call_checkpoint,
+            )
+            return self._reserve_call_event_locked(
+                event_key=f"{identity.key}/attempt_started",
+                kind="attempt_started",
+                identity=identity,
+                payload=payload,
+                model_delta=model_attempt_reservation,
+                control_delta=0,
+                approved_caps=approved_caps,
+            )
+
+    def reserve_control_request(
+        self,
+        identity: AttemptIdentity,
+        *,
+        request_kind: ControlRequestKind,
+        approved_caps: CallCaps,
+    ) -> tuple[JournalEvent, bool]:
+        """Atomically enforce caps and reserve one provider control call."""
+
+        payload = {
+            "identity": identity.key,
+            "request_kind": request_kind,
+            "control_request_reservation": 1,
+        }
+        validate_credential_free(payload)
+        with self._write_transaction():
+            return self._reserve_call_event_locked(
+                event_key=f"{identity.key}/control_request/{request_kind}",
+                kind="provider_control_request_reserved",
+                identity=identity,
+                payload=payload,
+                model_delta=0,
+                control_delta=1,
+                approved_caps=approved_caps,
+            )
+
     def persist_canonical_response(
         self, identity: AttemptIdentity, response: dict[str, Any]
     ) -> tuple[JournalEvent, bytes]:
@@ -323,13 +385,115 @@ class V5AttemptJournal:
     def call_counts(self) -> tuple[int, int]:
         """Return run-wide provider reservations reconstructed from durable events."""
 
+        with self._lock:
+            return self._call_counts_locked()
+
+    @contextmanager
+    def _write_transaction(self) -> Iterator[None]:
+        """Serialize a multi-write invariant across threads and journal processes."""
+
+        with self._lock:
+            self._connection.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+            except BaseException:
+                self._connection.execute("ROLLBACK")
+                raise
+            else:
+                self._connection.execute("COMMIT")
+
+    def _put_object_locked(self, *, digest: str, kind: str, data: bytes) -> None:
+        existing = self._connection.execute(
+            "SELECT kind, data FROM objects WHERE digest = ?", (digest,)
+        ).fetchone()
+        if existing is not None and bytes(existing[1]) != data:
+            raise JournalConflictError("content digest collision")
+        self._connection.execute(
+            "INSERT OR IGNORE INTO objects(digest, kind, data) VALUES (?, ?, ?)",
+            (digest, kind, data),
+        )
+        self._connection.execute(
+            "INSERT OR IGNORE INTO object_roles(digest, kind) VALUES (?, ?)",
+            (digest, kind),
+        )
+
+    def _reserve_call_event_locked(
+        self,
+        *,
+        event_key: str,
+        kind: str,
+        identity: AttemptIdentity,
+        payload: dict[str, Any],
+        model_delta: int,
+        control_delta: int,
+        approved_caps: CallCaps,
+    ) -> tuple[JournalEvent, bool]:
+        encoded = canonical_json_bytes(payload)
+        existing = self._connection.execute(
+            """
+            SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
+            FROM events WHERE event_key = ?
+            """,
+            (event_key,),
+        ).fetchone()
+        if existing is not None:
+            if existing[2] == kind and bytes(existing[6]) == encoded:
+                return self._event_from_row(existing), False
+            raise JournalConflictError("conflicting provider call reservation")
+        model_attempts, control_requests = self._call_counts_locked()
+        if model_delta and model_attempts + model_delta > approved_caps.model_attempt_cap:
+            raise RuntimeError("approved model-attempt cap reached")
+        if control_delta and (
+            control_requests + control_delta > approved_caps.provider_control_request_cap
+        ):
+            raise RuntimeError("approved provider-control-request cap reached")
+        if (
+            model_attempts
+            + control_requests
+            + model_delta
+            + control_delta
+            > approved_caps.provider_wire_request_cap
+        ):
+            raise RuntimeError("approved provider-wire-request cap reached")
+        self._connection.execute(
+            """
+            INSERT INTO events(event_key, kind, trial_id, step_index, attempt_index, payload)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event_key,
+                kind,
+                identity.trial_id,
+                identity.step_index,
+                identity.attempt_index,
+                encoded,
+            ),
+        )
+        row = self._connection.execute(
+            """
+            SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
+            FROM events WHERE event_key = ?
+            """,
+            (event_key,),
+        ).fetchone()
+        assert row is not None
+        return self._event_from_row(row), True
+
+    def _call_counts_locked(self) -> tuple[int, int]:
         model_attempts = 0
         control_requests = 0
-        for event in self.events():
-            if event.kind == "attempt_started":
-                model_attempts += int(event.payload["model_attempt_reservation"])
-            elif event.kind == "provider_control_request_reserved":
-                control_requests += int(event.payload["control_request_reservation"])
+        rows = self._connection.execute(
+            """
+            SELECT kind, payload FROM events
+            WHERE kind IN ('attempt_started', 'provider_control_request_reserved')
+            """
+        )
+        for kind, encoded in rows:
+            payload = json.loads(bytes(encoded))
+            if kind == "attempt_started":
+                model_attempts += int(payload["model_attempt_reservation"])
+            else:
+                control_requests += int(payload["control_request_reservation"])
         return model_attempts, control_requests
 
     def integrity_report(self) -> dict[str, Any]:

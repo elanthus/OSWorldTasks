@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import threading
 from collections import Counter
 from pathlib import Path
@@ -149,7 +150,7 @@ def test_v5_hanging_transport_cannot_extend_runner_or_start_retry(tmp_path: Path
             self.model_requests.append(
                 {"idempotency_key": idempotency_key, "request": request}
             )
-            self.release.wait()
+            self.release.wait(timeout=5.0)
             return TransportOutcome("unknown", failure_code="released_after_deadline")
 
     seed = 5000
@@ -251,6 +252,25 @@ def test_v5_journal_allows_one_content_object_to_have_multiple_roles(tmp_path: P
     assert journal.put_object("sealed_action", b"same-bytes") == digest
     assert journal.get_object(digest, expected_kind="parsed_action_candidate") == b"same-bytes"
     assert journal.get_object(digest, expected_kind="sealed_action") == b"same-bytes"
+
+
+def test_v5_journal_object_and_role_insert_roll_back_together(tmp_path: Path) -> None:
+    journal = V5AttemptJournal(tmp_path / "object-transaction.sqlite")
+    journal._connection.execute(
+        """
+        CREATE TRIGGER reject_object_role
+        BEFORE INSERT ON object_roles
+        BEGIN
+          SELECT RAISE(ABORT, 'injected interruption');
+        END
+        """
+    )
+    with pytest.raises(sqlite3.IntegrityError, match="injected interruption"):
+        journal.put_object("policy_checkpoint", b"transactional-object")
+    object_count = journal._connection.execute(
+        "SELECT COUNT(*) FROM objects"
+    ).fetchone()[0]
+    assert object_count == 0
 
 
 def test_v5_policy_reset_discards_cross_episode_state() -> None:
@@ -447,6 +467,81 @@ def test_v5_restart_enforces_durable_total_wire_cap(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="provider-wire-request cap"):
         runner.run(trial_id="after-wire-cap", task=task)
     assert not transport.model_requests
+
+
+def test_v5_concurrent_runners_cannot_overreserve_model_cap(tmp_path: Path) -> None:
+    path = tmp_path / "atomic-cap.sqlite"
+    journals = (V5AttemptJournal(path), V5AttemptJournal(path))
+    barrier = threading.Barrier(2)
+    outcomes: list[str] = []
+
+    def reserve(index: int) -> None:
+        identity = AttemptIdentity(f"concurrent-{index}", 0, 0)
+        barrier.wait()
+        try:
+            _event, created = journals[index].reserve_attempt_started(
+                identity,
+                provider_endpoint_identity="http://127.0.0.1:9999",
+                request_digest="sha256:" + str(index) * 64,
+                idempotency_key=f"concurrent-{index}",
+                model_attempt_reservation=1,
+                control_request_reservation=0,
+                pre_call_checkpoint=b"{}",
+                approved_caps=CallCaps(1, 1, 0, 1),
+            )
+            outcomes.append("created" if created else "duplicate")
+        except RuntimeError as exc:
+            outcomes.append(str(exc))
+
+    threads = [threading.Thread(target=reserve, args=(index,)) for index in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=5.0)
+    assert all(not thread.is_alive() for thread in threads)
+    assert sorted(outcomes) == ["approved model-attempt cap reached", "created"]
+    assert journals[0].call_counts() == (1, 0)
+
+
+def test_v5_recovery_with_reconciliation_disabled_sends_no_control_call(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    policy = scripted_policy(seed)
+    journal = V5AttemptJournal(tmp_path / "reconciliation-disabled.sqlite")
+    identity = AttemptIdentity("no-reconciliation", 0, 0)
+    journal.record_attempt_started(
+        identity,
+        provider_endpoint_identity="http://127.0.0.1:9999",
+        request_digest="sha256:" + "a" * 64,
+        idempotency_key="no-reconciliation",
+        model_attempt_reservation=1,
+        control_request_reservation=0,
+        pre_call_checkpoint=policy.reset(task.instruction),
+    )
+    base = policy_manifest()
+    values = base.__dict__.copy()
+    values.pop("policy_id")
+    values["max_reconciliation_requests_per_attempt"] = 0
+    values["reconciliation_deadline_seconds"] = 0.0
+    manifest = PolicyManifest.build(**values)
+    transport = ScriptedTransport()
+    recovered = V5Runner(
+        journal=journal,
+        manifest=manifest,
+        transport=transport,
+        policy=policy,
+        approved_caps=CallCaps(40, 1, 0, 1),
+    ).recover_step(
+        trial_id=identity.trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+    assert recovered["reason"] == "reconciliation_disabled"
+    assert not transport.control_requests
+    assert journal.terminal_attempt(identity).kind == "unknown_outcome_infrastructure_failure"
 
 
 @pytest.mark.parametrize(

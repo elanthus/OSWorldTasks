@@ -22,5 +22,5 @@ ul { margin: 0; padding-left: 24px; color: #354153; font-size: 15px; line-height
 .controls { position: absolute; left: 134px; right: 134px; top: 316px; }
 button, input { width: 100%; height: 58px; margin-bottom: 14px; padding: 0 18px; border: 2px solid #486284; border-radius: 7px; color: #17253d; background: #f8fafc; font: 18px DejaVu, sans-serif; text-align: left; }
 input { background: #eef4ff; }
-button[data-role="continue"] { width: 160px; float: right; text-align: center; }
+button[data-role="continue"] { text-align: center; }
 footer { position: absolute; left: 70px; bottom: 20px; color: #65748a; font-size: 15px; }

@@ -374,8 +374,7 @@ class V5Runner:
         request_bytes = canonical_json_bytes(request)
         identity = AttemptIdentity(trial_id, step_index, 0)
         idempotency_key = content_digest({"attempt": identity.key, "policy": self.manifest.policy_id})
-        self._check_model_attempt_cap()
-        self.journal.record_attempt_started(
+        _reservation, created = self.journal.reserve_attempt_started(
             identity,
             provider_endpoint_identity=self.manifest.sandbox.provider_endpoint,
             request_digest="sha256:" + sha256_bytes(request_bytes),
@@ -386,7 +385,10 @@ class V5Runner:
                 + self.manifest.max_reconciliation_requests_per_attempt
             ),
             pre_call_checkpoint=state,
+            approved_caps=self.approved_caps,
         )
+        if not created:
+            raise RuntimeError("model attempt is already durably reserved")
         self._boundary("attempt_started")
         bounded_send = self.deadline_executor.execute(
             lambda: self.transport.send(
@@ -664,26 +666,15 @@ class V5Runner:
         if self.approved_caps.environment_action_cap < task.max_episode_steps:
             raise RuntimeError("approved environment-action cap is below the assigned task bound")
 
-    def _check_model_attempt_cap(self) -> None:
-        model_attempts, control_requests = self.journal.call_counts()
-        if model_attempts >= self.approved_caps.model_attempt_cap:
-            raise RuntimeError("approved model-attempt cap reached")
-        if model_attempts + control_requests >= self.approved_caps.provider_wire_request_cap:
-            raise RuntimeError("approved provider-wire-request cap reached")
-
     def _reserve_control_request(
         self, identity: AttemptIdentity, request_kind: ControlRequestKind
     ) -> bool:
-        event_key = f"{identity.key}/control_request/{request_kind}"
-        if self.journal.event(event_key) is not None:
-            return False
-        model_attempts, control_requests = self.journal.call_counts()
-        if control_requests >= self.approved_caps.provider_control_request_cap:
-            raise RuntimeError("approved provider-control-request cap reached")
-        if model_attempts + control_requests >= self.approved_caps.provider_wire_request_cap:
-            raise RuntimeError("approved provider-wire-request cap reached")
-        self.journal.record_control_request_reserved(identity, request_kind=request_kind)
-        return True
+        _reservation, created = self.journal.reserve_control_request(
+            identity,
+            request_kind=request_kind,
+            approved_caps=self.approved_caps,
+        )
+        return created
 
     def _boundary(self, name: str) -> None:
         if self.interrupt_after == name:
@@ -884,6 +875,23 @@ class V5Runner:
         if "attempt_started" in by_kind:
             started = by_kind["attempt_started"]
             identity = AttemptIdentity(trial_id, step_index, 0)
+            pre_state = self.journal.get_object(
+                started.payload["pre_call_checkpoint_digest"],
+                expected_kind="policy_checkpoint",
+            )
+            if self.manifest.max_reconciliation_requests_per_attempt == 0:
+                post_state = self.policy.failure_state(pre_state, "reconciliation_disabled")
+                self.journal.seal_attempt_terminal(
+                    identity,
+                    kind="unknown_outcome_infrastructure_failure",
+                    post_attempt_checkpoint=post_state,
+                    failure_code="reconciliation_disabled",
+                )
+                return {
+                    "classification": "infrastructure_failure",
+                    "reason": "reconciliation_disabled",
+                    "redispatched": False,
+                }
             if not self._reserve_control_request(identity, "reconcile"):
                 return {
                     "classification": "infrastructure_failure",
@@ -904,10 +912,6 @@ class V5Runner:
             )
             if not isinstance(reconciled, TransportOutcome):
                 raise TypeError("provider reconciliation returned an invalid outcome")
-            pre_state = self.journal.get_object(
-                started.payload["pre_call_checkpoint_digest"],
-                expected_kind="policy_checkpoint",
-            )
             if reconciled.status != "response" or reconciled.response is None:
                 post_state = self.policy.failure_state(
                     pre_state, reconciled.failure_code or "outcome_not_recoverable"
@@ -966,12 +970,11 @@ class V5Runner:
             instruction=task.instruction,
             max_episode_steps=task.max_episode_steps,
         )
-        env._task = TaskSpec.from_generated(
+        task_spec = TaskSpec.from_generated(
             task.generated_record(),
             instruction=task.instruction,
             app_url=backend.app_url,
             max_episode_steps=task.max_episode_steps,
         )
-        env._step_count = step_count
-        env._episode_ended = False
+        env.restore_episode(task_spec, step_count=step_count)
         return env

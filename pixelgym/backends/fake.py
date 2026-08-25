@@ -195,8 +195,31 @@ class FakeBackend:
             value = json.loads(checkpoint)
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise ValueError("invalid core fake-backend checkpoint") from exc
+        if not isinstance(value, dict):
+            raise ValueError(  # noqa: TRY004 - malformed serialized checkpoint value
+                "core fake-backend checkpoint must be an object"
+            )
         if value.get("schema_version") != "pixelgym-core-fake-checkpoint-v1":
             raise ValueError("unsupported core fake-backend checkpoint schema")
+        required = {
+            "width",
+            "height",
+            "seed",
+            "task_id",
+            "text",
+            "country_index",
+            "payment_index",
+            "expedited",
+            "focus",
+            "country_open",
+            "status",
+            "submissions",
+            "click_calls",
+            "key_calls",
+            "noop_calls",
+        }
+        if not required <= value.keys():
+            raise ValueError("core fake-backend checkpoint is missing required fields")
         if (value["width"], value["height"]) != (self.width, self.height):
             raise ValueError("fake-backend checkpoint screen mismatch")
         self.closed = False

@@ -399,6 +399,8 @@ class OSWorldBackend:
             value = json.loads(checkpoint)
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise OSWorldBackendError("invalid OSWorld reconnect checkpoint") from exc
+        if not isinstance(value, dict):
+            raise OSWorldBackendError("OSWorld reconnect checkpoint must be an object")
         if value.get("schema_version") != "pixelgym-osworld-live-reconnect-v1":
             raise OSWorldBackendError("unsupported OSWorld reconnect checkpoint schema")
         current = json.loads(self.checkpoint())

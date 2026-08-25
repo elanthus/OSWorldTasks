@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from types import MappingProxyType
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pixelgym.actions import KEY_ALLOWLIST_VERSION
 from pixelgym.serialization import canonical_json_bytes
@@ -58,6 +59,28 @@ def sha256_bytes(data: bytes) -> str:
 
 def content_digest(value: Any) -> str:
     return "sha256:" + sha256_bytes(canonical_json_bytes(value))
+
+
+def sandbox_endpoint_allowlist_digest(endpoint: str, *, policy_version: str) -> str:
+    """Validate one credential-free provider origin and bind it to a policy version."""
+
+    parts = urlsplit(endpoint)
+    if parts.scheme not in {"http", "https"} or not parts.hostname:
+        raise ValueError("provider endpoint must be an absolute HTTP(S) URL")
+    if parts.username is not None or parts.password is not None:
+        raise ValueError("provider endpoint must not contain URL userinfo")
+    if parts.path not in {"", "/"} or parts.query or parts.fragment:
+        raise ValueError("provider endpoint identity must contain only scheme, host, and port")
+    try:
+        port = parts.port
+    except ValueError as exc:
+        raise ValueError("provider endpoint has an invalid port") from exc
+    hostname = parts.hostname.lower()
+    normalized_host = f"[{hostname}]" if ":" in hostname else hostname
+    normalized = f"{parts.scheme}://{normalized_host}"
+    if port is not None:
+        normalized += f":{port}"
+    return content_digest({"policy": policy_version, "allowed_origins": [normalized]})
 
 
 def _plain_mapping(value: dict[str, Any]) -> MappingProxyType[str, Any]:
@@ -253,6 +276,12 @@ class SandboxManifest:
     def __post_init__(self) -> None:
         if not self.runtime_digest.startswith("sha256:"):
             raise ValueError("sandbox runtime must be content addressed")
+        expected_endpoint_digest = sandbox_endpoint_allowlist_digest(
+            self.provider_endpoint,
+            policy_version=self.network_policy_version,
+        )
+        if self.endpoint_allowlist_digest != expected_endpoint_digest:
+            raise ValueError("sandbox endpoint allowlist digest does not match provider endpoint")
         missing = self.REQUIRED_DENIALS - set(self.denied_capabilities)
         if missing:
             raise ValueError(f"sandbox manifest omits required denials: {sorted(missing)}")

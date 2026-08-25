@@ -14,7 +14,12 @@ from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
 from pixelgym.grounding.v5.admission import validate_task_admission
 from pixelgym.grounding.v5.backend import V5FakeBackend
-from pixelgym.grounding.v5.contracts import Partition, V5Task, WorkflowFamily
+from pixelgym.grounding.v5.contracts import (
+    Partition,
+    SandboxManifest,
+    V5Task,
+    WorkflowFamily,
+)
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER, NORMALIZED_1000_ADAPTER
 from pixelgym.grounding.v5.evidence import (
     CredentialValidationError,
@@ -31,6 +36,11 @@ from pixelgym.grounding.v5.metrics import (
     wilson_interval,
 )
 from pixelgym.grounding.v5.policies import Mutation, golden_actions, mutation_trace
+from pixelgym.grounding.v5.sandbox import (
+    DENIED_CAPABILITIES,
+    SANDBOX_POLICY_VERSION,
+    build_sandbox_manifest,
+)
 from pixelgym.grounding.v5.seeds import SEED_RECORDS, validate_seed_contract
 
 ROOT = Path(__file__).parents[2]
@@ -170,6 +180,58 @@ def test_v5_wrong_irreversible_commit_cannot_later_succeed() -> None:
         env.close()
 
 
+def test_v5_repair_control_only_appears_for_declared_recovery_error() -> None:
+    tasks = (generate_task(record.seed) for record in SEED_RECORDS)
+    task = next(task for task in tasks if any(stage.recovery_stage for stage in task.stages))
+    recovery_index = next(
+        index for index, stage in enumerate(task.stages) if stage.recovery_stage
+    )
+    backend = V5FakeBackend()
+    backend.reset(task.seed)
+    for stage in task.stages[:recovery_index]:
+        if stage.required_text:
+            backend.click(*backend.control_center("text_input"))
+            for character in stage.required_text:
+                backend.key(character)
+            backend.click(*backend.control_center("continue"))
+        else:
+            backend.click(*backend.control_center(stage.target_control_id))
+    recovery = task.stages[recovery_index]
+    wrong = next(
+        control for control in recovery.controls if control.control_id != recovery.target_control_id
+    )
+    backend.click(*backend.control_center(wrong.control_id))
+    assert "repair_implicated" not in {
+        control.control_id for control in backend.visible_controls()
+    }
+    backend.click(*backend.control_center(recovery.target_control_id))
+    assert [control.control_id for control in backend.visible_controls()] == [
+        "repair_implicated"
+    ]
+    checkpoint = backend.checkpoint()
+    restored = V5FakeBackend()
+    restored.restore(checkpoint)
+    restored.click(*restored.control_center("repair_implicated"))
+    assert restored.stage_index == recovery_index + 1
+
+
+def test_v5_text_control_order_and_geometry_follow_frozen_stage_controls() -> None:
+    seed = next(record.seed for record in SEED_RECORDS if record.variant == "twin_b")
+    task = generate_task(seed)
+    backend = V5FakeBackend()
+    backend.reset(seed)
+    backend.click(*backend.control_center(task.stages[0].target_control_id))
+    text_stage = task.stages[1]
+    visible = backend.visible_controls()
+    assert [control.control_id for control in visible] == [
+        control.control_id for control in text_stage.controls
+    ]
+    assert [control.bbox for control in visible] == [
+        (190, 430, 834, 488),
+        (190, 502, 834, 560),
+    ]
+
+
 def test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor() -> None:
     record = validate_task_admission(generate_task(5016))
     assert record["golden"]["reward_sum"] == 1.0
@@ -217,6 +279,35 @@ def test_v5_credential_validator_fails_closed_without_echoing_candidate(value: o
         validate_credential_free(value)
     assert "not-echoed" not in str(captured.value)
     assert "abcdefghijklmnop" not in str(captured.value)
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "https://user:password@example.invalid",
+        "https://example.invalid?api_key=secret",
+        "https://example.invalid/provider",
+    ],
+)
+def test_v5_sandbox_manifest_rejects_non_origin_or_credential_endpoint(
+    endpoint: str,
+) -> None:
+    with pytest.raises(ValueError):
+        build_sandbox_manifest(
+            runtime_digest="sha256:" + "1" * 64,
+            provider_endpoint=endpoint,
+        )
+
+
+def test_v5_sandbox_manifest_rejects_forged_endpoint_binding() -> None:
+    with pytest.raises(ValueError, match="allowlist digest"):
+        SandboxManifest(
+            runtime_digest="sha256:" + "1" * 64,
+            network_policy_version=SANDBOX_POLICY_VERSION,
+            provider_endpoint="https://provider.example.invalid",
+            endpoint_allowlist_digest="sha256:" + "0" * 64,
+            denied_capabilities=DENIED_CAPABILITIES,
+        )
 
 
 def test_v5_authoritative_redaction_binding_and_integrity(tmp_path: Path) -> None:
@@ -292,3 +383,15 @@ def test_core_fake_backend_v5_checkpoint_restores_exact_state() -> None:
     restored.verify_resume_record(record, step_count=2)
     assert restored.checkpoint() == checkpoint
     assert (restored.screenshot() == backend.screenshot()).all()
+
+
+@pytest.mark.parametrize("checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v1"}'])
+def test_core_fake_backend_v5_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
+    with pytest.raises(ValueError):
+        FakeBackend().restore(checkpoint)
+
+
+@pytest.mark.parametrize("checkpoint", [b"[]", b'{"schema_version":"pixelgym-v5-fake-checkpoint-v1"}'])
+def test_v5_fake_backend_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
+    with pytest.raises(ValueError):
+        V5FakeBackend().restore(checkpoint)

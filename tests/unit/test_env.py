@@ -22,7 +22,8 @@ from gymnasium.utils.env_checker import check_env
 from pixelgym.actions import KEY_ALLOWLIST, ActionType, build_action_space
 from pixelgym.backends.base import Backend
 from pixelgym.backends.fake import FakeBackend
-from pixelgym.env import BackendContractError, PixelGuiEnv
+from pixelgym.env import DEFAULT_INSTRUCTION, BackendContractError, PixelGuiEnv
+from pixelgym.task_spec import TaskSpec
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.ui import WidgetId
 
@@ -743,6 +744,37 @@ def test_stepping_before_reset_raises():
     env = PixelGuiEnv(FakeBackend())
 
     with pytest.raises(RuntimeError):
+        env.step(_noop())
+
+
+def test_restore_episode_initializes_bookkeeping_without_resetting_backend():
+    backend = FakeBackend()
+    record = backend.reset(7)
+    env = PixelGuiEnv(backend)
+    task = TaskSpec.from_generated(
+        record,
+        instruction=DEFAULT_INSTRUCTION,
+        app_url=backend.app_url,
+        max_episode_steps=200,
+    )
+    env.restore_episode(task, step_count=0)
+    _observation, reward, terminated, truncated, info = env.step(_noop())
+    assert (reward, terminated, truncated) == (0.0, False, False)
+    assert info == {"task_id": task.task_id}
+
+
+def test_restore_episode_preserves_step_limit_end_guard():
+    backend = FakeBackend()
+    record = backend.reset(7)
+    env = PixelGuiEnv(backend, max_episode_steps=1)
+    task = TaskSpec.from_generated(
+        record,
+        instruction=DEFAULT_INSTRUCTION,
+        app_url=backend.app_url,
+        max_episode_steps=1,
+    )
+    env.restore_episode(task, step_count=1)
+    with pytest.raises(RuntimeError, match="after the episode already ended"):
         env.step(_noop())
 
 

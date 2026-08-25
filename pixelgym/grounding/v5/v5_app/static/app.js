@@ -10,6 +10,7 @@
     stageIndex: 0,
     textValue: "",
     visibleError: null,
+    repairPending: false,
     intentionalErrorsEntered: [],
     irreversibleFailure: false,
     submitted: false,
@@ -19,6 +20,7 @@
     state.stageIndex += 1;
     state.textValue = "";
     state.visibleError = null;
+    state.repairPending = false;
     if (state.stageIndex === task.stages.length) state.submitted = true;
     render();
   }
@@ -31,7 +33,8 @@
   function activate(controlId) {
     const stage = task.stages[state.stageIndex];
     if (controlId === "repair_implicated") {
-      advance();
+      if (state.repairPending) advance();
+      else fail("No declared recovery is pending.");
       return;
     }
     if (stage.kind === "text") {
@@ -53,6 +56,7 @@
     }
     if (internal.recovery_stages[state.stageIndex] && !state.intentionalErrorsEntered.includes(state.stageIndex)) {
       state.intentionalErrorsEntered.push(state.stageIndex);
+      state.repairPending = true;
       fail("Verification rejected this selection: repair the implicated reference only.");
       return;
     }
@@ -60,12 +64,14 @@
   }
 
   function controlMarkup(stage) {
-    if (state.visibleError && internal.recovery_stages[state.stageIndex]) {
+    if (state.repairPending) {
       return '<button data-control-id="repair_implicated">Repair the implicated verification selection</button>';
     }
     if (stage.kind === "text") {
-      return '<input data-control-id="text_input" aria-label="Short code" maxlength="5" value="' + state.textValue + '">' +
-        '<button data-control-id="continue" data-role="continue">Continue</button>';
+      return stage.controls.map((control) => control.role === "input"
+        ? '<input data-control-id="text_input" aria-label="Short code" maxlength="5">'
+        : '<button data-control-id="continue" data-role="continue">Continue</button>'
+      ).join("");
     }
     return stage.controls.map((control) =>
       '<button data-control-id="' + control.control_id + '">' + control.label + '</button>'
@@ -86,7 +92,10 @@
         '<div class="controls">' + controlMarkup(stage) + '</div>';
       root.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => activate(button.dataset.controlId)));
       const input = root.querySelector("input");
-      if (input) input.addEventListener("input", () => { state.textValue = input.value; });
+      if (input) {
+        input.value = state.textValue;
+        input.addEventListener("input", () => { state.textValue = input.value; });
+      }
     }
     ready.dataset.ready = "true";
   }
