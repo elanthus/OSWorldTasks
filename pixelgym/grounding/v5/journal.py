@@ -19,6 +19,7 @@ TerminalAttemptKind = Literal[
     "confirmed_no_response_timeout",
     "unknown_outcome_infrastructure_failure",
 ]
+ControlRequestKind = Literal["cancel", "reconcile"]
 TERMINAL_ATTEMPT_KINDS = frozenset(
     {
         "attempt_completed",
@@ -217,6 +218,27 @@ class V5AttemptJournal:
             },
         )
 
+    def record_control_request_reserved(
+        self,
+        identity: AttemptIdentity,
+        *,
+        request_kind: ControlRequestKind,
+    ) -> JournalEvent:
+        """Durably reserve one provider control call before it can reach the wire."""
+
+        return self.append_event(
+            event_key=f"{identity.key}/control_request/{request_kind}",
+            kind="provider_control_request_reserved",
+            trial_id=identity.trial_id,
+            step_index=identity.step_index,
+            attempt_index=identity.attempt_index,
+            payload={
+                "identity": identity.key,
+                "request_kind": request_kind,
+                "control_request_reservation": 1,
+            },
+        )
+
     def persist_canonical_response(
         self, identity: AttemptIdentity, response: dict[str, Any]
     ) -> tuple[JournalEvent, bytes]:
@@ -297,6 +319,18 @@ class V5AttemptJournal:
             (identity.trial_id, identity.step_index, identity.attempt_index),
         ).fetchone()
         return None if row is None else self._event_from_row(row)
+
+    def call_counts(self) -> tuple[int, int]:
+        """Return run-wide provider reservations reconstructed from durable events."""
+
+        model_attempts = 0
+        control_requests = 0
+        for event in self.events():
+            if event.kind == "attempt_started":
+                model_attempts += int(event.payload["model_attempt_reservation"])
+            elif event.kind == "provider_control_request_reserved":
+                control_requests += int(event.payload["control_request_reservation"])
+        return model_attempts, control_requests
 
     def integrity_report(self) -> dict[str, Any]:
         object_rows = self._connection.execute("SELECT digest, kind, data FROM objects").fetchall()

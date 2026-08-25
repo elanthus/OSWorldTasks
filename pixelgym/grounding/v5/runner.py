@@ -21,7 +21,11 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.evidence import validate_credential_free
-from pixelgym.grounding.v5.journal import TerminalAttemptKind, V5AttemptJournal
+from pixelgym.grounding.v5.journal import (
+    ControlRequestKind,
+    TerminalAttemptKind,
+    V5AttemptJournal,
+)
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import TaskSpec
 
@@ -257,8 +261,18 @@ class V5Runner:
         self.approved_caps = approved_caps
         self.interrupt_after = interrupt_after
         self.deadline_executor = deadline_executor or DaemonDeadlineExecutor()
-        self.model_attempts = 0
-        self.control_requests = 0
+
+    @property
+    def model_attempts(self) -> int:
+        """Run-wide model reservations, including those made by prior processes."""
+
+        return self.journal.call_counts()[0]
+
+    @property
+    def control_requests(self) -> int:
+        """Run-wide control reservations, including unknown post-crash outcomes."""
+
+        return self.journal.call_counts()[1]
 
     def run(self, *, trial_id: str, task: V5Task, backend: V5FakeBackend | None = None) -> EpisodeResult:
         if not trial_id:
@@ -374,7 +388,6 @@ class V5Runner:
             pre_call_checkpoint=state,
         )
         self._boundary("attempt_started")
-        self._reserve_model_attempt()
         bounded_send = self.deadline_executor.execute(
             lambda: self.transport.send(
                 request,
@@ -578,7 +591,8 @@ class V5Runner:
             return {"response": response_bytes, "state": post_state, "classification": "response"}
         failure_code = outcome.failure_code or outcome.status
         if outcome.status == "deadline" and self.manifest.max_cancellation_requests_per_attempt:
-            self._reserve_control_request()
+            if not self._reserve_control_request(identity, "cancel"):
+                raise RuntimeError("cancellation request outcome is already unknown")
             bounded_cancellation = self.deadline_executor.execute(
                 lambda: self.transport.cancel(
                     idempotency_key=idempotency_key, mode=self.manifest.cancellation_mode
@@ -603,7 +617,8 @@ class V5Runner:
                     "classification": "request_failure",
                 }
         if self.manifest.max_reconciliation_requests_per_attempt:
-            self._reserve_control_request()
+            if not self._reserve_control_request(identity, "reconcile"):
+                raise RuntimeError("reconciliation request outcome is already unknown")
             bounded_reconciliation = self.deadline_executor.execute(
                 lambda: self.transport.reconcile(
                     idempotency_key=idempotency_key,
@@ -649,20 +664,26 @@ class V5Runner:
         if self.approved_caps.environment_action_cap < task.max_episode_steps:
             raise RuntimeError("approved environment-action cap is below the assigned task bound")
 
-    def _reserve_model_attempt(self) -> None:
-        self._check_model_attempt_cap()
-        self.model_attempts += 1
-
     def _check_model_attempt_cap(self) -> None:
-        if self.model_attempts >= self.approved_caps.model_attempt_cap:
+        model_attempts, control_requests = self.journal.call_counts()
+        if model_attempts >= self.approved_caps.model_attempt_cap:
             raise RuntimeError("approved model-attempt cap reached")
-
-    def _reserve_control_request(self) -> None:
-        if self.control_requests >= self.approved_caps.provider_control_request_cap:
-            raise RuntimeError("approved provider-control-request cap reached")
-        if self.model_attempts + self.control_requests >= self.approved_caps.provider_wire_request_cap:
+        if model_attempts + control_requests >= self.approved_caps.provider_wire_request_cap:
             raise RuntimeError("approved provider-wire-request cap reached")
-        self.control_requests += 1
+
+    def _reserve_control_request(
+        self, identity: AttemptIdentity, request_kind: ControlRequestKind
+    ) -> bool:
+        event_key = f"{identity.key}/control_request/{request_kind}"
+        if self.journal.event(event_key) is not None:
+            return False
+        model_attempts, control_requests = self.journal.call_counts()
+        if control_requests >= self.approved_caps.provider_control_request_cap:
+            raise RuntimeError("approved provider-control-request cap reached")
+        if model_attempts + control_requests >= self.approved_caps.provider_wire_request_cap:
+            raise RuntimeError("approved provider-wire-request cap reached")
+        self.journal.record_control_request_reserved(identity, request_kind=request_kind)
+        return True
 
     def _boundary(self, name: str) -> None:
         if self.interrupt_after == name:
@@ -862,7 +883,13 @@ class V5Runner:
             )
         if "attempt_started" in by_kind:
             started = by_kind["attempt_started"]
-            self._reserve_control_request()
+            identity = AttemptIdentity(trial_id, step_index, 0)
+            if not self._reserve_control_request(identity, "reconcile"):
+                return {
+                    "classification": "infrastructure_failure",
+                    "reason": "control_request_reserved_without_settlement",
+                    "redispatched": False,
+                }
             bounded_reconciliation = self.deadline_executor.execute(
                 lambda: self.transport.reconcile(
                     idempotency_key=started.payload["idempotency_key"],
@@ -877,7 +904,6 @@ class V5Runner:
             )
             if not isinstance(reconciled, TransportOutcome):
                 raise TypeError("provider reconciliation returned an invalid outcome")
-            identity = AttemptIdentity(trial_id, step_index, 0)
             pre_state = self.journal.get_object(
                 started.payload["pre_call_checkpoint_digest"],
                 expected_kind="policy_checkpoint",

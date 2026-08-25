@@ -81,6 +81,11 @@ canonical response before the policy reducer or parser receives it. A pure reduc
 policy checkpoint from those exact bytes. Validation reads only the durable candidate. The runner
 stores `dispatch_started` before it invokes the backend.
 
+Every model attempt is counted by its durable `attempt_started` reservation. Every cancellation or
+reconciliation call receives its own durable control-request reservation before it can reach the
+wire. A restarted runner reconstructs the run-wide model, control, and total-wire counts from those
+records; a reserved control request with no settled outcome is not reissued and fails closed.
+
 Recovery never issues a second model request for an attempt with an unknown post-send outcome.
 Before dispatch, it restores and verifies the task ID, backend identity, step count, screenshot,
 application state, and checkpoint digest. A `dispatch_started` record without
