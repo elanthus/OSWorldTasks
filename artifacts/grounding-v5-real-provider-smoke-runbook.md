@@ -1,6 +1,6 @@
 # PixelGym v5 real-provider smoke-test runbook
 
-**Status:** proposed procedure; no provider call or spend is authorized
+**Status:** implemented procedure; completed diagnostic evidence does not authorize further calls
 
 **Use this when:** a candidate v5 provider adapter and policy manifest are implemented, the owner
 wants a few real-provider checks before D5.6 calibration approval, and no calibration or
@@ -174,3 +174,7 @@ summary includes, per policy:
 
 Smoke success does not authorize D5.6 calibration. The owner must separately approve the complete
 [D5.6 calibration package](grounding-v5-d56-calibration-approval.md).
+
+For the separately bounded Qwen3-VL calibration pilot, use the
+[Qwen3-VL calibration-pilot runbook](grounding-v5-qwen3-vl-calibration-pilot-runbook.md). That
+pilot is not the four-policy D5.6 calibration package.

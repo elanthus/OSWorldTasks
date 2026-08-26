@@ -274,11 +274,23 @@ class V5Runner:
 
         return self.journal.call_counts()[1]
 
-    def run(self, *, trial_id: str, task: V5Task, backend: V5FakeBackend | None = None) -> EpisodeResult:
+    def run(
+        self,
+        *,
+        trial_id: str,
+        task: V5Task,
+        backend: V5FakeBackend | None = None,
+        action_limit: int | None = None,
+    ) -> EpisodeResult:
         if not trial_id:
             raise ValueError("trial_id is required")
+        effective_action_limit = task.max_episode_steps if action_limit is None else action_limit
+        if type(effective_action_limit) is not int or not (
+            1 <= effective_action_limit <= task.max_episode_steps
+        ):
+            raise ValueError("action_limit must be within the task action horizon")
         backend = backend or V5FakeBackend()
-        self._preflight(task, backend)
+        self._preflight(task, backend, required_action_limit=effective_action_limit)
         env = PixelGuiEnv(
             backend,
             instruction=task.instruction,
@@ -313,7 +325,7 @@ class V5Runner:
                     "environment_resume_digest": initial_resume_digest,
                 },
             )
-            for step_index in range(task.max_episode_steps):
+            for step_index in range(effective_action_limit):
                 outcome = self._act(
                     trial_id=trial_id,
                     step_index=step_index,
@@ -336,8 +348,12 @@ class V5Runner:
                 if outcome["truncated"]:
                     classification = "step_limit_truncation"
                     break
-            else:  # pragma: no cover - PixelGuiEnv truncates on the final action
-                classification = "step_limit_truncation"
+            else:
+                classification = (
+                    "step_limit_truncation"
+                    if effective_action_limit == task.max_episode_steps
+                    else "pilot_action_limit"
+                )
         finally:
             self.policy.close()
             env.close()
@@ -659,11 +675,13 @@ class V5Runner:
             ),
         }
 
-    def _preflight(self, task: V5Task, backend: V5FakeBackend) -> None:
+    def _preflight(
+        self, task: V5Task, backend: V5FakeBackend, *, required_action_limit: int
+    ) -> None:
         validate_credential_free(task.canonical_dict())
         validate_credential_free(self.manifest.identity_fields())
         validate_credential_free({"app_url": backend.app_url})
-        if self.approved_caps.environment_action_cap < task.max_episode_steps:
+        if self.approved_caps.environment_action_cap < required_action_limit:
             raise RuntimeError("approved environment-action cap is below the assigned task bound")
 
     def _reserve_control_request(

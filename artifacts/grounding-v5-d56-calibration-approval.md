@@ -1,6 +1,7 @@
 # PixelGym v5 D5.6 calibration approval packet
 
-**Status:** draft for owner review; no provider call or spend is authorized
+**Status:** draft for owner review; the separate bounded Qwen3-VL pilot does not authorize the
+full four-policy D5.6 calibration
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -32,11 +33,11 @@ The owner should approve calibration only after recording evidence for every row
 | Fake-backend recovery | Interruption tests for every supported durable boundary | Implemented in the v5 unit suite |
 | OS-level policy isolation | Real OS enforcement test with an allowed fake endpoint and denied unauthorized channels | Implemented and exercised on Darwin |
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
-| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Not implemented or frozen |
-| Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Not frozen |
-| Price catalog | Provider-published prices captured with source URL and effective timestamp | Not selected |
-| Plan-only caps | Per-policy phase caps generated from the final manifest | Pending final policy manifests |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Pending separate smoke approval |
+| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Qwen3-VL stateful pilot implemented; remaining panel slots pending |
+| Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Bound by the generated Qwen3-VL pilot plan; full panel pending |
+| Price catalog | Provider-published prices captured with source URL and effective timestamp | Qwen3-VL pilot price record implemented; full panel pending |
+| Plan-only caps | Per-policy phase caps generated from the final manifest | Bounded Qwen3-VL pilot implemented; full D5.6 plans pending |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Qwen3-VL one-call diagnostics retained locally; complete panel smoke pending |
 
 ## Policy panel decision
 

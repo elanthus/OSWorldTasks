@@ -139,6 +139,42 @@ def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_p
     assert journal.integrity_report()["event_count"] > 0
 
 
+def test_v5_runner_supports_a_bounded_multi_task_pilot_horizon(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "journal.sqlite")
+    transport = ScriptedTransport()
+    result = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(2, 2, 4, 6),
+    ).run(trial_id="trial-two-action-pilot", task=task, action_limit=2)
+
+    assert result.classification == "pilot_action_limit"
+    assert result.environment_actions == 2
+    assert result.model_attempts == 2
+    assert len(transport.model_requests) == 2
+
+
+@pytest.mark.parametrize("action_limit", [0, -1, 10_000, 1.5, True])
+def test_v5_runner_rejects_invalid_pilot_action_limit(
+    tmp_path: Path, action_limit: object
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    runner = V5Runner(
+        journal=V5AttemptJournal(tmp_path / f"journal-{action_limit}.sqlite"),
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    )
+    with pytest.raises(ValueError, match="action_limit"):
+        runner.run(trial_id="trial-invalid-limit", task=task, action_limit=action_limit)  # type: ignore[arg-type]
+
+
 def test_v5_deadline_settles_once_without_hidden_retry(tmp_path: Path) -> None:
     seed = 5000
     journal = V5AttemptJournal(tmp_path / "journal.sqlite")
