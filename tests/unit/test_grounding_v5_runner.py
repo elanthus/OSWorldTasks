@@ -6,6 +6,7 @@ import json
 import sqlite3
 import threading
 from collections import Counter
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -14,11 +15,15 @@ from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
     AttemptIdentity,
     CallCaps,
+    Partition,
     PolicyManifest,
+    content_digest,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
+from pixelgym.grounding.v5.fixtures import scripted_policy_manifest
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import JournalConflictError, V5AttemptJournal
+from pixelgym.grounding.v5.manifests import partition_manifest
 from pixelgym.grounding.v5.planning import call_cap_plan
 from pixelgym.grounding.v5.policies import golden_actions
 from pixelgym.grounding.v5.runner import (
@@ -29,6 +34,9 @@ from pixelgym.grounding.v5.runner import (
     V5Runner,
 )
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest, validate_capability_handles
+from pixelgym.serialization import canonical_json_bytes
+
+ROOT = Path(__file__).parents[2]
 
 
 def policy_manifest() -> PolicyManifest:
@@ -362,12 +370,90 @@ def test_v5_capability_contract_rejects_all_forbidden_handles() -> None:
 
 def test_v5_plan_only_command_formula_makes_no_provider_calls() -> None:
     manifest = policy_manifest()
-    plan = call_cap_plan(manifest)
+    partitions = {partition: partition_manifest(partition) for partition in Partition}
+    plan = call_cap_plan(
+        manifest,
+        partition_manifests=partitions,
+        approved_calibration_manifest_digest=(
+            partitions[Partition.CALIBRATION]["manifest_digest"]
+        ),
+    )
     assert plan["provider_calls_made"] == 0
+    assert plan["policy_manifest_digest"] == content_digest(manifest.to_dict())
+    assert plan["partition_manifest_digests"] == {
+        partition.value: partitions[partition]["manifest_digest"]
+        for partition in Partition
+    }
     for phase in plan["phases"].values():
         assert phase["provider_wire_request_cap"] == (
             phase["model_attempt_cap"] + phase["provider_control_request_cap"]
         )
+
+
+def test_v5_call_plan_rejects_tampered_partition_manifest() -> None:
+    partitions = {partition: partition_manifest(partition) for partition in Partition}
+    partitions[Partition.CALIBRATION]["records"][0]["max_episode_steps"] += 1
+    with pytest.raises(ValueError, match="calibration partition manifest digest mismatch"):
+        call_cap_plan(
+            policy_manifest(),
+            partition_manifests=partitions,
+            approved_calibration_manifest_digest=(
+                partitions[Partition.CALIBRATION]["manifest_digest"]
+            ),
+        )
+
+
+def test_v5_call_plan_rejects_unapproved_calibration_manifest_digest() -> None:
+    partitions = {partition: partition_manifest(partition) for partition in Partition}
+    with pytest.raises(
+        ValueError, match="approved calibration partition manifest digest mismatch"
+    ):
+        call_cap_plan(
+            policy_manifest(),
+            partition_manifests=partitions,
+            approved_calibration_manifest_digest="sha256:" + "0" * 64,
+        )
+
+
+def test_v5_call_plan_uses_sealed_partition_action_caps() -> None:
+    partitions = {partition: partition_manifest(partition) for partition in Partition}
+    revised = deepcopy(partitions[Partition.CALIBRATION])
+    revised["records"][0]["max_episode_steps"] += 1
+    unsigned = dict(revised)
+    unsigned.pop("manifest_digest")
+    revised["manifest_digest"] = content_digest(unsigned)
+    partitions[Partition.CALIBRATION] = revised
+
+    plan = call_cap_plan(
+        policy_manifest(),
+        partition_manifests=partitions,
+        approved_calibration_manifest_digest=revised["manifest_digest"],
+    )
+    assert plan["phases"]["calibration"]["environment_action_cap"] == sum(
+        record["max_episode_steps"] for record in revised["records"]
+    )
+
+
+def test_v5_checked_in_scripted_cap_plan_uses_checked_in_partition_bytes() -> None:
+    partitions = {
+        partition: json.loads(
+            (
+                ROOT
+                / "artifacts/grounding-v5-manifests"
+                / f"{partition.value}.json"
+            ).read_text(encoding="utf-8")
+        )
+        for partition in Partition
+    }
+    expected = call_cap_plan(
+        scripted_policy_manifest(),
+        partition_manifests=partitions,
+        approved_calibration_manifest_digest=(
+            partitions[Partition.CALIBRATION]["manifest_digest"]
+        ),
+    )
+    stored = ROOT / "artifacts/grounding-v5-scripted-call-cap-plan.json"
+    assert stored.read_bytes() == canonical_json_bytes(expected) + b"\n"
 
 
 def test_v5_model_cap_is_checked_before_attempt_started_or_transport(tmp_path: Path) -> None:

@@ -86,7 +86,9 @@ the price record or approval packet.
 Generate a free plan for each final policy manifest from the repository root:
 
 ```bash
-python scripts/plan_grounding_v5_calls.py path/to/policy-manifest.json
+python scripts/plan_grounding_v5_calls.py path/to/policy-manifest.json \
+  --partition-manifest-directory artifacts/grounding-v5-manifests \
+  --approved-calibration-partition-digest sha256:APPROVED_DIGEST
 ```
 
 The output must report `provider_calls_made: 0` and separate caps for calibration, confirmatory
@@ -141,9 +143,12 @@ Approved by: <project owner>
 
 Before accepting the approval, canonicalize and verify each referenced policy manifest and confirm
 that its digest binds the approved provider endpoint, system-prompt digest, parser version, and
-transport retry rule. Verify all three frozen partition-manifest digests, and confirm that every
-approved calibration cap plan reproduces byte-for-byte from one approved policy manifest and the
-exact approved calibration partition manifest.
+transport retry rule. Generate each cap plan from the exact approved partition-manifest files. The
+planner verifies their embedded digests, derives caps from their stored `max_episode_steps` records
+without regenerating tasks, rejects a calibration digest different from the separately supplied
+approved digest, and binds the policy and partition digests into the plan digest. Confirm the
+approved plan and its digest reproduce byte-for-byte and name the exact approved policy and
+calibration partition digests.
 
 An approval with a missing binding, identity, cap, price, partition, policy manifest, or smoke
 evidence digest is incomplete and authorizes zero calibration calls.

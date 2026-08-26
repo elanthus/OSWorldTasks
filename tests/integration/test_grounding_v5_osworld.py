@@ -35,11 +35,13 @@ def test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state(
     def stop_loss(_signum: int, _frame: object) -> None:
         raise TimeoutError("v5 OSWorld live-reconnect test exceeded the 90-minute stop-loss")
 
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_alarm_seconds = signal.alarm(0)
     alarm_started_at = time.monotonic()
-    previous_handler = signal.signal(signal.SIGALRM, stop_loss)
-    previous_alarm_seconds = signal.alarm(90 * 60)
     backend: OSWorldBackend | None = None
     try:
+        signal.signal(signal.SIGALRM, stop_loss)
+        signal.alarm(90 * 60)
         backend = OSWorldBackend(OSWorldBackendConfig(guest_image_path=GUEST_IMAGE))
         backend.reset(7)
         initial_checkpoint = backend.checkpoint()
