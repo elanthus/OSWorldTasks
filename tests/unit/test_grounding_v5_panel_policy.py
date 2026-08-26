@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import io
 import json
+import urllib.error
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Self
 
 import pytest
 
+from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
     LLAMA_STATEFUL,
@@ -246,6 +249,64 @@ def test_shared_spend_ledger_blocks_before_wire_using_slot_maximum() -> None:
     assert outcome.failure_code == "aggregate_spend_guard"
     assert not called
     assert ledger.wire_requests_sent == 0
+
+
+def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
+    error_body = json.dumps(
+        {
+            "error": {
+                "code": 404,
+                "type": "no_available_provider",
+                "message": "sensitive provider response must not be retained",
+                "metadata": {
+                    "provider_name": "Google AI Studio",
+                    "raw": "sensitive upstream response must not be retained",
+                },
+            }
+        }
+    ).encode("utf-8")
+
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.HTTPError(
+            "https://openrouter.ai/api/v1/chat/completions",
+            404,
+            "Not Found",
+            None,
+            io.BytesIO(error_body),
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(GEMINI_STATEFUL)
+    transport = OpenRouterPanelTransport(
+        GEMINI_STATEFUL,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+    )
+    outcome = transport.send(
+        policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3)),
+        idempotency_key="attempt-http-error",
+        deadline_seconds=1.0,
+    )
+
+    assert outcome.status == "unknown"
+    assert outcome.failure_code == "provider_request_unknown"
+    assert ledger.blocked
+    assert transport.records == [
+        {
+            "idempotency_key": "attempt-http-error",
+            "status": "unknown",
+            "failure_code": "HTTPError",
+            "http_status": 404,
+            "error_body_prefix_digest": "sha256:" + sha256_bytes(error_body),
+            "error_body_bytes_read": len(error_body),
+            "error_body_truncated": False,
+            "provider_error_code": 404,
+            "provider_error_type": "no_available_provider",
+            "upstream_provider": "Google AI Studio",
+        }
+    ]
+    assert "sensitive" not in json.dumps(transport.records)
 
 
 def test_panel_transport_blocks_after_anomalous_response_cost() -> None:

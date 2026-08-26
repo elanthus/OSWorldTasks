@@ -1,7 +1,7 @@
 # PixelGym v5 four-policy D5.6 calibration runbook
 
-**Status:** no-call workflow implemented; exact panel-smoke and calibration plan digests are not
-yet approved
+**Status:** the first approved panel smoke is frozen after an infrastructure failure; a replacement
+panel-smoke plan and the calibration plan are not yet approved
 
 ## Outcome
 
@@ -30,7 +30,7 @@ First commit the implementation and verify that tracked files are clean. Generat
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --plan-only \
-  --output artifacts/grounding-v5-d56-panel-smoke-plan.json
+  --output artifacts/grounding-v5-d56-panel-smoke-plan-v2.json
 ```
 
 The plan must report four development tasks, four environment actions, four model attempts, zero
@@ -42,15 +42,30 @@ Execute only the approved plan into a fresh local restricted-evidence directory:
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --execute \
-  --plan artifacts/grounding-v5-d56-panel-smoke-plan.json \
+  --plan artifacts/grounding-v5-d56-panel-smoke-plan-v2.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --output artifacts/grounding-v5-d56-panel-smoke-run
+  --output artifacts/grounding-v5-d56-panel-smoke-run-v2
 ```
 
 Stop unless every policy reaches `pilot_action_limit`, all four response identities and routes
 match, every action parses and validates through its frozen adapter, usage and cost are present,
 and journal integrity verifies. Raw canonical responses remain in the local SQLite journal and are
 not committed or published.
+
+### Frozen first smoke
+
+The owner approved plan
+`sha256:7b49a52754b25435f89a534bbd3c02a64963e16cabb60ad1839e3883f9a054fd` on
+2026-08-26. Slot A sent one request and received an HTTP error before any environment action. The
+runner classified the episode as `infrastructure_failure`, attributed no cost, closed the journal,
+and did not attempt slots B, C, or D. The run remains immutable in the local restricted-evidence
+directory `artifacts/grounding-v5-d56-panel-smoke-run/`.
+
+The no-call audit verified that the live OpenRouter model metadata still lists the selected Gemini
+model, Google AI Studio route, image input, and requested inference parameters. The failed run did
+not retain the HTTP status or a safe provider error code, so it cannot establish the exact rejection
+reason. The transport now retains bounded non-message HTTP diagnostics for a separately approved
+replacement smoke. Do not reuse the consumed digest or overwrite either first-run artifact.
 
 ## Phase 2: exact D5.6 calibration plan
 
@@ -59,7 +74,7 @@ After the smoke evidence verifies, generate the calibration plan:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v2 \
   --output artifacts/grounding-v5-d56-calibration-plan.json
 ```
 
@@ -75,7 +90,7 @@ python scripts/run_grounding_v5_d56_calibration.py \
   --execute \
   --plan artifacts/grounding-v5-d56-calibration-plan.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v2 \
   --output artifacts/grounding-v5-d56-calibration-run
 ```
 

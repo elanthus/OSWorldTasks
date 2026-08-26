@@ -29,6 +29,7 @@ from pixelgym.serialization import canonical_json_bytes
 
 ENDPOINT_ORIGIN = "https://openrouter.ai"
 ENDPOINT = f"{ENDPOINT_ORIGIN}/api/v1/chat/completions"
+MAX_HTTP_ERROR_METADATA_BYTES = 64 * 1024
 MAX_OUTPUT_TOKENS = 4_096
 CONTEXT_LIMIT = 131_072
 MAX_PROMPT_TOKENS = CONTEXT_LIMIT - MAX_OUTPUT_TOKENS
@@ -418,6 +419,17 @@ class OpenRouterPanelTransport:
                 wire, timeout=min(self.timeout_seconds, deadline_seconds)
             ) as response:
                 body = json.load(response)
+        except urllib.error.HTTPError as exc:
+            self.ledger.block()
+            self.records.append(
+                {
+                    "idempotency_key": idempotency_key,
+                    "status": "unknown",
+                    "failure_code": type(exc).__name__,
+                    **_safe_http_error_metadata(exc),
+                }
+            )
+            return TransportOutcome("unknown", failure_code="provider_request_unknown")
         except (
             OSError,
             TimeoutError,
@@ -490,6 +502,46 @@ class OpenRouterPanelTransport:
     ) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="reconciliation_disabled")
+
+
+def _safe_http_error_metadata(exc: urllib.error.HTTPError) -> dict[str, Any]:
+    """Retain bounded, non-message HTTP diagnostics without storing provider content."""
+
+    metadata: dict[str, Any] = {"http_status": exc.code}
+    try:
+        body = exc.read(MAX_HTTP_ERROR_METADATA_BYTES + 1)
+    except (OSError, http.client.HTTPException) as read_error:
+        metadata["error_body_read_failure"] = type(read_error).__name__
+        return metadata
+    retained = body[:MAX_HTTP_ERROR_METADATA_BYTES]
+    metadata.update(
+        {
+            "error_body_prefix_digest": "sha256:" + sha256_bytes(retained),
+            "error_body_bytes_read": len(body),
+            "error_body_truncated": len(body) > MAX_HTTP_ERROR_METADATA_BYTES,
+        }
+    )
+    if metadata["error_body_truncated"]:
+        return metadata
+    try:
+        value = json.loads(retained)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return metadata
+    if not isinstance(value, dict) or not isinstance(value.get("error"), dict):
+        return metadata
+    error = value["error"]
+    for source, target in (("code", "provider_error_code"), ("type", "provider_error_type")):
+        field = error.get(source)
+        if isinstance(field, (int, float, bool)) or (
+            isinstance(field, str) and len(field) <= 128
+        ):
+            metadata[target] = field
+    provider_metadata = error.get("metadata")
+    if isinstance(provider_metadata, dict):
+        provider_name = provider_metadata.get("provider_name")
+        if isinstance(provider_name, str) and len(provider_name) <= 128:
+            metadata["upstream_provider"] = provider_name
+    return metadata
 
 
 def _file_digest(path: Path) -> str:
