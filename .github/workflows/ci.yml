@@ -78,4 +78,6 @@ jobs:
         run: python -m pip install -e ".[dev]"
 
       - name: Run fast suite
-        run: python -m pytest -q -n 4 --dist worksteal tests/unit
+        run: >-
+          python -m pytest -vv -n 4 --dist worksteal
+          -o faulthandler_timeout=60 --durations=25 tests/unit
