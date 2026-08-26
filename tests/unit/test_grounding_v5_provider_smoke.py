@@ -58,17 +58,11 @@ def _repository(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_checked_in_smoke_input_matches_current_fake_backend_renderer() -> None:
+def test_checked_in_smoke_input_digest_is_frozen() -> None:
     repository_root = Path(__file__).resolve().parents[2]
-    backend = V5FakeBackend()
-    backend.reset(provider_smoke.DEVELOPMENT_SEED)
-    try:
-        rendered_pixels = backend.screenshot().tobytes()
-    finally:
-        backend.close()
-    with Image.open(repository_root / provider_smoke.SCREENSHOT_PATH) as image:
-        checked_in_pixels = image.convert("RGB").tobytes()
-    assert checked_in_pixels == rendered_pixels
+    assert provider_smoke._file_digest(
+        repository_root / provider_smoke.SCREENSHOT_PATH
+    ) == "sha256:2bc39b43f359da959e6437025d38fd279518a0b1afb7410fc2d18633352e5be2"
 
 
 def test_plan_is_one_call_development_only_and_under_approved_cap(
@@ -150,6 +144,34 @@ def test_execute_smoke_rejects_noncanonical_plan_field_before_provider_call(
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
 
     with pytest.raises(ValueError, match="canonical request configuration"):
+        provider_smoke.execute_smoke(
+            root,
+            plan=plan,
+            approved_plan_sha256=provider_smoke.plan_digest(plan),
+            provider=provider,
+        )
+
+    assert provider.calls == 0
+
+
+def test_execute_smoke_rejects_image_that_differs_from_runtime_renderer_before_provider_call(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = _repository(tmp_path)
+    Image.new("RGB", (1024, 768), "black").save(root / provider_smoke.SCREENSHOT_PATH)
+
+    def git(_root: Path, *args: str) -> str:
+        return (
+            ""
+            if args == ("status", "--porcelain", "--untracked-files=no")
+            else "revision-1"
+        )
+
+    monkeypatch.setattr(provider_smoke, "_git", git)
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
+
+    with pytest.raises(ValueError, match="runtime initial screenshot"):
         provider_smoke.execute_smoke(
             root,
             plan=plan,
