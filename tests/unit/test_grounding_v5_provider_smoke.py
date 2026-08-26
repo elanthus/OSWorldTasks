@@ -7,6 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import ClassVar
 
+import pytest
 from PIL import Image
 
 from pixelgym.grounding.providers import ProviderResponse
@@ -138,6 +139,26 @@ def test_execute_smoke_rejects_non_development_seed_even_when_digest_matches(
     assert provider.calls == 0
 
 
+def test_execute_smoke_rejects_noncanonical_plan_field_before_provider_call(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = _repository(tmp_path)
+    monkeypatch.setattr(provider_smoke, "_git", lambda *_args: "revision-1")
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan["prompt"]["version"] = "tampered-prompt-version"
+    provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
+
+    with pytest.raises(ValueError, match="canonical request configuration"):
+        provider_smoke.execute_smoke(
+            root,
+            plan=plan,
+            approved_plan_sha256=provider_smoke.plan_digest(plan),
+            provider=provider,
+        )
+
+    assert provider.calls == 0
+
+
 def test_execute_smoke_makes_one_call_validates_and_dispatches(tmp_path: Path, monkeypatch) -> None:
     root = _repository(tmp_path)
 
@@ -171,6 +192,10 @@ def test_execute_smoke_makes_one_call_validates_and_dispatches(tmp_path: Path, m
     assert result["dispatch"]["backend_diagnostic"] == "correct_transition"
     assert result["classification"] == "dispatched"
     assert result["cost_usd"] == "0.00001"
+    assert result["authoritative_response"] == {
+        "publication_status": "restricted",
+        "raw_text": '{"action_type":1,"x":512,"y":459,"key":0}',
+    }
     assert "generation-1" not in json.dumps(result)
 
 
@@ -205,6 +230,38 @@ def test_execute_smoke_retains_attempt_when_usage_cost_is_missing(
     assert result["environment_actions"] == 0
     assert result["classification"] == "evidence_integrity_failure"
     assert result["failure_code"] == "missing_or_invalid_usage_cost"
+
+
+def test_invalid_output_is_retained_only_in_authoritative_result(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = _repository(tmp_path)
+
+    def git(_root: Path, *args: str) -> str:
+        return (
+            ""
+            if args == ("status", "--porcelain", "--untracked-files=no")
+            else "revision-1"
+        )
+
+    monkeypatch.setattr(provider_smoke, "_git", git)
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    raw_response = "not a JSON action"
+
+    result = provider_smoke.execute_smoke(
+        root,
+        plan=plan,
+        approved_plan_sha256=provider_smoke.plan_digest(plan),
+        provider=FakeProvider(raw_response),
+    )
+
+    assert result["classification"] == "invalid_output"
+    assert result["authoritative_response"] == {
+        "publication_status": "restricted",
+        "raw_text": raw_response,
+    }
+    assert result["publishable_response"] is None
+    assert raw_response not in json.dumps(provider_smoke.publishable_result(result))
 
 
 def test_command_refuses_existing_output_before_loading_credentials(tmp_path: Path) -> None:

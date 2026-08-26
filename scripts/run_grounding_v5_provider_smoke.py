@@ -12,6 +12,7 @@ from pixelgym.grounding.v5.provider_smoke import (
     build_plan,
     execute_smoke,
     plan_digest,
+    publishable_result,
     write_fresh_json,
 )
 
@@ -62,7 +63,7 @@ def main() -> None:
         approved_plan_sha256=args.approved_plan_sha256,
     )
     write_fresh_json(output, result)
-    print(json.dumps(result, indent=2, sort_keys=True))
+    print(json.dumps(publishable_result(result), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

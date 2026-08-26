@@ -103,9 +103,11 @@ python scripts/run_grounding_v5_provider_smoke.py \
   --output artifacts/grounding-v5-openrouter-smoke-result-qwen3.5-flash-02-23.json
 ```
 
-The publishable result retains the response digest, parsed action, usage, attributed cost, latency,
-dispatch diagnostic, and provider identity without publishing the raw provider response or request
-identifier. A successful diagnostic authorizes neither runbook stage 1 nor D5.6 calibration.
+The authoritative local result retains the raw provider response, including invalid or unparseable
+output, under a `publication_status: restricted` boundary. Do not publish that file. The CLI stdout
+and any publishable derivative omit the restricted response while retaining its digest, parsed
+action, usage, attributed cost, latency, dispatch diagnostic, and provider identity. A successful
+diagnostic authorizes neither runbook stage 1 nor D5.6 calibration.
 
 ## Procedure
 

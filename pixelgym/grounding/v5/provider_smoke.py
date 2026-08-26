@@ -35,7 +35,7 @@ SCREENSHOT_PATH = Path("artifacts/grounding-v5-provider-smoke/development-seed-5
 PROMPT_VERSION = "pixelgym-agent-v5-openrouter-action-prompt-v1"
 PARSER_VERSION = "pixelgym-agent-v5-json-action-parser-v1"
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v1"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v2"
 PRICE_OBSERVED_AT_UTC = "2026-08-26T01:06:43Z"
 
 ACTION_SCHEMA: dict[str, Any] = {
@@ -226,6 +226,10 @@ def _response_record(
             if isinstance(raw_response, str)
             else None
         ),
+        "authoritative_response": {
+            "publication_status": "restricted",
+            "raw_text": raw_response,
+        },
         "publishable_response": None,
         "parser_version": PARSER_VERSION,
         "action_validation": "not_reached",
@@ -277,10 +281,16 @@ def execute_smoke(
         raise ValueError("smoke plan must authorize exactly one model and wire request")
     if _git(repository_root, "rev-parse", "HEAD") != plan["code_revision"]:
         raise ValueError("source revision differs from the approved plan")
+    canonical_plan = build_plan(
+        repository_root,
+        maximum_spend_usd=APPROVED_MAXIMUM_SPEND_USD,
+    )
+    if plan != canonical_plan:
+        raise ValueError("smoke plan does not match the canonical request configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before the provider request")
 
-    screenshot_path = repository_root / plan["task"]["screenshot_path"]
+    screenshot_path = repository_root / SCREENSHOT_PATH
     if _file_digest(screenshot_path) != plan["task"]["screenshot_sha256"]:
         raise ValueError("approved screenshot digest mismatch")
     maximum_spend = Decimal(plan["caps"]["maximum_spend_usd"])
@@ -396,3 +406,10 @@ def write_fresh_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as stream:
         stream.write(json.dumps(value, indent=2, sort_keys=True) + "\n")
+
+
+def publishable_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Return the console/publishing derivative without restricted provider output."""
+    derivative = dict(result)
+    derivative.pop("authoritative_response", None)
+    return derivative
