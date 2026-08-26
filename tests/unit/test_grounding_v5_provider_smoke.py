@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from decimal import Decimal
 from pathlib import Path
 from typing import ClassVar
@@ -13,6 +11,7 @@ from PIL import Image
 from pixelgym.grounding.providers import ProviderResponse
 from pixelgym.grounding.v5 import provider_smoke
 from pixelgym.grounding.v5.backend import V5FakeBackend
+from scripts import run_grounding_v5_provider_smoke
 
 
 class FakeProvider:
@@ -264,30 +263,28 @@ def test_invalid_output_is_retained_only_in_authoritative_result(
     assert raw_response not in json.dumps(provider_smoke.publishable_result(result))
 
 
-def test_command_refuses_existing_output_before_loading_credentials(tmp_path: Path) -> None:
+def test_command_refuses_existing_output_before_loading_credentials(
+    tmp_path: Path, monkeypatch
+) -> None:
     output = tmp_path / "already-exists.json"
     output.write_text("preserve me", encoding="utf-8")
-    repository_root = Path(__file__).resolve().parents[2]
-
-    completed = subprocess.run(
-        [
-            sys.executable,
-            str(repository_root / "scripts/run_grounding_v5_provider_smoke.py"),
-            "--execute",
-            "--plan",
-            "does-not-exist.json",
-            "--approved-plan-sha256",
-            "sha256:" + "0" * 64,
-            "--output",
-            str(output),
-        ],
-        cwd=repository_root,
-        env={},
-        text=True,
-        capture_output=True,
-        check=False,
+    monkeypatch.setattr(
+        run_grounding_v5_provider_smoke,
+        "execute_smoke",
+        lambda *_args, **_kwargs: pytest.fail("execution loaded after existing-output refusal"),
     )
 
-    assert completed.returncode != 0
-    assert "output already exists" in completed.stderr
+    with pytest.raises(FileExistsError, match="output already exists"):
+        run_grounding_v5_provider_smoke.main(
+            [
+                "--execute",
+                "--plan",
+                "does-not-exist.json",
+                "--approved-plan-sha256",
+                "sha256:" + "0" * 64,
+                "--output",
+                str(output),
+            ]
+        )
+
     assert output.read_text(encoding="utf-8") == "preserve me"

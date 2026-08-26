@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -17,7 +18,7 @@ from pixelgym.grounding.v5.provider_smoke import (
 )
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--plan-only", action="store_true")
@@ -26,11 +27,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--approved-plan-sha256")
     parser.add_argument("--maximum-spend-usd")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def main(argv: Sequence[str] | None = None) -> None:
+    args = parse_args(argv)
     root = Path(__file__).resolve().parents[1]
     output = args.output if args.output.is_absolute() else root / args.output
     if output.exists():
