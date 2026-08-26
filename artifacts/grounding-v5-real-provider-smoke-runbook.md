@@ -92,6 +92,13 @@ limit](https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints).
 endpoint prices and maximum prompt size, the one-request theoretical maximum is $0.016959488, below
 the approved $5 aggregate cap.
 
+Qwen click coordinates use the frozen `normalized-1000x1000` adapter: the response schema accepts
+integer coordinates from 0 through 999 on both axes, and the versioned inclusive-endpoint transform
+maps them to native 1024×768 screenshot pixels before action validation and dispatch. The plan binds
+the adapter name, source digest, input convention, and output convention. A response that does not
+fit this declared grid is retained as invalid output; it is never guessed, clipped, or silently
+reinterpreted.
+
 Freeze a proposed one-call plan without network access:
 
 ```bash
