@@ -342,6 +342,8 @@ class OpenRouterProvider:
         environment: Mapping[str, str] = os.environ,
         require_api_key: bool = True,
         timeout_seconds: float = 180.0,
+        request_parameters: Mapping[str, Any] | None = None,
+        provider_routing: Mapping[str, Any] | None = None,
         urlopen: Callable[..., Any] = urllib.request.urlopen,
     ) -> None:
         api_key = environment.get("OPENROUTER_API_KEY")
@@ -350,9 +352,29 @@ class OpenRouterProvider:
             raise RuntimeError("OPENROUTER_API_KEY is not set")
         if not model:
             raise RuntimeError("OPENROUTER_MODEL is not set")
+        reserved = {"model", "messages", "response_format", "provider"} & set(
+            request_parameters or {}
+        )
+        if reserved:
+            raise ValueError(
+                f"OpenRouter request parameters cannot replace reserved fields: {sorted(reserved)}"
+            )
         self._api_key = api_key
         self.model = model
-        self.parameters = dict(OPENROUTER_PARAMETERS)
+        self._request_parameters = {
+            **OPENROUTER_PARAMETERS,
+            **dict(request_parameters or {}),
+        }
+        self._provider_routing = {
+            "require_parameters": True,
+            **dict(provider_routing or {}),
+        }
+        # ``parameters`` participates in the response-cache identity.  Bind
+        # routing separately from the OpenAI-compatible request parameters so
+        # changing an upstream provider cannot reuse prior evidence.
+        self.parameters = dict(self._request_parameters)
+        if provider_routing is not None:
+            self.parameters["provider_routing"] = self._provider_routing
         self.timeout_seconds = timeout_seconds
         self._urlopen = urlopen
 
@@ -365,7 +387,7 @@ class OpenRouterProvider:
         image_data = base64.b64encode(image_path.read_bytes()).decode("ascii")
         payload = {
             "model": self.model,
-            **self.parameters,
+            **self._request_parameters,
             "messages": [
                 {
                     "role": "user",
@@ -386,7 +408,7 @@ class OpenRouterProvider:
                     "schema": schema,
                 },
             },
-            "provider": {"require_parameters": True},
+            "provider": self._provider_routing,
         }
         request = urllib.request.Request(
             self.endpoint,
@@ -422,12 +444,22 @@ class OpenRouterProvider:
             raw_response = None
         usage = response_body.get("usage") if isinstance(response_body, dict) else None
         failure = None if isinstance(raw_response, str) else "OpenRouter response contained no text"
+        response_metadata = {
+            "endpoint": self.endpoint,
+            "response_id": response_body.get("id") if isinstance(response_body, dict) else None,
+            "response_model": (
+                response_body.get("model") if isinstance(response_body, dict) else None
+            ),
+            "upstream_provider": (
+                response_body.get("provider") if isinstance(response_body, dict) else None
+            ),
+        }
         return ProviderResponse(
             timestamp_utc=started_at,
             latency_ms=(time.monotonic() - start) * 1000,
             raw_response=raw_response,
             usage=usage if isinstance(usage, dict) else None,
-            provider_metadata={"endpoint": self.endpoint},
+            provider_metadata=response_metadata,
             provider_trace=[],
             request_failure=failure,
         )
