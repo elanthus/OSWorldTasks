@@ -114,7 +114,10 @@ def build_plan(
             "name": "openrouter",
             "endpoint": ENDPOINT,
             "upstream_provider": UPSTREAM_PROVIDER,
+            "only": [UPSTREAM_PROVIDER],
+            "require_parameters": True,
             "allow_fallbacks": False,
+            "data_collection": "deny",
             "automatic_retries": False,
         },
         "model": MODEL,
@@ -255,7 +258,10 @@ def execute_smoke(
         "name": "openrouter",
         "endpoint": ENDPOINT,
         "upstream_provider": UPSTREAM_PROVIDER,
+        "only": [UPSTREAM_PROVIDER],
+        "require_parameters": True,
         "allow_fallbacks": False,
+        "data_collection": "deny",
         "automatic_retries": False,
     }:
         raise ValueError("smoke provider identity is invalid")

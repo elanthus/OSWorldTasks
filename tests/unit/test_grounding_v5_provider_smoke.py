@@ -74,6 +74,8 @@ def test_plan_is_one_call_development_only_and_under_approved_cap(
     assert plan["purpose"].startswith("development-only")
     assert plan["task"]["partition"] == "development"
     assert plan["task"]["seed"] == 5000
+    assert plan["provider"]["require_parameters"] is True
+    assert plan["provider"]["data_collection"] == "deny"
     assert plan["caps"]["model_attempts"] == 1
     assert plan["caps"]["provider_wire_requests"] == 1
     assert Decimal(plan["caps"]["theoretical_request_maximum_usd"]) < Decimal("2.00")
