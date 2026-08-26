@@ -36,7 +36,7 @@ def _validated_records(
     unsigned.pop("manifest_digest", None)
     if not isinstance(claimed_digest, str) or content_digest(unsigned) != claimed_digest:
         raise ValueError(f"{partition.value} partition manifest digest mismatch")
-    if manifest.get("schema_version") != "pixelgym-agent-v5-partition-v1":
+    if manifest.get("schema_version") != "pixelgym-agent-v5-partition-v2":
         raise ValueError(f"{partition.value} partition manifest schema mismatch")
     if manifest.get("partition") != partition.value:
         raise ValueError(f"{partition.value} partition manifest identity mismatch")
@@ -125,7 +125,7 @@ def call_cap_plan(
         ).to_dict()
 
     plan = {
-        "schema_version": "pixelgym-agent-v5-call-cap-plan-v1",
+        "schema_version": "pixelgym-agent-v5-call-cap-plan-v2",
         "policy_id": manifest.policy_id,
         "policy_manifest_digest": content_digest(manifest.to_dict()),
         "provider": manifest.provider,
