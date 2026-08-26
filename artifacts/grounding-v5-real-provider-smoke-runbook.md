@@ -75,10 +75,39 @@ Before requesting smoke approval, produce:
 7. A plan-only smoke record that names development seeds and reports exact action, attempt,
    control-request, wire-request, and maximum-cost caps with `provider_calls_made: 0`.
 
-The repository does not yet implement the real-provider v5 smoke command. Before use, add one
-command with separate `--plan-only` and execution modes. The plan-only mode must not initialize a
-credential-bearing transport or launch the task. Execution must require a fresh immutable output
-path and a numeric approved cap; a different existing output must fail closed.
+The repository implements a one-call, development-only transport/parser/action diagnostic in
+`scripts/run_grounding_v5_provider_smoke.py`. It has separate `--plan-only` and execution modes,
+does not initialize a credential-bearing transport or launch the task in plan mode, binds execution
+to the exact approved plan digest, requires a clean matching source revision, and refuses to replace
+an existing output. This diagnostic is **pre-stage-1 evidence**: it does not substitute for a final
+stateful policy package, its content-addressed OS sandbox, interruption/recovery evidence, or a
+complete `PolicyManifest`.
+
+Freeze a proposed one-call plan without network access:
+
+```bash
+python scripts/run_grounding_v5_provider_smoke.py \
+  --plan-only \
+  --maximum-spend-usd 2.00 \
+  --output artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json
+```
+
+After the owner explicitly approves the printed digest and all identities in that plan, execute it
+once into a fresh result path:
+
+```bash
+python scripts/run_grounding_v5_provider_smoke.py \
+  --execute \
+  --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json \
+  --approved-plan-sha256 sha256:<approved-plan-digest> \
+  --output artifacts/grounding-v5-openrouter-smoke-result-qwen3.5-flash-02-23.json
+```
+
+The authoritative local result retains the raw provider response, including invalid or unparseable
+output, under a `publication_status: restricted` boundary. Do not publish that file. The CLI stdout
+and any publishable derivative omit the restricted response while retaining its digest, parsed
+action, usage, attributed cost, latency, dispatch diagnostic, and provider identity. A successful
+diagnostic authorizes neither runbook stage 1 nor D5.6 calibration.
 
 ## Procedure
 

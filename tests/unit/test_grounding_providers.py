@@ -103,6 +103,17 @@ def test_openrouter_requires_both_environment_variables() -> None:
         OpenRouterProvider(environment={"OPENROUTER_API_KEY": "secret"})
 
 
+def test_openrouter_rejects_request_parameter_overrides_of_reserved_fields() -> None:
+    with pytest.raises(ValueError, match="reserved fields"):
+        OpenRouterProvider(
+            environment={
+                "OPENROUTER_API_KEY": "secret",
+                "OPENROUTER_MODEL": "vendor/model",
+            },
+            request_parameters={"model": "different/model"},
+        )
+
+
 def test_openrouter_reads_model_from_environment_and_never_serializes_key(tmp_path: Path) -> None:
     image_path = tmp_path / "image.png"
     Image.new("RGB", (2, 2), "white").save(image_path)
@@ -144,6 +155,56 @@ def test_openrouter_reads_model_from_environment_and_never_serializes_key(tmp_pa
     assert b"secret-value" not in request.data
     assert request.headers["Authorization"] == "Bearer secret-value"
     assert response.raw_response == '{"x":1,"y":1}'
+
+
+def test_openrouter_binds_custom_parameters_routing_and_response_identity(tmp_path: Path) -> None:
+    image_path = tmp_path / "image.png"
+    Image.new("RGB", (2, 2), "white").save(image_path)
+    captured = {}
+
+    class Response(io.BytesIO):
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            self.close()
+
+    def urlopen(request: object, *, timeout: float) -> Response:
+        del timeout
+        captured["body"] = json.loads(request.data)
+        return Response(
+            json.dumps(
+                {
+                    "id": "generation-1",
+                    "model": "vendor/model",
+                    "provider": "Vendor",
+                    "choices": [{"message": {"content": '{"x":1,"y":1}'}}],
+                    "usage": {"prompt_tokens": 1, "completion_tokens": 1, "cost": 0.001},
+                }
+            ).encode("utf-8")
+        )
+
+    provider = OpenRouterProvider(
+        environment={"OPENROUTER_API_KEY": "secret", "OPENROUTER_MODEL": "vendor/model"},
+        request_parameters={"max_tokens": 128},
+        provider_routing={"only": ["vendor"], "allow_fallbacks": False},
+        urlopen=urlopen,
+    )
+    response = provider.invoke(image_path=image_path, prompt="prompt", schema=RAW_SCHEMA)
+
+    assert captured["body"]["max_tokens"] == 128
+    assert captured["body"]["provider"] == {
+        "require_parameters": True,
+        "only": ["vendor"],
+        "allow_fallbacks": False,
+    }
+    assert provider.parameters["provider_routing"] == captured["body"]["provider"]
+    assert response.provider_metadata == {
+        "endpoint": OpenRouterProvider.endpoint,
+        "response_id": "generation-1",
+        "response_model": "vendor/model",
+        "upstream_provider": "Vendor",
+    }
 
 
 def test_openrouter_does_not_cache_transport_exception_details(tmp_path: Path) -> None:
