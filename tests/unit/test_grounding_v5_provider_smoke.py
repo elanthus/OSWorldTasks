@@ -58,6 +58,17 @@ def _repository(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def test_checked_in_smoke_input_matches_current_fake_backend_renderer() -> None:
+    repository_root = Path(__file__).resolve().parents[2]
+    backend = V5FakeBackend()
+    backend.reset(provider_smoke.DEVELOPMENT_SEED)
+    try:
+        with Image.open(repository_root / provider_smoke.SCREENSHOT_PATH) as image:
+            assert image.convert("RGB").tobytes() == backend.screenshot().tobytes()
+    finally:
+        backend.close()
+
+
 def test_plan_is_one_call_development_only_and_under_approved_cap(
     tmp_path: Path, monkeypatch
 ) -> None:
