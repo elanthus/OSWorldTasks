@@ -73,7 +73,7 @@ def test_plan_is_one_call_development_only_and_under_approved_cap(
 
     plan = provider_smoke.build_plan(
         root,
-        maximum_spend_usd=Decimal("2.00"),
+        maximum_spend_usd=Decimal("5.00"),
         price_observed_at_utc="2026-08-26T00:00:00+00:00",
     )
 
@@ -83,9 +83,14 @@ def test_plan_is_one_call_development_only_and_under_approved_cap(
     assert plan["task"]["seed"] == 5000
     assert plan["provider"]["require_parameters"] is True
     assert plan["provider"]["data_collection"] == "deny"
+    assert plan["provider"]["only"] == ["alibaba"]
+    assert plan["model"] == "qwen/qwen3-vl-8b-instruct"
+    assert plan["inference_parameters"]["max_tokens"] == 4096
     assert plan["caps"]["model_attempts"] == 1
     assert plan["caps"]["provider_wire_requests"] == 1
-    assert Decimal(plan["caps"]["theoretical_request_maximum_usd"]) < Decimal("2.00")
+    assert Decimal(plan["caps"]["theoretical_request_maximum_usd"]) == Decimal(
+        "0.016959488"
+    )
 
 
 def test_execute_smoke_requires_exact_approval_before_provider_call(
@@ -93,7 +98,7 @@ def test_execute_smoke_requires_exact_approval_before_provider_call(
 ) -> None:
     root = _repository(tmp_path)
     monkeypatch.setattr(provider_smoke, "_git", lambda *_args: "revision-1")
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
 
     try:
@@ -115,7 +120,7 @@ def test_execute_smoke_rejects_non_development_seed_even_when_digest_matches(
 ) -> None:
     root = _repository(tmp_path)
     monkeypatch.setattr(provider_smoke, "_git", lambda *_args: "revision-1")
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     plan["task"]["partition"] = "calibration"
     plan["task"]["seed"] = 6000
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
@@ -139,7 +144,7 @@ def test_execute_smoke_rejects_noncanonical_plan_field_before_provider_call(
 ) -> None:
     root = _repository(tmp_path)
     monkeypatch.setattr(provider_smoke, "_git", lambda *_args: "revision-1")
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     plan["prompt"]["version"] = "tampered-prompt-version"
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
 
@@ -168,7 +173,7 @@ def test_execute_smoke_rejects_image_that_differs_from_runtime_renderer_before_p
         )
 
     monkeypatch.setattr(provider_smoke, "_git", git)
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
 
     with pytest.raises(ValueError, match="runtime initial screenshot"):
@@ -193,7 +198,7 @@ def test_execute_smoke_makes_one_call_validates_and_dispatches(tmp_path: Path, m
         )
 
     monkeypatch.setattr(provider_smoke, "_git", git)
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     provider = FakeProvider('{"action_type":1,"x":512,"y":459,"key":0}')
 
     result = provider_smoke.execute_smoke(
@@ -235,7 +240,7 @@ def test_execute_smoke_retains_attempt_when_usage_cost_is_missing(
         )
 
     monkeypatch.setattr(provider_smoke, "_git", git)
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     provider = FakeProvider(
         '{"action_type":1,"x":512,"y":459,"key":0}',
         usage={"prompt_tokens": 100, "completion_tokens": 10},
@@ -268,7 +273,7 @@ def test_invalid_output_is_retained_only_in_authoritative_result(
         )
 
     monkeypatch.setattr(provider_smoke, "_git", git)
-    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("2.00"))
+    plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
     raw_response = "not a JSON action"
 
     result = provider_smoke.execute_smoke(

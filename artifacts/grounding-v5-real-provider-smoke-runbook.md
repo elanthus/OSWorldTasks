@@ -83,13 +83,22 @@ an existing output. This diagnostic is **pre-stage-1 evidence**: it does not sub
 stateful policy package, its content-addressed OS sandbox, interruption/recovery evidence, or a
 complete `PolicyManifest`.
 
+The current diagnostic freezes `max_tokens=4096` for
+`qwen/qwen3-vl-8b-instruct`. The earlier 128-token limit was intentionally scoped to one terse JSON
+action, but it proved too small when a reasoning model consumed the allowance without emitting the
+action. The larger bound leaves room for provider-internal reasoning while remaining far below the
+[Alibaba endpoint's published 32,768-token completion
+limit](https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints). At the frozen
+endpoint prices and maximum prompt size, the one-request theoretical maximum is $0.016959488, below
+the approved $5 aggregate cap.
+
 Freeze a proposed one-call plan without network access:
 
 ```bash
 python scripts/run_grounding_v5_provider_smoke.py \
   --plan-only \
-  --maximum-spend-usd 2.00 \
-  --output artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json
+  --maximum-spend-usd 5.00 \
+  --output artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct.json
 ```
 
 After the owner explicitly approves the printed digest and all identities in that plan, execute it
@@ -98,9 +107,9 @@ once into a fresh result path:
 ```bash
 python scripts/run_grounding_v5_provider_smoke.py \
   --execute \
-  --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json \
+  --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct.json \
   --approved-plan-sha256 sha256:<approved-plan-digest> \
-  --output artifacts/grounding-v5-openrouter-smoke-result-qwen3.5-flash-02-23.json
+  --output artifacts/grounding-v5-openrouter-smoke-result-qwen3-vl-8b-instruct.json
 ```
 
 The authoritative local result retains the raw provider response, including invalid or unparseable

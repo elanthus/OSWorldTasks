@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan or execute one approved development-only v5 OpenRouter smoke request."""
+"""Plan or execute one approved development-only v5 Qwen3-VL OpenRouter smoke request."""
 
 from __future__ import annotations
 

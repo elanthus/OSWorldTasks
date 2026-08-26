@@ -21,22 +21,22 @@ from pixelgym.grounding.v5.contracts import Partition, content_digest, sha256_by
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.serialization import canonical_json_bytes
 
-MODEL = "qwen/qwen3.5-flash-02-23"
+MODEL = "qwen/qwen3-vl-8b-instruct"
 UPSTREAM_PROVIDER = "alibaba"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-PRICE_SOURCE = "https://openrouter.ai/api/v1/models/qwen/qwen3.5-flash-02-23/endpoints"
-PROMPT_PRICE_PER_TOKEN_USD = Decimal("0.000000065")
-COMPLETION_PRICE_PER_TOKEN_USD = Decimal("0.00000026")
-MAX_PROMPT_TOKENS = 983_616
-MAX_OUTPUT_TOKENS = 128
-APPROVED_MAXIMUM_SPEND_USD = Decimal("2.00")
+PRICE_SOURCE = "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"
+PROMPT_PRICE_PER_TOKEN_USD = Decimal("0.000000117")
+COMPLETION_PRICE_PER_TOKEN_USD = Decimal("0.000000455")
+MAX_PROMPT_TOKENS = 129_024
+MAX_OUTPUT_TOKENS = 4_096
+APPROVED_MAXIMUM_SPEND_USD = Decimal("5.00")
 DEVELOPMENT_SEED = 5000
 SCREENSHOT_PATH = Path("artifacts/grounding-v5-provider-smoke/development-seed-5000-initial.png")
 PROMPT_VERSION = "pixelgym-agent-v5-openrouter-action-prompt-v1"
 PARSER_VERSION = "pixelgym-agent-v5-json-action-parser-v1"
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v2"
-PRICE_OBSERVED_AT_UTC = "2026-08-26T01:06:43Z"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v3"
+PRICE_OBSERVED_AT_UTC = "2026-08-26T06:49:29Z"
 
 ACTION_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -86,7 +86,7 @@ def build_plan(
     price_observed_at_utc: str | None = None,
 ) -> dict[str, Any]:
     if maximum_spend_usd != APPROVED_MAXIMUM_SPEND_USD:
-        raise ValueError("maximum spend must match the approved $2.00 cap")
+        raise ValueError("maximum spend must match the approved $5.00 cap")
     task = generate_task(DEVELOPMENT_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
         raise ValueError("smoke seed is not in the development partition")
@@ -295,7 +295,7 @@ def execute_smoke(
         raise ValueError("approved screenshot digest mismatch")
     maximum_spend = Decimal(plan["caps"]["maximum_spend_usd"])
     if maximum_spend != APPROVED_MAXIMUM_SPEND_USD:
-        raise ValueError("smoke plan spend cap differs from the approved $2.00 cap")
+        raise ValueError("smoke plan spend cap differs from the approved $5.00 cap")
     if Decimal(plan["caps"]["theoretical_request_maximum_usd"]) > maximum_spend:
         raise ValueError("approved request can exceed its spend cap")
 
