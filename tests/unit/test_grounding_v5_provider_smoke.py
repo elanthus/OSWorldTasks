@@ -63,10 +63,12 @@ def test_checked_in_smoke_input_matches_current_fake_backend_renderer() -> None:
     backend = V5FakeBackend()
     backend.reset(provider_smoke.DEVELOPMENT_SEED)
     try:
-        with Image.open(repository_root / provider_smoke.SCREENSHOT_PATH) as image:
-            assert image.convert("RGB").tobytes() == backend.screenshot().tobytes()
+        rendered_pixels = backend.screenshot().tobytes()
     finally:
         backend.close()
+    with Image.open(repository_root / provider_smoke.SCREENSHOT_PATH) as image:
+        checked_in_pixels = image.convert("RGB").tobytes()
+    assert checked_in_pixels == rendered_pixels
 
 
 def test_plan_is_one_call_development_only_and_under_approved_cap(
