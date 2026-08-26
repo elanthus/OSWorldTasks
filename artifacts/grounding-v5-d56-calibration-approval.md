@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
 **Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-first smoke plan is consumed and frozen after an unknown-outcome infrastructure failure; the
-current panel cannot advance to calibration
+first smoke plan is consumed and frozen after an unknown-outcome infrastructure failure; the owner
+approved a materially new Slot A policy; its exact smoke-plan digest remains unapproved
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -36,11 +36,11 @@ The owner should approve calibration only after recording evidence for every row
 | Fake-backend recovery | Interruption tests for every supported durable boundary | Implemented in the v5 unit suite |
 | OS-level policy isolation | Real OS enforcement test with an allowed fake endpoint and denied unauthorized channels | Implemented and exercised on Darwin |
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
-| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; current Slot A package is frozen after an unknown outcome |
+| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; new Google Vertex Slot A package pending exact smoke approval |
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
-| Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google AI Studio, Alibaba, and DeepInfra on 2026-08-26 |
+| Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google Vertex, Alibaba, and DeepInfra on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | First approved plan froze after slot A HTTP failure; another request for the current policy is prohibited |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | First plan frozen; new panel uses materially new Slot A identity and four fresh development tasks |
 
 ## Policy panel decision
 
@@ -51,7 +51,7 @@ model name as the policy identity.
 
 | Slot | Provider route | Disclosed alias | Harness | Coordinate adapter | Purpose | Design decision |
 |---|---|---|---|---|---|---|
-| A | OpenRouter → Google AI Studio only | `google/gemini-3.7-flash` | Stateful visible-action history | `normalized-1000x1000` | Strong-policy candidate | Approved |
+| A | OpenRouter → Google Vertex Global only | `google/gemini-3.7-flash` | Stateful visible-action history | `normalized-1000x1000` | Strong-policy candidate | Approved; omit unsupported `temperature` |
 | B | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateful visible-action history | `normalized-1000x1000` | Mid-band visual policy candidate | Approved |
 | C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `native-1024x768` | Lower-band policy candidate | Approved; adapter requires smoke validation |
 | D | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateless within each episode | `normalized-1000x1000` | Isolate episode-local state use | Approved |
@@ -82,13 +82,13 @@ The refreshed route-specific token prices are:
 
 | Route | Prompt or image-input token | Completion token | Frozen per-request maximum |
 |---|---:|---:|---:|
-| Google AI Studio / Gemini 3.7 Flash | $0.00000075 | $0.00000375 | $0.110592000 |
+| Google Vertex Global / Gemini 3.7 Flash | $0.000000375 | $0.000001875 | $0.055296000 |
 | Alibaba / Qwen3-VL 8B | $0.000000117 | $0.000000455 | $0.016719872 |
 | DeepInfra FP8 / Llama 4 Scout | $0.0000001 | $0.0000003 | $0.013926400 |
 
 Each request freezes at most 126,976 prompt tokens plus 4,096 completion tokens within a 131,072
 policy context limit. These are conservative request guards, not expected costs. The uncapped
-worst-case sum across all 5,724 possible requests is $226.038104064, so the $10 shared ledger—not
+worst-case sum across all 5,724 possible requests is $146.909528064, so the $10 shared ledger—not
 that uncapped sum—is the binding run stop. A request is blocked before transmission when its own
 worst-case maximum no longer fits under the remaining aggregate balance.
 
@@ -111,7 +111,7 @@ root:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v3 \
   --output artifacts/grounding-v5-d56-calibration-plan.json
 ```
 
@@ -124,7 +124,7 @@ Record the approved calibration limits for each policy:
 
 | Slot / exact policy ID | Environment actions | Model attempts | Provider control requests | Total wire requests | Spend rule | Design decision |
 |---|---:|---:|---:|---:|---:|---|
-| A / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.110592/request guard | Approved |
+| A / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.055296/request guard | Approved |
 | B / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.016719872/request guard | Approved |
 | C / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.0139264/request guard | Approved |
 | D / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.016719872/request guard | Approved |

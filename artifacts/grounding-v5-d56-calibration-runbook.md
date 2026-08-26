@@ -1,7 +1,8 @@
 # PixelGym v5 four-policy D5.6 calibration runbook
 
 **Status:** the first approved panel smoke is frozen after an unknown-outcome infrastructure
-failure; the current panel cannot advance to calibration
+failure; the owner approved a materially new Slot A policy on 2026-08-26; its exact replacement
+panel-smoke plan remains unapproved
 
 ## Outcome
 
@@ -13,7 +14,8 @@ declare D4.12 or D5.6 passed.
 
 ## Frozen design
 
-- Slot A: `google/gemini-3.7-flash`, Google AI Studio only, stateful, normalized coordinates.
+- Slot A: `google/gemini-3.7-flash`, Google Vertex Global only, stateful, normalized coordinates;
+  omit unsupported `temperature` while retaining seed and structured output.
 - Slot B: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateful, normalized coordinates.
 - Slot C: `meta-llama/llama-4-scout`, DeepInfra FP8 only, stateful, native coordinates.
 - Slot D: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateless, normalized coordinates.
@@ -31,7 +33,7 @@ are clean. Generate the no-call plan into unused paths:
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --plan-only \
-  --output artifacts/grounding-v5-d56-panel-smoke-plan-NEXT.json
+  --output artifacts/grounding-v5-d56-panel-smoke-plan-v3.json
 ```
 
 The plan must report four development tasks, four environment actions, four model attempts, zero
@@ -43,9 +45,9 @@ Execute only the approved plan into a fresh local restricted-evidence directory:
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --execute \
-  --plan artifacts/grounding-v5-d56-panel-smoke-plan-NEXT.json \
+  --plan artifacts/grounding-v5-d56-panel-smoke-plan-v3.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --output artifacts/grounding-v5-d56-panel-smoke-run-NEXT
+  --output artifacts/grounding-v5-d56-panel-smoke-run-v3
 ```
 
 Stop unless every policy reaches `pilot_action_limit`, all four response identities and routes
@@ -70,9 +72,9 @@ reason. The transport now retains bounded non-message HTTP diagnostics for futur
 The request crossed the send boundary and the runner recorded an unknown outcome. The frozen retry
 rule therefore prohibits another request for this policy and prohibits a replacement assignment.
 Do not approve or execute a regenerated plan for the current panel, reuse the consumed digest, or
-overwrite either first-run artifact. To continue, the owner must approve a materially new Slot A
-policy identity, such as a different provider route or model, and a new panel-smoke package. The
-owner may instead stop the panel calibration.
+overwrite either first-run artifact. The owner approved a new Slot A identity using Google Vertex
+Global on 2026-08-26. The new four-policy smoke uses four previously unexposed development tasks
+and still requires approval of its exact generated digest before execution.
 
 ## Phase 2: exact D5.6 calibration plan
 
@@ -81,7 +83,7 @@ After the smoke evidence verifies, generate the calibration plan:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v3 \
   --output artifacts/grounding-v5-d56-calibration-plan.json
 ```
 
@@ -97,7 +99,7 @@ python scripts/run_grounding_v5_d56_calibration.py \
   --execute \
   --plan artifacts/grounding-v5-d56-calibration-plan.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v3 \
   --output artifacts/grounding-v5-d56-calibration-run
 ```
 

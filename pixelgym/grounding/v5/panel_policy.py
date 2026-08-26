@@ -55,6 +55,7 @@ class PanelPolicyConfig:
     adapter: CoordinateAdapter
     coordinate_input_convention: str
     stateful: bool
+    temperature: int | None = 0
     quantizations: tuple[str, ...] = ()
 
     @property
@@ -100,16 +101,17 @@ class PanelPolicyConfig:
 GEMINI_STATEFUL = PanelPolicyConfig(
     slot="A-gemini-stateful",
     model="google/gemini-3.7-flash",
-    provider_route="google-ai-studio",
-    response_provider="Google AI Studio",
-    prompt_price_per_token_usd=Decimal("0.00000075"),
-    completion_price_per_token_usd=Decimal("0.00000375"),
+    provider_route="google-vertex/global",
+    response_provider="Google",
+    prompt_price_per_token_usd=Decimal("0.000000375"),
+    completion_price_per_token_usd=Decimal("0.000001875"),
     price_source=(
         "https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints"
     ),
     adapter=NORMALIZED_1000_ADAPTER,
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
+    temperature=None,
 )
 QWEN_STATEFUL = PanelPolicyConfig(
     slot="B-qwen-stateful",
@@ -228,7 +230,7 @@ class OpenRouterPanelPolicy:
             f"Overall task: {value['instruction']}\n"
             f"{context}Choose the next action from the current screenshot."
         )
-        return {
+        request = {
             "model": self.config.model,
             "messages": [
                 {"role": "system", "content": system_prompt(self.config)},
@@ -249,10 +251,12 @@ class OpenRouterPanelPolicy:
                 },
             },
             "provider": self.config.provider_parameters(),
-            "temperature": 0,
             "seed": SEED,
             "max_tokens": MAX_OUTPUT_TOKENS,
         }
+        if self.config.temperature is not None:
+            request["temperature"] = self.config.temperature
+        return request
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
         if not self.config.stateful:
@@ -573,8 +577,9 @@ def build_panel_policy_manifest(
         ("provider", config.provider_route),
         ("require_parameters", "true"),
         ("seed", str(SEED)),
-        ("temperature", "0"),
     ]
+    if config.temperature is not None:
+        inference_parameters.append(("temperature", str(config.temperature)))
     if config.quantizations:
         inference_parameters.append(("quantizations", ",".join(config.quantizations)))
     return PolicyManifest.build(

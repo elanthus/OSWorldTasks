@@ -80,7 +80,10 @@ def test_panel_requests_pin_provider_and_are_credential_free(config: Any) -> Non
     assert request["model"] == config.model
     assert request["provider"] == config.provider_parameters()
     assert request["max_tokens"] == 4096
-    assert request["temperature"] == 0
+    if config.temperature is None:
+        assert "temperature" not in request
+    else:
+        assert request["temperature"] == config.temperature
     assert request["response_format"]["json_schema"]["schema"] == action_schema(config)
     assert "api_key" not in json.dumps(request).lower()
 
@@ -101,6 +104,16 @@ def test_llama_uses_native_coordinates_and_fp8_route_filter() -> None:
         ),
         policy.reset("task"),
     ) == {"action_type": 1, "x": 1023, "y": 767, "key": 0}
+
+
+def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:
+    policy = OpenRouterPanelPolicy(GEMINI_STATEFUL)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert request["provider"]["only"] == ["google-vertex/global"]
+    assert request["provider"]["data_collection"] == "deny"
+    assert request["seed"] == 20260809
+    assert "temperature" not in request
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:

@@ -24,12 +24,12 @@ from pixelgym.grounding.v5.runner import V5Runner
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-result-v1"
-PRICE_OBSERVED_AT_UTC = "2026-08-26T21:26:16Z"
+PRICE_OBSERVED_AT_UTC = "2026-08-26T22:36:24Z"
 SMOKE_ALLOCATIONS = (
-    ("A-gemini-stateful", 5000),
-    ("B-qwen-stateful", 5004),
-    ("C-llama-stateful", 5012),
-    ("D-qwen-stateless", 5020),
+    ("A-gemini-stateful", 5001),
+    ("B-qwen-stateful", 5005),
+    ("C-llama-stateful", 5013),
+    ("D-qwen-stateless", 5021),
 )
 
 
