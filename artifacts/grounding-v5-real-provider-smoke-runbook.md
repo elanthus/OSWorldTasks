@@ -115,9 +115,12 @@ once into a fresh result path:
 python scripts/run_grounding_v5_provider_smoke.py \
   --execute \
   --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct.json \
-  --approved-plan-sha256 sha256:<approved-plan-digest> \
+  --approved-plan-sha256 'sha256:EXACT_PRINTED_DIGEST' \
   --output artifacts/grounding-v5-openrouter-smoke-result-qwen3-vl-8b-instruct.json
 ```
+
+Replace the entire quoted value with the printed `plan_sha256`; do not add another `sha256:`
+prefix.
 
 The authoritative local result retains the raw provider response, including invalid or unparseable
 output, under a `publication_status: restricted` boundary. Do not publish that file. The CLI stdout

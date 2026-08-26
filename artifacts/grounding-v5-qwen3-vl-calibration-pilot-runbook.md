@@ -87,9 +87,12 @@ Choose a fresh local output directory and replace the placeholder with the exact
 python scripts/run_grounding_v5_calibration_pilot.py \
   --execute \
   --plan artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-plan.json \
-  --approved-plan-sha256 sha256:<approved-plan-digest> \
+  --approved-plan-sha256 'sha256:EXACT_PRINTED_DIGEST' \
   --output artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run
 ```
+
+Replace the entire quoted value with the printed `plan_sha256`; do not add another `sha256:`
+prefix.
 
 Expected result: the runner creates `attempts.sqlite` before the first reservation, executes no
 more than two actions per task, and writes `summary.json` after closing the journal. A normal
