@@ -131,3 +131,7 @@ separate redacted derivative before sharing results outside the project.
 
 After the pilot, report raw counts, costs, classifications, and integrity output. Do not declare
 D4.12 or D5.6 passed; those verdicts remain human-owned.
+
+After the owner reviews this pilot and explicitly approves full episodes on the same ten tasks, use
+the [expanded calibration runbook](grounding-v5-qwen3-vl-expanded-calibration-runbook.md). That
+larger single-policy run still does not constitute the four-policy D5.6 calibration.
