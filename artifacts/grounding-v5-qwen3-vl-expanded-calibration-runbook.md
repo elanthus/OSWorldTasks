@@ -59,7 +59,8 @@ episode that terminates successfully can use fewer calls.
 4. The completed pilot summary records the approved pilot digest, twenty wire requests, and
    $0.004228237 aggregate spend.
 5. `OPENROUTER_API_KEY` is present only in the process environment during execution.
-6. The requested plan and output paths do not exist; the command refuses to overwrite evidence.
+6. For `--execute`, the approved plan path exists and the requested output directory does not
+   exist; the command refuses to overwrite output evidence.
 
 ## Generate the no-call plan
 
