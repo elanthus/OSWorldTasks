@@ -15,6 +15,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--partition-manifest-directory", type=Path, required=True)
+    parser.add_argument("--calibration-manifest", type=Path)
     parser.add_argument("--approved-calibration-partition-digest", required=True)
     args = parser.parse_args()
     value = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -28,7 +29,8 @@ def main() -> None:
             call_cap_plan(
                 manifest,
                 partition_manifests=load_partition_manifests(
-                    args.partition_manifest_directory
+                    args.partition_manifest_directory,
+                    calibration_manifest=args.calibration_manifest,
                 ),
                 approved_calibration_manifest_digest=(
                     args.approved_calibration_partition_digest

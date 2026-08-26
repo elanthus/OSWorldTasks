@@ -75,7 +75,14 @@ Before requesting smoke approval, produce:
 7. A plan-only smoke record that names development seeds and reports exact action, attempt,
    control-request, wire-request, and maximum-cost caps with `provider_calls_made: 0`.
 
-The repository implements a one-call, development-only transport/parser/action diagnostic in
+The current D5.6 panel workflow implements one development-only action for each of the four frozen
+policy slots in `scripts/run_grounding_v5_panel_smoke.py`. It has separate `--plan-only` and
+execution modes, uses distinct development tasks, shares the approved aggregate ledger, and stops
+the sequence on the first failure. Follow the
+[four-policy calibration runbook](grounding-v5-d56-calibration-runbook.md) for its exact commands
+and approval boundary.
+
+The repository also retains the earlier one-call Qwen-only diagnostic in
 `scripts/run_grounding_v5_provider_smoke.py`. It has separate `--plan-only` and execution modes,
 does not initialize a credential-bearing transport or launch the task in plan mode, binds execution
 to the exact approved plan digest, requires a clean matching source revision, and refuses to replace

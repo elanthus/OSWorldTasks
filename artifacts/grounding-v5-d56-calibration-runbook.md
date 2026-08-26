@@ -1,0 +1,91 @@
+# PixelGym v5 four-policy D5.6 calibration runbook
+
+**Status:** no-call workflow implemented; exact panel-smoke and calibration plan digests are not
+yet approved
+
+## Outcome
+
+Run four frozen policy systems over 50 calibration tasks that were not exposed by the Qwen pilot.
+The run may reserve at most 5,724 model attempts and wire requests, makes no provider control
+requests, and shares one $10 aggregate spend ledger that includes prior diagnostics and smoke
+calls. This run produces calibration evidence only. It does not expose confirmatory tasks or
+declare D4.12 or D5.6 passed.
+
+## Frozen design
+
+- Slot A: `google/gemini-3.7-flash`, Google AI Studio only, stateful, normalized coordinates.
+- Slot B: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateful, normalized coordinates.
+- Slot C: `meta-llama/llama-4-scout`, DeepInfra FP8 only, stateful, native coordinates.
+- Slot D: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateless, normalized coordinates.
+- Calibration manifest: `artifacts/grounding-v5-manifests/calibration-d56.json`.
+- Task count: 50 per policy; action cap: 1,431 per policy.
+- Retry rule: no retry after send; cancellation and reconciliation disabled.
+- Failure rule: freeze the complete run after the first infrastructure, identity, price, parse,
+  adapter, invalid-action, or evidence-integrity failure.
+
+## Phase 1: exact four-call panel smoke
+
+First commit the implementation and verify that tracked files are clean. Generate the no-call plan:
+
+```bash
+python scripts/run_grounding_v5_panel_smoke.py \
+  --plan-only \
+  --output artifacts/grounding-v5-d56-panel-smoke-plan.json
+```
+
+The plan must report four development tasks, four environment actions, four model attempts, zero
+control requests, four wire requests, and `provider_calls_made: 0`. Record its printed digest and
+obtain explicit owner approval for that exact digest before continuing.
+
+Execute only the approved plan into a fresh local restricted-evidence directory:
+
+```bash
+python scripts/run_grounding_v5_panel_smoke.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-panel-smoke-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --output artifacts/grounding-v5-d56-panel-smoke-run
+```
+
+Stop unless every policy reaches `pilot_action_limit`, all four response identities and routes
+match, every action parses and validates through its frozen adapter, usage and cost are present,
+and journal integrity verifies. Raw canonical responses remain in the local SQLite journal and are
+not committed or published.
+
+## Phase 2: exact D5.6 calibration plan
+
+After the smoke evidence verifies, generate the calibration plan:
+
+```bash
+python scripts/run_grounding_v5_d56_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run \
+  --output artifacts/grounding-v5-d56-calibration-plan.json
+```
+
+Review the exact policy IDs, policy-manifest digests, price records, 50 task IDs, derived partition
+digest, smoke-evidence digests, per-policy caps, aggregate caps, prior actual spend, and shared $10
+guard. The plan must report `provider_calls_made: 0`. Obtain a second explicit owner approval for
+the exact printed calibration-plan digest.
+
+## Phase 3: execute only the approved calibration
+
+```bash
+python scripts/run_grounding_v5_d56_calibration.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-calibration-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run \
+  --output artifacts/grounding-v5-d56-calibration-run
+```
+
+Run slots sequentially in A, B, C, D order and tasks in manifest order. Continue after a scored
+success or step-limit truncation so assigned tasks remain in the denominator. Stop before any
+request whose theoretical maximum cannot fit under the remaining aggregate balance; retain every
+completed response, invalid output, failure, exhausted budget, and unattempted assignment.
+
+## Handoff evidence
+
+Report raw commands and exit statuses, actual wire requests, model reservations, spend before and
+after the run, classifications, attempted and successful policy-task pairs, and the complete
+journal integrity report. The human reviews that evidence and owns the D5.6 verdict.

@@ -28,7 +28,11 @@ from pixelgym.grounding.v5.evidence import (
     validate_credential_free,
 )
 from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition, validate_generator
-from pixelgym.grounding.v5.manifests import partition_manifest
+from pixelgym.grounding.v5.manifests import (
+    D56_EXCLUDED_CALIBRATION_SEEDS,
+    d56_calibration_manifest,
+    partition_manifest,
+)
 from pixelgym.grounding.v5.metrics import (
     clustered_bootstrap_difference,
     exact_mcnemar_pvalue,
@@ -80,6 +84,25 @@ def test_v5_checked_in_partition_manifests_match_current_sources(
 ) -> None:
     stored = ROOT / "artifacts/grounding-v5-manifests" / f"{partition.value}.json"
     assert stored.read_bytes() == canonical_json_bytes(partition_manifest(partition)) + b"\n"
+
+
+def test_v5_d56_calibration_manifest_excludes_the_complete_pilot_allocation() -> None:
+    source = partition_manifest(Partition.CALIBRATION)
+    derived = d56_calibration_manifest()
+
+    assert source["episode_count"] == 60
+    assert derived["schema_version"] == "pixelgym-agent-v5-partition-v3"
+    assert derived["episode_count"] == 50
+    assert sum(record["max_episode_steps"] for record in derived["records"]) == 1431
+    assert derived["derivation"]["source_manifest_digest"] == source["manifest_digest"]
+    assert derived["derivation"]["excluded_seeds"] == list(
+        D56_EXCLUDED_CALIBRATION_SEEDS
+    )
+    assert set(D56_EXCLUDED_CALIBRATION_SEEDS).isdisjoint(
+        record["seed_record"]["seed"] for record in derived["records"]
+    )
+    stored = ROOT / "artifacts/grounding-v5-manifests/calibration-d56.json"
+    assert stored.read_bytes() == canonical_json_bytes(derived) + b"\n"
 
 
 def test_v5_generated_difficulty_bounds_and_exact_slack() -> None:
