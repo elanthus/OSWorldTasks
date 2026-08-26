@@ -1,7 +1,7 @@
 # PixelGym v5 four-policy D5.6 calibration runbook
 
-**Status:** the first approved panel smoke is frozen after an infrastructure failure; a replacement
-panel-smoke plan and the calibration plan are not yet approved
+**Status:** the first approved panel smoke is frozen after an unknown-outcome infrastructure
+failure; the current panel cannot advance to calibration
 
 ## Outcome
 
@@ -25,12 +25,13 @@ declare D4.12 or D5.6 passed.
 
 ## Phase 1: exact four-call panel smoke
 
-First commit the implementation and verify that tracked files are clean. Generate the no-call plan:
+For a newly approved policy panel, first commit the implementation and verify that tracked files
+are clean. Generate the no-call plan into unused paths:
 
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --plan-only \
-  --output artifacts/grounding-v5-d56-panel-smoke-plan-v2.json
+  --output artifacts/grounding-v5-d56-panel-smoke-plan-NEXT.json
 ```
 
 The plan must report four development tasks, four environment actions, four model attempts, zero
@@ -42,9 +43,9 @@ Execute only the approved plan into a fresh local restricted-evidence directory:
 ```bash
 python scripts/run_grounding_v5_panel_smoke.py \
   --execute \
-  --plan artifacts/grounding-v5-d56-panel-smoke-plan-v2.json \
+  --plan artifacts/grounding-v5-d56-panel-smoke-plan-NEXT.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --output artifacts/grounding-v5-d56-panel-smoke-run-v2
+  --output artifacts/grounding-v5-d56-panel-smoke-run-NEXT
 ```
 
 Stop unless every policy reaches `pilot_action_limit`, all four response identities and routes
@@ -64,8 +65,14 @@ directory `artifacts/grounding-v5-d56-panel-smoke-run/`.
 The no-call audit verified that the live OpenRouter model metadata still lists the selected Gemini
 model, Google AI Studio route, image input, and requested inference parameters. The failed run did
 not retain the HTTP status or a safe provider error code, so it cannot establish the exact rejection
-reason. The transport now retains bounded non-message HTTP diagnostics for a separately approved
-replacement smoke. Do not reuse the consumed digest or overwrite either first-run artifact.
+reason. The transport now retains bounded non-message HTTP diagnostics for future policy packages.
+
+The request crossed the send boundary and the runner recorded an unknown outcome. The frozen retry
+rule therefore prohibits another request for this policy and prohibits a replacement assignment.
+Do not approve or execute a regenerated plan for the current panel, reuse the consumed digest, or
+overwrite either first-run artifact. To continue, the owner must approve a materially new Slot A
+policy identity, such as a different provider route or model, and a new panel-smoke package. The
+owner may instead stop the panel calibration.
 
 ## Phase 2: exact D5.6 calibration plan
 
@@ -74,7 +81,7 @@ After the smoke evidence verifies, generate the calibration plan:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v2 \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
   --output artifacts/grounding-v5-d56-calibration-plan.json
 ```
 
@@ -90,7 +97,7 @@ python scripts/run_grounding_v5_d56_calibration.py \
   --execute \
   --plan artifacts/grounding-v5-d56-calibration-plan.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v2 \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
   --output artifacts/grounding-v5-d56-calibration-run
 ```
 

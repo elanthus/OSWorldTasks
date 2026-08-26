@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
 **Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-first smoke plan is consumed and frozen after an infrastructure failure; replacement smoke and
-calibration digests remain unapproved
+first smoke plan is consumed and frozen after an unknown-outcome infrastructure failure; the
+current panel cannot advance to calibration
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -36,11 +36,11 @@ The owner should approve calibration only after recording evidence for every row
 | Fake-backend recovery | Interruption tests for every supported durable boundary | Implemented in the v5 unit suite |
 | OS-level policy isolation | Real OS enforcement test with an allowed fake endpoint and denied unauthorized channels | Implemented and exercised on Darwin |
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
-| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; replacement real-provider panel smoke pending |
+| Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; current Slot A package is frozen after an unknown outcome |
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
 | Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google AI Studio, Alibaba, and DeepInfra on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | First approved plan froze after slot A HTTP failure; replacement plan and approval pending |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | First approved plan froze after slot A HTTP failure; another request for the current policy is prohibited |
 
 ## Policy panel decision
 
@@ -111,7 +111,7 @@ root:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v2 \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-NEXT \
   --output artifacts/grounding-v5-d56-calibration-plan.json
 ```
 
