@@ -21,6 +21,7 @@ dependencies = [
 # and fast unit tests never require it.
 osworld = [
     "osworld @ git+https://github.com/xlang-ai/OSWorld-V2.git@v2026.06.24",
+    "chardet>=3,<6",  # OSWorld requests~=2.31 warns on the current chardet 7.x release
 ]
 platform = [
     "mlflow==3.14.0",
@@ -70,6 +71,7 @@ markers = [
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
     "platform_compose_integration: provisions an isolated Docker Compose platform stack",
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
+    "osworld_integration: requires the pinned local OSWorld Docker runtime and guest image",
     "v5_sandbox_integration: requires Darwin sandbox-exec outside a parent process sandbox",
 ]
 

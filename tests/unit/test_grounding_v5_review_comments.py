@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import json
 import subprocess
-from collections import Counter
 from pathlib import Path
 
 import pytest
 
 from pixelgym.grounding.v5 import os_sandbox
-from pixelgym.grounding.v5.contracts import Partition, WorkflowFamily
-from pixelgym.grounding.v5.generator import tasks_for_partition
+from pixelgym.grounding.v5.contracts import Partition
+from pixelgym.grounding.v5.manifests import partition_manifest
 from pixelgym.grounding.v5.os_sandbox import (
     _decode_probe_result,
     _escaped_sbpl_path,
@@ -32,12 +31,14 @@ def test_resume_record_decoder_rejects_non_object_json(payload: bytes) -> None:
 
 
 def test_confirmatory_subsets_are_family_stratified() -> None:
-    confirmatory = tasks_for_partition(Partition.CONFIRMATORY)
+    confirmatory = tuple(partition_manifest(Partition.CONFIRMATORY)["records"])
     for per_family in (2, 4):
         subset = _family_stratified_subset(confirmatory, per_family=per_family)
-        assert Counter(task.family for task in subset) == {
-            family: per_family for family in WorkflowFamily
+        counts = {
+            family: sum(record["seed_record"]["family"] == family for record in subset)
+            for family in {record["seed_record"]["family"] for record in confirmatory}
         }
+        assert set(counts.values()) == {per_family}
 
 
 def test_scripted_policy_outputs_reject_resolved_path_aliases(tmp_path: Path) -> None:

@@ -47,12 +47,13 @@ def partition_manifest(partition: Partition) -> dict[str, Any]:
             "task_id": task.task_id,
             "task_digest": content_digest(task.canonical_dict()),
             "semantic_digest": task.semantic_digest,
+            "max_episode_steps": task.max_episode_steps,
             "initial_capture_required": True,
         }
         for task in tasks
     ]
     manifest = {
-        "schema_version": "pixelgym-agent-v5-partition-v1",
+        "schema_version": "pixelgym-agent-v5-partition-v2",
         "protocol_version": PROTOCOL_VERSION,
         "generator_version": GENERATOR_VERSION,
         "generator_source_digest": generator_source_digest(),
