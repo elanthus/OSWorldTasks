@@ -245,16 +245,20 @@ def test_glm_trial_rejects_unapproved_digest_before_output(
 def test_consumed_strict_glm_trial_executor_is_frozen(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    frozen_output = fake_frozen_llama_trial_output(tmp_path, monkeypatch)
-    plan = build_plan(ROOT, frozen_llama_trial_output_directory=frozen_output)
+    plan = {"historical": "consumed strict GLM plan"}
     output = tmp_path / "must-not-exist"
+
+    def must_not_rebuild(*_args: object, **_kwargs: object) -> dict[str, object]:
+        raise AssertionError("frozen executor must not rebuild a historical plan")
+
+    monkeypatch.setattr(d56_glm_normalized_trial, "build_plan", must_not_rebuild)
 
     with pytest.raises(ValueError, match="strict-schema GLM trial is frozen"):
         execute_trial(
             ROOT,
             plan=plan,
             approved_plan_sha256=plan_digest(plan),
-            frozen_llama_trial_output_directory=frozen_output,
+            frozen_llama_trial_output_directory=tmp_path / "not-read",
             output_directory=output,
         )
 

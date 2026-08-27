@@ -305,13 +305,13 @@ def execute_trial(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved GLM candidate trial digest does not match the plan")
+    if EXECUTION_FROZEN:
+        raise ValueError("strict-schema GLM trial is frozen; use the relaxed-schema successor")
     if plan != build_plan(
         repository_root,
         frozen_llama_trial_output_directory=frozen_llama_trial_output_directory,
     ):
         raise ValueError("GLM candidate trial does not match canonical configuration")
-    if EXECUTION_FROZEN:
-        raise ValueError("strict-schema GLM trial is frozen; use the relaxed-schema successor")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before provider requests")
     if output_directory.exists():
