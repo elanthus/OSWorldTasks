@@ -11,6 +11,7 @@ from typing import Any
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
+from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_maximum_stage_index
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -347,7 +348,7 @@ def execute_trial(
             and isinstance(event.payload.get("diagnostic"), dict)
         ]
         diagnostic_counts = Counter(str(item.get("event")) for item in diagnostics)
-        maximum_stage_index = max((int(item["stage_index"]) for item in diagnostics), default=0)
+        maximum_stage_index = summarize_maximum_stage_index(diagnostics)
         transport_records = [] if transport is None else list(transport.records)
         integrity = journal.integrity_report()
         call_counts = journal.call_counts()
