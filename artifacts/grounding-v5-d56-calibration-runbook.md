@@ -1,16 +1,15 @@
-# PixelGym v5 four-policy D5.6 calibration runbook
+# PixelGym v5 D5.6 calibration runbook
 
-**Status:** the first approved panel smoke and partial calibration are consumed and frozen; a
-versioned one-retry policy and fresh replacement tasks are implemented; the exact new panel-smoke
-plan remains unapproved
+**Status:** the replacement panel smoke completed; the four-slot calibration stopped during Slot A
+and is frozen; a B/C/D-only successor is prepared but its exact plan digest remains unapproved
 
 ## Outcome
 
-Run four frozen policy systems over 50 calibration tasks that exclude both the original Qwen pilot
-and the eight assignments attempted by the consumed calibration. The run may reserve at most 5,724
-environment actions and 11,448 model attempts or wire requests, makes no provider control requests,
-and shares one $10 aggregate spend ledger. Prior attributed spend is `$0.370889195`, leaving
-`$9.629110805` before the new smoke. This run produces calibration evidence only. It does not expose
+Run the frozen policy systems over the approved 50-task calibration partition while preserving each
+consumed request and approval as immutable evidence. The current successor schedules only Slots B,
+C, and D: at most 4,293 environment actions and 8,586 model attempts or wire requests, with no
+provider control requests. Prior attributed spend is `$2.032875185`, leaving `$7.967124815` under
+the shared `$10.00` ceiling. This run produces calibration evidence only. It does not expose
 confirmatory tasks or declare D4.12 or D5.6 passed.
 
 ## Frozen design
@@ -130,6 +129,40 @@ Run slots sequentially in A, B, C, D order and tasks in manifest order. Continue
 success or step-limit truncation so assigned tasks remain in the denominator. Stop before any
 request whose theoretical maximum cannot fit under the remaining aggregate balance; retain every
 completed response, invalid output, failure, exhausted budget, and unattempted assignment.
+
+## Phase 4: B/C/D-only successor after the frozen Slot A failure
+
+Use this phase only for the owner-selected B/C/D continuation. Do not resume the four-slot run or
+retry its terminal Slot A request. First generate a new no-call plan into an unused path:
+
+```bash
+python scripts/run_grounding_v5_d56_bcd_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --output artifacts/grounding-v5-d56-bcd-calibration-plan.json
+```
+
+The planner verifies the frozen predecessor summary and journal byte digests, its request counts and
+integrity report, and the terminal `unknown_outcome_infrastructure_failure` event. It must report
+`provider_calls_made: 0`, policy order B/C/D, 150 assigned policy-task pairs, an aggregate action cap
+of 4,293, a model-attempt and wire-request cap of 8,586, and `$7.967124815` remaining. Obtain owner
+approval for the exact printed digest before executing:
+
+```bash
+python scripts/run_grounding_v5_d56_bcd_calibration.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-bcd-calibration-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --output artifacts/grounding-v5-d56-bcd-calibration-run
+```
+
+Run the three slots sequentially in B, C, D order and preserve the frozen task order. Continue after
+success and step-limit truncation. Freeze the B/C/D run after the first other failure or before a
+request whose theoretical maximum does not fit under the remaining shared ledger. Do not overwrite
+the predecessor or successor evidence directories.
 
 ## Handoff evidence
 

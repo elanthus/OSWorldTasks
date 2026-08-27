@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
 **Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-first smoke and partial calibration are consumed and frozen; a versioned one-retry policy and fresh
-replacement partition are prepared; the exact new smoke-plan digest remains unapproved
+replacement smoke completed; the four-slot calibration stopped during Slot A and is frozen; a
+B/C/D-only successor package is implemented but its exact plan digest remains unapproved
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -40,7 +40,7 @@ The owner should approve calibration only after recording evidence for every row
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
 | Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google Vertex, Alibaba, and DeepInfra on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Prior smoke and partial calibration frozen; new panel uses four fresh development tasks and the versioned retry rule |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Replacement four-slot smoke completed and is frozen at `artifacts/grounding-v5-d56-panel-smoke-run-v4/` |
 
 ## Policy panel decision
 
@@ -128,11 +128,46 @@ Record the approved calibration limits for each policy:
 | B / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
 | C / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.0139264/request guard | Approved |
 | D / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
-| **Aggregate** | **5,724** | **11,448** | **0** | **11,448** | **$10 including $0.370889195 prior spend** | **Approved envelope** |
+| **Aggregate** | **5,724** | **11,448** | **0** | **11,448** | **$10 including prior spend** | **Approved envelope** |
 
 The exact policy IDs and plan digests remain pending because they bind the clean implementation
 revision and verified smoke evidence. Until those are separately approved, the table authorizes
 zero calls.
+
+## B/C/D successor decision
+
+The owner selected Slots B, C, and D after the approved four-slot calibration stopped on the 33rd
+Slot A assignment. The predecessor run is immutable at
+`artifacts/grounding-v5-d56-calibration-run-v2/`. Its terminal request crossed the send boundary,
+then reached the runner deadline without a response. The journal classifies that outcome as
+`unknown_outcome_infrastructure_failure` with failure code `runner_request_deadline`; it is not
+eligible for retry. The successor neither resumes Slot A nor replaces any Slot A assignment.
+
+The new approval package must bind the predecessor plan, summary, journal, terminal event, and
+actual aggregate spend before it can authorize any call. It schedules the same frozen 50-task
+partition for the three previously unattempted policy slots:
+
+| Slot | Environment actions | Model attempts | Control requests | Wire requests | Uncapped request maximum |
+|---|---:|---:|---:|---:|---:|
+| B | 1,431 | 2,862 | 0 | 2,862 | $47.852273664 |
+| C | 1,431 | 2,862 | 0 | 2,862 | $39.857356800 |
+| D | 1,431 | 2,862 | 0 | 2,862 | $47.852273664 |
+| **B/C/D total** | **4,293** | **8,586** | **0** | **8,586** | **$135.561904128** |
+
+The shared ledger has already attributed `$2.032875185`, leaving `$7.967124815` under the approved
+`$10.00` ceiling. The ledger, rather than the uncapped maximum, remains binding. Generate the exact
+no-call successor plan only after committing the implementation:
+
+```bash
+python scripts/run_grounding_v5_d56_bcd_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --output artifacts/grounding-v5-d56-bcd-calibration-plan.json
+```
+
+The printed digest requires a fresh, exact owner approval. The earlier smoke and calibration
+approvals do not authorize the successor plan.
 
 ## Calibration routing freeze
 
