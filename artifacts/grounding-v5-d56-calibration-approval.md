@@ -215,7 +215,7 @@ smoke already exposed. It does not consume a calibration or confirmatory task. T
 at most 28 environment actions, 56 model attempts or wire requests, zero control requests, and an
 uncapped theoretical maximum of `$0.7798784`. The shared `$10.00` ledger remains binding.
 
-After committing the implementation, generate the no-call plan:
+The approved no-call plan was generated with:
 
 ```bash
 .venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \

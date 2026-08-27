@@ -222,11 +222,15 @@ journal sealed `unknown_outcome_infrastructure_failure` with failure code
 `$2.481019457` and leaving `$7.518980543`. Preserve
 `artifacts/grounding-v5-d56-c-calibration-run/` unchanged and do not resume it.
 
-## Phase 6: one normalized-coordinate Slot C development trial
+## Phase 6: consumed normalized-coordinate Slot C development trial
 
-Use development seed `5010` for one complete episode. This seed was already exposed by the panel
-smoke, so the trial does not consume calibration or confirmatory tasks. Generate a no-call plan
-only after committing the normalized adapter:
+This phase is complete and frozen. The runner now rejects execution and directs the operator to
+the GLM candidate successor. The commands in this section record the historical procedure; do not
+execute them again.
+
+The phase used development seed `5010` for one complete episode. This seed was already exposed by
+the panel smoke, so the trial did not consume calibration or confirmatory tasks. The no-call plan
+was generated only after committing the normalized adapter:
 
 ```bash
 .venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \
@@ -235,10 +239,9 @@ only after committing the normalized adapter:
   --output artifacts/grounding-v5-d56-c-normalized-trial-plan.json
 ```
 
-The plan must report one assigned development task, 28 environment actions, at most 56 model
-attempts or wire requests, zero control requests, `$2.481019457` prior spend, `$7.518980543`
-remaining, and `provider_calls_made: 0`. Obtain exact owner approval for its printed digest before
-executing:
+The plan reported one assigned development task, 28 environment actions, at most 56 model attempts
+or wire requests, zero control requests, `$2.481019457` prior spend, `$7.518980543` remaining, and
+`provider_calls_made: 0`. The owner approved its printed digest before the historical execution:
 
 ```bash
 .venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \

@@ -190,3 +190,22 @@ def test_normalized_trial_rejects_unapproved_digest_before_output(
         )
 
     assert not output.exists()
+
+
+def test_consumed_normalized_llama_trial_execution_is_locked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frozen_output = fake_frozen_c_output(tmp_path, monkeypatch)
+    plan = build_plan(ROOT, frozen_c_output_directory=frozen_output)
+    output = tmp_path / "must-not-exist"
+
+    with pytest.raises(RuntimeError, match="normalized Llama trial is frozen"):
+        execute_trial(
+            ROOT,
+            plan=plan,
+            approved_plan_sha256=plan_digest(plan),
+            frozen_c_output_directory=frozen_output,
+            output_directory=output,
+        )
+
+    assert not output.exists()

@@ -28,6 +28,7 @@ PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-result-v1"
 TRIAL_SEED = 5010
 PRICE_OBSERVED_AT_UTC = "2026-08-27T18:36:48Z"
+EXECUTION_FROZEN = True
 
 FROZEN_C_PLAN_SHA256 = "sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37"
 FROZEN_C_SUMMARY_SHA256 = "sha256:73cfd90ae6594a4d826520be3aa971ba049554c5d69196111edb672a78f0da0f"
@@ -265,6 +266,10 @@ def execute_trial(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved normalized Slot C trial digest does not match the plan")
+    if EXECUTION_FROZEN:
+        raise RuntimeError(
+            "normalized Llama trial is frozen; use the GLM candidate successor"
+        )
     if plan != build_plan(repository_root, frozen_c_output_directory=frozen_c_output_directory):
         raise ValueError("normalized Slot C trial does not match canonical configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
