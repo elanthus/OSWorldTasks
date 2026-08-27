@@ -254,6 +254,48 @@ failure or before a request whose worst-case cost cannot fit under the shared le
 first-transition flag and maximum observed stage from the generated summary. Do not treat this
 development trial as calibration evidence, and do not overwrite any frozen run.
 
+### Frozen normalized Llama result
+
+The owner approved plan
+`sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15`.
+The run completed stage 0, then repeatedly focused the stage-1 text field without typing. Request
+20 returned HTTP 429 and was sealed as an unknown-outcome infrastructure failure. Preserve
+`artifacts/grounding-v5-d56-c-normalized-trial-run/` unchanged. Its aggregate spend is
+`$2.487339457`; do not resume or retry it.
+
+## Phase 7: one GLM normalized-coordinate comparison trial
+
+Use the same already-exposed development seed `5010`. Pin `z-ai/glm-5.3-flash` to Novita FP8 with
+fallbacks disabled, and retain the normalized adapter and stateful visible-action history. This is
+a candidate comparison, not calibration or confirmatory evidence and not yet a Slot C replacement.
+
+After committing the implementation, generate the no-call plan:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_normalized_trial.py \
+  --plan-only \
+  --frozen-llama-trial-output artifacts/grounding-v5-d56-c-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-normalized-trial-plan.json
+```
+
+The plan must report one assigned development task, 28 environment actions, at most 56 model
+attempts or wire requests, zero control requests, `$2.487339457` prior spend, `$7.512660543`
+remaining, an uncapped theoretical trial maximum of `$0.590643200`, and
+`provider_calls_made: 0`. Obtain exact owner approval for its printed digest before executing:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_normalized_trial.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-glm-normalized-trial-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --frozen-llama-trial-output artifacts/grounding-v5-d56-c-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-normalized-trial-run
+```
+
+Let the episode end by success termination or step-limit truncation. Stop on any other failure or
+before a request whose worst-case cost cannot fit under the shared ledger. Report semantic progress
+from the generated summary and preserve every predecessor and comparison run unchanged.
+
 ## Handoff evidence
 
 Report raw commands and exit statuses, actual wire requests, model reservations, spend before and

@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
-**Status:** the four-slot, B/C/D, and native-coordinate Slot C runs are frozen; the owner selected a
-normalized-coordinate Slot C replacement on 2026-08-27, and its one-episode development trial
-requires a new exact plan approval
+**Status:** the four-slot, B/C/D, native-coordinate Slot C, and normalized Llama development runs
+are frozen; the owner selected `z-ai/glm-5.3-flash` for a one-episode comparison on 2026-08-27,
+and its exact paid-call plan remains pending
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -38,7 +38,7 @@ The owner should approve calibration only after recording evidence for every row
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
 | Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; new Google Vertex Slot A package pending exact smoke approval |
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
-| Price catalog | Provider-published prices captured with source URL and effective timestamp | DeepInfra Llama 4 Scout prices rechecked on 2026-08-27; other panel prices refreshed on 2026-08-26 |
+| Price catalog | Provider-published prices captured with source URL and effective timestamp | DeepInfra Llama 4 Scout and Novita GLM 5.3 Flash prices checked on 2026-08-27; other panel prices refreshed on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
 | Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Replacement four-slot smoke completed and is frozen at `artifacts/grounding-v5-d56-panel-smoke-run-v4/` |
 
@@ -53,7 +53,7 @@ model name as the policy identity.
 |---|---|---|---|---|---|---|
 | A | OpenRouter → Google Vertex Global only | `google/gemini-3.7-flash` | Stateful visible-action history | `normalized-1000x1000` | Strong-policy candidate | Approved; omit unsupported `temperature` |
 | B | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateful visible-action history | `normalized-1000x1000` | Mid-band visual policy candidate | Approved |
-| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `normalized-1000x1000` | Lower-band policy candidate | Owner selected replacement after the native-coordinate run made zero stage transitions; exact trial plan pending |
+| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `normalized-1000x1000` | Lower-band policy candidate | One development trial reached stage 1, then looped on the text field; frozen on HTTP 429 |
 | D | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateless within each episode | `normalized-1000x1000` | Isolate episode-local state use | Approved |
 
 Qwen appears twice intentionally. Slots B and D freeze the same model, route, coordinate adapter,
@@ -85,6 +85,7 @@ The refreshed route-specific token prices are:
 | Google Vertex Global / Gemini 3.7 Flash | $0.000000375 | $0.000001875 | $0.055296000 |
 | Alibaba / Qwen3-VL 8B | $0.000000117 | $0.000000455 | $0.016719872 |
 | DeepInfra FP8 / Llama 4 Scout | $0.0000001 | $0.0000003 | $0.013926400 |
+| Novita FP8 / GLM 5.3 Flash candidate | $0.000000075 | $0.00000025 | $0.010547200 |
 
 Each request freezes at most 126,976 prompt tokens plus 4,096 completion tokens within a 131,072
 policy context limit. These are conservative request guards, not expected costs. The uncapped
@@ -223,10 +224,39 @@ After committing the implementation, generate the no-call plan:
   --output artifacts/grounding-v5-d56-c-normalized-trial-plan.json
 ```
 
-The planner must bind the native run's exact summary and journal, report
-`provider_calls_made: 0`, and name only the development task above. The prior native-coordinate
-approval authorizes zero normalized-coordinate requests; execution requires approval of the new
-printed digest.
+The owner approved plan
+`sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15`.
+The normalized Llama run completed the first transition, then issued 18 more clicks that focused
+the stage-1 text field instead of typing its visible code. Request 20 returned HTTP 429 with no
+canonical response or usage. The run recorded 19 environment actions, 20 provider requests, zero
+successes, and `$0.006320000` incremental spend. Aggregate spend is `$2.487339457`, leaving
+`$7.512660543`. Preserve `artifacts/grounding-v5-d56-c-normalized-trial-run/` unchanged and do not
+resume or retry it.
+
+## GLM normalized development comparison
+
+The owner selected `z-ai/glm-5.3-flash` as a comparison candidate, not yet as a replacement for the
+frozen Slot C policy. Use the same already-exposed development seed `5010`, normalized coordinate
+adapter, and stateful visible-action history. Pin OpenRouter to Novita FP8, disable fallbacks, and
+require every declared request parameter. The Novita route was selected because its endpoint
+advertised image input, structured responses, and the frozen `seed` parameter when checked on
+2026-08-27.
+
+The episode permits at most 28 environment actions, 56 model attempts or wire requests, zero
+control requests, and an uncapped theoretical maximum of `$0.590643200`. It starts from aggregate
+spend `$2.487339457`; the shared `$10.00` ledger remains binding. Generate the no-call plan only
+after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_normalized_trial.py \
+  --plan-only \
+  --frozen-llama-trial-output artifacts/grounding-v5-d56-c-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-normalized-trial-plan.json
+```
+
+The planner must bind the normalized Llama trial's exact summary, journal, terminal event, and
+aggregate spend, report `provider_calls_made: 0`, and name only development seed `5010`. Every prior
+approval authorizes zero GLM requests; execution requires approval of the new printed digest.
 
 ## Calibration routing freeze
 

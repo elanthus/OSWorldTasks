@@ -12,6 +12,7 @@ import pytest
 from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
+    GLM_STATEFUL_CANDIDATE,
     LLAMA_STATEFUL,
     PANEL,
     QWEN_STATEFUL,
@@ -105,6 +106,26 @@ def test_llama_uses_normalized_coordinates_and_fp8_route_filter() -> None:
         ),
         policy.reset("task"),
     ) == {"action_type": 1, "x": 1023, "y": 767, "key": 0}
+
+
+def test_glm_candidate_uses_novita_fp8_and_normalized_coordinates() -> None:
+    policy = OpenRouterPanelPolicy(GLM_STATEFUL_CANDIDATE)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+    schema = request["response_format"]["json_schema"]["schema"]
+
+    assert GLM_STATEFUL_CANDIDATE not in PANEL
+    assert request["model"] == "z-ai/glm-5.3-flash"
+    assert request["provider"] == {
+        "only": ["novita"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+        "quantizations": ["fp8"],
+    }
+    assert request["seed"] == 20260809
+    assert schema["properties"]["x"]["maximum"] == 999
+    assert schema["properties"]["y"]["maximum"] == 999
+    assert GLM_STATEFUL_CANDIDATE.request_maximum_usd == Decimal("0.0105472")
 
 
 def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:

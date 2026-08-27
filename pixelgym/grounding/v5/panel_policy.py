@@ -142,6 +142,21 @@ LLAMA_STATEFUL = PanelPolicyConfig(
     stateful=True,
     quantizations=("fp8",),
 )
+GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
+    slot="C-glm-stateful-candidate",
+    model="z-ai/glm-5.3-flash",
+    provider_route="novita",
+    response_provider="Novita",
+    prompt_price_per_token_usd=Decimal("0.000000075"),
+    completion_price_per_token_usd=Decimal("0.00000025"),
+    price_source=(
+        "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-flash/endpoints"
+    ),
+    adapter=NORMALIZED_1000_ADAPTER,
+    coordinate_input_convention="integer-normalized-square/0..999-inclusive",
+    stateful=True,
+    quantizations=("fp8",),
+)
 QWEN_STATELESS = PanelPolicyConfig(
     slot="D-qwen-stateless",
     model=QWEN_STATEFUL.model,
