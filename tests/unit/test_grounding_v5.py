@@ -29,6 +29,7 @@ from pixelgym.grounding.v5.evidence import (
 )
 from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition, validate_generator
 from pixelgym.grounding.v5.manifests import (
+    D56_CONSUMED_CALIBRATION_SEEDS,
     D56_EXCLUDED_CALIBRATION_SEEDS,
     d56_calibration_manifest,
     partition_manifest,
@@ -46,7 +47,11 @@ from pixelgym.grounding.v5.sandbox import (
     SANDBOX_POLICY_VERSION,
     build_sandbox_manifest,
 )
-from pixelgym.grounding.v5.seeds import SEED_RECORDS, validate_seed_contract
+from pixelgym.grounding.v5.seeds import (
+    D56_REPLACEMENT_CALIBRATION_SEEDS,
+    SEED_RECORDS,
+    validate_seed_contract,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
@@ -67,6 +72,7 @@ def test_v5_seed_and_generator_contract_freezes_allocations() -> None:
         "calibration": 60,
         "confirmatory": 96,
     }
+    assert seed_summary["d56_replacement_calibration_count"] == 8
     assert seed_summary["difficulty_band_counts"] == {
         "regression_canary": 36,
         "frontier": 108,
@@ -86,19 +92,24 @@ def test_v5_checked_in_partition_manifests_match_current_sources(
     assert stored.read_bytes() == canonical_json_bytes(partition_manifest(partition)) + b"\n"
 
 
-def test_v5_d56_calibration_manifest_excludes_the_complete_pilot_allocation() -> None:
+def test_v5_d56_calibration_manifest_replaces_every_exposed_task() -> None:
     source = partition_manifest(Partition.CALIBRATION)
     derived = d56_calibration_manifest()
 
     assert source["episode_count"] == 60
-    assert derived["schema_version"] == "pixelgym-agent-v5-partition-v3"
+    assert derived["schema_version"] == "pixelgym-agent-v5-partition-v4"
     assert derived["episode_count"] == 50
     assert sum(record["max_episode_steps"] for record in derived["records"]) == 1431
     assert derived["derivation"]["source_manifest_digest"] == source["manifest_digest"]
-    assert derived["derivation"]["excluded_seeds"] == list(
-        D56_EXCLUDED_CALIBRATION_SEEDS
+    exposed = {*D56_EXCLUDED_CALIBRATION_SEEDS, *D56_CONSUMED_CALIBRATION_SEEDS}
+    assert set(derived["derivation"]["excluded_seeds"]) == exposed
+    assert exposed.isdisjoint(
+        record["seed_record"]["seed"] for record in derived["records"]
     )
-    assert set(D56_EXCLUDED_CALIBRATION_SEEDS).isdisjoint(
+    assert derived["derivation"]["replacement_seeds"] == list(
+        D56_REPLACEMENT_CALIBRATION_SEEDS
+    )
+    assert set(D56_REPLACEMENT_CALIBRATION_SEEDS).issubset(
         record["seed_record"]["seed"] for record in derived["records"]
     )
     stored = ROOT / "artifacts/grounding-v5-manifests/calibration-d56.json"

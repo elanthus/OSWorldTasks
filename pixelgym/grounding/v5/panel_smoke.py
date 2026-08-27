@@ -1,4 +1,4 @@
-"""Plan and execute the exact four-call D5.6 panel integration smoke."""
+"""Plan and execute the four-action D5.6 panel integration smoke."""
 
 from __future__ import annotations
 
@@ -11,6 +11,10 @@ from typing import Any
 from pixelgym.grounding.v5.contracts import CallCaps, Partition, content_digest, sha256_bytes
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.manifests import (
+    D56_CONSUMED_CALIBRATION_PLAN_DIGEST,
+    D56_CONSUMED_CALIBRATION_SUMMARY_SHA256,
+)
 from pixelgym.grounding.v5.panel_policy import (
     PANEL_BY_SLOT,
     PANEL_MAXIMUM_SPEND_USD,
@@ -22,14 +26,14 @@ from pixelgym.grounding.v5.panel_policy import (
 )
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-panel-smoke-result-v2"
 PRICE_OBSERVED_AT_UTC = "2026-08-26T22:36:24Z"
 SMOKE_ALLOCATIONS = (
-    ("A-gemini-stateful", 5001),
-    ("B-qwen-stateful", 5005),
-    ("C-llama-stateful", 5013),
-    ("D-qwen-stateless", 5021),
+    ("A-gemini-stateful", 5002),
+    ("B-qwen-stateful", 5006),
+    ("C-llama-stateful", 5010),
+    ("D-qwen-stateless", 5018),
 )
 
 
@@ -60,7 +64,7 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
         manifest = build_panel_policy_manifest(
             repository_root, config=config, code_revision=revision
         )
-        theoretical_smoke_maximum += config.request_maximum_usd
+        theoretical_smoke_maximum += config.request_maximum_usd * 2
         policies.append(
             {
                 "slot": slot,
@@ -121,9 +125,18 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
             ),
             "runner.py": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
         },
+        "prior_evidence": {
+            "consumed_calibration_plan_digest": (
+                D56_CONSUMED_CALIBRATION_PLAN_DIGEST
+            ),
+            "consumed_calibration_summary_sha256": (
+                D56_CONSUMED_CALIBRATION_SUMMARY_SHA256
+            ),
+            "actual_aggregate_spend_usd": str(PRIOR_AGGREGATE_SPEND_USD),
+        },
         "policies": policies,
         "caps": {
-            **CallCaps(4, 4, 0, 4).to_dict(),
+            **CallCaps(4, 8, 0, 8).to_dict(),
             "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
             "prior_aggregate_spend_usd": str(PRIOR_AGGREGATE_SPEND_USD),
             "smoke_theoretical_maximum_usd": str(theoretical_smoke_maximum),
@@ -131,9 +144,11 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
         },
         "stop_rules": [
             "run policies sequentially in slot order",
-            "stop after four total model-attempt reservations",
+            "stop after eight total model-attempt reservations",
             "stop after the first transport, identity, cost, parse, adapter, action, or evidence failure",
-            "do not retry or replace a failed or incomplete policy smoke",
+            "retry once on the same route only after a zero-token, zero-cost, empty response with finish_reason error",
+            "retain both attempts and stop after a repeated retryable provider error",
+            "do not retry any parse, action, unknown-outcome, or other provider failure",
             "do not expose calibration or confirmatory tasks",
         ],
         "approval_required": {
@@ -187,7 +202,7 @@ def execute_smoke(
                 manifest=manifest,
                 transport=transport,
                 policy=OpenRouterPanelPolicy(config),
-                approved_caps=CallCaps(4, 4, 0, 4),
+                approved_caps=CallCaps(4, 8, 0, 8),
             ).run(
                 trial_id=f"panel-smoke-{config.slot}-{task.task_id}",
                 task=task,

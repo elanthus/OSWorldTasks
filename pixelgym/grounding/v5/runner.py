@@ -6,6 +6,7 @@ import json
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, Literal, Protocol
 
 from pixelgym.actions import InvalidActionError, validate_action
@@ -52,6 +53,7 @@ class StatefulPolicyPackage(Protocol):
     def build_request(self, state: bytes, screenshot: bytes) -> dict[str, Any]: ...
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes: ...
     def failure_state(self, state: bytes, failure_code: str) -> bytes: ...
+    def retryable_response_code(self, canonical_response: bytes) -> str | None: ...
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]: ...
     def post_parse_state(self, state: bytes, candidate: dict[str, Any]) -> bytes: ...
     def post_dispatch_state(
@@ -212,6 +214,10 @@ class ScriptedStatefulPolicy:
         value = json.loads(state)
         value["history"].append({"failure_code": failure_code})
         return canonical_json_bytes(value)
+
+    def retryable_response_code(self, canonical_response: bytes) -> str | None:
+        del canonical_response
+        return None
 
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
         self.parse_calls += 1
@@ -388,45 +394,123 @@ class V5Runner:
         request = self.policy.build_request(state, screenshot_bytes)
         validate_credential_free(request)
         request_bytes = canonical_json_bytes(request)
-        identity = AttemptIdentity(trial_id, step_index, 0)
-        idempotency_key = content_digest({"attempt": identity.key, "policy": self.manifest.policy_id})
-        _reservation, created = self.journal.reserve_attempt_started(
-            identity,
-            provider_endpoint_identity=self.manifest.sandbox.provider_endpoint,
-            request_digest="sha256:" + sha256_bytes(request_bytes),
-            idempotency_key=idempotency_key,
-            model_attempt_reservation=1,
-            control_request_reservation=(
-                self.manifest.max_cancellation_requests_per_attempt
-                + self.manifest.max_reconciliation_requests_per_attempt
-            ),
-            pre_call_checkpoint=state,
-            approved_caps=self.approved_caps,
-        )
-        if not created:
-            raise RuntimeError("model attempt is already durably reserved")
-        self._boundary("attempt_started")
-        bounded_send = self.deadline_executor.execute(
-            lambda: self.transport.send(
+        request_digest = "sha256:" + sha256_bytes(request_bytes)
+        attempt_identities: list[AttemptIdentity] = []
+        canonical_response: bytes | None = None
+        post_attempt_state = state
+        for attempt_index in range(self.manifest.max_model_attempts_per_action):
+            identity = AttemptIdentity(trial_id, step_index, attempt_index)
+            attempt_identities.append(identity)
+            idempotency_key = content_digest(
+                {"attempt": identity.key, "policy": self.manifest.policy_id}
+            )
+            _reservation, created = self.journal.reserve_attempt_started(
+                identity,
+                provider_endpoint_identity=self.manifest.sandbox.provider_endpoint,
+                request_digest=request_digest,
+                idempotency_key=idempotency_key,
+                model_attempt_reservation=1,
+                control_request_reservation=(
+                    self.manifest.max_cancellation_requests_per_attempt
+                    + self.manifest.max_reconciliation_requests_per_attempt
+                ),
+                pre_call_checkpoint=state,
+                approved_caps=self.approved_caps,
+            )
+            if not created:
+                raise RuntimeError("model attempt is already durably reserved")
+            self._boundary("attempt_started")
+            send_request = partial(
+                self.transport.send,
                 request,
                 idempotency_key=idempotency_key,
                 deadline_seconds=self.manifest.request_deadline_seconds,
-            ),
-            timeout_seconds=self.manifest.request_deadline_seconds,
-        )
-        transport_outcome = (
-            TransportOutcome("deadline", failure_code="runner_request_deadline")
-            if bounded_send.timed_out
-            else bounded_send.value
-        )
-        if not isinstance(transport_outcome, TransportOutcome):
-            raise TypeError("provider transport returned an invalid outcome")
-        self._boundary("provider_receipt")
-        settled = self._settle(identity, idempotency_key, transport_outcome, state)
-        if settled["response"] is None:
-            return {"classification": settled["classification"], "state": settled["state"]}
-        canonical_response = settled["response"]
-        post_attempt_state = settled["state"]
+            )
+            bounded_send = self.deadline_executor.execute(
+                send_request,
+                timeout_seconds=self.manifest.request_deadline_seconds,
+            )
+            transport_outcome = (
+                TransportOutcome("deadline", failure_code="runner_request_deadline")
+                if bounded_send.timed_out
+                else bounded_send.value
+            )
+            if not isinstance(transport_outcome, TransportOutcome):
+                raise TypeError("provider transport returned an invalid outcome")
+            self._boundary("provider_receipt")
+            if transport_outcome.status != "response" or transport_outcome.response is None:
+                settled = self._settle(
+                    identity, idempotency_key, transport_outcome, state
+                )
+                return {
+                    "classification": settled["classification"],
+                    "state": settled["state"],
+                }
+            response_event, response_bytes = self.journal.persist_canonical_response(
+                identity, transport_outcome.response
+            )
+            self._boundary("canonical_response_persisted")
+            retry_code = self.policy.retryable_response_code(response_bytes)
+            if retry_code is not None:
+                self.journal.seal_attempt_terminal(
+                    identity,
+                    kind="attempt_completed",
+                    post_attempt_checkpoint=state,
+                    response_digest=response_event.payload["canonical_response_digest"],
+                    usage=transport_outcome.response["usage"],
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/retryable_provider_response",
+                    kind="retryable_provider_response",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=attempt_index,
+                    payload={
+                        "failure_code": retry_code,
+                        "response_digest": response_event.payload[
+                            "canonical_response_digest"
+                        ],
+                        "retry_rule": self.manifest.transport_retry_rule,
+                        "next_attempt_permitted": (
+                            attempt_index + 1
+                            < self.manifest.max_model_attempts_per_action
+                        ),
+                    },
+                )
+                self._boundary("attempt_terminal")
+                self._boundary("retryable_provider_response")
+                if attempt_index + 1 < self.manifest.max_model_attempts_per_action:
+                    continue
+                self.journal.append_event(
+                    event_key=f"{identity.key}/sealed_retry_exhausted",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=attempt_index,
+                    payload={
+                        "failure_code": "retryable_response_exhausted",
+                        "sanitized_reason": retry_code,
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
+                        "policy_checkpoint_digest": "sha256:"
+                        + sha256_bytes(state),
+                    },
+                )
+                return {"classification": "infrastructure_failure", "state": state}
+            post_attempt_state = self.policy.reduce_state(state, response_bytes)
+            self.journal.seal_attempt_terminal(
+                identity,
+                kind="attempt_completed",
+                post_attempt_checkpoint=post_attempt_state,
+                response_digest=response_event.payload["canonical_response_digest"],
+                usage=transport_outcome.response["usage"],
+            )
+            self._boundary("attempt_terminal")
+            canonical_response = response_bytes
+            break
+        if canonical_response is None:
+            raise RuntimeError("provider attempt loop ended without a terminal result")
         try:
             self._boundary("before_parse")
             candidate = self.policy.parse(canonical_response, post_attempt_state)
@@ -436,12 +520,15 @@ class V5Runner:
                 kind="sealed_unsuccessful_result",
                 trial_id=trial_id,
                 step_index=step_index,
-                attempt_index=0,
+                attempt_index=identity.attempt_index,
                 payload={
                     "failure_code": "parse_failure",
                     "sanitized_reason": type(exc).__name__,
                     "parser_version": self.manifest.parser_version,
                     "policy_checkpoint_digest": "sha256:" + sha256_bytes(post_attempt_state),
+                    "attempt_identities": [
+                        attempt.key for attempt in attempt_identities
+                    ],
                 },
             )
             self._boundary("parser_failure")
@@ -457,7 +544,9 @@ class V5Runner:
             step_index=step_index,
             payload={
                 "candidate_digest": candidate_digest,
-                "attempt_identities": [identity.key],
+                "attempt_identities": [
+                    attempt.key for attempt in attempt_identities
+                ],
                 "parser_version": self.manifest.parser_version,
                 "post_parse_checkpoint_digest": checkpoint_digest,
             },
@@ -829,12 +918,77 @@ class V5Runner:
                 backend=backend,
             )
         canonical_event = by_kind.get("canonical_response_persisted")
+        started_events = [
+            event for event in events if event.kind == "attempt_started"
+        ]
+        attempt_identities = [
+            AttemptIdentity(
+                trial_id,
+                step_index,
+                int(event.attempt_index if event.attempt_index is not None else 0),
+            )
+            for event in started_events
+        ]
+        retryable_event = by_kind.get("retryable_provider_response")
+        latest_started = started_events[-1] if started_events else None
+        if (
+            retryable_event is not None
+            and latest_started is not None
+            and retryable_event.attempt_index == latest_started.attempt_index
+        ):
+            identity = AttemptIdentity(
+                trial_id,
+                step_index,
+                int(
+                    latest_started.attempt_index
+                    if latest_started.attempt_index is not None
+                    else 0
+                ),
+            )
+            self.journal.append_event(
+                event_key=f"{identity.key}/sealed_retry_interrupted",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=step_index,
+                attempt_index=identity.attempt_index,
+                payload={
+                    "failure_code": "retry_interrupted_before_next_attempt",
+                    "attempt_identities": [
+                        attempt.key for attempt in attempt_identities
+                    ],
+                },
+            )
+            return {
+                "classification": "infrastructure_failure",
+                "reason": "retry_interrupted_before_next_attempt",
+                "redispatched": False,
+            }
+        if (
+            canonical_event is not None
+            and latest_started is not None
+            and latest_started.attempt_index is not None
+            and canonical_event.attempt_index is not None
+            and latest_started.attempt_index > canonical_event.attempt_index
+        ):
+            canonical_event = None
+        canonical_attempt_index = (
+            canonical_event.attempt_index if canonical_event is not None else None
+        )
         terminal = next(
-            (event for event in events if event.kind.endswith("failure") or event.kind in {
-                "attempt_completed",
-                "confirmed_cancellation",
-                "confirmed_no_response_timeout",
-            }),
+            (
+                event
+                for event in events
+                if event.attempt_index == canonical_attempt_index
+                and (
+                    event.kind.endswith("failure")
+                    or event.kind
+                    in {
+                        "attempt_completed",
+                        "confirmed_cancellation",
+                        "confirmed_no_response_timeout",
+                    }
+                )
+            ),
             None,
         )
         if terminal is not None and terminal.kind != "attempt_completed":
@@ -850,8 +1004,21 @@ class V5Runner:
                     started.payload["pre_call_checkpoint_digest"],
                     expected_kind="policy_checkpoint",
                 )
-                post_state = self.policy.reduce_state(pre_state, response_bytes)
-                identity = AttemptIdentity(trial_id, step_index, 0)
+                identity = AttemptIdentity(
+                    trial_id,
+                    step_index,
+                    int(
+                        canonical_event.attempt_index
+                        if canonical_event.attempt_index is not None
+                        else 0
+                    ),
+                )
+                retry_code = self.policy.retryable_response_code(response_bytes)
+                post_state = (
+                    pre_state
+                    if retry_code is not None
+                    else self.policy.reduce_state(pre_state, response_bytes)
+                )
                 self.journal.seal_attempt_terminal(
                     identity,
                     kind="attempt_completed",
@@ -859,6 +1026,44 @@ class V5Runner:
                     response_digest=canonical_event.payload["canonical_response_digest"],
                     usage=json.loads(response_bytes)["usage"],
                 )
+                if retry_code is not None:
+                    self.journal.append_event(
+                        event_key=f"{identity.key}/retryable_provider_response",
+                        kind="retryable_provider_response",
+                        trial_id=trial_id,
+                        step_index=step_index,
+                        attempt_index=identity.attempt_index,
+                        payload={
+                            "failure_code": retry_code,
+                            "response_digest": canonical_event.payload[
+                                "canonical_response_digest"
+                            ],
+                            "retry_rule": self.manifest.transport_retry_rule,
+                            "next_attempt_permitted": False,
+                            "recovery_disposition": (
+                                "retry_not_issued_after_process_interruption"
+                            ),
+                        },
+                    )
+                    self.journal.append_event(
+                        event_key=f"{identity.key}/sealed_retry_interrupted",
+                        kind="sealed_unsuccessful_result",
+                        trial_id=trial_id,
+                        step_index=step_index,
+                        attempt_index=identity.attempt_index,
+                        payload={
+                            "failure_code": "retry_interrupted_before_next_attempt",
+                            "attempt_identities": [
+                                attempt.key for attempt in attempt_identities
+                            ],
+                        },
+                    )
+                    return {
+                        "classification": "infrastructure_failure",
+                        "reason": "retry_interrupted_before_next_attempt",
+                        "state": post_state,
+                        "redispatched": False,
+                    }
             else:
                 post_state = self.journal.get_object(
                     terminal.payload["post_attempt_checkpoint_digest"],
@@ -867,18 +1072,29 @@ class V5Runner:
             try:
                 candidate = self.policy.parse(response_bytes, post_state)
             except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
-                identity = AttemptIdentity(trial_id, step_index, 0)
+                identity = AttemptIdentity(
+                    trial_id,
+                    step_index,
+                    int(
+                        canonical_event.attempt_index
+                        if canonical_event.attempt_index is not None
+                        else 0
+                    ),
+                )
                 self.journal.append_event(
                     event_key=f"{identity.key}/sealed_parser_failure",
                     kind="sealed_unsuccessful_result",
                     trial_id=trial_id,
                     step_index=step_index,
-                    attempt_index=0,
+                    attempt_index=identity.attempt_index,
                     payload={
                         "failure_code": "parse_failure",
                         "sanitized_reason": type(exc).__name__,
                         "parser_version": self.manifest.parser_version,
                         "policy_checkpoint_digest": "sha256:" + sha256_bytes(post_state),
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
                     },
                 )
                 self._boundary("parser_failure")
@@ -899,7 +1115,9 @@ class V5Runner:
                 step_index=step_index,
                 payload={
                     "candidate_digest": candidate_digest,
-                    "attempt_identities": [AttemptIdentity(trial_id, step_index, 0).key],
+                    "attempt_identities": [
+                        attempt.key for attempt in attempt_identities
+                    ],
                     "parser_version": self.manifest.parser_version,
                     "post_parse_checkpoint_digest": post_parse_digest,
                 },
@@ -912,7 +1130,11 @@ class V5Runner:
             )
         if "attempt_started" in by_kind:
             started = by_kind["attempt_started"]
-            identity = AttemptIdentity(trial_id, step_index, 0)
+            identity = AttemptIdentity(
+                trial_id,
+                step_index,
+                int(started.attempt_index if started.attempt_index is not None else 0),
+            )
             pre_state = self.journal.get_object(
                 started.payload["pre_call_checkpoint_digest"],
                 expected_kind="policy_checkpoint",

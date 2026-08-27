@@ -16,6 +16,7 @@ from pixelgym.grounding.v5.panel_policy import (
     PANEL,
     QWEN_STATEFUL,
     QWEN_STATELESS,
+    TRANSPORT_RETRY_RULE,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
@@ -140,6 +141,29 @@ def test_panel_policy_rejects_wrong_response_model_or_provider() -> None:
     wrong_provider["usage"]["upstream_provider"] = "Google Vertex"
     with pytest.raises(ValueError, match="route"):
         policy.parse(canonical_json_bytes(wrong_provider), state)
+
+
+def test_panel_policy_retries_only_exact_zero_completion_error_envelope() -> None:
+    policy = OpenRouterPanelPolicy(GEMINI_STATEFUL)
+    response = json.loads(canonical_response(config=GEMINI_STATEFUL))
+    response.update({"content": "", "finish_reason": "error"})
+    response["usage"].update({"completion_tokens": 0, "cost": "0"})
+
+    assert (
+        policy.retryable_response_code(canonical_json_bytes(response))
+        == "zero_completion_error"
+    )
+    for field, value in (
+        ("content", "not empty"),
+        ("finish_reason", "stop"),
+    ):
+        changed = json.loads(canonical_json_bytes(response))
+        changed[field] = value
+        assert policy.retryable_response_code(canonical_json_bytes(changed)) is None
+    for field, value in (("completion_tokens", 1), ("cost", "0.0001")):
+        changed = json.loads(canonical_json_bytes(response))
+        changed["usage"][field] = value
+        assert policy.retryable_response_code(canonical_json_bytes(changed)) is None
 
 
 def test_stateless_policy_does_not_retain_response_candidate_or_outcome() -> None:
@@ -322,6 +346,54 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
     assert "sensitive" not in json.dumps(transport.records)
 
 
+def test_panel_transport_retains_safe_successful_error_envelope_metadata() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        return FakeHttpResponse(
+            {
+                "id": "response-empty",
+                "model": GEMINI_STATEFUL.model,
+                "provider": GEMINI_STATEFUL.response_provider,
+                "choices": [
+                    {
+                        "message": {"content": ""},
+                        "finish_reason": "error",
+                        "error": {
+                            "code": 503,
+                            "type": "provider_unavailable",
+                            "message": "sensitive provider detail",
+                        },
+                    }
+                ],
+                "usage": {"cost": "0", "completion_tokens": 0},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(GEMINI_STATEFUL)
+    outcome = OpenRouterPanelTransport(
+        GEMINI_STATEFUL,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+    ).send(
+        policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3)),
+        idempotency_key="attempt-error-envelope",
+        deadline_seconds=1.0,
+    )
+
+    assert outcome.status == "response" and outcome.response is not None
+    usage = outcome.response["usage"]
+    assert usage["provider_error_signal"] == "finish_reason_error"
+    assert usage["provider_error_code"] == 503
+    assert usage["provider_error_type"] == "provider_unavailable"
+    assert usage["provider_error_envelope_digest"].startswith("sha256:")
+    assert "sensitive" not in json.dumps(outcome.response)
+    assert (
+        policy.retryable_response_code(canonical_json_bytes(outcome.response))
+        == "zero_completion_error"
+    )
+
+
 def test_panel_transport_blocks_after_anomalous_response_cost() -> None:
     def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
         return FakeHttpResponse(
@@ -386,3 +458,5 @@ def test_panel_manifest_ids_bind_model_route_adapter_and_memory(tmp_path: Path) 
     assert manifests[1].coordinate_adapter == manifests[3].coordinate_adapter
     assert manifests[1].memory_policy_version != manifests[3].memory_policy_version
     assert manifests[2].inference_parameters[-1] == ("quantizations", "fp8")
+    assert all(manifest.max_model_attempts_per_action == 2 for manifest in manifests)
+    assert all(manifest.transport_retry_rule == TRANSPORT_RETRY_RULE for manifest in manifests)

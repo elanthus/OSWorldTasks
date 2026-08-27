@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
 **Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-first smoke plan is consumed and frozen after an unknown-outcome infrastructure failure; the owner
-approved a materially new Slot A policy; its exact smoke-plan digest remains unapproved
+first smoke and partial calibration are consumed and frozen; a versioned one-retry policy and fresh
+replacement partition are prepared; the exact new smoke-plan digest remains unapproved
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -40,7 +40,7 @@ The owner should approve calibration only after recording evidence for every row
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
 | Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google Vertex, Alibaba, and DeepInfra on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | First plan frozen; new panel uses materially new Slot A identity and four fresh development tasks |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Prior smoke and partial calibration frozen; new panel uses four fresh development tasks and the versioned retry rule |
 
 ## Policy panel decision
 
@@ -88,7 +88,7 @@ The refreshed route-specific token prices are:
 
 Each request freezes at most 126,976 prompt tokens plus 4,096 completion tokens within a 131,072
 policy context limit. These are conservative request guards, not expected costs. The uncapped
-worst-case sum across all 5,724 possible requests is $146.909528064, so the $10 shared ledger—not
+worst-case sum across all 11,448 possible requests is $293.819056128, so the $10 shared ledger—not
 that uncapped sum—is the binding run stop. A request is blocked before transmission when its own
 worst-case maximum no longer fits under the remaining aggregate balance.
 
@@ -111,8 +111,8 @@ root:
 ```bash
 python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
-  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v3 \
-  --output artifacts/grounding-v5-d56-calibration-plan.json
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --output artifacts/grounding-v5-d56-calibration-plan-v2.json
 ```
 
 The output must report `provider_calls_made: 0` and separate caps for calibration, confirmatory
@@ -124,11 +124,11 @@ Record the approved calibration limits for each policy:
 
 | Slot / exact policy ID | Environment actions | Model attempts | Provider control requests | Total wire requests | Spend rule | Design decision |
 |---|---:|---:|---:|---:|---:|---|
-| A / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.055296/request guard | Approved |
-| B / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.016719872/request guard | Approved |
-| C / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.0139264/request guard | Approved |
-| D / generated after clean commit | 1,431 | 1,431 | 0 | 1,431 | Shared $10 ledger; $0.016719872/request guard | Approved |
-| **Aggregate** | **5,724** | **5,724** | **0** | **5,724** | **$10 including prior spend** | **Approved envelope** |
+| A / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.055296/request guard | Approved |
+| B / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
+| C / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.0139264/request guard | Approved |
+| D / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
+| **Aggregate** | **5,724** | **11,448** | **0** | **11,448** | **$10 including $0.370889195 prior spend** | **Approved envelope** |
 
 The exact policy IDs and plan digests remain pending because they bind the clean implementation
 revision and verified smoke evidence. Until those are separately approved, the table authorizes
@@ -145,9 +145,11 @@ Before calls, freeze the decisions that follow calibration outcomes:
 - **Low discrimination:** revise generator distributions rather than editing individual tasks
   around one model's output.
 - **Infrastructure, transport, parse, adapter, price, or integrity failure:** freeze the run and
-  perform a no-call audit. The only permitted retry is the frozen retry rule for a pre-send
-  failure proven to have produced no response, within every approved cap. Never retry an unknown
-  outcome, silently retry another failure, or alter task difficulty.
+  perform a no-call audit. The only permitted post-response retry is the manifest-bound rule for a
+  matching, empty `finish_reason=error` response with zero completion tokens and zero cost. Retain
+  both attempts; a second matching response stops as infrastructure failure. A frozen pre-send
+  no-response rule may also apply within every approved cap. Never retry an unknown outcome,
+  silently retry any other failure, or alter task difficulty.
 - **Mixed informative outcomes:** retain the complete matrix and proceed to the D5.8 power and
   final-freeze review.
 

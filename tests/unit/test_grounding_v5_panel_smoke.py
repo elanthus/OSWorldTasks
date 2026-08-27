@@ -24,15 +24,15 @@ def test_panel_smoke_plan_is_no_call_development_only_and_inside_cap() -> None:
     }
     assert len({record["task"]["task_id"] for record in plan["policies"]}) == 4
     assert [record["task"]["seed"] for record in plan["policies"]] == [
-        5001,
-        5005,
-        5013,
-        5021,
+        5002,
+        5006,
+        5010,
+        5018,
     ]
     assert plan["caps"]["environment_action_cap"] == 4
-    assert plan["caps"]["model_attempt_cap"] == 4
+    assert plan["caps"]["model_attempt_cap"] == 8
     assert plan["caps"]["provider_control_request_cap"] == 0
-    assert plan["caps"]["provider_wire_request_cap"] == 4
+    assert plan["caps"]["provider_wire_request_cap"] == 8
     assert Decimal(plan["caps"]["aggregate_theoretical_upper_bound_usd"]) < Decimal(10)
     assert plan_digest(plan).startswith("sha256:")
 

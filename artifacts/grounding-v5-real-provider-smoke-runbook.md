@@ -22,7 +22,11 @@ task.
   spend before the first request.
 - Keep provider SDK and proxy automatic retries disabled. The journaled runner is the only retry
   authority.
-- A response-producing call is final. An unknown post-send outcome is not retried.
+- A response-producing call is final unless its frozen policy manifest names a versioned response
+  classifier. The current four-policy panel permits one same-route retry only for an empty
+  `finish_reason=error` response with zero completion tokens, zero attributed cost, matching
+  response identity, and a successful price guard. Both attempts remain in evidence. An unknown
+  post-send outcome is not retried.
 - Stop when any approved cap is reached. Do not substitute another task, model, prompt, adapter, or
   endpoint under the same approval.
 - Load credentials only from ignored environment variables at transport time. Do not print them,
@@ -35,13 +39,15 @@ Use two bounded stages per policy. The approval may authorize stage 1 alone.
 ### Stage 1: transport and parser smoke
 
 - One fixed development task from the policy's assigned workflow family.
-- At most two response-producing model attempts: the initial screenshot and, only if the first
-  action validates and dispatches, the next screenshot.
-- At most the manifest's declared cancellation and reconciliation requests for those two attempts.
+- At most two environment decisions: the initial screenshot and, only if the first action validates
+  and dispatches, the next screenshot. Derive the model-attempt cap from those decisions and the
+  manifest's declared attempts-per-action limit.
+- Derive cancellation, reconciliation, and wire-request caps from the same manifest limits.
 - Stop on transport failure, unknown outcome, canonical capture failure, parser failure, invalid
-  action, sandbox denial, missing usage, missing price, or evidence-integrity failure. The sole
-  exception is the frozen retry rule for a pre-send failure proven to have produced no response;
-  that retry must remain within every approved cap.
+  action, sandbox denial, missing usage, missing price, or evidence-integrity failure. The only
+  exceptions are a frozen retry rule for a pre-send failure proven to have produced no response
+  and a policy-specific versioned response classifier explicitly bound into the approved manifest;
+  either retry must remain within every approved cap.
 
 Stage 1 does not claim episode success. Its purpose is to exercise the provider boundary and one
 state transition without exposing calibration items.
@@ -175,6 +181,7 @@ summary includes, per policy:
 | Observation | Required action |
 |---|---|
 | Pre-send failure proven to have produced no response | Apply only the frozen retry rule and remain inside every approved cap |
+| Canonical response matches an approved versioned response classifier | Retain and seal the response; apply only the manifest's bounded same-route retry and count both attempts |
 | Unknown outcome, including any outcome not proven pre-send/no-response | Seal infrastructure failure; do not retry |
 | Parse or action-validation failure | Retain the response and failure; audit without another call |
 | Coordinate mismatch | Stop that policy; create and test a new adapter identity before requesting new approval |

@@ -139,11 +139,12 @@ already bounded:
   endpoint or no endpoint for an in-process fake. External search, arbitrary URLs, browser or DOM
   inspection, shell execution, knowledge tools, inbound listeners, shared storage, and direct or
   indirect communication with another policy are denied.
-- A response-producing provider call is final. A pre-send transport failure, or a failure for which
-  the provider's idempotency or reconciliation API proves that no response was produced, may be
-  retried only under a predeclared, versioned rule. An attempt with an unknown post-send outcome is
-  not retried. Every request attempt remains in the attempt journal and counts toward
-  `max_model_attempts_per_action`.
+- A response-producing provider call is final unless a predeclared, versioned rule identifies a
+  provider error envelope with empty content, zero completion tokens, and zero attributed cost. A
+  pre-send transport failure, a failure for which the provider proves no response was produced, or
+  that exact zero-completion error envelope may be retried only within the frozen attempt cap. An
+  attempt with an unknown post-send outcome is not retried. Every request attempt remains in the
+  attempt journal and counts toward `max_model_attempts_per_action`.
 
 D5.2 must freeze a runner-owned, injected attempt journal before implementing a provider-backed
 policy. The journal is not a policy observation or tool. It is the only provider-call boundary and
@@ -178,6 +179,13 @@ bitwise. On resume, an `attempt_started` record without a canonical response or 
 be reconciled only through the frozen provider mechanism under the same attempt identity. If the
 exact outcome cannot be recovered, the episode receives an infrastructure failure; the runner does
 not issue another request or silently reinterpret the attempt.
+
+Before parsing, the runner applies the frozen retry classifier to the canonical response. A
+retryable zero-completion error retains its response and completed attempt, preserves the pre-call
+policy checkpoint unchanged, and may start one new same-route attempt with a distinct attempt
+identity and idempotency key. Process interruption before that new reservation fails closed without
+issuing the retry. A second qualifying error becomes an infrastructure failure. Other responses
+continue to the state reducer and parser.
 
 The frozen parser is a pure deterministic function of the exact canonical response bytes referenced
 by the completed attempt records, parser version, and latest post-attempt policy-state checkpoint.
@@ -658,7 +666,8 @@ provider credentials, or model calls. They cover:
   bounds, typed-character limits, and robustness-pair semantic identity;
 - policy-state reset, absence of cross-episode memory, action schema validation, internal call
   caps, pre-send attempt persistence, unknown-outcome reconciliation, post-attempt and post-dispatch
-  state reconstruction, attempt identity, and no hidden retry;
+  state reconstruction, attempt identity, no hidden retry, and the bounded same-route
+  zero-completion-error exception;
 - policy-sandbox manifest identity, endpoint-allowlist hashing, and capability-contract rejection of
   external-search, browser/DOM, shell, shared-storage, listener, and cross-policy handles;
 - injected-clock and fake-transport deadline/cancellation behavior, including a hanging provider

@@ -144,6 +144,10 @@ class QwenV5StatefulPolicy:
         value["history"].append({"failure_code": failure_code})
         return canonical_json_bytes(value)
 
+    def retryable_response_code(self, canonical_response: bytes) -> str | None:
+        del canonical_response
+        return None
+
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
         del state
         response = json.loads(canonical_response)

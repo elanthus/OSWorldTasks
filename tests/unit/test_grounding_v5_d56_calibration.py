@@ -34,13 +34,13 @@ def fake_smoke_output(tmp_path: Path) -> Path:
     (output / "summary.json").write_text(
         json.dumps(
             {
-                "schema_version": "pixelgym-agent-v5-panel-smoke-result-v1",
+                "schema_version": "pixelgym-agent-v5-panel-smoke-result-v2",
                 "approved_plan_sha256": "sha256:smoke-plan",
                 "provider_calls_made": 4,
                 "provider_wire_requests": 4,
                 "model_attempt_reservations": 4,
                 "provider_control_requests": 0,
-                "actual_aggregate_spend_usd": "0.01",
+                "actual_aggregate_spend_usd": "0.38",
                 "episode_results": [
                     {"slot": slot, "classification": "pilot_action_limit"}
                     for slot in (
@@ -68,7 +68,7 @@ def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_shared_cap(
     assert plan["provider_calls_made"] == 0
     assert plan["calibration_partition"]["episode_count"] == 50
     assert plan["calibration_partition"]["action_cap_per_policy"] == 1431
-    assert len(plan["calibration_partition"]["excluded_seeds"]) == 10
+    assert len(plan["calibration_partition"]["excluded_seeds"]) == 18
     assert len(plan["task_order"]) == 50
     assert len({record["task_id"] for record in plan["task_order"]}) == 50
     assert len(plan["policies"]) == 4
@@ -78,7 +78,7 @@ def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_shared_cap(
         "C-llama-stateful",
         "D-qwen-stateless",
     ]
-    assert all(record["caps"]["model_attempt_cap"] == 1431 for record in plan["policies"])
+    assert all(record["caps"]["model_attempt_cap"] == 2862 for record in plan["policies"])
     assert all(
         set(record["phase_call_cap_plan"]["phases"])
         == {
@@ -90,11 +90,11 @@ def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_shared_cap(
         for record in plan["policies"]
     )
     assert plan["aggregate_caps"]["environment_action_cap"] == 5724
-    assert plan["aggregate_caps"]["model_attempt_cap"] == 5724
+    assert plan["aggregate_caps"]["model_attempt_cap"] == 11448
     assert plan["aggregate_caps"]["provider_control_request_cap"] == 0
-    assert plan["aggregate_caps"]["provider_wire_request_cap"] == 5724
+    assert plan["aggregate_caps"]["provider_wire_request_cap"] == 11448
     assert plan["aggregate_caps"]["maximum_aggregate_spend_usd"] == "10.00"
-    assert plan["aggregate_caps"]["prior_aggregate_spend_usd"] == "0.01"
+    assert plan["aggregate_caps"]["prior_aggregate_spend_usd"] == "0.38"
     assert plan_digest(plan).startswith("sha256:")
 
 

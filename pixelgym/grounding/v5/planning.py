@@ -44,7 +44,11 @@ def _validated_records(
     if not isinstance(claimed_digest, str) or content_digest(unsigned) != claimed_digest:
         raise ValueError(f"{partition.value} partition manifest digest mismatch")
     expected_schema = (
-        {"pixelgym-agent-v5-partition-v2", "pixelgym-agent-v5-partition-v3"}
+        {
+            "pixelgym-agent-v5-partition-v2",
+            "pixelgym-agent-v5-partition-v3",
+            "pixelgym-agent-v5-partition-v4",
+        }
         if partition is Partition.CALIBRATION
         else {"pixelgym-agent-v5-partition-v2"}
     )
@@ -74,7 +78,10 @@ def _validated_records(
         if type(max_episode_steps) is not int or max_episode_steps <= 0:
             raise ValueError(f"{partition.value} partition record action cap is invalid")
         validated.append(record)
-    if manifest.get("schema_version") == "pixelgym-agent-v5-partition-v3":
+    if manifest.get("schema_version") in {
+        "pixelgym-agent-v5-partition-v3",
+        "pixelgym-agent-v5-partition-v4",
+    }:
         derivation = manifest.get("derivation")
         if not isinstance(derivation, dict):
             raise TypeError("derived calibration partition requires derivation evidence")
@@ -89,6 +96,22 @@ def _validated_records(
             & {record["seed_record"]["seed"] for record in validated}
         ):
             raise ValueError("derived calibration exclusion evidence is inconsistent")
+        if manifest.get("schema_version") == "pixelgym-agent-v5-partition-v4":
+            replacement_seeds = derivation.get("replacement_seeds")
+            replacement_task_ids = derivation.get("replacement_task_ids")
+            if (
+                not isinstance(replacement_seeds, list)
+                or not isinstance(replacement_task_ids, list)
+                or derivation.get("replacement_episode_count")
+                != len(replacement_seeds)
+                or len(replacement_task_ids) != len(replacement_seeds)
+                or not set(replacement_seeds).issubset(
+                    record["seed_record"]["seed"] for record in validated
+                )
+            ):
+                raise ValueError(
+                    "derived calibration replacement evidence is inconsistent"
+                )
     return tuple(validated)
 
 

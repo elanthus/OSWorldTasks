@@ -34,11 +34,12 @@ MAX_OUTPUT_TOKENS = 4_096
 CONTEXT_LIMIT = 131_072
 MAX_PROMPT_TOKENS = CONTEXT_LIMIT - MAX_OUTPUT_TOKENS
 PANEL_MAXIMUM_SPEND_USD = Decimal("10.00")
-PRIOR_AGGREGATE_SPEND_USD = Decimal("0.004228237")
+PRIOR_AGGREGATE_SPEND_USD = Decimal("0.370889195")
 SEED = 20260809
 
-RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-canonical-response-v1"
+RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-canonical-response-v2"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
+TRANSPORT_RETRY_RULE = "one-same-route-zero-completion-error-v1"
 
 
 @dataclass(frozen=True)
@@ -273,6 +274,30 @@ class OpenRouterPanelPolicy:
         value["history"].append({"failure_code": failure_code})
         return canonical_json_bytes(value)
 
+    def retryable_response_code(self, canonical_response: bytes) -> str | None:
+        response = json.loads(canonical_response)
+        usage = response.get("usage")
+        if not isinstance(usage, dict):
+            return None
+        if response.get("model") != self.config.model or str(
+            usage.get("upstream_provider", "")
+        ).lower() != self.config.response_provider.lower():
+            return None
+        try:
+            cost = _usage_cost(usage)
+        except ValueError:
+            return None
+        if (
+            response.get("finish_reason") == "error"
+            and response.get("content") == ""
+            and type(usage.get("completion_tokens")) is int
+            and usage["completion_tokens"] == 0
+            and usage.get("price_guard") == "ok"
+            and cost == 0
+        ):
+            return "zero_completion_error"
+        return None
+
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
         del state
         response = json.loads(canonical_response)
@@ -462,6 +487,7 @@ class OpenRouterPanelTransport:
         raw_usage = body.get("usage")
         usage: dict[str, Any] = dict(raw_usage) if isinstance(raw_usage, dict) else {}
         usage["upstream_provider"] = body.get("provider")
+        usage.update(_safe_response_error_metadata(body, finish_reason=finish_reason))
         try:
             cost = _usage_cost(usage)
         except ValueError:
@@ -548,6 +574,41 @@ def _safe_http_error_metadata(exc: urllib.error.HTTPError) -> dict[str, Any]:
     return metadata
 
 
+def _safe_response_error_metadata(
+    body: dict[str, Any], *, finish_reason: object
+) -> dict[str, Any]:
+    """Retain non-message diagnostics for a successful error response envelope."""
+
+    if finish_reason != "error":
+        return {}
+    metadata: dict[str, Any] = {
+        "provider_error_signal": "finish_reason_error",
+        "provider_error_envelope_digest": content_digest(body),
+    }
+    candidates: list[dict[str, Any]] = []
+    top_level = body.get("error")
+    if isinstance(top_level, dict):
+        candidates.append(top_level)
+    choices = body.get("choices")
+    if isinstance(choices, list) and choices and isinstance(choices[0], dict):
+        choice_error = choices[0].get("error")
+        if isinstance(choice_error, dict):
+            candidates.append(choice_error)
+    for error in candidates:
+        for source, target in (
+            ("code", "provider_error_code"),
+            ("type", "provider_error_type"),
+            ("status", "provider_error_status"),
+        ):
+            field = error.get(source)
+            if target not in metadata and (
+                isinstance(field, (int, float, bool))
+                or (isinstance(field, str) and len(field) <= 128)
+            ):
+                metadata[target] = field
+    return metadata
+
+
 def _file_digest(path: Path) -> str:
     return "sha256:" + sha256_bytes(path.read_bytes())
 
@@ -599,7 +660,7 @@ def build_panel_policy_manifest(
         coordinate_adapter=config.adapter.name,
         coordinate_adapter_digest=config.adapter.source_digest,
         coordinate_input_convention=config.coordinate_input_convention,
-        max_model_attempts_per_action=1,
+        max_model_attempts_per_action=2,
         max_cancellation_requests_per_attempt=0,
         max_reconciliation_requests_per_attempt=0,
         request_deadline_seconds=180.0,
@@ -610,5 +671,5 @@ def build_panel_policy_manifest(
         dirty_worktree_policy="reject-tracked-changes",
         inference_parameters=tuple(inference_parameters),
         context_limit=CONTEXT_LIMIT,
-        transport_retry_rule="no-retry-after-send-v1",
+        transport_retry_rule=TRANSPORT_RETRY_RULE,
     )
