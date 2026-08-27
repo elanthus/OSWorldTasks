@@ -1,7 +1,7 @@
 # PixelGym v5 D5.6 calibration runbook
 
-**Status:** the replacement panel smoke completed; the four-slot calibration stopped during Slot A
-and is frozen; a B/C/D-only successor is prepared but its exact plan digest remains unapproved
+**Status:** the four-slot and B/C/D runs are frozen after unknown-outcome failures in Slots A and B;
+a Slot C-only successor is prepared but its exact plan digest remains unapproved
 
 ## Outcome
 
@@ -35,7 +35,7 @@ For a newly approved policy panel, first commit the implementation and verify th
 are clean. Generate the no-call plan into unused paths:
 
 ```bash
-python scripts/run_grounding_v5_panel_smoke.py \
+.venv/bin/python scripts/run_grounding_v5_panel_smoke.py \
   --plan-only \
   --output artifacts/grounding-v5-d56-panel-smoke-plan-v4.json
 ```
@@ -49,7 +49,7 @@ explicit owner approval for that exact digest before continuing.
 Execute only the approved plan into a fresh local restricted-evidence directory:
 
 ```bash
-python scripts/run_grounding_v5_panel_smoke.py \
+.venv/bin/python scripts/run_grounding_v5_panel_smoke.py \
   --execute \
   --plan artifacts/grounding-v5-d56-panel-smoke-plan-v4.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
@@ -103,7 +103,7 @@ outcomes remain final and stop the run.
 After the smoke evidence verifies, generate the calibration plan:
 
 ```bash
-python scripts/run_grounding_v5_d56_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
   --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
   --output artifacts/grounding-v5-d56-calibration-plan-v2.json
@@ -117,7 +117,7 @@ the exact printed calibration-plan digest.
 ## Phase 3: execute only the approved calibration
 
 ```bash
-python scripts/run_grounding_v5_d56_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_calibration.py \
   --execute \
   --plan artifacts/grounding-v5-d56-calibration-plan-v2.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
@@ -136,7 +136,7 @@ Use this phase only for the owner-selected B/C/D continuation. Do not resume the
 retry its terminal Slot A request. First generate a new no-call plan into an unused path:
 
 ```bash
-python scripts/run_grounding_v5_d56_bcd_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_bcd_calibration.py \
   --plan-only \
   --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
   --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
@@ -150,7 +150,7 @@ of 4,293, a model-attempt and wire-request cap of 8,586, and `$7.967124815` rema
 approval for the exact printed digest before executing:
 
 ```bash
-python scripts/run_grounding_v5_d56_bcd_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_bcd_calibration.py \
   --execute \
   --plan artifacts/grounding-v5-d56-bcd-calibration-plan.json \
   --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
@@ -163,6 +163,51 @@ Run the three slots sequentially in B, C, D order and preserve the frozen task o
 success and step-limit truncation. Freeze the B/C/D run after the first other failure or before a
 request whose theoretical maximum does not fit under the remaining shared ledger. Do not overwrite
 the predecessor or successor evidence directories.
+
+### Frozen B/C/D result
+
+The owner approved plan
+`sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9`.
+The run completed 24 actions on the first Slot B assignment and received HTTP 429 on request 25.
+The terminal request crossed the send boundary but produced no canonical response or usage record,
+so the journal sealed `unknown_outcome_infrastructure_failure` with failure code
+`provider_request_unknown`. The run attributed `$0.008042372`, bringing aggregate spend to
+`$2.040917557` and leaving `$7.959082443`. Preserve
+`artifacts/grounding-v5-d56-bcd-calibration-run/` unchanged; do not resume or retry it.
+
+## Phase 5: Slot C-only successor after the frozen Slot B failure
+
+Use this phase only for the owner-selected Slot C continuation. Generate a new no-call plan into an
+unused path:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --frozen-bcd-output artifacts/grounding-v5-d56-bcd-calibration-run \
+  --output artifacts/grounding-v5-d56-c-calibration-plan.json
+```
+
+The planner must verify both frozen predecessor chains, report `provider_calls_made: 0`, schedule
+only Slot C, and bind 50 assignments, 1,431 environment actions, at most 2,862 model attempts or
+wire requests, zero control requests, and `$7.959082443` remaining. Obtain exact owner approval for
+the printed digest before execution:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_calibration.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-c-calibration-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --frozen-bcd-output artifacts/grounding-v5-d56-bcd-calibration-run \
+  --output artifacts/grounding-v5-d56-c-calibration-run
+```
+
+Continue after success and step-limit truncation. Freeze Slot C after the first other failure or
+before a request whose worst-case cost cannot fit under the remaining shared ledger. Do not
+overwrite any predecessor or Slot C evidence directory.
 
 ## Handoff evidence
 

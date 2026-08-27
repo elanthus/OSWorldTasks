@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
 **Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-replacement smoke completed; the four-slot calibration stopped during Slot A and is frozen; a
-B/C/D-only successor package is implemented but its exact plan digest remains unapproved
+four-slot calibration and B/C/D successor are frozen after unknown-outcome failures in Slots A and
+B; a Slot C-only successor is implemented but its exact plan digest remains unapproved
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -109,7 +109,7 @@ After all four panel smokes verify, generate the exact no-call calibration plan 
 root:
 
 ```bash
-python scripts/run_grounding_v5_d56_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
   --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
   --output artifacts/grounding-v5-d56-calibration-plan-v2.json
@@ -159,15 +159,44 @@ The shared ledger has already attributed `$2.032875185`, leaving `$7.967124815` 
 no-call successor plan only after committing the implementation:
 
 ```bash
-python scripts/run_grounding_v5_d56_bcd_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_bcd_calibration.py \
   --plan-only \
   --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
   --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
   --output artifacts/grounding-v5-d56-bcd-calibration-plan.json
 ```
 
-The printed digest requires a fresh, exact owner approval. The earlier smoke and calibration
-approvals do not authorize the successor plan.
+The owner approved the exact B/C/D plan digest
+`sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9`.
+The run attempted the first Slot B assignment, completed 24 actions, and received HTTP 429 on its
+25th request. The terminal attempt has no canonical response or usage and is sealed as
+`unknown_outcome_infrastructure_failure` with failure code `provider_request_unknown`. The run is
+immutable at `artifacts/grounding-v5-d56-bcd-calibration-run/`; it cannot be resumed or retried.
+
+## Slot C successor decision
+
+The owner selected only Slot C after the B/C/D run froze. The new package schedules the same frozen
+50-task partition for `meta-llama/llama-4-scout` on DeepInfra FP8, using the stateful native-pixel
+policy. It neither resumes nor replaces any Slot A or Slot B request.
+
+| Slot | Environment actions | Model attempts | Control requests | Wire requests | Uncapped request maximum |
+|---|---:|---:|---:|---:|---:|
+| C | 1,431 | 2,862 | 0 | 2,862 | $39.8573568 |
+
+The shared ledger has attributed `$2.040917557`, leaving `$7.959082443` under the existing `$10.00`
+ceiling. Generate the exact no-call Slot C plan only after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --frozen-bcd-output artifacts/grounding-v5-d56-bcd-calibration-run \
+  --output artifacts/grounding-v5-d56-c-calibration-plan.json
+```
+
+The printed digest requires a fresh, exact owner approval and must report
+`provider_calls_made: 0`. The B/C/D approval does not authorize the Slot C successor.
 
 ## Calibration routing freeze
 
