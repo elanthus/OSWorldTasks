@@ -16,12 +16,19 @@ from pixelgym.grounding.v5.contracts import (
 )
 
 
-def load_partition_manifests(directory: Path) -> dict[Partition, dict[str, Any]]:
+def load_partition_manifests(
+    directory: Path, *, calibration_manifest: Path | None = None
+) -> dict[Partition, dict[str, Any]]:
     """Load the exact partition bytes selected for one immutable cap plan."""
 
     manifests: dict[Partition, dict[str, Any]] = {}
     for partition in Partition:
-        value = json.loads((directory / f"{partition.value}.json").read_text(encoding="utf-8"))
+        path = (
+            calibration_manifest
+            if partition is Partition.CALIBRATION and calibration_manifest is not None
+            else directory / f"{partition.value}.json"
+        )
+        value = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(value, dict):
             raise TypeError(f"{partition.value} partition manifest must be an object")
         manifests[partition] = value
@@ -36,7 +43,16 @@ def _validated_records(
     unsigned.pop("manifest_digest", None)
     if not isinstance(claimed_digest, str) or content_digest(unsigned) != claimed_digest:
         raise ValueError(f"{partition.value} partition manifest digest mismatch")
-    if manifest.get("schema_version") != "pixelgym-agent-v5-partition-v2":
+    expected_schema = (
+        {
+            "pixelgym-agent-v5-partition-v2",
+            "pixelgym-agent-v5-partition-v3",
+            "pixelgym-agent-v5-partition-v4",
+        }
+        if partition is Partition.CALIBRATION
+        else {"pixelgym-agent-v5-partition-v2"}
+    )
+    if manifest.get("schema_version") not in expected_schema:
         raise ValueError(f"{partition.value} partition manifest schema mismatch")
     if manifest.get("partition") != partition.value:
         raise ValueError(f"{partition.value} partition manifest identity mismatch")
@@ -62,6 +78,40 @@ def _validated_records(
         if type(max_episode_steps) is not int or max_episode_steps <= 0:
             raise ValueError(f"{partition.value} partition record action cap is invalid")
         validated.append(record)
+    if manifest.get("schema_version") in {
+        "pixelgym-agent-v5-partition-v3",
+        "pixelgym-agent-v5-partition-v4",
+    }:
+        derivation = manifest.get("derivation")
+        if not isinstance(derivation, dict):
+            raise TypeError("derived calibration partition requires derivation evidence")
+        excluded_seeds = derivation.get("excluded_seeds")
+        excluded_task_ids = derivation.get("excluded_task_ids")
+        if (
+            not isinstance(excluded_seeds, list)
+            or not isinstance(excluded_task_ids, list)
+            or derivation.get("excluded_episode_count") != len(excluded_seeds)
+            or len(excluded_task_ids) != len(excluded_seeds)
+            or set(excluded_seeds)
+            & {record["seed_record"]["seed"] for record in validated}
+        ):
+            raise ValueError("derived calibration exclusion evidence is inconsistent")
+        if manifest.get("schema_version") == "pixelgym-agent-v5-partition-v4":
+            replacement_seeds = derivation.get("replacement_seeds")
+            replacement_task_ids = derivation.get("replacement_task_ids")
+            if (
+                not isinstance(replacement_seeds, list)
+                or not isinstance(replacement_task_ids, list)
+                or derivation.get("replacement_episode_count")
+                != len(replacement_seeds)
+                or len(replacement_task_ids) != len(replacement_seeds)
+                or not set(replacement_seeds).issubset(
+                    record["seed_record"]["seed"] for record in validated
+                )
+            ):
+                raise ValueError(
+                    "derived calibration replacement evidence is inconsistent"
+                )
     return tuple(validated)
 
 

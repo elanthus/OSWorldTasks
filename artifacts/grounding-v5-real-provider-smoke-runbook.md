@@ -1,6 +1,6 @@
 # PixelGym v5 real-provider smoke-test runbook
 
-**Status:** proposed procedure; no provider call or spend is authorized
+**Status:** implemented procedure; completed diagnostic evidence does not authorize further calls
 
 **Use this when:** a candidate v5 provider adapter and policy manifest are implemented, the owner
 wants a few real-provider checks before D5.6 calibration approval, and no calibration or
@@ -22,7 +22,11 @@ task.
   spend before the first request.
 - Keep provider SDK and proxy automatic retries disabled. The journaled runner is the only retry
   authority.
-- A response-producing call is final. An unknown post-send outcome is not retried.
+- A response-producing call is final unless its frozen policy manifest names a versioned response
+  classifier. The current four-policy panel permits one same-route retry only for an empty
+  `finish_reason=error` response with zero completion tokens, zero attributed cost, matching
+  response identity, and a successful price guard. Both attempts remain in evidence. An unknown
+  post-send outcome is not retried.
 - Stop when any approved cap is reached. Do not substitute another task, model, prompt, adapter, or
   endpoint under the same approval.
 - Load credentials only from ignored environment variables at transport time. Do not print them,
@@ -35,13 +39,15 @@ Use two bounded stages per policy. The approval may authorize stage 1 alone.
 ### Stage 1: transport and parser smoke
 
 - One fixed development task from the policy's assigned workflow family.
-- At most two response-producing model attempts: the initial screenshot and, only if the first
-  action validates and dispatches, the next screenshot.
-- At most the manifest's declared cancellation and reconciliation requests for those two attempts.
+- At most two environment decisions: the initial screenshot and, only if the first action validates
+  and dispatches, the next screenshot. Derive the model-attempt cap from those decisions and the
+  manifest's declared attempts-per-action limit.
+- Derive cancellation, reconciliation, and wire-request caps from the same manifest limits.
 - Stop on transport failure, unknown outcome, canonical capture failure, parser failure, invalid
-  action, sandbox denial, missing usage, missing price, or evidence-integrity failure. The sole
-  exception is the frozen retry rule for a pre-send failure proven to have produced no response;
-  that retry must remain within every approved cap.
+  action, sandbox denial, missing usage, missing price, or evidence-integrity failure. The only
+  exceptions are a frozen retry rule for a pre-send failure proven to have produced no response
+  and a policy-specific versioned response classifier explicitly bound into the approved manifest;
+  either retry must remain within every approved cap.
 
 Stage 1 does not claim episode success. Its purpose is to exercise the provider boundary and one
 state transition without exposing calibration items.
@@ -75,7 +81,14 @@ Before requesting smoke approval, produce:
 7. A plan-only smoke record that names development seeds and reports exact action, attempt,
    control-request, wire-request, and maximum-cost caps with `provider_calls_made: 0`.
 
-The repository implements a one-call, development-only transport/parser/action diagnostic in
+The current D5.6 panel workflow implements one development-only action for each of the four frozen
+policy slots in `scripts/run_grounding_v5_panel_smoke.py`. It has separate `--plan-only` and
+execution modes, uses distinct development tasks, shares the approved aggregate ledger, and stops
+the sequence on the first failure. Follow the
+[four-policy calibration runbook](grounding-v5-d56-calibration-runbook.md) for its exact commands
+and approval boundary.
+
+The repository also retains the earlier one-call Qwen-only diagnostic in
 `scripts/run_grounding_v5_provider_smoke.py`. It has separate `--plan-only` and execution modes,
 does not initialize a credential-bearing transport or launch the task in plan mode, binds execution
 to the exact approved plan digest, requires a clean matching source revision, and refuses to replace
@@ -83,13 +96,29 @@ an existing output. This diagnostic is **pre-stage-1 evidence**: it does not sub
 stateful policy package, its content-addressed OS sandbox, interruption/recovery evidence, or a
 complete `PolicyManifest`.
 
+The current diagnostic freezes `max_tokens=4096` for
+`qwen/qwen3-vl-8b-instruct`. The earlier 128-token limit was intentionally scoped to one terse JSON
+action, but it proved too small when a reasoning model consumed the allowance without emitting the
+action. The larger bound leaves room for provider-internal reasoning while remaining far below the
+[Alibaba endpoint's published 32,768-token completion
+limit](https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints). At the frozen
+endpoint prices and maximum prompt size, the one-request theoretical maximum is $0.016959488, below
+the approved $5 aggregate cap.
+
+Qwen click coordinates use the frozen `normalized-1000x1000` adapter: the response schema accepts
+integer coordinates from 0 through 999 on both axes, and the versioned inclusive-endpoint transform
+maps them to native 1024×768 screenshot pixels before action validation and dispatch. The plan binds
+the adapter name, source digest, input convention, and output convention. A response that does not
+fit this declared grid is retained as invalid output; it is never guessed, clipped, or silently
+reinterpreted.
+
 Freeze a proposed one-call plan without network access:
 
 ```bash
 python scripts/run_grounding_v5_provider_smoke.py \
   --plan-only \
-  --maximum-spend-usd 2.00 \
-  --output artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json
+  --maximum-spend-usd 5.00 \
+  --output artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct.json
 ```
 
 After the owner explicitly approves the printed digest and all identities in that plan, execute it
@@ -98,10 +127,13 @@ once into a fresh result path:
 ```bash
 python scripts/run_grounding_v5_provider_smoke.py \
   --execute \
-  --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3.5-flash-02-23.json \
-  --approved-plan-sha256 sha256:<approved-plan-digest> \
-  --output artifacts/grounding-v5-openrouter-smoke-result-qwen3.5-flash-02-23.json
+  --plan artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct.json \
+  --approved-plan-sha256 'sha256:EXACT_PRINTED_DIGEST' \
+  --output artifacts/grounding-v5-openrouter-smoke-result-qwen3-vl-8b-instruct.json
 ```
+
+Replace the entire quoted value with the printed `plan_sha256`; do not add another `sha256:`
+prefix.
 
 The authoritative local result retains the raw provider response, including invalid or unparseable
 output, under a `publication_status: restricted` boundary. Do not publish that file. The CLI stdout
@@ -149,6 +181,7 @@ summary includes, per policy:
 | Observation | Required action |
 |---|---|
 | Pre-send failure proven to have produced no response | Apply only the frozen retry rule and remain inside every approved cap |
+| Canonical response matches an approved versioned response classifier | Retain and seal the response; apply only the manifest's bounded same-route retry and count both attempts |
 | Unknown outcome, including any outcome not proven pre-send/no-response | Seal infrastructure failure; do not retry |
 | Parse or action-validation failure | Retain the response and failure; audit without another call |
 | Coordinate mismatch | Stop that policy; create and test a new adapter identity before requesting new approval |
@@ -158,3 +191,7 @@ summary includes, per policy:
 
 Smoke success does not authorize D5.6 calibration. The owner must separately approve the complete
 [D5.6 calibration package](grounding-v5-d56-calibration-approval.md).
+
+For the separately bounded Qwen3-VL calibration pilot, use the
+[Qwen3-VL calibration-pilot runbook](grounding-v5-qwen3-vl-calibration-pilot-runbook.md). That
+pilot is not the four-policy D5.6 calibration package.

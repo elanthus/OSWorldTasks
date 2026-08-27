@@ -90,6 +90,44 @@ def scripted_policy(seed: int) -> ScriptedStatefulPolicy:
     return ScriptedStatefulPolicy(actions)
 
 
+class ZeroCompletionRetryPolicy(ScriptedStatefulPolicy):
+    def retryable_response_code(self, canonical_response: bytes) -> str | None:
+        response = json.loads(canonical_response)
+        usage = response["usage"]
+        if (
+            response["finish_reason"] == "error"
+            and response["content"] == ""
+            and usage.get("completion_tokens") == 0
+            and usage.get("cost") == "0"
+        ):
+            return "zero_completion_error"
+        return None
+
+
+def retry_manifest() -> PolicyManifest:
+    values = policy_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values.update(
+        {
+            "max_model_attempts_per_action": 2,
+            "max_cancellation_requests_per_attempt": 0,
+            "max_reconciliation_requests_per_attempt": 0,
+            "transport_retry_rule": "one-same-route-zero-completion-error-v1",
+        }
+    )
+    return PolicyManifest.build(**values)
+
+
+def zero_completion_error_response(response_id: str) -> dict[str, object]:
+    return {
+        "response_id": response_id,
+        "model": "no-cost-scripted-policy",
+        "content": "",
+        "finish_reason": "error",
+        "usage": {"prompt_tokens": 1, "completion_tokens": 0, "cost": "0"},
+    }
+
+
 def reserve_prior_attempt(
     journal: V5AttemptJournal,
     identity: AttemptIdentity,
@@ -137,6 +175,42 @@ def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_p
     assert len(transport.model_requests) == task.optimal_low_level_actions
     assert not transport.control_requests
     assert journal.integrity_report()["event_count"] > 0
+
+
+def test_v5_runner_supports_a_bounded_multi_task_pilot_horizon(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "journal.sqlite")
+    transport = ScriptedTransport()
+    result = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(2, 2, 4, 6),
+    ).run(trial_id="trial-two-action-pilot", task=task, action_limit=2)
+
+    assert result.classification == "pilot_action_limit"
+    assert result.environment_actions == 2
+    assert result.model_attempts == 2
+    assert len(transport.model_requests) == 2
+
+
+@pytest.mark.parametrize("action_limit", [0, -1, 10_000, 1.5, True])
+def test_v5_runner_rejects_invalid_pilot_action_limit(
+    tmp_path: Path, action_limit: object
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    runner = V5Runner(
+        journal=V5AttemptJournal(tmp_path / f"journal-{action_limit}.sqlite"),
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    )
+    with pytest.raises(ValueError, match="action_limit"):
+        runner.run(trial_id="trial-invalid-limit", task=task, action_limit=action_limit)  # type: ignore[arg-type]
 
 
 def test_v5_deadline_settles_once_without_hidden_retry(tmp_path: Path) -> None:
@@ -219,6 +293,169 @@ def test_v5_unknown_post_send_outcome_is_not_retried(tmp_path: Path) -> None:
     assert result.classification == "infrastructure_failure"
     assert len(transport.model_requests) == 1
     assert [kind for kind, _identity in transport.control_requests] == ["reconcile"]
+
+
+def test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    base_policy = scripted_policy(seed)
+    policy = ZeroCompletionRetryPolicy(base_policy.actions)
+    transport = ScriptedTransport(
+        [TransportOutcome("response", zero_completion_error_response("empty-first"))]
+    )
+    journal = V5AttemptJournal(tmp_path / "retry-success.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=retry_manifest(),
+        transport=transport,
+        policy=policy,
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).run(trial_id="trial-retry-success", task=task, action_limit=1)
+
+    assert result.classification == "pilot_action_limit"
+    assert result.environment_actions == 1
+    assert result.model_attempts == result.provider_wire_requests == 2
+    events = journal.events("trial-retry-success")
+    assert [event.kind for event in events].count("attempt_started") == 2
+    assert [event.kind for event in events].count("attempt_completed") == 2
+    retry_event = next(
+        event for event in events if event.kind == "retryable_provider_response"
+    )
+    assert retry_event.payload["failure_code"] == "zero_completion_error"
+    assert retry_event.payload["next_attempt_permitted"] is True
+    assert retry_event.payload["retry_rule"] == "one-same-route-zero-completion-error-v1"
+    assert retry_event.payload["response_digest"].startswith("sha256:")
+    starts = [event for event in events if event.kind == "attempt_started"]
+    assert starts[0].payload["request_digest"] == starts[1].payload["request_digest"]
+    assert starts[0].payload["idempotency_key"] != starts[1].payload["idempotency_key"]
+    candidate = next(event for event in events if event.kind == "parsed_action_candidate")
+    assert candidate.payload["attempt_identities"] == [
+        "trial-retry-success/step-0000/attempt-00",
+        "trial-retry-success/step-0000/attempt-01",
+    ]
+
+
+def test_v5_runner_stops_after_second_zero_completion_error(tmp_path: Path) -> None:
+    seed = 5000
+    base_policy = scripted_policy(seed)
+    transport = ScriptedTransport(
+        [
+            TransportOutcome("response", zero_completion_error_response("empty-first")),
+            TransportOutcome("response", zero_completion_error_response("empty-second")),
+        ]
+    )
+    journal = V5AttemptJournal(tmp_path / "retry-exhausted.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=retry_manifest(),
+        transport=transport,
+        policy=ZeroCompletionRetryPolicy(base_policy.actions),
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).run(
+        trial_id="trial-retry-exhausted",
+        task=generate_task(seed),
+        action_limit=1,
+    )
+
+    assert result.classification == "infrastructure_failure"
+    assert result.environment_actions == 0
+    assert result.model_attempts == result.provider_wire_requests == 2
+    events = journal.events("trial-retry-exhausted")
+    assert [event.kind for event in events].count("retryable_provider_response") == 2
+    failure = next(
+        event for event in events if event.kind == "sealed_unsuccessful_result"
+    )
+    assert failure.payload["failure_code"] == "retryable_response_exhausted"
+
+
+def test_v5_parse_failure_after_retry_binds_both_attempts(tmp_path: Path) -> None:
+    seed = 5000
+    base_policy = scripted_policy(seed)
+    malformed_response = {
+        "response_id": "malformed-second",
+        "model": "no-cost-scripted-policy",
+        "content": "not-json",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+    }
+    journal = V5AttemptJournal(tmp_path / "retry-parse-failure.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=retry_manifest(),
+        transport=ScriptedTransport(
+            [
+                TransportOutcome(
+                    "response", zero_completion_error_response("empty-first")
+                ),
+                TransportOutcome("response", malformed_response),
+            ]
+        ),
+        policy=ZeroCompletionRetryPolicy(base_policy.actions),
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).run(
+        trial_id="trial-retry-parse-failure",
+        task=generate_task(seed),
+        action_limit=1,
+    )
+
+    assert result.classification == "invalid_output"
+    failure = next(
+        event
+        for event in journal.events("trial-retry-parse-failure")
+        if event.kind == "sealed_unsuccessful_result"
+    )
+    assert failure.attempt_index == 1
+    assert failure.payload["attempt_identities"] == [
+        "trial-retry-parse-failure/step-0000/attempt-00",
+        "trial-retry-parse-failure/step-0000/attempt-01",
+    ]
+
+
+def test_v5_recovery_never_issues_an_unrecorded_retry(tmp_path: Path) -> None:
+    seed = 5000
+    base_policy = scripted_policy(seed)
+    transport = ScriptedTransport(
+        [TransportOutcome("response", zero_completion_error_response("empty-first"))]
+    )
+    journal = V5AttemptJournal(tmp_path / "retry-interrupted.sqlite")
+    trial_id = "trial-retry-interrupted"
+    with pytest.raises(InjectedInterruption, match="retryable_provider_response"):
+        V5Runner(
+            journal=journal,
+            manifest=retry_manifest(),
+            transport=transport,
+            policy=ZeroCompletionRetryPolicy(base_policy.actions),
+            approved_caps=CallCaps(1, 2, 0, 2),
+            interrupt_after="retryable_provider_response",
+        ).run(trial_id=trial_id, task=generate_task(seed), action_limit=1)
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=retry_manifest(),
+        transport=transport,
+        policy=ZeroCompletionRetryPolicy(base_policy.actions),
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered["classification"] == "infrastructure_failure"
+    assert recovered["reason"] == "retry_interrupted_before_next_attempt"
+    assert len(transport.model_requests) == 1
+    failure = next(
+        event
+        for event in journal.events(trial_id)
+        if event.kind == "sealed_unsuccessful_result"
+    )
+    assert failure.payload["failure_code"] == "retry_interrupted_before_next_attempt"
 
 
 def test_v5_parse_failure_seals_failure_without_dispatch(tmp_path: Path) -> None:

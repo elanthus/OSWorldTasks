@@ -18,32 +18,33 @@ from pixelgym.env import PixelGuiEnv
 from pixelgym.grounding.providers import GroundingProvider, OpenRouterProvider, ProviderResponse
 from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import Partition, content_digest, sha256_bytes
+from pixelgym.grounding.v5.coordinates import NORMALIZED_1000_ADAPTER
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.serialization import canonical_json_bytes
 
-MODEL = "qwen/qwen3.5-flash-02-23"
+MODEL = "qwen/qwen3-vl-8b-instruct"
 UPSTREAM_PROVIDER = "alibaba"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-PRICE_SOURCE = "https://openrouter.ai/api/v1/models/qwen/qwen3.5-flash-02-23/endpoints"
-PROMPT_PRICE_PER_TOKEN_USD = Decimal("0.000000065")
-COMPLETION_PRICE_PER_TOKEN_USD = Decimal("0.00000026")
-MAX_PROMPT_TOKENS = 983_616
-MAX_OUTPUT_TOKENS = 128
-APPROVED_MAXIMUM_SPEND_USD = Decimal("2.00")
+PRICE_SOURCE = "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"
+PROMPT_PRICE_PER_TOKEN_USD = Decimal("0.000000117")
+COMPLETION_PRICE_PER_TOKEN_USD = Decimal("0.000000455")
+MAX_PROMPT_TOKENS = 129_024
+MAX_OUTPUT_TOKENS = 4_096
+APPROVED_MAXIMUM_SPEND_USD = Decimal("5.00")
 DEVELOPMENT_SEED = 5000
 SCREENSHOT_PATH = Path("artifacts/grounding-v5-provider-smoke/development-seed-5000-initial.png")
-PROMPT_VERSION = "pixelgym-agent-v5-openrouter-action-prompt-v1"
-PARSER_VERSION = "pixelgym-agent-v5-json-action-parser-v1"
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v2"
-PRICE_OBSERVED_AT_UTC = "2026-08-26T01:06:43Z"
+PROMPT_VERSION = "pixelgym-agent-v5-openrouter-qwen-normalized-action-prompt-v2"
+PARSER_VERSION = "pixelgym-agent-v5-json-action-qwen-normalized-parser-v2"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-plan-v3"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-provider-smoke-result-v4"
+PRICE_OBSERVED_AT_UTC = "2026-08-26T06:49:29Z"
 
 ACTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "action_type": {"type": "integer", "enum": [0, 1, 2]},
-        "x": {"type": "integer", "minimum": 0, "maximum": 1023},
-        "y": {"type": "integer", "minimum": 0, "maximum": 767},
+        "x": {"type": "integer", "minimum": 0, "maximum": 999},
+        "y": {"type": "integer", "minimum": 0, "maximum": 999},
         "key": {"type": "integer", "minimum": 0, "maximum": len(KEY_ALLOWLIST) - 1},
     },
     "required": ["action_type", "x", "y", "key"],
@@ -58,8 +59,9 @@ def smoke_prompt() -> str:
         f"Overall task: {task.instruction} "
         "Choose exactly one next action from the visible current stage. Return only one JSON "
         "object with action_type, x, y, and key. action_type is 0 for NOOP, 1 for CLICK, and "
-        "2 for KEY. CLICK coordinates must be integer screenshot pixels with origin at the "
-        "upper-left; set key to 0. For KEY, key is the allowlist index; set x and y to 0. "
+        "2 for KEY. For CLICK, return integer coordinates on a 1000x1000 normalized square grid "
+        "from 0 through 999 on each axis, with origin at the upper-left; set key to 0. For KEY, "
+        "key is the allowlist index; set x and y to 0. "
         "For NOOP, set x, y, and key to 0. Do not use tools or explain the action."
     )
 
@@ -86,7 +88,7 @@ def build_plan(
     price_observed_at_utc: str | None = None,
 ) -> dict[str, Any]:
     if maximum_spend_usd != APPROVED_MAXIMUM_SPEND_USD:
-        raise ValueError("maximum spend must match the approved $2.00 cap")
+        raise ValueError("maximum spend must match the approved $5.00 cap")
     task = generate_task(DEVELOPMENT_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
         raise ValueError("smoke seed is not in the development partition")
@@ -132,6 +134,12 @@ def build_plan(
             "sha256": "sha256:" + sha256_bytes(prompt.encode("utf-8")),
         },
         "parser_version": PARSER_VERSION,
+        "coordinate_adapter": {
+            "name": NORMALIZED_1000_ADAPTER.name,
+            "source_digest": NORMALIZED_1000_ADAPTER.source_digest,
+            "input_convention": "integer-normalized-square/0..999-inclusive",
+            "output_convention": "integer-pixel/1024x768",
+        },
         "response_schema_digest": content_digest(ACTION_SCHEMA),
         "task": {
             "partition": "development",
@@ -295,7 +303,7 @@ def execute_smoke(
         raise ValueError("approved screenshot digest mismatch")
     maximum_spend = Decimal(plan["caps"]["maximum_spend_usd"])
     if maximum_spend != APPROVED_MAXIMUM_SPEND_USD:
-        raise ValueError("smoke plan spend cap differs from the approved $2.00 cap")
+        raise ValueError("smoke plan spend cap differs from the approved $5.00 cap")
     if Decimal(plan["caps"]["theoretical_request_maximum_usd"]) > maximum_spend:
         raise ValueError("approved request can exceed its spend cap")
 
@@ -369,6 +377,10 @@ def execute_smoke(
             return result
         try:
             action = parse_action(response.raw_response)
+            if action["action_type"] == 1:
+                action["x"], action["y"] = NORMALIZED_1000_ADAPTER.transform(
+                    action["x"], action["y"]
+                )
             validated = validate_action(env.action_space, action)
         except (InvalidActionError, ValueError, TypeError, json.JSONDecodeError) as exc:
             result.update(

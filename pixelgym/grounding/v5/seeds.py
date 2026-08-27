@@ -26,6 +26,9 @@ CALIBRATION_SEEDS = (
     5140, 5141, 5142, 5143, 5144, 5145, 5146, 5147, 5148, 5149,
     5150, 5151, 5152, 5153, 5154, 5155, 5156, 5157, 5158, 5159,
 )
+D56_REPLACEMENT_CALIBRATION_SEEDS = (
+    5160, 5161, 5162, 5163, 5164, 5165, 5166, 5167,
+)
 CONFIRMATORY_SEEDS = (
     6000, 6001, 6002, 6003, 6004, 6005, 6006, 6007,
     6008, 6009, 6010, 6011, 6012, 6013, 6014, 6015,
@@ -112,7 +115,34 @@ SEED_RECORDS = (
         Partition.CONFIRMATORY, CONFIRMATORY_SEEDS, per_family=16, pair_count=4
     ),
 )
-SEED_RECORD_BY_SEED = {record.seed: record for record in SEED_RECORDS}
+D56_REPLACEMENT_SEED_RECORDS = tuple(
+    SeedRecord(
+        seed=seed,
+        partition=Partition.CALIBRATION,
+        family=WorkflowFamily.EVIDENCE_AGGREGATION,
+        family_index=10 + index,
+        logical_id=(
+            "calibration-evidence_aggregation-replacement-logical-00"
+            if index < 2
+            else f"calibration-evidence_aggregation-replacement-logical-{index - 1:02d}"
+        ),
+        variant=(
+            "twin_a"
+            if index == 0
+            else "twin_b"
+            if index == 1
+            else "base"
+        ),
+        difficulty_band=(
+            DifficultyBand.FRONTIER if index < 6 else DifficultyBand.CEILING
+        ),
+    )
+    for index, seed in enumerate(D56_REPLACEMENT_CALIBRATION_SEEDS)
+)
+SEED_RECORD_BY_SEED = {
+    record.seed: record
+    for record in (*SEED_RECORDS, *D56_REPLACEMENT_SEED_RECORDS)
+}
 
 
 def validate_seed_contract() -> dict[str, object]:
@@ -121,7 +151,9 @@ def validate_seed_contract() -> dict[str, object]:
         Partition.CALIBRATION: 60,
         Partition.CONFIRMATORY: 96,
     }
-    if len(SEED_RECORD_BY_SEED) != len(SEED_RECORDS):
+    if len(SEED_RECORD_BY_SEED) != len(SEED_RECORDS) + len(
+        D56_REPLACEMENT_SEED_RECORDS
+    ):
         raise ValueError("v5 seed partitions overlap")
     family_counts: dict[str, dict[str, int]] = {}
     pair_episodes: dict[str, int] = {}
@@ -157,6 +189,7 @@ def validate_seed_contract() -> dict[str, object]:
         raise ValueError("every v5 family must be represented in every difficulty band")
     return {
         "partition_counts": {key.value: value for key, value in expected.items()},
+        "d56_replacement_calibration_count": len(D56_REPLACEMENT_SEED_RECORDS),
         "family_counts": family_counts,
         "robustness_pair_episode_counts": pair_episodes,
         "difficulty_band_counts": band_counts,
