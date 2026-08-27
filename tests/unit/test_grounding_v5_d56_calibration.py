@@ -4,8 +4,14 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
-from pixelgym.grounding.v5.d56_calibration import build_plan, plan_digest
+from pixelgym.grounding.v5.d56_calibration import (
+    build_plan,
+    execute_calibration,
+    plan_digest,
+)
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 
 ROOT = Path(__file__).parents[2]
@@ -111,3 +117,22 @@ def test_d56_plan_discloses_uncapped_maximum_but_enforces_ten_dollar_guard(
         record["price_record"]["unknown_usage_or_price_rule"] == "fail_closed"
         for record in plan["policies"]
     )
+
+
+def test_consumed_native_d56_execution_is_locked_after_adapter_replacement(
+    tmp_path: Path,
+) -> None:
+    smoke_output = fake_smoke_output(tmp_path)
+    plan = build_plan(ROOT, smoke_output_directory=smoke_output)
+    output = tmp_path / "must-not-exist"
+
+    with pytest.raises(RuntimeError, match="native-coordinate D5.6 calibration is frozen"):
+        execute_calibration(
+            ROOT,
+            plan=plan,
+            approved_plan_sha256=plan_digest(plan),
+            smoke_output_directory=smoke_output,
+            output_directory=output,
+        )
+
+    assert not output.exists()

@@ -16,6 +16,7 @@ from pixelgym.grounding.v5.manifests import (
     D56_CONSUMED_CALIBRATION_SUMMARY_SHA256,
 )
 from pixelgym.grounding.v5.panel_policy import (
+    LLAMA_STATEFUL,
     PANEL_BY_SLOT,
     PANEL_MAXIMUM_SPEND_USD,
     PRIOR_AGGREGATE_SPEND_USD,
@@ -172,6 +173,10 @@ def execute_smoke(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved panel-smoke plan digest does not match the supplied plan")
+    if LLAMA_STATEFUL.adapter.name != "native-1024x768":
+        raise RuntimeError(
+            "native-coordinate panel smoke is frozen; use the normalized Slot C trial"
+        )
     if plan != build_plan(repository_root):
         raise ValueError("panel-smoke plan does not match the canonical request configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):

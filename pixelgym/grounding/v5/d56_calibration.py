@@ -13,6 +13,7 @@ from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_byt
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    LLAMA_STATEFUL,
     PANEL,
     PANEL_BY_SLOT,
     PANEL_MAXIMUM_SPEND_USD,
@@ -289,6 +290,10 @@ def execute_calibration(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved D5.6 plan digest does not match the supplied plan")
+    if LLAMA_STATEFUL.adapter.name != "native-1024x768":
+        raise RuntimeError(
+            "native-coordinate D5.6 calibration is frozen; use the normalized Slot C trial"
+        )
     if plan != build_plan(
         repository_root, smoke_output_directory=smoke_output_directory
     ):
