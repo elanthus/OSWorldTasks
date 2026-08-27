@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter
 from decimal import Decimal
@@ -52,6 +53,22 @@ FROZEN_ACTUAL_SPEND_USD = Decimal("2.032875185")
 FROZEN_TERMINAL_IDENTITY = AttemptIdentity(
     "d56-A-gemini-stateful-32-v5-48860ad9b285908aa000a26b", 14, 0
 )
+FROZEN_JOURNAL_INTEGRITY = {
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
+    "object_count": 5791,
+    "event_count": 6076,
+    "event_chain_digest": (
+        "sha256:316451e8cb73a6c2dafff0a9662f571d4c63084cef88c88036dcf55c929a2f54"
+    ),
+}
+
+
+def _streaming_file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(8 * 1024 * 1024):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
 
 
 def _validated_frozen_calibration_evidence(
@@ -61,8 +78,6 @@ def _validated_frozen_calibration_evidence(
     journal_path = output_directory / "attempts.sqlite"
     if _file_digest(summary_path) != FROZEN_SUMMARY_SHA256:
         raise ValueError("frozen D5.6 summary digest mismatch")
-    if _file_digest(journal_path) != FROZEN_JOURNAL_SHA256:
-        raise ValueError("frozen D5.6 journal digest mismatch")
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     expected_fields = {
         "schema_version": "pixelgym-agent-v5-d56-calibration-result-v2",
@@ -84,6 +99,7 @@ def _validated_frozen_calibration_evidence(
             "step_limit_truncation": 12,
             "success_termination": 20,
         },
+        "journal_integrity": FROZEN_JOURNAL_INTEGRITY,
     }
     if not isinstance(summary, dict) or any(
         summary.get(key) != value for key, value in expected_fields.items()
@@ -125,11 +141,10 @@ def _validated_frozen_calibration_evidence(
             raise ValueError("frozen D5.6 terminal journal event mismatch")
         if journal.call_counts() != (864, 0):
             raise ValueError("frozen D5.6 journal request counts mismatch")
-        journal_integrity = journal.integrity_report()
     finally:
         journal.close()
-    if journal_integrity != summary.get("journal_integrity"):
-        raise ValueError("frozen D5.6 journal integrity mismatch")
+    if _streaming_file_digest(journal_path) != FROZEN_JOURNAL_SHA256:
+        raise ValueError("frozen D5.6 journal digest mismatch")
     return {
         "approved_plan_sha256": FROZEN_PLAN_SHA256,
         "code_revision": FROZEN_CODE_REVISION,
@@ -153,7 +168,7 @@ def _validated_frozen_calibration_evidence(
             "request_outcome": "unknown",
             "retry_eligible": False,
         },
-        "journal_integrity": journal_integrity,
+        "journal_integrity": FROZEN_JOURNAL_INTEGRITY,
     }
 
 

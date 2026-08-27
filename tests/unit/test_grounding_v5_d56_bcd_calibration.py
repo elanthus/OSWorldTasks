@@ -108,8 +108,9 @@ def fake_frozen_calibration_output(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(
         d56_bcd_calibration,
         "FROZEN_JOURNAL_SHA256",
-        d56_bcd_calibration._file_digest(journal_path),
+        d56_bcd_calibration._streaming_file_digest(journal_path),
     )
+    monkeypatch.setattr(d56_bcd_calibration, "FROZEN_JOURNAL_INTEGRITY", integrity)
     return output
 
 
