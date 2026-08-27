@@ -1,8 +1,7 @@
 # PixelGym v5 D5.6 calibration approval packet
 
-**Status:** the four-slot, B/C/D, native-coordinate Slot C, and normalized Llama development runs
-are frozen; the owner selected `z-ai/glm-5.3-flash` for a one-episode comparison on 2026-08-27,
-and its exact paid-call plan remains pending
+**Status:** the four-slot, B/C/D, native-coordinate Slot C, normalized Llama, and strict-schema GLM
+development runs are frozen; prepare a new exact approval for one relaxed-schema GLM retry
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -236,11 +235,9 @@ resume or retry it.
 ## GLM normalized development comparison
 
 The owner selected `z-ai/glm-5.3-flash` as a comparison candidate, not yet as a replacement for the
-frozen Slot C policy. Use the same already-exposed development seed `5010`, normalized coordinate
-adapter, and stateful visible-action history. Pin OpenRouter to Novita FP8, disable fallbacks, and
-require every declared request parameter. The Novita route was selected because its endpoint
-advertised image input, structured responses, and the frozen `seed` parameter when checked on
-2026-08-27.
+frozen Slot C policy. The consumed strict-schema plan used the same already-exposed development
+seed `5010`, normalized coordinate adapter, and stateful visible-action history. It pinned
+OpenRouter to Novita FP8, disabled fallbacks, and required every declared request parameter.
 
 The episode permits at most 28 environment actions, 56 model attempts or wire requests, zero
 control requests, and an uncapped theoretical maximum of `$0.590643200`. It starts from aggregate
@@ -254,9 +251,35 @@ after committing the implementation:
   --output artifacts/grounding-v5-d56-glm-normalized-trial-plan.json
 ```
 
-The planner must bind the normalized Llama trial's exact summary, journal, terminal event, and
-aggregate spend, report `provider_calls_made: 0`, and name only development seed `5010`. Every prior
-approval authorizes zero GLM requests; execution requires approval of the new printed digest.
+The owner approved plan
+`sha256:e05780e1ba5487b024c8b3a76ff00ceae3d5cda7c28cb051d59777044e5f9f62`. Its first request
+returned HTTP 404 before a canonical response, usage record, or environment action. The journal
+sealed an `unknown_outcome_infrastructure_failure`; attributed spend remained `$2.487339457`.
+Preserve `artifacts/grounding-v5-d56-glm-normalized-trial-run/` unchanged and do not execute the
+strict-schema runner again.
+
+The exact rejection text was not retained, so the cause remains an inference. The evidence is
+consistent with route filtering by `json_schema.strict: true`: the current Novita endpoint lists
+`response_format` and `seed`, but does not list strict structured outputs. OpenRouter documents HTTP
+404 when strict schema requirements exclude every available endpoint. The retry therefore changes
+only the upstream schema enforcement mode and assigns a new policy identity. It keeps the same
+model, Novita FP8 route, prompt, local exact-action parser, normalized adapter, state policy, seed,
+caps, and shared ledger. Invalid or unparseable output remains retained and final without retry.
+
+Generate the successor no-call plan only after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_relaxed_trial.py \
+  --plan-only \
+  --frozen-strict-glm-trial-output artifacts/grounding-v5-d56-glm-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json
+```
+
+The planner must bind the strict trial's exact plan, summary, journal, HTTP 404 terminal evidence,
+and aggregate spend. It must report `provider_calls_made: 0`, one development assignment, 28
+environment actions, at most 56 attempts or wire requests, zero control requests, a theoretical
+maximum of `$0.590643200`, and `$7.512660543` remaining. Every prior approval authorizes zero
+requests under this new policy identity. Execution requires approval of the new printed digest.
 
 ## Calibration routing freeze
 

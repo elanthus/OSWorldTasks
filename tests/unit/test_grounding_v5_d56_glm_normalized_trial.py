@@ -240,3 +240,22 @@ def test_glm_trial_rejects_unapproved_digest_before_output(
         )
 
     assert not output.exists()
+
+
+def test_consumed_strict_glm_trial_executor_is_frozen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frozen_output = fake_frozen_llama_trial_output(tmp_path, monkeypatch)
+    plan = build_plan(ROOT, frozen_llama_trial_output_directory=frozen_output)
+    output = tmp_path / "must-not-exist"
+
+    with pytest.raises(ValueError, match="strict-schema GLM trial is frozen"):
+        execute_trial(
+            ROOT,
+            plan=plan,
+            approved_plan_sha256=plan_digest(plan),
+            frozen_llama_trial_output_directory=frozen_output,
+            output_directory=output,
+        )
+
+    assert not output.exists()

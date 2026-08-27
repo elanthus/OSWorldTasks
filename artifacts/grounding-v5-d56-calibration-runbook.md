@@ -1,7 +1,7 @@
 # PixelGym v5 D5.6 calibration runbook
 
-**Status:** the four-slot, B/C/D, and native-coordinate Slot C runs are frozen; prepare one
-development-only semantic trial for the owner-selected normalized Slot C replacement
+**Status:** all previous runs, including the strict-schema GLM comparison, are frozen; prepare one
+development-only relaxed-schema GLM successor plan for exact owner approval
 
 ## Outcome
 
@@ -266,11 +266,13 @@ The run completed stage 0, then repeatedly focused the stage-1 text field withou
 `artifacts/grounding-v5-d56-c-normalized-trial-run/` unchanged. Its aggregate spend is
 `$2.487339457`; do not resume or retry it.
 
-## Phase 7: one GLM normalized-coordinate comparison trial
+## Phase 7: consumed strict-schema GLM comparison trial
 
-Use the same already-exposed development seed `5010`. Pin `z-ai/glm-5.3-flash` to Novita FP8 with
-fallbacks disabled, and retain the normalized adapter and stateful visible-action history. This is
-a candidate comparison, not calibration or confirmatory evidence and not yet a Slot C replacement.
+This phase is complete and frozen. The runner now rejects execution and directs the operator to the
+relaxed-schema successor. The commands below record the historical procedure; do not run them
+again. The phase used the already-exposed development seed `5010`, pinned
+`z-ai/glm-5.3-flash` to Novita FP8 with fallbacks disabled, and retained the normalized adapter and
+stateful visible-action history.
 
 After committing the implementation, generate the no-call plan:
 
@@ -295,9 +297,51 @@ remaining, an uncapped theoretical trial maximum of `$0.590643200`, and
   --output artifacts/grounding-v5-d56-glm-normalized-trial-run
 ```
 
-Let the episode end by success termination or step-limit truncation. Stop on any other failure or
-before a request whose worst-case cost cannot fit under the shared ledger. Report semantic progress
-from the generated summary and preserve every predecessor and comparison run unchanged.
+The owner approved plan
+`sha256:e05780e1ba5487b024c8b3a76ff00ceae3d5cda7c28cb051d59777044e5f9f62`. The first request
+returned HTTP 404 before a canonical response, usage record, or environment action. The terminal
+attempt was sealed as `unknown_outcome_infrastructure_failure`; no cost was attributed. Preserve
+`artifacts/grounding-v5-d56-glm-normalized-trial-run/` unchanged and do not reuse its approval.
+
+## Phase 8: relaxed-schema GLM successor
+
+Use this phase only for the owner-selected retry. Keep the same model, Novita FP8 route, prompt,
+local exact-action parser, normalized coordinate adapter, stateful history, development seed `5010`,
+and shared `$10.00` ledger. Set only upstream `json_schema.strict` to `false`. This produces a new
+policy identity. The local parser still accepts only an exact four-integer action object; retain and
+stop on invalid or unparseable output.
+
+After committing the implementation and confirming a clean tracked worktree, generate the plan
+into an unused path:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_relaxed_trial.py \
+  --plan-only \
+  --frozen-strict-glm-trial-output artifacts/grounding-v5-d56-glm-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json
+```
+
+The plan must bind the frozen strict trial's plan digest, code revision, summary and journal byte
+digests, HTTP 404 terminal event, and unchanged aggregate spend. It must report one development
+assignment, 28 environment actions, at most 56 model attempts or wire requests, zero control
+requests, `$2.487339457` prior spend, `$7.512660543` remaining, a theoretical maximum of
+`$0.590643200`, and `provider_calls_made: 0`. Obtain explicit owner approval for the exact printed
+digest before execution:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_relaxed_trial.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --frozen-strict-glm-trial-output artifacts/grounding-v5-d56-glm-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-relaxed-trial-run
+```
+
+Let the one episode end by success termination or step-limit truncation. Retry at most once only
+after the existing canonical zero-token, zero-cost, empty `finish_reason=error` envelope on the
+same Novita route. Stop on the first other transport, identity, price, parse, adapter,
+invalid-action, or evidence-integrity failure, or before a request whose worst-case cost does not
+fit under the shared ledger. Preserve every predecessor and successor directory unchanged.
 
 ## Handoff evidence
 

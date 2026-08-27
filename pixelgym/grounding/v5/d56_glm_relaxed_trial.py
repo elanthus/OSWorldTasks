@@ -1,4 +1,4 @@
-"""Plan and execute one GLM normalized-coordinate candidate trial."""
+"""Plan and execute the relaxed-schema successor to the frozen GLM trial."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
-    GLM_STATEFUL_CANDIDATE,
+    GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
@@ -23,130 +23,111 @@ from pixelgym.grounding.v5.panel_policy import (
 )
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-glm-normalized-trial-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-glm-normalized-trial-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-glm-relaxed-trial-plan-v1"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-glm-relaxed-trial-result-v1"
 TRIAL_SEED = 5010
-PRICE_OBSERVED_AT_UTC = "2026-08-27T20:19:30Z"
-EXECUTION_FROZEN = True
+PRICE_OBSERVED_AT_UTC = "2026-08-27T23:11:32Z"
 
-FROZEN_LLAMA_TRIAL_PLAN_SHA256 = (
-    "sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15"
+FROZEN_STRICT_GLM_PLAN_SHA256 = (
+    "sha256:e05780e1ba5487b024c8b3a76ff00ceae3d5cda7c28cb051d59777044e5f9f62"
 )
-FROZEN_LLAMA_TRIAL_SUMMARY_SHA256 = (
-    "sha256:7e3c8778a7e35fd48ef81db9fb56a70fdd45c8f71f7736e3b1e961076cd1fd66"
+FROZEN_STRICT_GLM_SUMMARY_SHA256 = (
+    "sha256:884650f5a35b7767eb195de549857235d9aa0092d03ab9e7528627d66f8f823d"
 )
-FROZEN_LLAMA_TRIAL_JOURNAL_SHA256 = (
-    "sha256:1742f25baca698807f33407d1b046083f4731828796ce8b707f6374b71ec648e"
+FROZEN_STRICT_GLM_JOURNAL_SHA256 = (
+    "sha256:639592ffa11973550702eafabd69e7f8e6b94f973d6c30f42933ef60524f7294"
 )
-FROZEN_LLAMA_TRIAL_CODE_REVISION = "b34d7d3ba7163c09b23dc60d06bc8978a49690f2"
-FROZEN_LLAMA_TRIAL_ACTUAL_SPEND_USD = Decimal("2.487339457")
-FROZEN_LLAMA_TRIAL_JOURNAL_INTEGRITY = {
+FROZEN_STRICT_GLM_CODE_REVISION = "dd9709e4db535316246cfd618e0f1abdc13a3d8c"
+FROZEN_STRICT_GLM_ACTUAL_SPEND_USD = Decimal("2.487339457")
+FROZEN_STRICT_GLM_JOURNAL_INTEGRITY = {
     "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
-    "object_count": 123,
-    "event_count": 136,
+    "object_count": 5,
+    "event_count": 3,
     "event_chain_digest": (
-        "sha256:b68efcdfe838eeb04141e64bb9735af015fa5e8b11aa3e06340e07ff8de24db9"
+        "sha256:c14ddbf6c1e6f9d5dc67854d33e3eeb855f565a931552a4a413e53fced245de1"
     ),
 }
-FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY = AttemptIdentity(
-    "d56-c-normalized-trial-v5-bf8d93604c1ba0da75b32ca8", 19, 0
+FROZEN_STRICT_GLM_TERMINAL_IDENTITY = AttemptIdentity(
+    "d56-glm-normalized-trial-v5-bf8d93604c1ba0da75b32ca8", 0, 0
 )
 
 
-def _validated_frozen_llama_trial_evidence(output_directory: Path) -> dict[str, Any]:
+def _validated_frozen_strict_glm_evidence(output_directory: Path) -> dict[str, Any]:
     summary_path = output_directory / "summary.json"
     journal_path = output_directory / "attempts.sqlite"
-    if _file_digest(summary_path) != FROZEN_LLAMA_TRIAL_SUMMARY_SHA256:
-        raise ValueError("frozen normalized Llama trial summary digest mismatch")
-    if _streaming_file_digest(journal_path) != FROZEN_LLAMA_TRIAL_JOURNAL_SHA256:
-        raise ValueError("frozen normalized Llama trial journal digest mismatch")
+    if _file_digest(summary_path) != FROZEN_STRICT_GLM_SUMMARY_SHA256:
+        raise ValueError("frozen strict GLM summary digest mismatch")
+    if _streaming_file_digest(journal_path) != FROZEN_STRICT_GLM_JOURNAL_SHA256:
+        raise ValueError("frozen strict GLM journal digest mismatch")
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     expected_fields = {
-        "schema_version": "pixelgym-agent-v5-d56-c-normalized-trial-result-v1",
+        "schema_version": "pixelgym-agent-v5-d56-glm-normalized-trial-result-v1",
         "purpose": (
-            "one complete development-only Slot C episode to test the normalized coordinate "
-            "adapter; not calibration evidence"
+            "one complete development-only GLM candidate episode using the normalized "
+            "coordinate adapter; comparative diagnostic evidence, not calibration evidence"
         ),
-        "approved_plan_sha256": FROZEN_LLAMA_TRIAL_PLAN_SHA256,
-        "code_revision": FROZEN_LLAMA_TRIAL_CODE_REVISION,
-        "provider_calls_made": 20,
-        "provider_wire_requests": 20,
-        "model_attempt_reservations": 20,
+        "approved_plan_sha256": FROZEN_STRICT_GLM_PLAN_SHA256,
+        "code_revision": FROZEN_STRICT_GLM_CODE_REVISION,
+        "provider_calls_made": 1,
+        "provider_wire_requests": 1,
+        "model_attempt_reservations": 1,
         "provider_control_requests": 0,
-        "prior_aggregate_spend_usd": "2.481019457",
-        "actual_aggregate_spend_usd": str(FROZEN_LLAMA_TRIAL_ACTUAL_SPEND_USD),
-        "trial_incremental_spend_usd": "0.006320000",
+        "prior_aggregate_spend_usd": "2.487339457",
+        "actual_aggregate_spend_usd": str(FROZEN_STRICT_GLM_ACTUAL_SPEND_USD),
+        "trial_incremental_spend_usd": "0E-9",
         "remaining_aggregate_spend_usd": "7.512660543",
         "maximum_aggregate_spend_usd": "10.00",
         "assigned_policy_task_pairs": 1,
         "attempted_policy_task_pairs": 1,
         "successful_policy_task_pairs": 0,
         "semantic_progress": {
-            "first_transition_completed": True,
-            "maximum_stage_index_observed": 1,
-            "diagnostic_event_counts": {
-                "correct_transition": 1,
-                "text_input_focused": 18,
-            },
+            "first_transition_completed": False,
+            "maximum_stage_index_observed": 0,
+            "diagnostic_event_counts": {},
         },
         "execution_error": None,
-        "journal_integrity": FROZEN_LLAMA_TRIAL_JOURNAL_INTEGRITY,
-        "cleanup": {
-            "journal_closed": True,
-            "policy_and_environments_closed": True,
-        },
+        "journal_integrity": FROZEN_STRICT_GLM_JOURNAL_INTEGRITY,
+        "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},
     }
     if not isinstance(summary, dict) or any(
         summary.get(key) != value for key, value in expected_fields.items()
     ):
-        raise ValueError("frozen normalized Llama trial summary facts mismatch")
-    episode_result = summary.get("episode_result")
-    if episode_result != {
+        raise ValueError("frozen strict GLM summary facts mismatch")
+    if summary.get("episode_result") != {
         "classification": "infrastructure_failure",
-        "environment_actions": 19,
+        "environment_actions": 0,
         "final_policy_checkpoint_digest": (
-            "sha256:d16e535fe2ad504b0227fb97128a33ff533765806de449ed5626762d37ed9fb6"
+            "sha256:63e9da03831c87ca45e2c7b7bbc730fa262decdf49943ad3b6032b212e7348c1"
         ),
-        "model_attempts": 20,
+        "model_attempts": 1,
         "provider_control_requests": 0,
-        "provider_wire_requests": 20,
-        "slot": "C-llama-stateful",
+        "provider_wire_requests": 1,
+        "slot": "C-glm-stateful-candidate",
         "success": False,
         "task_id": "v5-bf8d93604c1ba0da75b32ca8",
-        "trial_id": FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY.trial_id,
+        "trial_id": FROZEN_STRICT_GLM_TERMINAL_IDENTITY.trial_id,
     }:
-        raise ValueError("frozen normalized Llama trial assignment mismatch")
-    native_evidence = summary.get("frozen_native_c_evidence")
-    if not isinstance(native_evidence, dict) or (
-        native_evidence.get("actual_aggregate_spend_usd") != "2.481019457"
-        or native_evidence.get("summary_sha256")
-        != "sha256:73cfd90ae6594a4d826520be3aa971ba049554c5d69196111edb672a78f0da0f"
-        or native_evidence.get("journal_sha256")
-        != "sha256:d67a8c9197e3d2d54f62fd28002e7c9e054c0e5cdb3872b1042ff76537272cf6"
-    ):
-        raise ValueError("frozen normalized Llama trial predecessor mismatch")
+        raise ValueError("frozen strict GLM assignment mismatch")
     transport_records = summary.get("transport_records")
-    if not isinstance(transport_records, list) or len(transport_records) != 20:
-        raise ValueError("frozen normalized Llama trial transport evidence mismatch")
-    if any(
-        record.get("status") != "response"
-        or record.get("upstream_provider") != "DeepInfra"
-        or record.get("response_model") != "meta-llama/llama-4-scout"
-        for record in transport_records[:-1]
-    ):
-        raise ValueError("frozen normalized Llama trial response route mismatch")
-    terminal_transport = transport_records[-1]
-    if (
-        terminal_transport.get("status") != "unknown"
-        or terminal_transport.get("failure_code") != "HTTPError"
-        or terminal_transport.get("http_status") != 429
-        or terminal_transport.get("provider_error_code") != 429
-        or terminal_transport.get("upstream_provider") != "DeepInfra"
-    ):
-        raise ValueError("frozen normalized Llama trial terminal transport mismatch")
+    if not isinstance(transport_records, list) or len(transport_records) != 1:
+        raise ValueError("frozen strict GLM transport evidence mismatch")
+    terminal_transport = transport_records[0]
+    expected_transport = {
+        "status": "unknown",
+        "failure_code": "HTTPError",
+        "http_status": 404,
+        "provider_error_code": 404,
+        "error_body_bytes_read": 201,
+        "error_body_prefix_digest": (
+            "sha256:680fd4832f47938dd9f75c25939ba46a92474efe69b643b0bfafbe087c195042"
+        ),
+        "error_body_truncated": False,
+    }
+    if any(terminal_transport.get(key) != value for key, value in expected_transport.items()):
+        raise ValueError("frozen strict GLM terminal transport mismatch")
     journal = V5AttemptJournal(journal_path)
     try:
-        terminal_event = journal.terminal_attempt(FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY)
+        terminal_event = journal.terminal_attempt(FROZEN_STRICT_GLM_TERMINAL_IDENTITY)
         if (
             terminal_event is None
             or terminal_event.kind != "unknown_outcome_infrastructure_failure"
@@ -154,21 +135,21 @@ def _validated_frozen_llama_trial_evidence(output_directory: Path) -> dict[str, 
             or terminal_event.payload.get("response_digest") is not None
             or terminal_event.payload.get("usage") != {}
         ):
-            raise ValueError("frozen normalized Llama trial terminal journal mismatch")
-        if journal.call_counts() != (20, 0):
-            raise ValueError("frozen normalized Llama trial journal counts mismatch")
+            raise ValueError("frozen strict GLM terminal journal mismatch")
+        if journal.call_counts() != (1, 0):
+            raise ValueError("frozen strict GLM journal counts mismatch")
     finally:
         journal.close()
     return {
-        "approved_plan_sha256": FROZEN_LLAMA_TRIAL_PLAN_SHA256,
-        "code_revision": FROZEN_LLAMA_TRIAL_CODE_REVISION,
+        "approved_plan_sha256": FROZEN_STRICT_GLM_PLAN_SHA256,
+        "code_revision": FROZEN_STRICT_GLM_CODE_REVISION,
         "summary_path": str(summary_path),
-        "summary_sha256": FROZEN_LLAMA_TRIAL_SUMMARY_SHA256,
+        "summary_sha256": FROZEN_STRICT_GLM_SUMMARY_SHA256,
         "journal_path": str(journal_path),
-        "journal_sha256": FROZEN_LLAMA_TRIAL_JOURNAL_SHA256,
-        "actual_aggregate_spend_usd": str(FROZEN_LLAMA_TRIAL_ACTUAL_SPEND_USD),
+        "journal_sha256": FROZEN_STRICT_GLM_JOURNAL_SHA256,
+        "actual_aggregate_spend_usd": str(FROZEN_STRICT_GLM_ACTUAL_SPEND_USD),
         "remaining_aggregate_spend_usd": str(
-            PANEL_MAXIMUM_SPEND_USD - FROZEN_LLAMA_TRIAL_ACTUAL_SPEND_USD
+            PANEL_MAXIMUM_SPEND_USD - FROZEN_STRICT_GLM_ACTUAL_SPEND_USD
         ),
         "attempted_policy_task_pairs": 1,
         "successful_policy_task_pairs": 0,
@@ -176,83 +157,89 @@ def _validated_frozen_llama_trial_evidence(output_directory: Path) -> dict[str, 
         "terminal": {
             "classification": terminal_event.kind,
             "failure_code": terminal_event.payload["failure_code"],
-            "http_status": 429,
-            "provider_error_code": 429,
-            "trial_id": FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY.trial_id,
-            "step_index": FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY.step_index,
-            "attempt_index": FROZEN_LLAMA_TRIAL_TERMINAL_IDENTITY.attempt_index,
+            "http_status": 404,
+            "provider_error_code": 404,
+            "trial_id": FROZEN_STRICT_GLM_TERMINAL_IDENTITY.trial_id,
+            "step_index": FROZEN_STRICT_GLM_TERMINAL_IDENTITY.step_index,
+            "attempt_index": FROZEN_STRICT_GLM_TERMINAL_IDENTITY.attempt_index,
             "request_outcome": "unknown",
             "retry_eligible": False,
         },
-        "journal_integrity": FROZEN_LLAMA_TRIAL_JOURNAL_INTEGRITY,
+        "journal_integrity": FROZEN_STRICT_GLM_JOURNAL_INTEGRITY,
     }
 
 
 def build_plan(
     repository_root: Path,
     *,
-    frozen_llama_trial_output_directory: Path,
+    frozen_strict_glm_trial_output_directory: Path,
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
-    frozen_llama_evidence = _validated_frozen_llama_trial_evidence(
-        frozen_llama_trial_output_directory
+    frozen_evidence = _validated_frozen_strict_glm_evidence(
+        frozen_strict_glm_trial_output_directory
     )
-    prior_spend = Decimal(frozen_llama_evidence["actual_aggregate_spend_usd"])
+    prior_spend = Decimal(frozen_evidence["actual_aggregate_spend_usd"])
     task = generate_task(TRIAL_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
-        raise ValueError("GLM candidate trial may use a development task only")
-    config = GLM_STATEFUL_CANDIDATE
+        raise ValueError("relaxed-schema GLM trial may use a development task only")
+    config = GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
     action_cap = task.max_episode_steps
     attempt_cap = action_cap * manifest.max_model_attempts_per_action
     theoretical_maximum = config.request_maximum_usd * attempt_cap
     aggregate_upper_bound = prior_spend + theoretical_maximum
     if aggregate_upper_bound > PANEL_MAXIMUM_SPEND_USD:
-        raise ValueError("GLM candidate trial theoretical maximum exceeds shared cap")
-    policy_record = {
-        "slot": config.slot,
-        "policy_manifest": manifest.to_dict(),
-        "policy_manifest_digest": content_digest(manifest.to_dict()),
-        "provider": {
-            "name": "openrouter",
-            "upstream_provider": config.response_provider,
-            "only": [config.provider_route],
-            "quantizations": list(config.quantizations),
-            "allow_fallbacks": False,
-            "automatic_retries": False,
-            "data_collection": "deny",
-            "require_parameters": True,
-        },
-        "model_capabilities": {
-            "input_modalities": ["text", "image", "video"],
-            "output_modalities": ["text"],
-            "structured_response_parameter": True,
-            "seed_parameter": True,
-        },
-        "price_record": {
-            "source_url": config.price_source,
-            "observed_at_utc": PRICE_OBSERVED_AT_UTC,
-            "currency": "USD",
-            "prompt_per_token": str(config.prompt_price_per_token_usd),
-            "completion_per_token": str(config.completion_price_per_token_usd),
-            "image_input_billing": "provider input tokens at prompt_per_token",
-            "max_prompt_tokens": 126_976,
-            "max_output_tokens": 4_096,
-            "per_request_theoretical_maximum_usd": str(config.request_maximum_usd),
-            "unknown_usage_or_price_rule": "fail_closed",
-        },
-    }
+        raise ValueError("relaxed-schema GLM trial theoretical maximum exceeds shared cap")
     return {
         "schema_version": PLAN_SCHEMA_VERSION,
         "purpose": (
-            "one complete development-only GLM candidate episode using the normalized coordinate "
-            "adapter; comparative diagnostic evidence, not calibration evidence"
+            "one complete development-only GLM candidate episode with upstream strict JSON "
+            "schema disabled and the local exact-action parser unchanged; comparative diagnostic "
+            "evidence, not calibration evidence"
         ),
         "provider_calls_made": 0,
         "code_revision": revision,
         "requires_clean_tracked_worktree": True,
         "assigned_policy_task_pairs": 1,
-        "policy": policy_record,
+        "policy": {
+            "slot": config.slot,
+            "policy_manifest": manifest.to_dict(),
+            "policy_manifest_digest": content_digest(manifest.to_dict()),
+            "provider": {
+                "name": "openrouter",
+                "upstream_provider": config.response_provider,
+                "only": [config.provider_route],
+                "quantizations": list(config.quantizations),
+                "allow_fallbacks": False,
+                "automatic_retries": False,
+                "data_collection": "deny",
+                "require_parameters": True,
+            },
+            "response_validation": {
+                "upstream_json_schema_strict": False,
+                "local_exact_action_parser": True,
+                "invalid_or_unparseable_output_rule": "retain_and_fail_closed_without_retry",
+            },
+            "model_capabilities": {
+                "input_modalities": ["text", "image", "video"],
+                "output_modalities": ["text"],
+                "response_format_parameter": True,
+                "strict_structured_outputs": False,
+                "seed_parameter": True,
+            },
+            "price_record": {
+                "source_url": config.price_source,
+                "observed_at_utc": PRICE_OBSERVED_AT_UTC,
+                "currency": "USD",
+                "prompt_per_token": str(config.prompt_price_per_token_usd),
+                "completion_per_token": str(config.completion_price_per_token_usd),
+                "image_input_billing": "provider input tokens at prompt_per_token",
+                "max_prompt_tokens": 126_976,
+                "max_output_tokens": 4_096,
+                "per_request_theoretical_maximum_usd": str(config.request_maximum_usd),
+                "unknown_usage_or_price_rule": "fail_closed",
+            },
+        },
         "task": {
             "partition": task.seed_record.partition.value,
             "seed": task.seed,
@@ -269,19 +256,20 @@ def build_plan(
             "trial_theoretical_maximum_usd": str(theoretical_maximum),
             "aggregate_theoretical_upper_bound_usd": str(aggregate_upper_bound),
             "enforcement": (
-                "before each wire request, reserve the GLM candidate's worst-case request cost "
-                "against the shared aggregate ledger; stop before a request that cannot fit"
+                "before each wire request, reserve the relaxed-schema GLM candidate's worst-case "
+                "request cost against the shared aggregate ledger; stop before a request that "
+                "cannot fit"
             ),
         },
-        "frozen_normalized_llama_trial_evidence": frozen_llama_evidence,
+        "frozen_strict_glm_trial_evidence": frozen_evidence,
         "stop_rules": [
             "run exactly one complete development-partition episode and no calibration or confirmatory task",
-            "do not resume, retry, replace, or reinterpret any frozen Llama request or assignment",
-            "retry once on the same Novita route only after a zero-token, zero-cost, empty response with finish_reason error",
+            "do not resume, retry, replace, or reinterpret the frozen strict-schema GLM request or assignment",
+            "retry once on the same Novita route only after a canonical zero-token, zero-cost, empty response with finish_reason error",
             "retain both attempts and stop after a repeated retryable provider error",
             "stop after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
-            "do not retry a parse, action, unknown-outcome, or other provider failure",
+            "retain and do not retry any invalid or unparseable model output",
         ],
         "approval_required": {
             "owner": "human",
@@ -299,23 +287,21 @@ def execute_trial(
     *,
     plan: dict[str, Any],
     approved_plan_sha256: str,
-    frozen_llama_trial_output_directory: Path,
+    frozen_strict_glm_trial_output_directory: Path,
     output_directory: Path,
 ) -> dict[str, Any]:
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
-        raise ValueError("approved GLM candidate trial digest does not match the plan")
+        raise ValueError("approved relaxed-schema GLM trial digest does not match the plan")
     if plan != build_plan(
         repository_root,
-        frozen_llama_trial_output_directory=frozen_llama_trial_output_directory,
+        frozen_strict_glm_trial_output_directory=frozen_strict_glm_trial_output_directory,
     ):
-        raise ValueError("GLM candidate trial does not match canonical configuration")
-    if EXECUTION_FROZEN:
-        raise ValueError("strict-schema GLM trial is frozen; use the relaxed-schema successor")
+        raise ValueError("relaxed-schema GLM trial does not match canonical configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before provider requests")
     if output_directory.exists():
-        raise FileExistsError(f"refusing to replace GLM candidate output: {output_directory}")
+        raise FileExistsError(f"refusing to replace relaxed-schema GLM output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
     prior_spend = Decimal(plan["caps"]["prior_aggregate_spend_usd"])
@@ -328,18 +314,18 @@ def execute_trial(
     )
     transport: OpenRouterPanelTransport | None = None
     result_record: dict[str, Any] | None = None
-    trial_id = f"d56-glm-normalized-trial-{plan['task']['task_id']}"
+    trial_id = f"d56-glm-relaxed-trial-{plan['task']['task_id']}"
     execution_error: dict[str, str] | None = None
     try:
-        config = GLM_STATEFUL_CANDIDATE
+        config = GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE
         manifest = build_panel_policy_manifest(
             repository_root, config=config, code_revision=plan["code_revision"]
         )
         if manifest.to_dict() != plan["policy"]["policy_manifest"]:
-            raise ValueError("runtime policy manifest differs from approved GLM trial plan")
+            raise ValueError("runtime policy manifest differs from approved relaxed GLM plan")
         task = generate_task(plan["task"]["seed"])
         if task.task_id != plan["task"]["task_id"]:
-            raise ValueError("generated development task differs from approved GLM trial plan")
+            raise ValueError("generated task differs from approved relaxed GLM plan")
         transport = OpenRouterPanelTransport(config, ledger=ledger)
         result = V5Runner(
             journal=journal,
@@ -360,10 +346,8 @@ def execute_trial(
             if event.kind == "dispatch_committed"
             and isinstance(event.payload.get("diagnostic"), dict)
         ]
-        diagnostic_counts = Counter(str(diagnostic.get("event")) for diagnostic in diagnostics)
-        maximum_stage_index = max(
-            (int(diagnostic["stage_index"]) for diagnostic in diagnostics), default=0
-        )
+        diagnostic_counts = Counter(str(item.get("event")) for item in diagnostics)
+        maximum_stage_index = max((int(item["stage_index"]) for item in diagnostics), default=0)
         transport_records = [] if transport is None else list(transport.records)
         integrity = journal.integrity_report()
         call_counts = journal.call_counts()
@@ -395,9 +379,7 @@ def execute_trial(
             },
             "execution_error": execution_error,
             "transport_records": transport_records,
-            "frozen_normalized_llama_trial_evidence": plan[
-                "frozen_normalized_llama_trial_evidence"
-            ],
+            "frozen_strict_glm_trial_evidence": plan["frozen_strict_glm_trial_evidence"],
             "journal_integrity": integrity,
             "publication_status": "restricted_raw_responses_in_local_journal",
             "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},

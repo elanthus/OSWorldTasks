@@ -13,6 +13,7 @@ from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
     GLM_STATEFUL_CANDIDATE,
+    GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
     LLAMA_STATEFUL,
     PANEL,
     QWEN_STATEFUL,
@@ -25,6 +26,8 @@ from pixelgym.grounding.v5.panel_policy import (
     build_panel_policy_manifest,
 )
 from pixelgym.serialization import canonical_json_bytes
+
+ROOT = Path(__file__).parents[2]
 
 
 class FakeHttpResponse:
@@ -126,6 +129,40 @@ def test_glm_candidate_uses_novita_fp8_and_normalized_coordinates() -> None:
     assert schema["properties"]["x"]["maximum"] == 999
     assert schema["properties"]["y"]["maximum"] == 999
     assert GLM_STATEFUL_CANDIDATE.request_maximum_usd == Decimal("0.0105472")
+    assert request["response_format"]["json_schema"]["strict"] is True
+
+
+def test_glm_relaxed_schema_candidate_changes_only_schema_mode_and_identity() -> None:
+    strict_policy = OpenRouterPanelPolicy(GLM_STATEFUL_CANDIDATE)
+    relaxed_policy = OpenRouterPanelPolicy(GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE)
+    strict_request = strict_policy.build_request(
+        strict_policy.reset("task"), bytes(1024 * 768 * 3)
+    )
+    relaxed_request = relaxed_policy.build_request(
+        relaxed_policy.reset("task"), bytes(1024 * 768 * 3)
+    )
+
+    assert GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE not in PANEL
+    assert relaxed_request["response_format"]["json_schema"]["strict"] is False
+    strict_request["response_format"]["json_schema"]["strict"] = False
+    assert strict_request == relaxed_request
+    strict_manifest = build_panel_policy_manifest(
+        ROOT, config=GLM_STATEFUL_CANDIDATE, code_revision="revision"
+    )
+    relaxed_manifest = build_panel_policy_manifest(
+        ROOT,
+        config=GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
+        code_revision="revision",
+    )
+    assert strict_manifest.policy_id != relaxed_manifest.policy_id
+    assert dict(strict_manifest.inference_parameters)["response_schema_strict"] == "true"
+    assert dict(relaxed_manifest.inference_parameters)["response_schema_strict"] == "false"
+
+    with pytest.raises((json.JSONDecodeError, ValueError, KeyError, TypeError)):
+        relaxed_policy.parse(
+            canonical_response(config=GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE, action="not json"),
+            relaxed_policy.reset("task"),
+        )
 
 
 def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:

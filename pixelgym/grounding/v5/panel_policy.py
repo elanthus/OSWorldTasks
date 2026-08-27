@@ -57,6 +57,7 @@ class PanelPolicyConfig:
     stateful: bool
     temperature: int | None = 0
     quantizations: tuple[str, ...] = ()
+    strict_response_schema: bool = True
 
     @property
     def request_maximum_usd(self) -> Decimal:
@@ -156,6 +157,20 @@ GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
     quantizations=("fp8",),
+)
+GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE = PanelPolicyConfig(
+    slot="C-glm-stateful-relaxed-schema-candidate",
+    model=GLM_STATEFUL_CANDIDATE.model,
+    provider_route=GLM_STATEFUL_CANDIDATE.provider_route,
+    response_provider=GLM_STATEFUL_CANDIDATE.response_provider,
+    prompt_price_per_token_usd=GLM_STATEFUL_CANDIDATE.prompt_price_per_token_usd,
+    completion_price_per_token_usd=GLM_STATEFUL_CANDIDATE.completion_price_per_token_usd,
+    price_source=GLM_STATEFUL_CANDIDATE.price_source,
+    adapter=GLM_STATEFUL_CANDIDATE.adapter,
+    coordinate_input_convention=GLM_STATEFUL_CANDIDATE.coordinate_input_convention,
+    stateful=True,
+    quantizations=("fp8",),
+    strict_response_schema=False,
 )
 QWEN_STATELESS = PanelPolicyConfig(
     slot="D-qwen-stateless",
@@ -261,7 +276,7 @@ class OpenRouterPanelPolicy:
                 "type": "json_schema",
                 "json_schema": {
                     "name": "pixelgym_v5_action",
-                    "strict": True,
+                    "strict": self.config.strict_response_schema,
                     "schema": action_schema(self.config),
                 },
             },
@@ -651,6 +666,7 @@ def build_panel_policy_manifest(
         ("max_tokens", str(MAX_OUTPUT_TOKENS)),
         ("provider", config.provider_route),
         ("require_parameters", "true"),
+        ("response_schema_strict", str(config.strict_response_schema).lower()),
         ("seed", str(SEED)),
     ]
     if config.temperature is not None:
