@@ -89,19 +89,19 @@ def test_panel_requests_pin_provider_and_are_credential_free(config: Any) -> Non
     assert "api_key" not in json.dumps(request).lower()
 
 
-def test_llama_uses_native_coordinates_and_fp8_route_filter() -> None:
+def test_llama_uses_normalized_coordinates_and_fp8_route_filter() -> None:
     policy = OpenRouterPanelPolicy(LLAMA_STATEFUL)
     request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
     schema = request["response_format"]["json_schema"]["schema"]
 
     assert request["provider"]["only"] == ["deepinfra"]
     assert request["provider"]["quantizations"] == ["fp8"]
-    assert schema["properties"]["x"]["maximum"] == 1023
-    assert schema["properties"]["y"]["maximum"] == 767
+    assert schema["properties"]["x"]["maximum"] == 999
+    assert schema["properties"]["y"]["maximum"] == 999
     assert OpenRouterPanelPolicy(LLAMA_STATEFUL).parse(
         canonical_response(
             config=LLAMA_STATEFUL,
-            action='{"action_type":1,"x":1023,"y":767,"key":0}',
+            action='{"action_type":1,"x":999,"y":999,"key":0}',
         ),
         policy.reset("task"),
     ) == {"action_type": 1, "x": 1023, "y": 767, "key": 0}

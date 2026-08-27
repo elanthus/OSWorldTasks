@@ -1,8 +1,8 @@
 # PixelGym v5 D5.6 calibration approval packet
 
-**Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-four-slot calibration and B/C/D successor are frozen after unknown-outcome failures in Slots A and
-B; a Slot C-only successor is implemented but its exact plan digest remains unapproved
+**Status:** the four-slot, B/C/D, and native-coordinate Slot C runs are frozen; the owner selected a
+normalized-coordinate Slot C replacement on 2026-08-27, and its one-episode development trial
+requires a new exact plan approval
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -38,7 +38,7 @@ The owner should approve calibration only after recording evidence for every row
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
 | Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; new Google Vertex Slot A package pending exact smoke approval |
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
-| Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google Vertex, Alibaba, and DeepInfra on 2026-08-26 |
+| Price catalog | Provider-published prices captured with source URL and effective timestamp | DeepInfra Llama 4 Scout prices rechecked on 2026-08-27; other panel prices refreshed on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
 | Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Replacement four-slot smoke completed and is frozen at `artifacts/grounding-v5-d56-panel-smoke-run-v4/` |
 
@@ -53,7 +53,7 @@ model name as the policy identity.
 |---|---|---|---|---|---|---|
 | A | OpenRouter → Google Vertex Global only | `google/gemini-3.7-flash` | Stateful visible-action history | `normalized-1000x1000` | Strong-policy candidate | Approved; omit unsupported `temperature` |
 | B | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateful visible-action history | `normalized-1000x1000` | Mid-band visual policy candidate | Approved |
-| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `native-1024x768` | Lower-band policy candidate | Approved; adapter requires smoke validation |
+| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `normalized-1000x1000` | Lower-band policy candidate | Owner selected replacement after the native-coordinate run made zero stage transitions; exact trial plan pending |
 | D | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateless within each episode | `normalized-1000x1000` | Isolate episode-local state use | Approved |
 
 Qwen appears twice intentionally. Slots B and D freeze the same model, route, coordinate adapter,
@@ -195,8 +195,38 @@ ceiling. Generate the exact no-call Slot C plan only after committing the implem
   --output artifacts/grounding-v5-d56-c-calibration-plan.json
 ```
 
-The printed digest requires a fresh, exact owner approval and must report
-`provider_calls_made: 0`. The B/C/D approval does not authorize the Slot C successor.
+The owner approved exact plan
+`sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37`.
+The native-coordinate run attempted 42 assignments: 41 reached their step limit without leaving
+stage zero, and the 42nd stopped on an HTTP 429 unknown outcome. It recorded 1,179 environment
+actions, 1,180 provider requests, zero successes, and `$0.440101900` incremental spend. Aggregate
+spend is `$2.481019457`, leaving `$7.518980543`. Preserve
+`artifacts/grounding-v5-d56-c-calibration-run/` unchanged; do not resume or retry it.
+
+## Normalized Slot C development trial
+
+The owner selected a new Slot C policy identity that changes only the coordinate adapter and its
+declared input convention from native 1024×768 pixels to a normalized 1000×1000 grid. This is not a
+resume or reinterpretation of the frozen native run.
+
+The first paid check is one complete episode on development seed `5010`, which the earlier panel
+smoke already exposed. It does not consume a calibration or confirmatory task. The episode permits
+at most 28 environment actions, 56 model attempts or wire requests, zero control requests, and an
+uncapped theoretical maximum of `$0.7798784`. The shared `$10.00` ledger remains binding.
+
+After committing the implementation, generate the no-call plan:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \
+  --plan-only \
+  --frozen-c-output artifacts/grounding-v5-d56-c-calibration-run \
+  --output artifacts/grounding-v5-d56-c-normalized-trial-plan.json
+```
+
+The planner must bind the native run's exact summary and journal, report
+`provider_calls_made: 0`, and name only the development task above. The prior native-coordinate
+approval authorizes zero normalized-coordinate requests; execution requires approval of the new
+printed digest.
 
 ## Calibration routing freeze
 

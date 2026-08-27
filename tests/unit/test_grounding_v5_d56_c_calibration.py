@@ -192,3 +192,31 @@ def test_c_execution_rejects_unapproved_digest_before_creating_output(
         )
 
     assert not output.exists()
+
+
+def test_consumed_native_c_execution_is_locked_after_adapter_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    smoke_output = fake_smoke_output(tmp_path)
+    frozen_output = fake_frozen_calibration_output(tmp_path, monkeypatch)
+    frozen_bcd_output = fake_frozen_bcd_output(tmp_path, monkeypatch)
+    plan = build_plan(
+        ROOT,
+        smoke_output_directory=smoke_output,
+        frozen_calibration_output_directory=frozen_output,
+        frozen_bcd_output_directory=frozen_bcd_output,
+    )
+    output = tmp_path / "must-not-exist"
+
+    with pytest.raises(RuntimeError, match="native-coordinate Slot C calibration is frozen"):
+        execute_calibration(
+            ROOT,
+            plan=plan,
+            approved_plan_sha256=plan_digest(plan),
+            smoke_output_directory=smoke_output,
+            frozen_calibration_output_directory=frozen_output,
+            frozen_bcd_output_directory=frozen_bcd_output,
+            output_directory=output,
+        )
+
+    assert not output.exists()

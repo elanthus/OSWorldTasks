@@ -1,7 +1,7 @@
 # PixelGym v5 D5.6 calibration runbook
 
-**Status:** the four-slot and B/C/D runs are frozen after unknown-outcome failures in Slots A and B;
-a Slot C-only successor is prepared but its exact plan digest remains unapproved
+**Status:** the four-slot, B/C/D, and native-coordinate Slot C runs are frozen; prepare one
+development-only semantic trial for the owner-selected normalized Slot C replacement
 
 ## Outcome
 
@@ -17,7 +17,9 @@ confirmatory tasks or declare D4.12 or D5.6 passed.
 - Slot A: `google/gemini-3.7-flash`, Google Vertex Global only, stateful, normalized coordinates;
   omit unsupported `temperature` while retaining seed and structured output.
 - Slot B: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateful, normalized coordinates.
-- Slot C: `meta-llama/llama-4-scout`, DeepInfra FP8 only, stateful, native coordinates.
+- Frozen Slot C: `meta-llama/llama-4-scout`, DeepInfra FP8 only, stateful, native coordinates.
+- Replacement Slot C: the same model, route, and state policy with normalized coordinates; this is
+  a new policy identity and requires a new exact approval.
 - Slot D: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateless, normalized coordinates.
 - Calibration manifest: `artifacts/grounding-v5-manifests/calibration-d56.json`.
 - Task count: 50 per policy; action cap: 1,431 per policy.
@@ -177,8 +179,8 @@ so the journal sealed `unknown_outcome_infrastructure_failure` with failure code
 
 ## Phase 5: Slot C-only successor after the frozen Slot B failure
 
-Use this phase only for the owner-selected Slot C continuation. Generate a new no-call plan into an
-unused path:
+This phase is consumed historical procedure. Do not regenerate or execute it. The approved native
+Slot C plan used the following command and an unused output path:
 
 ```bash
 .venv/bin/python scripts/run_grounding_v5_d56_c_calibration.py \
@@ -208,6 +210,49 @@ the printed digest before execution:
 Continue after success and step-limit truncation. Freeze Slot C after the first other failure or
 before a request whose worst-case cost cannot fit under the remaining shared ledger. Do not
 overwrite any predecessor or Slot C evidence directory.
+
+### Frozen native-coordinate Slot C result
+
+The owner approved plan
+`sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37`.
+The run attempted 42 assignments. The first 41 reached their step limits without leaving stage
+zero; request 1,180, on assignment 42, returned HTTP 429 with no canonical response or usage. The
+journal sealed `unknown_outcome_infrastructure_failure` with failure code
+`provider_request_unknown`. The run attributed `$0.440101900`, bringing aggregate spend to
+`$2.481019457` and leaving `$7.518980543`. Preserve
+`artifacts/grounding-v5-d56-c-calibration-run/` unchanged and do not resume it.
+
+## Phase 6: one normalized-coordinate Slot C development trial
+
+Use development seed `5010` for one complete episode. This seed was already exposed by the panel
+smoke, so the trial does not consume calibration or confirmatory tasks. Generate a no-call plan
+only after committing the normalized adapter:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \
+  --plan-only \
+  --frozen-c-output artifacts/grounding-v5-d56-c-calibration-run \
+  --output artifacts/grounding-v5-d56-c-normalized-trial-plan.json
+```
+
+The plan must report one assigned development task, 28 environment actions, at most 56 model
+attempts or wire requests, zero control requests, `$2.481019457` prior spend, `$7.518980543`
+remaining, and `provider_calls_made: 0`. Obtain exact owner approval for its printed digest before
+executing:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \
+  --execute \
+  --plan artifacts/grounding-v5-d56-c-normalized-trial-plan.json \
+  --approved-plan-sha256 'sha256:EXACT_APPROVED_DIGEST' \
+  --frozen-c-output artifacts/grounding-v5-d56-c-calibration-run \
+  --output artifacts/grounding-v5-d56-c-normalized-trial-run
+```
+
+Let the single episode end by success termination or step-limit truncation. Stop on any other
+failure or before a request whose worst-case cost cannot fit under the shared ledger. Report the
+first-transition flag and maximum observed stage from the generated summary. Do not treat this
+development trial as calibration evidence, and do not overwrite any frozen run.
 
 ## Handoff evidence
 

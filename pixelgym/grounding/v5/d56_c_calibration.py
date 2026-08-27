@@ -250,6 +250,10 @@ def execute_calibration(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved Slot C calibration plan digest does not match the supplied plan")
+    if LLAMA_STATEFUL.adapter.name != "native-1024x768":
+        raise RuntimeError(
+            "native-coordinate Slot C calibration is frozen; use the normalized trial"
+        )
     if plan != build_plan(
         repository_root,
         smoke_output_directory=smoke_output_directory,

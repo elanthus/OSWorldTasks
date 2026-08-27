@@ -18,7 +18,6 @@ from typing import Any, Literal
 from pixelgym.actions import KEY_ALLOWLIST
 from pixelgym.grounding.v5.contracts import PolicyManifest, content_digest, sha256_bytes
 from pixelgym.grounding.v5.coordinates import (
-    IDENTITY_ADAPTER,
     NORMALIZED_1000_ADAPTER,
     CoordinateAdapter,
 )
@@ -138,8 +137,8 @@ LLAMA_STATEFUL = PanelPolicyConfig(
     price_source=(
         "https://openrouter.ai/api/v1/models/meta-llama/llama-4-scout/endpoints"
     ),
-    adapter=IDENTITY_ADAPTER,
-    coordinate_input_convention="integer-pixel/1024x768",
+    adapter=NORMALIZED_1000_ADAPTER,
+    coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
     quantizations=("fp8",),
 )
