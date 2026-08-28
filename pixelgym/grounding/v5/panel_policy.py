@@ -61,6 +61,7 @@ class PanelPolicyConfig:
     response_format_type: Literal["json_schema", "json_object"] = "json_schema"
     router_metadata: bool = False
     max_model_attempts_per_action: int = 2
+    request_deadline_seconds: float = 180.0
 
     @property
     def request_maximum_usd(self) -> Decimal:
@@ -131,6 +132,30 @@ GEMINI_STATEFUL_ONE_CALL_SMOKE = PanelPolicyConfig(
     temperature=None,
     router_metadata=True,
     max_model_attempts_per_action=1,
+)
+GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
+    slot="A-gemini-stateful-v2",
+    model=GEMINI_STATEFUL_ONE_CALL_SMOKE.model,
+    provider_route=GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_route,
+    response_provider=GEMINI_STATEFUL_ONE_CALL_SMOKE.response_provider,
+    prompt_price_per_token_usd=(
+        GEMINI_STATEFUL_ONE_CALL_SMOKE.prompt_price_per_token_usd
+    ),
+    completion_price_per_token_usd=(
+        GEMINI_STATEFUL_ONE_CALL_SMOKE.completion_price_per_token_usd
+    ),
+    price_source=GEMINI_STATEFUL_ONE_CALL_SMOKE.price_source,
+    adapter=GEMINI_STATEFUL_ONE_CALL_SMOKE.adapter,
+    coordinate_input_convention=(
+        GEMINI_STATEFUL_ONE_CALL_SMOKE.coordinate_input_convention
+    ),
+    stateful=True,
+    temperature=None,
+    router_metadata=True,
+    max_model_attempts_per_action=1,
+    # The transport retains its 180-second timeout. The extra outer margin prevents
+    # a transport timeout from racing the runner deadline and becoming ambiguous.
+    request_deadline_seconds=210.0,
 )
 QWEN_STATEFUL = PanelPolicyConfig(
     slot="B-qwen-stateful",
@@ -767,7 +792,7 @@ def build_panel_policy_manifest(
         max_model_attempts_per_action=config.max_model_attempts_per_action,
         max_cancellation_requests_per_attempt=0,
         max_reconciliation_requests_per_attempt=0,
-        request_deadline_seconds=180.0,
+        request_deadline_seconds=config.request_deadline_seconds,
         cancellation_mode="disabled",
         reconciliation_deadline_seconds=1.0,
         sandbox=sandbox,

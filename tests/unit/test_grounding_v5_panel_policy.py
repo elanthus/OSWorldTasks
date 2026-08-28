@@ -12,6 +12,7 @@ import pytest
 from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
+    GEMINI_STATEFUL_FULL_CALIBRATION,
     GEMINI_STATEFUL_ONE_CALL_SMOKE,
     GLM_STATEFUL_CANDIDATE,
     GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE,
@@ -251,6 +252,22 @@ def test_gemini_one_call_smoke_is_strict_no_retry_and_reserves_priority_price() 
     manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
     assert manifest.max_model_attempts_per_action == 1
     assert dict(manifest.inference_parameters)["router_metadata"] == "enabled"
+
+
+def test_gemini_full_calibration_matches_smoke_inference_with_deadline_margin() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.model
+    assert request["provider"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_parameters()
+    assert request["response_format"]["json_schema"]["strict"] is True
+    assert config.request_maximum_usd == GEMINI_STATEFUL_ONE_CALL_SMOKE.request_maximum_usd
+    assert config.max_model_attempts_per_action == 1
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.request_deadline_seconds == 210.0
+    assert manifest.max_model_attempts_per_action == 1
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:
