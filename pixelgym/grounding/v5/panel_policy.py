@@ -58,6 +58,9 @@ class PanelPolicyConfig:
     temperature: int | None = 0
     quantizations: tuple[str, ...] = ()
     strict_response_schema: bool = True
+    response_format_type: Literal["json_schema", "json_object"] = "json_schema"
+    router_metadata: bool = False
+    max_model_attempts_per_action: int = 2
 
     @property
     def request_maximum_usd(self) -> Decimal:
@@ -106,9 +109,7 @@ GEMINI_STATEFUL = PanelPolicyConfig(
     response_provider="Google",
     prompt_price_per_token_usd=Decimal("0.000000375"),
     completion_price_per_token_usd=Decimal("0.000001875"),
-    price_source=(
-        "https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints"
-    ),
+    price_source=("https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints"),
     adapter=NORMALIZED_1000_ADAPTER,
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
@@ -121,9 +122,7 @@ QWEN_STATEFUL = PanelPolicyConfig(
     response_provider="Alibaba",
     prompt_price_per_token_usd=Decimal("0.000000117"),
     completion_price_per_token_usd=Decimal("0.000000455"),
-    price_source=(
-        "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"
-    ),
+    price_source=("https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"),
     adapter=NORMALIZED_1000_ADAPTER,
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
@@ -135,9 +134,7 @@ LLAMA_STATEFUL = PanelPolicyConfig(
     response_provider="DeepInfra",
     prompt_price_per_token_usd=Decimal("0.0000001"),
     completion_price_per_token_usd=Decimal("0.0000003"),
-    price_source=(
-        "https://openrouter.ai/api/v1/models/meta-llama/llama-4-scout/endpoints"
-    ),
+    price_source=("https://openrouter.ai/api/v1/models/meta-llama/llama-4-scout/endpoints"),
     adapter=NORMALIZED_1000_ADAPTER,
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
@@ -150,9 +147,7 @@ GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     response_provider="Novita",
     prompt_price_per_token_usd=Decimal("0.000000075"),
     completion_price_per_token_usd=Decimal("0.00000025"),
-    price_source=(
-        "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-flash/endpoints"
-    ),
+    price_source=("https://openrouter.ai/api/v1/models/z-ai/glm-5.3-flash/endpoints"),
     adapter=NORMALIZED_1000_ADAPTER,
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
@@ -171,6 +166,22 @@ GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE = PanelPolicyConfig(
     stateful=True,
     quantizations=("fp8",),
     strict_response_schema=False,
+)
+GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE = PanelPolicyConfig(
+    slot="C-glm-stateful-json-object-smoke-candidate",
+    model=GLM_STATEFUL_CANDIDATE.model,
+    provider_route="novita/fp8",
+    response_provider=GLM_STATEFUL_CANDIDATE.response_provider,
+    prompt_price_per_token_usd=GLM_STATEFUL_CANDIDATE.prompt_price_per_token_usd,
+    completion_price_per_token_usd=GLM_STATEFUL_CANDIDATE.completion_price_per_token_usd,
+    price_source=GLM_STATEFUL_CANDIDATE.price_source,
+    adapter=GLM_STATEFUL_CANDIDATE.adapter,
+    coordinate_input_convention=GLM_STATEFUL_CANDIDATE.coordinate_input_convention,
+    stateful=True,
+    quantizations=("fp8",),
+    response_format_type="json_object",
+    router_metadata=True,
+    max_model_attempts_per_action=1,
 )
 QWEN_STATELESS = PanelPolicyConfig(
     slot="D-qwen-stateless",
@@ -260,6 +271,13 @@ class OpenRouterPanelPolicy:
             f"Overall task: {value['instruction']}\n"
             f"{context}Choose the next action from the current screenshot."
         )
+        response_format: dict[str, Any] = {"type": self.config.response_format_type}
+        if self.config.response_format_type == "json_schema":
+            response_format["json_schema"] = {
+                "name": "pixelgym_v5_action",
+                "strict": self.config.strict_response_schema,
+                "schema": action_schema(self.config),
+            }
         request = {
             "model": self.config.model,
             "messages": [
@@ -272,14 +290,7 @@ class OpenRouterPanelPolicy:
                     ],
                 },
             ],
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "pixelgym_v5_action",
-                    "strict": self.config.strict_response_schema,
-                    "schema": action_schema(self.config),
-                },
-            },
+            "response_format": response_format,
             "provider": self.config.provider_parameters(),
             "seed": SEED,
             "max_tokens": MAX_OUTPUT_TOKENS,
@@ -308,9 +319,11 @@ class OpenRouterPanelPolicy:
         usage = response.get("usage")
         if not isinstance(usage, dict):
             return None
-        if response.get("model") != self.config.model or str(
-            usage.get("upstream_provider", "")
-        ).lower() != self.config.response_provider.lower():
+        if (
+            response.get("model") != self.config.model
+            or str(usage.get("upstream_provider", "")).lower()
+            != self.config.response_provider.lower()
+        ):
             return None
         try:
             cost = _usage_cost(usage)
@@ -455,20 +468,24 @@ class OpenRouterPanelTransport:
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
     ) -> TransportOutcome:
-        if request.get("model") != self.config.model or request.get(
-            "provider"
-        ) != self.config.provider_parameters():
+        if (
+            request.get("model") != self.config.model
+            or request.get("provider") != self.config.provider_parameters()
+        ):
             return TransportOutcome("pre_send_failure", failure_code="request_identity_mismatch")
         if not self.ledger.reserve_wire(self.config.request_maximum_usd):
             return TransportOutcome("pre_send_failure", failure_code="aggregate_spend_guard")
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotency_key,
+        }
+        if self.config.router_metadata:
+            headers["X-OpenRouter-Metadata"] = "enabled"
         wire = urllib.request.Request(
             ENDPOINT,
             data=json.dumps(request, separators=(",", ":")).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json",
-                "Idempotency-Key": idempotency_key,
-            },
+            headers=headers,
             method="POST",
         )
         started = time.monotonic()
@@ -550,15 +567,11 @@ class OpenRouterPanelTransport:
         )
         return TransportOutcome("response", canonical)
 
-    def cancel(
-        self, *, idempotency_key: str, mode: str
-    ) -> Literal["cancelled", "unknown"]:
+    def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
         del idempotency_key, mode
         return "unknown"
 
-    def reconcile(
-        self, *, idempotency_key: str, deadline_seconds: float
-    ) -> TransportOutcome:
+    def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="reconciliation_disabled")
 
@@ -591,21 +604,63 @@ def _safe_http_error_metadata(exc: urllib.error.HTTPError) -> dict[str, Any]:
     error = value["error"]
     for source, target in (("code", "provider_error_code"), ("type", "provider_error_type")):
         field = error.get(source)
-        if isinstance(field, (int, float, bool)) or (
-            isinstance(field, str) and len(field) <= 128
-        ):
+        if isinstance(field, (int, float, bool)) or (isinstance(field, str) and len(field) <= 128):
             metadata[target] = field
     provider_metadata = error.get("metadata")
     if isinstance(provider_metadata, dict):
         provider_name = provider_metadata.get("provider_name")
         if isinstance(provider_name, str) and len(provider_name) <= 128:
             metadata["upstream_provider"] = provider_name
+    router_metadata = _safe_router_metadata(value.get("openrouter_metadata"))
+    if router_metadata:
+        metadata["openrouter_metadata"] = router_metadata
     return metadata
 
 
-def _safe_response_error_metadata(
-    body: dict[str, Any], *, finish_reason: object
-) -> dict[str, Any]:
+def _safe_router_metadata(value: object) -> dict[str, Any]:
+    """Allowlist credential-free routing facts from an opted-in error envelope."""
+
+    if not isinstance(value, dict):
+        return {}
+    result: dict[str, Any] = {}
+    for key, maximum_length in (("requested", 256), ("strategy", 64)):
+        item = value.get(key)
+        if isinstance(item, str) and len(item) <= maximum_length:
+            result[key] = item
+    attempt = value.get("attempt")
+    if type(attempt) is int and attempt >= 0:
+        result["attempt"] = attempt
+    endpoints = value.get("endpoints")
+    if not isinstance(endpoints, dict):
+        return result
+    endpoint_record: dict[str, Any] = {}
+    total = endpoints.get("total")
+    if type(total) is int and total >= 0:
+        endpoint_record["total"] = total
+    available = endpoints.get("available")
+    safe_available: list[dict[str, Any]] = []
+    if isinstance(available, list):
+        for endpoint in available[:32]:
+            if not isinstance(endpoint, dict):
+                continue
+            safe_endpoint: dict[str, Any] = {}
+            for key in ("provider", "model"):
+                item = endpoint.get(key)
+                if isinstance(item, str) and len(item) <= 256:
+                    safe_endpoint[key] = item
+            selected = endpoint.get("selected")
+            if type(selected) is bool:
+                safe_endpoint["selected"] = selected
+            if safe_endpoint:
+                safe_available.append(safe_endpoint)
+    if safe_available:
+        endpoint_record["available"] = safe_available
+    if endpoint_record:
+        result["endpoints"] = endpoint_record
+    return result
+
+
+def _safe_response_error_metadata(body: dict[str, Any], *, finish_reason: object) -> dict[str, Any]:
     """Retain non-message diagnostics for a successful error response envelope."""
 
     if finish_reason != "error":
@@ -673,14 +728,16 @@ def build_panel_policy_manifest(
         inference_parameters.append(("temperature", str(config.temperature)))
     if config.quantizations:
         inference_parameters.append(("quantizations", ",".join(config.quantizations)))
+    if config.response_format_type != "json_schema":
+        inference_parameters.append(("response_format_type", config.response_format_type))
+    if config.router_metadata:
+        inference_parameters.append(("router_metadata", "enabled"))
     return PolicyManifest.build(
         provider=f"openrouter/{config.provider_route}",
         model=config.model,
         exact_snapshot=False,
         harness_digest=_file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-        dependency_lock_digest=_file_digest(
-            repository_root / "requirements/platform-py312.lock"
-        ),
+        dependency_lock_digest=_file_digest(repository_root / "requirements/platform-py312.lock"),
         system_prompt_digest=content_digest(system_prompt(config)),
         task_renderer_version=TASK_RENDERER_VERSION,
         response_schema_version=RESPONSE_SCHEMA_VERSION,
@@ -690,7 +747,7 @@ def build_panel_policy_manifest(
         coordinate_adapter=config.adapter.name,
         coordinate_adapter_digest=config.adapter.source_digest,
         coordinate_input_convention=config.coordinate_input_convention,
-        max_model_attempts_per_action=2,
+        max_model_attempts_per_action=config.max_model_attempts_per_action,
         max_cancellation_requests_per_attempt=0,
         max_reconciliation_requests_per_attempt=0,
         request_deadline_seconds=180.0,

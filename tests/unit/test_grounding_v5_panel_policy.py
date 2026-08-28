@@ -13,6 +13,7 @@ from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
     GLM_STATEFUL_CANDIDATE,
+    GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE,
     GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
     LLAMA_STATEFUL,
     PANEL,
@@ -135,9 +136,7 @@ def test_glm_candidate_uses_novita_fp8_and_normalized_coordinates() -> None:
 def test_glm_relaxed_schema_candidate_changes_only_schema_mode_and_identity() -> None:
     strict_policy = OpenRouterPanelPolicy(GLM_STATEFUL_CANDIDATE)
     relaxed_policy = OpenRouterPanelPolicy(GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE)
-    strict_request = strict_policy.build_request(
-        strict_policy.reset("task"), bytes(1024 * 768 * 3)
-    )
+    strict_request = strict_policy.build_request(strict_policy.reset("task"), bytes(1024 * 768 * 3))
     relaxed_request = relaxed_policy.build_request(
         relaxed_policy.reset("task"), bytes(1024 * 768 * 3)
     )
@@ -163,6 +162,62 @@ def test_glm_relaxed_schema_candidate_changes_only_schema_mode_and_identity() ->
             canonical_response(config=GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE, action="not json"),
             relaxed_policy.reset("task"),
         )
+
+
+def test_glm_json_object_smoke_pins_exact_novita_endpoint_without_structured_outputs() -> None:
+    config = GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == "z-ai/glm-5.3-flash"
+    assert request["provider"] == {
+        "only": ["novita/fp8"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+        "quantizations": ["fp8"],
+    }
+    assert request["response_format"] == {"type": "json_object"}
+    assert config.max_model_attempts_per_action == 1
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.max_model_attempts_per_action == 1
+    assert dict(manifest.inference_parameters)["response_format_type"] == "json_object"
+    assert dict(manifest.inference_parameters)["router_metadata"] == "enabled"
+
+
+def test_glm_json_object_smoke_requests_safe_router_metadata() -> None:
+    config = GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE
+    captured: dict[str, Any] = {}
+
+    def urlopen(request: Any, *, timeout: float) -> FakeHttpResponse:
+        del timeout
+        captured["metadata_header"] = request.get_header("X-openrouter-metadata")
+        return FakeHttpResponse(
+            {
+                "id": "response-1",
+                "model": config.model,
+                "provider": config.response_provider,
+                "choices": [{"message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'}}],
+                "usage": {"cost": "0.0001", "completion_tokens": 1},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(config)
+    outcome = OpenRouterPanelTransport(
+        config,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+    ).send(
+        policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3)),
+        idempotency_key="attempt-json-object",
+        deadline_seconds=1.0,
+    )
+
+    assert outcome.status == "response"
+    assert captured["metadata_header"] == "enabled"
 
 
 def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:
@@ -207,10 +262,7 @@ def test_panel_policy_retries_only_exact_zero_completion_error_envelope() -> Non
     response.update({"content": "", "finish_reason": "error"})
     response["usage"].update({"completion_tokens": 0, "cost": "0"})
 
-    assert (
-        policy.retryable_response_code(canonical_json_bytes(response))
-        == "zero_completion_error"
-    )
+    assert policy.retryable_response_code(canonical_json_bytes(response)) == "zero_completion_error"
     for field, value in (
         ("content", "not empty"),
         ("finish_reason", "stop"),
@@ -286,9 +338,7 @@ def test_shared_spend_ledger_accounts_across_policy_transports() -> None:
                 "provider": config.response_provider,
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
@@ -357,7 +407,24 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
                     "provider_name": "Google AI Studio",
                     "raw": "sensitive upstream response must not be retained",
                 },
-            }
+            },
+            "openrouter_metadata": {
+                "requested": "z-ai/glm-5.3-flash",
+                "strategy": "direct",
+                "attempt": 0,
+                "endpoints": {
+                    "total": 1,
+                    "available": [
+                        {
+                            "provider": "Novita",
+                            "model": "z-ai/glm-5.3-flash",
+                            "selected": False,
+                            "private_detail": "must not be retained",
+                        }
+                    ],
+                },
+                "private_detail": "must not be retained",
+            },
         }
     ).encode("utf-8")
 
@@ -399,6 +466,21 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
             "provider_error_code": 404,
             "provider_error_type": "no_available_provider",
             "upstream_provider": "Google AI Studio",
+            "openrouter_metadata": {
+                "requested": "z-ai/glm-5.3-flash",
+                "strategy": "direct",
+                "attempt": 0,
+                "endpoints": {
+                    "total": 1,
+                    "available": [
+                        {
+                            "provider": "Novita",
+                            "model": "z-ai/glm-5.3-flash",
+                            "selected": False,
+                        }
+                    ],
+                },
+            },
         }
     ]
     assert "sensitive" not in json.dumps(transport.records)
@@ -461,15 +543,11 @@ def test_panel_transport_blocks_after_anomalous_response_cost() -> None:
                 "provider": QWEN_STATEFUL.response_provider,
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
-                "usage": {
-                    "cost": str(QWEN_STATEFUL.request_maximum_usd + Decimal("0.000001"))
-                },
+                "usage": {"cost": str(QWEN_STATEFUL.request_maximum_usd + Decimal("0.000001"))},
             }
         )
 
