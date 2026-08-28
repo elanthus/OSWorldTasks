@@ -271,6 +271,9 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-v5-d56-gemini-full-calibration-report.md`](artifacts/grounding-v5-d56-gemini-full-calibration-report.md) — generated incomplete Gemini calibration report; no milestone-gate verdict
 - [`artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json`](artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json) — response-content-free calibration derivative
 - [`artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json`](artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json) — stored-evidence integrity audit
+- [`artifacts/grounding-v5-d56-qwen-full-calibration-report.md`](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) — generated incomplete negative Qwen calibration report; no milestone-gate verdict
+- [`artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json`](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json) — response-content-free Qwen calibration derivative
+- [`artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json`](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) — Qwen stored-evidence integrity audit
 
 ## Sprint plans
 
