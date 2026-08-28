@@ -1,0 +1,141 @@
+{
+  "artifacts": {
+    "approved_plan": {
+      "path": "artifacts/grounding-v5-d56-gemini-full-calibration-plan.json",
+      "sha256": "sha256:204ed2671ed160dd89acd1b5e300a00d0fb6653fcdc1f29534521779d0711c74",
+      "size_bytes": 19196
+    },
+    "attempt_journal": {
+      "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/attempts.sqlite",
+      "sha256": "sha256:99d6520bc24ab6dc2515d70d4977aed19602dfa6fa87f0e4102d61c583557c82",
+      "size_bytes": 1425731584
+    },
+    "calibration_manifest": {
+      "path": "artifacts/grounding-v5-manifests/calibration-d56.json",
+      "sha256": "sha256:7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+      "size_bytes": 26539
+    },
+    "predecessor_summary": {
+      "path": "artifacts/grounding-v5-d56-calibration-run-v2/summary.json",
+      "sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+      "size_bytes": 394907
+    },
+    "run_summary": {
+      "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/summary.json",
+      "sha256": "sha256:69e542daef2084c2cc8329453a56132699469dd3e712cc13a7885d1b2811d29c",
+      "size_bytes": 492901
+    },
+    "smoke_attempt_journal": {
+      "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-run/attempts.sqlite",
+      "sha256": "sha256:d3e8c3cd92a97829a54d0790bc76164c71843f76f0ae47bf11c7249ff1d22ac5",
+      "size_bytes": 4784128
+    },
+    "smoke_summary": {
+      "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-run/summary.json",
+      "sha256": "sha256:fde15b406566da8dab83801047db3e79e2d68e52c6f708d097dd22e613651039",
+      "size_bytes": 3518
+    }
+  },
+  "audit_implementation": {
+    "path": "scripts/audit_grounding_v5_d56_gemini_full_calibration.py",
+    "sha256": "sha256:692a66c76f7a48867679a2dbbb4023d566a245b69598b582be55cb0e67385c81",
+    "size_bytes": 28101
+  },
+  "checks": [
+    {
+      "approved_plan_sha256": "sha256:68469a8057cbfa4e380f40e7bb27f2264c49b638aa5951ff7ac93866e8dc1e38",
+      "code_revision": "4d319ac850c870b9eee55772fb35b95746c673c9",
+      "name": "approved_plan_and_run_identity",
+      "verified": true
+    },
+    {
+      "assigned_policy_task_pairs": 50,
+      "attempted_policy_task_pairs": 41,
+      "classifications": {
+        "infrastructure_failure": 1,
+        "step_limit_truncation": 11,
+        "success_termination": 29
+      },
+      "name": "assignment_and_episode_reconciliation",
+      "successful_policy_task_pairs": 29,
+      "verified": true
+    },
+    {
+      "episode_count": 50,
+      "manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+      "name": "calibration_partition_binding",
+      "verified": true
+    },
+    {
+      "event_counts": {
+        "attempt_completed": 1067,
+        "attempt_started": 1068,
+        "canonical_response_persisted": 1067,
+        "dispatch_committed": 1067,
+        "dispatch_started": 1067,
+        "initial_screenshot": 41,
+        "parsed_action_candidate": 1067,
+        "sealed_action_intent": 1067,
+        "unknown_outcome_infrastructure_failure": 1
+      },
+      "journal_integrity": {
+        "event_chain_digest": "sha256:9c21971b4ac2878aef796a9a6fd8afa878a173f0f7095aeea986d51960458134",
+        "event_count": 7512,
+        "object_count": 7123,
+        "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+      },
+      "name": "journal_bytes_event_chain_and_lineage",
+      "object_bytes_verified": 1412573242,
+      "structured_objects_verified": 6529,
+      "verified": true
+    },
+    {
+      "actual_aggregate_spend_usd": "4.552765957",
+      "calibration_incremental_spend_usd": "2.064119625",
+      "completed_provider_responses": 1067,
+      "name": "provider_identity_calls_unknown_outcome_and_spend",
+      "provider_wire_requests": 1068,
+      "remaining_aggregate_spend_usd": "5.447234043",
+      "unknown_provider_outcomes": 1,
+      "unknown_transport_failure_code": "TimeoutError",
+      "verified": true
+    },
+    {
+      "name": "successful_smoke_predecessor_binding",
+      "smoke_journal_integrity": {
+        "event_chain_digest": "sha256:f5d3526e4231377aaa30c3c3c36e3d4cddf602a05e923a587307d49be19edc1c",
+        "event_count": 8,
+        "object_count": 12,
+        "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+      },
+      "smoke_journal_sha256": "sha256:d3e8c3cd92a97829a54d0790bc76164c71843f76f0ae47bf11c7249ff1d22ac5",
+      "smoke_summary_sha256": "sha256:fde15b406566da8dab83801047db3e79e2d68e52c6f708d097dd22e613651039",
+      "verified": true
+    },
+    {
+      "name": "frozen_predecessor_binding",
+      "predecessor_plan_sha256": "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6",
+      "predecessor_summary_sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+      "verified": true
+    },
+    {
+      "cleanup": {
+        "journal_closed": true,
+        "policy_and_environments_closed": true
+      },
+      "name": "cleanup_and_publication_restriction",
+      "publication_status": "restricted_raw_responses_in_local_journal",
+      "verified": true
+    }
+  ],
+  "provider_calls_made": 0,
+  "publication_status": "publishable_no_provider_payloads",
+  "purpose": "no-call integrity audit of the frozen Gemini 3.7 Flash calibration evidence",
+  "result": {
+    "checks_failed": 0,
+    "checks_verified": 8,
+    "milestone_gate_verdict": "not_evaluated_human_owned",
+    "provider_calls_made": 0
+  },
+  "schema_version": "pixelgym-agent-v5-d56-gemini-integrity-audit-v1"
+}

@@ -268,6 +268,9 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
 - [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
 - [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
+- [`artifacts/grounding-v5-d56-gemini-full-calibration-report.md`](artifacts/grounding-v5-d56-gemini-full-calibration-report.md) — generated incomplete Gemini calibration report; no milestone-gate verdict
+- [`artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json`](artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json) — response-content-free calibration derivative
+- [`artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json`](artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json) — stored-evidence integrity audit
 
 ## Sprint plans
 

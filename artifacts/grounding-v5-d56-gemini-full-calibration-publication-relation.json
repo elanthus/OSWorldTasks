@@ -1,0 +1,27 @@
+{
+  "authoritative": {
+    "approved_plan_content_sha256": "sha256:68469a8057cbfa4e380f40e7bb27f2264c49b638aa5951ff7ac93866e8dc1e38",
+    "integrity_audit_file_sha256": "sha256:26c6ba1fa0d02d1a35bc4a6b987303995869230ed0d50711118274a2225ce6ac",
+    "journal_event_chain_sha256": "sha256:9c21971b4ac2878aef796a9a6fd8afa878a173f0f7095aeea986d51960458134",
+    "restricted_attempt_journal_file_sha256": "sha256:99d6520bc24ab6dc2515d70d4977aed19602dfa6fa87f0e4102d61c583557c82",
+    "run_summary_file_sha256": "sha256:69e542daef2084c2cc8329453a56132699469dd3e712cc13a7885d1b2811d29c"
+  },
+  "excluded_authoritative_artifacts": [
+    {
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/attempts.sqlite",
+      "reason": "restricted provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:99d6520bc24ab6dc2515d70d4977aed19602dfa6fa87f0e4102d61c583557c82",
+      "size_bytes": 1425731584
+    }
+  ],
+  "publishable": {
+    "derivative_content_sha256": "sha256:8a8a0f118c40b7bbceb87d96beccfdf215ce06549ec361469db9558d54167620",
+    "derivative_file_sha256": "sha256:8193d556fe10e327e62603b6e3621f46b7134bd8c9b49d7e6aef6dc4ededcb67",
+    "derivative_path": "artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json",
+    "report_file_sha256": "sha256:716098161d2862ea5aac1466623e8137bb66a231d7c3d25db9aeca556f72ac9f",
+    "report_path": "artifacts/grounding-v5-d56-gemini-full-calibration-report.md"
+  },
+  "redaction_policy_version": "pixelgym-agent-v5-redaction-v1",
+  "schema_version": "pixelgym-agent-v5-d56-gemini-publication-relation-v1"
+}
