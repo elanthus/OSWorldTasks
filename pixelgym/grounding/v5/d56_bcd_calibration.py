@@ -129,6 +129,8 @@ def _validated_frozen_calibration_evidence(
         "trial_id": FROZEN_TERMINAL_IDENTITY.trial_id,
     }:
         raise ValueError("frozen D5.6 terminal assignment mismatch")
+    if _streaming_file_digest(journal_path) != FROZEN_JOURNAL_SHA256:
+        raise ValueError("frozen D5.6 journal digest mismatch")
     journal = V5AttemptJournal(journal_path)
     try:
         terminal_event = journal.terminal_attempt(FROZEN_TERMINAL_IDENTITY)
@@ -144,8 +146,6 @@ def _validated_frozen_calibration_evidence(
             raise ValueError("frozen D5.6 journal request counts mismatch")
     finally:
         journal.close()
-    if _streaming_file_digest(journal_path) != FROZEN_JOURNAL_SHA256:
-        raise ValueError("frozen D5.6 journal digest mismatch")
     return {
         "approved_plan_sha256": FROZEN_PLAN_SHA256,
         "code_revision": FROZEN_CODE_REVISION,

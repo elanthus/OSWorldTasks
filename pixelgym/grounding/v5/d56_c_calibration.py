@@ -116,6 +116,8 @@ def _validated_frozen_bcd_evidence(output_directory: Path) -> dict[str, Any]:
         or terminal_transport.get("upstream_provider") != "Alibaba"
     ):
         raise ValueError("frozen B/C/D terminal transport mismatch")
+    if _streaming_file_digest(journal_path) != FROZEN_BCD_JOURNAL_SHA256:
+        raise ValueError("frozen B/C/D journal digest mismatch")
     journal = V5AttemptJournal(journal_path)
     try:
         terminal_event = journal.terminal_attempt(FROZEN_BCD_TERMINAL_IDENTITY)
@@ -131,8 +133,6 @@ def _validated_frozen_bcd_evidence(output_directory: Path) -> dict[str, Any]:
             raise ValueError("frozen B/C/D journal request counts mismatch")
     finally:
         journal.close()
-    if _streaming_file_digest(journal_path) != FROZEN_BCD_JOURNAL_SHA256:
-        raise ValueError("frozen B/C/D journal digest mismatch")
     return {
         "approved_plan_sha256": FROZEN_BCD_PLAN_SHA256,
         "code_revision": FROZEN_BCD_CODE_REVISION,

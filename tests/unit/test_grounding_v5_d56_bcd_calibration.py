@@ -159,6 +159,25 @@ def test_bcd_plan_binds_only_unattempted_slots_and_remaining_shared_ledger(
     assert plan_digest(plan).startswith("sha256:")
 
 
+def test_bcd_predecessor_rejects_journal_digest_before_opening_sqlite(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frozen_output = fake_frozen_calibration_output(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        d56_bcd_calibration,
+        "_streaming_file_digest",
+        lambda _path: "sha256:changed",
+    )
+
+    def fail_if_opened(_path: Path) -> V5AttemptJournal:
+        raise AssertionError("unverified journal was opened")
+
+    monkeypatch.setattr(d56_bcd_calibration, "V5AttemptJournal", fail_if_opened)
+
+    with pytest.raises(ValueError, match="frozen D5.6 journal digest mismatch"):
+        d56_bcd_calibration._validated_frozen_calibration_evidence(frozen_output)
+
+
 def test_bcd_execution_rejects_unapproved_digest_before_creating_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
