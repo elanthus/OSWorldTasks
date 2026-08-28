@@ -16,6 +16,7 @@ from pixelgym.grounding.v5.manifests import (
     D56_CONSUMED_CALIBRATION_SUMMARY_SHA256,
 )
 from pixelgym.grounding.v5.panel_policy import (
+    BOUNDED_RETRY_STOP_RULE,
     LLAMA_STATEFUL,
     PANEL_BY_SLOT,
     PANEL_MAXIMUM_SPEND_USD,
@@ -147,7 +148,7 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
             "run policies sequentially in slot order",
             "stop after eight total model-attempt reservations",
             "stop after the first transport, identity, cost, parse, adapter, action, or evidence failure",
-            "retry once on the same route only after a zero-token, zero-cost, empty response with finish_reason error",
+            BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "do not retry any parse, action, unknown-outcome, or other provider failure",
             "do not expose calibration or confirmatory tasks",

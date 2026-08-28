@@ -13,6 +13,7 @@ from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_byt
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    BOUNDED_RETRY_STOP_RULE,
     LLAMA_STATEFUL,
     PANEL,
     PANEL_BY_SLOT,
@@ -261,7 +262,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
         "stop_rules": [
             "run policy slots sequentially in A, B, C, D order and tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            "retry once on the same route only after a zero-token, zero-cost, empty response with finish_reason error",
+            BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop the complete panel after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",

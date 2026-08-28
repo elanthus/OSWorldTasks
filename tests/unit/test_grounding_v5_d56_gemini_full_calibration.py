@@ -127,6 +127,7 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
     assert plan["caps"]["remaining_aggregate_spend_usd"] == "7.511353668"
     assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.099532800"
     assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "284.862873600"
+    assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 

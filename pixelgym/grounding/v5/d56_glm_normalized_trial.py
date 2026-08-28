@@ -15,6 +15,7 @@ from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_m
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    BOUNDED_RETRY_STOP_RULE,
     GLM_STATEFUL_CANDIDATE,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
@@ -278,7 +279,7 @@ def build_plan(
         "stop_rules": [
             "run exactly one complete development-partition episode and no calibration or confirmatory task",
             "do not resume, retry, replace, or reinterpret any frozen Llama request or assignment",
-            "retry once on the same Novita route only after a zero-token, zero-cost, empty response with finish_reason error",
+            BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",

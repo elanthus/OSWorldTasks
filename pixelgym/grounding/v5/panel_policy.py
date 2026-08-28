@@ -45,6 +45,11 @@ TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = (
     "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
 )
+BOUNDED_RETRY_STOP_RULE = (
+    "retry at most once on the same pinned route after either a confirmed HTTP 429, "
+    "waiting for bounded Retry-After or exponential backoff, or a canonical zero-token, "
+    "zero-cost, empty response with finish_reason error; retain every attempt"
+)
 
 
 @dataclass(frozen=True)

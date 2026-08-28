@@ -22,6 +22,7 @@ from pixelgym.grounding.v5.d56_calibration import (
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    BOUNDED_RETRY_STOP_RULE,
     LLAMA_STATEFUL,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
@@ -219,7 +220,7 @@ def build_plan(
             "run only policy Slot C and tasks in frozen manifest order",
             "do not resume, retry, or replace any predecessor Slot A or Slot B request or assignment",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            "retry once on the same route only after a zero-token, zero-cost, empty response with finish_reason error",
+            BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop the Slot C run after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",

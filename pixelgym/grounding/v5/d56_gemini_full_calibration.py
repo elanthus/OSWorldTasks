@@ -21,6 +21,7 @@ from pixelgym.grounding.v5.d56_calibration import (
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    BOUNDED_RETRY_STOP_RULE,
     GEMINI_STATEFUL_FULL_CALIBRATION,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
@@ -270,7 +271,7 @@ def build_plan(
         "stop_rules": [
             "run all fifty tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            "send at most one provider wire request per environment step and do not retry any provider response or failure",
+            BOUNDED_RETRY_STOP_RULE,
             "retain every invalid or unparseable model output and fail closed",
             "stop after the first transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
