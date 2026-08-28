@@ -155,8 +155,8 @@ The partition contains 6 complete logical twin pairs. 2 were attempted; 4 were n
 - Approved plan: `sha256:fc1f41d00df8c847d55765ea6af6b4c688463a893281f995f3eee3b770c43f7c`
 - Restricted journal: `sha256:81e9137cb5c5074c3a0fd02f8f20ef7c2368ede9dbf95f1a92a1805a61818671`
 - Journal event chain: `sha256:6117a1454d0cbe834a2b6a0f46cc0be8536ae44650b687a30ad1360c5ff0999d`
-- Integrity audit: `sha256:38450081f871b77cf7d2721b6b0820062589cfa0498d6a9848732579235b7d56`
-- Publishable derivative: `sha256:4a3f1faf42e186e29e093b2df135381ca1eaa4572edec8ba20a0a1bef19a74d5`
+- Integrity audit: `sha256:faf1cfb20422fe87456ba2373d48f6e321da50a1ba1b0ceabbc2c9561ceb0afd`
+- Publishable derivative: `sha256:952e105d4d6f092b2f5a98b98b3ff6e2f784c407ee99f8b7c540ae000134fde6`
 - [Publishable derivative](grounding-v5-d56-qwen-full-calibration-publishable.json)
 - [Integrity audit](grounding-v5-d56-qwen-full-calibration-integrity-audit.json)
 - [Publication relation](grounding-v5-d56-qwen-full-calibration-publication-relation.json)

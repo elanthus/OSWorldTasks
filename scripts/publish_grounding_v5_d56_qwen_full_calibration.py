@@ -258,6 +258,11 @@ def build_audit(
             0 <= int(result["environment_actions"]) <= int(task["max_episode_steps"]),
             "episode action count exceeds its horizon",
         )
+        if result["classification"] == "step_limit_truncation":
+            _require(
+                int(result["environment_actions"]) == int(task["max_episode_steps"]),
+                "step-limit truncation did not exhaust its approved action horizon",
+            )
     classifications = Counter(str(row["classification"]) for row in results)
     _require(summary["attempted_policy_task_pairs"] == len(results), "attempted count differs")
     _require(summary["successful_policy_task_pairs"] == 0, "success count differs")
@@ -273,6 +278,9 @@ def build_audit(
             "attempted_policy_task_pairs": len(results),
             "successful_policy_task_pairs": 0,
             "classifications": dict(sorted(classifications.items())),
+            "step_limit_horizons_exhausted": classifications.get(
+                "step_limit_truncation", 0
+            ),
         },
     )
 
@@ -379,6 +387,13 @@ def build_audit(
         "parse failure identity differs",
     )
     _require(
+        int(terminal_result["environment_actions"]) == int(failure["step_index"])
+        and int(terminal_result["model_attempts"]) == int(failure["step_index"]) + 1
+        and int(terminal_result["provider_wire_requests"])
+        == int(terminal_result["model_attempts"]),
+        "terminal action and model-attempt counts do not bind to the parse failure",
+    )
+    _require(
         failure["failure_code"] == "parse_failure"
         and failure["sanitized_reason"] == "JSONDecodeError",
         "parse failure reason differs",
@@ -398,6 +413,9 @@ def build_audit(
             "trial_id": terminal_result["trial_id"],
             "step_index": failure["step_index"],
             "attempt_index": failure["attempt_index"],
+            "environment_actions": terminal_result["environment_actions"],
+            "model_attempts": terminal_result["model_attempts"],
+            "provider_wire_requests": terminal_result["provider_wire_requests"],
             "failure_code": failure["failure_code"],
             "sanitized_reason": failure["sanitized_reason"],
             "parser_version": failure["parser_version"],

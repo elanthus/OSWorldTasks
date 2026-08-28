@@ -23,8 +23,8 @@
   },
   "audit_implementation": {
     "path": "scripts/publish_grounding_v5_d56_qwen_full_calibration.py",
-    "sha256": "sha256:7550a2a74312c4deefa2b5a660a0b9b71e37a089a989098a761128ccd990ba54",
-    "size_bytes": 50697
+    "sha256": "sha256:ebbe160220fe6371342d0004cdfa5acae93f6e0e2ba41eb4067b44792a06b850",
+    "size_bytes": 51695
   },
   "checks": [
     {
@@ -41,6 +41,7 @@
         "step_limit_truncation": 12
       },
       "name": "assignment_and_episode_reconciliation",
+      "step_limit_horizons_exhausted": 12,
       "successful_policy_task_pairs": 0,
       "verified": true
     },
@@ -98,9 +99,12 @@
     },
     {
       "attempt_index": 0,
+      "environment_actions": 9,
       "failure_code": "parse_failure",
+      "model_attempts": 10,
       "name": "terminal_invalid_output_route",
       "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "provider_wire_requests": 10,
       "response_structure": {
         "begins_with_opening_brace": true,
         "closing_brace_count": 0,

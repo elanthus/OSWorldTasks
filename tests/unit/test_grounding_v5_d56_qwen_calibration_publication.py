@@ -38,6 +38,35 @@ def test_qwen_integrity_audit_is_no_call_and_has_no_failed_checks() -> None:
         "provider_calls_made": 0,
     }
     assert all(check["verified"] is True for check in audit["checks"])
+    checks = {check["name"]: check for check in audit["checks"]}
+    assert checks["assignment_and_episode_reconciliation"][
+        "step_limit_horizons_exhausted"
+    ] == 12
+    assert checks["terminal_invalid_output_route"] == {
+        "attempt_index": 0,
+        "environment_actions": 9,
+        "failure_code": "parse_failure",
+        "model_attempts": 10,
+        "name": "terminal_invalid_output_route",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "provider_wire_requests": 10,
+        "response_structure": {
+            "begins_with_opening_brace": True,
+            "closing_brace_count": 0,
+            "completion_tokens": 192,
+            "content_characters": 504,
+            "finish_reason": "stop",
+            "meaningful_characters": 56,
+            "opening_brace_count": 1,
+            "trailing_json_whitespace_characters": 448,
+        },
+        "retry_permitted_by_approved_plan": False,
+        "sanitized_reason": "JSONDecodeError",
+        "step_index": 9,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384",
+        "trial_id": "d56-qwen-v2-12-v5-2d305fda4e9ebe2d9075a384",
+        "verified": True,
+    }
 
 
 def test_qwen_derivative_reconciles_negative_result_and_excludes_payloads() -> None:
