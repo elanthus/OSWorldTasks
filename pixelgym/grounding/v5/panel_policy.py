@@ -190,6 +190,18 @@ QWEN_STATEFUL = PanelPolicyConfig(
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
 )
+QWEN_STATEFUL_RETRY_SUCCESSOR = PanelPolicyConfig(
+    slot="B-qwen-stateful-v2",
+    model=QWEN_STATEFUL.model,
+    provider_route=QWEN_STATEFUL.provider_route,
+    response_provider=QWEN_STATEFUL.response_provider,
+    prompt_price_per_token_usd=QWEN_STATEFUL.prompt_price_per_token_usd,
+    completion_price_per_token_usd=QWEN_STATEFUL.completion_price_per_token_usd,
+    price_source=QWEN_STATEFUL.price_source,
+    adapter=QWEN_STATEFUL.adapter,
+    coordinate_input_convention=QWEN_STATEFUL.coordinate_input_convention,
+    stateful=True,
+)
 LLAMA_STATEFUL = PanelPolicyConfig(
     slot="C-llama-stateful",
     model="meta-llama/llama-4-scout",
