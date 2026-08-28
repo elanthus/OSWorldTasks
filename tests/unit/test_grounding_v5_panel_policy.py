@@ -12,6 +12,7 @@ import pytest
 from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
+    GEMINI_STATEFUL_ONE_CALL_SMOKE,
     GLM_STATEFUL_CANDIDATE,
     GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE,
     GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
@@ -228,6 +229,28 @@ def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:
     assert request["provider"]["data_collection"] == "deny"
     assert request["seed"] == 20260809
     assert "temperature" not in request
+
+
+def test_gemini_one_call_smoke_is_strict_no_retry_and_reserves_priority_price() -> None:
+    config = GEMINI_STATEFUL_ONE_CALL_SMOKE
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == "google/gemini-3.7-flash"
+    assert request["provider"] == {
+        "only": ["google-vertex/global"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+    }
+    assert request["response_format"]["json_schema"]["strict"] is True
+    assert "temperature" not in request
+    assert config.max_model_attempts_per_action == 1
+    assert config.request_maximum_usd == Decimal("0.099532800")
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.max_model_attempts_per_action == 1
+    assert dict(manifest.inference_parameters)["router_metadata"] == "enabled"
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:

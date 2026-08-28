@@ -115,6 +115,23 @@ GEMINI_STATEFUL = PanelPolicyConfig(
     stateful=True,
     temperature=None,
 )
+GEMINI_STATEFUL_ONE_CALL_SMOKE = PanelPolicyConfig(
+    slot="A-gemini-stateful-one-call-smoke",
+    model=GEMINI_STATEFUL.model,
+    provider_route=GEMINI_STATEFUL.provider_route,
+    response_provider=GEMINI_STATEFUL.response_provider,
+    # google-vertex/global can match its /flex and /priority variants. Reserve
+    # against the highest-priced matching endpoint instead of the base price.
+    prompt_price_per_token_usd=Decimal("0.000000675"),
+    completion_price_per_token_usd=Decimal("0.000003375"),
+    price_source=GEMINI_STATEFUL.price_source,
+    adapter=GEMINI_STATEFUL.adapter,
+    coordinate_input_convention=GEMINI_STATEFUL.coordinate_input_convention,
+    stateful=True,
+    temperature=None,
+    router_metadata=True,
+    max_model_attempts_per_action=1,
+)
 QWEN_STATEFUL = PanelPolicyConfig(
     slot="B-qwen-stateful",
     model="qwen/qwen3-vl-8b-instruct",
