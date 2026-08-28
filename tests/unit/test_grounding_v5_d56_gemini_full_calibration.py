@@ -113,17 +113,20 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
     assert len(plan["task_order"]) == 50
     assert len({record["task_id"] for record in plan["task_order"]}) == 50
     assert plan["policy"]["policy_manifest"]["model"] == "google/gemini-3.7-flash"
-    assert plan["policy"]["policy_manifest"]["max_model_attempts_per_action"] == 1
+    assert plan["policy"]["policy_manifest"]["max_model_attempts_per_action"] == 2
+    assert dict(
+        plan["policy"]["policy_manifest"]["inference_parameters"]
+    )["max_rate_limit_retries_per_action"] == "1"
     assert plan["policy"]["policy_manifest"]["request_deadline_seconds"] == 210.0
     assert plan["policy"]["provider"]["only"] == ["google-vertex/global"]
     assert plan["caps"]["environment_action_cap"] == 1431
-    assert plan["caps"]["model_attempt_cap"] == 1431
+    assert plan["caps"]["model_attempt_cap"] == 2862
     assert plan["caps"]["provider_control_request_cap"] == 0
-    assert plan["caps"]["provider_wire_request_cap"] == 1431
+    assert plan["caps"]["provider_wire_request_cap"] == 2862
     assert plan["caps"]["prior_aggregate_spend_usd"] == "2.488646332"
     assert plan["caps"]["remaining_aggregate_spend_usd"] == "7.511353668"
     assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.099532800"
-    assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "142.431436800"
+    assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "284.862873600"
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 

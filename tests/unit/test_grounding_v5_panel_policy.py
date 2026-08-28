@@ -28,6 +28,7 @@ from pixelgym.grounding.v5.panel_policy import (
     action_schema,
     build_panel_policy_manifest,
 )
+from pixelgym.grounding.v5.runner import TransportOutcome
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
@@ -45,6 +46,19 @@ class FakeHttpResponse:
 
     def read(self) -> bytes:
         return json.dumps(self.value).encode("utf-8")
+
+
+class FakeClock:
+    def __init__(self) -> None:
+        self.now = 0.0
+        self.sleeps: list[float] = []
+
+    def monotonic(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.sleeps.append(seconds)
+        self.now += seconds
 
 
 def canonical_response(
@@ -264,10 +278,12 @@ def test_gemini_full_calibration_matches_smoke_inference_with_deadline_margin() 
     assert request["provider"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_parameters()
     assert request["response_format"]["json_schema"]["strict"] is True
     assert config.request_maximum_usd == GEMINI_STATEFUL_ONE_CALL_SMOKE.request_maximum_usd
-    assert config.max_model_attempts_per_action == 1
+    assert config.max_model_attempts_per_action == 2
+    assert config.max_rate_limit_retries_per_action == 1
     manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
     assert manifest.request_deadline_seconds == 210.0
-    assert manifest.max_model_attempts_per_action == 1
+    assert manifest.max_model_attempts_per_action == 2
+    assert dict(manifest.inference_parameters)["max_rate_limit_retries_per_action"] == "1"
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:
@@ -524,6 +540,116 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
         }
     ]
     assert "sensitive" not in json.dumps(transport.records)
+
+
+def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    clock = FakeClock()
+    timeouts: list[float] = []
+    calls = 0
+
+    def urlopen(_request: Any, *, timeout: float) -> FakeHttpResponse:
+        nonlocal calls
+        calls += 1
+        timeouts.append(timeout)
+        if calls == 1:
+            raise urllib.error.HTTPError(
+                "https://openrouter.ai/api/v1/chat/completions",
+                429,
+                "Too Many Requests",
+                {"Retry-After": "3"},
+                io.BytesIO(b'{"error":{"type":"rate_limit"}}'),
+            )
+        return FakeHttpResponse(
+            {
+                "id": "response-after-backoff",
+                "model": config.model,
+                "provider": config.response_provider,
+                "choices": [
+                    {
+                        "message": {
+                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"cost": "0.001"},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(config)
+    transport = OpenRouterPanelTransport(
+        config,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+        monotonic=clock.monotonic,
+        wall_time=lambda: 0.0,
+        sleep=clock.sleep,
+    )
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    first = transport.send(
+        request, idempotency_key="attempt-1", deadline_seconds=10.0
+    )
+    second = transport.send(
+        request, idempotency_key="attempt-2", deadline_seconds=10.0
+    )
+
+    assert first == TransportOutcome(
+        "rate_limited",
+        failure_code="http_429_rate_limit",
+        retry_after_seconds=3.0,
+        backoff_source="retry_after",
+    )
+    assert second.status == "response"
+    assert clock.sleeps == [3.0]
+    assert timeouts == [9.0, 6.0]
+    assert ledger.wire_requests_sent == 2
+    assert not ledger.blocked
+    assert transport.records[0]["status"] == "rate_limited"
+    assert transport.records[0]["cost_usd"] == "0"
+    assert transport.records[1]["pre_send_backoff_seconds"] == 3.0
+
+
+def test_panel_transport_uses_exponential_429_fallback() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    clock = FakeClock()
+
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.HTTPError(
+            "https://openrouter.ai/api/v1/chat/completions",
+            429,
+            "Too Many Requests",
+            {"Retry-After": "invalid"},
+            io.BytesIO(b"{}"),
+        )
+
+    policy = OpenRouterPanelPolicy(config)
+    transport = OpenRouterPanelTransport(
+        config,
+        ledger=SpendLedger(Decimal(10), Decimal(0)),
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    first = transport.send(request, idempotency_key="one", deadline_seconds=100.0)
+    second = transport.send(request, idempotency_key="two", deadline_seconds=100.0)
+    third = transport.send(request, idempotency_key="three", deadline_seconds=100.0)
+
+    assert first.retry_after_seconds == 2.0
+    assert second.retry_after_seconds == 4.0
+    assert third.retry_after_seconds == 8.0
+    assert {
+        first.backoff_source,
+        second.backoff_source,
+        third.backoff_source,
+    } == {"exponential_fallback"}
+    assert clock.sleeps == [2.0, 4.0]
 
 
 def test_panel_transport_retains_safe_successful_error_envelope_metadata() -> None:

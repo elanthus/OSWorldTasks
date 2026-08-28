@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import http.client
 import json
+import math
 import os
 import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from decimal import Decimal
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from threading import Lock
 from typing import Any, Literal
@@ -29,6 +32,7 @@ from pixelgym.serialization import canonical_json_bytes
 ENDPOINT_ORIGIN = "https://openrouter.ai"
 ENDPOINT = f"{ENDPOINT_ORIGIN}/api/v1/chat/completions"
 MAX_HTTP_ERROR_METADATA_BYTES = 64 * 1024
+MAX_RUNNER_DEADLINE_SAFETY_MARGIN_SECONDS = 1.0
 MAX_OUTPUT_TOKENS = 4_096
 CONTEXT_LIMIT = 131_072
 MAX_PROMPT_TOKENS = CONTEXT_LIMIT - MAX_OUTPUT_TOKENS
@@ -38,7 +42,9 @@ SEED = 20260809
 
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-canonical-response-v2"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
-TRANSPORT_RETRY_RULE = "one-same-route-zero-completion-error-v1"
+TRANSPORT_RETRY_RULE = (
+    "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
+)
 
 
 @dataclass(frozen=True)
@@ -61,7 +67,16 @@ class PanelPolicyConfig:
     response_format_type: Literal["json_schema", "json_object"] = "json_schema"
     router_metadata: bool = False
     max_model_attempts_per_action: int = 2
+    max_rate_limit_retries_per_action: int = 1
+    rate_limit_backoff_base_seconds: float = 2.0
+    rate_limit_backoff_max_seconds: float = 60.0
     request_deadline_seconds: float = 180.0
+
+    def __post_init__(self) -> None:
+        if not 0 <= self.max_rate_limit_retries_per_action < self.max_model_attempts_per_action:
+            raise ValueError("rate-limit retry cap must fit within the model-attempt cap")
+        if not 0 < self.rate_limit_backoff_base_seconds <= self.rate_limit_backoff_max_seconds:
+            raise ValueError("rate-limit backoff bounds are invalid")
 
     @property
     def request_maximum_usd(self) -> Decimal:
@@ -132,6 +147,7 @@ GEMINI_STATEFUL_ONE_CALL_SMOKE = PanelPolicyConfig(
     temperature=None,
     router_metadata=True,
     max_model_attempts_per_action=1,
+    max_rate_limit_retries_per_action=0,
 )
 GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
     slot="A-gemini-stateful-v2",
@@ -152,7 +168,7 @@ GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
     stateful=True,
     temperature=None,
     router_metadata=True,
-    max_model_attempts_per_action=1,
+    max_model_attempts_per_action=2,
     # The transport retains its 180-second timeout. The extra outer margin prevents
     # a transport timeout from racing the runner deadline and becoming ambiguous.
     request_deadline_seconds=210.0,
@@ -224,6 +240,7 @@ GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE = PanelPolicyConfig(
     response_format_type="json_object",
     router_metadata=True,
     max_model_attempts_per_action=1,
+    max_rate_limit_retries_per_action=0,
 )
 QWEN_STATELESS = PanelPolicyConfig(
     slot="D-qwen-stateless",
@@ -478,7 +495,7 @@ class SpendLedger:
 
 
 class OpenRouterPanelTransport:
-    """One-send/no-retry transport sharing one fail-closed panel spend ledger."""
+    """One-wire-send transport with an observable, shared 429 cooldown."""
 
     def __init__(
         self,
@@ -488,6 +505,9 @@ class OpenRouterPanelTransport:
         environment: Mapping[str, str] = os.environ,
         timeout_seconds: float = 180.0,
         urlopen: Callable[..., Any] = urllib.request.urlopen,
+        monotonic: Callable[[], float] = time.monotonic,
+        wall_time: Callable[[], float] = time.time,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = environment.get("OPENROUTER_API_KEY")
         if not api_key:
@@ -497,6 +517,11 @@ class OpenRouterPanelTransport:
         self._api_key = api_key
         self.timeout_seconds = timeout_seconds
         self._urlopen = urlopen
+        self._monotonic = monotonic
+        self._wall_time = wall_time
+        self._sleep = sleep
+        self._cooldown_until = 0.0
+        self._consecutive_rate_limits = 0
         self.records: list[dict[str, Any]] = []
 
     @property
@@ -510,11 +535,31 @@ class OpenRouterPanelTransport:
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
     ) -> TransportOutcome:
+        call_started = self._monotonic()
         if (
             request.get("model") != self.config.model
             or request.get("provider") != self.config.provider_parameters()
         ):
             return TransportOutcome("pre_send_failure", failure_code="request_identity_mismatch")
+        cooldown_wait = max(0.0, self._cooldown_until - self._monotonic())
+        if cooldown_wait >= deadline_seconds:
+            return TransportOutcome(
+                "pre_send_failure",
+                failure_code="rate_limit_cooldown_exceeds_request_deadline",
+            )
+        if cooldown_wait:
+            self._sleep(cooldown_wait)
+        elapsed_before_wire = self._monotonic() - call_started
+        deadline_margin = min(
+            MAX_RUNNER_DEADLINE_SAFETY_MARGIN_SECONDS,
+            deadline_seconds * 0.1,
+        )
+        remaining_deadline = deadline_seconds - elapsed_before_wire - deadline_margin
+        if remaining_deadline <= 0:
+            return TransportOutcome(
+                "pre_send_failure",
+                failure_code="rate_limit_cooldown_exhausted_request_deadline",
+            )
         if not self.ledger.reserve_wire(self.config.request_maximum_usd):
             return TransportOutcome("pre_send_failure", failure_code="aggregate_spend_guard")
         headers = {
@@ -530,13 +575,45 @@ class OpenRouterPanelTransport:
             headers=headers,
             method="POST",
         )
-        started = time.monotonic()
+        started = self._monotonic()
         try:
             with self._urlopen(
-                wire, timeout=min(self.timeout_seconds, deadline_seconds)
+                wire, timeout=min(self.timeout_seconds, remaining_deadline)
             ) as response:
                 body = json.load(response)
         except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                self._consecutive_rate_limits += 1
+                retry_after_seconds, backoff_source = _rate_limit_backoff(
+                    exc,
+                    consecutive_rate_limits=self._consecutive_rate_limits,
+                    base_seconds=self.config.rate_limit_backoff_base_seconds,
+                    max_seconds=self.config.rate_limit_backoff_max_seconds,
+                    wall_time=self._wall_time(),
+                )
+                self._cooldown_until = max(
+                    self._cooldown_until,
+                    self._monotonic() + retry_after_seconds,
+                )
+                self.records.append(
+                    {
+                        "idempotency_key": idempotency_key,
+                        "status": "rate_limited",
+                        "failure_code": type(exc).__name__,
+                        "latency_ms": (self._monotonic() - started) * 1000,
+                        "pre_send_backoff_seconds": cooldown_wait,
+                        "retry_after_seconds": retry_after_seconds,
+                        "backoff_source": backoff_source,
+                        "cost_usd": "0",
+                        **_safe_http_error_metadata(exc),
+                    }
+                )
+                return TransportOutcome(
+                    "rate_limited",
+                    failure_code="http_429_rate_limit",
+                    retry_after_seconds=retry_after_seconds,
+                    backoff_source=backoff_source,
+                )
             self.ledger.block()
             self.records.append(
                 {
@@ -566,6 +643,7 @@ class OpenRouterPanelTransport:
         if not isinstance(body, dict):
             self.ledger.block()
             return TransportOutcome("unknown", failure_code="provider_envelope_invalid")
+        self._consecutive_rate_limits = 0
         try:
             content = body["choices"][0]["message"]["content"]
             finish_reason = body["choices"][0].get("finish_reason")
@@ -600,7 +678,8 @@ class OpenRouterPanelTransport:
                 "idempotency_key": idempotency_key,
                 "slot": self.config.slot,
                 "status": "response",
-                "latency_ms": (time.monotonic() - started) * 1000,
+                "latency_ms": (self._monotonic() - started) * 1000,
+                "pre_send_backoff_seconds": cooldown_wait,
                 "response_id_digest": content_digest(str(body.get("id", ""))),
                 "response_model": body.get("model"),
                 "upstream_provider": body.get("provider"),
@@ -616,6 +695,37 @@ class OpenRouterPanelTransport:
     def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="reconciliation_disabled")
+
+
+def _rate_limit_backoff(
+    exc: urllib.error.HTTPError,
+    *,
+    consecutive_rate_limits: int,
+    base_seconds: float,
+    max_seconds: float,
+    wall_time: float,
+) -> tuple[float, Literal["retry_after", "exponential_fallback"]]:
+    """Parse standard Retry-After forms, falling back to capped exponential delay."""
+
+    raw_retry_after = exc.headers.get("Retry-After") if exc.headers is not None else None
+    parsed: float | None = None
+    if raw_retry_after is not None:
+        try:
+            parsed = float(raw_retry_after)
+        except ValueError:
+            try:
+                retry_at = parsedate_to_datetime(raw_retry_after)
+                if retry_at.tzinfo is None:
+                    retry_at = retry_at.replace(tzinfo=UTC)
+                now = datetime.fromtimestamp(wall_time, tz=UTC)
+                parsed = (retry_at - now).total_seconds()
+            except (TypeError, ValueError, OverflowError):
+                parsed = None
+    if parsed is not None and math.isfinite(parsed) and parsed >= 0:
+        return min(parsed, max_seconds), "retry_after"
+    exponent = min(max(0, consecutive_rate_limits - 1), 63)
+    fallback = base_seconds * (2**exponent)
+    return min(fallback, max_seconds), "exponential_fallback"
 
 
 def _safe_http_error_metadata(exc: urllib.error.HTTPError) -> dict[str, Any]:
@@ -765,6 +875,16 @@ def build_panel_policy_manifest(
         ("require_parameters", "true"),
         ("response_schema_strict", str(config.strict_response_schema).lower()),
         ("seed", str(SEED)),
+        (
+            "max_rate_limit_retries_per_action",
+            str(config.max_rate_limit_retries_per_action),
+        ),
+        ("rate_limit_backoff_base_seconds", str(config.rate_limit_backoff_base_seconds)),
+        ("rate_limit_backoff_max_seconds", str(config.rate_limit_backoff_max_seconds)),
+        (
+            "runner_deadline_safety_margin_seconds",
+            str(MAX_RUNNER_DEADLINE_SAFETY_MARGIN_SECONDS),
+        ),
     ]
     if config.temperature is not None:
         inference_parameters.append(("temperature", str(config.temperature)))
