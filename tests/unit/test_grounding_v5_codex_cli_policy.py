@@ -122,7 +122,7 @@ def make_transport(
     prior: Decimal = Decimal("4.778164718"),
 ) -> tuple[
     policy.CodexCliTransport,
-    policy.CostEquivalentLedger,
+    policy.SubscriptionExemptLedger,
     policy.CodexCliInvocationJournal,
     dict[str, Any],
 ]:
@@ -136,7 +136,7 @@ def make_transport(
         return process
 
     invocation_journal = policy.CodexCliInvocationJournal(tmp_path / "invocations.sqlite")
-    ledger = policy.CostEquivalentLedger(Decimal("10.00"), prior)
+    ledger = policy.SubscriptionExemptLedger(Decimal("10.00"), prior)
     transport = policy.CodexCliTransport(
         ledger=ledger,
         invocation_journal=invocation_journal,
@@ -175,6 +175,7 @@ def test_command_contract_disables_tools_context_and_retries() -> None:
         "multi_agent",
         "computer_use",
         "in_app_browser",
+        "view_image",
         "workspace_dependencies",
     ):
         index = contract.index(feature)
@@ -185,6 +186,7 @@ def test_command_contract_disables_tools_context_and_retries() -> None:
     assert "--sandbox read-only" in joined
     assert "--yolo" not in contract
     assert "dangerously-bypass" not in joined
+    assert "tools.view_image" not in joined
     assert str(ROOT) not in joined
 
 
@@ -215,7 +217,9 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         assert not image_path.exists()
         assert not working_path.exists()
         expected = Decimal(1000) * Decimal("0.00000050") + Decimal(120) * Decimal("0.00000180")
-        assert ledger.incremental_cost_equivalent_usd == expected
+        assert ledger.incremental_informational_list_price_equivalent_usd == expected
+        assert ledger.incremental_experiment_charge_usd == Decimal("0.00")
+        assert ledger.budget_accounted_usd == Decimal("4.778164718")
         assert not ledger.unresolved
         record = invocation_journal.record("sha256:one")
         assert record is not None
@@ -273,7 +277,7 @@ def test_tool_use_and_invalid_actions_fail_before_backend_execution(
         invocation_journal.close()
 
 
-def test_missing_usage_retains_maximum_reservation_and_blocks_next_call(
+def test_missing_usage_is_nonblocking_and_keeps_luna_experiment_charge_zero(
     tmp_path: Path,
 ) -> None:
     process = FakeProcess(cli_stream(include_usage=False))
@@ -284,22 +288,59 @@ def test_missing_usage_retains_maximum_reservation_and_blocks_next_call(
             idempotency_key="sha256:unknown",
             deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
         )
-        assert outcome.status == "unknown"
-        assert ledger.blocked is True
-        assert ledger.charges["sha256:unknown"] == policy.REQUEST_MAXIMUM_COST_EQUIVALENT_USD
-        second = transport.send(
-            request(),
-            idempotency_key="sha256:blocked",
-            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
-        )
-        assert second.failure_code == "aggregate_cost_guard"
-        assert ledger.processes_started == 1
+        assert outcome.status == "response"
+        assert outcome.response is not None
+        assert policy.CodexCliPolicy().parse(
+            policy.canonical_json_bytes(outcome.response), b"{}"
+        ) == {"action_type": 1, "x": 100, "y": 100, "key": 0}
+        assert ledger.blocked is False
+        assert ledger.experiment_charges["sha256:unknown"] == policy.LUNA_EXPERIMENT_CHARGE_USD
+        assert ledger.usage_telemetry_unavailable == {"sha256:unknown"}
+        assert ledger.budget_accounted_usd == Decimal("4.778164718")
+        assert outcome.response["usage"]["usage_telemetry_status"] == "unavailable"
+        assert outcome.response["usage"]["informational_list_price_equivalent_usd"] is None
+        assert outcome.response["usage"]["experiment_charge_usd"] == "0.00"
     finally:
         transport.close()
         invocation_journal.close()
 
 
-def test_cost_guard_blocks_before_process_start(tmp_path: Path) -> None:
+def test_missing_usage_valid_action_reaches_backend(tmp_path: Path) -> None:
+    process = FakeProcess(cli_stream(include_usage=False))
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    journal = V5AttemptJournal(tmp_path / "attempts.sqlite")
+    backend = V5FakeBackend()
+    task = generate_task(5002)
+    manifest = policy.build_codex_cli_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+    )
+    try:
+        result = V5Runner(
+            journal=journal,
+            manifest=manifest,
+            transport=transport,
+            policy=policy.CodexCliPolicy(),
+            approved_caps=CallCaps(1, 1, 0, 1),
+        ).run(
+            trial_id="codex-missing-usage",
+            task=task,
+            backend=backend,
+            action_limit=1,
+        )
+        assert result.classification == "pilot_action_limit"
+        assert result.environment_actions == 1
+        assert backend.action_count == 1
+    finally:
+        transport.close()
+        journal.close()
+        invocation_journal.close()
+
+
+def test_subscription_exempt_luna_is_not_blocked_by_non_luna_dollar_headroom(
+    tmp_path: Path,
+) -> None:
     process = FakeProcess(cli_stream())
     transport, ledger, invocation_journal, _captured = make_transport(
         tmp_path,
@@ -312,10 +353,11 @@ def test_cost_guard_blocks_before_process_start(tmp_path: Path) -> None:
             idempotency_key="sha256:too-expensive",
             deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
         )
-        assert outcome.status == "pre_send_failure"
-        assert outcome.failure_code == "aggregate_cost_guard"
-        assert ledger.processes_started == 0
-        assert invocation_journal.record("sha256:too-expensive") is None
+        assert outcome.status == "response"
+        assert ledger.processes_started == 1
+        assert ledger.incremental_experiment_charge_usd == Decimal("0.00")
+        assert ledger.budget_accounted_usd == Decimal("9.50")
+        assert invocation_journal.record("sha256:too-expensive") is not None
     finally:
         transport.close()
         invocation_journal.close()
@@ -368,6 +410,7 @@ def test_timeout_and_interruption_terminate_process_and_retain_raw_journal(
         assert not Path(captured["cwd"]).exists()
         assert ledger.blocked is True
         assert key in ledger.unresolved
+        assert ledger.experiment_charges[key] == Decimal("0.00")
         record = invocation_journal.record(key)
         assert record is not None
         assert record["status"] == expected_status
@@ -394,7 +437,10 @@ def test_duplicate_idempotency_key_never_replays_process(tmp_path: Path) -> None
         )
         assert first.status == "response"
         assert second.status == "pre_send_failure"
-        assert second.failure_code in {"aggregate_cost_guard", "duplicate_invocation_blocked"}
+        assert second.failure_code in {
+            "subscription_exempt_invocation_guard",
+            "duplicate_invocation_blocked",
+        }
         assert ledger.processes_started == 1
     finally:
         transport.close()

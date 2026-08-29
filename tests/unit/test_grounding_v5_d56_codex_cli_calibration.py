@@ -43,11 +43,28 @@ def predecessor_evidence() -> dict[str, Any]:
     }
 
 
+def failed_luna_smoke_evidence() -> dict[str, Any]:
+    return {
+        "status": "consumed_immutable_infrastructure_failure",
+        "approved_plan_content_sha256": calibration.FAILED_LUNA_SMOKE_PLAN_CONTENT_SHA256,
+        "classification": "infrastructure_failure",
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "root_cause": "strict_config_rejected_unknown_tools_view_image_key_before_inference",
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def stub_plan_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         calibration,
         "validated_predecessor_evidence",
         lambda _root: predecessor_evidence(),
+    )
+    monkeypatch.setattr(
+        calibration,
+        "validated_failed_luna_smoke_evidence",
+        lambda _root: failed_luna_smoke_evidence(),
     )
 
     def git(_root: Path, *args: str) -> str:
@@ -66,7 +83,9 @@ def successful_smoke() -> dict[str, Any]:
         "summary_file_sha256": "sha256:summary",
         "attempt_journal_file_sha256": "sha256:attempts",
         "invocation_journal_file_sha256": "sha256:invocations",
-        "budget_accounted_aggregate_spend_usd": "4.779000000",
+        "budget_accounted_aggregate_spend_usd": "4.778164718",
+        "incremental_luna_experiment_charge_usd": "0.00",
+        "usage_telemetry_status": "available",
         "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
         "classification": "pilot_action_limit",
         "provider_calls_made": 1,
@@ -131,6 +150,29 @@ def test_real_predecessor_evidence_is_bound_and_frozen() -> None:
     assert evidence["reuse_rule"] == "do_not_resume_overwrite_reuse_or_reinterpret"
 
 
+def test_failed_luna_smoke_is_bound_and_preserved_as_immutable_evidence() -> None:
+    evidence = calibration.validated_failed_luna_smoke_evidence(ROOT)
+
+    assert evidence["approved_plan_content_sha256"] == (
+        "sha256:1bea6849d3dd619ab481ee21b957975fedac9302119806aaadc90b21ce6be433"
+    )
+    assert evidence["summary_file_sha256"] == (
+        "sha256:6bff9bfb09f36556133dc1e33ff2c69ce846ad3856b7af89edc2ef5e5f045ebb"
+    )
+    assert evidence["provider_calls_made"] == 1
+    assert evidence["environment_actions"] == 0
+    assert evidence["classification"] == "infrastructure_failure"
+    assert evidence["root_cause"] == (
+        "strict_config_rejected_unknown_tools_view_image_key_before_inference"
+    )
+    assert evidence["historical_result_accounting"] == {
+        "accounting_method": "superseded_conservative_list_price_reservation_v1",
+        "incremental_cost_equivalent_usd": "0.97920000",
+        "budget_accounted_aggregate_spend_usd": "5.757364718",
+        "unresolved_reservation_count": 1,
+    }
+
+
 def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -179,17 +221,30 @@ def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
             "one logical adapter transport send; packet-level ChatGPT authentication "
             "exchanges are not observable"
         ),
-        "prior_budget_accounted_spend_usd": "4.778164718",
-        "maximum_remaining_incremental_exposure_usd": "5.221835282",
-        "per_invocation_unresolved_reservation_usd": "0.97920000",
-        "aggregate_theoretical_upper_bound_usd": "5.757364718",
+        "prior_non_luna_budget_accounted_spend_usd": "4.778164718",
+        "maximum_remaining_non_luna_incremental_exposure_usd": "5.221835282",
+        "luna_experiment_charge_per_call_usd": "0.00",
+        "maximum_luna_incremental_experiment_charge_usd": "0.00",
+        "per_invocation_maximum_informational_list_price_equivalent_usd": "0.97920000",
+        "aggregate_theoretical_upper_bound_usd": "4.778164718",
         "maximum_aggregate_spend_usd": "10.00",
     }
     assert plan["price_and_cost_accounting"]["billing_classification"] == (
-        "ChatGPT/Codex subscription usage_not_metered_API_spend"
+        "ChatGPT_subscription_billed"
     )
+    assert plan["price_and_cost_accounting"]["luna_experiment_charge_per_call_usd"] == "0.00"
+    assert plan["failed_luna_smoke_evidence"] == failed_luna_smoke_evidence()
+    assert plan["human_accounting_override"] == {
+        "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
+        "effective_experiment_charge_usd": "0.00",
+        "rationale": "subscription_billed",
+        "historical_raw_result_rewritten": False,
+        "superseded_failed_smoke_reservation_excluded_from_current_aggregate": True,
+        "service_subscription_limits_unchanged": True,
+    }
     assert "HTTP 401" in plan["policy"]["retry_and_backoff"]["codex_401_auth_recovery"]
     assert plan["approval_required"]["earlier_qwen_or_openrouter_approvals_apply"] is False
+    assert plan["approval_required"]["earlier_luna_smoke_approval_applies"] is False
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 
@@ -239,6 +294,8 @@ def test_successor_generator_binds_frozen_fifty_task_order_and_caps(
     assert "packet-level" in plan["caps"]["provider_wire_request_cap_semantics"]
     assert plan["caps"]["provider_control_request_cap"] == 0
     assert plan["caps"]["maximum_aggregate_spend_usd"] == "10.00"
+    assert plan["caps"]["luna_experiment_charge_per_call_usd"] == "0.00"
+    assert plan["caps"]["maximum_luna_incremental_experiment_charge_usd"] == "0.00"
     assert plan["approval_required"]["smoke_approval_applies"] is False
     assert plan["successful_smoke_evidence"] == successful_smoke()
 
@@ -348,7 +405,11 @@ def test_execute_smoke_with_fake_cli_writes_restricted_journals_and_summary(
     assert summary["episode_result"]["classification"] == "pilot_action_limit"
     assert summary["episode_result"]["environment_actions"] == 1
     assert summary["policy_violation"] == "none"
-    assert summary["unresolved_reservation_count"] == 0
+    assert summary["incremental_luna_experiment_charge_usd"] == "0.00"
+    assert summary["budget_accounted_aggregate_spend_usd"] == "4.778164718"
+    assert summary["informational_list_price_equivalent_usd"] == "0.00071600"
+    assert summary["usage_telemetry_status"] == "available"
+    assert summary["unresolved_invocation_count"] == 0
     assert summary["cleanup"] == {
         "attempt_journal_closed": True,
         "invocation_journal_closed": True,

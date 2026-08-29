@@ -17,6 +17,7 @@ from pixelgym.grounding.v5.codex_cli_policy import (
     CONSERVATIVE_INPUT_PER_TOKEN_USD,
     CONSERVATIVE_OUTPUT_PER_TOKEN_USD,
     KILL_GRACE_SECONDS,
+    LUNA_EXPERIMENT_CHARGE_USD,
     MODEL,
     MODEL_CONTEXT_WINDOW_TOKENS,
     MODEL_PROVIDER_ID,
@@ -24,17 +25,18 @@ from pixelgym.grounding.v5.codex_cli_policy import (
     PRICE_OBSERVED_AT_UTC,
     PRICE_SOURCE,
     PROCESS_TIMEOUT_SECONDS,
-    REQUEST_MAXIMUM_COST_EQUIVALENT_USD,
+    REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD,
     ROLLOUT_BUDGET_TOKENS,
     RUNNER_REQUEST_DEADLINE_SECONDS,
+    SUBSCRIPTION_SOURCE,
     TERMINATE_GRACE_SECONDS,
     TRANSPORT_RETRY_RULE,
     CodexCliInvocationJournal,
     CodexCliPolicy,
     CodexCliTransport,
     CodexRuntimeIdentity,
-    CostEquivalentLedger,
     RunningProcess,
+    SubscriptionExemptLedger,
     build_codex_cli_policy_manifest,
     command_contract_digest,
     probe_codex_runtime,
@@ -52,9 +54,9 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
 from pixelgym.serialization import canonical_json_bytes
 
-SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v1"
-CALIBRATION_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-calibration-plan-v1"
-SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v1"
+SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v2"
+CALIBRATION_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-calibration-plan-v2"
+SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v2"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 MAXIMUM_REMAINING_INCREMENTAL_EXPOSURE_USD = Decimal("5.221835282")
@@ -90,6 +92,35 @@ PREDECESSOR_REPORT_FILE_SHA256 = (
 )
 PREDECESSOR_CODE_REVISION = "0e74a791559b5e6636c12e2fa4fd480ab3a8c8fd"
 
+FAILED_LUNA_SMOKE_PLAN_CONTENT_SHA256 = (
+    "sha256:1bea6849d3dd619ab481ee21b957975fedac9302119806aaadc90b21ce6be433"
+)
+FAILED_LUNA_SMOKE_PLAN_FILE_SHA256 = (
+    "sha256:f75293b1370d60ac84e1afeaeddf97b01f9fa4193b1b295fd3c1aadb614b6dd3"
+)
+FAILED_LUNA_SMOKE_SUMMARY_FILE_SHA256 = (
+    "sha256:6bff9bfb09f36556133dc1e33ff2c69ce846ad3856b7af89edc2ef5e5f045ebb"
+)
+FAILED_LUNA_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256 = (
+    "sha256:412350c8211ea077b5bc763aa802ee9553f8496583d26a2b553b062feabbc98e"
+)
+FAILED_LUNA_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256 = (
+    "sha256:c29c9f7b6e6eadbfca55356bfa4f34367a1b26674f32fac37f050a610cb99530"
+)
+FAILED_LUNA_SMOKE_INVOCATION_JOURNAL_FILE_SHA256 = (
+    "sha256:1487aa1603b84ee6aa54bf228b9bea02e05b58ae03c767579f6aac9bf6d26894"
+)
+FAILED_LUNA_SMOKE_RAW_STDOUT_SHA256 = (
+    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+)
+FAILED_LUNA_SMOKE_RAW_STDERR_SHA256 = (
+    "sha256:74cb00300ed4a4c23ba979d30d34218cd356e4bfb55b81f10a3dc832d52c56c7"
+)
+FAILED_LUNA_SMOKE_OUTCOME_SHA256 = (
+    "sha256:5927d5c61ff3b0f495857990feb3d3e70488c5836126061e30f5ee99817e1d66"
+)
+FAILED_LUNA_SMOKE_CODE_REVISION = "f3cf861edda5b75d30145739de12e1764923d6b4"
+
 _PLAN_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-plan.json")
 _SUMMARY_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json")
 _JOURNAL_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/attempts.sqlite")
@@ -97,6 +128,10 @@ _AUDIT_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-integrity-a
 _RELATION_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-publication-relation.json")
 _PUBLISHABLE_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json")
 _REPORT_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-report.md")
+_FAILED_LUNA_SMOKE_PLAN_PATH = Path(
+    "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-plan.json"
+)
+_FAILED_LUNA_SMOKE_RUN_PATH = Path("artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-run")
 
 
 def _git(repository_root: Path, *args: str) -> str:
@@ -212,6 +247,106 @@ def validated_predecessor_evidence(repository_root: Path) -> dict[str, Any]:
     }
 
 
+def validated_failed_luna_smoke_evidence(repository_root: Path) -> dict[str, Any]:
+    """Verify the consumed first Luna smoke without rewriting its historical result."""
+
+    plan_path = repository_root / _FAILED_LUNA_SMOKE_PLAN_PATH
+    run_path = repository_root / _FAILED_LUNA_SMOKE_RUN_PATH
+    summary_path = run_path / "summary.json"
+    attempt_path = run_path / "attempts.sqlite"
+    invocation_path = run_path / "codex-cli-invocations.sqlite"
+    expected_files = (
+        (plan_path, FAILED_LUNA_SMOKE_PLAN_FILE_SHA256, False),
+        (summary_path, FAILED_LUNA_SMOKE_SUMMARY_FILE_SHA256, False),
+        (attempt_path, FAILED_LUNA_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256, True),
+        (invocation_path, FAILED_LUNA_SMOKE_INVOCATION_JOURNAL_FILE_SHA256, True),
+    )
+    for path, expected, streaming in expected_files:
+        actual = _streaming_file_digest(path) if streaming else _file_digest(path)
+        if actual != expected:
+            raise ValueError(f"frozen failed Luna smoke digest mismatch: {path.name}")
+    plan = _load_json_object(plan_path)
+    if content_digest(plan) != FAILED_LUNA_SMOKE_PLAN_CONTENT_SHA256:
+        raise ValueError("frozen failed Luna smoke canonical plan digest mismatch")
+    summary = _load_json_object(summary_path)
+    expected_summary = {
+        "approved_plan_sha256": FAILED_LUNA_SMOKE_PLAN_CONTENT_SHA256,
+        "code_revision": FAILED_LUNA_SMOKE_CODE_REVISION,
+        "provider_calls_made": 1,
+        "provider_wire_requests": 1,
+        "model_attempt_reservations": 1,
+        "incremental_cost_equivalent_usd": "0.97920000",
+        "budget_accounted_aggregate_spend_usd": "5.757364718",
+        "unresolved_reservation_count": 1,
+        "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+        "policy_violation": (
+            "completed_turn_usage_count_mismatch,cost_accounting_failure,"
+            "final_agent_message_count_mismatch,nonzero_exit"
+        ),
+    }
+    if any(summary.get(key) != expected for key, expected in expected_summary.items()):
+        raise ValueError("frozen failed Luna smoke summary facts mismatch")
+    episode = summary.get("episode_result")
+    if not isinstance(episode, dict) or any(
+        episode.get(key) != expected
+        for key, expected in {
+            "classification": "infrastructure_failure",
+            "environment_actions": 0,
+            "model_attempts": 1,
+            "provider_wire_requests": 1,
+            "success": False,
+        }.items()
+    ):
+        raise ValueError("frozen failed Luna smoke episode facts mismatch")
+    attempt_integrity = summary.get("attempt_journal_integrity")
+    if not isinstance(attempt_integrity, dict) or (
+        attempt_integrity.get("event_chain_digest") != FAILED_LUNA_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256
+    ):
+        raise ValueError("frozen failed Luna smoke attempt event chain mismatch")
+    invocation_integrity = summary.get("invocation_journal_integrity")
+    records = (
+        invocation_integrity.get("records") if isinstance(invocation_integrity, dict) else None
+    )
+    if not isinstance(records, list) or len(records) != 1 or not isinstance(records[0], dict):
+        raise ValueError("frozen failed Luna invocation integrity record is invalid")
+    invocation_record = records[0]
+    expected_invocation = {
+        "exit_code": 1,
+        "status": "policy_violation",
+        "raw_stdout_sha256": FAILED_LUNA_SMOKE_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": FAILED_LUNA_SMOKE_RAW_STDERR_SHA256,
+        "outcome_sha256": FAILED_LUNA_SMOKE_OUTCOME_SHA256,
+    }
+    if any(invocation_record.get(key) != expected for key, expected in expected_invocation.items()):
+        raise ValueError("frozen failed Luna invocation integrity facts mismatch")
+    return {
+        "status": "consumed_immutable_infrastructure_failure",
+        "approved_plan_content_sha256": FAILED_LUNA_SMOKE_PLAN_CONTENT_SHA256,
+        "approved_plan_file_sha256": FAILED_LUNA_SMOKE_PLAN_FILE_SHA256,
+        "summary_file_sha256": FAILED_LUNA_SMOKE_SUMMARY_FILE_SHA256,
+        "attempt_journal_file_sha256": FAILED_LUNA_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256,
+        "attempt_journal_event_chain_sha256": FAILED_LUNA_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256,
+        "invocation_journal_file_sha256": FAILED_LUNA_SMOKE_INVOCATION_JOURNAL_FILE_SHA256,
+        "raw_stdout_sha256": FAILED_LUNA_SMOKE_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": FAILED_LUNA_SMOKE_RAW_STDERR_SHA256,
+        "outcome_sha256": FAILED_LUNA_SMOKE_OUTCOME_SHA256,
+        "code_revision": FAILED_LUNA_SMOKE_CODE_REVISION,
+        "task_id": expected_summary["task_id"],
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "classification": "infrastructure_failure",
+        "root_cause": "strict_config_rejected_unknown_tools_view_image_key_before_inference",
+        "replacement_fix": "remove_unknown_config_key_and_disable_view_image_feature",
+        "historical_result_accounting": {
+            "accounting_method": "superseded_conservative_list_price_reservation_v1",
+            "incremental_cost_equivalent_usd": "0.97920000",
+            "budget_accounted_aggregate_spend_usd": "5.757364718",
+            "unresolved_reservation_count": 1,
+        },
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def _policy_record(
     repository_root: Path,
     *,
@@ -300,12 +435,21 @@ PROVIDER_RUNTIME = "non-interactive codex exec"
 
 def _pricing_record() -> dict[str, Any]:
     return {
-        "source_url": PRICE_SOURCE,
+        "subscription_source_url": SUBSCRIPTION_SOURCE,
+        "informational_list_price_source_url": PRICE_SOURCE,
         "observed_at_utc": PRICE_OBSERVED_AT_UTC,
         "authentication_mode": AUTH_MODE,
-        "billing_classification": "ChatGPT/Codex subscription usage_not_metered_API_spend",
-        "accounting_method": "conservative_standard_list_price_equivalent_v1",
+        "billing_classification": "ChatGPT_subscription_billed",
+        "human_approved_experiment_rule": (
+            "treat_gpt_5_6_luna_calls_as_zero_dollars_and_exclude_them_from_the_usage_cap"
+        ),
+        "accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
         "currency": "USD",
+        "luna_experiment_charge_per_call_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+        "missing_or_invalid_usage_telemetry_rule": (
+            "record_unavailable_nonblocking_and_preserve_action_validation"
+        ),
+        "usage_telemetry_purpose": "optional_non_billing_diagnostic_only",
         "standard_long_context_input_rate_usd_per_unit": "0.00000040",
         "standard_long_context_cached_input_rate_usd_per_unit": "0.00000004",
         "standard_long_context_cache_write_rate_usd_per_unit": "0.00000050",
@@ -313,10 +457,9 @@ def _pricing_record() -> dict[str, Any]:
         "conservative_input_rate_usd_per_unit": str(CONSERVATIVE_INPUT_PER_TOKEN_USD),
         "conservative_output_rate_usd_per_unit": str(CONSERVATIVE_OUTPUT_PER_TOKEN_USD),
         "reasoning_output_double_counted": True,
-        "authoritative_usage_source": "codex_jsonl_turn.completed.usage",
-        "per_invocation_unresolved_reservation_usd": str(REQUEST_MAXIMUM_COST_EQUIVALENT_USD),
-        "unknown_or_invalid_usage_rule": (
-            "retain_full_reservation_block_all_further_calls_and_fail_closed"
+        "usage_telemetry_source": "codex_jsonl_turn.completed.usage_when_present",
+        "per_invocation_maximum_informational_list_price_equivalent_usd": str(
+            REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD
         ),
     }
 
@@ -327,10 +470,10 @@ def _failure_classifications() -> dict[str, str]:
         "step_limit_truncation": "normal_terminal_continue_in_calibration",
         "invalid_output": "retain_and_stop_without_retry",
         "request_failure": "retain_and_stop_without_retry",
-        "infrastructure_failure": "retain_unresolved_reservation_and_stop",
+        "infrastructure_failure": "retain_raw_evidence_and_stop",
         "tool_or_unauthorized_observation": "invalid_output_retain_and_stop",
         "timeout_or_interruption": "terminate_process_group_retain_and_stop",
-        "missing_or_invalid_usage": "retain_full_reservation_and_stop",
+        "missing_or_invalid_usage_telemetry": "record_nonblocking_for_subscription_billed_luna",
     }
 
 
@@ -406,18 +549,18 @@ def build_smoke_plan(
 ) -> dict[str, Any]:
     runtime = runtime_identity or probe_codex_runtime()
     predecessor = validated_predecessor_evidence(repository_root)
+    failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task = generate_task(SMOKE_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
         raise ValueError("Codex CLI smoke may use a development task only")
-    aggregate_upper_bound = PRIOR_BUDGET_ACCOUNTED_SPEND_USD + REQUEST_MAXIMUM_COST_EQUIVALENT_USD
-    if aggregate_upper_bound > MAXIMUM_AGGREGATE_SPEND_USD:
-        raise ValueError("Codex CLI smoke reservation exceeds the aggregate cap")
+    aggregate_upper_bound = PRIOR_BUDGET_ACCOUNTED_SPEND_USD + LUNA_EXPERIMENT_CHARGE_USD
     plan = {
         "schema_version": SMOKE_PLAN_SCHEMA_VERSION,
         "purpose": (
             "one development-only Codex CLI action validating image input, isolation, "
-            "schema-constrained action output, journaling, and conservative cost accounting; "
+            "schema-constrained action output, journaling, and subscription-exempt Luna "
+            "accounting; replacement for one immutable pre-inference infrastructure failure; "
             "not calibration evidence"
         ),
         "execution_state": "awaiting_exact_human_approval",
@@ -449,35 +592,49 @@ def build_smoke_plan(
                 "one logical adapter transport send; packet-level ChatGPT authentication "
                 "exchanges are not observable"
             ),
-            "prior_budget_accounted_spend_usd": str(PRIOR_BUDGET_ACCOUNTED_SPEND_USD),
-            "maximum_remaining_incremental_exposure_usd": str(
+            "prior_non_luna_budget_accounted_spend_usd": str(PRIOR_BUDGET_ACCOUNTED_SPEND_USD),
+            "maximum_remaining_non_luna_incremental_exposure_usd": str(
                 MAXIMUM_REMAINING_INCREMENTAL_EXPOSURE_USD
             ),
-            "per_invocation_unresolved_reservation_usd": str(REQUEST_MAXIMUM_COST_EQUIVALENT_USD),
+            "luna_experiment_charge_per_call_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "maximum_luna_incremental_experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "per_invocation_maximum_informational_list_price_equivalent_usd": str(
+                REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD
+            ),
             "aggregate_theoretical_upper_bound_usd": str(aggregate_upper_bound),
             "maximum_aggregate_spend_usd": str(MAXIMUM_AGGREGATE_SPEND_USD),
         },
         "price_and_cost_accounting": _pricing_record(),
         "failure_classifications": _failure_classifications(),
         "predecessor_evidence": predecessor,
+        "failed_luna_smoke_evidence": failed_luna_smoke,
+        "human_accounting_override": {
+            "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
+            "effective_experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "rationale": "subscription_billed",
+            "historical_raw_result_rewritten": False,
+            "superseded_failed_smoke_reservation_excluded_from_current_aggregate": True,
+            "service_subscription_limits_unchanged": True,
+        },
         "raw_evidence_policy": _raw_evidence_policy(),
         "stop_conditions": [
             "send at most one Codex CLI model invocation and never retry",
             "stop after the first valid environment action",
             "stop without dispatch on invalid or unparseable action output",
             "stop without dispatch on any JSONL tool, web, filesystem, MCP, plugin, skill, connector, or subagent event",
-            "terminate the whole process group on timeout or interruption and retain the maximum unresolved reservation",
+            "terminate the whole process group on timeout or interruption and retain restricted raw evidence",
             "stop if CLI version, ChatGPT authentication mode, model catalog identity, model, reasoning effort, command contract, or predecessor evidence differs",
-            "stop before process start if the maximum unresolved reservation cannot fit under the aggregate cap",
-            "stop and block further calls if authoritative JSONL usage is missing or invalid",
-            "stop if the ChatGPT authentication-mode preflight fails; any ultimate 401 or missing usage retains the full unresolved reservation",
+            "record JSONL usage as optional non-billing telemetry when present; missing or invalid usage telemetry does not invalidate an otherwise valid action",
+            "stop if the ChatGPT authentication-mode preflight fails or the process exits nonzero",
             "do not resume, overwrite, or reuse the consumed Qwen/OpenRouter plan or journals",
+            "do not resume, overwrite, or reuse the consumed first Luna smoke plan or run directory",
         ],
         "approval_required": {
             "owner": "human",
             "scope": "this_exact_one_task_smoke_plan_only",
             "exact_plan_sha256": "sha256 of canonical plan bytes",
             "earlier_qwen_or_openrouter_approvals_apply": False,
+            "earlier_luna_smoke_approval_applies": False,
         },
         "human_gates": {
             "D4.12": "not_evaluated_human_owned",
@@ -495,6 +652,8 @@ def _validated_successful_smoke_evidence(value: dict[str, Any]) -> dict[str, Any
         "attempt_journal_file_sha256",
         "invocation_journal_file_sha256",
         "budget_accounted_aggregate_spend_usd",
+        "incremental_luna_experiment_charge_usd",
+        "usage_telemetry_status",
         "task_id",
         "classification",
         "provider_calls_made",
@@ -516,6 +675,7 @@ def _validated_successful_smoke_evidence(value: dict[str, Any]) -> dict[str, Any
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
             "cli_version": CODEX_CLI_VERSION,
             "policy_violation": "none",
+            "incremental_luna_experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
         }.items()
     ):
         raise ValueError("smoke evidence does not record one successful bounded action")
@@ -527,8 +687,14 @@ def _validated_successful_smoke_evidence(value: dict[str, Any]) -> dict[str, Any
     ):
         if not isinstance(value[key], str) or not value[key].startswith("sha256:"):
             raise ValueError("smoke evidence digest is invalid")
+    if value.get("usage_telemetry_status") not in {
+        "available",
+        "unavailable",
+        "invalid_or_ambiguous",
+    }:
+        raise ValueError("smoke evidence usage telemetry status is invalid")
     accounted = Decimal(str(value["budget_accounted_aggregate_spend_usd"]))
-    if not PRIOR_BUDGET_ACCOUNTED_SPEND_USD <= accounted <= MAXIMUM_AGGREGATE_SPEND_USD:
+    if accounted != PRIOR_BUDGET_ACCOUNTED_SPEND_USD:
         raise ValueError("smoke evidence aggregate accounting is invalid")
     return dict(value)
 
@@ -543,6 +709,7 @@ def build_successor_calibration_plan(
 
     runtime = runtime_identity or probe_codex_runtime()
     predecessor = validated_predecessor_evidence(repository_root)
+    failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
     smoke = _validated_successful_smoke_evidence(successful_smoke_evidence)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task_order, partition = _task_order(repository_root)
@@ -583,30 +750,35 @@ def build_successor_calibration_plan(
                 "exchanges are not observable"
             ),
             "prior_budget_accounted_spend_usd": str(prior),
-            "maximum_remaining_incremental_exposure_usd": str(MAXIMUM_AGGREGATE_SPEND_USD - prior),
-            "per_invocation_unresolved_reservation_usd": str(REQUEST_MAXIMUM_COST_EQUIVALENT_USD),
-            "uncapped_run_theoretical_maximum_usd": str(
-                REQUEST_MAXIMUM_COST_EQUIVALENT_USD * action_cap
+            "maximum_remaining_non_luna_incremental_exposure_usd": str(
+                MAXIMUM_AGGREGATE_SPEND_USD - prior
+            ),
+            "luna_experiment_charge_per_call_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "maximum_luna_incremental_experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "per_invocation_maximum_informational_list_price_equivalent_usd": str(
+                REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD
+            ),
+            "uncapped_run_informational_list_price_equivalent_ceiling_usd": str(
+                REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD * action_cap
             ),
             "maximum_aggregate_spend_usd": str(MAXIMUM_AGGREGATE_SPEND_USD),
             "enforcement": (
-                "reserve one full-context conservative cost equivalent before each fresh "
-                "CLI process; release only to authoritative completed-turn usage; stop "
-                "before any reservation that cannot fit"
+                "charge every Luna invocation exactly zero experiment dollars; enforce "
+                "task, action, process, model-attempt, and logical-wire caps independently"
             ),
         },
         "price_and_cost_accounting": _pricing_record(),
         "failure_classifications": _failure_classifications(),
         "predecessor_evidence": predecessor,
+        "failed_luna_smoke_evidence": failed_luna_smoke,
         "successful_smoke_evidence": smoke,
         "raw_evidence_policy": _raw_evidence_policy(),
         "stop_conditions": [
             "run tasks only in the frozen fifty-task order",
             "continue after success termination or full step-limit truncation",
-            "stop at the first invalid output, policy violation, request failure, infrastructure failure, timeout, interruption, identity mismatch, evidence mismatch, or cost-accounting failure",
+            "stop at the first invalid output, policy violation, request failure, infrastructure failure, timeout, interruption, identity mismatch, or evidence mismatch",
             "never retry or replay a Codex CLI process invocation",
-            "stop before any next invocation whose unresolved reservation cannot fit under the aggregate cap",
-            "retain the maximum reservation and block all further calls after unknown or missing usage",
+            "record JSONL usage as optional non-billing telemetry when present; missing or invalid usage telemetry is nonblocking",
             "do not resume, overwrite, or reuse the consumed Qwen/OpenRouter plan or journals",
             "do not expose confirmatory tasks",
         ],
@@ -657,7 +829,7 @@ def execute_smoke(
     invocation_journal = CodexCliInvocationJournal(
         output_directory / "codex-cli-invocations.sqlite"
     )
-    ledger = CostEquivalentLedger(
+    ledger = SubscriptionExemptLedger(
         MAXIMUM_AGGREGATE_SPEND_USD,
         PRIOR_BUDGET_ACCOUNTED_SPEND_USD,
     )
@@ -712,6 +884,9 @@ def execute_smoke(
         policy_violation = (
             str(transport_records[-1].get("policy_violation")) if transport_records else None
         )
+        usage_telemetry_status = (
+            str(transport_records[-1].get("usage_telemetry_status")) if transport_records else None
+        )
         summary = {
             "schema_version": SMOKE_RESULT_SCHEMA_VERSION,
             "purpose": plan["purpose"],
@@ -727,17 +902,20 @@ def execute_smoke(
             "provider_wire_requests": ledger.processes_started,
             "model_attempt_reservations": call_counts[0],
             "provider_control_requests": call_counts[1],
-            "prior_budget_accounted_spend_usd": str(PRIOR_BUDGET_ACCOUNTED_SPEND_USD),
-            "incremental_cost_equivalent_usd": str(ledger.incremental_cost_equivalent_usd),
+            "prior_non_luna_budget_accounted_spend_usd": str(PRIOR_BUDGET_ACCOUNTED_SPEND_USD),
+            "incremental_luna_experiment_charge_usd": str(ledger.incremental_experiment_charge_usd),
+            "informational_list_price_equivalent_usd": str(
+                ledger.incremental_informational_list_price_equivalent_usd
+            ),
             "budget_accounted_aggregate_spend_usd": str(ledger.budget_accounted_usd),
-            "remaining_aggregate_exposure_usd": str(
+            "remaining_non_luna_aggregate_exposure_usd": str(
                 MAXIMUM_AGGREGATE_SPEND_USD - ledger.budget_accounted_usd
             ),
             "maximum_aggregate_spend_usd": str(MAXIMUM_AGGREGATE_SPEND_USD),
-            "unresolved_reservation_count": len(ledger.unresolved),
-            "cost_accounting_method": (
-                "conservative_standard_list_price_equivalent_v1_not_billed_spend"
-            ),
+            "unresolved_invocation_count": len(ledger.unresolved),
+            "usage_telemetry_unavailable_count": len(ledger.usage_telemetry_unavailable),
+            "usage_telemetry_status": usage_telemetry_status,
+            "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
             "task_id": plan["task"]["task_id"],
             "episode_result": result_record,
             "execution_error": execution_error,
@@ -746,6 +924,8 @@ def execute_smoke(
             "attempt_journal_integrity": attempt_integrity,
             "invocation_journal_integrity": invocation_integrity,
             "predecessor_evidence": plan["predecessor_evidence"],
+            "failed_luna_smoke_evidence": plan["failed_luna_smoke_evidence"],
+            "human_accounting_override": plan["human_accounting_override"],
             "publication_status": "restricted_raw_evidence_local_only",
             "cleanup": {
                 "attempt_journal_closed": True,
@@ -785,6 +965,10 @@ def successful_smoke_evidence_from_files(output_directory: Path) -> dict[str, An
             "budget_accounted_aggregate_spend_usd": summary.get(
                 "budget_accounted_aggregate_spend_usd"
             ),
+            "incremental_luna_experiment_charge_usd": summary.get(
+                "incremental_luna_experiment_charge_usd"
+            ),
+            "usage_telemetry_status": summary.get("usage_telemetry_status"),
             "task_id": summary.get("task_id"),
             "classification": episode.get("classification"),
             "provider_calls_made": summary.get("provider_calls_made"),

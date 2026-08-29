@@ -55,12 +55,14 @@ KILL_GRACE_SECONDS = 2.0
 # the higher cache-write rate and reasoning tokens are charged again in addition to
 # output tokens. This deliberately overstates the published standard list price.
 PRICE_SOURCE = "https://developers.openai.com/api/docs/pricing/"
+SUBSCRIPTION_SOURCE = "https://learn.chatgpt.com/docs/pricing"
 PRICE_OBSERVED_AT_UTC = "2026-08-29T00:00:00Z"
 CONSERVATIVE_INPUT_PER_TOKEN_USD = Decimal("0.00000050")
 CONSERVATIVE_OUTPUT_PER_TOKEN_USD = Decimal("0.00000180")
-REQUEST_MAXIMUM_COST_EQUIVALENT_USD = (
+REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD = (
     Decimal(MODEL_CONTEXT_WINDOW_TOKENS) * CONSERVATIVE_OUTPUT_PER_TOKEN_USD * 2
 )
+LUNA_EXPERIMENT_CHARGE_USD = Decimal("0.00")
 
 PROMPT_VERSION = "pixelgym-agent-v5-codex-cli-current-screenshot-prompt-v1"
 PARSER_VERSION = "pixelgym-agent-v5-json-action-codex-cli-native-parser-v1"
@@ -69,7 +71,7 @@ MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-jsonl-response-v1"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = "codex-cli-zero-request-zero-stream-zero-runner-retries-v1"
-INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-invocation-journal-v1"
+INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-invocation-journal-v2"
 
 ACTION_SCHEMA: dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -117,6 +119,7 @@ _DISABLED_FEATURES = (
     "tool_suggest",
     "unbounded_connection_retries",
     "unified_exec",
+    "view_image",
     "workspace_dependencies",
 )
 
@@ -135,7 +138,6 @@ _CONFIG_OVERRIDES = (
     f"model_context_window={MODEL_CONTEXT_WINDOW_TOKENS}",
     'web_search="disabled"',
     "tools.web_search=false",
-    "tools.view_image=false",
     'shell_environment_policy.inherit="none"',
     "shell_environment_policy.ignore_default_excludes=false",
     f"features.rollout_budget.limit_tokens={ROLLOUT_BUDGET_TOKENS}",
@@ -424,8 +426,9 @@ class CodexCliPolicy:
             "authentication_mode": AUTH_MODE,
             "cli_version": CODEX_CLI_VERSION,
             "command_contract_digest": command_contract_digest(),
+            "experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
-            "price_guard": "ok",
+            "price_guard": "subscription_exempt",
             "policy_violation": "none",
         }
         if any(usage.get(key) != expected_value for key, expected_value in expected.items()):
@@ -457,10 +460,12 @@ class CodexCliPolicy:
 
 
 @dataclass
-class CostEquivalentLedger:
+class SubscriptionExemptLedger:
     maximum_aggregate_usd: Decimal
     prior_budget_accounted_usd: Decimal
-    charges: dict[str, Decimal] = field(default_factory=dict)
+    experiment_charges: dict[str, Decimal] = field(default_factory=dict)
+    informational_list_price_equivalents: dict[str, Decimal] = field(default_factory=dict)
+    usage_telemetry_unavailable: set[str] = field(default_factory=set)
     unresolved: set[str] = field(default_factory=set)
     blocked: bool = False
     processes_started: int = 0
@@ -468,29 +473,27 @@ class CostEquivalentLedger:
 
     def __post_init__(self) -> None:
         if self.maximum_aggregate_usd <= 0 or self.prior_budget_accounted_usd < 0:
-            raise ValueError("cost-equivalent limits must be non-negative")
+            raise ValueError("experiment dollar limits must be non-negative")
         if self.prior_budget_accounted_usd > self.maximum_aggregate_usd:
             raise ValueError("prior budget-accounted spend exceeds the aggregate cap")
 
     @property
     def budget_accounted_usd(self) -> Decimal:
-        return self.prior_budget_accounted_usd + sum(self.charges.values(), Decimal(0))
+        return self.prior_budget_accounted_usd + sum(self.experiment_charges.values(), Decimal(0))
 
     @property
-    def incremental_cost_equivalent_usd(self) -> Decimal:
-        return sum(self.charges.values(), Decimal(0))
+    def incremental_informational_list_price_equivalent_usd(self) -> Decimal:
+        return sum(self.informational_list_price_equivalents.values(), Decimal(0))
+
+    @property
+    def incremental_experiment_charge_usd(self) -> Decimal:
+        return sum(self.experiment_charges.values(), Decimal(0))
 
     def reserve(self, idempotency_key: str) -> bool:
         with self._lock:
-            if (
-                self.blocked
-                or idempotency_key in self.charges
-                or self.budget_accounted_usd + REQUEST_MAXIMUM_COST_EQUIVALENT_USD
-                > self.maximum_aggregate_usd
-            ):
+            if self.blocked or idempotency_key in self.experiment_charges:
                 return False
-            self.charges[idempotency_key] = REQUEST_MAXIMUM_COST_EQUIVALENT_USD
-            self.unresolved.add(idempotency_key)
+            self.experiment_charges[idempotency_key] = LUNA_EXPERIMENT_CHARGE_USD
             return True
 
     def mark_process_started(self) -> None:
@@ -499,28 +502,42 @@ class CostEquivalentLedger:
 
     def release_pre_send(self, idempotency_key: str) -> None:
         with self._lock:
-            self.charges.pop(idempotency_key, None)
+            self.experiment_charges.pop(idempotency_key, None)
+            self.informational_list_price_equivalents.pop(idempotency_key, None)
+            self.usage_telemetry_unavailable.discard(idempotency_key)
             self.unresolved.discard(idempotency_key)
 
-    def settle(self, idempotency_key: str, cost_equivalent_usd: Decimal) -> bool:
+    def record_usage(
+        self, idempotency_key: str, informational_list_price_equivalent_usd: Decimal
+    ) -> bool:
         with self._lock:
             if (
-                idempotency_key not in self.charges
-                or cost_equivalent_usd < 0
-                or cost_equivalent_usd > REQUEST_MAXIMUM_COST_EQUIVALENT_USD
+                idempotency_key not in self.experiment_charges
+                or informational_list_price_equivalent_usd < 0
+                or informational_list_price_equivalent_usd
+                > REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD
             ):
                 self.blocked = True
                 return False
-            self.charges[idempotency_key] = cost_equivalent_usd
+            self.informational_list_price_equivalents[idempotency_key] = (
+                informational_list_price_equivalent_usd
+            )
+            self.usage_telemetry_unavailable.discard(idempotency_key)
             self.unresolved.discard(idempotency_key)
-            if self.budget_accounted_usd > self.maximum_aggregate_usd:
+            return True
+
+    def mark_usage_telemetry_unavailable(self, idempotency_key: str) -> bool:
+        with self._lock:
+            if idempotency_key not in self.experiment_charges:
                 self.blocked = True
                 return False
+            self.usage_telemetry_unavailable.add(idempotency_key)
+            self.unresolved.discard(idempotency_key)
             return True
 
     def retain_unresolved_and_block(self, idempotency_key: str) -> None:
         with self._lock:
-            if idempotency_key in self.charges:
+            if idempotency_key in self.experiment_charges:
                 self.unresolved.add(idempotency_key)
             self.blocked = True
 
@@ -542,7 +559,7 @@ class CodexCliInvocationJournal:
                 schema_version TEXT NOT NULL,
                 request_digest TEXT NOT NULL,
                 command_contract BLOB NOT NULL,
-                reserved_cost_equivalent_usd TEXT NOT NULL,
+                experiment_charge_usd TEXT NOT NULL,
                 status TEXT NOT NULL,
                 process_id INTEGER,
                 exit_code INTEGER,
@@ -563,7 +580,7 @@ class CodexCliInvocationJournal:
                         """
                         INSERT INTO invocations(
                             idempotency_key, schema_version, request_digest,
-                            command_contract, reserved_cost_equivalent_usd, status
+                            command_contract, experiment_charge_usd, status
                         ) VALUES (?, ?, ?, ?, ?, 'reserved')
                         """,
                         (
@@ -571,7 +588,7 @@ class CodexCliInvocationJournal:
                             INVOCATION_JOURNAL_SCHEMA_VERSION,
                             request_digest,
                             canonical_json_bytes(command),
-                            str(REQUEST_MAXIMUM_COST_EQUIVALENT_USD),
+                            str(LUNA_EXPERIMENT_CHARGE_USD),
                         ),
                     )
             except sqlite3.IntegrityError:
@@ -713,6 +730,7 @@ def _start_process(command: Sequence[str], **kwargs: Any) -> RunningProcess:
 class ParsedCliStream:
     content: str
     usage: dict[str, int] | None
+    usage_telemetry_status: str
     policy_violations: tuple[str, ...]
     event_counts: dict[str, int]
 
@@ -735,6 +753,7 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
     event_counts = Counter(str(event["type"]) for event in events)
     messages: list[str] = []
     completed_usage: list[dict[str, int]] = []
+    unavailable_usage_count = 0
     for event in events:
         event_type = str(event["type"])
         if event_type not in _ALLOWED_EVENT_TYPES:
@@ -757,7 +776,7 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
         if event_type == "turn.completed":
             usage = event.get("usage")
             if not isinstance(usage, dict):
-                violations.append("turn_usage_missing")
+                unavailable_usage_count += 1
                 continue
             required = (
                 "input_tokens",
@@ -766,14 +785,21 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
                 "reasoning_output_tokens",
             )
             if any(type(usage.get(key)) is not int or usage[key] < 0 for key in required):
-                violations.append("turn_usage_invalid")
+                unavailable_usage_count += 1
                 continue
             completed_usage.append({key: int(usage[key]) for key in required})
     if len(messages) != 1:
         violations.append("final_agent_message_count_mismatch")
-    if len(completed_usage) != 1:
-        violations.append("completed_turn_usage_count_mismatch")
+    if event_counts.get("turn.completed", 0) > 1:
+        violations.append("completed_turn_count_exceeded")
     usage_value = completed_usage[0] if len(completed_usage) == 1 else None
+    if len(completed_usage) == 1 and unavailable_usage_count == 0:
+        usage_telemetry_status = "available"
+    elif unavailable_usage_count > 0 or len(completed_usage) > 1:
+        usage_telemetry_status = "invalid_or_ambiguous"
+        usage_value = None
+    else:
+        usage_telemetry_status = "unavailable"
     if usage_value is not None:
         if usage_value["cached_input_tokens"] > usage_value["input_tokens"]:
             violations.append("cached_input_exceeds_input")
@@ -784,12 +810,13 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
     return ParsedCliStream(
         content=messages[0] if len(messages) == 1 else "",
         usage=usage_value,
+        usage_telemetry_status=usage_telemetry_status,
         policy_violations=tuple(sorted(set(violations))),
         event_counts=dict(sorted(event_counts.items())),
     )
 
 
-def conservative_cost_equivalent(usage: Mapping[str, int]) -> Decimal:
+def informational_list_price_equivalent(usage: Mapping[str, int]) -> Decimal:
     input_tokens = usage["input_tokens"]
     output_tokens = usage["output_tokens"]
     reasoning_tokens = usage["reasoning_output_tokens"]
@@ -805,7 +832,7 @@ class CodexCliTransport:
     def __init__(
         self,
         *,
-        ledger: CostEquivalentLedger,
+        ledger: SubscriptionExemptLedger,
         invocation_journal: CodexCliInvocationJournal,
         runtime_identity: CodexRuntimeIdentity,
         environment: Mapping[str, str] = os.environ,
@@ -836,7 +863,9 @@ class CodexCliTransport:
             return TransportOutcome("pre_send_failure", failure_code=failure)
         request_digest = content_digest(request)
         if not self.ledger.reserve(idempotency_key):
-            return TransportOutcome("pre_send_failure", failure_code="aggregate_cost_guard")
+            return TransportOutcome(
+                "pre_send_failure", failure_code="subscription_exempt_invocation_guard"
+            )
         if not self.invocation_journal.reserve(
             idempotency_key=idempotency_key, request_digest=request_digest
         ):
@@ -944,16 +973,14 @@ class CodexCliTransport:
         except CredentialValidationError:
             content = ""
             policy_violations.append("credential_shaped_output")
-        cost_equivalent: Decimal | None = None
-        price_guard = "missing_or_invalid_usage"
+        list_price_equivalent: Decimal | None = None
+        accounting_ok = True
         if parsed.usage is not None:
-            cost_equivalent = conservative_cost_equivalent(parsed.usage)
-            price_guard = (
-                "ok" if self.ledger.settle(idempotency_key, cost_equivalent) else "exceeded"
-            )
+            list_price_equivalent = informational_list_price_equivalent(parsed.usage)
+            accounting_ok = self.ledger.record_usage(idempotency_key, list_price_equivalent)
         else:
-            self.ledger.retain_unresolved_and_block(idempotency_key)
-        if price_guard != "ok":
+            accounting_ok = self.ledger.mark_usage_telemetry_unavailable(idempotency_key)
+        if not accounting_ok:
             policy_violations.append("cost_accounting_failure")
         violation_value = (
             "none" if not policy_violations else ",".join(sorted(set(policy_violations)))
@@ -963,11 +990,15 @@ class CodexCliTransport:
             "authentication_mode": AUTH_MODE,
             "cli_version": CODEX_CLI_VERSION,
             "command_contract_digest": command_contract_digest(),
-            "cost_accounting_method": "conservative_standard_list_price_equivalent_v1",
-            "cost_equivalent_usd": (str(cost_equivalent) if cost_equivalent is not None else None),
+            "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
+            "experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
+            "informational_list_price_equivalent_usd": (
+                str(list_price_equivalent) if list_price_equivalent is not None else None
+            ),
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
             "policy_violation": violation_value,
-            "price_guard": price_guard,
+            "price_guard": "subscription_exempt",
+            "usage_telemetry_status": parsed.usage_telemetry_status,
             "raw_stdout_sha256": "sha256:" + sha256_bytes(raw_stdout.encode("utf-8")),
             "raw_stderr_sha256": "sha256:" + sha256_bytes(raw_stderr.encode("utf-8")),
         }
@@ -982,8 +1013,12 @@ class CodexCliTransport:
             "event_counts": parsed.event_counts,
             "exit_code": process.returncode,
             "policy_violation": violation_value,
-            "price_guard": price_guard,
-            "cost_equivalent_usd": usage_record["cost_equivalent_usd"],
+            "price_guard": "subscription_exempt",
+            "experiment_charge_usd": usage_record["experiment_charge_usd"],
+            "informational_list_price_equivalent_usd": usage_record[
+                "informational_list_price_equivalent_usd"
+            ],
+            "usage_telemetry_status": parsed.usage_telemetry_status,
             "canonical_response": canonical,
         }
         status = "response" if violation_value == "none" else "policy_violation"
@@ -996,8 +1031,6 @@ class CodexCliTransport:
             outcome=outcome_record,
         )
         self.records.append(self._record(idempotency_key, status, outcome_record))
-        if parsed.usage is None:
-            return TransportOutcome("unknown", failure_code="authoritative_usage_missing")
         return TransportOutcome("response", canonical)
 
     def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
@@ -1092,9 +1125,13 @@ class CodexCliTransport:
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
             "authentication_mode": AUTH_MODE,
             "command_contract_digest": command_contract_digest(),
-            "cost_equivalent_usd": outcome.get("cost_equivalent_usd"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd"),
+            "informational_list_price_equivalent_usd": outcome.get(
+                "informational_list_price_equivalent_usd"
+            ),
             "policy_violation": outcome.get("policy_violation"),
             "price_guard": outcome.get("price_guard"),
+            "usage_telemetry_status": outcome.get("usage_telemetry_status"),
         }
 
 
