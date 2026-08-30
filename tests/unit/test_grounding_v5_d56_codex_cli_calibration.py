@@ -68,6 +68,22 @@ def retry_predecessor_evidence() -> dict[str, Any]:
     }
 
 
+def third_smoke_evidence() -> dict[str, Any]:
+    return {
+        "status": "consumed_immutable_invalid_output",
+        "approved_plan_content_sha256": calibration.THIRD_SMOKE_PLAN_CONTENT_SHA256,
+        "classification": "invalid_output",
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "policy_violation": "unauthorized_item:error",
+        "schema_valid_action_present_in_restricted_raw_stream": True,
+        "error_message_sha256": policy.ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
+        "experiment_charge_usd": "0.00",
+        "historical_result_reinterpreted": False,
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def stub_plan_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         calibration,
@@ -83,6 +99,11 @@ def stub_plan_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
         calibration,
         "validated_retry_predecessor_evidence",
         lambda _root: retry_predecessor_evidence(),
+    )
+    monkeypatch.setattr(
+        calibration,
+        "validated_third_smoke_evidence",
+        lambda _root: third_smoke_evidence(),
     )
 
     def git(_root: Path, *args: str) -> str:
@@ -215,6 +236,24 @@ def test_retry_predecessor_is_bound_without_publishing_error_content() -> None:
     assert "message" not in evidence
 
 
+def test_third_smoke_is_bound_without_reinterpreting_historical_result() -> None:
+    evidence = calibration.validated_third_smoke_evidence(ROOT)
+
+    assert evidence["approved_plan_content_sha256"] == (
+        "sha256:822306dac3987dad1fa744cf773b2f543b4e2624208beeb0ac7491106d87acc4"
+    )
+    assert evidence["summary_file_sha256"] == (
+        "sha256:4973c4ab6ab28842aa442ca0afdbdb3f588f0b40455461e5e9a73a82bbe33c04"
+    )
+    assert evidence["error_message_sha256"] == (
+        "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+    )
+    assert evidence["classification"] == "invalid_output"
+    assert evidence["schema_valid_action_present_in_restricted_raw_stream"] is True
+    assert evidence["historical_result_reinterpreted"] is False
+    assert "message" not in evidence
+
+
 def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -277,13 +316,27 @@ def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     assert plan["price_and_cost_accounting"]["luna_experiment_charge_per_call_usd"] == "0.00"
     assert plan["failed_luna_smoke_evidence"] == failed_luna_smoke_evidence()
     assert plan["retry_predecessor_evidence"] == retry_predecessor_evidence()
+    assert plan["third_smoke_evidence"] == third_smoke_evidence()
+    assert plan["policy"]["jsonl_diagnostic_policy"] == {
+        "allowed_item_type": "error",
+        "allowed_message_sha256": policy.ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
+        "allowed_occurrence_cap": 1,
+        "required_event_type": "item.completed",
+        "all_other_error_items": "fail_closed_policy_violation",
+        "historical_smoke_results_reinterpreted": False,
+    }
     assert plan["retry_context"] == {
         "human_requested_fresh_attempt": True,
         "transport_retry": False,
-        "luna_smoke_process_ordinal": 3,
+        "luna_smoke_process_ordinal": 4,
         "fresh_process_invocation_cap": 1,
-        "parser_policy_changed": False,
-        "unresolved_error_item_will_remain_fail_closed": True,
+        "parser_policy_changed": True,
+        "parser_change": (
+            "accept exactly one item.completed:error only when its restricted message "
+            "matches the bound disabled-code-mode diagnostic SHA-256"
+        ),
+        "all_unmatched_error_items_remain_fail_closed": True,
+        "historical_smoke_results_reinterpreted": False,
     }
     assert plan["human_accounting_override"] == {
         "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
@@ -297,6 +350,7 @@ def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     assert plan["approval_required"]["earlier_qwen_or_openrouter_approvals_apply"] is False
     assert plan["approval_required"]["earlier_luna_smoke_approval_applies"] is False
     assert plan["approval_required"]["v2_luna_smoke_approval_applies"] is False
+    assert plan["approval_required"]["v3_luna_smoke_approval_applies"] is False
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 
@@ -349,6 +403,7 @@ def test_successor_generator_binds_frozen_fifty_task_order_and_caps(
     assert plan["caps"]["luna_experiment_charge_per_call_usd"] == "0.00"
     assert plan["caps"]["maximum_luna_incremental_experiment_charge_usd"] == "0.00"
     assert plan["approval_required"]["smoke_approval_applies"] is False
+    assert plan["third_smoke_evidence"] == third_smoke_evidence()
     assert plan["successful_smoke_evidence"] == successful_smoke()
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import signal
 import subprocess
@@ -38,13 +39,27 @@ def cli_stream(
     action: dict[str, int] | None = None,
     *,
     tool_item_type: str | None = None,
+    diagnostic_message: str | None = None,
+    diagnostic_count: int = 1,
     include_usage: bool = True,
 ) -> str:
     value = action or {"action_type": 1, "x": 100, "y": 100, "key": 0}
     events: list[dict[str, Any]] = [
         {"type": "thread.started", "thread_id": "private-thread-id"},
-        {"type": "turn.started"},
     ]
+    if diagnostic_message is not None:
+        events.extend(
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": f"diagnostic-{index}",
+                    "type": "error",
+                    "message": diagnostic_message,
+                },
+            }
+            for index in range(diagnostic_count)
+        )
+    events.append({"type": "turn.started"})
     if tool_item_type is not None:
         events.append(
             {
@@ -226,6 +241,78 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         assert record["status"] == "response"
         assert "private-thread-id" in record["raw_stdout"]
         assert "private-thread-id" not in json.dumps(transport.records)
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_exact_digest_bound_disabled_code_mode_diagnostic_is_accepted_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    diagnostic = "synthetic disabled code mode diagnostic"
+    monkeypatch.setattr(
+        policy,
+        "ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256",
+        "sha256:" + hashlib.sha256(diagnostic.encode("utf-8")).hexdigest(),
+    )
+    process = FakeProcess(cli_stream(diagnostic_message=diagnostic))
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:allowed-diagnostic",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+        assert outcome.status == "response"
+        assert outcome.response is not None
+        assert outcome.response["usage"]["policy_violation"] == "none"
+        assert outcome.response["usage"]["accepted_cli_diagnostic_count"] == 1
+        assert policy.CodexCliPolicy().parse(
+            policy.canonical_json_bytes(outcome.response), b"{}"
+        ) == {"action_type": 1, "x": 100, "y": 100, "key": 0}
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("diagnostic", "count", "expected_violation"),
+    [
+        ("unmatched error", 1, "unauthorized_item:error"),
+        ("synthetic disabled code mode diagnostic", 2, "allowed_cli_diagnostic_count_exceeded"),
+    ],
+)
+def test_unmatched_or_repeated_error_items_remain_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    diagnostic: str,
+    count: int,
+    expected_violation: str,
+) -> None:
+    allowed = "synthetic disabled code mode diagnostic"
+    monkeypatch.setattr(
+        policy,
+        "ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256",
+        "sha256:" + hashlib.sha256(allowed.encode("utf-8")).hexdigest(),
+    )
+    process = FakeProcess(
+        cli_stream(diagnostic_message=diagnostic, diagnostic_count=count)
+    )
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key=f"sha256:rejected-diagnostic-{count}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+        assert outcome.status == "response"
+        assert outcome.response is not None
+        assert expected_violation in outcome.response["usage"]["policy_violation"]
+        with pytest.raises(ValueError, match="policy boundary"):
+            policy.CodexCliPolicy().parse(
+                policy.canonical_json_bytes(outcome.response), b"{}"
+            )
     finally:
         transport.close()
         invocation_journal.close()

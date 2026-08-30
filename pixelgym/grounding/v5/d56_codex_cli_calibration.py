@@ -13,6 +13,7 @@ from typing import Any
 
 from pixelgym.grounding.v5.codex_cli_policy import (
     ACTION_SCHEMA,
+    ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
     AUTH_MODE,
     CODEX_CLI_VERSION,
     CONSERVATIVE_INPUT_PER_TOKEN_USD,
@@ -55,9 +56,9 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
 from pixelgym.serialization import canonical_json_bytes
 
-SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v3"
-CALIBRATION_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-calibration-plan-v2"
-SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v3"
+SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v4"
+CALIBRATION_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-calibration-plan-v3"
+SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v4"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 MAXIMUM_REMAINING_INCREMENTAL_EXPOSURE_USD = Decimal("5.221835282")
@@ -154,6 +155,35 @@ RETRY_PREDECESSOR_ERROR_MESSAGE_SHA256 = (
 )
 RETRY_PREDECESSOR_CODE_REVISION = "af82c6fbb27be82a0ee8ccccb8a3a2f20bc0c5fa"
 
+THIRD_SMOKE_PLAN_CONTENT_SHA256 = (
+    "sha256:822306dac3987dad1fa744cf773b2f543b4e2624208beeb0ac7491106d87acc4"
+)
+THIRD_SMOKE_PLAN_FILE_SHA256 = (
+    "sha256:c1b1a2bd13acc3c1603c6b736c1bf63307c6c008759e2a66fea3afe5a474247f"
+)
+THIRD_SMOKE_SUMMARY_FILE_SHA256 = (
+    "sha256:4973c4ab6ab28842aa442ca0afdbdb3f588f0b40455461e5e9a73a82bbe33c04"
+)
+THIRD_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256 = (
+    "sha256:732691041dd4121c67d53b000846dd90ee3514360677daeeeb9d94d0b4697ea7"
+)
+THIRD_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256 = (
+    "sha256:999cc6060bd52493362d4fb5ea88e2107cc22db9731ce8fe732ea544af4391b2"
+)
+THIRD_SMOKE_INVOCATION_JOURNAL_FILE_SHA256 = (
+    "sha256:617b867214769baea1a2ffb3e028103de67496dc5994c07d66038bd4eedb9546"
+)
+THIRD_SMOKE_RAW_STDOUT_SHA256 = (
+    "sha256:91c73212b356f04de193b3c15678c8c425043a94f1a4d015cb5cf2e0503009b9"
+)
+THIRD_SMOKE_RAW_STDERR_SHA256 = (
+    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+)
+THIRD_SMOKE_OUTCOME_SHA256 = (
+    "sha256:8517c91b16e91bffd46f30af37fa2c6788945967f852306984ccdcbfb7ff9243"
+)
+THIRD_SMOKE_CODE_REVISION = "2a8fcc564c32432d2ccce35397f809063100adb2"
+
 _PLAN_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-plan.json")
 _SUMMARY_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json")
 _JOURNAL_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/attempts.sqlite")
@@ -170,6 +200,12 @@ _RETRY_PREDECESSOR_PLAN_PATH = Path(
 )
 _RETRY_PREDECESSOR_RUN_PATH = Path(
     "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-run-v2"
+)
+_THIRD_SMOKE_PLAN_PATH = Path(
+    "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-plan-v3.json"
+)
+_THIRD_SMOKE_RUN_PATH = Path(
+    "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-run-v3"
 )
 
 
@@ -517,6 +553,158 @@ def validated_retry_predecessor_evidence(repository_root: Path) -> dict[str, Any
     }
 
 
+def validated_third_smoke_evidence(repository_root: Path) -> dict[str, Any]:
+    """Verify the consumed v3 smoke and its stable restricted CLI diagnostic."""
+
+    plan_path = repository_root / _THIRD_SMOKE_PLAN_PATH
+    run_path = repository_root / _THIRD_SMOKE_RUN_PATH
+    summary_path = run_path / "summary.json"
+    attempt_path = run_path / "attempts.sqlite"
+    invocation_path = run_path / "codex-cli-invocations.sqlite"
+    expected_files = (
+        (plan_path, THIRD_SMOKE_PLAN_FILE_SHA256, False),
+        (summary_path, THIRD_SMOKE_SUMMARY_FILE_SHA256, False),
+        (attempt_path, THIRD_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256, True),
+        (invocation_path, THIRD_SMOKE_INVOCATION_JOURNAL_FILE_SHA256, True),
+    )
+    for path, expected, streaming in expected_files:
+        actual = _streaming_file_digest(path) if streaming else _file_digest(path)
+        if actual != expected:
+            raise ValueError(f"frozen third smoke digest mismatch: {path.name}")
+    plan = _load_json_object(plan_path)
+    if content_digest(plan) != THIRD_SMOKE_PLAN_CONTENT_SHA256:
+        raise ValueError("frozen third smoke canonical plan digest mismatch")
+    summary = _load_json_object(summary_path)
+    expected_summary = {
+        "approved_plan_sha256": THIRD_SMOKE_PLAN_CONTENT_SHA256,
+        "code_revision": THIRD_SMOKE_CODE_REVISION,
+        "provider_calls_made": 1,
+        "provider_wire_requests": 1,
+        "model_attempt_reservations": 1,
+        "incremental_luna_experiment_charge_usd": "0.00",
+        "informational_list_price_equivalent_usd": "0.00426240",
+        "budget_accounted_aggregate_spend_usd": "4.778164718",
+        "unresolved_invocation_count": 0,
+        "usage_telemetry_status": "available",
+        "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+        "policy_violation": "unauthorized_item:error",
+    }
+    if any(summary.get(key) != expected for key, expected in expected_summary.items()):
+        raise ValueError("frozen third smoke summary facts mismatch")
+    episode = summary.get("episode_result")
+    if not isinstance(episode, dict) or any(
+        episode.get(key) != expected
+        for key, expected in {
+            "classification": "invalid_output",
+            "environment_actions": 0,
+            "model_attempts": 1,
+            "provider_wire_requests": 1,
+            "success": False,
+        }.items()
+    ):
+        raise ValueError("frozen third smoke episode facts mismatch")
+    attempt_integrity = summary.get("attempt_journal_integrity")
+    if not isinstance(attempt_integrity, dict) or (
+        attempt_integrity.get("event_chain_digest") != THIRD_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256
+    ):
+        raise ValueError("frozen third smoke attempt event chain mismatch")
+    invocation_integrity = summary.get("invocation_journal_integrity")
+    records = (
+        invocation_integrity.get("records") if isinstance(invocation_integrity, dict) else None
+    )
+    if not isinstance(records, list) or len(records) != 1 or not isinstance(records[0], dict):
+        raise ValueError("frozen third smoke invocation integrity record is invalid")
+    expected_invocation = {
+        "exit_code": 0,
+        "status": "policy_violation",
+        "raw_stdout_sha256": THIRD_SMOKE_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": THIRD_SMOKE_RAW_STDERR_SHA256,
+        "outcome_sha256": THIRD_SMOKE_OUTCOME_SHA256,
+    }
+    if any(records[0].get(key) != expected for key, expected in expected_invocation.items()):
+        raise ValueError("frozen third smoke invocation integrity facts mismatch")
+    with sqlite3.connect(f"file:{invocation_path}?mode=ro", uri=True) as connection:
+        row = connection.execute("SELECT raw_stdout FROM invocations").fetchone()
+    if row is None or not isinstance(row[0], bytes):
+        raise ValueError("frozen third smoke raw stream is unavailable")
+    events = [json.loads(line) for line in row[0].decode("utf-8").splitlines() if line]
+    event_shapes = [
+        (
+            event.get("type"),
+            event.get("item", {}).get("type") if isinstance(event.get("item"), dict) else None,
+        )
+        for event in events
+        if isinstance(event, dict)
+    ]
+    if event_shapes != [
+        ("thread.started", None),
+        ("item.completed", "error"),
+        ("turn.started", None),
+        ("item.completed", "agent_message"),
+        ("turn.completed", None),
+    ]:
+        raise ValueError("frozen third smoke event sequence mismatch")
+    error_item = events[1].get("item")
+    if not isinstance(error_item, dict) or not isinstance(error_item.get("message"), str):
+        raise TypeError("frozen third smoke error item is invalid")
+    error_message_digest = (
+        "sha256:" + hashlib.sha256(error_item["message"].encode("utf-8")).hexdigest()
+    )
+    if error_message_digest != ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256:
+        raise ValueError("frozen third smoke error diagnostic digest mismatch")
+    message_item = events[3].get("item")
+    if not isinstance(message_item, dict) or not isinstance(message_item.get("text"), str):
+        raise TypeError("frozen third smoke agent message is invalid")
+    candidate = json.loads(message_item["text"])
+    if (
+        not isinstance(candidate, dict)
+        or set(candidate) != {"action_type", "x", "y", "key"}
+        or any(type(candidate[field]) is not int for field in candidate)
+    ):
+        raise ValueError("frozen third smoke agent message is not one action object")
+    properties = ACTION_SCHEMA["properties"]
+    for field in ("action_type", "x", "y", "key"):
+        contract = properties[field]
+        if "enum" in contract:
+            valid = candidate[field] in contract["enum"]
+        else:
+            valid = contract["minimum"] <= candidate[field] <= contract["maximum"]
+        if not valid:
+            raise ValueError("frozen third smoke action field is outside the schema")
+    return {
+        "status": "consumed_immutable_invalid_output",
+        "approved_plan_content_sha256": THIRD_SMOKE_PLAN_CONTENT_SHA256,
+        "approved_plan_file_sha256": THIRD_SMOKE_PLAN_FILE_SHA256,
+        "summary_file_sha256": THIRD_SMOKE_SUMMARY_FILE_SHA256,
+        "attempt_journal_file_sha256": THIRD_SMOKE_ATTEMPT_JOURNAL_FILE_SHA256,
+        "attempt_journal_event_chain_sha256": THIRD_SMOKE_ATTEMPT_EVENT_CHAIN_SHA256,
+        "invocation_journal_file_sha256": THIRD_SMOKE_INVOCATION_JOURNAL_FILE_SHA256,
+        "raw_stdout_sha256": THIRD_SMOKE_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": THIRD_SMOKE_RAW_STDERR_SHA256,
+        "outcome_sha256": THIRD_SMOKE_OUTCOME_SHA256,
+        "error_message_sha256": error_message_digest,
+        "code_revision": THIRD_SMOKE_CODE_REVISION,
+        "task_id": expected_summary["task_id"],
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "classification": "invalid_output",
+        "policy_violation": "unauthorized_item:error",
+        "schema_valid_action_present_in_restricted_raw_stream": True,
+        "event_sequence": [
+            "thread.started",
+            "item.completed:error",
+            "turn.started",
+            "item.completed:agent_message",
+            "turn.completed",
+        ],
+        "experiment_charge_usd": "0.00",
+        "usage_telemetry_status": "available",
+        "diagnosis": "stable_disabled_code_mode_cli_diagnostic_preceded_valid_action",
+        "historical_result_reinterpreted": False,
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def _policy_record(
     repository_root: Path,
     *,
@@ -541,6 +729,14 @@ def _policy_record(
         "command_contract": list(sanitized_command_contract()),
         "command_contract_digest": command_contract_digest(),
         "response_schema_digest": content_digest(ACTION_SCHEMA),
+        "jsonl_diagnostic_policy": {
+            "allowed_item_type": "error",
+            "allowed_message_sha256": ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
+            "allowed_occurrence_cap": 1,
+            "required_event_type": "item.completed",
+            "all_other_error_items": "fail_closed_policy_violation",
+            "historical_smoke_results_reinterpreted": False,
+        },
         "observation_contract": {
             "application_state_observation": "current_screenshot_only",
             "allowed_non_observation_input": "task_instruction",
@@ -721,6 +917,7 @@ def build_smoke_plan(
     predecessor = validated_predecessor_evidence(repository_root)
     failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
     retry_predecessor = validated_retry_predecessor_evidence(repository_root)
+    third_smoke = validated_third_smoke_evidence(repository_root)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task = generate_task(SMOKE_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
@@ -731,7 +928,7 @@ def build_smoke_plan(
         "purpose": (
             "one development-only Codex CLI action validating image input, isolation, "
             "schema-constrained action output, journaling, and subscription-exempt Luna "
-            "accounting; one fresh human-requested invocation after two immutable failed "
+            "accounting; one fresh human-requested invocation after three immutable failed "
             "smokes; not calibration evidence"
         ),
         "execution_state": "awaiting_exact_human_approval",
@@ -780,13 +977,19 @@ def build_smoke_plan(
         "predecessor_evidence": predecessor,
         "failed_luna_smoke_evidence": failed_luna_smoke,
         "retry_predecessor_evidence": retry_predecessor,
+        "third_smoke_evidence": third_smoke,
         "retry_context": {
             "human_requested_fresh_attempt": True,
             "transport_retry": False,
-            "luna_smoke_process_ordinal": 3,
+            "luna_smoke_process_ordinal": 4,
             "fresh_process_invocation_cap": 1,
-            "parser_policy_changed": False,
-            "unresolved_error_item_will_remain_fail_closed": True,
+            "parser_policy_changed": True,
+            "parser_change": (
+                "accept exactly one item.completed:error only when its restricted message "
+                "matches the bound disabled-code-mode diagnostic SHA-256"
+            ),
+            "all_unmatched_error_items_remain_fail_closed": True,
+            "historical_smoke_results_reinterpreted": False,
         },
         "human_accounting_override": {
             "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
@@ -801,7 +1004,8 @@ def build_smoke_plan(
             "send at most one fresh Codex CLI model invocation and never retry it",
             "stop after the first valid environment action",
             "stop without dispatch on invalid or unparseable action output",
-            "stop without dispatch on any JSONL tool, web, filesystem, MCP, plugin, skill, connector, or subagent event",
+            "stop without dispatch on any JSONL tool, web, filesystem, MCP, plugin, skill, connector, subagent, or unmatched error event",
+            "accept at most one exact digest-bound disabled-code-mode CLI diagnostic and retain it only in restricted raw evidence",
             "terminate the whole process group on timeout or interruption and retain restricted raw evidence",
             "stop if CLI version, ChatGPT authentication mode, model catalog identity, model, reasoning effort, command contract, or predecessor evidence differs",
             "record JSONL usage as optional non-billing telemetry when present; missing or invalid usage telemetry does not invalidate an otherwise valid action",
@@ -809,6 +1013,7 @@ def build_smoke_plan(
             "do not resume, overwrite, or reuse the consumed Qwen/OpenRouter plan or journals",
             "do not resume, overwrite, or reuse the consumed first Luna smoke plan or run directory",
             "do not resume, overwrite, or reuse the consumed v2 Luna smoke plan or run directory",
+            "do not resume, overwrite, reinterpret, or reuse the consumed v3 Luna smoke plan or run directory",
         ],
         "approval_required": {
             "owner": "human",
@@ -817,6 +1022,7 @@ def build_smoke_plan(
             "earlier_qwen_or_openrouter_approvals_apply": False,
             "earlier_luna_smoke_approval_applies": False,
             "v2_luna_smoke_approval_applies": False,
+            "v3_luna_smoke_approval_applies": False,
         },
         "human_gates": {
             "D4.12": "not_evaluated_human_owned",
@@ -893,6 +1099,7 @@ def build_successor_calibration_plan(
     predecessor = validated_predecessor_evidence(repository_root)
     failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
     retry_predecessor = validated_retry_predecessor_evidence(repository_root)
+    third_smoke = validated_third_smoke_evidence(repository_root)
     smoke = _validated_successful_smoke_evidence(successful_smoke_evidence)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task_order, partition = _task_order(repository_root)
@@ -955,6 +1162,7 @@ def build_successor_calibration_plan(
         "predecessor_evidence": predecessor,
         "failed_luna_smoke_evidence": failed_luna_smoke,
         "retry_predecessor_evidence": retry_predecessor,
+        "third_smoke_evidence": third_smoke,
         "successful_smoke_evidence": smoke,
         "raw_evidence_policy": _raw_evidence_policy(),
         "stop_conditions": [
@@ -1110,6 +1318,7 @@ def execute_smoke(
             "predecessor_evidence": plan["predecessor_evidence"],
             "failed_luna_smoke_evidence": plan["failed_luna_smoke_evidence"],
             "retry_predecessor_evidence": plan["retry_predecessor_evidence"],
+            "third_smoke_evidence": plan["third_smoke_evidence"],
             "retry_context": plan["retry_context"],
             "human_accounting_override": plan["human_accounting_override"],
             "publication_status": "restricted_raw_evidence_local_only",

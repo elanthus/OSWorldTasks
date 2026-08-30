@@ -65,13 +65,21 @@ REQUEST_MAXIMUM_INFORMATIONAL_LIST_PRICE_EQUIVALENT_USD = (
 LUNA_EXPERIMENT_CHARGE_USD = Decimal("0.00")
 
 PROMPT_VERSION = "pixelgym-agent-v5-codex-cli-current-screenshot-prompt-v1"
-PARSER_VERSION = "pixelgym-agent-v5-json-action-codex-cli-native-parser-v1"
+PARSER_VERSION = "pixelgym-agent-v5-json-action-codex-cli-native-parser-v2"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
-RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-jsonl-response-v1"
+RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-jsonl-response-v2"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = "codex-cli-zero-request-zero-stream-zero-runner-retries-v1"
 INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-codex-cli-invocation-journal-v2"
+
+# Codex CLI 0.150.1 emits this exact pre-turn diagnostic when code_mode and
+# code_mode_host are both explicitly disabled. The raw text remains restricted
+# evidence; only its digest is allowlisted. Every other error item remains a
+# fail-closed policy violation.
+ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256 = (
+    "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+)
 
 ACTION_SCHEMA: dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -733,6 +741,21 @@ class ParsedCliStream:
     usage_telemetry_status: str
     policy_violations: tuple[str, ...]
     event_counts: dict[str, int]
+    accepted_cli_diagnostic_count: int
+
+
+def _is_allowed_disabled_code_mode_diagnostic(
+    event_type: str, item: Mapping[str, Any]
+) -> bool:
+    if event_type != "item.completed" or set(item) != {"id", "type", "message"}:
+        return False
+    if item.get("type") != "error" or not isinstance(item.get("id"), str):
+        return False
+    message = item.get("message")
+    return isinstance(message, str) and (
+        "sha256:" + sha256_bytes(message.encode("utf-8"))
+        == ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256
+    )
 
 
 def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
@@ -754,6 +777,7 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
     messages: list[str] = []
     completed_usage: list[dict[str, int]] = []
     unavailable_usage_count = 0
+    accepted_cli_diagnostic_count = 0
     for event in events:
         event_type = str(event["type"])
         if event_type not in _ALLOWED_EVENT_TYPES:
@@ -766,7 +790,10 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
                 continue
             item_type = str(item["type"])
             if item_type not in _ALLOWED_ITEM_TYPES:
-                violations.append(f"unauthorized_item:{item_type}")
+                if _is_allowed_disabled_code_mode_diagnostic(event_type, item):
+                    accepted_cli_diagnostic_count += 1
+                else:
+                    violations.append(f"unauthorized_item:{item_type}")
             elif event_type == "item.completed" and item_type == "agent_message":
                 text = item.get("text")
                 if isinstance(text, str):
@@ -790,6 +817,8 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
             completed_usage.append({key: int(usage[key]) for key in required})
     if len(messages) != 1:
         violations.append("final_agent_message_count_mismatch")
+    if accepted_cli_diagnostic_count > 1:
+        violations.append("allowed_cli_diagnostic_count_exceeded")
     if event_counts.get("turn.completed", 0) > 1:
         violations.append("completed_turn_count_exceeded")
     usage_value = completed_usage[0] if len(completed_usage) == 1 else None
@@ -813,6 +842,7 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
         usage_telemetry_status=usage_telemetry_status,
         policy_violations=tuple(sorted(set(violations))),
         event_counts=dict(sorted(event_counts.items())),
+        accepted_cli_diagnostic_count=accepted_cli_diagnostic_count,
     )
 
 
@@ -999,6 +1029,7 @@ class CodexCliTransport:
             "policy_violation": violation_value,
             "price_guard": "subscription_exempt",
             "usage_telemetry_status": parsed.usage_telemetry_status,
+            "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
             "raw_stdout_sha256": "sha256:" + sha256_bytes(raw_stdout.encode("utf-8")),
             "raw_stderr_sha256": "sha256:" + sha256_bytes(raw_stderr.encode("utf-8")),
         }
@@ -1011,6 +1042,7 @@ class CodexCliTransport:
         }
         outcome_record = {
             "event_counts": parsed.event_counts,
+            "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
             "exit_code": process.returncode,
             "policy_violation": violation_value,
             "price_guard": "subscription_exempt",
@@ -1132,6 +1164,7 @@ class CodexCliTransport:
             "policy_violation": outcome.get("policy_violation"),
             "price_guard": outcome.get("price_guard"),
             "usage_telemetry_status": outcome.get("usage_telemetry_status"),
+            "accepted_cli_diagnostic_count": outcome.get("accepted_cli_diagnostic_count"),
         }
 
 
@@ -1166,6 +1199,10 @@ def build_codex_cli_policy_manifest(
         ("command_contract_digest", command_contract_digest()),
         ("model_catalog_comp_hash", MODEL_CATALOG_COMP_HASH),
         ("model_reasoning_effort", MODEL_REASONING_EFFORT),
+        (
+            "allowed_cli_diagnostic_message_sha256",
+            ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
+        ),
         ("request_max_retries", "0"),
         ("stream_max_retries", "0"),
         ("rollout_budget_tokens", str(ROLLOUT_BUDGET_TOKENS)),
