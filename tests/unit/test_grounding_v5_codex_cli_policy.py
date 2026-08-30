@@ -204,6 +204,16 @@ def test_command_contract_disables_tools_context_and_retries() -> None:
     assert "tools.view_image" not in joined
     assert str(ROOT) not in joined
 
+    luna_medium = policy.sanitized_command_contract(policy.LUNA_MEDIUM)
+    assert luna_medium[:4] == ("codex", "exec", "--model", "gpt-5.6-luna")
+    assert 'model_reasoning_effort="medium"' in luna_medium
+    terra = policy.sanitized_command_contract(policy.TERRA_MEDIUM)
+    assert terra[:4] == ("codex", "exec", "--model", "gpt-5.6-terra")
+    assert 'model_reasoning_effort="medium"' in terra
+    assert policy.command_contract_digest(policy.LUNA_MEDIUM) != (
+        policy.command_contract_digest(policy.TERRA_MEDIUM)
+    )
+
 
 def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted(
     tmp_path: Path,

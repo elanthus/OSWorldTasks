@@ -35,9 +35,6 @@ from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
 from pixelgym.serialization import canonical_json_bytes
 
 CODEX_CLI_VERSION = "codex-cli 0.150.1"
-MODEL = "gpt-5.6-luna"
-MODEL_CATALOG_COMP_HASH = "3000"
-MODEL_REASONING_EFFORT = "low"
 AUTH_MODE = "chatgpt_subscription"
 PROVIDER_IDENTITY = "codex-cli/chatgpt-subscription"
 PROVIDER_ORIGIN = "https://chatgpt.com"
@@ -50,6 +47,55 @@ PROCESS_TIMEOUT_SECONDS = 90.0
 RUNNER_REQUEST_DEADLINE_SECONDS = 95.0
 TERMINATE_GRACE_SECONDS = 2.0
 KILL_GRACE_SECONDS = 2.0
+
+
+@dataclass(frozen=True)
+class CodexPolicyConfig:
+    slot: str
+    model: str
+    model_reasoning_effort: str
+    model_catalog_comp_hash: str = "3000"
+    model_context_window_tokens: int = MODEL_CONTEXT_WINDOW_TOKENS
+
+    def __post_init__(self) -> None:
+        if self.slot not in {"luna-low", "luna-medium", "terra-medium"}:
+            raise ValueError("unsupported Codex subscription policy slot")
+        if self.model not in {"gpt-5.6-luna", "gpt-5.6-terra"}:
+            raise ValueError("unsupported Codex subscription model")
+        expected_effort = "low" if self.slot == "luna-low" else "medium"
+        if self.model_reasoning_effort != expected_effort:
+            raise ValueError("Codex subscription policy slot and reasoning effort differ")
+        if self.model_catalog_comp_hash != "3000":
+            raise ValueError("Codex model catalog identity differs from the frozen campaign")
+        if self.model_context_window_tokens != MODEL_CONTEXT_WINDOW_TOKENS:
+            raise ValueError("Codex context window differs from the frozen campaign")
+
+
+LUNA_LOW = CodexPolicyConfig(
+    slot="luna-low",
+    model="gpt-5.6-luna",
+    model_reasoning_effort="low",
+)
+LUNA_MEDIUM = CodexPolicyConfig(
+    slot="luna-medium",
+    model="gpt-5.6-luna",
+    model_reasoning_effort="medium",
+)
+TERRA_MEDIUM = CodexPolicyConfig(
+    slot="terra-medium",
+    model="gpt-5.6-terra",
+    model_reasoning_effort="medium",
+)
+CODEX_POLICY_BY_SLOT = {
+    config.slot: config for config in (LUNA_LOW, LUNA_MEDIUM, TERRA_MEDIUM)
+}
+DEFAULT_CODEX_POLICY = LUNA_LOW
+
+# Compatibility aliases for the default policy. New campaign code passes an
+# explicit CodexPolicyConfig so plan identity cannot depend on ambient state.
+MODEL = DEFAULT_CODEX_POLICY.model
+MODEL_CATALOG_COMP_HASH = DEFAULT_CODEX_POLICY.model_catalog_comp_hash
+MODEL_REASONING_EFFORT = DEFAULT_CODEX_POLICY.model_reasoning_effort
 
 # Official standard long-context prices observed on 2026-08-29. Input is charged at
 # the higher cache-write rate and reasoning tokens are charged again in addition to
@@ -131,28 +177,32 @@ _DISABLED_FEATURES = (
     "workspace_dependencies",
 )
 
-_CONFIG_OVERRIDES = (
-    'approval_policy="never"',
-    f'model_provider="{MODEL_PROVIDER_ID}"',
-    f'model_providers.{MODEL_PROVIDER_ID}.name="OpenAI"',
-    f'model_providers.{MODEL_PROVIDER_ID}.wire_api="responses"',
-    f"model_providers.{MODEL_PROVIDER_ID}.requires_openai_auth=true",
-    f"model_providers.{MODEL_PROVIDER_ID}.supports_websockets=false",
-    f"model_providers.{MODEL_PROVIDER_ID}.supports_standalone_web_search=false",
-    f'model_providers.{MODEL_PROVIDER_ID}.http_headers={{version="0.150.1"}}',
-    f"model_providers.{MODEL_PROVIDER_ID}.request_max_retries=0",
-    f"model_providers.{MODEL_PROVIDER_ID}.stream_max_retries=0",
-    f'model_reasoning_effort="{MODEL_REASONING_EFFORT}"',
-    f"model_context_window={MODEL_CONTEXT_WINDOW_TOKENS}",
-    'web_search="disabled"',
-    "tools.web_search=false",
-    'shell_environment_policy.inherit="none"',
-    "shell_environment_policy.ignore_default_excludes=false",
-    f"features.rollout_budget.limit_tokens={ROLLOUT_BUDGET_TOKENS}",
-    (f"features.rollout_budget.reminder_at_remaining_tokens=[{ROLLOUT_REMINDER_INTERVAL_TOKENS}]"),
-    "features.rollout_budget.sampling_token_weight=1.0",
-    "features.rollout_budget.prefill_token_weight=1.0",
-)
+def _config_overrides(config: CodexPolicyConfig) -> tuple[str, ...]:
+    return (
+        'approval_policy="never"',
+        f'model_provider="{MODEL_PROVIDER_ID}"',
+        f'model_providers.{MODEL_PROVIDER_ID}.name="OpenAI"',
+        f'model_providers.{MODEL_PROVIDER_ID}.wire_api="responses"',
+        f"model_providers.{MODEL_PROVIDER_ID}.requires_openai_auth=true",
+        f"model_providers.{MODEL_PROVIDER_ID}.supports_websockets=false",
+        f"model_providers.{MODEL_PROVIDER_ID}.supports_standalone_web_search=false",
+        f'model_providers.{MODEL_PROVIDER_ID}.http_headers={{version="0.150.1"}}',
+        f"model_providers.{MODEL_PROVIDER_ID}.request_max_retries=0",
+        f"model_providers.{MODEL_PROVIDER_ID}.stream_max_retries=0",
+        f'model_reasoning_effort="{config.model_reasoning_effort}"',
+        f"model_context_window={config.model_context_window_tokens}",
+        'web_search="disabled"',
+        "tools.web_search=false",
+        'shell_environment_policy.inherit="none"',
+        "shell_environment_policy.ignore_default_excludes=false",
+        f"features.rollout_budget.limit_tokens={ROLLOUT_BUDGET_TOKENS}",
+        (
+            "features.rollout_budget.reminder_at_remaining_tokens="
+            f"[{ROLLOUT_REMINDER_INTERVAL_TOKENS}]"
+        ),
+        "features.rollout_budget.sampling_token_weight=1.0",
+        "features.rollout_budget.prefill_token_weight=1.0",
+    )
 
 _ALLOWED_EVENT_TYPES = frozenset(
     {
@@ -185,14 +235,8 @@ class CodexRuntimeIdentity:
             raise ValueError("Codex CLI version differs from the frozen adapter")
         if self.authentication_mode != AUTH_MODE:
             raise ValueError("Codex CLI must use the approved ChatGPT authentication mode")
-        if self.model != MODEL or self.model_catalog_comp_hash != MODEL_CATALOG_COMP_HASH:
-            raise ValueError("Codex model catalog identity differs from the frozen adapter")
-        if MODEL_REASONING_EFFORT not in self.supported_reasoning_efforts:
-            raise ValueError("Codex model catalog does not advertise low reasoning effort")
         if "image" not in self.input_modalities or "text" not in self.input_modalities:
             raise ValueError("Codex model catalog does not advertise text and image input")
-        if self.context_window_tokens != MODEL_CONTEXT_WINDOW_TOKENS:
-            raise ValueError("Codex model context window differs from the frozen adapter")
         if not self.exec_help_sha256.startswith("sha256:"):
             raise ValueError("Codex exec help digest is invalid")
         if not self.feature_inventory_sha256.startswith("sha256:"):
@@ -215,13 +259,30 @@ class CodexRuntimeIdentity:
         }
 
 
+def _validate_runtime_identity(
+    identity: CodexRuntimeIdentity, config: CodexPolicyConfig
+) -> None:
+    CodexPolicyConfig(**config.__dict__)
+    if (
+        identity.model != config.model
+        or identity.model_catalog_comp_hash != config.model_catalog_comp_hash
+    ):
+        raise ValueError("Codex model catalog identity differs from the frozen policy")
+    if config.model_reasoning_effort not in identity.supported_reasoning_efforts:
+        raise ValueError("Codex model catalog omits the approved reasoning effort")
+    if identity.context_window_tokens != config.model_context_window_tokens:
+        raise ValueError("Codex model context window differs from the frozen policy")
+
+
 def _run_probe(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, text=True, capture_output=True, check=True)
 
 
-def _configuration_preflight_command() -> tuple[str, ...]:
+def _configuration_preflight_command(
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+) -> tuple[str, ...]:
     command: list[str] = ["codex", "debug", "prompt-input"]
-    for value in _CONFIG_OVERRIDES:
+    for value in _config_overrides(config):
         command.extend(("--config", value))
     for feature in _DISABLED_FEATURES:
         command.extend(("--disable", feature))
@@ -230,7 +291,9 @@ def _configuration_preflight_command() -> tuple[str, ...]:
 
 
 def probe_codex_runtime(
-    *, run: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] = _run_probe
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+    *,
+    run: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] = _run_probe,
 ) -> CodexRuntimeIdentity:
     """Inspect only local CLI metadata and authentication; no model request is made."""
 
@@ -264,7 +327,7 @@ def probe_codex_runtime(
     feature_inventory = run(("codex", "features", "list")).stdout
     if any(feature not in feature_inventory for feature in _DISABLED_FEATURES):
         raise ValueError("installed Codex feature inventory omits an isolation control")
-    preflight = json.loads(run(_configuration_preflight_command()).stdout)
+    preflight = json.loads(run(_configuration_preflight_command(config)).stdout)
     if not isinstance(preflight, list):
         raise TypeError("Codex configuration preflight output is invalid")
     catalog_value = json.loads(run(("codex", "debug", "models", "--bundled")).stdout)
@@ -273,7 +336,7 @@ def probe_codex_runtime(
     matches = [
         item
         for item in catalog_value["models"]
-        if isinstance(item, dict) and item.get("slug") == MODEL
+        if isinstance(item, dict) and item.get("slug") == config.model
     ]
     if len(matches) != 1:
         raise ValueError("Codex bundled model catalog does not contain one approved model")
@@ -289,10 +352,10 @@ def probe_codex_runtime(
     modalities = model_record.get("input_modalities")
     if not isinstance(modalities, list) or any(not isinstance(item, str) for item in modalities):
         raise ValueError("Codex bundled model modality metadata is invalid")
-    return CodexRuntimeIdentity(
+    identity = CodexRuntimeIdentity(
         cli_version=version,
         authentication_mode=AUTH_MODE,
-        model=MODEL,
+        model=config.model,
         model_catalog_comp_hash=str(model_record.get("comp_hash", "")),
         supported_reasoning_efforts=efforts,
         input_modalities=tuple(modalities),
@@ -301,11 +364,15 @@ def probe_codex_runtime(
         feature_inventory_sha256=("sha256:" + sha256_bytes(feature_inventory.encode("utf-8"))),
         configuration_preflight_validated=True,
     )
+    _validate_runtime_identity(identity, config)
+    return identity
 
 
-def sanitized_command_contract() -> tuple[str, ...]:
-    command: list[str] = ["codex", "exec", "--model", MODEL]
-    for value in _CONFIG_OVERRIDES:
+def sanitized_command_contract(
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+) -> tuple[str, ...]:
+    command: list[str] = ["codex", "exec", "--model", config.model]
+    for value in _config_overrides(config):
         command.extend(("--config", value))
     for feature in _DISABLED_FEATURES:
         command.extend(("--disable", feature))
@@ -331,16 +398,22 @@ def sanitized_command_contract() -> tuple[str, ...]:
     return tuple(command)
 
 
-def command_contract_digest() -> str:
-    return content_digest(list(sanitized_command_contract()))
+def command_contract_digest(config: CodexPolicyConfig = DEFAULT_CODEX_POLICY) -> str:
+    return content_digest(list(sanitized_command_contract(config)))
 
 
-def _runtime_command(*, schema_path: Path, image_path: Path, working_directory: Path) -> list[str]:
+def _runtime_command(
+    *,
+    schema_path: Path,
+    image_path: Path,
+    working_directory: Path,
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+) -> list[str]:
     return [
         value.replace("<isolated-action-schema>", str(schema_path))
         .replace("<current-screenshot>", str(image_path))
         .replace("<isolated-empty-working-directory>", str(working_directory))
-        for value in sanitized_command_contract()
+        for value in sanitized_command_contract(config)
     ]
 
 
@@ -391,6 +464,9 @@ def _png_bytes(screenshot: bytes) -> bytes:
 class CodexCliPolicy:
     """Stateless policy package: the task instruction and current screenshot only."""
 
+    def __init__(self, config: CodexPolicyConfig = DEFAULT_CODEX_POLICY) -> None:
+        self.config = CodexPolicyConfig(**config.__dict__)
+
     def reset(self, task_instruction: str) -> bytes:
         return canonical_json_bytes({"instruction": task_instruction})
 
@@ -401,13 +477,13 @@ class CodexCliPolicy:
         png = _png_bytes(screenshot)
         return {
             "provider": PROVIDER_IDENTITY,
-            "model": MODEL,
-            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "model": self.config.model,
+            "model_reasoning_effort": self.config.model_reasoning_effort,
             "prompt": action_prompt(str(value["instruction"])),
             "image_png_base64": base64.b64encode(png).decode("ascii"),
             "image_sha256": "sha256:" + sha256_bytes(png),
             "action_schema_digest": content_digest(ACTION_SCHEMA),
-            "command_contract_digest": command_contract_digest(),
+            "command_contract_digest": command_contract_digest(self.config),
         }
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
@@ -425,7 +501,7 @@ class CodexCliPolicy:
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
         del state
         response = json.loads(canonical_response)
-        if response.get("model") != MODEL:
+        if response.get("model") != self.config.model:
             raise ValueError("Codex response model does not match the approved policy")
         usage = response.get("usage")
         if not isinstance(usage, dict):
@@ -433,9 +509,9 @@ class CodexCliPolicy:
         expected = {
             "authentication_mode": AUTH_MODE,
             "cli_version": CODEX_CLI_VERSION,
-            "command_contract_digest": command_contract_digest(),
+            "command_contract_digest": command_contract_digest(self.config),
             "experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
-            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "model_reasoning_effort": self.config.model_reasoning_effort,
             "price_guard": "subscription_exempt",
             "policy_violation": "none",
         }
@@ -553,7 +629,12 @@ class SubscriptionExemptLedger:
 class CodexCliInvocationJournal:
     """Restricted, FULL-synchronous raw CLI journal keyed by runner idempotency."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(
+        self,
+        path: Path,
+        config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+    ) -> None:
+        self.config = CodexPolicyConfig(**config.__dict__)
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
         self._lock = threading.RLock()
@@ -579,7 +660,7 @@ class CodexCliInvocationJournal:
         )
 
     def reserve(self, *, idempotency_key: str, request_digest: str) -> bool:
-        command = list(sanitized_command_contract())
+        command = list(sanitized_command_contract(self.config))
         validate_credential_free(command)
         with self._lock:
             try:
@@ -758,7 +839,9 @@ def _is_allowed_disabled_code_mode_diagnostic(
     )
 
 
-def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
+def _parse_cli_stream(
+    raw_stdout: str, *, context_window_tokens: int = MODEL_CONTEXT_WINDOW_TOKENS
+) -> ParsedCliStream:
     violations: list[str] = []
     events: list[dict[str, Any]] = []
     for line in raw_stdout.splitlines():
@@ -834,7 +917,7 @@ def _parse_cli_stream(raw_stdout: str) -> ParsedCliStream:
             violations.append("cached_input_exceeds_input")
         if usage_value["reasoning_output_tokens"] > usage_value["output_tokens"]:
             violations.append("reasoning_output_exceeds_output")
-        if usage_value["input_tokens"] + usage_value["output_tokens"] > MODEL_CONTEXT_WINDOW_TOKENS:
+        if usage_value["input_tokens"] + usage_value["output_tokens"] > context_window_tokens:
             violations.append("reported_usage_exceeds_context_window")
     return ParsedCliStream(
         content=messages[0] if len(messages) == 1 else "",
@@ -865,11 +948,16 @@ class CodexCliTransport:
         ledger: SubscriptionExemptLedger,
         invocation_journal: CodexCliInvocationJournal,
         runtime_identity: CodexRuntimeIdentity,
+        config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
         environment: Mapping[str, str] = os.environ,
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
     ) -> None:
         CodexRuntimeIdentity(**runtime_identity.__dict__)
+        self.config = CodexPolicyConfig(**config.__dict__)
+        _validate_runtime_identity(runtime_identity, self.config)
+        if invocation_journal.config != self.config:
+            raise ValueError("Codex invocation journal policy differs from the transport")
         if process_timeout_seconds <= 0:
             raise ValueError("Codex process timeout must be positive")
         self.ledger = ledger
@@ -919,6 +1007,7 @@ class CodexCliTransport:
                 schema_path=schema_path,
                 image_path=image_path,
                 working_directory=working_directory,
+                config=self.config,
             )
             try:
                 process = self.process_factory(
@@ -993,7 +1082,10 @@ class CodexCliTransport:
                     self._active.pop(idempotency_key, None)
 
         assert process is not None
-        parsed = _parse_cli_stream(raw_stdout)
+        parsed = _parse_cli_stream(
+            raw_stdout,
+            context_window_tokens=self.config.model_context_window_tokens,
+        )
         policy_violations = list(parsed.policy_violations)
         if process.returncode != 0:
             policy_violations.append("nonzero_exit")
@@ -1019,13 +1111,13 @@ class CodexCliTransport:
             **(parsed.usage or {}),
             "authentication_mode": AUTH_MODE,
             "cli_version": CODEX_CLI_VERSION,
-            "command_contract_digest": command_contract_digest(),
-            "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
+            "command_contract_digest": command_contract_digest(self.config),
+            "cost_accounting_method": "codex_chatgpt_subscription_experiment_charge_zero_v1",
             "experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
             "informational_list_price_equivalent_usd": (
                 str(list_price_equivalent) if list_price_equivalent is not None else None
             ),
-            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "model_reasoning_effort": self.config.model_reasoning_effort,
             "policy_violation": violation_value,
             "price_guard": "subscription_exempt",
             "usage_telemetry_status": parsed.usage_telemetry_status,
@@ -1035,7 +1127,7 @@ class CodexCliTransport:
         }
         canonical = {
             "response_id": "sha256:" + sha256_bytes(raw_stdout.encode("utf-8")),
-            "model": MODEL,
+            "model": self.config.model,
             "content": content,
             "finish_reason": "stop" if violation_value == "none" else "policy_violation",
             "usage": usage_record,
@@ -1107,13 +1199,16 @@ class CodexCliTransport:
         }
         if set(request) != expected_keys:
             return "request_shape_mismatch"
-        if request.get("provider") != PROVIDER_IDENTITY or request.get("model") != MODEL:
+        if (
+            request.get("provider") != PROVIDER_IDENTITY
+            or request.get("model") != self.config.model
+        ):
             return "request_identity_mismatch"
-        if request.get("model_reasoning_effort") != MODEL_REASONING_EFFORT:
+        if request.get("model_reasoning_effort") != self.config.model_reasoning_effort:
             return "reasoning_effort_mismatch"
         if request.get("action_schema_digest") != content_digest(ACTION_SCHEMA):
             return "action_schema_mismatch"
-        if request.get("command_contract_digest") != command_contract_digest():
+        if request.get("command_contract_digest") != command_contract_digest(self.config):
             return "command_contract_mismatch"
         if not isinstance(request.get("prompt"), str) or not request["prompt"]:
             return "prompt_missing"
@@ -1153,10 +1248,10 @@ class CodexCliTransport:
             "idempotency_key_digest": content_digest(idempotency_key),
             "status": status,
             "cli_version": CODEX_CLI_VERSION,
-            "model": MODEL,
-            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "model": self.config.model,
+            "model_reasoning_effort": self.config.model_reasoning_effort,
             "authentication_mode": AUTH_MODE,
-            "command_contract_digest": command_contract_digest(),
+            "command_contract_digest": command_contract_digest(self.config),
             "experiment_charge_usd": outcome.get("experiment_charge_usd"),
             "informational_list_price_equivalent_usd": outcome.get(
                 "informational_list_price_equivalent_usd"
@@ -1177,8 +1272,11 @@ def build_codex_cli_policy_manifest(
     *,
     code_revision: str,
     runtime_identity: CodexRuntimeIdentity,
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
 ) -> PolicyManifest:
     CodexRuntimeIdentity(**runtime_identity.__dict__)
+    config = CodexPolicyConfig(**config.__dict__)
+    _validate_runtime_identity(runtime_identity, config)
     module_path = repository_root / "pixelgym/grounding/v5/codex_cli_policy.py"
     runtime_digest = content_digest(
         {
@@ -1196,9 +1294,9 @@ def build_codex_cli_policy_manifest(
     inference_parameters = (
         ("authentication_mode", AUTH_MODE),
         ("cli_version", CODEX_CLI_VERSION),
-        ("command_contract_digest", command_contract_digest()),
-        ("model_catalog_comp_hash", MODEL_CATALOG_COMP_HASH),
-        ("model_reasoning_effort", MODEL_REASONING_EFFORT),
+        ("command_contract_digest", command_contract_digest(config)),
+        ("model_catalog_comp_hash", config.model_catalog_comp_hash),
+        ("model_reasoning_effort", config.model_reasoning_effort),
         (
             "allowed_cli_diagnostic_message_sha256",
             ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256,
@@ -1211,7 +1309,7 @@ def build_codex_cli_policy_manifest(
     )
     return PolicyManifest.build(
         provider=PROVIDER_IDENTITY,
-        model=MODEL,
+        model=config.model,
         exact_snapshot=False,
         harness_digest=_file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
         dependency_lock_digest=_file_digest(repository_root / "requirements/platform-py312.lock"),
@@ -1234,6 +1332,6 @@ def build_codex_cli_policy_manifest(
         code_revision=code_revision,
         dirty_worktree_policy="reject-tracked-changes",
         inference_parameters=inference_parameters,
-        context_limit=MODEL_CONTEXT_WINDOW_TOKENS,
+        context_limit=config.model_context_window_tokens,
         transport_retry_rule=TRANSPORT_RETRY_RULE,
     )
