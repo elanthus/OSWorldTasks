@@ -55,6 +55,19 @@ def failed_luna_smoke_evidence() -> dict[str, Any]:
     }
 
 
+def retry_predecessor_evidence() -> dict[str, Any]:
+    return {
+        "status": "consumed_immutable_invalid_output",
+        "approved_plan_content_sha256": calibration.RETRY_PREDECESSOR_PLAN_CONTENT_SHA256,
+        "classification": "invalid_output",
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "policy_violation": "unauthorized_item:error",
+        "experiment_charge_usd": "0.00",
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def stub_plan_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         calibration,
@@ -65,6 +78,11 @@ def stub_plan_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
         calibration,
         "validated_failed_luna_smoke_evidence",
         lambda _root: failed_luna_smoke_evidence(),
+    )
+    monkeypatch.setattr(
+        calibration,
+        "validated_retry_predecessor_evidence",
+        lambda _root: retry_predecessor_evidence(),
     )
 
     def git(_root: Path, *args: str) -> str:
@@ -173,6 +191,30 @@ def test_failed_luna_smoke_is_bound_and_preserved_as_immutable_evidence() -> Non
     }
 
 
+def test_retry_predecessor_is_bound_without_publishing_error_content() -> None:
+    evidence = calibration.validated_retry_predecessor_evidence(ROOT)
+
+    assert evidence["approved_plan_content_sha256"] == (
+        "sha256:ec88a91aa1573d9b33aeb840c9deb56147c94c47456169546a9c7c834a6bfc7b"
+    )
+    assert evidence["summary_file_sha256"] == (
+        "sha256:fd7c3c8ab525b1a5e924e6aa7fa1fddd77e203fb805a82d3992515766ecee401"
+    )
+    assert evidence["error_message_sha256"] == (
+        "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+    )
+    assert evidence["event_sequence"] == [
+        "thread.started",
+        "item.completed:error",
+        "turn.started",
+        "item.completed:agent_message",
+        "turn.completed",
+    ]
+    assert evidence["classification"] == "invalid_output"
+    assert evidence["policy_violation"] == "unauthorized_item:error"
+    assert "message" not in evidence
+
+
 def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -234,6 +276,15 @@ def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     )
     assert plan["price_and_cost_accounting"]["luna_experiment_charge_per_call_usd"] == "0.00"
     assert plan["failed_luna_smoke_evidence"] == failed_luna_smoke_evidence()
+    assert plan["retry_predecessor_evidence"] == retry_predecessor_evidence()
+    assert plan["retry_context"] == {
+        "human_requested_fresh_attempt": True,
+        "transport_retry": False,
+        "luna_smoke_process_ordinal": 3,
+        "fresh_process_invocation_cap": 1,
+        "parser_policy_changed": False,
+        "unresolved_error_item_will_remain_fail_closed": True,
+    }
     assert plan["human_accounting_override"] == {
         "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
         "effective_experiment_charge_usd": "0.00",
@@ -245,6 +296,7 @@ def test_smoke_plan_binds_exact_cli_isolation_cost_and_one_call(
     assert "HTTP 401" in plan["policy"]["retry_and_backoff"]["codex_401_auth_recovery"]
     assert plan["approval_required"]["earlier_qwen_or_openrouter_approvals_apply"] is False
     assert plan["approval_required"]["earlier_luna_smoke_approval_applies"] is False
+    assert plan["approval_required"]["v2_luna_smoke_approval_applies"] is False
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 

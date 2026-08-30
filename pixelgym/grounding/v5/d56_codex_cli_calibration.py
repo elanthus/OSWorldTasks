@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 import subprocess
 from collections.abc import Callable, Mapping
 from decimal import Decimal
@@ -54,9 +55,9 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
 from pixelgym.serialization import canonical_json_bytes
 
-SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v2"
+SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v3"
 CALIBRATION_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-calibration-plan-v2"
-SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v2"
+SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v3"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 MAXIMUM_REMAINING_INCREMENTAL_EXPOSURE_USD = Decimal("5.221835282")
@@ -121,6 +122,38 @@ FAILED_LUNA_SMOKE_OUTCOME_SHA256 = (
 )
 FAILED_LUNA_SMOKE_CODE_REVISION = "f3cf861edda5b75d30145739de12e1764923d6b4"
 
+RETRY_PREDECESSOR_PLAN_CONTENT_SHA256 = (
+    "sha256:ec88a91aa1573d9b33aeb840c9deb56147c94c47456169546a9c7c834a6bfc7b"
+)
+RETRY_PREDECESSOR_PLAN_FILE_SHA256 = (
+    "sha256:e56dd925fe7fbe0c01e9d2c7c97f1e11ded132fc94504d206ddb36082661e507"
+)
+RETRY_PREDECESSOR_SUMMARY_FILE_SHA256 = (
+    "sha256:fd7c3c8ab525b1a5e924e6aa7fa1fddd77e203fb805a82d3992515766ecee401"
+)
+RETRY_PREDECESSOR_ATTEMPT_JOURNAL_FILE_SHA256 = (
+    "sha256:320ea82608e78915906104977fda370f8cc6a7e1db9efe090d9228c4270c3adb"
+)
+RETRY_PREDECESSOR_ATTEMPT_EVENT_CHAIN_SHA256 = (
+    "sha256:8d8ddd96aefbb48e24086ca84ca831f1657b39d760220015618c8628e66e740b"
+)
+RETRY_PREDECESSOR_INVOCATION_JOURNAL_FILE_SHA256 = (
+    "sha256:64818ef9ecac914537fc085721e69fd419fd1930f23a91c0d170c32e0afeefd6"
+)
+RETRY_PREDECESSOR_RAW_STDOUT_SHA256 = (
+    "sha256:11fa917940f8157b9f0d28678298426b51e538925fa79fcf530d59f284dc75eb"
+)
+RETRY_PREDECESSOR_RAW_STDERR_SHA256 = (
+    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+)
+RETRY_PREDECESSOR_OUTCOME_SHA256 = (
+    "sha256:044d2c18c06845cc4689e3d5175284194bab16b4783ab259d7ed4283668a9fbd"
+)
+RETRY_PREDECESSOR_ERROR_MESSAGE_SHA256 = (
+    "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+)
+RETRY_PREDECESSOR_CODE_REVISION = "af82c6fbb27be82a0ee8ccccb8a3a2f20bc0c5fa"
+
 _PLAN_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-plan.json")
 _SUMMARY_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json")
 _JOURNAL_PATH = Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/attempts.sqlite")
@@ -132,6 +165,12 @@ _FAILED_LUNA_SMOKE_PLAN_PATH = Path(
     "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-plan.json"
 )
 _FAILED_LUNA_SMOKE_RUN_PATH = Path("artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-run")
+_RETRY_PREDECESSOR_PLAN_PATH = Path(
+    "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-plan-v2.json"
+)
+_RETRY_PREDECESSOR_RUN_PATH = Path(
+    "artifacts/grounding-v5-d56-codex-cli-luna-one-call-smoke-run-v2"
+)
 
 
 def _git(repository_root: Path, *args: str) -> str:
@@ -347,6 +386,137 @@ def validated_failed_luna_smoke_evidence(repository_root: Path) -> dict[str, Any
     }
 
 
+def validated_retry_predecessor_evidence(repository_root: Path) -> dict[str, Any]:
+    """Verify the consumed v2 Luna smoke before planning one fresh invocation."""
+
+    plan_path = repository_root / _RETRY_PREDECESSOR_PLAN_PATH
+    run_path = repository_root / _RETRY_PREDECESSOR_RUN_PATH
+    summary_path = run_path / "summary.json"
+    attempt_path = run_path / "attempts.sqlite"
+    invocation_path = run_path / "codex-cli-invocations.sqlite"
+    expected_files = (
+        (plan_path, RETRY_PREDECESSOR_PLAN_FILE_SHA256, False),
+        (summary_path, RETRY_PREDECESSOR_SUMMARY_FILE_SHA256, False),
+        (attempt_path, RETRY_PREDECESSOR_ATTEMPT_JOURNAL_FILE_SHA256, True),
+        (invocation_path, RETRY_PREDECESSOR_INVOCATION_JOURNAL_FILE_SHA256, True),
+    )
+    for path, expected, streaming in expected_files:
+        actual = _streaming_file_digest(path) if streaming else _file_digest(path)
+        if actual != expected:
+            raise ValueError(f"frozen retry predecessor digest mismatch: {path.name}")
+    plan = _load_json_object(plan_path)
+    if content_digest(plan) != RETRY_PREDECESSOR_PLAN_CONTENT_SHA256:
+        raise ValueError("frozen retry predecessor canonical plan digest mismatch")
+    summary = _load_json_object(summary_path)
+    expected_summary = {
+        "approved_plan_sha256": RETRY_PREDECESSOR_PLAN_CONTENT_SHA256,
+        "code_revision": RETRY_PREDECESSOR_CODE_REVISION,
+        "provider_calls_made": 1,
+        "provider_wire_requests": 1,
+        "model_attempt_reservations": 1,
+        "incremental_luna_experiment_charge_usd": "0.00",
+        "informational_list_price_equivalent_usd": "0.00426390",
+        "budget_accounted_aggregate_spend_usd": "4.778164718",
+        "unresolved_invocation_count": 0,
+        "usage_telemetry_status": "available",
+        "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+        "policy_violation": "unauthorized_item:error",
+    }
+    if any(summary.get(key) != expected for key, expected in expected_summary.items()):
+        raise ValueError("frozen retry predecessor summary facts mismatch")
+    episode = summary.get("episode_result")
+    if not isinstance(episode, dict) or any(
+        episode.get(key) != expected
+        for key, expected in {
+            "classification": "invalid_output",
+            "environment_actions": 0,
+            "model_attempts": 1,
+            "provider_wire_requests": 1,
+            "success": False,
+        }.items()
+    ):
+        raise ValueError("frozen retry predecessor episode facts mismatch")
+    attempt_integrity = summary.get("attempt_journal_integrity")
+    if not isinstance(attempt_integrity, dict) or (
+        attempt_integrity.get("event_chain_digest") != RETRY_PREDECESSOR_ATTEMPT_EVENT_CHAIN_SHA256
+    ):
+        raise ValueError("frozen retry predecessor attempt event chain mismatch")
+    invocation_integrity = summary.get("invocation_journal_integrity")
+    records = (
+        invocation_integrity.get("records") if isinstance(invocation_integrity, dict) else None
+    )
+    if not isinstance(records, list) or len(records) != 1 or not isinstance(records[0], dict):
+        raise ValueError("frozen retry predecessor invocation integrity record is invalid")
+    expected_invocation = {
+        "exit_code": 0,
+        "status": "policy_violation",
+        "raw_stdout_sha256": RETRY_PREDECESSOR_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": RETRY_PREDECESSOR_RAW_STDERR_SHA256,
+        "outcome_sha256": RETRY_PREDECESSOR_OUTCOME_SHA256,
+    }
+    if any(records[0].get(key) != expected for key, expected in expected_invocation.items()):
+        raise ValueError("frozen retry predecessor invocation integrity facts mismatch")
+    with sqlite3.connect(f"file:{invocation_path}?mode=ro", uri=True) as connection:
+        row = connection.execute("SELECT raw_stdout FROM invocations").fetchone()
+    if row is None or not isinstance(row[0], bytes):
+        raise ValueError("frozen retry predecessor raw stream is unavailable")
+    events = [json.loads(line) for line in row[0].decode("utf-8").splitlines() if line]
+    event_shapes = [
+        (
+            event.get("type"),
+            event.get("item", {}).get("type") if isinstance(event.get("item"), dict) else None,
+        )
+        for event in events
+        if isinstance(event, dict)
+    ]
+    if event_shapes != [
+        ("thread.started", None),
+        ("item.completed", "error"),
+        ("turn.started", None),
+        ("item.completed", "agent_message"),
+        ("turn.completed", None),
+    ]:
+        raise ValueError("frozen retry predecessor event sequence mismatch")
+    error_item = events[1].get("item")
+    if not isinstance(error_item, dict) or not isinstance(error_item.get("message"), str):
+        raise TypeError("frozen retry predecessor error item is invalid")
+    error_message_digest = (
+        "sha256:" + hashlib.sha256(error_item["message"].encode("utf-8")).hexdigest()
+    )
+    if error_message_digest != RETRY_PREDECESSOR_ERROR_MESSAGE_SHA256:
+        raise ValueError("frozen retry predecessor error message digest mismatch")
+    return {
+        "status": "consumed_immutable_invalid_output",
+        "approved_plan_content_sha256": RETRY_PREDECESSOR_PLAN_CONTENT_SHA256,
+        "approved_plan_file_sha256": RETRY_PREDECESSOR_PLAN_FILE_SHA256,
+        "summary_file_sha256": RETRY_PREDECESSOR_SUMMARY_FILE_SHA256,
+        "attempt_journal_file_sha256": RETRY_PREDECESSOR_ATTEMPT_JOURNAL_FILE_SHA256,
+        "attempt_journal_event_chain_sha256": RETRY_PREDECESSOR_ATTEMPT_EVENT_CHAIN_SHA256,
+        "invocation_journal_file_sha256": RETRY_PREDECESSOR_INVOCATION_JOURNAL_FILE_SHA256,
+        "raw_stdout_sha256": RETRY_PREDECESSOR_RAW_STDOUT_SHA256,
+        "raw_stderr_sha256": RETRY_PREDECESSOR_RAW_STDERR_SHA256,
+        "outcome_sha256": RETRY_PREDECESSOR_OUTCOME_SHA256,
+        "error_message_sha256": RETRY_PREDECESSOR_ERROR_MESSAGE_SHA256,
+        "code_revision": RETRY_PREDECESSOR_CODE_REVISION,
+        "task_id": expected_summary["task_id"],
+        "provider_calls_made": 1,
+        "environment_actions": 0,
+        "classification": "invalid_output",
+        "policy_violation": "unauthorized_item:error",
+        "event_sequence": [
+            "thread.started",
+            "item.completed:error",
+            "turn.started",
+            "item.completed:agent_message",
+            "turn.completed",
+        ],
+        "experiment_charge_usd": "0.00",
+        "usage_telemetry_status": "available",
+        "diagnosis": "unresolved_pre_turn_cli_error_item_with_later_agent_message",
+        "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    }
+
+
 def _policy_record(
     repository_root: Path,
     *,
@@ -550,6 +720,7 @@ def build_smoke_plan(
     runtime = runtime_identity or probe_codex_runtime()
     predecessor = validated_predecessor_evidence(repository_root)
     failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
+    retry_predecessor = validated_retry_predecessor_evidence(repository_root)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task = generate_task(SMOKE_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
@@ -560,8 +731,8 @@ def build_smoke_plan(
         "purpose": (
             "one development-only Codex CLI action validating image input, isolation, "
             "schema-constrained action output, journaling, and subscription-exempt Luna "
-            "accounting; replacement for one immutable pre-inference infrastructure failure; "
-            "not calibration evidence"
+            "accounting; one fresh human-requested invocation after two immutable failed "
+            "smokes; not calibration evidence"
         ),
         "execution_state": "awaiting_exact_human_approval",
         "provider_calls_made_while_planning": 0,
@@ -608,6 +779,15 @@ def build_smoke_plan(
         "failure_classifications": _failure_classifications(),
         "predecessor_evidence": predecessor,
         "failed_luna_smoke_evidence": failed_luna_smoke,
+        "retry_predecessor_evidence": retry_predecessor,
+        "retry_context": {
+            "human_requested_fresh_attempt": True,
+            "transport_retry": False,
+            "luna_smoke_process_ordinal": 3,
+            "fresh_process_invocation_cap": 1,
+            "parser_policy_changed": False,
+            "unresolved_error_item_will_remain_fail_closed": True,
+        },
         "human_accounting_override": {
             "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
             "effective_experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
@@ -618,7 +798,7 @@ def build_smoke_plan(
         },
         "raw_evidence_policy": _raw_evidence_policy(),
         "stop_conditions": [
-            "send at most one Codex CLI model invocation and never retry",
+            "send at most one fresh Codex CLI model invocation and never retry it",
             "stop after the first valid environment action",
             "stop without dispatch on invalid or unparseable action output",
             "stop without dispatch on any JSONL tool, web, filesystem, MCP, plugin, skill, connector, or subagent event",
@@ -628,6 +808,7 @@ def build_smoke_plan(
             "stop if the ChatGPT authentication-mode preflight fails or the process exits nonzero",
             "do not resume, overwrite, or reuse the consumed Qwen/OpenRouter plan or journals",
             "do not resume, overwrite, or reuse the consumed first Luna smoke plan or run directory",
+            "do not resume, overwrite, or reuse the consumed v2 Luna smoke plan or run directory",
         ],
         "approval_required": {
             "owner": "human",
@@ -635,6 +816,7 @@ def build_smoke_plan(
             "exact_plan_sha256": "sha256 of canonical plan bytes",
             "earlier_qwen_or_openrouter_approvals_apply": False,
             "earlier_luna_smoke_approval_applies": False,
+            "v2_luna_smoke_approval_applies": False,
         },
         "human_gates": {
             "D4.12": "not_evaluated_human_owned",
@@ -710,6 +892,7 @@ def build_successor_calibration_plan(
     runtime = runtime_identity or probe_codex_runtime()
     predecessor = validated_predecessor_evidence(repository_root)
     failed_luna_smoke = validated_failed_luna_smoke_evidence(repository_root)
+    retry_predecessor = validated_retry_predecessor_evidence(repository_root)
     smoke = _validated_successful_smoke_evidence(successful_smoke_evidence)
     revision = _git(repository_root, "rev-parse", "HEAD")
     task_order, partition = _task_order(repository_root)
@@ -771,6 +954,7 @@ def build_successor_calibration_plan(
         "failure_classifications": _failure_classifications(),
         "predecessor_evidence": predecessor,
         "failed_luna_smoke_evidence": failed_luna_smoke,
+        "retry_predecessor_evidence": retry_predecessor,
         "successful_smoke_evidence": smoke,
         "raw_evidence_policy": _raw_evidence_policy(),
         "stop_conditions": [
@@ -925,6 +1109,8 @@ def execute_smoke(
             "invocation_journal_integrity": invocation_integrity,
             "predecessor_evidence": plan["predecessor_evidence"],
             "failed_luna_smoke_evidence": plan["failed_luna_smoke_evidence"],
+            "retry_predecessor_evidence": plan["retry_predecessor_evidence"],
+            "retry_context": plan["retry_context"],
             "human_accounting_override": plan["human_accounting_override"],
             "publication_status": "restricted_raw_evidence_local_only",
             "cleanup": {
