@@ -42,6 +42,7 @@ AUTH_METHOD = "claude.ai"
 SUBSCRIPTION_TYPE = "max"
 PROVIDER_IDENTITY = "claude-code-cli/claude-ai-max-subscription"
 PROVIDER_ORIGIN = "https://api.anthropic.com"
+EMPTY_MCP_CONFIG = '{"mcpServers":{}}'
 PROCESS_TIMEOUT_SECONDS = 120.0
 RUNNER_REQUEST_DEADLINE_SECONDS = 125.0
 TERMINATE_GRACE_SECONDS = 2.0
@@ -179,7 +180,7 @@ def sanitized_command_contract() -> tuple[str, ...]:
         "--disable-slash-commands",
         "--strict-mcp-config",
         "--mcp-config",
-        "{}",
+        EMPTY_MCP_CONFIG,
         "--no-chrome",
         "--no-session-persistence",
         "--exclude-dynamic-system-prompt-sections",

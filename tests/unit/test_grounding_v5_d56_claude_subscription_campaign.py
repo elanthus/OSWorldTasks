@@ -116,6 +116,7 @@ def test_smoke_plan_is_deterministic_bounded_and_zero_tool(
     assert command[command.index("--tools") + 1] == ""
     assert "--json-schema" not in command
     assert "--strict-mcp-config" in command
+    assert command[command.index("--mcp-config") + 1] == '{"mcpServers":{}}'
     assert "--safe-mode" in command
     text = campaign.plan_file_bytes(first).decode("utf-8")
     assert str(ROOT) not in text
