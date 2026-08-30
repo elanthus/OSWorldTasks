@@ -16,6 +16,15 @@ from scripts import run_grounding_v5_d56_codex_cli_calibration
 ROOT = Path(__file__).parents[2]
 
 
+def restricted_evidence_available(*paths: Path) -> bool:
+    return all((ROOT / path).exists() for path in paths)
+
+
+RESTRICTED_EVIDENCE_SKIP_REASON = (
+    "requires restricted local calibration evidence that is intentionally not tracked"
+)
+
+
 def runtime_identity() -> policy.CodexRuntimeIdentity:
     return policy.CodexRuntimeIdentity(
         cli_version=policy.CODEX_CLI_VERSION,
@@ -174,6 +183,16 @@ class SuccessfulProcess:
         self.returncode = -9
 
 
+@pytest.mark.skipif(
+    not restricted_evidence_available(
+        calibration._PLAN_PATH,
+        calibration._SUMMARY_PATH,
+        calibration._JOURNAL_PATH,
+        calibration._AUDIT_PATH,
+        calibration._RELATION_PATH,
+    ),
+    reason=RESTRICTED_EVIDENCE_SKIP_REASON,
+)
 def test_real_predecessor_evidence_is_bound_and_frozen() -> None:
     evidence = calibration.validated_predecessor_evidence(ROOT)
 
@@ -189,6 +208,15 @@ def test_real_predecessor_evidence_is_bound_and_frozen() -> None:
     assert evidence["reuse_rule"] == "do_not_resume_overwrite_reuse_or_reinterpret"
 
 
+@pytest.mark.skipif(
+    not restricted_evidence_available(
+        calibration._FAILED_LUNA_SMOKE_PLAN_PATH,
+        calibration._FAILED_LUNA_SMOKE_RUN_PATH / "summary.json",
+        calibration._FAILED_LUNA_SMOKE_RUN_PATH / "attempts.sqlite",
+        calibration._FAILED_LUNA_SMOKE_RUN_PATH / "codex-cli-invocations.sqlite",
+    ),
+    reason=RESTRICTED_EVIDENCE_SKIP_REASON,
+)
 def test_failed_luna_smoke_is_bound_and_preserved_as_immutable_evidence() -> None:
     evidence = calibration.validated_failed_luna_smoke_evidence(ROOT)
 
@@ -212,6 +240,15 @@ def test_failed_luna_smoke_is_bound_and_preserved_as_immutable_evidence() -> Non
     }
 
 
+@pytest.mark.skipif(
+    not restricted_evidence_available(
+        calibration._RETRY_PREDECESSOR_PLAN_PATH,
+        calibration._RETRY_PREDECESSOR_RUN_PATH / "summary.json",
+        calibration._RETRY_PREDECESSOR_RUN_PATH / "attempts.sqlite",
+        calibration._RETRY_PREDECESSOR_RUN_PATH / "codex-cli-invocations.sqlite",
+    ),
+    reason=RESTRICTED_EVIDENCE_SKIP_REASON,
+)
 def test_retry_predecessor_is_bound_without_publishing_error_content() -> None:
     evidence = calibration.validated_retry_predecessor_evidence(ROOT)
 
@@ -236,6 +273,15 @@ def test_retry_predecessor_is_bound_without_publishing_error_content() -> None:
     assert "message" not in evidence
 
 
+@pytest.mark.skipif(
+    not restricted_evidence_available(
+        calibration._THIRD_SMOKE_PLAN_PATH,
+        calibration._THIRD_SMOKE_RUN_PATH / "summary.json",
+        calibration._THIRD_SMOKE_RUN_PATH / "attempts.sqlite",
+        calibration._THIRD_SMOKE_RUN_PATH / "codex-cli-invocations.sqlite",
+    ),
+    reason=RESTRICTED_EVIDENCE_SKIP_REASON,
+)
 def test_third_smoke_is_bound_without_reinterpreting_historical_result() -> None:
     evidence = calibration.validated_third_smoke_evidence(ROOT)
 
