@@ -416,6 +416,7 @@ def _summary_common(
     call_counts: tuple[int, int],
     transport_records: list[dict[str, Any]],
     execution_error: dict[str, str] | None,
+    subprocesses_closed: bool,
 ) -> dict[str, Any]:
     informational_cost = sum(
         Decimal(str(record["informational_cost_telemetry_usd"]))
@@ -468,7 +469,7 @@ def _summary_common(
             "attempt_journal_closed": True,
             "invocation_journal_closed": True,
             "policy_and_environments_closed": True,
-            "subprocesses_closed": True,
+            "subprocesses_closed": subprocesses_closed,
             "temporary_inputs_removed": True,
         },
         "human_gates": {
@@ -568,6 +569,7 @@ def _execute(
         invocation_integrity = invocation_journal.integrity_report()
         call_counts = attempt_journal.call_counts()
         transport_records = [] if transport is None else list(transport.records)
+        subprocesses_closed = transport is None or transport.subprocesses_closed
         attempt_journal.close()
         invocation_journal.close()
         summary = {
@@ -584,6 +586,7 @@ def _execute(
                 call_counts=call_counts,
                 transport_records=transport_records,
                 execution_error=execution_error,
+                subprocesses_closed=subprocesses_closed,
             ),
             "assigned_policy_task_pairs": 1 if smoke else EXPECTED_TASK_COUNT,
             "attempted_policy_task_pairs": len(episode_results),

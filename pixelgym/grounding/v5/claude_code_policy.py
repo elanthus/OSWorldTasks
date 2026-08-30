@@ -573,14 +573,38 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         violations.append("unexpected_structured_output")
     result_text = result.get("result")
     content = result_text if isinstance(result_text, str) else ""
-    usage = result.get("usage") if isinstance(result.get("usage"), dict) else None
+    raw_usage = result.get("usage")
+    usage: dict[str, int] | None = None
+    if isinstance(raw_usage, dict):
+        normalized_usage: dict[str, int] = {}
+        usage_valid = True
+        for field in ("input_tokens", "output_tokens"):
+            value = raw_usage.get(field)
+            if type(value) is not int or value < 0:
+                usage_valid = False
+                break
+            normalized_usage[field] = value
+        for field in ("cache_creation_input_tokens", "cache_read_input_tokens"):
+            value = raw_usage.get(field, 0)
+            if type(value) is not int or value < 0:
+                usage_valid = False
+                break
+            normalized_usage[field] = value
+        if usage_valid and sum(normalized_usage.values()) <= CONTEXT_LIMIT_TOKENS:
+            usage = normalized_usage
+        else:
+            violations.append("invalid_usage_telemetry")
+    elif raw_usage is not None:
+        violations.append("invalid_usage_telemetry")
     cost_value = result.get("total_cost_usd")
     try:
         informational_cost = Decimal(str(cost_value)) if cost_value is not None else None
     except InvalidOperation:
         informational_cost = None
         violations.append("invalid_cost_telemetry")
-    if informational_cost is not None and informational_cost < 0:
+    if informational_cost is not None and (
+        not informational_cost.is_finite() or informational_cost < 0
+    ):
         informational_cost = None
         violations.append("invalid_cost_telemetry")
     return ParsedClaudeStream(
@@ -617,8 +641,14 @@ class ClaudeCodeTransport:
         self.process_timeout_seconds = process_timeout_seconds
         self.records: list[dict[str, Any]] = []
         self._active: dict[str, RunningProcess] = {}
+        self._started_processes: list[RunningProcess] = []
         self._active_lock = threading.Lock()
         self._closed = False
+
+    @property
+    def subprocesses_closed(self) -> bool:
+        with self._active_lock:
+            return all(process.poll() is not None for process in self._started_processes)
 
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
@@ -683,6 +713,7 @@ class ClaudeCodeTransport:
             self.ledger.mark_process_started()
             self.invocation_journal.mark_running(idempotency_key, process.pid)
             with self._active_lock:
+                self._started_processes.append(process)
                 self._active[idempotency_key] = process
             try:
                 raw_stdout, raw_stderr = process.communicate(

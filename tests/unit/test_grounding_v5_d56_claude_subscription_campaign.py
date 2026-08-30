@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import signal
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -45,9 +46,17 @@ class SuccessfulProcess:
         action: dict[str, int] | None = None,
         *,
         content_block_type: str = "text",
+        usage: object = None,
+        total_cost_usd: object = 0.01,
     ) -> None:
         self.action = action or {"action_type": 1, "x": 100, "y": 100, "key": 0}
         self.content_block_type = content_block_type
+        self.usage = (
+            {"input_tokens": 1000, "output_tokens": 50}
+            if usage is None
+            else usage
+        )
+        self.total_cost_usd = total_cost_usd
         self.input_event: dict[str, Any] | None = None
 
     def communicate(
@@ -79,9 +88,9 @@ class SuccessfulProcess:
                 "is_error": False,
                 "num_turns": 1,
                 "result": json.dumps(self.action, separators=(",", ":")),
-                "usage": {"input_tokens": 1000, "output_tokens": 50},
+                "usage": self.usage,
                 "modelUsage": {RESOLVED_MODEL: {"inputTokens": 1000, "outputTokens": 50}},
-                "total_cost_usd": 0.01,
+                "total_cost_usd": self.total_cost_usd,
             },
         ]
         return "\n".join(json.dumps(event) for event in events) + "\n", ""
@@ -192,6 +201,82 @@ def test_tool_content_is_fail_closed_before_environment_dispatch(
     assert "unauthorized_content_block:tool_use" in summary["policy_violation"]
     with pytest.raises(ValueError, match="successful bounded policy action"):
         campaign.successful_smoke_evidence_from_files(tmp_path / "tool-violation")
+
+
+@pytest.mark.parametrize(
+    ("usage", "total_cost_usd"),
+    [
+        ({"input_tokens": True, "output_tokens": 1}, 0.01),
+        ({"input_tokens": 1, "output_tokens": 1}, float("nan")),
+        ({"input_tokens": 1, "output_tokens": 1}, float("inf")),
+    ],
+)
+def test_malformed_telemetry_is_fail_closed_before_environment_dispatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    usage: object,
+    total_cost_usd: object,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=tmp_path / f"malformed-{len(list(tmp_path.iterdir()))}",
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(
+            usage=usage,
+            total_cost_usd=total_cost_usd,
+        ),
+    )
+
+    assert summary["provider_calls_made"] == 1
+    assert summary["episode_result"]["environment_actions"] == 0
+    assert summary["policy_violation"] != "none"
+
+
+class StubbornProcess:
+    pid = 930_002
+    returncode: int | None = None
+
+    def communicate(
+        self, input: str | None = None, timeout: float | None = None
+    ) -> tuple[str, str]:
+        del input
+        raise subprocess.TimeoutExpired("claude", timeout)
+
+    def poll(self) -> int | None:
+        return None
+
+    def terminate(self) -> None:
+        return None
+
+    def kill(self) -> None:
+        return None
+
+
+def test_cleanup_does_not_claim_a_stubborn_process_was_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=tmp_path / "stubborn-process",
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: StubbornProcess(),
+    )
+
+    assert summary["episode_result"]["environment_actions"] == 0
+    assert summary["cleanup"]["subprocesses_closed"] is False
 
 
 def test_runtime_probe_sanitizes_authenticated_subscription_identity() -> None:
