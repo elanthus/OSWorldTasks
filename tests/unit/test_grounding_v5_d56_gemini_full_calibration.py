@@ -56,9 +56,9 @@ def fake_successful_smoke_output(
         "provider_wire_requests": 1,
         "model_attempt_reservations": 1,
         "provider_control_requests": 0,
-        "actual_aggregate_spend_usd": "2.488646332",
-        "smoke_incremental_spend_usd": "0.001306875",
-        "remaining_aggregate_spend_usd": "7.511353668",
+        "actual_aggregate_spend_usd": "2.489953207",
+        "smoke_incremental_spend_usd": "0.002613750",
+        "remaining_aggregate_spend_usd": "7.510046793",
         "reached_model_response": True,
         "journal_integrity": integrity,
         "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},
@@ -81,7 +81,7 @@ def fake_successful_smoke_output(
                 "status": "response",
                 "response_model": "google/gemini-3.7-flash",
                 "upstream_provider": "Google",
-                "cost_usd": "0.001306875",
+                "cost_usd": "0.00261375",
             }
         ],
     }

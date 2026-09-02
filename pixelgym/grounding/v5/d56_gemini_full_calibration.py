@@ -39,22 +39,22 @@ RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-result-v1
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T00:32:11Z"
 
 FROZEN_SMOKE_PLAN_SHA256 = (
-    "sha256:4dbb7ca365963c5e28ee82381e812f0f2668c651f9270d5c5939d92fab5b892f"
+    "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb"
 )
 FROZEN_SMOKE_SUMMARY_SHA256 = (
-    "sha256:fde15b406566da8dab83801047db3e79e2d68e52c6f708d097dd22e613651039"
+    "sha256:97a8f1fa404999f05d248c8988fe1f2ee595ac2c0459d14efbc73e43bc773815"
 )
 FROZEN_SMOKE_JOURNAL_SHA256 = (
-    "sha256:d3e8c3cd92a97829a54d0790bc76164c71843f76f0ae47bf11c7249ff1d22ac5"
+    "sha256:04ce4b27670371bd1d95f2cc055acab3e1c30ff426f98f38c350b676b42109b0"
 )
-FROZEN_SMOKE_CODE_REVISION = "915200142fec1941bf59104ba682ea7b0f39071e"
-FROZEN_SMOKE_ACTUAL_SPEND_USD = Decimal("2.488646332")
+FROZEN_SMOKE_CODE_REVISION = "6380a4ccb6869a21fe21598527efd6e915601551"
+FROZEN_SMOKE_ACTUAL_SPEND_USD = Decimal("2.489953207")
 FROZEN_SMOKE_JOURNAL_INTEGRITY = {
     "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
     "object_count": 12,
     "event_count": 8,
     "event_chain_digest": (
-        "sha256:f5d3526e4231377aaa30c3c3c36e3d4cddf602a05e923a587307d49be19edc1c"
+        "sha256:f8fe491f1d053362098a81c7dd236a95dce3558b41889cc7b97b158db0bd0e75"
     ),
 }
 FROZEN_PREDECESSOR_SLOT_A_PLAN_SHA256 = (
@@ -82,8 +82,8 @@ def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> 
         "model_attempt_reservations": 1,
         "provider_control_requests": 0,
         "actual_aggregate_spend_usd": str(FROZEN_SMOKE_ACTUAL_SPEND_USD),
-        "smoke_incremental_spend_usd": "0.001306875",
-        "remaining_aggregate_spend_usd": "7.511353668",
+        "smoke_incremental_spend_usd": "0.002613750",
+        "remaining_aggregate_spend_usd": "7.510046793",
         "reached_model_response": True,
         "journal_integrity": FROZEN_SMOKE_JOURNAL_INTEGRITY,
         "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},
@@ -123,7 +123,7 @@ def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> 
             "status": "response",
             "response_model": "google/gemini-3.7-flash",
             "upstream_provider": "Google",
-            "cost_usd": "0.001306875",
+            "cost_usd": "0.00261375",
         }.items()
     ):
         raise ValueError("frozen Gemini smoke response identity mismatch")
