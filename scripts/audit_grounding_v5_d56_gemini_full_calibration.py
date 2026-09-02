@@ -508,8 +508,10 @@ def audit(
     )
 
     smoke = plan["successful_smoke_evidence"]
-    smoke_summary_path = Path(smoke["summary_path"])
-    smoke_journal_path = Path(smoke["journal_path"])
+    # Plans record repository-relative paths; plans frozen before that normalisation
+    # recorded absolute paths and are still audited as-is.
+    smoke_summary_path = _under_root(repository_root, Path(smoke["summary_path"]))
+    smoke_journal_path = _under_root(repository_root, Path(smoke["journal_path"]))
     smoke_summary_file = _file_record(repository_root, smoke_summary_path)
     smoke_journal_file = _file_record(repository_root, smoke_journal_path)
     _require(smoke_summary_file["sha256"] == smoke["summary_sha256"], "smoke summary changed")

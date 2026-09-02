@@ -77,18 +77,6 @@ def _load_json_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _relative_evidence_paths(evidence: dict[str, Any], repository_root: Path) -> dict[str, Any]:
-    """Keep local absolute host paths out of approval and result artifacts."""
-
-    result = dict(evidence)
-    root = repository_root.resolve()
-    for key in ("summary_path", "journal_path"):
-        value = result.get(key)
-        if isinstance(value, str):
-            result[key] = Path(value).resolve().relative_to(root).as_posix()
-    return result
-
-
 def _validated_latest_spend_evidence(
     repository_root: Path,
     *,
@@ -210,11 +198,9 @@ def build_plan(
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
-    smoke_evidence = _relative_evidence_paths(
-        _validated_smoke_evidence(smoke_output_directory), repository_root
-    )
-    qwen_predecessor = _relative_evidence_paths(
-        _validated_frozen_bcd_evidence(frozen_bcd_output_directory), repository_root
+    smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
+    qwen_predecessor = _validated_frozen_bcd_evidence(
+        repository_root, frozen_bcd_output_directory
     )
     latest_spend = _validated_latest_spend_evidence(
         repository_root,

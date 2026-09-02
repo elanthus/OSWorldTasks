@@ -12,6 +12,7 @@ from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, Partition
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
 from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_maximum_stage_index
+from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -48,7 +49,7 @@ FROZEN_C_JOURNAL_INTEGRITY = {
 FROZEN_C_TERMINAL_IDENTITY = AttemptIdentity("d56-c-41-v5-c1e3ad39ecbaa0beb626a8ec", 6, 0)
 
 
-def _validated_frozen_c_evidence(output_directory: Path) -> dict[str, Any]:
+def _validated_frozen_c_evidence(repository_root: Path, output_directory: Path) -> dict[str, Any]:
     summary_path = output_directory / "summary.json"
     journal_path = output_directory / "attempts.sqlite"
     if _file_digest(summary_path) != FROZEN_C_SUMMARY_SHA256:
@@ -135,9 +136,9 @@ def _validated_frozen_c_evidence(output_directory: Path) -> dict[str, Any]:
     return {
         "approved_plan_sha256": FROZEN_C_PLAN_SHA256,
         "code_revision": FROZEN_C_CODE_REVISION,
-        "summary_path": str(summary_path),
+        "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": FROZEN_C_SUMMARY_SHA256,
-        "journal_path": str(journal_path),
+        "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_C_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_C_ACTUAL_SPEND_USD),
         "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - FROZEN_C_ACTUAL_SPEND_USD),
@@ -164,7 +165,7 @@ def build_plan(
     frozen_c_output_directory: Path,
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
-    frozen_c_evidence = _validated_frozen_c_evidence(frozen_c_output_directory)
+    frozen_c_evidence = _validated_frozen_c_evidence(repository_root, frozen_c_output_directory)
     prior_spend = Decimal(frozen_c_evidence["actual_aggregate_spend_usd"])
     task = generate_task(TRIAL_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:

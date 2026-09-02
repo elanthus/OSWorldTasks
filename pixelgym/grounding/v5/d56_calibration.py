@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_bytes
+from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -78,7 +79,7 @@ def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
     return value
 
 
-def _validated_smoke_evidence(smoke_output_directory: Path) -> dict[str, Any]:
+def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Path) -> dict[str, Any]:
     summary_path = smoke_output_directory / "summary.json"
     journal_path = smoke_output_directory / "attempts.sqlite"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -132,9 +133,9 @@ def _validated_smoke_evidence(smoke_output_directory: Path) -> dict[str, Any]:
         raise ValueError("panel-smoke journal integrity mismatch")
     return {
         "approved_plan_sha256": approved_plan,
-        "summary_path": str(summary_path),
+        "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": _file_digest(summary_path),
-        "journal_path": str(journal_path),
+        "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": _file_digest(journal_path),
         "provider_wire_requests": provider_requests,
         "actual_aggregate_spend_usd": str(actual_spend),
@@ -145,7 +146,7 @@ def _validated_smoke_evidence(smoke_output_directory: Path) -> dict[str, Any]:
 def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
-    smoke_evidence = _validated_smoke_evidence(smoke_output_directory)
+    smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     prior_spend = Decimal(smoke_evidence["actual_aggregate_spend_usd"])
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(

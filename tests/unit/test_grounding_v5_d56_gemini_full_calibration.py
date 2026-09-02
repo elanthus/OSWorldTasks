@@ -169,3 +169,18 @@ def test_command_refuses_existing_output_before_loading_plan(tmp_path: Path) -> 
                 str(output),
             ]
         )
+
+
+def test_smoke_evidence_records_repository_relative_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Regression: this module recorded str(output_directory / ...), so an absolute
+    # invocation embedded the operator's home directory in the stored plan and summary.
+    smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
+
+    evidence = calibration._validated_smoke_evidence(tmp_path, smoke_output)
+
+    assert evidence["summary_path"] == "successful-smoke/summary.json"
+    assert evidence["journal_path"] == "successful-smoke/attempts.sqlite"
+    assert str(tmp_path) not in evidence["summary_path"]
+    assert str(tmp_path) not in evidence["journal_path"]

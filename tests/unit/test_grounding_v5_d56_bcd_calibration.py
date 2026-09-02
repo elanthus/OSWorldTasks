@@ -175,7 +175,7 @@ def test_bcd_predecessor_rejects_journal_digest_before_opening_sqlite(
     monkeypatch.setattr(d56_bcd_calibration, "V5AttemptJournal", fail_if_opened)
 
     with pytest.raises(ValueError, match="frozen D5.6 journal digest mismatch"):
-        d56_bcd_calibration._validated_frozen_calibration_evidence(frozen_output)
+        d56_bcd_calibration._validated_frozen_calibration_evidence(tmp_path, frozen_output)
 
 
 def test_bcd_execution_rejects_unapproved_digest_before_creating_output(

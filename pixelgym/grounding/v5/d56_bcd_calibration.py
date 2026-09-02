@@ -19,6 +19,7 @@ from pixelgym.grounding.v5.d56_calibration import (
     _git,
     _validated_smoke_evidence,
 )
+from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -74,6 +75,7 @@ def _streaming_file_digest(path: Path) -> str:
 
 
 def _validated_frozen_calibration_evidence(
+    repository_root: Path,
     output_directory: Path,
 ) -> dict[str, Any]:
     summary_path = output_directory / "summary.json"
@@ -150,9 +152,9 @@ def _validated_frozen_calibration_evidence(
     return {
         "approved_plan_sha256": FROZEN_PLAN_SHA256,
         "code_revision": FROZEN_CODE_REVISION,
-        "summary_path": str(summary_path),
+        "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": FROZEN_SUMMARY_SHA256,
-        "journal_path": str(journal_path),
+        "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_ACTUAL_SPEND_USD),
         "remaining_aggregate_spend_usd": str(
@@ -182,9 +184,9 @@ def build_plan(
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
-    smoke_evidence = _validated_smoke_evidence(smoke_output_directory)
+    smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     frozen_evidence = _validated_frozen_calibration_evidence(
-        frozen_calibration_output_directory
+        repository_root, frozen_calibration_output_directory
     )
     prior_spend = Decimal(frozen_evidence["actual_aggregate_spend_usd"])
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])

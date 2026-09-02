@@ -12,6 +12,7 @@ from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, Partition
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
 from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_maximum_stage_index
+from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -53,7 +54,7 @@ FROZEN_RELAXED_GLM_TERMINAL_IDENTITY = AttemptIdentity(
 )
 
 
-def _validated_frozen_relaxed_glm_evidence(output_directory: Path) -> dict[str, Any]:
+def _validated_frozen_relaxed_glm_evidence(repository_root: Path, output_directory: Path) -> dict[str, Any]:
     summary_path = output_directory / "summary.json"
     journal_path = output_directory / "attempts.sqlite"
     if _file_digest(summary_path) != FROZEN_RELAXED_GLM_SUMMARY_SHA256:
@@ -116,9 +117,9 @@ def _validated_frozen_relaxed_glm_evidence(output_directory: Path) -> dict[str, 
     return {
         "approved_plan_sha256": FROZEN_RELAXED_GLM_PLAN_SHA256,
         "code_revision": FROZEN_RELAXED_GLM_CODE_REVISION,
-        "summary_path": str(summary_path),
+        "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": FROZEN_RELAXED_GLM_SUMMARY_SHA256,
-        "journal_path": str(journal_path),
+        "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_RELAXED_GLM_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_RELAXED_GLM_ACTUAL_SPEND_USD),
         "terminal": {
@@ -138,7 +139,7 @@ def build_plan(
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     frozen_evidence = _validated_frozen_relaxed_glm_evidence(
-        frozen_relaxed_glm_trial_output_directory
+        repository_root, frozen_relaxed_glm_trial_output_directory
     )
     prior_spend = Decimal(frozen_evidence["actual_aggregate_spend_usd"])
     task = generate_task(SMOKE_SEED)

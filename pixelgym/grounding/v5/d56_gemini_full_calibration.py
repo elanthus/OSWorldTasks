@@ -18,6 +18,7 @@ from pixelgym.grounding.v5.d56_calibration import (
     _file_digest,
     _git,
 )
+from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -63,7 +64,7 @@ FROZEN_PREDECESSOR_SLOT_A_SUMMARY_SHA256 = (
 )
 
 
-def _validated_smoke_evidence(output_directory: Path) -> dict[str, Any]:
+def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> dict[str, Any]:
     summary_path = output_directory / "summary.json"
     journal_path = output_directory / "attempts.sqlite"
     if _file_digest(summary_path) != FROZEN_SMOKE_SUMMARY_SHA256:
@@ -136,9 +137,9 @@ def _validated_smoke_evidence(output_directory: Path) -> dict[str, Any]:
     return {
         "approved_plan_sha256": FROZEN_SMOKE_PLAN_SHA256,
         "code_revision": FROZEN_SMOKE_CODE_REVISION,
-        "summary_path": str(summary_path),
+        "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": FROZEN_SMOKE_SUMMARY_SHA256,
-        "journal_path": str(journal_path),
+        "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_SMOKE_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_SMOKE_ACTUAL_SPEND_USD),
         "remaining_aggregate_spend_usd": str(
@@ -155,7 +156,7 @@ def build_plan(
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
-    smoke_evidence = _validated_smoke_evidence(smoke_output_directory)
+    smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     prior_spend = Decimal(smoke_evidence["actual_aggregate_spend_usd"])
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     config = GEMINI_STATEFUL_FULL_CALIBRATION

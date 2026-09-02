@@ -19,7 +19,7 @@ def _stub_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         calibration,
         "_validated_smoke_evidence",
-        lambda _path: {
+        lambda _root, _path: {
             "approved_plan_sha256": "sha256:smoke",
             "actual_aggregate_spend_usd": "0.372661310",
         },
@@ -27,7 +27,7 @@ def _stub_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         calibration,
         "_validated_frozen_bcd_evidence",
-        lambda _path: {
+        lambda _root, _path: {
             "approved_plan_sha256": "sha256:qwen-429",
             "actual_aggregate_spend_usd": "2.040917557",
             "terminal": {"http_status": 429, "request_outcome": "unknown"},
@@ -110,7 +110,7 @@ def test_plan_rejects_spend_lineage_that_moves_backwards(
     monkeypatch.setattr(
         calibration,
         "_validated_frozen_bcd_evidence",
-        lambda _path: {"actual_aggregate_spend_usd": "5.00"},
+        lambda _root, _path: {"actual_aggregate_spend_usd": "5.00"},
     )
 
     with pytest.raises(ValueError, match="predecessor spend exceeds"):
