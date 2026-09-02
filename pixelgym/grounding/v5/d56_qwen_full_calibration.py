@@ -139,7 +139,7 @@ def build_plan(
             "hard_stop_conditions": [
                 "run spend ledger blocked",
                 "policy or request identity mismatch",
-                "missing, invalid, or exceeded price guard",
+                "a charge above the per-request theoretical maximum",
                 "non-retryable HTTP status",
                 "evidence-integrity failure",
             ],

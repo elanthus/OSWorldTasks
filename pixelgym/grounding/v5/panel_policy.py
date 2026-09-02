@@ -800,9 +800,21 @@ class OpenRouterPanelTransport:
         try:
             cost = _usage_cost(usage)
         except ValueError:
-            self.ledger.block()
+            # The response arrived but its charge is unreadable, which is the same
+            # unobservable-charge case as a dropped send: reserve the worst case
+            # rather than blocking every request that follows. An envelope that
+            # also lost its model identity is degenerate, not a billing anomaly,
+            # so it retries like any other transient transport fault.
             cost = None
             usage["price_guard"] = "missing_or_invalid_cost"
+            if body.get("model") is None and body.get("provider") is None:
+                return self._transport_fault(
+                    idempotency_key=idempotency_key,
+                    failure_code="provider_response_envelope_incomplete",
+                    started=started,
+                    cooldown_wait=cooldown_wait,
+                )
+            self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
         if cost is not None:
             usage["price_guard"] = (
                 "ok"

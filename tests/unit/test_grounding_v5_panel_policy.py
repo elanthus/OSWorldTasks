@@ -943,3 +943,83 @@ def test_unknown_charge_reservations_fail_closed_at_the_aggregate_cap() -> None:
     ledger.reserve_unknown_charge(Decimal("1.00"))
     assert ledger.blocked
     assert not ledger.reserve_wire(Decimal("0.001"))
+
+
+def degenerate_envelope() -> dict[str, Any]:
+    """The exact HTTP 200 shape that ended the Gemini v3 calibration at task 5."""
+
+    return {"choices": [{"message": {"content": ""}, "finish_reason": None}]}
+
+
+def test_unreadable_charge_reserves_worst_case_instead_of_blocking() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        return FakeHttpResponse(degenerate_envelope())
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-no-cost")
+
+    # A charge we cannot read must not block every request that follows.
+    assert outcome.status == "transport_fault"
+    assert outcome.failure_code == "provider_response_envelope_incomplete"
+    assert not ledger.blocked
+    assert ledger.unknown_charge_outcomes == 1
+    assert ledger.unknown_reservation_usd == (
+        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    )
+
+
+def test_identified_response_with_unreadable_charge_fails_only_that_request() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        return FakeHttpResponse(
+            {
+                "id": "resp-no-usage",
+                "model": GEMINI_STATEFUL_FULL_CALIBRATION.model,
+                "provider": "Google",
+                "choices": [
+                    {
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
+                        "finish_reason": "stop",
+                    }
+                ],
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-identified")
+
+    # The provider is identified, so this is a billing anomaly rather than a
+    # degenerate envelope: keep the response, reserve its cost, fail the guard.
+    assert outcome.status == "response"
+    assert outcome.response is not None
+    assert outcome.response["usage"]["price_guard"] == "missing_or_invalid_cost"
+    assert not ledger.blocked
+    assert ledger.unknown_reservation_usd == (
+        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    )
+
+
+def test_a_charge_above_the_per_request_maximum_still_blocks() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        return FakeHttpResponse(
+            {
+                "id": "resp-overcharge",
+                "model": GEMINI_STATEFUL_FULL_CALIBRATION.model,
+                "provider": "Google",
+                "choices": [
+                    {
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 5, "cost": "5.00"},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-overcharge")
+
+    # A charge beyond the modelled maximum means the price basis is wrong, which
+    # retrying cannot fix. This must still stop the run.
+    assert outcome.response is not None
+    assert outcome.response["usage"]["price_guard"] == "exceeded"
+    assert ledger.blocked
