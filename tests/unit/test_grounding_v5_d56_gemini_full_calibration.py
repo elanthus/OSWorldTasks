@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -8,7 +9,7 @@ import pytest
 from pixelgym.grounding.v5 import d56_gemini_full_calibration as calibration
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
-from pixelgym.grounding.v5.d56_calibration import _file_digest
+from pixelgym.grounding.v5.d56_calibration import CONSECUTIVE_FAILURE_LIMIT, _file_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from scripts import run_grounding_v5_d56_gemini_full_calibration
 
@@ -104,7 +105,9 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
     smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
     monkeypatch.setattr(calibration, "_git", lambda *_args: "revision-1")
 
-    plan = calibration.build_plan(ROOT, smoke_output_directory=smoke_output)
+    plan = calibration.build_plan(
+        ROOT, smoke_output_directory=smoke_output, maximum_spend_usd=Decimal("3.00")
+    )
 
     assert plan["provider_calls_made"] == 0
     assert plan["assigned_policy_task_pairs"] == 50
@@ -113,20 +116,22 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
     assert len(plan["task_order"]) == 50
     assert len({record["task_id"] for record in plan["task_order"]}) == 50
     assert plan["policy"]["policy_manifest"]["model"] == "google/gemini-3.7-flash"
-    assert plan["policy"]["policy_manifest"]["max_model_attempts_per_action"] == 2
+    assert plan["policy"]["policy_manifest"]["max_model_attempts_per_action"] == 4
     assert dict(
         plan["policy"]["policy_manifest"]["inference_parameters"]
-    )["max_rate_limit_retries_per_action"] == "1"
+    )["max_rate_limit_retries_per_action"] == "3"
     assert plan["policy"]["policy_manifest"]["request_deadline_seconds"] == 210.0
     assert plan["policy"]["provider"]["only"] == ["google-vertex/global"]
     assert plan["caps"]["environment_action_cap"] == 1431
-    assert plan["caps"]["model_attempt_cap"] == 2862
+    assert plan["caps"]["model_attempt_cap"] == 5724
     assert plan["caps"]["provider_control_request_cap"] == 0
-    assert plan["caps"]["provider_wire_request_cap"] == 2862
-    assert plan["caps"]["prior_aggregate_spend_usd"] == "2.488646332"
-    assert plan["caps"]["remaining_aggregate_spend_usd"] == "7.511353668"
+    assert plan["caps"]["provider_wire_request_cap"] == 5724
+    # The budget is exactly the approved value; no prior run contributes to it.
+    assert plan["caps"]["maximum_run_spend_usd"] == "3.00"
+    assert "no prior run's spend is carried in" in plan["caps"]["spend_lineage"]
+    assert not [key for key in plan["caps"] if "prior" in key or "aggregate" in key]
     assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.099532800"
-    assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "284.862873600"
+    assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "569.725747200"
     assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
     assert calibration.plan_digest(plan).startswith("sha256:")
 
@@ -136,7 +141,9 @@ def test_execute_rejects_unapproved_digest_before_output(
 ) -> None:
     smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
     monkeypatch.setattr(calibration, "_git", lambda *_args: "revision-1")
-    plan = calibration.build_plan(ROOT, smoke_output_directory=smoke_output)
+    plan = calibration.build_plan(
+        ROOT, smoke_output_directory=smoke_output, maximum_spend_usd=Decimal("3.00")
+    )
     output = tmp_path / "must-not-exist"
 
     with pytest.raises(ValueError, match="approved Gemini full calibration digest"):
@@ -184,3 +191,37 @@ def test_smoke_evidence_records_repository_relative_paths(
     assert evidence["journal_path"] == "successful-smoke/attempts.sqlite"
     assert str(tmp_path) not in evidence["summary_path"]
     assert str(tmp_path) not in evidence["journal_path"]
+
+
+def test_plan_declares_run_continuation_and_unobservable_charge_accounting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
+    monkeypatch.setattr(calibration, "_git", lambda *_args: "revision-1")
+
+    plan = calibration.build_plan(
+        ROOT, smoke_output_directory=smoke_output, maximum_spend_usd=Decimal("3.00")
+    )
+    continuation = plan["run_continuation"]
+
+    assert continuation["consecutive_failure_limit"] == CONSECUTIVE_FAILURE_LIMIT
+    assert "reserve the per-request theoretical maximum" in (
+        continuation["unobservable_charge_rule"]
+    )
+    assert "http_429_rate_limit" in continuation["retryable_send_outcomes"]
+    assert any(
+        "transient transport fault" in outcome
+        for outcome in continuation["retryable_send_outcomes"]
+    )
+    assert "run spend ledger blocked" in continuation["hard_stop_conditions"]
+    # A malformed model output must fail the assignment, not the run.
+    assert plan["policy"]["response_validation"][
+        "invalid_or_unparseable_output_rule"
+    ] == "retain_fail_the_assignment_and_continue_without_retry"
+    assert any(
+        "continue to the next task" in rule for rule in plan["stop_rules"]
+    )
+    assert any(
+        f"stop after {CONSECUTIVE_FAILURE_LIMIT} consecutive" in rule
+        for rule in plan["stop_rules"]
+    )

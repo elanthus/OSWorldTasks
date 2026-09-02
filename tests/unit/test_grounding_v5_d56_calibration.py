@@ -8,6 +8,8 @@ import pytest
 
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.d56_calibration import (
+    CONSECUTIVE_FAILURE_LIMIT,
+    ConsecutiveFailureBreaker,
     build_plan,
     execute_calibration,
     plan_digest,
@@ -136,3 +138,53 @@ def test_consumed_native_d56_execution_is_locked_after_adapter_replacement(
         )
 
     assert not output.exists()
+
+
+def test_breaker_keeps_running_after_an_isolated_malformed_output() -> None:
+    breaker = ConsecutiveFailureBreaker()
+
+    # This is the exact shape that stopped the frozen Qwen run at task 13 of 50.
+    assert breaker.record("step_limit_truncation") is False
+    assert breaker.record("invalid_output") is False
+    assert breaker.record("step_limit_truncation") is False
+    assert breaker.tripped is False
+    assert breaker.longest_failure_streak == 1
+
+
+def test_breaker_stops_a_sustained_failure_streak() -> None:
+    breaker = ConsecutiveFailureBreaker(limit=3)
+
+    assert breaker.record("invalid_output") is False
+    assert breaker.record("infrastructure_failure") is False
+    assert breaker.record("request_failure") is True
+    assert breaker.tripped is True
+    assert breaker.trip_reason == "consecutive_failure_limit_reached"
+
+
+def test_breaker_streak_resets_on_a_normal_classification() -> None:
+    breaker = ConsecutiveFailureBreaker(limit=3)
+
+    for _ in range(2):
+        assert breaker.record("invalid_output") is False
+    assert breaker.record("success_termination") is False
+    for _ in range(2):
+        assert breaker.record("invalid_output") is False
+    assert breaker.tripped is False
+    assert breaker.to_dict()["longest_consecutive_failure_streak"] == 2
+
+
+def test_breaker_records_an_external_stop_reason() -> None:
+    breaker = ConsecutiveFailureBreaker()
+    breaker.trip("aggregate_spend_ledger_blocked")
+
+    assert breaker.to_dict() == {
+        "consecutive_failure_limit": CONSECUTIVE_FAILURE_LIMIT,
+        "longest_consecutive_failure_streak": 0,
+        "tripped": True,
+        "trip_reason": "aggregate_spend_ledger_blocked",
+    }
+
+
+def test_breaker_rejects_a_non_positive_limit() -> None:
+    with pytest.raises(ValueError, match="consecutive failure limit"):
+        ConsecutiveFailureBreaker(limit=0)

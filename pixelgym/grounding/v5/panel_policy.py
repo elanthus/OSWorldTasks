@@ -43,13 +43,19 @@ SEED = 20260809
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-canonical-response-v2"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = (
-    "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
+    "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-"
+    "after-bounded-backoff-v3"
 )
 BOUNDED_RETRY_STOP_RULE = (
-    "retry at most once on the same pinned route after either a confirmed HTTP 429, "
-    "waiting for bounded Retry-After or exponential backoff, or a canonical zero-token, "
-    "zero-cost, empty response with finish_reason error; retain every attempt"
+    "retry on the same pinned route, up to the per-action bounded-retry budget declared "
+    "in the policy manifest, after a confirmed HTTP 429, a transient transport fault "
+    "(dropped connection, timeout, retryable 5xx, or unreadable envelope), or a canonical "
+    "zero-token, zero-cost, empty response with finish_reason error; wait for bounded "
+    "Retry-After or exponential backoff before each retry; reserve the per-request "
+    "theoretical maximum against the shared ledger for every send whose charge cannot be "
+    "observed; retain every attempt"
 )
+RETRYABLE_HTTP_STATUSES = frozenset({408, 425, 500, 502, 503, 504})
 
 
 @dataclass(frozen=True)
@@ -73,6 +79,7 @@ class PanelPolicyConfig:
     router_metadata: bool = False
     max_model_attempts_per_action: int = 2
     max_rate_limit_retries_per_action: int = 1
+    max_bounded_retries_per_action: int | None = None
     rate_limit_backoff_base_seconds: float = 2.0
     rate_limit_backoff_max_seconds: float = 60.0
     request_deadline_seconds: float = 180.0
@@ -80,8 +87,26 @@ class PanelPolicyConfig:
     def __post_init__(self) -> None:
         if not 0 <= self.max_rate_limit_retries_per_action < self.max_model_attempts_per_action:
             raise ValueError("rate-limit retry cap must fit within the model-attempt cap")
+        if not (
+            self.max_rate_limit_retries_per_action
+            <= self.bounded_retry_budget
+            < self.max_model_attempts_per_action
+        ):
+            raise ValueError("bounded retry cap must fit within the model-attempt cap")
         if not 0 < self.rate_limit_backoff_base_seconds <= self.rate_limit_backoff_max_seconds:
             raise ValueError("rate-limit backoff bounds are invalid")
+
+    @property
+    def bounded_retry_budget(self) -> int:
+        """Retries per action shared by rate limits and transient transport faults.
+
+        A config that predates transport-fault retries leaves this unset and keeps
+        its original rate-limit-only budget.
+        """
+
+        if self.max_bounded_retries_per_action is None:
+            return self.max_rate_limit_retries_per_action
+        return self.max_bounded_retries_per_action
 
     @property
     def request_maximum_usd(self) -> Decimal:
@@ -155,7 +180,7 @@ GEMINI_STATEFUL_ONE_CALL_SMOKE = PanelPolicyConfig(
     max_rate_limit_retries_per_action=0,
 )
 GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
-    slot="A-gemini-stateful-v2",
+    slot="A-gemini-stateful-v3",
     model=GEMINI_STATEFUL_ONE_CALL_SMOKE.model,
     provider_route=GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_route,
     response_provider=GEMINI_STATEFUL_ONE_CALL_SMOKE.response_provider,
@@ -173,7 +198,9 @@ GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
     stateful=True,
     temperature=None,
     router_metadata=True,
-    max_model_attempts_per_action=2,
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
     # The transport retains its 180-second timeout. The extra outer margin prevents
     # a transport timeout from racing the runner deadline and becoming ambiguous.
     request_deadline_seconds=210.0,
@@ -191,7 +218,7 @@ QWEN_STATEFUL = PanelPolicyConfig(
     stateful=True,
 )
 QWEN_STATEFUL_RETRY_SUCCESSOR = PanelPolicyConfig(
-    slot="B-qwen-stateful-v2",
+    slot="B-qwen-stateful-v3",
     model=QWEN_STATEFUL.model,
     provider_route=QWEN_STATEFUL.provider_route,
     response_provider=QWEN_STATEFUL.response_provider,
@@ -201,6 +228,12 @@ QWEN_STATEFUL_RETRY_SUCCESSOR = PanelPolicyConfig(
     adapter=QWEN_STATEFUL.adapter,
     coordinate_input_convention=QWEN_STATEFUL.coordinate_input_convention,
     stateful=True,
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
+    # Match the Gemini successor: keep the runner deadline clear of the
+    # transport's own 180-second timeout so a slow send stays unambiguous.
+    request_deadline_seconds=210.0,
 )
 LLAMA_STATEFUL = PanelPolicyConfig(
     slot="C-llama-stateful",
@@ -482,6 +515,8 @@ class SpendLedger:
     maximum_spend_usd: Decimal
     spent_usd: Decimal
     wire_requests_sent: int = 0
+    unknown_reservation_usd: Decimal = Decimal(0)
+    unknown_charge_outcomes: int = 0
     blocked: bool = False
     _lock: Lock = field(default_factory=Lock, repr=False, compare=False)
 
@@ -491,9 +526,18 @@ class SpendLedger:
         if self.spent_usd > self.maximum_spend_usd:
             raise ValueError("prior spend exceeds the aggregate cap")
 
+    @property
+    def budget_accounted_spend_usd(self) -> Decimal:
+        """Known spend plus worst-case reservations for unobservable charges."""
+
+        return self.spent_usd + self.unknown_reservation_usd
+
     def reserve_wire(self, request_maximum_usd: Decimal) -> bool:
         with self._lock:
-            if self.blocked or self.spent_usd + request_maximum_usd > self.maximum_spend_usd:
+            projected = (
+                self.spent_usd + self.unknown_reservation_usd + request_maximum_usd
+            )
+            if self.blocked or projected > self.maximum_spend_usd:
                 return False
             self.wire_requests_sent += 1
             return True
@@ -501,10 +545,27 @@ class SpendLedger:
     def record_cost(self, cost: Decimal, request_maximum_usd: Decimal) -> bool:
         with self._lock:
             self.spent_usd += cost
-            if cost > request_maximum_usd or self.spent_usd > self.maximum_spend_usd:
+            if (
+                cost > request_maximum_usd
+                or self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd
+            ):
                 self.blocked = True
                 return False
             return True
+
+    def reserve_unknown_charge(self, request_maximum_usd: Decimal) -> None:
+        """Charge a sent request whose actual cost cannot be observed.
+
+        The request may have been served and billed upstream. Reserving its
+        worst-case cost keeps the aggregate guard fail-closed while letting the
+        run continue, instead of blocking every remaining request.
+        """
+
+        with self._lock:
+            self.unknown_reservation_usd += request_maximum_usd
+            self.unknown_charge_outcomes += 1
+            if self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd:
+                self.blocked = True
 
     def block(self) -> None:
         with self._lock:
@@ -539,11 +600,64 @@ class OpenRouterPanelTransport:
         self._sleep = sleep
         self._cooldown_until = 0.0
         self._consecutive_rate_limits = 0
+        self._consecutive_transport_faults = 0
         self.records: list[dict[str, Any]] = []
 
     @property
     def spent_usd(self) -> Decimal:
         return self.ledger.spent_usd
+
+    @property
+    def unknown_reservation_usd(self) -> Decimal:
+        return self.ledger.unknown_reservation_usd
+
+    def _transport_fault(
+        self,
+        *,
+        idempotency_key: str,
+        failure_code: str,
+        started: float,
+        cooldown_wait: float,
+        metadata: dict[str, Any] | None = None,
+    ) -> TransportOutcome:
+        """Reserve an unobservable charge and hand the runner a retryable outcome.
+
+        The send reached the wire, so the provider may already have served and
+        billed it. The worst-case reservation keeps the aggregate guard honest
+        without blocking every request that follows.
+        """
+
+        self._consecutive_transport_faults += 1
+        self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
+        backoff_seconds = min(
+            self.config.rate_limit_backoff_base_seconds
+            * (2 ** min(max(0, self._consecutive_transport_faults - 1), 63)),
+            self.config.rate_limit_backoff_max_seconds,
+        )
+        self._cooldown_until = max(
+            self._cooldown_until, self._monotonic() + backoff_seconds
+        )
+        self.records.append(
+            {
+                "idempotency_key": idempotency_key,
+                "slot": self.config.slot,
+                "status": "transport_fault",
+                "failure_code": failure_code,
+                "latency_ms": (self._monotonic() - started) * 1000,
+                "pre_send_backoff_seconds": cooldown_wait,
+                "retry_after_seconds": backoff_seconds,
+                "backoff_source": "exponential_fallback",
+                "cost_usd": None,
+                "unknown_charge_reservation_usd": str(self.config.request_maximum_usd),
+                **(metadata or {}),
+            }
+        )
+        return TransportOutcome(
+            "transport_fault",
+            failure_code=failure_code,
+            retry_after_seconds=backoff_seconds,
+            backoff_source="exponential_fallback",
+        )
 
     @property
     def wire_requests_sent(self) -> int:
@@ -631,6 +745,16 @@ class OpenRouterPanelTransport:
                     retry_after_seconds=retry_after_seconds,
                     backoff_source=backoff_source,
                 )
+            if exc.code in RETRYABLE_HTTP_STATUSES:
+                return self._transport_fault(
+                    idempotency_key=idempotency_key,
+                    failure_code=f"retryable_http_{exc.code}",
+                    started=started,
+                    cooldown_wait=cooldown_wait,
+                    metadata=_safe_http_error_metadata(exc),
+                )
+            # A non-retryable HTTP status is a request, route, or credential
+            # defect. Retrying cannot fix it, so the ledger stays blocked.
             self.ledger.block()
             self.records.append(
                 {
@@ -648,19 +772,21 @@ class OpenRouterPanelTransport:
             http.client.HTTPException,
             json.JSONDecodeError,
         ) as exc:
-            self.ledger.block()
-            self.records.append(
-                {
-                    "idempotency_key": idempotency_key,
-                    "status": "unknown",
-                    "failure_code": type(exc).__name__,
-                }
+            return self._transport_fault(
+                idempotency_key=idempotency_key,
+                failure_code=type(exc).__name__,
+                started=started,
+                cooldown_wait=cooldown_wait,
             )
-            return TransportOutcome("unknown", failure_code="provider_request_unknown")
         if not isinstance(body, dict):
-            self.ledger.block()
-            return TransportOutcome("unknown", failure_code="provider_envelope_invalid")
+            return self._transport_fault(
+                idempotency_key=idempotency_key,
+                failure_code="provider_envelope_invalid",
+                started=started,
+                cooldown_wait=cooldown_wait,
+            )
         self._consecutive_rate_limits = 0
+        self._consecutive_transport_faults = 0
         try:
             content = body["choices"][0]["message"]["content"]
             finish_reason = body["choices"][0].get("finish_reason")
@@ -903,6 +1029,13 @@ def build_panel_policy_manifest(
             str(MAX_RUNNER_DEADLINE_SAFETY_MARGIN_SECONDS),
         ),
     ]
+    if config.max_bounded_retries_per_action is not None:
+        inference_parameters.append(
+            (
+                "max_bounded_retries_per_action",
+                str(config.max_bounded_retries_per_action),
+            )
+        )
     if config.temperature is not None:
         inference_parameters.append(("temperature", str(config.temperature)))
     if config.quantizations:

@@ -396,6 +396,8 @@ def test_v5_runner_retries_one_429_as_a_new_journaled_attempt(tmp_path: Path) ->
             "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
         ),
         "next_attempt_permitted": True,
+        "bounded_retries_used": 0,
+        "bounded_retry_budget": 1,
     }
     starts = [event for event in events if event.kind == "attempt_started"]
     assert starts[0].payload["request_digest"] == starts[1].payload["request_digest"]
@@ -1110,3 +1112,150 @@ def test_v5_recovery_rejects_tampered_environment_binding(tmp_path: Path) -> Non
     )
     assert recovered["classification"] == "dispatched"
     assert backend.task.task_id == task.task_id
+
+
+def bounded_retry_manifest(
+    attempts: int = 4, budget: int = 3, rate_limit_budget: int | None = None
+) -> PolicyManifest:
+    values = retry_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values.update(
+        {
+            "max_model_attempts_per_action": attempts,
+            "transport_retry_rule": (
+                "bounded-same-route-zero-completion-http-429-or-transient-transport-"
+                "fault-after-bounded-backoff-v3"
+            ),
+            "inference_parameters": (
+                (
+                    "max_rate_limit_retries_per_action",
+                    str(budget if rate_limit_budget is None else rate_limit_budget),
+                ),
+                ("max_bounded_retries_per_action", str(budget)),
+                ("rate_limit_backoff_base_seconds", "2.0"),
+                ("rate_limit_backoff_max_seconds", "60.0"),
+            ),
+        }
+    )
+    return PolicyManifest.build(**values)
+
+
+def transport_fault(seconds: float = 2.0) -> TransportOutcome:
+    return TransportOutcome(
+        "transport_fault",
+        failure_code="URLError",
+        retry_after_seconds=seconds,
+        backoff_source="exponential_fallback",
+    )
+
+
+def test_v5_runner_retries_a_dropped_request_then_succeeds(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    transport = ScriptedTransport([transport_fault(), transport_fault()])
+    journal = V5AttemptJournal(tmp_path / "transport-fault-retry.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=bounded_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 4, 0, 4),
+    ).run(trial_id="trial-transport-fault", task=task, action_limit=1)
+
+    # Two dropped sends are absorbed; the third reaches the model and dispatches.
+    assert result.classification == "pilot_action_limit"
+    assert result.model_attempts == 3
+    events = journal.events("trial-transport-fault")
+    kinds = [event.kind for event in events]
+    assert kinds.count("attempt_started") == 3
+    assert kinds.count("retryable_transport_fault") == 2
+    assert kinds.count("unknown_outcome_infrastructure_failure") == 2
+    fault = next(event for event in events if event.kind == "retryable_transport_fault")
+    assert fault.payload["failure_code"] == "URLError"
+    assert fault.payload["next_attempt_permitted"] is True
+    assert fault.payload["bounded_retry_budget"] == 3
+    journal.close()
+
+
+def test_v5_runner_settles_after_the_bounded_retry_budget_is_spent(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    transport = ScriptedTransport([transport_fault() for _ in range(4)])
+    journal = V5AttemptJournal(tmp_path / "transport-fault-exhausted.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=bounded_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 4, 0, 4),
+    ).run(trial_id="trial-fault-exhausted", task=task, action_limit=1)
+
+    # Four faults exhaust one initial attempt plus three retries.
+    assert result.classification == "infrastructure_failure"
+    assert result.model_attempts == 4
+    assert len(transport.model_requests) == 4
+    events = journal.events("trial-fault-exhausted")
+    assert [event.kind for event in events].count("retryable_transport_fault") == 4
+    sealed = next(
+        event
+        for event in events
+        if event.kind == "sealed_unsuccessful_result"
+    )
+    assert sealed.payload["failure_code"] == "transport_fault_retry_exhausted"
+    journal.close()
+
+
+def test_v5_runner_shares_one_retry_budget_across_429_and_transport_faults(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    transport = ScriptedTransport(
+        [
+            TransportOutcome(
+                "rate_limited",
+                failure_code="http_429_rate_limit",
+                retry_after_seconds=3.0,
+                backoff_source="retry_after",
+            ),
+            transport_fault(),
+            TransportOutcome(
+                "rate_limited",
+                failure_code="http_429_rate_limit",
+                retry_after_seconds=3.0,
+                backoff_source="retry_after",
+            ),
+            transport_fault(),
+        ]
+    )
+    journal = V5AttemptJournal(tmp_path / "mixed-retry.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=bounded_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 4, 0, 4),
+    ).run(trial_id="trial-mixed-retry", task=task, action_limit=1)
+
+    # A mixed fault streak draws from the same budget: four sends, not eight.
+    assert result.model_attempts == 4
+    assert len(transport.model_requests) == 4
+    kinds = [event.kind for event in journal.events("trial-mixed-retry")]
+    assert kinds.count("retryable_rate_limit") == 2
+    assert kinds.count("retryable_transport_fault") == 2
+    assert result.classification == "infrastructure_failure"
+    journal.close()
+
+
+def test_v5_runner_rejects_a_bounded_budget_wider_than_the_attempt_cap() -> None:
+    with pytest.raises(ValueError, match="bounded retry cap"):
+        V5Runner(
+            journal=object(),  # type: ignore[arg-type]
+            manifest=bounded_retry_manifest(attempts=2, budget=2, rate_limit_budget=1),
+            transport=ScriptedTransport(),
+            policy=scripted_policy(5000),
+            approved_caps=CallCaps(1, 2, 0, 2),
+        )

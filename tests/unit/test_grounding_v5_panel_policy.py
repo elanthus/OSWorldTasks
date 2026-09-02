@@ -278,12 +278,14 @@ def test_gemini_full_calibration_matches_smoke_inference_with_deadline_margin() 
     assert request["provider"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_parameters()
     assert request["response_format"]["json_schema"]["strict"] is True
     assert config.request_maximum_usd == GEMINI_STATEFUL_ONE_CALL_SMOKE.request_maximum_usd
-    assert config.max_model_attempts_per_action == 2
-    assert config.max_rate_limit_retries_per_action == 1
+    assert config.max_model_attempts_per_action == 4
+    assert config.max_rate_limit_retries_per_action == 3
+    assert config.bounded_retry_budget == 3
     manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
     assert manifest.request_deadline_seconds == 210.0
-    assert manifest.max_model_attempts_per_action == 2
-    assert dict(manifest.inference_parameters)["max_rate_limit_retries_per_action"] == "1"
+    assert manifest.max_model_attempts_per_action == 4
+    assert dict(manifest.inference_parameters)["max_rate_limit_retries_per_action"] == "3"
+    assert dict(manifest.inference_parameters)["max_bounded_retries_per_action"] == "3"
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:
@@ -762,3 +764,182 @@ def test_panel_manifest_ids_bind_model_route_adapter_and_memory(tmp_path: Path) 
     assert manifests[2].inference_parameters[-1] == ("quantizations", "fp8")
     assert all(manifest.max_model_attempts_per_action == 2 for manifest in manifests)
     assert all(manifest.transport_retry_rule == TRANSPORT_RETRY_RULE for manifest in manifests)
+
+
+def gemini_transport(
+    urlopen: Any, *, ledger: SpendLedger, sleeps: list[float] | None = None
+) -> OpenRouterPanelTransport:
+    return OpenRouterPanelTransport(
+        GEMINI_STATEFUL_FULL_CALIBRATION,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+        sleep=(sleeps.append if sleeps is not None else lambda _seconds: None),
+    )
+
+
+def one_send(transport: OpenRouterPanelTransport, key: str) -> TransportOutcome:
+    policy = OpenRouterPanelPolicy(GEMINI_STATEFUL_FULL_CALIBRATION)
+    return transport.send(
+        policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3)),
+        idempotency_key=key,
+        deadline_seconds=60.0,
+    )
+
+
+@pytest.mark.parametrize(
+    ("raise_error", "failure_code"),
+    [
+        (lambda: (_ for _ in ()).throw(urllib.error.URLError("connection reset")), "URLError"),
+        (lambda: (_ for _ in ()).throw(TimeoutError("read timed out")), "TimeoutError"),
+        (
+            lambda: (_ for _ in ()).throw(
+                urllib.error.HTTPError(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    503,
+                    "Service Unavailable",
+                    None,
+                    io.BytesIO(b"{}"),
+                )
+            ),
+            "retryable_http_503",
+        ),
+    ],
+)
+def test_dropped_request_is_retryable_and_does_not_block_the_ledger(
+    raise_error: Any, failure_code: str
+) -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise_error()
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-dropped")
+
+    assert outcome.status == "transport_fault"
+    assert outcome.failure_code == failure_code
+    assert outcome.retry_after_seconds == 2.0
+    # The run must survive the fault, so the ledger stays open ...
+    assert not ledger.blocked
+    # ... while the possibly-billed send is charged at its worst case.
+    assert ledger.unknown_charge_outcomes == 1
+    assert ledger.unknown_reservation_usd == (
+        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    )
+    assert ledger.budget_accounted_spend_usd == ledger.unknown_reservation_usd
+
+
+def test_unreadable_envelope_is_a_retryable_transport_fault() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        return FakeHttpResponse(["not", "an", "object"])  # type: ignore[arg-type]
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-envelope")
+
+    assert outcome.status == "transport_fault"
+    assert outcome.failure_code == "provider_envelope_invalid"
+    assert not ledger.blocked
+    assert ledger.unknown_charge_outcomes == 1
+
+
+def test_non_retryable_http_status_still_blocks_the_ledger() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.HTTPError(
+            "https://openrouter.ai/api/v1/chat/completions",
+            401,
+            "Unauthorized",
+            None,
+            io.BytesIO(b"{}"),
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    outcome = one_send(gemini_transport(urlopen, ledger=ledger), "attempt-auth")
+
+    # A credential or route defect cannot be retried away; it must stop the run.
+    assert outcome.status == "unknown"
+    assert ledger.blocked
+    assert ledger.unknown_charge_outcomes == 0
+
+
+def test_a_dropped_request_does_not_poison_the_requests_that_follow() -> None:
+    calls: list[int] = []
+
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        calls.append(1)
+        if len(calls) == 1:
+            raise urllib.error.URLError("connection reset")
+        return FakeHttpResponse(
+            {
+                "id": "resp-2",
+                "model": GEMINI_STATEFUL_FULL_CALIBRATION.model,
+                "provider": "Google",
+                "choices": [
+                    {
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 5, "cost": "0.002"},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    sleeps: list[float] = []
+    transport = gemini_transport(urlopen, ledger=ledger, sleeps=sleeps)
+
+    first = one_send(transport, "attempt-1")
+    second = one_send(transport, "attempt-2")
+
+    assert first.status == "transport_fault"
+    assert second.status == "response"
+    assert second.response is not None
+    assert second.response["usage"]["price_guard"] == "ok"
+    # The retry waits out the fault's exponential backoff before reaching the wire.
+    assert sleeps and sleeps[0] == pytest.approx(2.0, abs=0.5)
+    assert ledger.spent_usd == Decimal("0.002")
+    assert ledger.unknown_charge_outcomes == 1
+
+
+def test_transport_fault_backoff_grows_and_resets_after_a_response() -> None:
+    faulty = [True]
+
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        if faulty[0]:
+            raise urllib.error.URLError("connection reset")
+        return FakeHttpResponse(
+            {
+                "id": "resp",
+                "model": GEMINI_STATEFUL_FULL_CALIBRATION.model,
+                "provider": "Google",
+                "choices": [
+                    {
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 5, "cost": "0.002"},
+            }
+        )
+
+    transport = gemini_transport(urlopen, ledger=SpendLedger(Decimal(10), Decimal(0)))
+    delays = [one_send(transport, f"attempt-{index}").retry_after_seconds for index in range(3)]
+    assert delays == [2.0, 4.0, 8.0]
+
+    faulty[0] = False
+    assert one_send(transport, "attempt-ok").status == "response"
+    # A clean response clears the streak, so the next fault starts at the base delay.
+    faulty[0] = True
+    assert one_send(transport, "attempt-after").retry_after_seconds == 2.0
+
+
+def test_unknown_charge_reservations_fail_closed_at_the_aggregate_cap() -> None:
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+
+    ledger.reserve_unknown_charge(Decimal("9.99"))
+    assert not ledger.blocked
+    # A reservation consumes budget, so it must gate the next send.
+    assert not ledger.reserve_wire(Decimal("0.02"))
+    assert ledger.reserve_wire(Decimal("0.005"))
+
+    ledger.reserve_unknown_charge(Decimal("1.00"))
+    assert ledger.blocked
+    assert not ledger.reserve_wire(Decimal("0.001"))
