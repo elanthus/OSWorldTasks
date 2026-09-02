@@ -33,9 +33,13 @@ from pixelgym.task_spec import TaskSpec
 
 @dataclass(frozen=True)
 class TransportOutcome:
-    status: Literal["response", "pre_send_failure", "deadline", "unknown"]
+    status: Literal[
+        "response", "pre_send_failure", "deadline", "rate_limited", "unknown"
+    ]
     response: dict[str, Any] | None = None
     failure_code: str | None = None
+    retry_after_seconds: float | None = None
+    backoff_source: str | None = None
 
 
 class ProviderTransport(Protocol):
@@ -267,6 +271,15 @@ class V5Runner:
         self.approved_caps = approved_caps
         self.interrupt_after = interrupt_after
         self.deadline_executor = deadline_executor or DaemonDeadlineExecutor()
+        retry_cap = dict(manifest.inference_parameters).get(
+            "max_rate_limit_retries_per_action", "0"
+        )
+        try:
+            self.max_rate_limit_retries_per_action = int(retry_cap)
+        except ValueError as exc:
+            raise ValueError("rate-limit retry cap must be an integer") from exc
+        if not 0 <= self.max_rate_limit_retries_per_action < manifest.max_model_attempts_per_action:
+            raise ValueError("rate-limit retry cap must fit within the model-attempt cap")
 
     @property
     def model_attempts(self) -> int:
@@ -398,6 +411,7 @@ class V5Runner:
         attempt_identities: list[AttemptIdentity] = []
         canonical_response: bytes | None = None
         post_attempt_state = state
+        rate_limit_retries = 0
         for attempt_index in range(self.manifest.max_model_attempts_per_action):
             identity = AttemptIdentity(trial_id, step_index, attempt_index)
             attempt_identities.append(identity)
@@ -438,6 +452,65 @@ class V5Runner:
             if not isinstance(transport_outcome, TransportOutcome):
                 raise TypeError("provider transport returned an invalid outcome")
             self._boundary("provider_receipt")
+            if transport_outcome.status == "rate_limited":
+                next_attempt_permitted = (
+                    rate_limit_retries
+                    < self.max_rate_limit_retries_per_action
+                    and attempt_index + 1
+                    < self.manifest.max_model_attempts_per_action
+                )
+                failure_code = transport_outcome.failure_code or "http_429_rate_limit"
+                post_rate_limit_state = (
+                    state
+                    if next_attempt_permitted
+                    else self.policy.failure_state(state, failure_code)
+                )
+                # This legacy terminal name represents a confirmed zero-response
+                # send; the adjacent event supplies the exact HTTP 429 route.
+                self.journal.seal_attempt_terminal(
+                    identity,
+                    kind="confirmed_no_response_timeout",
+                    post_attempt_checkpoint=post_rate_limit_state,
+                    failure_code=failure_code,
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/retryable_rate_limit",
+                    kind="retryable_rate_limit",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=attempt_index,
+                    payload={
+                        "failure_code": failure_code,
+                        "retry_after_seconds": transport_outcome.retry_after_seconds,
+                        "backoff_source": transport_outcome.backoff_source,
+                        "retry_rule": self.manifest.transport_retry_rule,
+                        "next_attempt_permitted": next_attempt_permitted,
+                    },
+                )
+                self._boundary("attempt_terminal")
+                self._boundary("retryable_rate_limit")
+                if next_attempt_permitted:
+                    rate_limit_retries += 1
+                    continue
+                self.journal.append_event(
+                    event_key=f"{identity.key}/sealed_rate_limit_retry_exhausted",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=attempt_index,
+                    payload={
+                        "failure_code": "rate_limit_retry_exhausted",
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
+                        "policy_checkpoint_digest": "sha256:"
+                        + sha256_bytes(post_rate_limit_state),
+                    },
+                )
+                return {
+                    "classification": "request_failure",
+                    "state": post_rate_limit_state,
+                }
             if transport_outcome.status != "response" or transport_outcome.response is None:
                 settled = self._settle(
                     identity, idempotency_key, transport_outcome, state
@@ -929,7 +1002,15 @@ class V5Runner:
             )
             for event in started_events
         ]
-        retryable_event = by_kind.get("retryable_provider_response")
+        retryable_event = next(
+            (
+                event
+                for event in reversed(events)
+                if event.kind
+                in {"retryable_provider_response", "retryable_rate_limit"}
+            ),
+            None,
+        )
         latest_started = started_events[-1] if started_events else None
         if (
             retryable_event is not None

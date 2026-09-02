@@ -12,6 +12,11 @@ import pytest
 from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_STATEFUL,
+    GEMINI_STATEFUL_FULL_CALIBRATION,
+    GEMINI_STATEFUL_ONE_CALL_SMOKE,
+    GLM_STATEFUL_CANDIDATE,
+    GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE,
+    GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
     LLAMA_STATEFUL,
     PANEL,
     QWEN_STATEFUL,
@@ -23,7 +28,10 @@ from pixelgym.grounding.v5.panel_policy import (
     action_schema,
     build_panel_policy_manifest,
 )
+from pixelgym.grounding.v5.runner import TransportOutcome
 from pixelgym.serialization import canonical_json_bytes
+
+ROOT = Path(__file__).parents[2]
 
 
 class FakeHttpResponse:
@@ -38,6 +46,19 @@ class FakeHttpResponse:
 
     def read(self) -> bytes:
         return json.dumps(self.value).encode("utf-8")
+
+
+class FakeClock:
+    def __init__(self) -> None:
+        self.now = 0.0
+        self.sleeps: list[float] = []
+
+    def monotonic(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.sleeps.append(seconds)
+        self.now += seconds
 
 
 def canonical_response(
@@ -89,22 +110,130 @@ def test_panel_requests_pin_provider_and_are_credential_free(config: Any) -> Non
     assert "api_key" not in json.dumps(request).lower()
 
 
-def test_llama_uses_native_coordinates_and_fp8_route_filter() -> None:
+def test_llama_uses_normalized_coordinates_and_fp8_route_filter() -> None:
     policy = OpenRouterPanelPolicy(LLAMA_STATEFUL)
     request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
     schema = request["response_format"]["json_schema"]["schema"]
 
     assert request["provider"]["only"] == ["deepinfra"]
     assert request["provider"]["quantizations"] == ["fp8"]
-    assert schema["properties"]["x"]["maximum"] == 1023
-    assert schema["properties"]["y"]["maximum"] == 767
+    assert schema["properties"]["x"]["maximum"] == 999
+    assert schema["properties"]["y"]["maximum"] == 999
     assert OpenRouterPanelPolicy(LLAMA_STATEFUL).parse(
         canonical_response(
             config=LLAMA_STATEFUL,
-            action='{"action_type":1,"x":1023,"y":767,"key":0}',
+            action='{"action_type":1,"x":999,"y":999,"key":0}',
         ),
         policy.reset("task"),
     ) == {"action_type": 1, "x": 1023, "y": 767, "key": 0}
+
+
+def test_glm_candidate_uses_novita_fp8_and_normalized_coordinates() -> None:
+    policy = OpenRouterPanelPolicy(GLM_STATEFUL_CANDIDATE)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+    schema = request["response_format"]["json_schema"]["schema"]
+
+    assert GLM_STATEFUL_CANDIDATE not in PANEL
+    assert request["model"] == "z-ai/glm-5.3-flash"
+    assert request["provider"] == {
+        "only": ["novita"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+        "quantizations": ["fp8"],
+    }
+    assert request["seed"] == 20260809
+    assert schema["properties"]["x"]["maximum"] == 999
+    assert schema["properties"]["y"]["maximum"] == 999
+    assert GLM_STATEFUL_CANDIDATE.request_maximum_usd == Decimal("0.0105472")
+    assert request["response_format"]["json_schema"]["strict"] is True
+
+
+def test_glm_relaxed_schema_candidate_changes_only_schema_mode_and_identity() -> None:
+    strict_policy = OpenRouterPanelPolicy(GLM_STATEFUL_CANDIDATE)
+    relaxed_policy = OpenRouterPanelPolicy(GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE)
+    strict_request = strict_policy.build_request(strict_policy.reset("task"), bytes(1024 * 768 * 3))
+    relaxed_request = relaxed_policy.build_request(
+        relaxed_policy.reset("task"), bytes(1024 * 768 * 3)
+    )
+
+    assert GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE not in PANEL
+    assert relaxed_request["response_format"]["json_schema"]["strict"] is False
+    strict_request["response_format"]["json_schema"]["strict"] = False
+    assert strict_request == relaxed_request
+    strict_manifest = build_panel_policy_manifest(
+        ROOT, config=GLM_STATEFUL_CANDIDATE, code_revision="revision"
+    )
+    relaxed_manifest = build_panel_policy_manifest(
+        ROOT,
+        config=GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
+        code_revision="revision",
+    )
+    assert strict_manifest.policy_id != relaxed_manifest.policy_id
+    assert dict(strict_manifest.inference_parameters)["response_schema_strict"] == "true"
+    assert dict(relaxed_manifest.inference_parameters)["response_schema_strict"] == "false"
+
+    with pytest.raises((json.JSONDecodeError, ValueError, KeyError, TypeError)):
+        relaxed_policy.parse(
+            canonical_response(config=GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE, action="not json"),
+            relaxed_policy.reset("task"),
+        )
+
+
+def test_glm_json_object_smoke_pins_exact_novita_endpoint_without_structured_outputs() -> None:
+    config = GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == "z-ai/glm-5.3-flash"
+    assert request["provider"] == {
+        "only": ["novita/fp8"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+        "quantizations": ["fp8"],
+    }
+    assert request["response_format"] == {"type": "json_object"}
+    assert config.max_model_attempts_per_action == 1
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.max_model_attempts_per_action == 1
+    assert dict(manifest.inference_parameters)["response_format_type"] == "json_object"
+    assert dict(manifest.inference_parameters)["router_metadata"] == "enabled"
+
+
+def test_glm_json_object_smoke_requests_safe_router_metadata() -> None:
+    config = GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE
+    captured: dict[str, Any] = {}
+
+    def urlopen(request: Any, *, timeout: float) -> FakeHttpResponse:
+        del timeout
+        captured["metadata_header"] = request.get_header("X-openrouter-metadata")
+        return FakeHttpResponse(
+            {
+                "id": "response-1",
+                "model": config.model,
+                "provider": config.response_provider,
+                "choices": [{"message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'}}],
+                "usage": {"cost": "0.0001", "completion_tokens": 1},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(config)
+    outcome = OpenRouterPanelTransport(
+        config,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+    ).send(
+        policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3)),
+        idempotency_key="attempt-json-object",
+        deadline_seconds=1.0,
+    )
+
+    assert outcome.status == "response"
+    assert captured["metadata_header"] == "enabled"
 
 
 def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:
@@ -115,6 +244,46 @@ def test_gemini_uses_vertex_global_without_unsupported_temperature() -> None:
     assert request["provider"]["data_collection"] == "deny"
     assert request["seed"] == 20260809
     assert "temperature" not in request
+
+
+def test_gemini_one_call_smoke_is_strict_no_retry_and_reserves_priority_price() -> None:
+    config = GEMINI_STATEFUL_ONE_CALL_SMOKE
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == "google/gemini-3.7-flash"
+    assert request["provider"] == {
+        "only": ["google-vertex/global"],
+        "allow_fallbacks": False,
+        "data_collection": "deny",
+        "require_parameters": True,
+    }
+    assert request["response_format"]["json_schema"]["strict"] is True
+    assert "temperature" not in request
+    assert config.max_model_attempts_per_action == 1
+    assert config.request_maximum_usd == Decimal("0.099532800")
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.max_model_attempts_per_action == 1
+    assert dict(manifest.inference_parameters)["router_metadata"] == "enabled"
+
+
+def test_gemini_full_calibration_matches_smoke_inference_with_deadline_margin() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    assert config not in PANEL
+    assert request["model"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.model
+    assert request["provider"] == GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_parameters()
+    assert request["response_format"]["json_schema"]["strict"] is True
+    assert config.request_maximum_usd == GEMINI_STATEFUL_ONE_CALL_SMOKE.request_maximum_usd
+    assert config.max_model_attempts_per_action == 2
+    assert config.max_rate_limit_retries_per_action == 1
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="revision")
+    assert manifest.request_deadline_seconds == 210.0
+    assert manifest.max_model_attempts_per_action == 2
+    assert dict(manifest.inference_parameters)["max_rate_limit_retries_per_action"] == "1"
 
 
 def test_normalized_panel_policy_maps_grid_to_native_pixels() -> None:
@@ -149,10 +318,7 @@ def test_panel_policy_retries_only_exact_zero_completion_error_envelope() -> Non
     response.update({"content": "", "finish_reason": "error"})
     response["usage"].update({"completion_tokens": 0, "cost": "0"})
 
-    assert (
-        policy.retryable_response_code(canonical_json_bytes(response))
-        == "zero_completion_error"
-    )
+    assert policy.retryable_response_code(canonical_json_bytes(response)) == "zero_completion_error"
     for field, value in (
         ("content", "not empty"),
         ("finish_reason", "stop"),
@@ -228,9 +394,7 @@ def test_shared_spend_ledger_accounts_across_policy_transports() -> None:
                 "provider": config.response_provider,
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
@@ -299,7 +463,24 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
                     "provider_name": "Google AI Studio",
                     "raw": "sensitive upstream response must not be retained",
                 },
-            }
+            },
+            "openrouter_metadata": {
+                "requested": "z-ai/glm-5.3-flash",
+                "strategy": "direct",
+                "attempt": 0,
+                "endpoints": {
+                    "total": 1,
+                    "available": [
+                        {
+                            "provider": "Novita",
+                            "model": "z-ai/glm-5.3-flash",
+                            "selected": False,
+                            "private_detail": "must not be retained",
+                        }
+                    ],
+                },
+                "private_detail": "must not be retained",
+            },
         }
     ).encode("utf-8")
 
@@ -341,9 +522,134 @@ def test_panel_transport_records_safe_bounded_http_error_metadata() -> None:
             "provider_error_code": 404,
             "provider_error_type": "no_available_provider",
             "upstream_provider": "Google AI Studio",
+            "openrouter_metadata": {
+                "requested": "z-ai/glm-5.3-flash",
+                "strategy": "direct",
+                "attempt": 0,
+                "endpoints": {
+                    "total": 1,
+                    "available": [
+                        {
+                            "provider": "Novita",
+                            "model": "z-ai/glm-5.3-flash",
+                            "selected": False,
+                        }
+                    ],
+                },
+            },
         }
     ]
     assert "sensitive" not in json.dumps(transport.records)
+
+
+def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    clock = FakeClock()
+    timeouts: list[float] = []
+    calls = 0
+
+    def urlopen(_request: Any, *, timeout: float) -> FakeHttpResponse:
+        nonlocal calls
+        calls += 1
+        timeouts.append(timeout)
+        if calls == 1:
+            raise urllib.error.HTTPError(
+                "https://openrouter.ai/api/v1/chat/completions",
+                429,
+                "Too Many Requests",
+                {"Retry-After": "3"},
+                io.BytesIO(b'{"error":{"type":"rate_limit"}}'),
+            )
+        return FakeHttpResponse(
+            {
+                "id": "response-after-backoff",
+                "model": config.model,
+                "provider": config.response_provider,
+                "choices": [
+                    {
+                        "message": {
+                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"cost": "0.001"},
+            }
+        )
+
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    policy = OpenRouterPanelPolicy(config)
+    transport = OpenRouterPanelTransport(
+        config,
+        ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+        monotonic=clock.monotonic,
+        wall_time=lambda: 0.0,
+        sleep=clock.sleep,
+    )
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    first = transport.send(
+        request, idempotency_key="attempt-1", deadline_seconds=10.0
+    )
+    second = transport.send(
+        request, idempotency_key="attempt-2", deadline_seconds=10.0
+    )
+
+    assert first == TransportOutcome(
+        "rate_limited",
+        failure_code="http_429_rate_limit",
+        retry_after_seconds=3.0,
+        backoff_source="retry_after",
+    )
+    assert second.status == "response"
+    assert clock.sleeps == [3.0]
+    assert timeouts == [9.0, 6.0]
+    assert ledger.wire_requests_sent == 2
+    assert not ledger.blocked
+    assert transport.records[0]["status"] == "rate_limited"
+    assert transport.records[0]["cost_usd"] == "0"
+    assert transport.records[1]["pre_send_backoff_seconds"] == 3.0
+
+
+def test_panel_transport_uses_exponential_429_fallback() -> None:
+    config = GEMINI_STATEFUL_FULL_CALIBRATION
+    clock = FakeClock()
+
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.HTTPError(
+            "https://openrouter.ai/api/v1/chat/completions",
+            429,
+            "Too Many Requests",
+            {"Retry-After": "invalid"},
+            io.BytesIO(b"{}"),
+        )
+
+    policy = OpenRouterPanelPolicy(config)
+    transport = OpenRouterPanelTransport(
+        config,
+        ledger=SpendLedger(Decimal(10), Decimal(0)),
+        environment={"OPENROUTER_API_KEY": "secret"},
+        urlopen=urlopen,
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+    request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
+
+    first = transport.send(request, idempotency_key="one", deadline_seconds=100.0)
+    second = transport.send(request, idempotency_key="two", deadline_seconds=100.0)
+    third = transport.send(request, idempotency_key="three", deadline_seconds=100.0)
+
+    assert first.retry_after_seconds == 2.0
+    assert second.retry_after_seconds == 4.0
+    assert third.retry_after_seconds == 8.0
+    assert {
+        first.backoff_source,
+        second.backoff_source,
+        third.backoff_source,
+    } == {"exponential_fallback"}
+    assert clock.sleeps == [2.0, 4.0]
 
 
 def test_panel_transport_retains_safe_successful_error_envelope_metadata() -> None:
@@ -403,15 +709,11 @@ def test_panel_transport_blocks_after_anomalous_response_cost() -> None:
                 "provider": QWEN_STATEFUL.response_provider,
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
-                "usage": {
-                    "cost": str(QWEN_STATEFUL.request_maximum_usd + Decimal("0.000001"))
-                },
+                "usage": {"cost": str(QWEN_STATEFUL.request_maximum_usd + Decimal("0.000001"))},
             }
         )
 

@@ -19,10 +19,8 @@ generation, and stored validation evidence for a synthetic vendor-onboarding wor
 | Grounding experiment | Raw 56/100; marks 100/100; +44.0 points, paired bootstrap 95% CI [+35.0, +54.0] | [`grounding-results.json`](artifacts/grounding-results.json) |
 
 The project owner reviewed the stored Day 2 evidence and declared that gate `PASS`. Automated
-status is not substituted for the human verdict. The real resets are **not bitwise visually
-deterministic**: the live guest clock changed a small localized pixel region. Semantic task state
-was exact across resets, and the unmasked full-frame minimum SSIM was 0.999863
-([validation evidence](artifacts/validation-report.json)).
+status is not substituted for the human verdict. Reset determinism here is semantic, **not
+bitwise visual**; see [Limitations](#limitations) for what the stored frames do and do not show.
 
 ## Grounding benchmark
 
@@ -79,6 +77,44 @@ uses strict JSON Schema, requires routed parameter support, and enables neither 
 hidden retries. See OpenRouter's official
 [image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
 [structured-output](https://openrouter.ai/docs/guides/features/structured-outputs) documentation.
+
+## v5 agent benchmark (in progress)
+
+V5 is a separate protocol that evaluates a complete versioned policy system — model, prompt,
+memory, harness, parser, and coordinate adapter — end to end on stateful workflows, after the v4c
+pilot saturated at the episode level. It preserves the pixel-only observation, bounded action,
+privileged evaluator, and sparse reward contracts described below
+([v5 plan](plans/grounding-v5-agent-benchmark.md)).
+
+**Calibration is incomplete and no v5 result is a benchmark score.** One policy slot has retained
+evidence, and it did not complete its 50 assigned tasks. Unattempted assignments are retained in the
+denominator rather than dropped:
+
+| Policy slot | Assigned | Attempted | Exact success | Stop reason | Evidence |
+|---|---:|---:|---|---|---|
+| `B-qwen-stateful-v2` | 50 | 13 | 0 / 13 attempted (0.0%) | first invalid output, as the approved plan required; 37 unattempted | [report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) |
+
+These are descriptive calibration numbers for one incomplete run. They are not a complete-run score,
+not a confirmatory result, and not a milestone-gate verdict.
+
+The `A-gemini-stateful-v2` calibration was **withdrawn**, and its evidence and reports were removed
+from this repository rather than corrected in place. Its stored plan and run summaries recorded
+absolute operator paths, which cannot be redacted without invalidating the SHA-256 values its own
+integrity audit recorded for them, and no code path regenerates a run summary from its attempt
+journal. That slot will be re-run from scratch under a new approval; until then this repository
+makes no Gemini claim. The path defect itself is fixed at the producer
+(`pixelgym/grounding/v5/evidence.py`), so a re-run records repository-relative paths.
+
+The run's authoritative attempt journal holds raw provider responses, screenshots, and private
+policy checkpoints. It is sealed as `must_not_commit` in the run's
+`*-publication-relation.json` and is excluded from this repository by policy, enforced by
+`tests/unit/test_restricted_evidence_excluded.py`. What is published instead is a
+response-content-free derivative plus an integrity audit recording each authoritative artifact's
+path and SHA-256:
+[audit](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) ·
+[derivative](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json). Every
+non-restricted artifact the audit references is committed, so the recorded hashes can be checked
+from a clone.
 
 ## Architecture
 
@@ -247,7 +283,9 @@ known limitation, with the underlying evidence retained
 
 - This is one deterministic synthetic form, not a broad desktop-task distribution.
 - Real OSWorld frames are semantically stable but not bitwise identical because the guest desktop
-  clock is live; no mask or tolerance was applied to the reported raw differences.
+  clock is live, which changed a small localized pixel region; no mask or tolerance was applied to
+  the reported raw differences. Semantic task state was exact across resets, and the unmasked
+  full-frame minimum SSIM was 0.999863 ([validation evidence](artifacts/validation-report.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
 - The privileged state endpoint exists inside the guest. The bounded action interface cannot
@@ -268,6 +306,10 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
 - [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
 - [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
+- Incomplete v5 calibration reports, response-content-free derivatives, and stored-evidence
+  integrity audits are linked from
+  [v5 agent benchmark (in progress)](#v5-agent-benchmark-in-progress) above, with their coverage
+  limits stated there.
 
 ## Sprint plans
 

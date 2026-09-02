@@ -27,6 +27,28 @@ _REDACT_KEYS = re.compile(
 )
 
 
+def repository_relative_path(repository_root: Path, path: Path) -> str:
+    """Record an evidence path as a repository-relative POSIX string.
+
+    Evidence files are published. Recording ``str(path)`` stores whatever the operator
+    typed on the command line, so an absolute invocation leaks the operator's home
+    directory into a committed artifact and makes the value differ between machines.
+    Normalising against the repository root keeps the recorded value invariant to how
+    the run was invoked.
+
+    A path outside the repository has no portable form, so it is returned resolved. That
+    case is unreachable for published evidence, which is always written inside the
+    repository; ``test_checked_in_text_artifacts_have_no_local_absolute_paths`` remains
+    the backstop that keeps such a path from ever being committed.
+    """
+
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(repository_root.resolve()).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
 class CredentialValidationError(ValueError):
     """A credential-shaped field class was found; candidate bytes are never included."""
 

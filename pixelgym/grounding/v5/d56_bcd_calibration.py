@@ -1,15 +1,24 @@
-"""Plan and execute the exact four-policy, fifty-task D5.6 calibration."""
+"""Plan and execute the B/C/D successor to the frozen D5.6 calibration."""
 
 from __future__ import annotations
 
+import hashlib
 import json
-import subprocess
 from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_bytes
+from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, content_digest
+from pixelgym.grounding.v5.d56_calibration import (
+    CALIBRATION_MANIFEST,
+    EXPECTED_TASK_COUNT,
+    NORMAL_TERMINAL_CLASSIFICATIONS,
+    _calibration_manifest,
+    _file_digest,
+    _git,
+    _validated_smoke_evidence,
+)
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
@@ -19,7 +28,6 @@ from pixelgym.grounding.v5.panel_policy import (
     PANEL,
     PANEL_BY_SLOT,
     PANEL_MAXIMUM_SPEND_USD,
-    PRIOR_AGGREGATE_SPEND_USD,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
@@ -29,125 +37,158 @@ from pixelgym.grounding.v5.panel_smoke import PRICE_OBSERVED_AT_UTC
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v2"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v2"
-CALIBRATION_MANIFEST = Path("artifacts/grounding-v5-manifests/calibration-d56.json")
-EXPECTED_TASK_COUNT = 50
-EXPECTED_PANEL_SLOTS = tuple(config.slot for config in PANEL)
-NORMAL_TERMINAL_CLASSIFICATIONS = frozenset(
-    {"success_termination", "step_limit_truncation"}
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-bcd-calibration-plan-v1"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-bcd-calibration-result-v1"
+SUCCESSOR_PANEL = PANEL[1:]
+EXPECTED_SUCCESSOR_SLOTS = tuple(config.slot for config in SUCCESSOR_PANEL)
+
+FROZEN_PLAN_SHA256 = (
+    "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6"
 )
+FROZEN_SUMMARY_SHA256 = (
+    "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741"
+)
+FROZEN_JOURNAL_SHA256 = (
+    "sha256:2e98191a2169627d2d5fc6b30200b9578b035ad4013499a57b5845d2f7532812"
+)
+FROZEN_CODE_REVISION = "a9b35eac1540aa13693b28d37e2bf3397e32b842"
+FROZEN_ACTUAL_SPEND_USD = Decimal("2.032875185")
+FROZEN_TERMINAL_IDENTITY = AttemptIdentity(
+    "d56-A-gemini-stateful-32-v5-48860ad9b285908aa000a26b", 14, 0
+)
+FROZEN_JOURNAL_INTEGRITY = {
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
+    "object_count": 5791,
+    "event_count": 6076,
+    "event_chain_digest": (
+        "sha256:316451e8cb73a6c2dafff0a9662f571d4c63084cef88c88036dcf55c929a2f54"
+    ),
+}
 
 
-def _git(repository_root: Path, *args: str) -> str:
-    completed = subprocess.run(
-        ["git", *args],
-        cwd=repository_root,
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    return completed.stdout.strip()
+def _streaming_file_digest(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(8 * 1024 * 1024):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
 
 
-def _file_digest(path: Path) -> str:
-    return "sha256:" + sha256_bytes(path.read_bytes())
-
-
-def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
-    path = repository_root / CALIBRATION_MANIFEST
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise TypeError("D5.6 calibration manifest must be an object")
-    unsigned = dict(value)
-    claimed = unsigned.pop("manifest_digest", None)
-    if claimed != content_digest(unsigned):
-        raise ValueError("D5.6 calibration manifest digest mismatch")
-    records = value.get("records")
-    if value.get("schema_version") != "pixelgym-agent-v5-partition-v4" or not isinstance(
-        records, list
-    ):
-        raise ValueError("D5.6 calibration manifest schema mismatch")
-    if len(records) != EXPECTED_TASK_COUNT:
-        raise ValueError("D5.6 calibration manifest must contain fifty tasks")
-    if any(
-        type(record.get("max_episode_steps")) is not int
-        or record["max_episode_steps"] <= 0
-        for record in records
-    ):
-        raise ValueError("D5.6 calibration manifest action caps are invalid")
-    return value
-
-
-def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Path) -> dict[str, Any]:
-    summary_path = smoke_output_directory / "summary.json"
-    journal_path = smoke_output_directory / "attempts.sqlite"
+def _validated_frozen_calibration_evidence(
+    repository_root: Path,
+    output_directory: Path,
+) -> dict[str, Any]:
+    summary_path = output_directory / "summary.json"
+    journal_path = output_directory / "attempts.sqlite"
+    if _file_digest(summary_path) != FROZEN_SUMMARY_SHA256:
+        raise ValueError("frozen D5.6 summary digest mismatch")
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    if not isinstance(summary, dict):
-        raise TypeError("panel-smoke summary must be an object")
-    if summary.get("schema_version") != "pixelgym-agent-v5-panel-smoke-result-v2":
-        raise ValueError("panel-smoke summary schema mismatch")
+    expected_fields = {
+        "schema_version": "pixelgym-agent-v5-d56-calibration-result-v2",
+        "approved_plan_sha256": FROZEN_PLAN_SHA256,
+        "code_revision": FROZEN_CODE_REVISION,
+        "provider_calls_made": 864,
+        "provider_wire_requests": 864,
+        "model_attempt_reservations": 864,
+        "provider_control_requests": 0,
+        "prior_aggregate_spend_usd": "0.372661310",
+        "actual_aggregate_spend_usd": str(FROZEN_ACTUAL_SPEND_USD),
+        "calibration_incremental_spend_usd": "1.660213875",
+        "remaining_aggregate_spend_usd": "7.967124815",
+        "assigned_policy_task_pairs": 200,
+        "attempted_policy_task_pairs": 33,
+        "successful_policy_task_pairs": 20,
+        "classifications": {
+            "infrastructure_failure": 1,
+            "step_limit_truncation": 12,
+            "success_termination": 20,
+        },
+        "journal_integrity": FROZEN_JOURNAL_INTEGRITY,
+    }
+    if not isinstance(summary, dict) or any(
+        summary.get(key) != value for key, value in expected_fields.items()
+    ):
+        raise ValueError("frozen D5.6 summary facts mismatch")
     results = summary.get("episode_results")
-    if not isinstance(results, list) or len(results) != 4:
-        raise ValueError("all four panel smoke assignments must be present")
-    if tuple(result.get("slot") for result in results) != EXPECTED_PANEL_SLOTS:
-        raise ValueError("panel-smoke slot identities or order mismatch")
-    if any(result.get("classification") != "pilot_action_limit" for result in results):
-        raise ValueError("all four panel smoke assignments must reach the action limit")
-    provider_requests = summary.get("provider_wire_requests")
     if (
-        type(provider_requests) is not int
-        or not 4 <= provider_requests <= 8
-        or summary.get("provider_calls_made") != provider_requests
-        or summary.get("model_attempt_reservations") != provider_requests
-        or summary.get("provider_control_requests") != 0
+        not isinstance(results, list)
+        or len(results) != 33
+        or any(result.get("slot") != "A-gemini-stateful" for result in results)
     ):
-        raise ValueError("panel-smoke request counts mismatch")
-    approved_plan = summary.get("approved_plan_sha256")
-    if not isinstance(approved_plan, str) or not approved_plan.startswith("sha256:"):
-        raise ValueError("panel-smoke approval digest is invalid")
-    actual_spend = Decimal(str(summary.get("actual_aggregate_spend_usd")))
-    if not actual_spend.is_finite() or not (
-        PRIOR_AGGREGATE_SPEND_USD <= actual_spend <= PANEL_MAXIMUM_SPEND_USD
-    ):
-        raise ValueError("panel-smoke aggregate spend is invalid")
-    if not journal_path.is_file():
-        raise FileNotFoundError("panel-smoke journal is missing")
+        raise ValueError("frozen D5.6 assignment evidence mismatch")
+    terminal_result = results[-1]
+    if terminal_result != {
+        "classification": "infrastructure_failure",
+        "environment_actions": 14,
+        "final_policy_checkpoint_digest": (
+            "sha256:677ece2bb2f88aa36136e3bd472ec6c3622f5ccbd3815b271888d1f4e137c188"
+        ),
+        "model_attempts": 15,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 15,
+        "slot": "A-gemini-stateful",
+        "success": False,
+        "task_id": "v5-48860ad9b285908aa000a26b",
+        "trial_id": FROZEN_TERMINAL_IDENTITY.trial_id,
+    }:
+        raise ValueError("frozen D5.6 terminal assignment mismatch")
+    if _streaming_file_digest(journal_path) != FROZEN_JOURNAL_SHA256:
+        raise ValueError("frozen D5.6 journal digest mismatch")
     journal = V5AttemptJournal(journal_path)
     try:
-        if journal.call_counts() != (provider_requests, 0):
-            raise ValueError("panel-smoke journal request counts mismatch")
-        events = journal.events()
-        retry_events = [
-            event for event in events if event.kind == "retryable_provider_response"
-        ]
-        if len(retry_events) != provider_requests - 4 or any(
-            event.payload.get("failure_code") != "zero_completion_error"
-            for event in retry_events
+        terminal_event = journal.terminal_attempt(FROZEN_TERMINAL_IDENTITY)
+        if (
+            terminal_event is None
+            or terminal_event.kind != "unknown_outcome_infrastructure_failure"
+            or terminal_event.payload.get("failure_code") != "runner_request_deadline"
+            or terminal_event.payload.get("response_digest") is not None
+            or terminal_event.payload.get("usage") != {}
         ):
-            raise ValueError("panel-smoke retry evidence mismatch")
-        journal_integrity = journal.integrity_report()
+            raise ValueError("frozen D5.6 terminal journal event mismatch")
+        if journal.call_counts() != (864, 0):
+            raise ValueError("frozen D5.6 journal request counts mismatch")
     finally:
         journal.close()
-    if journal_integrity != summary.get("journal_integrity"):
-        raise ValueError("panel-smoke journal integrity mismatch")
     return {
-        "approved_plan_sha256": approved_plan,
+        "approved_plan_sha256": FROZEN_PLAN_SHA256,
+        "code_revision": FROZEN_CODE_REVISION,
         "summary_path": repository_relative_path(repository_root, summary_path),
-        "summary_sha256": _file_digest(summary_path),
+        "summary_sha256": FROZEN_SUMMARY_SHA256,
         "journal_path": repository_relative_path(repository_root, journal_path),
-        "journal_sha256": _file_digest(journal_path),
-        "provider_wire_requests": provider_requests,
-        "actual_aggregate_spend_usd": str(actual_spend),
-        "journal_integrity": journal_integrity,
+        "journal_sha256": FROZEN_JOURNAL_SHA256,
+        "actual_aggregate_spend_usd": str(FROZEN_ACTUAL_SPEND_USD),
+        "remaining_aggregate_spend_usd": str(
+            PANEL_MAXIMUM_SPEND_USD - FROZEN_ACTUAL_SPEND_USD
+        ),
+        "attempted_policy_task_pairs": 33,
+        "attempted_slots": ["A-gemini-stateful"],
+        "unattempted_successor_slots": list(EXPECTED_SUCCESSOR_SLOTS),
+        "terminal": {
+            "classification": terminal_event.kind,
+            "failure_code": terminal_event.payload["failure_code"],
+            "trial_id": FROZEN_TERMINAL_IDENTITY.trial_id,
+            "step_index": FROZEN_TERMINAL_IDENTITY.step_index,
+            "attempt_index": FROZEN_TERMINAL_IDENTITY.attempt_index,
+            "request_outcome": "unknown",
+            "retry_eligible": False,
+        },
+        "journal_integrity": FROZEN_JOURNAL_INTEGRITY,
     }
 
 
-def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[str, Any]:
+def build_plan(
+    repository_root: Path,
+    *,
+    smoke_output_directory: Path,
+    frozen_calibration_output_directory: Path,
+) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
-    prior_spend = Decimal(smoke_evidence["actual_aggregate_spend_usd"])
+    frozen_evidence = _validated_frozen_calibration_evidence(
+        repository_root, frozen_calibration_output_directory
+    )
+    prior_spend = Decimal(frozen_evidence["actual_aggregate_spend_usd"])
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
         repository_root / "artifacts/grounding-v5-manifests",
@@ -155,7 +196,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
     )
     policies: list[dict[str, Any]] = []
     aggregate_theoretical_maximum = Decimal(0)
-    for config in PANEL:
+    for config in SUCCESSOR_PANEL:
         manifest = build_panel_policy_manifest(
             repository_root, config=config, code_revision=revision
         )
@@ -206,12 +247,17 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
                 },
             }
         )
+    successor_count = len(SUCCESSOR_PANEL)
     return {
         "schema_version": PLAN_SCHEMA_VERSION,
-        "purpose": "complete four-policy D5.6 calibration on fifty pilot-unexposed tasks",
+        "purpose": (
+            "evaluate only the three unattempted B/C/D policy slots on the frozen fifty-task "
+            "D5.6 calibration partition"
+        ),
         "provider_calls_made": 0,
         "code_revision": revision,
         "requires_clean_tracked_worktree": True,
+        "assigned_policy_task_pairs": successor_count * EXPECTED_TASK_COUNT,
         "calibration_partition": {
             "path": CALIBRATION_MANIFEST.as_posix(),
             "file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
@@ -233,14 +279,16 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
         "policies": policies,
         "aggregate_caps": {
             **CallCaps(
-                action_cap * len(PANEL),
-                action_cap * len(PANEL) * 2,
+                action_cap * successor_count,
+                action_cap * successor_count * 2,
                 0,
-                action_cap * len(PANEL) * 2,
+                action_cap * successor_count * 2,
             ).to_dict(),
             "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
             "prior_aggregate_spend_usd": str(prior_spend),
-            "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - prior_spend),
+            "remaining_aggregate_spend_usd": str(
+                PANEL_MAXIMUM_SPEND_USD - prior_spend
+            ),
             "uncapped_theoretical_request_maximum_usd": str(
                 aggregate_theoretical_maximum
             ),
@@ -250,6 +298,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
             ),
         },
         "smoke_evidence": smoke_evidence,
+        "frozen_predecessor_evidence": frozen_evidence,
         "task_order": [
             {
                 "ordinal": ordinal,
@@ -261,11 +310,12 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
             for ordinal, record in enumerate(partition["records"])
         ],
         "stop_rules": [
-            "run policy slots sequentially in A, B, C, D order and tasks in frozen manifest order",
+            "run only policy slots B, C, and D sequentially in that order and tasks in frozen manifest order",
+            "do not resume, retry, or replace any predecessor Slot A request or assignment",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
             BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
-            "stop the complete panel after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
+            "stop the B/C/D run after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
             "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
             "do not retry a parse, action, unknown-outcome, or other provider failure; do not replace or reorder an assignment",
             "do not expose confirmatory tasks",
@@ -287,23 +337,26 @@ def execute_calibration(
     plan: dict[str, Any],
     approved_plan_sha256: str,
     smoke_output_directory: Path,
+    frozen_calibration_output_directory: Path,
     output_directory: Path,
 ) -> dict[str, Any]:
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
-        raise ValueError("approved D5.6 plan digest does not match the supplied plan")
+        raise ValueError("approved B/C/D calibration plan digest does not match the supplied plan")
     if LLAMA_STATEFUL.adapter.name != "native-1024x768":
         raise RuntimeError(
-            "native-coordinate D5.6 calibration is frozen; use the normalized Slot C trial"
+            "native-coordinate B/C/D calibration is frozen; use the normalized Slot C trial"
         )
     if plan != build_plan(
-        repository_root, smoke_output_directory=smoke_output_directory
+        repository_root,
+        smoke_output_directory=smoke_output_directory,
+        frozen_calibration_output_directory=frozen_calibration_output_directory,
     ):
-        raise ValueError("D5.6 plan does not match the canonical request configuration")
+        raise ValueError("B/C/D plan does not match the canonical request configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before calibration provider requests")
     if output_directory.exists():
-        raise FileExistsError(f"refusing to replace D5.6 output: {output_directory}")
+        raise FileExistsError(f"refusing to replace B/C/D output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
     prior_spend = Decimal(plan["aggregate_caps"]["prior_aggregate_spend_usd"])
@@ -338,7 +391,7 @@ def execute_calibration(
                     approved_caps=aggregate_caps,
                 ).run(
                     trial_id=(
-                        f"d56-{config.slot}-{task_record['ordinal']:02d}-{task.task_id}"
+                        f"d56-bcd-{config.slot}-{task_record['ordinal']:02d}-{task.task_id}"
                     ),
                     task=task,
                 )
@@ -367,7 +420,7 @@ def execute_calibration(
                 PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd
             ),
             "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "assigned_policy_task_pairs": len(PANEL) * EXPECTED_TASK_COUNT,
+            "assigned_policy_task_pairs": len(SUCCESSOR_PANEL) * EXPECTED_TASK_COUNT,
             "attempted_policy_task_pairs": len(episode_results),
             "successful_policy_task_pairs": sum(
                 result["success"] for result in episode_results
@@ -375,6 +428,7 @@ def execute_calibration(
             "classifications": dict(sorted(classifications.items())),
             "episode_results": episode_results,
             "transport_records": transport_records,
+            "frozen_predecessor_evidence": plan["frozen_predecessor_evidence"],
             "journal_integrity": journal.integrity_report(),
             "publication_status": "restricted_raw_responses_in_local_journal",
             "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},

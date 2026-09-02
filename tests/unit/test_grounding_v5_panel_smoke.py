@@ -3,7 +3,9 @@ from __future__ import annotations
 from decimal import Decimal
 from pathlib import Path
 
-from pixelgym.grounding.v5.panel_smoke import build_plan, plan_digest
+import pytest
+
+from pixelgym.grounding.v5.panel_smoke import build_plan, execute_smoke, plan_digest
 
 ROOT = Path(__file__).parents[2]
 
@@ -56,3 +58,20 @@ def test_panel_smoke_price_records_fail_closed_and_bind_routes() -> None:
         record["price_record"]["unknown_usage_or_price_rule"]
         for record in plan["policies"]
     } == {"fail_closed"}
+
+
+def test_consumed_native_panel_smoke_is_locked_after_adapter_replacement(
+    tmp_path: Path,
+) -> None:
+    plan = build_plan(ROOT)
+    output = tmp_path / "must-not-exist"
+
+    with pytest.raises(RuntimeError, match="native-coordinate panel smoke is frozen"):
+        execute_smoke(
+            ROOT,
+            plan=plan,
+            approved_plan_sha256=plan_digest(plan),
+            output_directory=output,
+        )
+
+    assert not output.exists()

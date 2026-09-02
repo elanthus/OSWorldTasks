@@ -1,8 +1,7 @@
 # PixelGym v5 D5.6 calibration approval packet
 
-**Status:** panel, clean-set size, and aggregate budget approved by the owner on 2026-08-26; the
-first smoke and partial calibration are consumed and frozen; a versioned one-retry policy and fresh
-replacement partition are prepared; the exact new smoke-plan digest remains unapproved
+**Status:** the four-slot, B/C/D, native-coordinate Slot C, normalized Llama, and strict-schema GLM
+development runs are frozen; prepare a new exact approval for one relaxed-schema GLM retry
 
 **Primary reader:** the project owner freezing the v5 calibration panel and deciding whether to
 authorize a capped calibration run
@@ -38,9 +37,9 @@ The owner should approve calibration only after recording evidence for every row
 | OSWorld live reconnect | Real local OSWorld session accepts the current binding, rejects stale state, and closes cleanly | Exercised locally on 2026-08-25; opt-in integration test added |
 | Real policy adapters | Provider transport, canonical response capture, parser, state reducer, and sandbox entry point | Four policy packages implemented; new Google Vertex Slot A package pending exact smoke approval |
 | Exact runtime | Clean dependency lock, source revision, runtime digest, and `pip check` result | Generator implemented; exact identities bind after the implementation commit |
-| Price catalog | Provider-published prices captured with source URL and effective timestamp | Refreshed for Google Vertex, Alibaba, and DeepInfra on 2026-08-26 |
+| Price catalog | Provider-published prices captured with source URL and effective timestamp | DeepInfra Llama 4 Scout and Novita GLM 5.3 Flash prices checked on 2026-08-27; other panel prices refreshed on 2026-08-26 |
 | Plan-only caps | Per-policy phase caps generated from the final manifest | Four-policy 50-task planner implemented; exact digests bind after smoke evidence |
-| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Prior smoke and partial calibration frozen; new panel uses four fresh development tasks and the versioned retry rule |
+| Smoke evidence | Approved development-only real-provider smoke tests retain every attempt and failure | Replacement four-slot smoke completed and is frozen at `artifacts/grounding-v5-d56-panel-smoke-run-v4/` |
 
 ## Policy panel decision
 
@@ -53,7 +52,7 @@ model name as the policy identity.
 |---|---|---|---|---|---|---|
 | A | OpenRouter → Google Vertex Global only | `google/gemini-3.7-flash` | Stateful visible-action history | `normalized-1000x1000` | Strong-policy candidate | Approved; omit unsupported `temperature` |
 | B | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateful visible-action history | `normalized-1000x1000` | Mid-band visual policy candidate | Approved |
-| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `native-1024x768` | Lower-band policy candidate | Approved; adapter requires smoke validation |
+| C | OpenRouter → DeepInfra FP8 only | `meta-llama/llama-4-scout` | Stateful visible-action history | `normalized-1000x1000` | Lower-band policy candidate | One development trial reached stage 1, then looped on the text field; frozen on HTTP 429 |
 | D | OpenRouter → Alibaba only | `qwen/qwen3-vl-8b-instruct` | Stateless within each episode | `normalized-1000x1000` | Isolate episode-local state use | Approved |
 
 Qwen appears twice intentionally. Slots B and D freeze the same model, route, coordinate adapter,
@@ -85,6 +84,7 @@ The refreshed route-specific token prices are:
 | Google Vertex Global / Gemini 3.7 Flash | $0.000000375 | $0.000001875 | $0.055296000 |
 | Alibaba / Qwen3-VL 8B | $0.000000117 | $0.000000455 | $0.016719872 |
 | DeepInfra FP8 / Llama 4 Scout | $0.0000001 | $0.0000003 | $0.013926400 |
+| Novita FP8 / GLM 5.3 Flash candidate | $0.000000075 | $0.00000025 | $0.010547200 |
 
 Each request freezes at most 126,976 prompt tokens plus 4,096 completion tokens within a 131,072
 policy context limit. These are conservative request guards, not expected costs. The uncapped
@@ -109,7 +109,7 @@ After all four panel smokes verify, generate the exact no-call calibration plan 
 root:
 
 ```bash
-python scripts/run_grounding_v5_d56_calibration.py \
+.venv/bin/python scripts/run_grounding_v5_d56_calibration.py \
   --plan-only \
   --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
   --output artifacts/grounding-v5-d56-calibration-plan-v2.json
@@ -128,11 +128,158 @@ Record the approved calibration limits for each policy:
 | B / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
 | C / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.0139264/request guard | Approved |
 | D / generated after clean commit | 1,431 | 2,862 | 0 | 2,862 | Shared $10 ledger; $0.016719872/request guard | Approved |
-| **Aggregate** | **5,724** | **11,448** | **0** | **11,448** | **$10 including $0.370889195 prior spend** | **Approved envelope** |
+| **Aggregate** | **5,724** | **11,448** | **0** | **11,448** | **$10 including prior spend** | **Approved envelope** |
 
 The exact policy IDs and plan digests remain pending because they bind the clean implementation
 revision and verified smoke evidence. Until those are separately approved, the table authorizes
 zero calls.
+
+## B/C/D successor decision
+
+The owner selected Slots B, C, and D after the approved four-slot calibration stopped on the 33rd
+Slot A assignment. The predecessor run is immutable at
+`artifacts/grounding-v5-d56-calibration-run-v2/`. Its terminal request crossed the send boundary,
+then reached the runner deadline without a response. The journal classifies that outcome as
+`unknown_outcome_infrastructure_failure` with failure code `runner_request_deadline`; it is not
+eligible for retry. The successor neither resumes Slot A nor replaces any Slot A assignment.
+
+The new approval package must bind the predecessor plan, summary, journal, terminal event, and
+actual aggregate spend before it can authorize any call. It schedules the same frozen 50-task
+partition for the three previously unattempted policy slots:
+
+| Slot | Environment actions | Model attempts | Control requests | Wire requests | Uncapped request maximum |
+|---|---:|---:|---:|---:|---:|
+| B | 1,431 | 2,862 | 0 | 2,862 | $47.852273664 |
+| C | 1,431 | 2,862 | 0 | 2,862 | $39.857356800 |
+| D | 1,431 | 2,862 | 0 | 2,862 | $47.852273664 |
+| **B/C/D total** | **4,293** | **8,586** | **0** | **8,586** | **$135.561904128** |
+
+The shared ledger has already attributed `$2.032875185`, leaving `$7.967124815` under the approved
+`$10.00` ceiling. The ledger, rather than the uncapped maximum, remains binding. Generate the exact
+no-call successor plan only after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_bcd_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --output artifacts/grounding-v5-d56-bcd-calibration-plan.json
+```
+
+The owner approved the exact B/C/D plan digest
+`sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9`.
+The run attempted the first Slot B assignment, completed 24 actions, and received HTTP 429 on its
+25th request. The terminal attempt has no canonical response or usage and is sealed as
+`unknown_outcome_infrastructure_failure` with failure code `provider_request_unknown`. The run is
+immutable at `artifacts/grounding-v5-d56-bcd-calibration-run/`; it cannot be resumed or retried.
+
+## Slot C successor decision
+
+The owner selected only Slot C after the B/C/D run froze. The new package schedules the same frozen
+50-task partition for `meta-llama/llama-4-scout` on DeepInfra FP8, using the stateful native-pixel
+policy. It neither resumes nor replaces any Slot A or Slot B request.
+
+| Slot | Environment actions | Model attempts | Control requests | Wire requests | Uncapped request maximum |
+|---|---:|---:|---:|---:|---:|
+| C | 1,431 | 2,862 | 0 | 2,862 | $39.8573568 |
+
+The shared ledger has attributed `$2.040917557`, leaving `$7.959082443` under the existing `$10.00`
+ceiling. Generate the exact no-call Slot C plan only after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_calibration.py \
+  --plan-only \
+  --smoke-output artifacts/grounding-v5-d56-panel-smoke-run-v4 \
+  --frozen-calibration-output artifacts/grounding-v5-d56-calibration-run-v2 \
+  --frozen-bcd-output artifacts/grounding-v5-d56-bcd-calibration-run \
+  --output artifacts/grounding-v5-d56-c-calibration-plan.json
+```
+
+The owner approved exact plan
+`sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37`.
+The native-coordinate run attempted 42 assignments: 41 reached their step limit without leaving
+stage zero, and the 42nd stopped on an HTTP 429 unknown outcome. It recorded 1,179 environment
+actions, 1,180 provider requests, zero successes, and `$0.440101900` incremental spend. Aggregate
+spend is `$2.481019457`, leaving `$7.518980543`. Preserve
+`artifacts/grounding-v5-d56-c-calibration-run/` unchanged; do not resume or retry it.
+
+## Normalized Slot C development trial
+
+The owner selected a new Slot C policy identity that changes only the coordinate adapter and its
+declared input convention from native 1024×768 pixels to a normalized 1000×1000 grid. This is not a
+resume or reinterpretation of the frozen native run.
+
+The first paid check is one complete episode on development seed `5010`, which the earlier panel
+smoke already exposed. It does not consume a calibration or confirmatory task. The episode permits
+at most 28 environment actions, 56 model attempts or wire requests, zero control requests, and an
+uncapped theoretical maximum of `$0.7798784`. The shared `$10.00` ledger remains binding.
+
+The approved no-call plan was generated with:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_c_normalized_trial.py \
+  --plan-only \
+  --frozen-c-output artifacts/grounding-v5-d56-c-calibration-run \
+  --output artifacts/grounding-v5-d56-c-normalized-trial-plan.json
+```
+
+The owner approved plan
+`sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15`.
+The normalized Llama run completed the first transition, then issued 18 more clicks that focused
+the stage-1 text field instead of typing its visible code. Request 20 returned HTTP 429 with no
+canonical response or usage. The run recorded 19 environment actions, 20 provider requests, zero
+successes, and `$0.006320000` incremental spend. Aggregate spend is `$2.487339457`, leaving
+`$7.512660543`. Preserve `artifacts/grounding-v5-d56-c-normalized-trial-run/` unchanged and do not
+resume or retry it.
+
+## GLM normalized development comparison
+
+The owner selected `z-ai/glm-5.3-flash` as a comparison candidate, not yet as a replacement for the
+frozen Slot C policy. The consumed strict-schema plan used the same already-exposed development
+seed `5010`, normalized coordinate adapter, and stateful visible-action history. It pinned
+OpenRouter to Novita FP8, disabled fallbacks, and required every declared request parameter.
+
+The episode permits at most 28 environment actions, 56 model attempts or wire requests, zero
+control requests, and an uncapped theoretical maximum of `$0.590643200`. It starts from aggregate
+spend `$2.487339457`; the shared `$10.00` ledger remains binding. Generate the no-call plan only
+after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_normalized_trial.py \
+  --plan-only \
+  --frozen-llama-trial-output artifacts/grounding-v5-d56-c-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-normalized-trial-plan.json
+```
+
+The owner approved plan
+`sha256:e05780e1ba5487b024c8b3a76ff00ceae3d5cda7c28cb051d59777044e5f9f62`. Its first request
+returned HTTP 404 before a canonical response, usage record, or environment action. The journal
+sealed an `unknown_outcome_infrastructure_failure`; attributed spend remained `$2.487339457`.
+Preserve `artifacts/grounding-v5-d56-glm-normalized-trial-run/` unchanged and do not execute the
+strict-schema runner again.
+
+The exact rejection text was not retained, so the cause remains an inference. The evidence is
+consistent with route filtering by `json_schema.strict: true`: the current Novita endpoint lists
+`response_format` and `seed`, but does not list strict structured outputs. OpenRouter documents HTTP
+404 when strict schema requirements exclude every available endpoint. The retry therefore changes
+only the upstream schema enforcement mode and assigns a new policy identity. It keeps the same
+model, Novita FP8 route, prompt, local exact-action parser, normalized adapter, state policy, seed,
+caps, and shared ledger. Invalid or unparseable output remains retained and final without retry.
+
+Generate the successor no-call plan only after committing the implementation:
+
+```bash
+.venv/bin/python scripts/run_grounding_v5_d56_glm_relaxed_trial.py \
+  --plan-only \
+  --frozen-strict-glm-trial-output artifacts/grounding-v5-d56-glm-normalized-trial-run \
+  --output artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json
+```
+
+The planner must bind the strict trial's exact plan, summary, journal, HTTP 404 terminal evidence,
+and aggregate spend. It must report `provider_calls_made: 0`, one development assignment, 28
+environment actions, at most 56 attempts or wire requests, zero control requests, a theoretical
+maximum of `$0.590643200`, and `$7.512660543` remaining. Every prior approval authorizes zero
+requests under this new policy identity. Execution requires approval of the new printed digest.
 
 ## Calibration routing freeze
 

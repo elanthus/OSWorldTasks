@@ -118,6 +118,25 @@ def retry_manifest() -> PolicyManifest:
     return PolicyManifest.build(**values)
 
 
+def rate_limit_retry_manifest() -> PolicyManifest:
+    values = retry_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values.update(
+        {
+            "transport_retry_rule": (
+                "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
+            ),
+            "inference_parameters": (
+                ("max_rate_limit_retries_per_action", "1"),
+                ("rate_limit_backoff_base_seconds", "2.0"),
+                ("rate_limit_backoff_max_seconds", "60.0"),
+                ("runner_deadline_safety_margin_seconds", "1.0"),
+            ),
+        }
+    )
+    return PolicyManifest.build(**values)
+
+
 def zero_completion_error_response(response_id: str) -> dict[str, object]:
     return {
         "response_id": response_id,
@@ -336,6 +355,95 @@ def test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts(
         "trial-retry-success/step-0000/attempt-00",
         "trial-retry-success/step-0000/attempt-01",
     ]
+
+
+def test_v5_runner_retries_one_429_as_a_new_journaled_attempt(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    policy = scripted_policy(seed)
+    transport = ScriptedTransport(
+        [
+            TransportOutcome(
+                "rate_limited",
+                failure_code="http_429_rate_limit",
+                retry_after_seconds=3.0,
+                backoff_source="retry_after",
+            )
+        ]
+    )
+    journal = V5AttemptJournal(tmp_path / "rate-limit-retry.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=rate_limit_retry_manifest(),
+        transport=transport,
+        policy=policy,
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).run(trial_id="trial-rate-limit-retry", task=task, action_limit=1)
+
+    assert result.classification == "pilot_action_limit"
+    assert result.model_attempts == result.provider_wire_requests == 2
+    assert len(transport.model_requests) == 2
+    events = journal.events("trial-rate-limit-retry")
+    assert [event.kind for event in events].count("attempt_started") == 2
+    assert [event.kind for event in events].count("confirmed_no_response_timeout") == 1
+    rate_limit = next(event for event in events if event.kind == "retryable_rate_limit")
+    assert rate_limit.payload == {
+        "failure_code": "http_429_rate_limit",
+        "retry_after_seconds": 3.0,
+        "backoff_source": "retry_after",
+        "retry_rule": (
+            "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
+        ),
+        "next_attempt_permitted": True,
+    }
+    starts = [event for event in events if event.kind == "attempt_started"]
+    assert starts[0].payload["request_digest"] == starts[1].payload["request_digest"]
+    assert starts[0].payload["idempotency_key"] != starts[1].payload["idempotency_key"]
+
+
+def test_v5_runner_does_not_reissue_429_retry_after_interruption(tmp_path: Path) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    transport = ScriptedTransport(
+        [
+            TransportOutcome(
+                "rate_limited",
+                failure_code="http_429_rate_limit",
+                retry_after_seconds=2.0,
+                backoff_source="exponential_fallback",
+            )
+        ]
+    )
+    journal = V5AttemptJournal(tmp_path / "rate-limit-interrupted.sqlite")
+    trial_id = "trial-rate-limit-interrupted"
+
+    with pytest.raises(InjectedInterruption, match="retryable_rate_limit"):
+        V5Runner(
+            journal=journal,
+            manifest=rate_limit_retry_manifest(),
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=CallCaps(1, 2, 0, 2),
+            interrupt_after="retryable_rate_limit",
+        ).run(trial_id=trial_id, task=task, action_limit=1)
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=rate_limit_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 2, 0, 2),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered["classification"] == "infrastructure_failure"
+    assert recovered["reason"] == "retry_interrupted_before_next_attempt"
+    assert len(transport.model_requests) == 1
 
 
 def test_v5_runner_stops_after_second_zero_completion_error(tmp_path: Path) -> None:

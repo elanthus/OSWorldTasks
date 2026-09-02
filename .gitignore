@@ -227,3 +227,11 @@ __marimo__/
 .metaflow/
 .cache/platform/
 mlruns/
+
+# Restricted evaluation attempt journals: provider responses, screenshots, and private
+# policy checkpoints. Sealed evidence declares these "must_not_commit" in the
+# excluded_authoritative_artifacts block of artifacts/*publication-relation.json.
+# tests/unit/test_restricted_evidence_excluded.py enforces that declaration.
+artifacts/**/*.sqlite
+artifacts/**/*.sqlite-shm
+artifacts/**/*.sqlite-wal
