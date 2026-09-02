@@ -86,36 +86,35 @@ pilot saturated at the episode level. It preserves the pixel-only observation, b
 privileged evaluator, and sparse reward contracts described below
 ([v5 plan](plans/grounding-v5-agent-benchmark.md)).
 
-**Calibration is incomplete and no v5 result is a benchmark score.** Neither run completed its 50
-assigned tasks, and each report states its own status. Unattempted assignments are retained in the
-denominators rather than dropped:
+**Calibration is incomplete and no v5 result is a benchmark score.** One policy slot has retained
+evidence, and it did not complete its 50 assigned tasks. Unattempted assignments are retained in the
+denominator rather than dropped:
 
 | Policy slot | Assigned | Attempted | Exact success | Stop reason | Evidence |
 |---|---:|---:|---|---|---|
-| `A-gemini-stateful-v2` | 50 | 41 | 29 / 41 attempted (70.7%) | unknown provider outcome; 9 unattempted | [report](artifacts/grounding-v5-d56-gemini-full-calibration-report.md) |
 | `B-qwen-stateful-v2` | 50 | 13 | 0 / 13 attempted (0.0%) | first invalid output, as the approved plan required; 37 unattempted | [report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) |
 
-The Gemini run has no observations at all for the `evidence_aggregation` family. These are
-descriptive calibration numbers for one incomplete run per slot. They are not a complete-run score,
+These are descriptive calibration numbers for one incomplete run. They are not a complete-run score,
 not a confirmatory result, and not a milestone-gate verdict.
 
-Each run's authoritative attempt journal holds raw provider responses, screenshots, and private
-policy checkpoints. Those journals are sealed as `must_not_commit` in the run's
-`*-publication-relation.json` and are excluded from this repository by policy, enforced by
+The `A-gemini-stateful-v2` calibration was **withdrawn**, and its evidence and reports were removed
+from this repository rather than corrected in place. Its stored plan and run summaries recorded
+absolute operator paths, which cannot be redacted without invalidating the SHA-256 values its own
+integrity audit recorded for them, and no code path regenerates a run summary from its attempt
+journal. That slot will be re-run from scratch under a new approval; until then this repository
+makes no Gemini claim. The path defect itself is fixed at the producer
+(`pixelgym/grounding/v5/evidence.py`), so a re-run records repository-relative paths.
+
+The run's authoritative attempt journal holds raw provider responses, screenshots, and private
+policy checkpoints. It is sealed as `must_not_commit` in the run's
+`*-publication-relation.json` and is excluded from this repository by policy, enforced by
 `tests/unit/test_restricted_evidence_excluded.py`. What is published instead is a
 response-content-free derivative plus an integrity audit recording each authoritative artifact's
 path and SHA-256:
-
-- Qwen: [audit](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) ·
-  [derivative](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json). Every
-  non-restricted artifact it references is committed, so the recorded hashes can be checked from a
-  clone.
-- Gemini: [audit](artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json) ·
-  [derivative](artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json). Three of its
-  referenced artifacts remain untracked: they embed host-absolute paths, and redacting them would
-  invalidate the SHA-256 the audit records for them. That part of the Gemini audit is therefore not
-  independently checkable from a clone. The later Qwen pipeline records relative paths and does not
-  have this defect.
+[audit](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) ·
+[derivative](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json). Every
+non-restricted artifact the audit references is committed, so the recorded hashes can be checked
+from a clone.
 
 ## Architecture
 

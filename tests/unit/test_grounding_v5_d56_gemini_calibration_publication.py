@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
 from decimal import Decimal
-from pathlib import Path
 
 from scripts.generate_grounding_v5_d56_gemini_calibration_publication import (
     _known_cost,
@@ -151,51 +149,3 @@ def test_report_is_rendered_only_from_publishable_derivative() -> None:
     assert "sha256:journal" in report
     assert Decimal(derivative["cost"]["known_actual_aggregate_spend_usd"]) == Decimal("0.200000000")
 
-
-def test_checked_in_derivative_excludes_restricted_payload_fields() -> None:
-    root = Path(__file__).resolve().parents[2]
-    path = root / "artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json"
-    derivative = json.loads(path.read_text(encoding="utf-8"))
-
-    keys: set[str] = set()
-
-    def collect_keys(value: object) -> None:
-        if isinstance(value, dict):
-            keys.update(str(key) for key in value)
-            for nested in value.values():
-                collect_keys(nested)
-        elif isinstance(value, list):
-            for nested in value:
-                collect_keys(nested)
-
-    collect_keys(derivative)
-    assert (
-        not {
-            "content",
-            "idempotency_key",
-            "provider_endpoint_identity",
-            "request_digest",
-            "response_id",
-            "screenshot_digest",
-        }
-        & keys
-    )
-    encoded = json.dumps(derivative, sort_keys=True)
-    assert "/Users/" not in encoded
-    assert "data:image/" not in encoded
-
-
-def test_publication_relation_marks_raw_journal_as_excluded() -> None:
-    root = Path(__file__).resolve().parents[2]
-    path = root / "artifacts/grounding-v5-d56-gemini-full-calibration-publication-relation.json"
-    relation = json.loads(path.read_text(encoding="utf-8"))
-
-    assert relation["excluded_authoritative_artifacts"] == [
-        {
-            "git_status": "must_not_commit",
-            "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/attempts.sqlite",
-            "reason": "restricted provider responses, screenshots, and private checkpoints",
-            "sha256": "sha256:99d6520bc24ab6dc2515d70d4977aed19602dfa6fa87f0e4102d61c583557c82",
-            "size_bytes": 1_425_731_584,
-        }
-    ]

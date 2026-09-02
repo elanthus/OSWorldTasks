@@ -82,7 +82,13 @@ def _validated_latest_spend_evidence(
     *,
     frozen_gemini_output_directory: Path,
 ) -> dict[str, Any]:
-    """Bind the latest audited aggregate spend without opening the raw journal."""
+    """Bind the latest audited aggregate spend without opening the raw journal.
+
+    The Gemini calibration this binds to has been withdrawn and its evidence removed from
+    the repository, so this function — and therefore ``build_plan`` — cannot run until that
+    slot is re-run and a new predecessor is approved. The frozen digests below are retained
+    deliberately: they still document which evidence the completed Qwen run was bound to.
+    """
 
     audit_path = repository_root / INTEGRITY_AUDIT_PATH
     relation_path = repository_root / PUBLICATION_RELATION_PATH
