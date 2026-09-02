@@ -19,10 +19,8 @@ generation, and stored validation evidence for a synthetic vendor-onboarding wor
 | Grounding experiment | Raw 56/100; marks 100/100; +44.0 points, paired bootstrap 95% CI [+35.0, +54.0] | [`grounding-results.json`](artifacts/grounding-results.json) |
 
 The project owner reviewed the stored Day 2 evidence and declared that gate `PASS`. Automated
-status is not substituted for the human verdict. The real resets are **not bitwise visually
-deterministic**: the live guest clock changed a small localized pixel region. Semantic task state
-was exact across resets, and the unmasked full-frame minimum SSIM was 0.999863
-([validation evidence](artifacts/validation-report.json)).
+status is not substituted for the human verdict. Reset determinism here is semantic, **not
+bitwise visual**; see [Limitations](#limitations) for what the stored frames do and do not show.
 
 ## Grounding benchmark
 
@@ -79,6 +77,45 @@ uses strict JSON Schema, requires routed parameter support, and enables neither 
 hidden retries. See OpenRouter's official
 [image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
 [structured-output](https://openrouter.ai/docs/guides/features/structured-outputs) documentation.
+
+## v5 agent benchmark (in progress)
+
+V5 is a separate protocol that evaluates a complete versioned policy system — model, prompt,
+memory, harness, parser, and coordinate adapter — end to end on stateful workflows, after the v4c
+pilot saturated at the episode level. It preserves the pixel-only observation, bounded action,
+privileged evaluator, and sparse reward contracts described below
+([v5 plan](plans/grounding-v5-agent-benchmark.md)).
+
+**Calibration is incomplete and no v5 result is a benchmark score.** Neither run completed its 50
+assigned tasks, and each report states its own status. Unattempted assignments are retained in the
+denominators rather than dropped:
+
+| Policy slot | Assigned | Attempted | Exact success | Stop reason | Evidence |
+|---|---:|---:|---|---|---|
+| `A-gemini-stateful-v2` | 50 | 41 | 29 / 41 attempted (70.7%) | unknown provider outcome; 9 unattempted | [report](artifacts/grounding-v5-d56-gemini-full-calibration-report.md) |
+| `B-qwen-stateful-v2` | 50 | 13 | 0 / 13 attempted (0.0%) | first invalid output, as the approved plan required; 37 unattempted | [report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) |
+
+The Gemini run has no observations at all for the `evidence_aggregation` family. These are
+descriptive calibration numbers for one incomplete run per slot. They are not a complete-run score,
+not a confirmatory result, and not a milestone-gate verdict.
+
+Each run's authoritative attempt journal holds raw provider responses, screenshots, and private
+policy checkpoints. Those journals are sealed as `must_not_commit` in the run's
+`*-publication-relation.json` and are excluded from this repository by policy, enforced by
+`tests/unit/test_restricted_evidence_excluded.py`. What is published instead is a
+response-content-free derivative plus an integrity audit recording each authoritative artifact's
+path and SHA-256:
+
+- Qwen: [audit](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) ·
+  [derivative](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json). Every
+  non-restricted artifact it references is committed, so the recorded hashes can be checked from a
+  clone.
+- Gemini: [audit](artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json) ·
+  [derivative](artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json). Three of its
+  referenced artifacts remain untracked: they embed host-absolute paths, and redacting them would
+  invalidate the SHA-256 the audit records for them. That part of the Gemini audit is therefore not
+  independently checkable from a clone. The later Qwen pipeline records relative paths and does not
+  have this defect.
 
 ## Architecture
 
@@ -247,7 +284,9 @@ known limitation, with the underlying evidence retained
 
 - This is one deterministic synthetic form, not a broad desktop-task distribution.
 - Real OSWorld frames are semantically stable but not bitwise identical because the guest desktop
-  clock is live; no mask or tolerance was applied to the reported raw differences.
+  clock is live, which changed a small localized pixel region; no mask or tolerance was applied to
+  the reported raw differences. Semantic task state was exact across resets, and the unmasked
+  full-frame minimum SSIM was 0.999863 ([validation evidence](artifacts/validation-report.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
 - The privileged state endpoint exists inside the guest. The bounded action interface cannot
@@ -268,12 +307,10 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
 - [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
 - [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
-- [`artifacts/grounding-v5-d56-gemini-full-calibration-report.md`](artifacts/grounding-v5-d56-gemini-full-calibration-report.md) — generated incomplete Gemini calibration report; no milestone-gate verdict
-- [`artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json`](artifacts/grounding-v5-d56-gemini-full-calibration-publishable.json) — response-content-free calibration derivative
-- [`artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json`](artifacts/grounding-v5-d56-gemini-full-calibration-integrity-audit.json) — stored-evidence integrity audit
-- [`artifacts/grounding-v5-d56-qwen-full-calibration-report.md`](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) — generated incomplete negative Qwen calibration report; no milestone-gate verdict
-- [`artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json`](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json) — response-content-free Qwen calibration derivative
-- [`artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json`](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) — Qwen stored-evidence integrity audit
+- Incomplete v5 calibration reports, response-content-free derivatives, and stored-evidence
+  integrity audits are linked from
+  [v5 agent benchmark (in progress)](#v5-agent-benchmark-in-progress) above, with their coverage
+  limits stated there.
 
 ## Sprint plans
 
