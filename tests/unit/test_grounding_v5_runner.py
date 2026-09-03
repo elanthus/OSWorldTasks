@@ -822,6 +822,73 @@ def test_v5_model_cap_is_checked_before_attempt_started_or_transport(tmp_path: P
     }
 
 
+def test_v5_control_reservation_is_checked_before_attempt_started_or_transport(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "control-reservation-cap.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("deadline", failure_code="request_deadline")]
+    )
+    runner = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 1, 2, 1),
+    )
+
+    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+        runner.run(trial_id="trial-control-reservation-cap", task=task, action_limit=1)
+
+    events = journal.events("trial-control-reservation-cap")
+    assert "attempt_started" not in {event.kind for event in events}
+    assert len(transport.model_requests) + len(transport.control_requests) == 0
+
+
+def test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = "trial-control-reservation-recovery"
+    journal = V5AttemptJournal(tmp_path / "control-reservation-recovery.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("deadline", failure_code="request_deadline")]
+    )
+    runner = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 1, 2, 1),
+    )
+
+    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+        runner.run(trial_id=trial_id, task=task, action_limit=1)
+    wire_requests_before_recovery = len(transport.model_requests) + len(
+        transport.control_requests
+    )
+
+    recovered = runner.recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "attempt_not_started",
+        "reason": "no_attempt_reservation",
+        "redispatched": False,
+    }
+    assert len(transport.model_requests) + len(transport.control_requests) == (
+        wire_requests_before_recovery
+    )
+    assert wire_requests_before_recovery == 0
+
+
 def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(
     tmp_path: Path,
 ) -> None:

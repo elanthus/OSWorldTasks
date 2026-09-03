@@ -1388,6 +1388,19 @@ class V5Runner:
                 task=task,
                 backend=backend,
             )
+        prior_environment_boundary = (
+            self.journal.event(f"{trial_id}/initial_screenshot")
+            if step_index == 0
+            else self.journal.event(
+                f"{trial_id}/step-{step_index - 1:04d}/dispatch_committed"
+            )
+        )
+        if prior_environment_boundary is not None and set(by_kind) <= {"initial_screenshot"}:
+            return {
+                "classification": "attempt_not_started",
+                "reason": "no_attempt_reservation",
+                "redispatched": False,
+            }
         raise RuntimeError("no durable v5 recovery boundary exists for this step")
 
     def _restore_current_environment(
