@@ -11,6 +11,7 @@ import pytest
 
 from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.panel_policy import (
+    GEMINI_FULL_CALIBRATION_POLICY_GENERATION,
     GEMINI_STATEFUL,
     GEMINI_STATEFUL_FULL_CALIBRATION,
     GEMINI_STATEFUL_ONE_CALL_SMOKE,
@@ -32,6 +33,12 @@ from pixelgym.grounding.v5.runner import TransportOutcome
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
+
+
+def test_gemini_full_calibration_slot_names_its_policy_generation() -> None:
+    assert GEMINI_STATEFUL_FULL_CALIBRATION.slot == (
+        f"A-gemini-stateful-{GEMINI_FULL_CALIBRATION_POLICY_GENERATION}"
+    )
 
 
 @pytest.mark.parametrize(

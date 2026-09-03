@@ -23,6 +23,7 @@ from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
+    GEMINI_FULL_CALIBRATION_POLICY_GENERATION,
     GEMINI_STATEFUL_FULL_CALIBRATION,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
@@ -37,7 +38,7 @@ from pixelgym.grounding.v5.runner import V5Runner
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-result-v1"
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T00:32:11Z"
-POLICY_GENERATION = "v3"
+POLICY_GENERATION = GEMINI_FULL_CALIBRATION_POLICY_GENERATION
 
 FROZEN_SMOKE_PLAN_SHA256 = (
     "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb"

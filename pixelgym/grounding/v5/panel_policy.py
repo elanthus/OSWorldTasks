@@ -39,6 +39,7 @@ MAX_PROMPT_TOKENS = CONTEXT_LIMIT - MAX_OUTPUT_TOKENS
 PANEL_MAXIMUM_SPEND_USD = Decimal("10.00")
 PRIOR_AGGREGATE_SPEND_USD = Decimal("0.370889195")
 SEED = 20260809
+GEMINI_FULL_CALIBRATION_POLICY_GENERATION = "v3"
 
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-canonical-response-v2"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
@@ -190,7 +191,7 @@ GEMINI_STATEFUL_ONE_CALL_SMOKE = PanelPolicyConfig(
     max_rate_limit_retries_per_action=0,
 )
 GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
-    slot="A-gemini-stateful-v3",
+    slot=f"A-gemini-stateful-{GEMINI_FULL_CALIBRATION_POLICY_GENERATION}",
     model=GEMINI_STATEFUL_ONE_CALL_SMOKE.model,
     provider_route=GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_route,
     response_provider=GEMINI_STATEFUL_ONE_CALL_SMOKE.response_provider,
