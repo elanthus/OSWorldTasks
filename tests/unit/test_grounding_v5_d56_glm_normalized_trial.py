@@ -202,10 +202,10 @@ def test_glm_trial_plan_binds_candidate_route_task_and_latest_spend(
     assert plan["caps"]["model_attempt_cap"] == 56
     assert plan["caps"]["provider_control_request_cap"] == 0
     assert plan["caps"]["provider_wire_request_cap"] == 56
-    assert plan["caps"]["prior_aggregate_spend_usd"] == "2.487339457"
-    assert plan["caps"]["remaining_aggregate_spend_usd"] == "7.512660543"
+    assert plan["caps"]["prior_campaign_spend"]["known_spend_usd"] == "2.487339457"
+    assert plan["caps"]["remaining_run_spend_usd"] == "10.00"
     assert plan["caps"]["trial_theoretical_maximum_usd"] == "0.590643200"
-    assert plan["caps"]["aggregate_theoretical_upper_bound_usd"] == "3.077982657"
+    assert plan["caps"]["run_theoretical_upper_bound_usd"] == "0.590643200"
     assert plan["frozen_normalized_llama_trial_evidence"]["terminal"] == {
         "classification": "unknown_outcome_infrastructure_failure",
         "failure_code": "provider_request_unknown",

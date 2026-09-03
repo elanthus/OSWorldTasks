@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scripts.publish_grounding_v5_d56_qwen_full_calibration import (
     _file_digest,
+    _format_cost,
     render_report,
 )
 
@@ -144,3 +145,7 @@ def test_qwen_publication_relation_excludes_restricted_journal() -> None:
     )
     assert relation["publishable"]["derivative_file_sha256"] == _file_digest(DERIVATIVE)
     assert relation["publishable"]["report_file_sha256"] == _file_digest(REPORT)
+
+
+def test_qwen_report_formatter_preserves_unknown_spend() -> None:
+    assert _format_cost("unknown") == "unknown"

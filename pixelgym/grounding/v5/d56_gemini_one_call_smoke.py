@@ -11,6 +11,14 @@ from typing import Any
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
+from pixelgym.grounding.v5.d56_spend import (
+    campaign_spend_fields,
+    combine_spend_disclosures,
+    ledger_spend_disclosure,
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+    phase_spend_fields,
+)
 from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_maximum_stage_index
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
@@ -25,8 +33,8 @@ from pixelgym.grounding.v5.panel_policy import (
 )
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-one-call-smoke-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-one-call-smoke-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-one-call-smoke-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-one-call-smoke-result-v2"
 SMOKE_SEED = 5002
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T00:32:11Z"
 
@@ -107,12 +115,16 @@ def _validated_frozen_glm_json_smoke_evidence(repository_root: Path, output_dire
             raise ValueError("frozen GLM JSON-object smoke terminal journal mismatch")
     finally:
         journal.close()
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     return {
         "summary_path": repository_relative_path(repository_root, summary_path),
         "summary_sha256": FROZEN_GLM_JSON_SMOKE_SUMMARY_SHA256,
         "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_GLM_JSON_SMOKE_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_GLM_JSON_SMOKE_ACTUAL_SPEND_USD),
+        "phase_spend": phase_spend,
+        "campaign_spend": campaign_spend,
         "terminal": {
             "classification": terminal_event.kind,
             "failure_code": terminal_event.payload["failure_code"],
@@ -133,16 +145,15 @@ def build_plan(
     frozen_evidence = _validated_frozen_glm_json_smoke_evidence(
         repository_root, frozen_glm_json_smoke_output_directory
     )
-    prior_spend = Decimal(frozen_evidence["actual_aggregate_spend_usd"])
+    prior_campaign_spend = frozen_evidence["campaign_spend"]
     task = generate_task(SMOKE_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
         raise ValueError("Gemini one-call smoke may use a development task only")
     config = GEMINI_STATEFUL_ONE_CALL_SMOKE
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
     theoretical_maximum = config.request_maximum_usd
-    aggregate_upper_bound = prior_spend + theoretical_maximum
-    if aggregate_upper_bound > PANEL_MAXIMUM_SPEND_USD:
-        raise ValueError("Gemini one-call smoke theoretical maximum exceeds shared cap")
+    if theoretical_maximum > PANEL_MAXIMUM_SPEND_USD:
+        raise ValueError("Gemini one-call smoke theoretical maximum exceeds its run cap")
     return {
         "schema_version": PLAN_SCHEMA_VERSION,
         "purpose": (
@@ -206,10 +217,15 @@ def build_plan(
             "model_attempt_cap": 1,
             "provider_control_request_cap": 0,
             "provider_wire_request_cap": 1,
-            "prior_aggregate_spend_usd": str(prior_spend),
+            "prior_campaign_spend": prior_campaign_spend,
             "per_request_theoretical_maximum_usd": str(theoretical_maximum),
-            "aggregate_maximum_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "aggregate_theoretical_upper_bound_usd": str(aggregate_upper_bound),
+            "maximum_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "remaining_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "run_theoretical_upper_bound_usd": str(theoretical_maximum),
+            "spend_lineage": (
+                "per-run enforcement: this phase starts at zero; predecessor spend is "
+                "carried only as campaign disclosure"
+            ),
         },
         "frozen_glm_json_smoke_evidence": frozen_evidence,
         "stop_rules": [
@@ -217,7 +233,7 @@ def build_plan(
             "do not retry any transport failure",
             "do not retry any invalid or unparseable model output",
             "stop after the first environment action",
-            "stop before the request if its theoretical maximum cannot fit under the shared ten-dollar ledger",
+            "stop before the request if its theoretical maximum cannot fit under this phase's ten-dollar ledger",
         ],
         "approval_required": {
             "owner": "human",
@@ -252,8 +268,8 @@ def execute_smoke(
         raise FileExistsError(f"refusing to replace Gemini smoke output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
-    prior_spend = Decimal(plan["caps"]["prior_aggregate_spend_usd"])
-    ledger = SpendLedger(PANEL_MAXIMUM_SPEND_USD, prior_spend)
+    maximum_spend = Decimal(plan["caps"]["maximum_run_spend_usd"])
+    ledger = SpendLedger(maximum_spend, Decimal(0))
     approved_caps = CallCaps(1, 1, 0, 1)
     transport: OpenRouterPanelTransport | None = None
     result_record: dict[str, Any] | None = None
@@ -298,6 +314,11 @@ def execute_smoke(
         smoke_reached_model_response = any(
             event.kind == "canonical_response_persisted" for event in events
         )
+        phase_spend = ledger_spend_disclosure(ledger)
+        prior_campaign_spend = plan["caps"]["prior_campaign_spend"]
+        campaign_spend = combine_spend_disclosures(
+            (prior_campaign_spend, phase_spend)
+        )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "purpose": plan["purpose"],
@@ -307,11 +328,16 @@ def execute_smoke(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": call_counts[0],
             "provider_control_requests": call_counts[1],
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "smoke_incremental_spend_usd": str(ledger.spent_usd - prior_spend),
-            "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
+            **phase_spend_fields(phase_spend),
+            "prior_campaign_spend": prior_campaign_spend,
+            **campaign_spend_fields(campaign_spend),
+            "actual_aggregate_spend_usd": campaign_spend["known_spend_usd"],
+            "smoke_incremental_spend_usd": phase_spend["known_spend_usd"],
+            "remaining_run_spend_usd": str(
+                maximum_spend - Decimal(phase_spend["budget_accounted_spend_usd"])
+            ),
+            "maximum_run_spend_usd": str(maximum_spend),
             "reached_model_response": smoke_reached_model_response,
             "episode_result": result_record,
             "semantic_progress": {

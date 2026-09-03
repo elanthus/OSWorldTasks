@@ -152,9 +152,10 @@ def test_relaxed_glm_plan_binds_frozen_404_and_local_fail_closed_parser(
     assert inference_parameters["response_schema_strict"] == "false"
     assert plan["caps"]["environment_action_cap"] == 28
     assert plan["caps"]["model_attempt_cap"] == 56
-    assert plan["caps"]["prior_aggregate_spend_usd"] == "2.487339457"
+    assert plan["caps"]["prior_campaign_spend"]["known_spend_usd"] == "2.487339457"
+    assert plan["caps"]["remaining_run_spend_usd"] == "10.00"
     assert plan["caps"]["trial_theoretical_maximum_usd"] == "0.590643200"
-    assert plan["caps"]["aggregate_theoretical_upper_bound_usd"] == "3.077982657"
+    assert plan["caps"]["run_theoretical_upper_bound_usd"] == "0.590643200"
     assert plan["frozen_strict_glm_trial_evidence"]["terminal"] == {
         "classification": "unknown_outcome_infrastructure_failure",
         "failure_code": "provider_request_unknown",

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/pixelgym-agent-v5-d56-phase-spend-v2.json",
+  "title": "PixelGym D5.6 phase spend disclosure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "known_spend_usd",
+    "unknown_reservation_usd",
+    "in_flight_reservation_usd",
+    "budget_accounted_spend_usd"
+  ],
+  "properties": {
+    "schema_version": {"const": "pixelgym-agent-v5-d56-phase-spend-v2"},
+    "known_spend_usd": {"$ref": "#/$defs/amount"},
+    "unknown_reservation_usd": {"$ref": "#/$defs/amount"},
+    "in_flight_reservation_usd": {"$ref": "#/$defs/amount"},
+    "budget_accounted_spend_usd": {"$ref": "#/$defs/amount"}
+  },
+  "$defs": {
+    "amount": {"type": "string", "pattern": "^(0|[0-9]+(\\.[0-9]+)?)$"}
+  }
+}
