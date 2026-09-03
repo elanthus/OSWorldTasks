@@ -28,7 +28,11 @@ from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
-from pixelgym.platform.mlflow_tracking import TrackingRunView
+from pixelgym.platform.mlflow_tracking import (
+    COMPATIBLE_SEARCH_CAPACITY,
+    CompatibleSearchCapacityError,
+    TrackingRunView,
+)
 from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     ImmutableOperationalLog,
@@ -2399,6 +2403,45 @@ def test_compatible_run_api_rejects_unsafe_filters_and_maps_timeout(tmp_path: Pa
     assert tracking.calls == 0
     assert client.get("/api/tracking/runs/compatible", params=base).status_code == 504
     assert tracking.calls == 1
+
+
+def test_compatible_run_api_maps_capacity_exhaustion_to_documented_503(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+
+    class SaturatedTracking:
+        def search_compatible_runs(self, **_filters):
+            raise CompatibleSearchCapacityError(
+                capacity=COMPATIBLE_SEARCH_CAPACITY,
+                occupancy=COMPATIBLE_SEARCH_CAPACITY,
+            )
+
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            tracking=SaturatedTracking(),
+        )
+    )
+    response = client.get(
+        "/api/tracking/runs/compatible",
+        params={
+            "dataset_fingerprint": "sha256:" + "a" * 64,
+            "scorer_version": "scorer-v1",
+            "target_semantics": "target-v1",
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": {
+            "error": "MLflow compatible-run search capacity exhausted",
+            "capacity": COMPATIBLE_SEARCH_CAPACITY,
+            "occupancy": COMPATIBLE_SEARCH_CAPACITY,
+        }
+    }
 
 
 def test_runs_render_safe_source_provenance_diagnostic(
