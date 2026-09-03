@@ -17,7 +17,12 @@ from pixelgym.grounding.v5.contracts import (
     content_digest,
     sha256_bytes,
 )
-from pixelgym.grounding.v5.evidence import validate_credential_free
+from pixelgym.grounding.v5.evidence import (
+    JOURNAL_DIGEST_VERSION_V1,
+    JOURNAL_DIGEST_VERSION_V2,
+    JOURNAL_INTEGRITY_SCHEMA_VERSION,
+    validate_credential_free,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 TerminalAttemptKind = Literal[
@@ -35,6 +40,8 @@ TERMINAL_ATTEMPT_KINDS = frozenset(
         "unknown_outcome_infrastructure_failure",
     }
 )
+
+_DIGEST_VERSION_METADATA_KEY = "event_chain_digest_version"
 
 
 class JournalConflictError(RuntimeError):
@@ -62,60 +69,95 @@ class V5AttemptJournal:
         self._connection = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self._connection.execute("PRAGMA journal_mode=WAL")
         self._connection.execute("PRAGMA synchronous=FULL")
-        self._connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS objects (
-                digest TEXT PRIMARY KEY,
-                kind TEXT NOT NULL,
-                data BLOB NOT NULL
+        try:
+            self._initialize_schema()
+        except BaseException:
+            self._connection.close()
+            raise
+
+    def _initialize_schema(self) -> None:
+        """Create a v2 journal without migrating marker-less v1 evidence."""
+
+        self._connection.execute("BEGIN IMMEDIATE")
+        try:
+            events_table_existed = (
+                self._connection.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'events'"
+                ).fetchone()
+                is not None
             )
-            """
-        )
-        self._connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS object_roles (
-                digest TEXT NOT NULL,
-                kind TEXT NOT NULL,
-                PRIMARY KEY (digest, kind),
-                FOREIGN KEY (digest) REFERENCES objects(digest)
+            self._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS objects (
+                    digest TEXT PRIMARY KEY,
+                    kind TEXT NOT NULL,
+                    data BLOB NOT NULL
+                )
+                """
             )
-            """
-        )
-        self._connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS events (
-                sequence INTEGER PRIMARY KEY AUTOINCREMENT,
-                event_key TEXT NOT NULL UNIQUE,
-                kind TEXT NOT NULL,
-                trial_id TEXT NOT NULL,
-                step_index INTEGER NOT NULL,
-                attempt_index INTEGER,
-                payload BLOB NOT NULL
+            self._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS object_roles (
+                    digest TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    PRIMARY KEY (digest, kind),
+                    FOREIGN KEY (digest) REFERENCES objects(digest)
+                )
+                """
             )
-            """
-        )
-        self._connection.execute(
-            """
-            CREATE UNIQUE INDEX IF NOT EXISTS one_attempt_terminal
-            ON events(trial_id, step_index, attempt_index)
-            WHERE kind IN (
-                'attempt_completed', 'confirmed_cancellation',
-                'confirmed_no_response_timeout', 'unknown_outcome_infrastructure_failure'
+            self._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS events (
+                    sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event_key TEXT NOT NULL UNIQUE,
+                    kind TEXT NOT NULL,
+                    trial_id TEXT NOT NULL,
+                    step_index INTEGER NOT NULL,
+                    attempt_index INTEGER,
+                    payload BLOB NOT NULL
+                )
+                """
             )
-            """
-        )
-        self._connection.execute(
-            """
-            CREATE UNIQUE INDEX IF NOT EXISTS one_dispatch_started
-            ON events(trial_id, step_index) WHERE kind = 'dispatch_started'
-            """
-        )
-        self._connection.execute(
-            """
-            CREATE UNIQUE INDEX IF NOT EXISTS one_dispatch_committed
-            ON events(trial_id, step_index) WHERE kind = 'dispatch_committed'
-            """
-        )
+            self._connection.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS one_attempt_terminal
+                ON events(trial_id, step_index, attempt_index)
+                WHERE kind IN (
+                    'attempt_completed', 'confirmed_cancellation',
+                    'confirmed_no_response_timeout', 'unknown_outcome_infrastructure_failure'
+                )
+                """
+            )
+            self._connection.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS one_dispatch_started
+                ON events(trial_id, step_index) WHERE kind = 'dispatch_started'
+                """
+            )
+            self._connection.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS one_dispatch_committed
+                ON events(trial_id, step_index) WHERE kind = 'dispatch_committed'
+                """
+            )
+            if not events_table_existed:
+                self._connection.execute(
+                    """
+                    CREATE TABLE journal_metadata (
+                        key TEXT PRIMARY KEY,
+                        value TEXT NOT NULL
+                    )
+                    """
+                )
+                self._connection.execute(
+                    "INSERT INTO journal_metadata(key, value) VALUES (?, ?)",
+                    (_DIGEST_VERSION_METADATA_KEY, JOURNAL_DIGEST_VERSION_V2),
+                )
+        except BaseException:
+            self._connection.execute("ROLLBACK")
+            raise
+        else:
+            self._connection.execute("COMMIT")
 
     def close(self) -> None:
         self._connection.close()
@@ -502,22 +544,52 @@ class V5AttemptJournal:
             if "sha256:" + sha256_bytes(bytes(data)) != digest:
                 raise JournalConflictError("journal integrity verification failed")
         events = self.events()
-        return {
-            "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
+        digest_version = self._digest_version()
+        event_chain = [
+            {
+                "sequence": event.sequence,
+                "event_key": event.event_key,
+                "kind": event.kind,
+                "payload": event.payload,
+            }
+            for event in events
+        ]
+        if digest_version == JOURNAL_DIGEST_VERSION_V2:
+            event_chain = [
+                {
+                    "sequence": event.sequence,
+                    "event_key": event.event_key,
+                    "kind": event.kind,
+                    "trial_id": event.trial_id,
+                    "step_index": event.step_index,
+                    "attempt_index": event.attempt_index,
+                    "payload": event.payload,
+                }
+                for event in events
+            ]
+        report = {
+            "schema_version": JOURNAL_INTEGRITY_SCHEMA_VERSION,
             "object_count": len(object_rows),
             "event_count": len(events),
-            "event_chain_digest": content_digest(
-                [
-                    {
-                        "sequence": event.sequence,
-                        "event_key": event.event_key,
-                        "kind": event.kind,
-                        "payload": event.payload,
-                    }
-                    for event in events
-                ]
-            ),
+            "event_chain_digest": content_digest(event_chain),
         }
+        if digest_version == JOURNAL_DIGEST_VERSION_V2:
+            report["digest_version"] = digest_version
+        return report
+
+    def _digest_version(self) -> str:
+        metadata_table = self._connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'journal_metadata'"
+        ).fetchone()
+        if metadata_table is None:
+            return JOURNAL_DIGEST_VERSION_V1
+        row = self._connection.execute(
+            "SELECT value FROM journal_metadata WHERE key = ?",
+            (_DIGEST_VERSION_METADATA_KEY,),
+        ).fetchone()
+        if row is None or row[0] != JOURNAL_DIGEST_VERSION_V2:
+            raise JournalConflictError("journal digest version metadata is invalid")
+        return JOURNAL_DIGEST_VERSION_V2
 
     @staticmethod
     def _event_from_row(row: tuple[Any, ...]) -> JournalEvent:
