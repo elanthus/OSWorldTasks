@@ -11,6 +11,14 @@ from typing import Any
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import _file_digest, _git
+from pixelgym.grounding.v5.d56_spend import (
+    campaign_spend_fields,
+    combine_spend_disclosures,
+    ledger_spend_disclosure,
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+    phase_spend_fields,
+)
 from pixelgym.grounding.v5.diagnostics import maximum_stage_index as summarize_maximum_stage_index
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
@@ -27,8 +35,8 @@ from pixelgym.grounding.v5.panel_policy import (
 from pixelgym.grounding.v5.panel_smoke import PRICE_OBSERVED_AT_UTC as PRIOR_PRICE_OBSERVED_AT_UTC
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-normalized-trial-result-v2"
 TRIAL_SEED = 5010
 PRICE_OBSERVED_AT_UTC = "2026-08-27T18:36:48Z"
 EXECUTION_FROZEN = True
@@ -133,6 +141,8 @@ def _validated_frozen_c_evidence(repository_root: Path, output_directory: Path) 
             raise ValueError("frozen native-coordinate Slot C journal counts mismatch")
     finally:
         journal.close()
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     return {
         "approved_plan_sha256": FROZEN_C_PLAN_SHA256,
         "code_revision": FROZEN_C_CODE_REVISION,
@@ -141,6 +151,8 @@ def _validated_frozen_c_evidence(repository_root: Path, output_directory: Path) 
         "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_C_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_C_ACTUAL_SPEND_USD),
+        "phase_spend": phase_spend,
+        "campaign_spend": campaign_spend,
         "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - FROZEN_C_ACTUAL_SPEND_USD),
         "attempted_policy_task_pairs": 42,
         "successful_policy_task_pairs": 0,
@@ -166,7 +178,7 @@ def build_plan(
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
     frozen_c_evidence = _validated_frozen_c_evidence(repository_root, frozen_c_output_directory)
-    prior_spend = Decimal(frozen_c_evidence["actual_aggregate_spend_usd"])
+    prior_campaign_spend = frozen_c_evidence["campaign_spend"]
     task = generate_task(TRIAL_SEED)
     if task.seed_record.partition is not Partition.DEVELOPMENT:
         raise ValueError("normalized Slot C trial may use a development task only")
@@ -175,9 +187,8 @@ def build_plan(
     action_cap = task.max_episode_steps
     attempt_cap = action_cap * manifest.max_model_attempts_per_action
     theoretical_maximum = config.request_maximum_usd * attempt_cap
-    aggregate_upper_bound = prior_spend + theoretical_maximum
-    if aggregate_upper_bound > PANEL_MAXIMUM_SPEND_USD:
-        raise ValueError("normalized Slot C trial theoretical maximum exceeds shared cap")
+    if theoretical_maximum > PANEL_MAXIMUM_SPEND_USD:
+        raise ValueError("normalized Slot C trial theoretical maximum exceeds its run cap")
     policy_record = {
         "slot": config.slot,
         "policy_manifest": manifest.to_dict(),
@@ -227,14 +238,18 @@ def build_plan(
         },
         "caps": {
             **CallCaps(action_cap, attempt_cap, 0, attempt_cap).to_dict(),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - prior_spend),
+            "maximum_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "remaining_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "prior_campaign_spend": prior_campaign_spend,
+            "spend_lineage": (
+                "per-run enforcement: this phase starts at zero; predecessor spend is "
+                "carried only as campaign disclosure"
+            ),
             "trial_theoretical_maximum_usd": str(theoretical_maximum),
-            "aggregate_theoretical_upper_bound_usd": str(aggregate_upper_bound),
+            "run_theoretical_upper_bound_usd": str(theoretical_maximum),
             "enforcement": (
                 "before each wire request, reserve Slot C's worst-case request cost against "
-                "the shared aggregate ledger; stop before a request that cannot fit"
+                "this phase's ledger; stop before a request that cannot fit"
             ),
         },
         "frozen_native_c_evidence": frozen_c_evidence,
@@ -244,7 +259,7 @@ def build_plan(
             BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            "stop before any request whose per-request theoretical maximum cannot fit under this phase's ten-dollar ledger",
             "do not retry a parse, action, unknown-outcome, or other provider failure",
         ],
         "approval_required": {
@@ -281,8 +296,8 @@ def execute_trial(
         raise FileExistsError(f"refusing to replace normalized Slot C output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
-    prior_spend = Decimal(plan["caps"]["prior_aggregate_spend_usd"])
-    ledger = SpendLedger(PANEL_MAXIMUM_SPEND_USD, prior_spend)
+    maximum_spend = Decimal(plan["caps"]["maximum_run_spend_usd"])
+    ledger = SpendLedger(maximum_spend, Decimal(0))
     approved_caps = CallCaps(
         plan["caps"]["environment_action_cap"],
         plan["caps"]["model_attempt_cap"],
@@ -329,6 +344,11 @@ def execute_trial(
         integrity = journal.integrity_report()
         call_counts = journal.call_counts()
         journal.close()
+        phase_spend = ledger_spend_disclosure(ledger)
+        prior_campaign_spend = plan["caps"]["prior_campaign_spend"]
+        campaign_spend = combine_spend_disclosures(
+            (prior_campaign_spend, phase_spend)
+        )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "purpose": plan["purpose"],
@@ -338,11 +358,16 @@ def execute_trial(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": call_counts[0],
             "provider_control_requests": call_counts[1],
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "trial_incremental_spend_usd": str(ledger.spent_usd - prior_spend),
-            "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
+            **phase_spend_fields(phase_spend),
+            "prior_campaign_spend": prior_campaign_spend,
+            **campaign_spend_fields(campaign_spend),
+            "actual_aggregate_spend_usd": campaign_spend["known_spend_usd"],
+            "trial_incremental_spend_usd": phase_spend["known_spend_usd"],
+            "remaining_run_spend_usd": str(
+                maximum_spend - Decimal(phase_spend["budget_accounted_spend_usd"])
+            ),
+            "maximum_run_spend_usd": str(maximum_spend),
             "assigned_policy_task_pairs": 1,
             "attempted_policy_task_pairs": int(result_record is not None),
             "successful_policy_task_pairs": int(

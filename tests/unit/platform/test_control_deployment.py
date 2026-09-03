@@ -12,12 +12,18 @@ from pixelgym.platform.control_store import (
     AuthorizationError,
     ConflictError,
     ControlStore,
+    DeploymentRecord,
     TransitionError,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
+from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
-from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
+from pixelgym.platform.immutable_store import (
+    ImmutableStore,
+    ImmutableStoreError,
+    LocalImmutableStore,
+)
 from pixelgym.platform.mlflow_tracking import TrackingMirrorError
 from pixelgym.platform.policy import build_policy_manifest, prompt_template
 from pixelgym.platform.schema_validation import ContractValidationError
@@ -788,7 +794,7 @@ def test_reconcile_tracking_mirrors_authoritative_status_and_active_alias(
     assert control.audit_events()[-1]["event_type"] == "tracking.reconciliation_resolved"
 
 
-def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order(
+def test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_source(
     tmp_path: Path, passing_evidence
 ) -> None:
     control = _control(tmp_path)
@@ -801,26 +807,31 @@ def test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_ord
     with pytest.raises(TransitionError, match="smoke"):
         failing.deploy(second.candidate_id, actor="local-reviewer", reason="bad")
     assert control.active()[0] == deployed_first
-    coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    deployed_second = coordinator.deploy(
+        second.candidate_id, actor="local-reviewer", reason="second"
+    )
     restored_first = coordinator.rollback(actor="local-reviewer", reason="rehearsal")
-    restored_second = coordinator.rollback(actor="local-reviewer", reason="repeat rehearsal")
+    with pytest.raises(TransitionError, match="no eligible known-good"):
+        coordinator.rollback(actor="local-reviewer", reason="repeat rehearsal")
 
     assert restored_first.candidate_id == first.candidate_id
-    assert restored_second.candidate_id == second.candidate_id
     assert [event["candidate_id"] for event in control.deployment_history()] == [
         first.candidate_id,
         second.candidate_id,
         first.candidate_id,
-        second.candidate_id,
     ]
     assert [event["action"] for event in control.deployment_history()] == [
         "deploy",
         "deploy",
         "rollback",
-        "rollback",
     ]
-    assert all(
-        "previous_deployment_id" not in event for event in control.deployment_history()
+    rollback_audit = control.audit_events()[-1]
+    assert rollback_audit["event_type"] == "deployment.rollback"
+    assert rollback_audit["details"]["abandoned_deployment_id"] == (
+        deployed_second.deployment_id
+    )
+    assert rollback_audit["details"]["restored_deployment_id"] == (
+        deployed_first.deployment_id
     )
 
 
@@ -1059,11 +1070,177 @@ def test_rollback_fails_when_no_previous_deployment_event_exists(
     coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
     coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
 
-    with pytest.raises(TransitionError, match="no previous"):
+    with pytest.raises(TransitionError, match="no eligible known-good"):
         coordinator.rollback(actor="local-reviewer", reason="no prior event")
 
 
-def test_store_rejects_rollback_to_any_candidate_except_previous_event(
+def test_repeated_rollbacks_follow_last_known_good_lineage(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate_c = _approved_candidate(control, passing_evidence, store, "candidate-c")
+    candidate_a = _approved_candidate(control, passing_evidence, store, "candidate-a")
+    candidate_b = _approved_candidate(control, passing_evidence, store, "candidate-b")
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
+
+    deployed_c = coordinator.deploy(
+        candidate_c.candidate_id, actor="local-reviewer", reason="candidate C"
+    )
+    coordinator.deploy(
+        candidate_a.candidate_id, actor="local-reviewer", reason="candidate A"
+    )
+    deployed_b = coordinator.deploy(
+        candidate_b.candidate_id, actor="local-reviewer", reason="candidate B"
+    )
+
+    restored_a = coordinator.rollback(actor="local-reviewer", reason="abandon B")
+    assert restored_a.candidate_id == candidate_a.candidate_id
+    assert control.previous_target(restored_a).deployment_id == deployed_c.deployment_id
+
+    restored_c = coordinator.rollback(actor="local-reviewer", reason="abandon A")
+    assert restored_c.candidate_id == candidate_c.candidate_id
+    with pytest.raises(TransitionError, match="no eligible known-good"):
+        coordinator.rollback(actor="local-reviewer", reason="exhausted lineage")
+
+    assert [event["candidate_id"] for event in control.deployment_history()] == [
+        candidate_c.candidate_id,
+        candidate_a.candidate_id,
+        candidate_b.candidate_id,
+        candidate_a.candidate_id,
+        candidate_c.candidate_id,
+    ]
+    rollback_audits = [
+        event
+        for event in control.audit_events()
+        if event["event_type"] == "deployment.rollback"
+    ]
+    assert rollback_audits[0]["details"]["abandoned_deployment_id"] == (
+        deployed_b.deployment_id
+    )
+    assert rollback_audits[1]["details"]["restored_deployment_id"] == (
+        deployed_c.deployment_id
+    )
+
+
+def test_fresh_deploy_resets_the_abandoned_rollback_chain(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate_c = _approved_candidate(control, passing_evidence, store, "candidate-c")
+    candidate_a = _approved_candidate(control, passing_evidence, store, "candidate-a")
+    candidate_b = _approved_candidate(control, passing_evidence, store, "candidate-b")
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
+
+    coordinator.deploy(candidate_c.candidate_id, actor="local-reviewer", reason="C")
+    coordinator.deploy(candidate_a.candidate_id, actor="local-reviewer", reason="A")
+    coordinator.deploy(candidate_b.candidate_id, actor="local-reviewer", reason="B")
+    restored_a = coordinator.rollback(actor="local-reviewer", reason="abandon B")
+    assert control.previous_target(restored_a).candidate_id == candidate_c.candidate_id
+
+    redeployed_b = coordinator.deploy(
+        candidate_b.candidate_id, actor="local-reviewer", reason="fresh explicit B"
+    )
+    restored_a_again = coordinator.rollback(
+        actor="local-reviewer", reason="new deploy reset the chain"
+    )
+
+    assert redeployed_b.action == "deploy"
+    assert restored_a_again.candidate_id == candidate_a.candidate_id
+    assert [event["action"] for event in control.deployment_history()] == [
+        "deploy",
+        "deploy",
+        "deploy",
+        "rollback",
+        "deploy",
+        "rollback",
+    ]
+
+
+def test_pre_lineage_history_resolves_without_rewriting_stored_events(
+    tmp_path: Path, passing_evidence
+) -> None:
+    database = tmp_path / "control.db"
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate_c = _approved_candidate(control, passing_evidence, store, "candidate-c")
+    candidate_a = _approved_candidate(control, passing_evidence, store, "candidate-a")
+    candidate_b = _approved_candidate(control, passing_evidence, store, "candidate-b")
+    rows = [
+        (
+            "old-deploy-c",
+            candidate_c.candidate_id,
+            candidate_c.policy.policy_id,
+            "deploy",
+            1,
+        ),
+        (
+            "old-deploy-a",
+            candidate_a.candidate_id,
+            candidate_a.policy.policy_id,
+            "deploy",
+            2,
+        ),
+        (
+            "old-deploy-b",
+            candidate_b.candidate_id,
+            candidate_b.policy.policy_id,
+            "deploy",
+            3,
+        ),
+        (
+            "old-rollback-a",
+            candidate_a.candidate_id,
+            candidate_a.policy.policy_id,
+            "rollback",
+            4,
+        ),
+    ]
+    for deployment_id, candidate_id, policy_id, action, generation in rows:
+        control.connection.execute(
+            """INSERT INTO deployments(
+                deployment_id, candidate_id, policy_id, action, actor, reason,
+                created_at_utc, generation
+            ) VALUES (?, ?, ?, ?, 'local-reviewer', 'pre-change event', ?, ?)""",
+            (
+                deployment_id,
+                candidate_id,
+                policy_id,
+                action,
+                f"2000-01-01T00:01:{generation:02d}Z",
+                generation,
+            ),
+        )
+    control.connection.execute(
+        "UPDATE active_pointer SET deployment_id = 'old-rollback-a', generation = 4 "
+        "WHERE singleton = 1"
+    )
+    original_history = control.deployment_history()
+    control.connection.close()
+
+    reopened = ControlStore(database, reviewer_identity="local-reviewer")
+    reopened.migrate()
+    current, generation = reopened.active()
+
+    assert current is not None
+    assert generation == 4
+    assert reopened.previous_target(current).deployment_id == "old-deploy-c"
+    assert reopened.deployment_history() == original_history
+    restarted = DeploymentCoordinator(
+        control=reopened, store=store, load_and_smoke=lambda policy: True
+    )
+    assert restarted.restore_active() == current
+    assert restarted.rollback(
+        actor="local-reviewer", reason="resolved after restart"
+    ).candidate_id == candidate_c.candidate_id
+
+
+def test_store_rejects_rollback_to_any_candidate_except_known_good_target(
     tmp_path: Path, passing_evidence
 ) -> None:
     control = _control(tmp_path)
@@ -1081,7 +1258,7 @@ def test_store_rejects_rollback_to_any_candidate_except_previous_event(
     assert target.deployment_id == first_event.deployment_id
     assert target.candidate_id == first.candidate_id
 
-    with pytest.raises(TransitionError, match="previous deployment event"):
+    with pytest.raises(TransitionError, match="eligible known-good deployment"):
         control.activate(
             second.candidate_id,
             actor="local-reviewer",
@@ -1090,6 +1267,64 @@ def test_store_rejects_rollback_to_any_candidate_except_previous_event(
             expected_deployment_id=current.deployment_id,
             expected_generation=generation,
         )
+
+
+@pytest.mark.parametrize(
+    "failure",
+    ["unapproved", "corrupt", "missing", "incompatible", "unhealthy", "expired"],
+)
+def test_rollback_reverifies_known_good_target_before_activation(
+    tmp_path: Path, passing_evidence, failure: str
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    target = _approved_candidate(control, passing_evidence, store, "target")
+    active_candidate = _approved_candidate(control, passing_evidence, store, "active")
+    setup = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
+    setup.deploy(target.candidate_id, actor="local-reviewer", reason="target")
+    active = setup.deploy(
+        active_candidate.candidate_id, actor="local-reviewer", reason="active"
+    )
+    rollback_store: ImmutableStore = store
+
+    if failure == "unapproved":
+        control.connection.execute(
+            "UPDATE candidates SET state = 'Eligible' WHERE candidate_id = ?",
+            (target.candidate_id,),
+        )
+    elif failure == "corrupt":
+        artifact = target.artifacts[0]
+        (tmp_path / "immutable" / "objects" / artifact.logical_key).write_bytes(
+            b"corrupt"
+        )
+    elif failure == "missing":
+        artifact = target.artifacts[0]
+        (tmp_path / "immutable" / "objects" / artifact.logical_key).unlink()
+    elif failure == "expired":
+
+        class ExpiredStore:
+            def get_verified(self, _reference) -> bytes:
+                raise ImmutableStoreError("immutable retention window expired")
+
+        rollback_store = ExpiredStore()
+
+    def smoke(_candidate) -> bool:
+        if failure == "incompatible":
+            raise DeploymentSmokeError("candidate is incompatible with the serving API")
+        return failure != "unhealthy"
+
+    coordinator = DeploymentCoordinator(
+        control=control, store=rollback_store, load_and_smoke=smoke
+    )
+    with pytest.raises(
+        (TransitionError, ContractValidationError, ImmutableStoreError, DeploymentSmokeError)
+    ):
+        coordinator.rollback(actor="local-reviewer", reason=f"reject {failure}")
+
+    assert control.active()[0] == active
+    assert len(control.deployment_history()) == 2
 
 
 def test_corrupt_artifact_blocks_activation(tmp_path: Path, passing_evidence) -> None:
@@ -1153,6 +1388,81 @@ def test_coordinator_rejects_stale_rendered_deploy_and_rollback_state(
             expected_generation=deployed_second.generation,
         )
     assert control.active()[0] == rolled_back
+
+
+def test_concurrent_deploy_and_rollback_have_one_store_winner(
+    tmp_path: Path, passing_evidence
+) -> None:
+    primary = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate_a = _approved_candidate(primary, passing_evidence, store, "candidate-a")
+    candidate_b = _approved_candidate(primary, passing_evidence, store, "candidate-b")
+    candidate_c = _approved_candidate(primary, passing_evidence, store, "candidate-c")
+    setup = DeploymentCoordinator(
+        control=primary, store=store, load_and_smoke=lambda policy: True
+    )
+    setup.deploy(candidate_a.candidate_id, actor="local-reviewer", reason="A")
+    current = setup.deploy(
+        candidate_b.candidate_id, actor="local-reviewer", reason="B"
+    )
+    _, generation = primary.active()
+
+    secondary = ControlStore(
+        tmp_path / "control.db", reviewer_identity="local-reviewer"
+    )
+    secondary.require_migrated()
+    interleaved = threading.Barrier(2)
+
+    def smoke(_candidate) -> bool:
+        interleaved.wait(timeout=2)
+        return True
+
+    deploying = DeploymentCoordinator(
+        control=primary, store=store, load_and_smoke=smoke
+    )
+    rolling_back = DeploymentCoordinator(
+        control=secondary, store=store, load_and_smoke=smoke
+    )
+
+    def deploy() -> DeploymentRecord | None:
+        try:
+            return deploying.deploy(
+                candidate_c.candidate_id,
+                actor="local-reviewer",
+                reason="concurrent deploy",
+                expected_deployment_id=current.deployment_id,
+                expected_generation=generation,
+            )
+        except ConflictError:
+            return None
+
+    def rollback() -> DeploymentRecord | None:
+        try:
+            return rolling_back.rollback(
+                actor="local-reviewer",
+                reason="concurrent rollback",
+                expected_deployment_id=current.deployment_id,
+                expected_generation=generation,
+            )
+        except ConflictError:
+            return None
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(operation) for operation in (deploy, rollback)]
+        outcomes = [future.result(timeout=5) for future in futures]
+
+    winners = [outcome for outcome in outcomes if outcome is not None]
+    assert len(winners) == 1
+    active_primary, primary_generation = primary.active()
+    active_secondary, secondary_generation = secondary.active()
+    assert active_primary == active_secondary == winners[0]
+    assert primary_generation == secondary_generation == generation + 1
+    assert primary.deployment_history()[-1]["deployment_id"] == (
+        winners[0].deployment_id
+    )
+    assert primary.connection.execute(
+        "SELECT COUNT(*) FROM active_pointer WHERE singleton = 1"
+    ).fetchone()[0] == 1
 
 
 def test_identical_audit_events_with_fixed_clock_have_distinct_ids(tmp_path: Path) -> None:

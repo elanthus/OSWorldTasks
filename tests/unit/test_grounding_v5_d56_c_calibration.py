@@ -122,7 +122,7 @@ def fake_frozen_bcd_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> P
     return output
 
 
-def test_c_plan_binds_only_slot_c_and_latest_remaining_shared_ledger(
+def test_c_plan_binds_only_slot_c_and_keeps_prior_spend_disclosure_only(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     plan = build_plan(
@@ -145,9 +145,14 @@ def test_c_plan_binds_only_slot_c_and_latest_remaining_shared_ledger(
     assert plan["aggregate_caps"]["model_attempt_cap"] == 2862
     assert plan["aggregate_caps"]["provider_control_request_cap"] == 0
     assert plan["aggregate_caps"]["provider_wire_request_cap"] == 2862
-    assert plan["aggregate_caps"]["maximum_aggregate_spend_usd"] == "10.00"
-    assert plan["aggregate_caps"]["prior_aggregate_spend_usd"] == "2.040917557"
-    assert plan["aggregate_caps"]["remaining_aggregate_spend_usd"] == "7.959082443"
+    assert plan["aggregate_caps"]["maximum_run_spend_usd"] == "10.00"
+    assert plan["aggregate_caps"]["remaining_run_spend_usd"] == "10.00"
+    assert plan["aggregate_caps"]["prior_campaign_spend"]["known_spend_usd"] == (
+        "2.040917557"
+    )
+    assert plan["aggregate_caps"]["prior_campaign_spend"][
+        "budget_accounted_spend_usd"
+    ] == "unknown"
     assert (
         plan["aggregate_caps"]["uncapped_theoretical_request_maximum_usd"]
         == "39.8573568"
