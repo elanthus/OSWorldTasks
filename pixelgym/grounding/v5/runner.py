@@ -85,6 +85,9 @@ RETRYABLE_EVENT_KINDS = frozenset(
     {"retryable_provider_response"}
     | {rule.event_kind for rule in RETRYABLE_SEND_STATUSES.values()}
 )
+RETRYABLE_SEND_RULES_BY_EVENT_KIND = {
+    rule.event_kind: rule for rule in RETRYABLE_SEND_STATUSES.values()
+}
 
 
 class ProviderTransport(Protocol):
@@ -1094,6 +1097,49 @@ class V5Runner:
                     else 0
                 ),
             )
+            retry_rule = RETRYABLE_SEND_RULES_BY_EVENT_KIND.get(retryable_event.kind)
+            if (
+                retry_rule is not None
+                and retryable_event.payload.get("next_attempt_permitted") is False
+            ):
+                terminal_event = next(
+                    (
+                        event
+                        for event in events
+                        if event.attempt_index == identity.attempt_index
+                        and event.kind == retry_rule.terminal_kind
+                    ),
+                    None,
+                )
+                if terminal_event is None:
+                    raise RuntimeError("retryable send event is missing its terminal evidence")
+                checkpoint_digest = terminal_event.payload[
+                    "post_attempt_checkpoint_digest"
+                ]
+                post_retry_state = self.journal.get_object(
+                    checkpoint_digest,
+                    expected_kind="policy_checkpoint",
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/{retry_rule.exhausted_event_key}",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=identity.attempt_index,
+                    payload={
+                        "failure_code": retry_rule.exhausted_failure_code,
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
+                        "policy_checkpoint_digest": checkpoint_digest,
+                    },
+                )
+                return {
+                    "classification": retry_rule.exhausted_classification,
+                    "reason": retry_rule.exhausted_failure_code,
+                    "state": post_retry_state,
+                    "redispatched": False,
+                }
             self.journal.append_event(
                 event_key=f"{identity.key}/sealed_retry_interrupted",
                 kind="sealed_unsuccessful_result",

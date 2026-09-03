@@ -46,15 +46,21 @@ TRANSPORT_RETRY_RULE = (
     "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-"
     "after-bounded-backoff-v3"
 )
-BOUNDED_RETRY_STOP_RULE = (
-    "retry on the same pinned route, up to the per-action bounded-retry budget declared "
-    "in the policy manifest, after a confirmed HTTP 429, a transient transport fault "
-    "(dropped connection, timeout, retryable 5xx, or unreadable envelope), or a canonical "
-    "zero-token, zero-cost, empty response with finish_reason error; wait for bounded "
-    "Retry-After or exponential backoff before each retry; reserve the per-request "
-    "theoretical maximum against the shared ledger for every send whose charge cannot be "
-    "observed; retain every attempt"
-)
+def bounded_retry_stop_rule(*, ledger: str) -> str:
+    """Describe bounded retries against the plan's actual spend-ledger scope."""
+
+    return (
+        "retry on the same pinned route, up to the per-action bounded-retry budget declared "
+        "in the policy manifest, after a confirmed HTTP 429, a transient transport fault "
+        "(dropped connection, timeout, retryable 5xx, or unreadable envelope), or a canonical "
+        "zero-token, zero-cost, empty response with finish_reason error; wait for bounded "
+        "Retry-After or exponential backoff before each retry; reserve the per-request "
+        f"theoretical maximum against {ledger} for every send whose charge cannot be "
+        "observed; retain every attempt"
+    )
+
+
+BOUNDED_RETRY_STOP_RULE = bounded_retry_stop_rule(ledger="the shared ledger")
 RETRYABLE_HTTP_STATUSES = frozenset({408, 425, 500, 502, 503, 504})
 # How much of an unobservable charge to hold, as a multiple of the most expensive
 # response this run has actually priced. The per-request theoretical maximum stays
@@ -514,7 +520,7 @@ class OpenRouterPanelPolicy:
 
 @dataclass
 class SpendLedger:
-    """Shared, sequential aggregate cap across all four panel transports."""
+    """Sequential spend cap for one explicitly configured ledger scope."""
 
     maximum_spend_usd: Decimal
     spent_usd: Decimal
@@ -526,10 +532,18 @@ class SpendLedger:
     _lock: Lock = field(default_factory=Lock, repr=False, compare=False)
 
     def __post_init__(self) -> None:
-        if self.maximum_spend_usd <= 0 or self.spent_usd < 0:
-            raise ValueError("spend limits must be non-negative")
-        if self.spent_usd > self.maximum_spend_usd:
-            raise ValueError("prior spend exceeds the aggregate cap")
+        balances = (
+            self.maximum_spend_usd,
+            self.spent_usd,
+            self.unknown_reservation_usd,
+            self.max_observed_cost_usd,
+        )
+        if not all(value.is_finite() for value in balances):
+            raise ValueError("spend limits and balances must be finite")
+        if self.maximum_spend_usd <= 0 or any(value < 0 for value in balances[1:]):
+            raise ValueError("spend limits and balances must be non-negative")
+        if self.budget_accounted_spend_usd > self.maximum_spend_usd:
+            raise ValueError("prior spend and reservations exceed the aggregate cap")
 
     @property
     def budget_accounted_spend_usd(self) -> Decimal:

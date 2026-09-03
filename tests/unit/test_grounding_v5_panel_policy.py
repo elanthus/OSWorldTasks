@@ -34,6 +34,30 @@ from pixelgym.serialization import canonical_json_bytes
 ROOT = Path(__file__).parents[2]
 
 
+@pytest.mark.parametrize(
+    "maximum,spent,reserved,observed",
+    [
+        (Decimal("Infinity"), Decimal(0), Decimal(0), Decimal(0)),
+        (Decimal(10), Decimal("NaN"), Decimal(0), Decimal(0)),
+        (Decimal(10), Decimal(0), Decimal("Infinity"), Decimal(0)),
+        (Decimal(10), Decimal(0), Decimal(0), Decimal("NaN")),
+    ],
+)
+def test_spend_ledger_rejects_non_finite_limits_and_balances(
+    maximum: Decimal,
+    spent: Decimal,
+    reserved: Decimal,
+    observed: Decimal,
+) -> None:
+    with pytest.raises(ValueError, match="must be finite"):
+        SpendLedger(
+            maximum,
+            spent,
+            unknown_reservation_usd=reserved,
+            max_observed_cost_usd=observed,
+        )
+
+
 class FakeHttpResponse:
     def __init__(self, value: dict[str, Any]) -> None:
         self.value = value

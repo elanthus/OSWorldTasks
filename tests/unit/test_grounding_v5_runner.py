@@ -1207,6 +1207,63 @@ def test_v5_runner_settles_after_the_bounded_retry_budget_is_spent(tmp_path: Pat
     journal.close()
 
 
+def test_v5_runner_recovers_final_transport_fault_as_retry_exhausted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    transport = ScriptedTransport([transport_fault() for _ in range(4)])
+    journal = V5AttemptJournal(tmp_path / "transport-fault-final-interrupted.sqlite")
+    trial_id = "trial-transport-fault-final-interrupted"
+    runner = V5Runner(
+        journal=journal,
+        manifest=bounded_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 4, 0, 4),
+    )
+    fault_events = 0
+
+    def interrupt_after_final_fault(name: str) -> None:
+        nonlocal fault_events
+        if name != "retryable_transport_fault":
+            return
+        fault_events += 1
+        if fault_events == 4:
+            raise InjectedInterruption(name)
+
+    monkeypatch.setattr(runner, "_boundary", interrupt_after_final_fault)
+
+    with pytest.raises(InjectedInterruption, match="retryable_transport_fault"):
+        runner.run(trial_id=trial_id, task=task, action_limit=1)
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=bounded_retry_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 4, 0, 4),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered["classification"] == "infrastructure_failure"
+    assert recovered["reason"] == "transport_fault_retry_exhausted"
+    assert recovered["redispatched"] is False
+    assert len(transport.model_requests) == 4
+    sealed = next(
+        event
+        for event in journal.events(trial_id)
+        if event.kind == "sealed_unsuccessful_result"
+    )
+    assert sealed.payload["failure_code"] == "transport_fault_retry_exhausted"
+    assert sealed.payload["policy_checkpoint_digest"].startswith("sha256:")
+    journal.close()
+
+
 def test_v5_runner_shares_one_retry_budget_across_429_and_transport_faults(
     tmp_path: Path,
 ) -> None:

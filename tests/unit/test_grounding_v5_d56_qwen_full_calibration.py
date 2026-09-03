@@ -11,6 +11,7 @@ from pixelgym.grounding.v5.panel_policy import (
     QWEN_STATEFUL,
     QWEN_STATEFUL_RETRY_SUCCESSOR,
 )
+from scripts import run_grounding_v5_d56_qwen_full_calibration
 
 ROOT = Path(__file__).parents[2]
 
@@ -90,12 +91,18 @@ def test_plan_binds_all_tasks_latest_spend_and_bounded_429_retry(
     assert price["supports_response_format"] is True
     assert price["supports_structured_outputs"] is True
     assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
+    assert any("against this run's ledger" in rule for rule in plan["stop_rules"])
+    assert any(
+        "approved maximum_run_spend_usd cap of 1.50 USD" in rule
+        for rule in plan["stop_rules"]
+    )
+    assert all("shared ten-dollar ledger" not in rule for rule in plan["stop_rules"])
     assert any("do not resume or replay" in rule for rule in plan["stop_rules"])
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 
-@pytest.mark.parametrize("budget", [Decimal(0), Decimal(-1)])
-def test_plan_rejects_a_non_positive_run_budget(
+@pytest.mark.parametrize("budget", [Decimal(0), Decimal(-1), Decimal("NaN"), Decimal("Infinity")])
+def test_plan_rejects_a_non_finite_or_non_positive_run_budget(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, budget: Decimal
 ) -> None:
     _stub_evidence(monkeypatch)
@@ -107,6 +114,29 @@ def test_plan_rejects_a_non_positive_run_budget(
             frozen_bcd_output_directory=tmp_path / "bcd",
             maximum_spend_usd=budget,
         )
+
+
+@pytest.mark.parametrize("value", ["abc", "NaN", "Infinity", "0", "-1"])
+def test_command_reports_invalid_run_budgets_as_usage_errors(
+    value: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        run_grounding_v5_d56_qwen_full_calibration.parse_args(
+            [
+                "--plan-only",
+                "--output",
+                "plan.json",
+                "--smoke-output",
+                "smoke",
+                "--frozen-bcd-output",
+                "bcd",
+                "--maximum-spend-usd",
+                value,
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    assert "must be a finite positive decimal" in capsys.readouterr().err
 
 
 def test_plan_budget_is_the_only_spend_input(

@@ -99,7 +99,7 @@ def fake_successful_smoke_output(
     return output
 
 
-def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
+def test_plan_binds_all_fifty_tasks_successful_smoke_and_per_run_cap(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
@@ -132,8 +132,51 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_shared_cap(
     assert not [key for key in plan["caps"] if "prior" in key or "aggregate" in key]
     assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.099532800"
     assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "569.725747200"
+    assert "v3 policy" in plan["purpose"]
+    assert "this v3 policy" in plan["predecessor_relation"]["rule"]
     assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
+    assert any("against this run's ledger" in rule for rule in plan["stop_rules"])
+    assert any(
+        "approved maximum_run_spend_usd cap of 3.00 USD" in rule
+        for rule in plan["stop_rules"]
+    )
+    assert all("shared ten-dollar ledger" not in rule for rule in plan["stop_rules"])
     assert calibration.plan_digest(plan).startswith("sha256:")
+
+
+@pytest.mark.parametrize("budget", [Decimal(0), Decimal(-1), Decimal("NaN"), Decimal("Infinity")])
+def test_plan_rejects_a_non_finite_or_non_positive_run_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, budget: Decimal
+) -> None:
+    smoke_output = fake_successful_smoke_output(tmp_path, monkeypatch)
+
+    with pytest.raises(ValueError, match="maximum run spend must be positive"):
+        calibration.build_plan(
+            ROOT,
+            smoke_output_directory=smoke_output,
+            maximum_spend_usd=budget,
+        )
+
+
+@pytest.mark.parametrize("value", ["abc", "NaN", "Infinity", "0", "-1"])
+def test_command_reports_invalid_run_budgets_as_usage_errors(
+    value: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        run_grounding_v5_d56_gemini_full_calibration.parse_args(
+            [
+                "--plan-only",
+                "--output",
+                "plan.json",
+                "--smoke-output",
+                "smoke",
+                "--maximum-spend-usd",
+                value,
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    assert "must be a finite positive decimal" in capsys.readouterr().err
 
 
 def test_execute_rejects_unapproved_digest_before_output(
