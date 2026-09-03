@@ -1183,14 +1183,13 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     assert runtime.manifest.policy_id == candidate.policy.policy_id
     assert runtime.deployment_id == restored.deployment_id
     assert second.deployment_id != restored.deployment_id
-    # A rollback is an append-only event, so another previous event remains
-    # available and the operator control must not disappear after the first one.
+    # The rejected source remains in append-only history but is not eligible again.
     deployment_page = TestClient(app).get("/deployment")
-    assert "Rollback to previous approved version" in deployment_page.text
-    repeated = app.state.deployment_coordinator.rollback(
-        actor="local-reviewer", reason="repeat deterministic rollback"
-    )
-    assert repeated.candidate_id == rollback_candidate.candidate_id
+    assert "Rollback to previous approved version" not in deployment_page.text
+    with pytest.raises(TransitionError, match="no eligible known-good"):
+        app.state.deployment_coordinator.rollback(
+            actor="local-reviewer", reason="repeat deterministic rollback"
+        )
 
 
 @pytest.mark.parametrize("failure", ["provider", "invalid-output", "identity"])
