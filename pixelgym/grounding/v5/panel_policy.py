@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from threading import Lock
+from threading import RLock
 from typing import Any, Literal
 
 from pixelgym.actions import KEY_ALLOWLIST
@@ -24,6 +24,7 @@ from pixelgym.grounding.v5.coordinates import (
     NORMALIZED_1000_ADAPTER,
     CoordinateAdapter,
 )
+from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.openrouter_policy import _png_data_url, _usage_cost
 from pixelgym.grounding.v5.runner import TransportOutcome
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
@@ -521,7 +522,7 @@ class OpenRouterPanelPolicy:
 
 @dataclass
 class SpendLedger:
-    """Sequential spend cap for one explicitly configured ledger scope."""
+    """Thread-safe, journaled spend cap for one explicitly configured run."""
 
     maximum_spend_usd: Decimal
     spent_usd: Decimal
@@ -530,7 +531,14 @@ class SpendLedger:
     unknown_charge_outcomes: int = 0
     max_observed_cost_usd: Decimal = Decimal(0)
     blocked: bool = False
-    _lock: Lock = field(default_factory=Lock, repr=False, compare=False)
+    journal: V5AttemptJournal | None = field(default=None, repr=False, compare=False)
+    _in_flight: dict[str, Decimal] = field(
+        default_factory=dict, init=False, repr=False, compare=False
+    )
+    _settlements: dict[str, tuple[str, Decimal]] = field(
+        default_factory=dict, init=False, repr=False, compare=False
+    )
+    _lock: RLock = field(default_factory=RLock, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         balances = (
@@ -543,32 +551,227 @@ class SpendLedger:
             raise ValueError("spend limits and balances must be finite")
         if self.maximum_spend_usd <= 0 or any(value < 0 for value in balances[1:]):
             raise ValueError("spend limits and balances must be non-negative")
+        if self.journal is not None:
+            self._replay_journal(self.journal)
         if self.budget_accounted_spend_usd > self.maximum_spend_usd:
-            raise ValueError("prior spend and reservations exceed the aggregate cap")
+            raise ValueError("prior spend and reservations exceed the run cap")
 
     @property
     def budget_accounted_spend_usd(self) -> Decimal:
-        """Known spend plus worst-case reservations for unobservable charges."""
+        """Known spend plus every in-flight and unobservable-charge hold."""
 
-        return self.spent_usd + self.unknown_reservation_usd
-
-    def reserve_wire(self, request_maximum_usd: Decimal) -> bool:
         with self._lock:
+            return (
+                self.spent_usd
+                + self.unknown_reservation_usd
+                + sum(self._in_flight.values(), Decimal(0))
+            )
+
+    @property
+    def in_flight_reservation_usd(self) -> Decimal:
+        """Worst-case exposure for sends without a terminal accounting state."""
+
+        with self._lock:
+            return sum(self._in_flight.values(), Decimal(0))
+
+    @property
+    def in_flight_reservations(self) -> dict[str, Decimal]:
+        """Return an isolated copy of the per-idempotency-key holds."""
+
+        with self._lock:
+            return self._in_flight.copy()
+
+    def has_in_flight_reservation(self, idempotency_key: str) -> bool:
+        """Whether a request still lacks a terminal accounting state."""
+
+        reservation_id = self._reservation_id(idempotency_key)
+        with self._lock:
+            return reservation_id in self._in_flight
+
+    def to_dict(self) -> dict[str, str | int | bool]:
+        """Serialize separately reported spend balances without exposing request keys."""
+
+        with self._lock:
+            return {
+                "spent_usd": str(self.spent_usd),
+                "in_flight_reservation_usd": str(
+                    sum(self._in_flight.values(), Decimal(0))
+                ),
+                "unknown_reservation_usd": str(self.unknown_reservation_usd),
+                "budget_accounted_spend_usd": str(
+                    self.spent_usd
+                    + self.unknown_reservation_usd
+                    + sum(self._in_flight.values(), Decimal(0))
+                ),
+                "wire_requests_sent": self.wire_requests_sent,
+                "unknown_charge_outcomes": self.unknown_charge_outcomes,
+                "blocked": self.blocked,
+            }
+
+    def bind_journal(self, journal: V5AttemptJournal) -> None:
+        """Attach an empty ledger to its durable run journal exactly once."""
+
+        with self._lock:
+            if self.journal is journal:
+                return
+            if self.journal is not None:
+                raise RuntimeError("spend ledger is already bound to a journal")
+            if self.wire_requests_sent or self._in_flight or self._settlements:
+                raise RuntimeError("spend journal must be bound before reserving a send")
+            self.journal = journal
+            self._replay_journal(journal)
+            if self.budget_accounted_spend_usd > self.maximum_spend_usd:
+                raise ValueError("journaled spend and reservations exceed the run cap")
+
+    def _replay_journal(self, journal: V5AttemptJournal) -> None:
+        for event in journal.events():
+            reservation_id = event.payload.get("reservation_id")
+            if not isinstance(reservation_id, str):
+                continue
+            if event.kind == "spend_reservation_acquired":
+                amount = Decimal(event.payload["request_maximum_usd"])
+                existing = self._in_flight.get(reservation_id)
+                if existing is not None and existing != amount:
+                    raise RuntimeError("conflicting journaled spend reservation")
+                if reservation_id not in self._settlements:
+                    self._in_flight[reservation_id] = amount
+                self.wire_requests_sent += int(existing is None)
+            elif event.kind == "spend_reservation_unknown":
+                if reservation_id in self._settlements:
+                    continue
+                amount = Decimal(event.payload["unknown_reservation_usd"])
+                self._in_flight.pop(reservation_id, None)
+                self._settlements[reservation_id] = ("unknown", amount)
+                self.unknown_reservation_usd += amount
+                self.unknown_charge_outcomes += 1
+            elif event.kind == "spend_reservation_charged":
+                amount = Decimal(event.payload["cost_usd"])
+                request_maximum = Decimal(event.payload["request_maximum_usd"])
+                prior = self._settlements.get(reservation_id)
+                if prior is not None and prior[0] == "unknown":
+                    self.unknown_reservation_usd -= prior[1]
+                self._in_flight.pop(reservation_id, None)
+                if prior is None or prior[0] != "known":
+                    self.spent_usd += amount
+                    self.max_observed_cost_usd = max(
+                        self.max_observed_cost_usd, amount
+                    )
+                elif prior[1] != amount:
+                    raise RuntimeError("conflicting journaled known charge")
+                self._settlements[reservation_id] = ("known", amount)
+                if amount > request_maximum:
+                    self.blocked = True
+            elif event.kind == "spend_reservation_released":
+                prior = self._settlements.get(reservation_id)
+                if prior is not None and prior[0] == "unknown":
+                    self.unknown_reservation_usd -= prior[1]
+                if prior is None or prior[0] != "known":
+                    self._in_flight.pop(reservation_id, None)
+                    self._settlements[reservation_id] = ("released", Decimal(0))
+
+    @staticmethod
+    def _reservation_id(idempotency_key: str) -> str:
+        if not idempotency_key:
+            raise ValueError("idempotency key is required for spend reservation")
+        return content_digest(idempotency_key)
+
+    @staticmethod
+    def _validate_amount(value: Decimal, *, name: str, allow_zero: bool) -> None:
+        if not value.is_finite() or value < 0 or (not allow_zero and value == 0):
+            qualifier = "non-negative" if allow_zero else "positive"
+            raise ValueError(f"{name} must be finite and {qualifier}")
+
+    def _append_spend_event(
+        self,
+        *,
+        reservation_id: str,
+        suffix: str,
+        kind: str,
+        payload: dict[str, str],
+    ) -> None:
+        if self.journal is None:
+            return
+        self.journal.append_event(
+            event_key=f"spend/{reservation_id}/{suffix}",
+            kind=kind,
+            trial_id="__spend_ledger__",
+            step_index=0,
+            payload={"reservation_id": reservation_id, **payload},
+        )
+
+    def reserve_wire(self, idempotency_key: str, request_maximum_usd: Decimal) -> bool:
+        """Atomically acquire one worst-case hold before a request reaches the wire."""
+
+        self._validate_amount(
+            request_maximum_usd, name="request maximum", allow_zero=False
+        )
+        reservation_id = self._reservation_id(idempotency_key)
+        with self._lock:
+            if reservation_id in self._in_flight or reservation_id in self._settlements:
+                return False
             projected = (
-                self.spent_usd + self.unknown_reservation_usd + request_maximum_usd
+                self.spent_usd
+                + self.unknown_reservation_usd
+                + sum(self._in_flight.values(), Decimal(0))
+                + request_maximum_usd
             )
             if self.blocked or projected > self.maximum_spend_usd:
                 return False
+            self._append_spend_event(
+                reservation_id=reservation_id,
+                suffix="reserved",
+                kind="spend_reservation_acquired",
+                payload={"request_maximum_usd": str(request_maximum_usd)},
+            )
+            self._in_flight[reservation_id] = request_maximum_usd
             self.wire_requests_sent += 1
             return True
 
-    def record_cost(self, cost: Decimal, request_maximum_usd: Decimal) -> bool:
+    def record_cost(
+        self,
+        idempotency_key: str,
+        cost: Decimal,
+        request_maximum_usd: Decimal,
+    ) -> bool:
+        """Atomically replace one hold or unknown reservation with a known charge."""
+
+        self._validate_amount(cost, name="cost", allow_zero=True)
+        self._validate_amount(
+            request_maximum_usd, name="request maximum", allow_zero=False
+        )
+        reservation_id = self._reservation_id(idempotency_key)
         with self._lock:
+            prior = self._settlements.get(reservation_id)
+            if prior is not None and prior[0] == "known":
+                if prior[1] != cost:
+                    self.blocked = True
+                    return False
+                return not self.blocked
+            if prior is not None and prior[0] == "released":
+                self.blocked = True
+                return False
+            hold = self._in_flight.get(reservation_id)
+            if hold is None and (prior is None or prior[0] != "unknown"):
+                raise RuntimeError("known charge has no matching spend reservation")
+            self._append_spend_event(
+                reservation_id=reservation_id,
+                suffix="charged",
+                kind="spend_reservation_charged",
+                payload={
+                    "cost_usd": str(cost),
+                    "request_maximum_usd": str(request_maximum_usd),
+                },
+            )
+            self._in_flight.pop(reservation_id, None)
+            if prior is not None and prior[0] == "unknown":
+                self.unknown_reservation_usd -= prior[1]
             self.spent_usd += cost
+            self._settlements[reservation_id] = ("known", cost)
             self.max_observed_cost_usd = max(self.max_observed_cost_usd, cost)
             if (
-                cost > request_maximum_usd
-                or self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd
+                hold is not None and hold != request_maximum_usd
+                or cost > request_maximum_usd
+                or self.budget_accounted_spend_usd > self.maximum_spend_usd
             ):
                 self.blocked = True
                 return False
@@ -598,21 +801,70 @@ class SpendLedger:
             self.max_observed_cost_usd * UNOBSERVED_CHARGE_CEILING_MULTIPLIER,
         )
 
-    def reserve_unknown_charge(self, request_maximum_usd: Decimal) -> Decimal:
-        """Charge a sent request whose actual cost cannot be observed.
+    def reserve_unknown_charge(
+        self, idempotency_key: str, request_maximum_usd: Decimal
+    ) -> Decimal:
+        """Replace one in-flight hold with an unobservable-charge reservation.
 
         The request may have been served and billed upstream. Reserving against
         it keeps the guard fail-closed while letting the run continue, instead of
         blocking every remaining request. Returns the amount held.
         """
 
+        self._validate_amount(
+            request_maximum_usd, name="request maximum", allow_zero=False
+        )
+        reservation_id = self._reservation_id(idempotency_key)
         with self._lock:
+            prior = self._settlements.get(reservation_id)
+            if prior is not None:
+                return prior[1] if prior[0] == "unknown" else Decimal(0)
+            hold = self._in_flight.get(reservation_id)
+            if hold is None:
+                raise RuntimeError("unknown charge has no matching spend reservation")
             reservation = self._unknown_charge_reservation(request_maximum_usd)
+            self._append_spend_event(
+                reservation_id=reservation_id,
+                suffix="unknown",
+                kind="spend_reservation_unknown",
+                payload={"unknown_reservation_usd": str(reservation)},
+            )
+            self._in_flight.pop(reservation_id, None)
+            self._settlements[reservation_id] = ("unknown", reservation)
             self.unknown_reservation_usd += reservation
             self.unknown_charge_outcomes += 1
-            if self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd:
+            if hold != request_maximum_usd or (
+                self.budget_accounted_spend_usd > self.maximum_spend_usd
+            ):
                 self.blocked = True
             return reservation
+
+    def release_wire(self, idempotency_key: str, *, reason: str) -> bool:
+        """Release a hold only for a proven zero-charge terminal outcome."""
+
+        reservation_id = self._reservation_id(idempotency_key)
+        with self._lock:
+            prior = self._settlements.get(reservation_id)
+            if prior is not None:
+                if prior[0] == "released":
+                    return True
+                if prior[0] == "known":
+                    return False
+            if reservation_id not in self._in_flight and (
+                prior is None or prior[0] != "unknown"
+            ):
+                raise RuntimeError("released request has no matching spend reservation")
+            self._append_spend_event(
+                reservation_id=reservation_id,
+                suffix="released",
+                kind="spend_reservation_released",
+                payload={"reason": reason},
+            )
+            self._in_flight.pop(reservation_id, None)
+            if prior is not None and prior[0] == "unknown":
+                self.unknown_reservation_usd -= prior[1]
+            self._settlements[reservation_id] = ("released", Decimal(0))
+            return True
 
     def block(self) -> None:
         with self._lock:
@@ -658,6 +910,29 @@ class OpenRouterPanelTransport:
     def unknown_reservation_usd(self) -> Decimal:
         return self.ledger.unknown_reservation_usd
 
+    @property
+    def in_flight_reservation_usd(self) -> Decimal:
+        return self.ledger.in_flight_reservation_usd
+
+    def bind_spend_journal(self, journal: V5AttemptJournal) -> None:
+        """Bind spend transitions to the runner's durable journal before sending."""
+
+        self.ledger.bind_journal(journal)
+
+    def settle_unknown_spend(self, *, idempotency_key: str) -> None:
+        """Retain a terminal possible-send outcome as an unknown-charge hold."""
+
+        if self.ledger.has_in_flight_reservation(idempotency_key):
+            self.ledger.reserve_unknown_charge(
+                idempotency_key, self.config.request_maximum_usd
+            )
+
+    def settle_zero_charge_spend(self, *, idempotency_key: str, reason: str) -> None:
+        """Release a hold after the runner proves that no charge is possible."""
+
+        if self.ledger.has_in_flight_reservation(idempotency_key):
+            self.ledger.release_wire(idempotency_key, reason=reason)
+
     def _transport_fault(
         self,
         *,
@@ -675,7 +950,9 @@ class OpenRouterPanelTransport:
         """
 
         self._consecutive_transport_faults += 1
-        reservation = self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
+        reservation = self.ledger.reserve_unknown_charge(
+            idempotency_key, self.config.request_maximum_usd
+        )
         backoff_seconds = min(
             self.config.rate_limit_backoff_base_seconds
             * (2 ** min(max(0, self._consecutive_transport_faults - 1), 63)),
@@ -738,8 +1015,6 @@ class OpenRouterPanelTransport:
                 "pre_send_failure",
                 failure_code="rate_limit_cooldown_exhausted_request_deadline",
             )
-        if not self.ledger.reserve_wire(self.config.request_maximum_usd):
-            return TransportOutcome("pre_send_failure", failure_code="aggregate_spend_guard")
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -753,6 +1028,10 @@ class OpenRouterPanelTransport:
             headers=headers,
             method="POST",
         )
+        if not self.ledger.reserve_wire(
+            idempotency_key, self.config.request_maximum_usd
+        ):
+            return TransportOutcome("pre_send_failure", failure_code="aggregate_spend_guard")
         started = self._monotonic()
         try:
             with self._urlopen(
@@ -761,6 +1040,9 @@ class OpenRouterPanelTransport:
                 body = json.load(response)
         except urllib.error.HTTPError as exc:
             if exc.code == 429:
+                self.ledger.release_wire(
+                    idempotency_key, reason="confirmed_zero_charge_http_429"
+                )
                 self._consecutive_rate_limits += 1
                 retry_after_seconds, backoff_source = _rate_limit_backoff(
                     exc,
@@ -802,6 +1084,9 @@ class OpenRouterPanelTransport:
                 )
             # A non-retryable HTTP status is a request, route, or credential
             # defect. Retrying cannot fix it, so the ledger stays blocked.
+            self.ledger.reserve_unknown_charge(
+                idempotency_key, self.config.request_maximum_usd
+            )
             self.ledger.block()
             self.records.append(
                 {
@@ -861,11 +1146,15 @@ class OpenRouterPanelTransport:
                     started=started,
                     cooldown_wait=cooldown_wait,
                 )
-            self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
+            self.ledger.reserve_unknown_charge(
+                idempotency_key, self.config.request_maximum_usd
+            )
         if cost is not None:
             usage["price_guard"] = (
                 "ok"
-                if self.ledger.record_cost(cost, self.config.request_maximum_usd)
+                if self.ledger.record_cost(
+                    idempotency_key, cost, self.config.request_maximum_usd
+                )
                 else "exceeded"
             )
         canonical = {
@@ -895,7 +1184,8 @@ class OpenRouterPanelTransport:
         return "unknown"
 
     def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
-        del idempotency_key, deadline_seconds
+        del deadline_seconds
+        self.settle_unknown_spend(idempotency_key=idempotency_key)
         return TransportOutcome("unknown", failure_code="reconciliation_disabled")
 
 
