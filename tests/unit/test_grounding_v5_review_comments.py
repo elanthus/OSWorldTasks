@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import os_sandbox
-from pixelgym.grounding.v5.contracts import Partition
+from pixelgym.grounding.v5 import codex_cli_policy, os_sandbox
+from pixelgym.grounding.v5.contracts import Partition, sandbox_endpoint_allowlist_digest
 from pixelgym.grounding.v5.manifests import partition_manifest
 from pixelgym.grounding.v5.os_sandbox import (
     _decode_probe_result,
@@ -18,10 +18,81 @@ from pixelgym.grounding.v5.os_sandbox import (
 )
 from pixelgym.grounding.v5.planning import _family_stratified_subset
 from pixelgym.grounding.v5.resume import decode_resume_record
+from pixelgym.grounding.v5.sandbox import (
+    LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION,
+    SANDBOX_MANIFEST_SCHEMA_VERSION,
+    DeclaredSandboxManifest,
+    build_sandbox_manifest,
+    load_sandbox_manifest,
+    unbound_runtime_enforcement,
+)
 from scripts.freeze_grounding_v5_scripted_policy import (
     fresh_output_paths,
     write_fresh_outputs,
 )
+
+
+@pytest.fixture
+def legacy_sandbox_manifest_fixture() -> dict[str, object]:
+    endpoint = "https://provider.example.invalid"
+    return {
+        "runtime_digest": "sha256:" + "1" * 64,
+        "network_policy_version": LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION,
+        "provider_endpoint": endpoint,
+        "endpoint_allowlist_digest": sandbox_endpoint_allowlist_digest(
+            endpoint,
+            policy_version=LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION,
+        ),
+        "denied_capabilities": [
+            "browser_dom",
+            "cross_policy_channel",
+            "external_search",
+            "inbound_listener",
+            "shared_storage",
+            "shell",
+        ],
+    }
+
+
+@pytest.fixture
+def declared_sandbox_manifest_fixture() -> dict[str, object]:
+    return build_sandbox_manifest(
+        runtime_digest="sha256:" + "2" * 64,
+        provider_endpoint="https://provider.example.invalid",
+        launch_enforcement=unbound_runtime_enforcement(),
+    ).to_dict()
+
+
+def test_legacy_and_declared_sandbox_manifest_fixtures_remain_loadable(
+    legacy_sandbox_manifest_fixture: dict[str, object],
+    declared_sandbox_manifest_fixture: dict[str, object],
+) -> None:
+    legacy = load_sandbox_manifest(legacy_sandbox_manifest_fixture)
+    declared = load_sandbox_manifest(declared_sandbox_manifest_fixture)
+
+    assert legacy.network_policy_version == LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION
+    assert isinstance(declared, DeclaredSandboxManifest)
+    assert declared.schema_version == SANDBOX_MANIFEST_SCHEMA_VERSION
+    value = declared.to_dict()
+    assert set(value) >= {"probe_result", "runtime_enforcement", "policy_claim"}
+    assert "denied_capabilities" not in value
+
+
+def test_non_darwin_launch_metadata_never_claims_os_level_denial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(os_sandbox.platform, "system", lambda: "Plan9")
+    enforcement = codex_cli_policy._codex_launch_enforcement(
+        codex_cli_policy.sanitized_command_contract(),
+        {"PATH": "/bin"},
+    )
+
+    assert os_sandbox.platform.system() == "Plan9"
+    assert enforcement.mechanism_name == "cli_flags_and_environment_allowlist"
+    assert enforcement.cli_restrictions_applied is True
+    assert enforcement.environment_allowlist_applied is True
+    assert enforcement.os_sandbox_applied is False
+    assert "denied_capabilities" not in enforcement.to_dict()
 
 
 @pytest.mark.parametrize("payload", [b"[]", b"null", b'"record"', b"1"])
@@ -122,6 +193,9 @@ def test_os_sandbox_probe_payload_requires_exact_boolean_fields() -> None:
     }
     result = _decode_probe_result(json.dumps(valid), returncode=0)
     assert result.shell_denied
+    declared = result.declared_result()
+    assert declared.status == "passed"
+    assert declared.applied_to_cli_launch is False
 
     invalid = dict(valid)
     invalid["unexpected"] = True

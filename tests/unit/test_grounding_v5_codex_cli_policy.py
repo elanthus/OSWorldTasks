@@ -17,6 +17,7 @@ from pixelgym.grounding.v5.evidence import V5EvidenceStore, validate_credential_
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.sandbox import environment_allowlist_digest
 
 ROOT = Path(__file__).parents[2]
 
@@ -229,6 +230,24 @@ def test_command_contract_disables_tools_context_and_retries() -> None:
     )
 
 
+def test_codex_policy_manifest_emits_declared_v3_sandbox_contract() -> None:
+    manifest = policy.build_codex_cli_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+    )
+    sandbox = manifest.to_dict()["sandbox"]
+
+    assert sandbox["schema_version"] == "pixelgym-agent-v5-sandbox-v3"
+    assert sandbox["probe_result"]["status"] == "not_run"
+    assert sandbox["runtime_enforcement"]["mechanism_name"] == (
+        "cli_flags_and_environment_allowlist"
+    )
+    assert sandbox["runtime_enforcement"]["os_sandbox_applied"] is False
+    assert "declared_unavailable_capabilities" in sandbox["policy_claim"]
+    assert "denied_capabilities" not in sandbox
+
+
 def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted(
     tmp_path: Path,
 ) -> None:
@@ -263,8 +282,61 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         record = invocation_journal.record("sha256:one")
         assert record is not None
         assert record["status"] == "response"
+        recorded_enforcement = record["outcome"]["runtime_enforcement"]
+        assert recorded_enforcement["mechanism_name"] == (
+            "cli_flags_and_environment_allowlist"
+        )
+        assert recorded_enforcement["argv_digest"] == policy.content_digest(command)
+        assert recorded_enforcement["environment_allowlist_digest"] == (
+            environment_allowlist_digest(captured["environment"])
+        )
+        assert recorded_enforcement["environment_variable_names"] == sorted(
+            captured["environment"]
+        )
+        assert recorded_enforcement["os_sandbox_applied"] is False
         assert "private-thread-id" in record["raw_stdout"]
         assert "private-thread-id" not in json.dumps(transport.records)
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_missing_required_launch_restriction_changes_evidence_and_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_runtime_command = policy._runtime_command
+    commands: dict[str, list[str]] = {}
+
+    def command_without_read_only_sandbox(**kwargs: Any) -> list[str]:
+        complete = original_runtime_command(**kwargs)
+        restricted = list(complete)
+        sandbox_index = restricted.index("--sandbox")
+        del restricted[sandbox_index : sandbox_index + 2]
+        commands["complete"] = complete
+        commands["restricted"] = restricted
+        return restricted
+
+    monkeypatch.setattr(policy, "_runtime_command", command_without_read_only_sandbox)
+    process = FakeProcess(cli_stream())
+    transport, _ledger, invocation_journal, captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:missing-restriction",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "pre_send_failure"
+        assert outcome.failure_code == "runtime_enforcement_mismatch"
+        assert captured == {}
+        record = invocation_journal.record("sha256:missing-restriction")
+        assert record is not None
+        enforcement = record["outcome"]["runtime_enforcement"]
+        assert enforcement["argv_digest"] == policy.content_digest(commands["restricted"])
+        assert enforcement["argv_digest"] != policy.content_digest(commands["complete"])
+        assert enforcement["cli_restrictions_applied"] is False
+        assert enforcement["environment_allowlist_applied"] is True
     finally:
         transport.close()
         invocation_journal.close()
