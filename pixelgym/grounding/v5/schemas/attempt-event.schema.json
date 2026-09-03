@@ -15,6 +15,13 @@
     "trial_id": {"type": "string", "minLength": 1},
     "step_index": {"type": "integer", "minimum": 0},
     "attempt_index": {"type": ["integer", "null"], "minimum": 0},
-    "payload": {"type": "object"}
+    "payload": {
+      "type": "object",
+      "properties": {
+        "control_request_reservation": {
+          "description": "Declared control-call capacity included in the atomic total provider-wire cap check before an attempt_started event is committed; actual control calls and the provider-control cap are counted when provider_control_request_reserved events are committed."
+        }
+      }
+    }
   }
 }
