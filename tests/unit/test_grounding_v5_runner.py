@@ -7,6 +7,7 @@ import sqlite3
 import threading
 from collections import Counter
 from copy import deepcopy
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -24,6 +25,7 @@ from pixelgym.grounding.v5.fixtures import scripted_policy_manifest
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import JournalConflictError, V5AttemptJournal
 from pixelgym.grounding.v5.manifests import partition_manifest
+from pixelgym.grounding.v5.panel_policy import SpendLedger
 from pixelgym.grounding.v5.planning import call_cap_plan
 from pixelgym.grounding.v5.policies import golden_actions
 from pixelgym.grounding.v5.runner import (
@@ -69,6 +71,15 @@ def policy_manifest() -> PolicyManifest:
         code_revision="test-revision",
         dirty_worktree_policy="reject",
     )
+
+
+def reconciliation_manifest(limit: int) -> PolicyManifest:
+    values = policy_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values["max_cancellation_requests_per_attempt"] = 0
+    values["max_reconciliation_requests_per_attempt"] = limit
+    values["reconciliation_deadline_seconds"] = float(limit)
+    return PolicyManifest.build(**values)
 
 
 def episode_caps(seed: int) -> CallCaps:
@@ -196,6 +207,29 @@ def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_p
     assert journal.integrity_report()["event_count"] > 0
 
 
+def test_v5_runner_binds_transport_spend_ledger_to_attempt_journal(tmp_path: Path) -> None:
+    class JournalBoundTransport(ScriptedTransport):
+        def __init__(self) -> None:
+            super().__init__()
+            self.spend_journal: V5AttemptJournal | None = None
+
+        def bind_spend_journal(self, journal: V5AttemptJournal) -> None:
+            self.spend_journal = journal
+
+    journal = V5AttemptJournal(tmp_path / "spend-binding.sqlite")
+    transport = JournalBoundTransport()
+
+    V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(5000),
+        approved_caps=episode_caps(5000),
+    )
+
+    assert transport.spend_journal is journal
+
+
 def test_v5_runner_supports_a_bounded_multi_task_pilot_horizon(tmp_path: Path) -> None:
     seed = 5000
     task = generate_task(seed)
@@ -254,6 +288,78 @@ def test_v5_deadline_settles_once_without_hidden_retry(tmp_path: Path) -> None:
     assert Counter(event.kind for event in journal.events("trial-timeout"))[
         "confirmed_cancellation"
     ] == 1
+    assert Counter(event.kind for event in journal.events("trial-timeout"))[
+        "sealed_unsuccessful_result"
+    ] == 1
+
+
+@pytest.mark.parametrize(
+    ("transport_status", "expected_settlement", "expected_classification"),
+    [
+        ("deadline", "unknown", "infrastructure_failure"),
+        ("pre_send_failure", "zero", "request_failure"),
+    ],
+)
+def test_v5_runner_settles_spend_when_provider_controls_are_disabled(
+    tmp_path: Path,
+    transport_status: str,
+    expected_settlement: str,
+    expected_classification: str,
+) -> None:
+    class SpendSettlementTransport(ScriptedTransport):
+        def __init__(self) -> None:
+            super().__init__()
+            self.settlements: list[tuple[str, str]] = []
+
+        def send(
+            self,
+            request: dict[str, object],
+            *,
+            idempotency_key: str,
+            deadline_seconds: float,
+        ) -> TransportOutcome:
+            del deadline_seconds
+            self.model_requests.append(
+                {"idempotency_key": idempotency_key, "request": request}
+            )
+            return TransportOutcome(transport_status)  # type: ignore[arg-type]
+
+        def settle_unknown_spend(self, *, idempotency_key: str) -> None:
+            self.settlements.append(("unknown", idempotency_key))
+
+        def settle_zero_charge_spend(
+            self, *, idempotency_key: str, reason: str
+        ) -> None:
+            del reason
+            self.settlements.append(("zero", idempotency_key))
+
+    values = policy_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values.update(
+        {
+            "max_cancellation_requests_per_attempt": 0,
+            "max_reconciliation_requests_per_attempt": 0,
+        }
+    )
+    manifest = PolicyManifest.build(**values)
+    transport = SpendSettlementTransport()
+    result = V5Runner(
+        journal=V5AttemptJournal(tmp_path / f"spend-{transport_status}.sqlite"),
+        manifest=manifest,
+        transport=transport,
+        policy=scripted_policy(5000),
+        approved_caps=CallCaps(1, 1, 0, 1),
+    ).run(
+        trial_id=f"trial-spend-{transport_status}",
+        task=generate_task(5000),
+        action_limit=1,
+    )
+
+    assert result.classification == expected_classification
+    assert len(transport.model_requests) == 1
+    assert transport.settlements == [
+        (expected_settlement, transport.model_requests[0]["idempotency_key"])
+    ]
 
 
 def test_v5_hanging_transport_cannot_extend_runner_or_start_retry(tmp_path: Path) -> None:
@@ -312,6 +418,129 @@ def test_v5_unknown_post_send_outcome_is_not_retried(tmp_path: Path) -> None:
     assert result.classification == "infrastructure_failure"
     assert len(transport.model_requests) == 1
     assert [kind for kind, _identity in transport.control_requests] == ["reconcile"]
+
+
+@pytest.mark.parametrize("reconciliation_limit", [0, 1])
+def test_v5_recover_step_returns_settled_failure_without_appending(
+    tmp_path: Path, reconciliation_limit: int
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = f"trial-settled-http-400-{reconciliation_limit}"
+    journal = V5AttemptJournal(tmp_path / f"settled-{reconciliation_limit}.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("unknown", failure_code="http_400_bad_request")]
+    )
+    manifest = reconciliation_manifest(reconciliation_limit)
+    caps = CallCaps(
+        task.max_episode_steps,
+        1,
+        reconciliation_limit,
+        1 + reconciliation_limit,
+    )
+
+    with pytest.raises(InjectedInterruption, match="attempt_terminal"):
+        V5Runner(
+            journal=journal,
+            manifest=manifest,
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=caps,
+            interrupt_after="attempt_terminal",
+        ).run(trial_id=trial_id, task=task, action_limit=1)
+
+    events = journal.events(trial_id)
+    assert [event.kind for event in events][-2:] == [
+        "unknown_outcome_infrastructure_failure",
+        "sealed_unsuccessful_result",
+    ]
+    before = journal.integrity_report()
+    before_event_chain_digest = before["event_chain_digest"]
+    recovered = V5Runner(
+        journal=journal,
+        manifest=manifest,
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=caps,
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "infrastructure_failure",
+        "redispatched": False,
+    }
+    after = journal.integrity_report()
+    assert after["event_chain_digest"] == before_event_chain_digest
+    assert after == before
+    assert len(transport.model_requests) == 1
+    assert len(transport.control_requests) == reconciliation_limit
+
+
+@pytest.mark.parametrize("reconciliation_limit", [0, 1])
+def test_v5_recover_step_preserves_old_sealed_terminal_event_chain(
+    tmp_path: Path, reconciliation_limit: int
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = f"old-sealed-http-400-{reconciliation_limit}"
+    identity = AttemptIdentity(trial_id, 0, 0)
+    journal = V5AttemptJournal(tmp_path / f"old-sealed-{reconciliation_limit}.sqlite")
+    policy = scripted_policy(seed)
+    pre_state = policy.reset(task.instruction)
+    journal.record_attempt_started(
+        identity,
+        provider_endpoint_identity="http://127.0.0.1:9999",
+        request_digest="sha256:" + "a" * 64,
+        idempotency_key="old-http-400",
+        model_attempt_reservation=1,
+        control_request_reservation=reconciliation_limit,
+        pre_call_checkpoint=pre_state,
+    )
+    journal.seal_attempt_terminal(
+        identity,
+        kind="unknown_outcome_infrastructure_failure",
+        post_attempt_checkpoint=policy.failure_state(
+            pre_state, "http_400_bad_request"
+        ),
+        failure_code="http_400_bad_request",
+    )
+    assert "sealed_unsuccessful_result" not in {
+        event.kind for event in journal.events(trial_id)
+    }
+    before = journal.integrity_report()
+    before_event_chain_digest = before["event_chain_digest"]
+    transport = ScriptedTransport()
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=reconciliation_manifest(reconciliation_limit),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(
+            task.max_episode_steps,
+            1,
+            reconciliation_limit,
+            1 + reconciliation_limit,
+        ),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "infrastructure_failure",
+        "redispatched": False,
+    }
+    after = journal.integrity_report()
+    assert after["event_chain_digest"] == before_event_chain_digest
+    assert after == before
+    assert not transport.control_requests
 
 
 def test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts(
@@ -1383,3 +1612,40 @@ def test_v5_runner_rejects_a_bounded_budget_wider_than_the_attempt_cap() -> None
             policy=scripted_policy(5000),
             approved_caps=CallCaps(1, 2, 0, 2),
         )
+
+
+@pytest.mark.parametrize("settlement", ["in_flight", "known", "reconciled_known"])
+def test_spend_reservation_replay_neither_duplicates_nor_loses_exposure(
+    tmp_path: Path, settlement: str
+) -> None:
+    journal_path = tmp_path / f"spend-replay-{settlement}.sqlite"
+    request_maximum = Decimal("1.00")
+    journal = V5AttemptJournal(journal_path)
+    ledger = SpendLedger(request_maximum, Decimal(0), journal=journal)
+    assert ledger.reserve_wire("attempt-one", request_maximum)
+    if settlement == "reconciled_known":
+        assert ledger.reserve_unknown_charge(
+            "attempt-one", request_maximum
+        ) == request_maximum
+    if settlement != "in_flight":
+        assert ledger.record_cost(
+            "attempt-one", Decimal("0.25"), request_maximum
+        )
+    journal.close()
+    del ledger
+
+    resumed_journal = V5AttemptJournal(journal_path)
+    resumed = SpendLedger(request_maximum, Decimal(0), journal=resumed_journal)
+
+    assert resumed.wire_requests_sent == 1
+    assert resumed.unknown_reservation_usd == 0
+    if settlement != "in_flight":
+        assert resumed.in_flight_reservation_usd == 0
+        assert resumed.spent_usd == Decimal("0.25")
+    else:
+        assert resumed.in_flight_reservation_usd == request_maximum
+        assert resumed.spent_usd == 0
+    assert (resumed.in_flight_reservation_usd > 0) is not (
+        resumed.spent_usd > 0
+    )
+    resumed_journal.close()
