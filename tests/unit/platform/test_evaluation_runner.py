@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.evaluation import (
     EvaluationRunner,
     PlatformProviderResponse,
@@ -27,11 +28,12 @@ def _runner(
     provider=None,
     tracking=None,
     submission: str | None = None,
+    store=None,
 ):
     version = 1 if variant == "baseline" else 2
     return EvaluationRunner(
         repository_root=repository_root,
-        store=LocalImmutableStore(tmp_path / "immutable"),
+        store=store or LocalImmutableStore(tmp_path / "immutable"),
         tracking=tracking or InMemoryTracking(),
         provider=provider
         or ScriptedReplayProvider(
@@ -190,6 +192,57 @@ def test_resume_reuses_verified_raw_responses_without_duplicate_calls(
     assert first[0].to_dict() == second[0].to_dict()
     assert len(provider.call_ids) == 100
     assert len(set(provider.call_ids)) == 100
+
+
+class _OperationRecordingLocalStore(LocalImmutableStore):
+    def __init__(self, root: Path) -> None:
+        super().__init__(root)
+        self.operations: list[str] = []
+
+    def get_reference(self, logical_key: str) -> ArtifactRef | None:
+        self.operations.append("get_reference")
+        return super().get_reference(logical_key)
+
+    def _get_verified_unlocked(self, reference: ArtifactRef) -> bytes:
+        self.operations.append("get_verified")
+        return super()._get_verified_unlocked(reference)
+
+
+def test_resume_probes_cached_envelopes_without_payload_gets(
+    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+) -> None:
+    provider = ScriptedReplayProvider(
+        repository_root / "artifacts/grounding-predictions.jsonl", variant="revised"
+    )
+    store = _OperationRecordingLocalStore(tmp_path / "immutable")
+    runner = _runner(
+        repository_root=repository_root,
+        tmp_path=tmp_path,
+        gate_policy=gate_policy,
+        policy_factory=policy_factory,
+        variant="revised",
+        provider=provider,
+        store=store,
+    )
+    first_four = runner.build_shards(shard_size=4, max_calls=100)[0]
+    cached_shard = {**first_four, "example_ids": first_four["example_ids"][:3]}
+    runner.evaluate_shard(cached_shard, max_calls=100)
+    assert len(provider.call_ids) == 3
+
+    store.operations.clear()
+    runner.evaluate_shard(cached_shard, max_calls=100)
+    assert store.operations == ["get_reference"] * 3
+    assert len(provider.call_ids) == 3
+
+    operations_before_first_uncached_call: list[str] = []
+    runner.provider_response_hook = lambda _: operations_before_first_uncached_call.extend(
+        store.operations
+    )
+    store.operations.clear()
+    runner.evaluate_shard(first_four, max_calls=100)
+
+    assert operations_before_first_uncached_call == ["get_reference"] * 4
+    assert len(provider.call_ids) == 4
 
 
 class InvalidProvider:
