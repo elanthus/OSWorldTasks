@@ -22,8 +22,7 @@ from typing import Any, cast
 import numpy as np
 from PIL import Image
 
-from pixelgym.backends.base import Frame
-from pixelgym.grounding.v5.contracts import EnvironmentResumeRecord, content_digest, sha256_bytes
+from pixelgym.backends.base import EnvironmentResumeRecord, Frame, content_digest, sha256_bytes
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form.osworld_task import APP_URL, create_osworld_task
