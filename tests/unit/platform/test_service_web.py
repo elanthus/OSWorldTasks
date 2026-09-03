@@ -10,6 +10,7 @@ import re
 import secrets
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -1092,6 +1093,103 @@ def test_worker_registration_and_cancellation_intent_are_atomic(
         process_lock=process_lock,
         cancelled_submissions=cancelled,
     )
+
+
+def test_cancel_waiting_for_process_lock_does_not_block_serving(tmp_path: Path) -> None:
+    from pixelgym.platform import bootstrap
+
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    payload = {
+        "dataset": "day3-frozen-v1",
+        "prompt_version": "2",
+        "model": "day3-replay-revised-v2",
+        "condition": "raw",
+        "maximum_calls": "100",
+        "price_catalog": "pixelgym-demo-prices-v1",
+    }
+    submission_id = control.submit(payload)
+    process_lock = threading.Lock()
+    cancelled_submissions: set[str] = set()
+    lock_held = threading.Event()
+    release_lock = threading.Event()
+    callback_started = threading.Event()
+    callback_calls: list[str] = []
+
+    def hold_process_lock() -> None:
+        with process_lock:
+            lock_held.set()
+            assert release_lock.wait(timeout=2)
+
+    def cancel_callback(cancelled_id: str) -> bool:
+        callback_calls.append(cancelled_id)
+        callback_started.set()
+        return bootstrap._record_cancellation_intent(
+            control,
+            cancelled_id,
+            process_lock=process_lock,
+            cancelled_submissions=cancelled_submissions,
+        )
+
+    app = create_control_app(
+        control,
+        csrf_secret="test-secret-at-least-sixteen",
+        cancel_callback=cancel_callback,
+    )
+    app.mount(
+        "/",
+        create_serving_app(
+            PolicyRuntime(),
+            operational_log=MemoryOperationalLog(),
+        ),
+    )
+
+    with TestClient(app) as client:
+        token = _csrf(client.get(f"/submissions/{submission_id}").text)
+        cancellation_form = {"csrf_token": token, "reason": "stop concurrent fixture"}
+
+        def request_cancel() -> httpx.Response:
+            return client.post(
+                f"/submissions/{submission_id}/cancel",
+                data=cancellation_form,
+                follow_redirects=False,
+            )
+
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            holder = executor.submit(hold_process_lock)
+            assert lock_held.wait(timeout=1)
+            cancellation = executor.submit(request_cancel)
+            assert callback_started.wait(timeout=1)
+            assert not cancellation.done()
+            serving = executor.submit(client.get, "/health/live")
+            try:
+                serving_response = serving.result(timeout=1)
+                assert serving_response.status_code == 200
+            finally:
+                release_lock.set()
+
+            cancel_response = cancellation.result(timeout=1)
+            holder.result(timeout=1)
+            assert cancel_response.status_code == 303
+
+        repeated = client.post(
+            f"/submissions/{submission_id}/cancel",
+            data=cancellation_form,
+            follow_redirects=False,
+        )
+
+    assert repeated.status_code == 303
+    assert callback_calls == [submission_id]
+    assert control.get_submission(submission_id)["status"] == "Cancelled"
+    cancellation_events = [
+        event for event in control.audit_events() if event["event_type"] == "submission.cancelled"
+    ]
+    assert len(cancellation_events) == 1
+    assert cancellation_events[0]["subject_id"] == submission_id
+    assert cancellation_events[0]["details"] == {
+        "previous_status": "Submitted",
+        "reason": "stop concurrent fixture",
+    }
 
 
 def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(

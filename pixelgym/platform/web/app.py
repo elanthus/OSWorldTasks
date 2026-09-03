@@ -345,7 +345,7 @@ def create_control_app(
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "cancellation fields do not match the fixed contract")
         try:
-            submission = control.get_submission(submission_id)
+            submission = await run_in_threadpool(control.get_submission, submission_id)
         except KeyError as exc:
             raise HTTPException(404, "submission does not exist") from exc
         if submission["status"] == "Running" and cancel_callback is None:
@@ -356,8 +356,8 @@ def create_control_app(
             actor=control.reviewer_identity,
             reason=fields["reason"],
         )
-        if cancel_callback is not None:
-            cancel_callback(submission_id)
+        if cancel_callback is not None and submission["status"] != "Cancelled":
+            await run_in_threadpool(cancel_callback, submission_id)
         return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
 
     @app.get("/runs", response_class=HTMLResponse)
