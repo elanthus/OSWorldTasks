@@ -815,6 +815,16 @@ class ControlStore:
         # blocking writers while still detecting out-of-band row corruption.
         return [self._candidate_record(row) for row in rows]
 
+    def list_candidate_providers(self) -> list[str]:
+        with self._lock:
+            rows = self.connection.execute(
+                """SELECT DISTINCT json_extract(policy_json, '$.provider') AS provider
+                FROM candidates
+                WHERE json_type(policy_json, '$.provider') = 'text'
+                ORDER BY provider"""
+            ).fetchall()
+        return [row["provider"] for row in rows]
+
     def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
         try:
             policy_value = json.loads(row["policy_json"])

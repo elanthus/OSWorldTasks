@@ -1708,17 +1708,19 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
 
 
-def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger(
-    tmp_path: Path, passing_evidence
+def _register_bulk_candidates(
+    control: ControlStore,
+    passing_evidence,
+    *,
+    oldest_provider: str | None = None,
 ) -> None:
     policy, _summary, report = passing_evidence
-    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
-    control.migrate()
     for index in range(1_000):
         run_id = f"bulk-run-{index:04d}"
         unsigned = dataclasses.replace(
             policy,
             model=f"bulk-model-{index:04d}",
+            provider=oldest_provider if oldest_provider and index < 10 else policy.provider,
             policy_id="",
         )
         candidate_policy = dataclasses.replace(
@@ -1738,6 +1740,59 @@ def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger
             artifacts=[],
         )
 
+
+def test_runs_filter_before_pagination_finds_oldest_provider_candidates(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs?provider=bulk-provider-x")
+
+    assert response.status_code == 200
+    assert response.text.count('<tr><td><a href="/candidates/') == 10
+    assert 'href="/runs?provider=bulk-provider-x&amp;page=2"' not in response.text
+
+
+def test_runs_provider_options_include_providers_outside_first_page(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs")
+
+    assert response.status_code == 200
+    provider_select = re.search(
+        r'<select name="provider">(?P<options>.*?)</select>', response.text
+    )
+    assert provider_select is not None
+    assert 'value="bulk-provider-x"' in provider_select.group("options")
+    table_body = response.text.split("<tbody>", 1)[1].split("</tbody>", 1)[0]
+    assert "bulk-provider-x" not in table_body
+
+
+def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(control, passing_evidence)
+
     statements: list[str] = []
     control.connection.set_trace_callback(statements.append)
     try:
@@ -1756,8 +1811,8 @@ def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger
         statement for statement in selects if "FROM candidates" in statement
     ]
     assert response.status_code == 200
-    assert len(selects) == 2
-    assert len(candidate_selects) == 1
+    assert len(selects) == 3
+    assert len(candidate_selects) == 2
     assert response.text.count('<tr><td><a href="/candidates/') == RUNS_PAGE_SIZE
     assert 'href="/runs?page=2"' in response.text
 

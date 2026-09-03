@@ -391,13 +391,31 @@ def create_control_app(
                     raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date")
         if gate_result is not None and gate_result not in {"passed", "failed"}:
             raise HTTPException(422, "gate_result must be passed or failed")
-        candidate_window = control.list_candidates(
-            limit=RUNS_PAGE_SIZE + 1,
-            offset=(page - 1) * RUNS_PAGE_SIZE,
+        filters_active = any(
+            (
+                provider,
+                lifecycle,
+                dataset,
+                code_revision,
+                prompt_version is not None,
+                model,
+                status,
+                date_from,
+                date_to,
+                gate_result,
+            )
         )
-        has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
-        candidates = candidate_window[:RUNS_PAGE_SIZE]
-        provider_options = sorted({item.policy.provider for item in candidates})
+        if filters_active:
+            candidates = control.list_candidates()
+            has_next_page = False
+        else:
+            candidate_window = control.list_candidates(
+                limit=RUNS_PAGE_SIZE + 1,
+                offset=(page - 1) * RUNS_PAGE_SIZE,
+            )
+            has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
+            candidates = candidate_window[:RUNS_PAGE_SIZE]
+        provider_options = control.list_candidate_providers()
         submissions = control.list_submissions()
         submission_by_run = {
             item["mlflow_run_id"]: item for item in submissions if item["mlflow_run_id"]
@@ -449,6 +467,11 @@ def create_control_app(
             candidates = [
                 item for item in candidates if item.gate_report["overall_passed"] is expected
             ]
+        if filters_active:
+            offset = (page - 1) * RUNS_PAGE_SIZE
+            candidate_window = candidates[offset : offset + RUNS_PAGE_SIZE + 1]
+            has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
+            candidates = candidate_window[:RUNS_PAGE_SIZE]
         notice = f'<div class="notice">Submission {_escape(submitted)} accepted.</div>' if submitted else ""
         rows = "".join(_candidate_row(item, mlflow_base_url) for item in candidates)
         if not rows:
