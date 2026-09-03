@@ -7,6 +7,7 @@ import importlib
 import io
 import logging
 import re
+import sqlite3
 import sys
 import threading
 from pathlib import Path
@@ -1317,6 +1318,44 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
     blocked = client.post("/experiments", data={**form, "model": "shell-command"})
     assert blocked.status_code == 422
     assert "DEMO PROVIDER" in page.text
+
+
+def test_exhausted_control_lock_returns_redacted_service_response(tmp_path: Path) -> None:
+    database = tmp_path / "control.db"
+    control = ControlStore(
+        database,
+        reviewer_identity="local-reviewer",
+        busy_timeout_ms=50,
+    )
+    control.migrate()
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    )
+    page = client.get("/")
+    locker = sqlite3.connect(database, isolation_level=None)
+    locker.execute("BEGIN IMMEDIATE")
+    try:
+        response = client.post(
+            "/experiments",
+            data={
+                "csrf_token": _csrf(page.text),
+                "dataset": "day3-frozen-v1",
+                "prompt_version": "2",
+                "model": "day3-replay-revised-v2",
+                "condition": "raw",
+                "maximum_calls": "100",
+                "price_catalog": "pixelgym-demo-prices-v1",
+            },
+        )
+    finally:
+        locker.rollback()
+        locker.close()
+
+    assert response.status_code == 503
+    assert "control database is temporarily busy; retry the request" in response.text
+    assert "database is locked" not in response.text.lower()
+    assert "sqlite3" not in response.text.lower()
+    assert "operationalerror" not in response.text.lower()
 
 
 def test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure(

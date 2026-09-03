@@ -41,6 +41,44 @@ def _disable_approval_append_only_guards(control: ControlStore) -> None:
     control.connection.execute("DROP TRIGGER approvals_no_delete")
 
 
+def test_file_runtime_connection_applies_wal_and_configured_busy_timeout(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(
+        tmp_path / "control.db",
+        reviewer_identity="local-reviewer",
+        busy_timeout_ms=237,
+    )
+    control.migrate()
+
+    assert control.connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+    assert control.connection.execute("PRAGMA synchronous").fetchone()[0] == 1
+    assert control.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 237
+    assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
+def test_memory_and_file_uri_connections_use_documented_journal_modes(
+    tmp_path: Path,
+) -> None:
+    memory = ControlStore(
+        ":memory:", reviewer_identity="local-reviewer", busy_timeout_ms=149
+    )
+    file_uri = ControlStore(
+        f"{(tmp_path / 'uri-control.db').as_uri()}?mode=rwc",
+        reviewer_identity="local-reviewer",
+        busy_timeout_ms=151,
+    )
+
+    assert memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
+    assert memory.connection.execute("PRAGMA synchronous").fetchone()[0] == 1
+    assert memory.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 149
+    assert memory.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    assert file_uri.connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+    assert file_uri.connection.execute("PRAGMA synchronous").fetchone()[0] == 1
+    assert file_uri.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 151
+    assert file_uri.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
 def test_require_migrated_rejects_missing_active_pointer_singleton(tmp_path: Path) -> None:
     control = _control(tmp_path)
     control.connection.execute("DELETE FROM active_pointer WHERE singleton = 1")
@@ -995,6 +1033,20 @@ def test_new_serving_connection_enforces_foreign_keys(tmp_path: Path) -> None:
             "INSERT INTO deployments VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             ("bad", "missing", "policy", "deploy", "actor", "reason", "now", 1),
         )
+
+
+def test_wal_migration_restart_preserves_data_and_schema(tmp_path: Path) -> None:
+    database = tmp_path / "restart.sqlite"
+    migrator = ControlStore(database, reviewer_identity="local-reviewer")
+    migrator.migrate()
+    submission_id = migrator.submit({"model": "persisted"})
+    migrator.connection.close()
+
+    serving = ControlStore(database, reviewer_identity="local-reviewer")
+    serving.require_migrated()
+
+    assert serving.connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+    assert serving.get_submission(submission_id)["request"] == {"model": "persisted"}
 
 
 def test_migration_ignores_check_text_in_sql_comment(tmp_path: Path) -> None:
