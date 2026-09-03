@@ -34,6 +34,10 @@ bind address supplied to `create_app`: `127.0.0.1`, `::1`, and `localhost` defau
 off, while every other address defaults to `Secure` on. Callers may explicitly override that
 choice with the `session_cookie_secure` parameter. Keep the bind address loopback-only when using
 plain HTTP; any non-loopback deployment must terminate TLS before sending this cookie.
+When no `bind_address` argument is supplied, `PIXELGYM_BIND_ADDRESS` supplies the bind address and
+defaults to `127.0.0.1` when unset. An explicit `session_cookie_secure` argument takes precedence
+over `PIXELGYM_SESSION_COOKIE_SECURE` (`true` or `false`, case-insensitive), after which the resolved
+bind address determines the default as described above.
 
 The cookie is always server-issued and has the exact format `<session-id>.<tag>`. `session-id` is
 the 32-character URL-safe Base64 output of `secrets.token_urlsafe(24)`. `tag` is the 64-character

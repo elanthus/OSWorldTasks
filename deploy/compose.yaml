@@ -92,6 +92,7 @@ services:
       minio-init: {condition: service_completed_successfully}
     environment:
       PIXELGYM_REPOSITORY_ROOT: /app
+      PIXELGYM_BIND_ADDRESS: 0.0.0.0
       PIXELGYM_CONTROL_DB: /state/control.db
       PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
       PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}

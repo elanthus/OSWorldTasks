@@ -1112,14 +1112,7 @@ def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(
     assert captured["retry_max_attempts"] == 1
 
 
-def _assembled_platform_app(
-    tmp_path: Path,
-    repository_root: Path,
-    monkeypatch,
-    *,
-    bind_address: str = "127.0.0.1",
-    session_cookie_secure: bool | None = None,
-):
+def _configure_bootstrap_environment(tmp_path: Path, repository_root: Path, monkeypatch):
     from pixelgym.platform import bootstrap
 
     database = tmp_path / "state/control.db"
@@ -1130,6 +1123,20 @@ def _assembled_platform_app(
     monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
     monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
     monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
+    return bootstrap, control
+
+
+def _assembled_platform_app(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    *,
+    bind_address: str = "127.0.0.1",
+    session_cookie_secure: bool | None = None,
+):
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
     return (
         bootstrap.create_app(
             bind_address=bind_address,
@@ -1174,6 +1181,43 @@ def test_bootstrap_configures_session_cookie_from_bind_address_and_override(
     assert bool(session["secure"]) is expected_secure
     assert bool(session["httponly"])
     assert session["samesite"] == "strict"
+
+
+def test_bootstrap_uses_environment_bind_address_for_session_cookie(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert bool(cookie["pixelgym_session"]["secure"])
+
+
+def test_bootstrap_environment_can_disable_secure_session_cookie(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "false")
+
+    response = TestClient(bootstrap.create_app(bind_address="0.0.0.0")).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert not cookie["pixelgym_session"]["secure"]
+
+
+def test_bootstrap_rejects_invalid_environment_session_cookie_secure(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_SESSION_COOKIE_SECURE"):
+        bootstrap.create_app()
 
 
 def _approved_candidate(control: ControlStore, policy, summary, report):

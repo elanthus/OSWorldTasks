@@ -191,11 +191,30 @@ def _record_cancellation_intent(
 
 
 def create_app(
-    bind_address: str = "127.0.0.1",
+    bind_address: str | None = None,
     *,
     session_cookie_secure: bool | None = None,
 ) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
+    resolved_bind_address = (
+        bind_address
+        if bind_address is not None
+        else os.environ.get("PIXELGYM_BIND_ADDRESS", "127.0.0.1")
+    )
+    if session_cookie_secure is None:
+        secure_environment = os.environ.get("PIXELGYM_SESSION_COOKIE_SECURE")
+        if secure_environment is not None:
+            if secure_environment.lower() not in {"true", "false"}:
+                raise ValueError(
+                    "PIXELGYM_SESSION_COOKIE_SECURE must be 'true' or 'false'"
+                )
+            session_cookie_secure = secure_environment.lower() == "true"
+        else:
+            session_cookie_secure = resolved_bind_address.lower() not in {
+                "127.0.0.1",
+                "::1",
+                "localhost",
+            }
     repository_root = _repository_root()
     csrf_secret = os.environ.get("PIXELGYM_CSRF_SECRET")
     if not csrf_secret:
@@ -279,11 +298,7 @@ def create_app(
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
-        session_cookie_secure=(
-            bind_address.lower() not in {"127.0.0.1", "::1", "localhost"}
-            if session_cookie_secure is None
-            else session_cookie_secure
-        ),
+        session_cookie_secure=session_cookie_secure,
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,
         tracking=tracking,
