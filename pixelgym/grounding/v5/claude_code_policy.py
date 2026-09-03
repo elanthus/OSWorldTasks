@@ -30,7 +30,11 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
-from pixelgym.grounding.v5.evidence import CredentialValidationError, validate_credential_free
+from pixelgym.grounding.v5.evidence import (
+    CredentialValidationError,
+    redact_raw_stdio,
+    validate_credential_free,
+)
 from pixelgym.grounding.v5.runner import TransportOutcome
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
 from pixelgym.serialization import canonical_json_bytes
@@ -57,7 +61,7 @@ STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
 TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = "one-claude-cli-process-per-action-no-runner-retry-v1"
-INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-claude-cli-invocation-journal-v1"
+INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-claude-cli-invocation-journal-v2"
 SYSTEM_PROMPT = (
     "You are a stateless pixel-only GUI policy. Use only the user-provided task text and "
     "inline screenshot. Do not use tools or request other context. Return exactly one action "
@@ -351,6 +355,9 @@ class ClaudeInvocationJournal:
                 exit_code INTEGER,
                 raw_stdout BLOB,
                 raw_stderr BLOB,
+                raw_stdout_original_sha256 TEXT,
+                raw_stderr_original_sha256 TEXT,
+                credential_redacted INTEGER NOT NULL DEFAULT 0,
                 outcome BLOB
             )
             """
@@ -380,7 +387,18 @@ class ClaudeInvocationJournal:
         return True
 
     def mark_running(self, idempotency_key: str, process_id: int) -> None:
-        self._update(idempotency_key, "running", process_id, None, None, None, None)
+        self._update(
+            idempotency_key,
+            "running",
+            process_id,
+            None,
+            None,
+            None,
+            None,
+            None,
+            False,
+            None,
+        )
 
     def finish(
         self,
@@ -392,33 +410,48 @@ class ClaudeInvocationJournal:
         raw_stderr: str,
         outcome: dict[str, Any],
     ) -> None:
+        stdout = redact_raw_stdio(raw_stdout)
+        stderr = redact_raw_stdio(raw_stderr)
         self._update(
             idempotency_key,
             status,
             None,
             exit_code,
-            raw_stdout.encode("utf-8", errors="replace"),
-            raw_stderr.encode("utf-8", errors="replace"),
+            stdout.value.encode("utf-8", errors="replace"),
+            stderr.value.encode("utf-8", errors="replace"),
+            stdout.original_sha256,
+            stderr.original_sha256,
+            stdout.credential_redacted or stderr.credential_redacted,
             canonical_json_bytes(outcome),
         )
 
     def record(self, idempotency_key: str) -> dict[str, Any] | None:
         row = self._connection.execute(
-            "SELECT status, outcome FROM invocations WHERE idempotency_key = ?",
+            """
+            SELECT status, raw_stdout, raw_stderr, raw_stdout_original_sha256,
+                   raw_stderr_original_sha256, credential_redacted, outcome
+            FROM invocations WHERE idempotency_key = ?
+            """,
             (idempotency_key,),
         ).fetchone()
         if row is None:
             return None
         return {
             "status": str(row[0]),
-            "outcome": json.loads(bytes(row[1]).decode("utf-8")) if row[1] else None,
+            "raw_stdout": bytes(row[1] or b"").decode("utf-8", errors="replace"),
+            "raw_stderr": bytes(row[2] or b"").decode("utf-8", errors="replace"),
+            "raw_stdout_original_sha256": row[3],
+            "raw_stderr_original_sha256": row[4],
+            "credential_redacted": bool(row[5]),
+            "outcome": json.loads(bytes(row[6]).decode("utf-8")) if row[6] else None,
         }
 
     def integrity_report(self) -> dict[str, Any]:
         rows = self._connection.execute(
             """
             SELECT idempotency_key, request_digest, status, exit_code,
-                   raw_stdout, raw_stderr, outcome
+                   raw_stdout, raw_stderr, raw_stdout_original_sha256,
+                   raw_stderr_original_sha256, credential_redacted, outcome
             FROM invocations ORDER BY idempotency_key
             """
         ).fetchall()
@@ -430,7 +463,10 @@ class ClaudeInvocationJournal:
                 "exit_code": row[3],
                 "raw_stdout_sha256": "sha256:" + sha256_bytes(bytes(row[4] or b"")),
                 "raw_stderr_sha256": "sha256:" + sha256_bytes(bytes(row[5] or b"")),
-                "outcome_sha256": "sha256:" + sha256_bytes(bytes(row[6] or b"")),
+                "raw_stdout_original_sha256": row[6],
+                "raw_stderr_original_sha256": row[7],
+                "credential_redacted": bool(row[8]),
+                "outcome_sha256": "sha256:" + sha256_bytes(bytes(row[9] or b"")),
             }
             for row in rows
         ]
@@ -451,13 +487,18 @@ class ClaudeInvocationJournal:
         exit_code: int | None,
         raw_stdout: bytes | None,
         raw_stderr: bytes | None,
+        raw_stdout_original_sha256: str | None,
+        raw_stderr_original_sha256: str | None,
+        credential_redacted: bool,
         outcome: bytes | None,
     ) -> None:
         with self._lock, self._connection:
             cursor = self._connection.execute(
                 """
                 UPDATE invocations
-                SET status=?, process_id=?, exit_code=?, raw_stdout=?, raw_stderr=?, outcome=?
+                SET status=?, process_id=?, exit_code=?, raw_stdout=?, raw_stderr=?,
+                    raw_stdout_original_sha256=?, raw_stderr_original_sha256=?,
+                    credential_redacted=?, outcome=?
                 WHERE idempotency_key=?
                 """,
                 (
@@ -466,6 +507,9 @@ class ClaudeInvocationJournal:
                     exit_code,
                     raw_stdout,
                     raw_stderr,
+                    raw_stdout_original_sha256,
+                    raw_stderr_original_sha256,
+                    int(credential_redacted),
                     outcome,
                     idempotency_key,
                 ),

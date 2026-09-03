@@ -19,6 +19,14 @@ from pixelgym.grounding.v5.d56_calibration import (
     _file_digest,
     _git,
 )
+from pixelgym.grounding.v5.d56_spend import (
+    campaign_spend_fields,
+    combine_spend_disclosures,
+    ledger_spend_disclosure,
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+    phase_spend_fields,
+)
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
@@ -33,8 +41,8 @@ from pixelgym.grounding.v5.panel_policy import (
 )
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-calibration-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-calibration-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-calibration-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-c-calibration-result-v2"
 
 FROZEN_BCD_PLAN_SHA256 = (
     "sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9"
@@ -135,6 +143,8 @@ def _validated_frozen_bcd_evidence(repository_root: Path, output_directory: Path
             raise ValueError("frozen B/C/D journal request counts mismatch")
     finally:
         journal.close()
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     return {
         "approved_plan_sha256": FROZEN_BCD_PLAN_SHA256,
         "code_revision": FROZEN_BCD_CODE_REVISION,
@@ -143,6 +153,8 @@ def _validated_frozen_bcd_evidence(repository_root: Path, output_directory: Path
         "journal_path": repository_relative_path(repository_root, journal_path),
         "journal_sha256": FROZEN_BCD_JOURNAL_SHA256,
         "actual_aggregate_spend_usd": str(FROZEN_BCD_ACTUAL_SPEND_USD),
+        "phase_spend": phase_spend,
+        "campaign_spend": campaign_spend,
         "remaining_aggregate_spend_usd": str(
             PANEL_MAXIMUM_SPEND_USD - FROZEN_BCD_ACTUAL_SPEND_USD
         ),
@@ -179,7 +191,7 @@ def build_plan(
     frozen_bcd_evidence = _validated_frozen_bcd_evidence(
         repository_root, frozen_bcd_output_directory
     )
-    prior_spend = Decimal(frozen_bcd_evidence["actual_aggregate_spend_usd"])
+    prior_campaign_spend = frozen_bcd_evidence["campaign_spend"]
     c_policy = next(
         policy for policy in base_plan["policies"] if policy["slot"] == LLAMA_STATEFUL.slot
     )
@@ -198,17 +210,19 @@ def build_plan(
         "policies": [c_policy],
         "aggregate_caps": {
             **CallCaps(action_cap, action_cap * 2, 0, action_cap * 2).to_dict(),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "remaining_aggregate_spend_usd": str(
-                PANEL_MAXIMUM_SPEND_USD - prior_spend
+            "maximum_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "remaining_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "prior_campaign_spend": prior_campaign_spend,
+            "spend_lineage": (
+                "per-run enforcement: this phase starts at zero; predecessor spend is "
+                "carried only as campaign disclosure"
             ),
             "uncapped_theoretical_request_maximum_usd": c_policy["caps"][
                 "run_theoretical_maximum_usd"
             ],
             "enforcement": (
                 "before each wire request, reserve Slot C's worst-case request cost against "
-                "the shared aggregate ledger; stop before a request that cannot fit"
+                "this phase's ledger; stop before a request that cannot fit"
             ),
         },
         "smoke_evidence": base_plan["smoke_evidence"],
@@ -224,7 +238,7 @@ def build_plan(
             BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop the Slot C run after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            "stop before any request whose per-request theoretical maximum cannot fit under this phase's ten-dollar ledger",
             "do not retry a parse, action, unknown-outcome, or other provider failure; do not replace or reorder an assignment",
             "do not expose confirmatory tasks",
         ],
@@ -269,8 +283,8 @@ def execute_calibration(
         raise FileExistsError(f"refusing to replace Slot C output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
-    prior_spend = Decimal(plan["aggregate_caps"]["prior_aggregate_spend_usd"])
-    ledger = SpendLedger(PANEL_MAXIMUM_SPEND_USD, prior_spend)
+    maximum_spend = Decimal(plan["aggregate_caps"]["maximum_run_spend_usd"])
+    ledger = SpendLedger(maximum_spend, Decimal(0))
     aggregate_caps = CallCaps(
         plan["aggregate_caps"]["environment_action_cap"],
         plan["aggregate_caps"]["model_attempt_cap"],
@@ -309,6 +323,11 @@ def execute_calibration(
         classifications = Counter(
             result["classification"] for result in episode_results
         )
+        phase_spend = ledger_spend_disclosure(ledger)
+        prior_campaign_spend = plan["aggregate_caps"]["prior_campaign_spend"]
+        campaign_spend = combine_spend_disclosures(
+            (prior_campaign_spend, phase_spend)
+        )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "approved_plan_sha256": digest,
@@ -317,13 +336,16 @@ def execute_calibration(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": journal.call_counts()[0],
             "provider_control_requests": journal.call_counts()[1],
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "calibration_incremental_spend_usd": str(ledger.spent_usd - prior_spend),
-            "remaining_aggregate_spend_usd": str(
-                PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd
+            "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
+            **phase_spend_fields(phase_spend),
+            "prior_campaign_spend": prior_campaign_spend,
+            **campaign_spend_fields(campaign_spend),
+            "actual_aggregate_spend_usd": campaign_spend["known_spend_usd"],
+            "calibration_incremental_spend_usd": phase_spend["known_spend_usd"],
+            "remaining_run_spend_usd": str(
+                maximum_spend - Decimal(phase_spend["budget_accounted_spend_usd"])
             ),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "maximum_run_spend_usd": str(maximum_spend),
             "assigned_policy_task_pairs": EXPECTED_TASK_COUNT,
             "attempted_policy_task_pairs": len(episode_results),
             "successful_policy_task_pairs": sum(

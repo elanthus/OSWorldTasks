@@ -8,11 +8,17 @@ and makes the recorded value differ between machines for the same run.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5.evidence import repository_relative_path
+from pixelgym.grounding.v5.evidence import (
+    journal_integrity_audit_record,
+    repository_relative_path,
+)
+
+ROOT = Path(__file__).parents[2]
 
 
 def test_absolute_path_inside_the_repository_is_recorded_relative(tmp_path: Path) -> None:
@@ -57,3 +63,37 @@ def test_posix_separators_are_used_so_the_value_is_platform_stable(tmp_path: Pat
     evidence.parent.mkdir(parents=True)
 
     assert "\\" not in repository_relative_path(root, evidence)
+
+
+def test_publication_audit_records_version_for_frozen_v1_journal_report() -> None:
+    summary = json.loads(
+        (
+            ROOT / "artifacts/grounding-v5-d56-panel-smoke-run/summary.json"
+        ).read_text(encoding="utf-8")
+    )
+    frozen = summary["journal_integrity"]
+
+    assert frozen == {
+        "event_chain_digest": (
+            "sha256:03fde3081edbfda83c2f0c77c6acb52ed67cb37bcd3d1ade0faff63886a6929b"
+        ),
+        "event_count": 3,
+        "object_count": 5,
+        "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
+    }
+    assert journal_integrity_audit_record(frozen) == {
+        **frozen,
+        "digest_version": "v1",
+    }
+
+
+def test_publication_audit_preserves_explicit_v2_digest_version() -> None:
+    report = {
+        "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
+        "object_count": 0,
+        "event_count": 0,
+        "event_chain_digest": "sha256:" + "0" * 64,
+        "digest_version": "v2",
+    }
+
+    assert journal_integrity_audit_record(report) == report
