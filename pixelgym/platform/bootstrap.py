@@ -15,7 +15,11 @@ from typing import Any
 from fastapi import FastAPI
 
 from pixelgym.platform.contracts import PolicyManifest
-from pixelgym.platform.control_store import ControlStore, DeploymentRecord
+from pixelgym.platform.control_store import (
+    DEFAULT_BUSY_TIMEOUT_MS,
+    ControlStore,
+    DeploymentRecord,
+)
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -83,6 +87,9 @@ def _build_control(repository_root: Path) -> ControlStore:
     control = ControlStore(
         database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
+        busy_timeout_ms=int(
+            os.environ.get("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", DEFAULT_BUSY_TIMEOUT_MS)
+        ),
     )
     control.require_migrated()
     return control

@@ -71,6 +71,13 @@ approval/deployment ledger remains the explicit SQLite control store implemented
 There is no PostgreSQL control-ledger schema to migrate. Diagnostics redact repository/home paths
 and local demo credentials before pytest can print them.
 
+SQLite is the local-first control-ledger choice, not a multi-host high-availability design.
+File-backed stores, including `file:` URI paths, use WAL with `synchronous=NORMAL`, foreign-key
+enforcement, and a bounded busy timeout (5 seconds by default, configurable with
+`PIXELGYM_SQLITE_BUSY_TIMEOUT_MS`). Pure `:memory:` and URI memory databases use SQLite's `memory`
+journal instead of inapplicable WAL, while retaining the same synchronization, foreign-key, and
+busy-timeout settings. Exhausted lock waits return a retryable, redacted service error.
+
 The Metaflow suite also sends `SIGKILL` to the entire local flow process group after durable
 evidence persistence and resumes the recorded origin run. It proves no duplicate fixture-provider
 billing in that bounded local runtime. A remote scheduler that loses its parent independently can

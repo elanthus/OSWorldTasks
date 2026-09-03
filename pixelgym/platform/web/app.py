@@ -26,6 +26,7 @@ from pixelgym.platform.contracts import CandidateState
 from pixelgym.platform.control_store import (
     AuthorizationError,
     ConflictError,
+    ContentionError,
     ControlStore,
     TransitionError,
 )
@@ -676,11 +677,17 @@ def create_control_app(
 
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
+    @app.exception_handler(ContentionError)
     @app.exception_handler(AuthorizationError)
     @app.exception_handler(ImmutableStoreError)
     @app.exception_handler(DeploymentSmokeError)
     async def lifecycle_error(request: Request, exc: Exception) -> HTMLResponse:
-        status = 403 if isinstance(exc, AuthorizationError) else 409
+        if isinstance(exc, AuthorizationError):
+            status = 403
+        elif isinstance(exc, ContentionError):
+            status = 503
+        else:
+            status = 409
         return HTMLResponse(
             _layout("Action blocked", f'<section class="error-summary"><h1>Action blocked</h1><p>{_escape(exc)}</p><a href="/runs">Return to runs</a></section>', csrf=request.state.csrf),
             status_code=status,
