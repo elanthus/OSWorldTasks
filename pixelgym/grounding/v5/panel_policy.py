@@ -56,6 +56,10 @@ BOUNDED_RETRY_STOP_RULE = (
     "observed; retain every attempt"
 )
 RETRYABLE_HTTP_STATUSES = frozenset({408, 425, 500, 502, 503, 504})
+# How much of an unobservable charge to hold, as a multiple of the most expensive
+# response this run has actually priced. The per-request theoretical maximum stays
+# the ceiling; this only tightens the hold once the run has real evidence.
+UNOBSERVED_CHARGE_CEILING_MULTIPLIER = Decimal(3)
 
 
 @dataclass(frozen=True)
@@ -517,6 +521,7 @@ class SpendLedger:
     wire_requests_sent: int = 0
     unknown_reservation_usd: Decimal = Decimal(0)
     unknown_charge_outcomes: int = 0
+    max_observed_cost_usd: Decimal = Decimal(0)
     blocked: bool = False
     _lock: Lock = field(default_factory=Lock, repr=False, compare=False)
 
@@ -545,6 +550,7 @@ class SpendLedger:
     def record_cost(self, cost: Decimal, request_maximum_usd: Decimal) -> bool:
         with self._lock:
             self.spent_usd += cost
+            self.max_observed_cost_usd = max(self.max_observed_cost_usd, cost)
             if (
                 cost > request_maximum_usd
                 or self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd
@@ -553,19 +559,45 @@ class SpendLedger:
                 return False
             return True
 
-    def reserve_unknown_charge(self, request_maximum_usd: Decimal) -> None:
+    def unknown_charge_reservation_usd(self, request_maximum_usd: Decimal) -> Decimal:
+        """What to hold for one send whose charge cannot be read."""
+
+        with self._lock:
+            return self._unknown_charge_reservation(request_maximum_usd)
+
+    def _unknown_charge_reservation(self, request_maximum_usd: Decimal) -> Decimal:
+        """Caller holds the lock.
+
+        The per-request theoretical maximum assumes a full context window that
+        this workload never approaches, so holding it for every fault drains the
+        budget for charges that are often never incurred. Once the run has priced
+        real responses, hold a multiple of the most expensive one instead. Before
+        any response has been priced there is no evidence, so the full theoretical
+        maximum is held, and it remains the ceiling in every case.
+        """
+
+        if self.max_observed_cost_usd <= 0:
+            return request_maximum_usd
+        return min(
+            request_maximum_usd,
+            self.max_observed_cost_usd * UNOBSERVED_CHARGE_CEILING_MULTIPLIER,
+        )
+
+    def reserve_unknown_charge(self, request_maximum_usd: Decimal) -> Decimal:
         """Charge a sent request whose actual cost cannot be observed.
 
-        The request may have been served and billed upstream. Reserving its
-        worst-case cost keeps the aggregate guard fail-closed while letting the
-        run continue, instead of blocking every remaining request.
+        The request may have been served and billed upstream. Reserving against
+        it keeps the guard fail-closed while letting the run continue, instead of
+        blocking every remaining request. Returns the amount held.
         """
 
         with self._lock:
-            self.unknown_reservation_usd += request_maximum_usd
+            reservation = self._unknown_charge_reservation(request_maximum_usd)
+            self.unknown_reservation_usd += reservation
             self.unknown_charge_outcomes += 1
             if self.spent_usd + self.unknown_reservation_usd > self.maximum_spend_usd:
                 self.blocked = True
+            return reservation
 
     def block(self) -> None:
         with self._lock:
@@ -628,7 +660,7 @@ class OpenRouterPanelTransport:
         """
 
         self._consecutive_transport_faults += 1
-        self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
+        reservation = self.ledger.reserve_unknown_charge(self.config.request_maximum_usd)
         backoff_seconds = min(
             self.config.rate_limit_backoff_base_seconds
             * (2 ** min(max(0, self._consecutive_transport_faults - 1), 63)),
@@ -648,7 +680,7 @@ class OpenRouterPanelTransport:
                 "retry_after_seconds": backoff_seconds,
                 "backoff_source": "exponential_fallback",
                 "cost_usd": None,
-                "unknown_charge_reservation_usd": str(self.config.request_maximum_usd),
+                "unknown_charge_reservation_usd": str(reservation),
                 **(metadata or {}),
             }
         )

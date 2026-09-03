@@ -149,8 +149,10 @@ def build_plan(
                 "zero_completion_error",
             ],
             "unobservable_charge_rule": (
-                "reserve the per-request theoretical maximum against this run's ledger "
-                "for every send whose charge cannot be observed"
+                "for every send whose charge cannot be observed, hold against this "
+                "run's ledger three times the most expensive response the run has "
+                "priced so far, capped at the per-request theoretical maximum and "
+                "falling back to that maximum before any response has been priced"
             ),
         },
         "caps": {

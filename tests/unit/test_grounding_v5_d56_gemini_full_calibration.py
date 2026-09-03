@@ -205,9 +205,9 @@ def test_plan_declares_run_continuation_and_unobservable_charge_accounting(
     continuation = plan["run_continuation"]
 
     assert continuation["consecutive_failure_limit"] == CONSECUTIVE_FAILURE_LIMIT
-    assert "reserve the per-request theoretical maximum" in (
-        continuation["unobservable_charge_rule"]
-    )
+    rule = continuation["unobservable_charge_rule"]
+    assert "the most expensive response the run has priced so far" in rule
+    assert "capped at the per-request theoretical maximum" in rule
     assert "http_429_rate_limit" in continuation["retryable_send_outcomes"]
     assert any(
         "transient transport fault" in outcome

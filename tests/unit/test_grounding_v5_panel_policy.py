@@ -1023,3 +1023,66 @@ def test_a_charge_above_the_per_request_maximum_still_blocks() -> None:
     assert outcome.response is not None
     assert outcome.response["usage"]["price_guard"] == "exceeded"
     assert ledger.blocked
+
+
+def test_reservation_falls_back_to_the_theoretical_maximum_without_evidence() -> None:
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+
+    # No response has been priced, so there is nothing to reason from.
+    assert ledger.unknown_charge_reservation_usd(request_maximum) == request_maximum
+    assert ledger.reserve_unknown_charge(request_maximum) == request_maximum
+
+
+def test_reservation_tightens_to_the_observed_ceiling() -> None:
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+
+    ledger.record_cost(Decimal("0.004"), request_maximum)
+    ledger.record_cost(Decimal("0.011"), request_maximum)
+    ledger.record_cost(Decimal("0.002"), request_maximum)
+
+    assert ledger.max_observed_cost_usd == Decimal("0.011")
+    assert ledger.reserve_unknown_charge(request_maximum) == Decimal("0.033")
+    assert ledger.unknown_reservation_usd == Decimal("0.033")
+
+
+def test_reservation_never_exceeds_the_theoretical_maximum() -> None:
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+
+    # Three times this observation is far above the modelled per-request ceiling,
+    # which must still cap the hold.
+    ledger.record_cost(Decimal("0.05"), request_maximum)
+
+    assert ledger.reserve_unknown_charge(request_maximum) == request_maximum
+
+
+def test_observed_ceiling_reservation_matches_the_v3b_run_shape() -> None:
+    """Replay the Gemini v3b figures: 20 faults nearly ended a completed run."""
+
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal("7.00"), Decimal(0))
+    ledger.record_cost(Decimal("0.011250"), request_maximum)  # the run's priciest
+
+    for _ in range(20):
+        ledger.reserve_unknown_charge(request_maximum)
+
+    assert ledger.unknown_reservation_usd == Decimal("0.675000")
+    assert not ledger.blocked
+    # The run held $1.990656 under the old rule and finished $0.098 from the cap.
+    assert ledger.unknown_reservation_usd < Decimal("1.990656")
+
+
+def test_transport_records_the_amount_actually_held() -> None:
+    def urlopen(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.URLError("connection reset")
+
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal(10), Decimal(0))
+    ledger.record_cost(Decimal("0.01"), request_maximum)
+    transport = gemini_transport(urlopen, ledger=ledger)
+
+    one_send(transport, "attempt-held")
+
+    assert transport.records[-1]["unknown_charge_reservation_usd"] == "0.03"
