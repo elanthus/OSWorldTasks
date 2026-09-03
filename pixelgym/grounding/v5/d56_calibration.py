@@ -38,6 +38,55 @@ NORMAL_TERMINAL_CLASSIFICATIONS = frozenset(
     {"success_termination", "step_limit_truncation"}
 )
 
+# An isolated failure is a property of one task, not of the run: a malformed model
+# output or a settled transport fault is retained as a failed assignment and the run
+# continues, so every assigned task stays in the denominator. A run of consecutive
+# failures instead indicates a systematically broken route, credential, or policy,
+# and stops before it can spend the remaining budget on doomed calls.
+CONSECUTIVE_FAILURE_LIMIT = 5
+
+
+class ConsecutiveFailureBreaker:
+    """Continue past isolated task failures; stop on a sustained failure streak."""
+
+    def __init__(self, limit: int = CONSECUTIVE_FAILURE_LIMIT) -> None:
+        if limit < 1:
+            raise ValueError("consecutive failure limit must be positive")
+        self.limit = limit
+        self.consecutive_failures = 0
+        self.longest_failure_streak = 0
+        self.tripped = False
+        self.trip_reason: str | None = None
+
+    def record(self, classification: str) -> bool:
+        """Record one terminal classification and report whether the run must stop."""
+
+        if classification in NORMAL_TERMINAL_CLASSIFICATIONS:
+            self.consecutive_failures = 0
+            return False
+        self.consecutive_failures += 1
+        self.longest_failure_streak = max(
+            self.longest_failure_streak, self.consecutive_failures
+        )
+        if self.consecutive_failures >= self.limit:
+            self.tripped = True
+            self.trip_reason = "consecutive_failure_limit_reached"
+        return self.tripped
+
+    def trip(self, reason: str) -> None:
+        """Stop the run for a reason outside the per-task classification stream."""
+
+        self.tripped = True
+        self.trip_reason = reason
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "consecutive_failure_limit": self.limit,
+            "longest_consecutive_failure_streak": self.longest_failure_streak,
+            "tripped": self.tripped,
+            "trip_reason": self.trip_reason,
+        }
+
 
 def _git(repository_root: Path, *args: str) -> str:
     completed = subprocess.run(

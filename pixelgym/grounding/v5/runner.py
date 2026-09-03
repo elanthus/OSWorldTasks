@@ -34,12 +34,60 @@ from pixelgym.task_spec import TaskSpec
 @dataclass(frozen=True)
 class TransportOutcome:
     status: Literal[
-        "response", "pre_send_failure", "deadline", "rate_limited", "unknown"
+        "response",
+        "pre_send_failure",
+        "deadline",
+        "rate_limited",
+        "transport_fault",
+        "unknown",
     ]
     response: dict[str, Any] | None = None
     failure_code: str | None = None
     retry_after_seconds: float | None = None
     backoff_source: str | None = None
+
+
+@dataclass(frozen=True)
+class RetryableSendRule:
+    """How one retryable send outcome is sealed, journaled, and classified."""
+
+    terminal_kind: TerminalAttemptKind
+    event_kind: str
+    default_failure_code: str
+    exhausted_event_key: str
+    exhausted_failure_code: str
+    exhausted_classification: str
+
+
+RETRYABLE_SEND_STATUSES: dict[str, RetryableSendRule] = {
+    "rate_limited": RetryableSendRule(
+        terminal_kind="confirmed_no_response_timeout",
+        event_kind="retryable_rate_limit",
+        default_failure_code="http_429_rate_limit",
+        exhausted_event_key="sealed_rate_limit_retry_exhausted",
+        exhausted_failure_code="rate_limit_retry_exhausted",
+        exhausted_classification="request_failure",
+    ),
+    "transport_fault": RetryableSendRule(
+        terminal_kind="unknown_outcome_infrastructure_failure",
+        event_kind="retryable_transport_fault",
+        default_failure_code="provider_request_unknown",
+        exhausted_event_key="sealed_transport_fault_retry_exhausted",
+        exhausted_failure_code="transport_fault_retry_exhausted",
+        exhausted_classification="infrastructure_failure",
+    ),
+}
+
+
+# Every event kind that marks an attempt as retryable, so an interruption between
+# the sealed attempt and its retry is recovered the same way for all of them.
+RETRYABLE_EVENT_KINDS = frozenset(
+    {"retryable_provider_response"}
+    | {rule.event_kind for rule in RETRYABLE_SEND_STATUSES.values()}
+)
+RETRYABLE_SEND_RULES_BY_EVENT_KIND = {
+    rule.event_kind: rule for rule in RETRYABLE_SEND_STATUSES.values()
+}
 
 
 class ProviderTransport(Protocol):
@@ -271,15 +319,30 @@ class V5Runner:
         self.approved_caps = approved_caps
         self.interrupt_after = interrupt_after
         self.deadline_executor = deadline_executor or DaemonDeadlineExecutor()
-        retry_cap = dict(manifest.inference_parameters).get(
-            "max_rate_limit_retries_per_action", "0"
-        )
+        parameters = dict(manifest.inference_parameters)
+        retry_cap = parameters.get("max_rate_limit_retries_per_action", "0")
         try:
             self.max_rate_limit_retries_per_action = int(retry_cap)
         except ValueError as exc:
             raise ValueError("rate-limit retry cap must be an integer") from exc
         if not 0 <= self.max_rate_limit_retries_per_action < manifest.max_model_attempts_per_action:
             raise ValueError("rate-limit retry cap must fit within the model-attempt cap")
+        # One budget covers every retryable send outcome. A policy that predates the
+        # transport-fault outcome declares only the rate-limit cap and keeps its
+        # existing behaviour byte for byte.
+        bounded_cap = parameters.get(
+            "max_bounded_retries_per_action", str(self.max_rate_limit_retries_per_action)
+        )
+        try:
+            self.max_bounded_retries_per_action = int(bounded_cap)
+        except ValueError as exc:
+            raise ValueError("bounded retry cap must be an integer") from exc
+        if not (
+            self.max_rate_limit_retries_per_action
+            <= self.max_bounded_retries_per_action
+            < manifest.max_model_attempts_per_action
+        ):
+            raise ValueError("bounded retry cap must fit within the model-attempt cap")
 
     @property
     def model_attempts(self) -> int:
@@ -411,7 +474,7 @@ class V5Runner:
         attempt_identities: list[AttemptIdentity] = []
         canonical_response: bytes | None = None
         post_attempt_state = state
-        rate_limit_retries = 0
+        bounded_retries = 0
         for attempt_index in range(self.manifest.max_model_attempts_per_action):
             identity = AttemptIdentity(trial_id, step_index, attempt_index)
             attempt_identities.append(identity)
@@ -452,30 +515,36 @@ class V5Runner:
             if not isinstance(transport_outcome, TransportOutcome):
                 raise TypeError("provider transport returned an invalid outcome")
             self._boundary("provider_receipt")
-            if transport_outcome.status == "rate_limited":
-                next_attempt_permitted = (
-                    rate_limit_retries
-                    < self.max_rate_limit_retries_per_action
-                    and attempt_index + 1
-                    < self.manifest.max_model_attempts_per_action
+            if transport_outcome.status in RETRYABLE_SEND_STATUSES:
+                rule = RETRYABLE_SEND_STATUSES[transport_outcome.status]
+                retry_budget = (
+                    self.max_rate_limit_retries_per_action
+                    if transport_outcome.status == "rate_limited"
+                    else self.max_bounded_retries_per_action
                 )
-                failure_code = transport_outcome.failure_code or "http_429_rate_limit"
-                post_rate_limit_state = (
+                next_attempt_permitted = (
+                    bounded_retries < retry_budget
+                    and attempt_index + 1 < self.manifest.max_model_attempts_per_action
+                )
+                failure_code = transport_outcome.failure_code or rule.default_failure_code
+                post_retry_state = (
                     state
                     if next_attempt_permitted
                     else self.policy.failure_state(state, failure_code)
                 )
-                # This legacy terminal name represents a confirmed zero-response
-                # send; the adjacent event supplies the exact HTTP 429 route.
+                # A rate-limited send is confirmed to carry no response and no charge.
+                # A transport fault is genuinely unknown: the request may have been
+                # served and billed, so it seals as an unknown outcome and the
+                # transport reserves its worst-case cost against the ledger.
                 self.journal.seal_attempt_terminal(
                     identity,
-                    kind="confirmed_no_response_timeout",
-                    post_attempt_checkpoint=post_rate_limit_state,
+                    kind=rule.terminal_kind,
+                    post_attempt_checkpoint=post_retry_state,
                     failure_code=failure_code,
                 )
                 self.journal.append_event(
-                    event_key=f"{identity.key}/retryable_rate_limit",
-                    kind="retryable_rate_limit",
+                    event_key=f"{identity.key}/{rule.event_kind}",
+                    kind=rule.event_kind,
                     trial_id=trial_id,
                     step_index=step_index,
                     attempt_index=attempt_index,
@@ -485,31 +554,33 @@ class V5Runner:
                         "backoff_source": transport_outcome.backoff_source,
                         "retry_rule": self.manifest.transport_retry_rule,
                         "next_attempt_permitted": next_attempt_permitted,
+                        "bounded_retries_used": bounded_retries,
+                        "bounded_retry_budget": retry_budget,
                     },
                 )
                 self._boundary("attempt_terminal")
-                self._boundary("retryable_rate_limit")
+                self._boundary(rule.event_kind)
                 if next_attempt_permitted:
-                    rate_limit_retries += 1
+                    bounded_retries += 1
                     continue
                 self.journal.append_event(
-                    event_key=f"{identity.key}/sealed_rate_limit_retry_exhausted",
+                    event_key=f"{identity.key}/{rule.exhausted_event_key}",
                     kind="sealed_unsuccessful_result",
                     trial_id=trial_id,
                     step_index=step_index,
                     attempt_index=attempt_index,
                     payload={
-                        "failure_code": "rate_limit_retry_exhausted",
+                        "failure_code": rule.exhausted_failure_code,
                         "attempt_identities": [
                             attempt.key for attempt in attempt_identities
                         ],
                         "policy_checkpoint_digest": "sha256:"
-                        + sha256_bytes(post_rate_limit_state),
+                        + sha256_bytes(post_retry_state),
                     },
                 )
                 return {
-                    "classification": "request_failure",
-                    "state": post_rate_limit_state,
+                    "classification": rule.exhausted_classification,
+                    "state": post_retry_state,
                 }
             if transport_outcome.status != "response" or transport_outcome.response is None:
                 settled = self._settle(
@@ -1007,7 +1078,7 @@ class V5Runner:
                 event
                 for event in reversed(events)
                 if event.kind
-                in {"retryable_provider_response", "retryable_rate_limit"}
+                in RETRYABLE_EVENT_KINDS
             ),
             None,
         )
@@ -1026,6 +1097,49 @@ class V5Runner:
                     else 0
                 ),
             )
+            retry_rule = RETRYABLE_SEND_RULES_BY_EVENT_KIND.get(retryable_event.kind)
+            if (
+                retry_rule is not None
+                and retryable_event.payload.get("next_attempt_permitted") is False
+            ):
+                terminal_event = next(
+                    (
+                        event
+                        for event in events
+                        if event.attempt_index == identity.attempt_index
+                        and event.kind == retry_rule.terminal_kind
+                    ),
+                    None,
+                )
+                if terminal_event is None:
+                    raise RuntimeError("retryable send event is missing its terminal evidence")
+                checkpoint_digest = terminal_event.payload[
+                    "post_attempt_checkpoint_digest"
+                ]
+                post_retry_state = self.journal.get_object(
+                    checkpoint_digest,
+                    expected_kind="policy_checkpoint",
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/{retry_rule.exhausted_event_key}",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=identity.attempt_index,
+                    payload={
+                        "failure_code": retry_rule.exhausted_failure_code,
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
+                        "policy_checkpoint_digest": checkpoint_digest,
+                    },
+                )
+                return {
+                    "classification": retry_rule.exhausted_classification,
+                    "reason": retry_rule.exhausted_failure_code,
+                    "state": post_retry_state,
+                    "redispatched": False,
+                }
             self.journal.append_event(
                 event_key=f"{identity.key}/sealed_retry_interrupted",
                 kind="sealed_unsuccessful_result",

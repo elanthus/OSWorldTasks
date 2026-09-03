@@ -12,8 +12,9 @@ from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
 from pixelgym.grounding.v5.d56_calibration import (
     CALIBRATION_MANIFEST,
+    CONSECUTIVE_FAILURE_LIMIT,
     EXPECTED_TASK_COUNT,
-    NORMAL_TERMINAL_CLASSIFICATIONS,
+    ConsecutiveFailureBreaker,
     _calibration_manifest,
     _file_digest,
     _git,
@@ -22,12 +23,13 @@ from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
-    BOUNDED_RETRY_STOP_RULE,
+    GEMINI_FULL_CALIBRATION_POLICY_GENERATION,
     GEMINI_STATEFUL_FULL_CALIBRATION,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
+    bounded_retry_stop_rule,
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
@@ -36,24 +38,25 @@ from pixelgym.grounding.v5.runner import V5Runner
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-result-v1"
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T00:32:11Z"
+POLICY_GENERATION = GEMINI_FULL_CALIBRATION_POLICY_GENERATION
 
 FROZEN_SMOKE_PLAN_SHA256 = (
-    "sha256:4dbb7ca365963c5e28ee82381e812f0f2668c651f9270d5c5939d92fab5b892f"
+    "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb"
 )
 FROZEN_SMOKE_SUMMARY_SHA256 = (
-    "sha256:fde15b406566da8dab83801047db3e79e2d68e52c6f708d097dd22e613651039"
+    "sha256:97a8f1fa404999f05d248c8988fe1f2ee595ac2c0459d14efbc73e43bc773815"
 )
 FROZEN_SMOKE_JOURNAL_SHA256 = (
-    "sha256:d3e8c3cd92a97829a54d0790bc76164c71843f76f0ae47bf11c7249ff1d22ac5"
+    "sha256:04ce4b27670371bd1d95f2cc055acab3e1c30ff426f98f38c350b676b42109b0"
 )
-FROZEN_SMOKE_CODE_REVISION = "915200142fec1941bf59104ba682ea7b0f39071e"
-FROZEN_SMOKE_ACTUAL_SPEND_USD = Decimal("2.488646332")
+FROZEN_SMOKE_CODE_REVISION = "6380a4ccb6869a21fe21598527efd6e915601551"
+FROZEN_SMOKE_ACTUAL_SPEND_USD = Decimal("2.489953207")
 FROZEN_SMOKE_JOURNAL_INTEGRITY = {
     "schema_version": "pixelgym-agent-v5-journal-integrity-v1",
     "object_count": 12,
     "event_count": 8,
     "event_chain_digest": (
-        "sha256:f5d3526e4231377aaa30c3c3c36e3d4cddf602a05e923a587307d49be19edc1c"
+        "sha256:f8fe491f1d053362098a81c7dd236a95dce3558b41889cc7b97b158db0bd0e75"
     ),
 }
 FROZEN_PREDECESSOR_SLOT_A_PLAN_SHA256 = (
@@ -81,8 +84,8 @@ def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> 
         "model_attempt_reservations": 1,
         "provider_control_requests": 0,
         "actual_aggregate_spend_usd": str(FROZEN_SMOKE_ACTUAL_SPEND_USD),
-        "smoke_incremental_spend_usd": "0.001306875",
-        "remaining_aggregate_spend_usd": "7.511353668",
+        "smoke_incremental_spend_usd": "0.002613750",
+        "remaining_aggregate_spend_usd": "7.510046793",
         "reached_model_response": True,
         "journal_integrity": FROZEN_SMOKE_JOURNAL_INTEGRITY,
         "cleanup": {"journal_closed": True, "policy_and_environments_closed": True},
@@ -122,7 +125,7 @@ def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> 
             "status": "response",
             "response_model": "google/gemini-3.7-flash",
             "upstream_provider": "Google",
-            "cost_usd": "0.001306875",
+            "cost_usd": "0.00261375",
         }.items()
     ):
         raise ValueError("frozen Gemini smoke response identity mismatch")
@@ -152,12 +155,16 @@ def _validated_smoke_evidence(repository_root: Path, output_directory: Path) -> 
 
 
 def build_plan(
-    repository_root: Path, *, smoke_output_directory: Path
+    repository_root: Path,
+    *,
+    smoke_output_directory: Path,
+    maximum_spend_usd: Decimal,
 ) -> dict[str, Any]:
+    if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
+        raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
-    prior_spend = Decimal(smoke_evidence["actual_aggregate_spend_usd"])
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     config = GEMINI_STATEFUL_FULL_CALIBRATION
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
@@ -175,8 +182,8 @@ def build_plan(
     return {
         "schema_version": PLAN_SCHEMA_VERSION,
         "purpose": (
-            "evaluate the Gemini 3.7 Flash v2 policy on all fifty frozen D5.6 calibration "
-            "tasks as a distinct successor run"
+            f"evaluate the Gemini 3.7 Flash {POLICY_GENERATION} policy on all fifty frozen "
+            "D5.6 calibration tasks as a distinct successor run"
         ),
         "provider_calls_made": 0,
         "code_revision": revision,
@@ -213,7 +220,9 @@ def build_plan(
                 "upstream_response_format": "json_schema",
                 "upstream_json_schema_strict": True,
                 "local_exact_action_parser": True,
-                "invalid_or_unparseable_output_rule": "retain_and_fail_closed_without_retry",
+                "invalid_or_unparseable_output_rule": (
+                    "retain_fail_the_assignment_and_continue_without_retry"
+                ),
             },
             "live_endpoint_record": {
                 "source_url": config.price_source,
@@ -235,18 +244,43 @@ def build_plan(
                 ),
             },
         },
+        "run_continuation": {
+            "rule": (
+                "record every non-normal terminal classification as a failed assignment "
+                "and continue to the next task so all fifty stay in the denominator"
+            ),
+            "consecutive_failure_limit": CONSECUTIVE_FAILURE_LIMIT,
+            "hard_stop_conditions": [
+                "run spend ledger blocked",
+                "policy or request identity mismatch",
+                "a charge above the per-request theoretical maximum",
+                "non-retryable HTTP status",
+                "evidence-integrity failure",
+            ],
+            "retryable_send_outcomes": [
+                "http_429_rate_limit",
+                "transient transport fault (dropped connection, timeout, retryable 5xx, unreadable envelope)",
+                "zero_completion_error",
+            ],
+            "unobservable_charge_rule": (
+                "for every send whose charge cannot be observed, hold against this "
+                "run's ledger three times the most expensive response the run has "
+                "priced so far, capped at the per-request theoretical maximum and "
+                "falling back to that maximum before any response has been priced"
+            ),
+        },
         "caps": {
             **CallCaps(action_cap, attempt_cap, 0, attempt_cap).to_dict(),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "remaining_aggregate_spend_usd": str(
-                PANEL_MAXIMUM_SPEND_USD - prior_spend
+            "maximum_run_spend_usd": str(maximum_spend_usd),
+            "spend_lineage": (
+                "per-run: this run's ledger starts at zero and is bounded only by the "
+                "approved maximum_run_spend_usd; no prior run's spend is carried in"
             ),
             "per_request_theoretical_maximum_usd": str(config.request_maximum_usd),
             "uncapped_run_theoretical_maximum_usd": str(theoretical_maximum),
             "enforcement": (
                 "before each wire request, reserve the highest matching Vertex endpoint's "
-                "worst-case request cost against the shared aggregate ledger; stop before a "
+                "worst-case request cost against this run's own ledger; stop before a "
                 "request that cannot fit"
             ),
         },
@@ -255,8 +289,9 @@ def build_plan(
             "frozen_plan_sha256": FROZEN_PREDECESSOR_SLOT_A_PLAN_SHA256,
             "frozen_summary_sha256": FROZEN_PREDECESSOR_SLOT_A_SUMMARY_SHA256,
             "rule": (
-                "this v2 policy is a distinct successor run; do not resume, retry, replace, "
-                "or reinterpret any frozen predecessor Slot A request or assignment"
+                f"this {POLICY_GENERATION} policy is a distinct successor run; do not "
+                "resume, retry, replace, or reinterpret any frozen predecessor Slot A "
+                "request or assignment"
             ),
         },
         "task_order": [
@@ -272,10 +307,18 @@ def build_plan(
         "stop_rules": [
             "run all fifty tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            BOUNDED_RETRY_STOP_RULE,
-            "retain every invalid or unparseable model output and fail closed",
-            "stop after the first transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            bounded_retry_stop_rule(
+                ledger=f"this run's approved {maximum_spend_usd} USD ledger"
+            ),
+            "retain every invalid or unparseable model output, record it as a failed assignment, and continue to the next task",
+            "continue after a settled per-task transport or infrastructure failure so the assignment stays in the denominator",
+            f"stop after {CONSECUTIVE_FAILURE_LIMIT} consecutive non-normal terminal classifications",
+            "stop immediately on an identity, price-guard, non-retryable HTTP, or evidence-integrity failure",
+            (
+                "stop before any request whose per-request theoretical maximum cannot fit "
+                "under this run's approved maximum_run_spend_usd cap of "
+                f"{maximum_spend_usd} USD"
+            ),
             "do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment",
             "do not expose confirmatory tasks",
         ],
@@ -301,7 +344,12 @@ def execute_calibration(
     digest = plan_digest(plan)
     if digest != approved_plan_sha256:
         raise ValueError("approved Gemini full calibration digest does not match the plan")
-    if plan != build_plan(repository_root, smoke_output_directory=smoke_output_directory):
+    maximum_spend_usd = Decimal(plan["caps"]["maximum_run_spend_usd"])
+    if plan != build_plan(
+        repository_root,
+        smoke_output_directory=smoke_output_directory,
+        maximum_spend_usd=maximum_spend_usd,
+    ):
         raise ValueError("Gemini full calibration does not match canonical configuration")
     if _git(repository_root, "status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before calibration provider requests")
@@ -309,8 +357,8 @@ def execute_calibration(
         raise FileExistsError(f"refusing to replace Gemini calibration output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
-    prior_spend = Decimal(plan["caps"]["prior_aggregate_spend_usd"])
-    ledger = SpendLedger(PANEL_MAXIMUM_SPEND_USD, prior_spend)
+    # The approved plan carries this run's entire budget; nothing is inherited.
+    ledger = SpendLedger(maximum_spend_usd, Decimal(0))
     approved_caps = CallCaps(
         plan["caps"]["environment_action_cap"],
         plan["caps"]["model_attempt_cap"],
@@ -322,6 +370,7 @@ def execute_calibration(
         repository_root, config=config, code_revision=plan["code_revision"]
     )
     transport: OpenRouterPanelTransport | None = None
+    breaker = ConsecutiveFailureBreaker(CONSECUTIVE_FAILURE_LIMIT)
     episode_results: list[dict[str, Any]] = []
     execution_error: dict[str, str] | None = None
     try:
@@ -340,12 +389,16 @@ def execute_calibration(
                 approved_caps=approved_caps,
             ).run(
                 trial_id=(
-                    f"d56-gemini-v2-{task_record['ordinal']:02d}-{task.task_id}"
+                    f"d56-gemini-{POLICY_GENERATION}-"
+                    f"{task_record['ordinal']:02d}-{task.task_id}"
                 ),
                 task=task,
             )
             episode_results.append({"slot": config.slot, **result.to_dict()})
-            if result.classification not in NORMAL_TERMINAL_CLASSIFICATIONS:
+            if breaker.record(result.classification):
+                break
+            if ledger.blocked:
+                breaker.trip("run_spend_ledger_blocked")
                 break
     except Exception as exc:
         execution_error = {"type": type(exc).__name__}
@@ -367,13 +420,16 @@ def execute_calibration(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": call_counts[0],
             "provider_control_requests": call_counts[1],
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "calibration_incremental_spend_usd": str(ledger.spent_usd - prior_spend),
-            "remaining_aggregate_spend_usd": str(
-                PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd
+            "run_spend_usd": str(ledger.spent_usd),
+            "budget_accounted_run_spend_usd": str(ledger.budget_accounted_spend_usd),
+            "unknown_charge_reservation_usd": str(ledger.unknown_reservation_usd),
+            "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
+            "run_spend_ledger_blocked": ledger.blocked,
+            "run_continuation": breaker.to_dict(),
+            "remaining_run_spend_usd": str(
+                maximum_spend_usd - ledger.budget_accounted_spend_usd
             ),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "maximum_run_spend_usd": str(maximum_spend_usd),
             "assigned_policy_task_pairs": EXPECTED_TASK_COUNT,
             "attempted_policy_task_pairs": len(episode_results),
             "successful_policy_task_pairs": sum(

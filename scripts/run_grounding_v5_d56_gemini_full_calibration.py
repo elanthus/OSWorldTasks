@@ -8,6 +8,7 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
+from pixelgym.grounding.v5.cli import positive_finite_decimal
 from pixelgym.grounding.v5.d56_gemini_full_calibration import (
     build_plan,
     execute_calibration,
@@ -24,6 +25,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--plan", type=Path)
     parser.add_argument("--approved-plan-sha256")
     parser.add_argument("--smoke-output", type=Path, required=True)
+    parser.add_argument(
+        "--maximum-spend-usd",
+        metavar="USD",
+        type=positive_finite_decimal,
+        help=(
+            "this run's entire spend budget in USD; required for --plan-only. "
+            "It is recorded in the plan and therefore covered by the approved digest."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -41,13 +51,21 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.plan_only:
         if args.plan is not None or args.approved_plan_sha256 is not None:
             raise ValueError("plan mode does not accept execution approval arguments")
-        plan = build_plan(root, smoke_output_directory=smoke_output)
+        if args.maximum_spend_usd is None:
+            raise ValueError("plan mode requires --maximum-spend-usd")
+        plan = build_plan(
+            root,
+            smoke_output_directory=smoke_output,
+            maximum_spend_usd=args.maximum_spend_usd,
+        )
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"output": str(output), "plan_sha256": plan_digest(plan)}, indent=2))
         return
     if args.plan is None or args.approved_plan_sha256 is None:
         raise ValueError("execution requires --plan and --approved-plan-sha256")
+    if args.maximum_spend_usd is not None:
+        raise ValueError("execution takes its budget from the approved plan")
     plan_path = _under_root(root, args.plan)
     value = json.loads(plan_path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
