@@ -1,0 +1,69 @@
+{
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "caps": {
+    "environment_actions": 1,
+    "maximum_spend_usd": "5.00",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "theoretical_request_maximum_usd": "0.016959488"
+  },
+  "code_revision": "4b769cfa262f1559f712528f7d2c8e937dc3d1a0",
+  "coordinate_adapter": {
+    "input_convention": "integer-normalized-square/0..999-inclusive",
+    "name": "normalized-1000x1000",
+    "output_convention": "integer-pixel/1024x768",
+    "source_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12"
+  },
+  "dependency_inputs": {
+    "pyproject.toml": "sha256:546aef9594f0f57007093d5f4e21fbddfd72b85055242503510ab3995d28afdb",
+    "requirements/platform-py312.lock": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b"
+  },
+  "inference_parameters": {
+    "max_tokens": 4096,
+    "seed": 20260809,
+    "structured_outputs": true,
+    "temperature": 0
+  },
+  "model": "qwen/qwen3-vl-8b-instruct",
+  "parser_version": "pixelgym-agent-v5-json-action-qwen-normalized-parser-v2",
+  "price_record": {
+    "completion_per_token": "4.55E-7",
+    "currency": "USD",
+    "max_prompt_tokens": 129024,
+    "observed_at_utc": "2026-08-26T06:49:29Z",
+    "prompt_per_token": "1.17E-7",
+    "source_url": "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"
+  },
+  "prompt": {
+    "sha256": "sha256:fef0b6d0dd3bb7ae4d111ae45d0ddb8b966ff8b9409d370741bb95e1e167deef",
+    "version": "pixelgym-agent-v5-openrouter-qwen-normalized-action-prompt-v2"
+  },
+  "provider": {
+    "allow_fallbacks": false,
+    "automatic_retries": false,
+    "data_collection": "deny",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "name": "openrouter",
+    "only": [
+      "alibaba"
+    ],
+    "require_parameters": true,
+    "upstream_provider": "alibaba"
+  },
+  "provider_calls_made": 0,
+  "purpose": "development-only transport/parser/action smoke; not calibration evidence",
+  "requires_clean_worktree": true,
+  "response_schema_digest": "sha256:8dd8b3c14ce3402ee0daa77fb0476b0729d5d7c7659c46fc3246be24a613159c",
+  "schema_version": "pixelgym-agent-v5-provider-smoke-plan-v3",
+  "task": {
+    "partition": "development",
+    "screenshot_path": "artifacts/grounding-v5-provider-smoke/development-seed-5000-initial.png",
+    "screenshot_sha256": "sha256:2bc39b43f359da959e6437025d38fd279518a0b1afb7410fc2d18633352e5be2",
+    "seed": 5000,
+    "task_id": "v5-c707ae8a64e33f631d6fb210"
+  }
+}

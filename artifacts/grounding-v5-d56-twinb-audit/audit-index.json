@@ -1,0 +1,429 @@
+[
+ {
+  "logical_id": "calibration-conditional_precedence-logical-01",
+  "twin_b_task": "v5-a3b213b43f485af0c0e40c16",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 28,
+  "twin_b_band": "frontier",
+  "stall_stage": 4,
+  "twin_b_events": {
+   "correct_transition": 3,
+   "text_input_focused": 24,
+   "text_value_accepted": 1
+  },
+  "twin_b_instruction": "Apply the visible base rule, exception, and precedence rule to this case.",
+  "files": {
+   "b_initial": "conditional_precedence-logical-01__twin_b__initial__stage0.png",
+   "b_stall_entry": "conditional_precedence-logical-01__twin_b__stall-entry__stage4__step25.png",
+   "b_final": "conditional_precedence-logical-01__twin_b__final-frame__stage4__step27.png",
+   "a_initial": "conditional_precedence-logical-01__twin_a__initial__stage0.png",
+   "a_same_stage": "conditional_precedence-logical-01__twin_a__same-stage__stage4__step08.png",
+   "b_post_focus": "conditional_precedence-logical-01__twin_b__post-focus__stage4__step26.png",
+   "a_post_focus": "conditional_precedence-logical-01__twin_a__post-focus__stage4__step10.png"
+  },
+  "twin_a_task": "v5-8b44ff7f55397462e532374f",
+  "twin_a_class": "success_termination",
+  "twin_a_instruction": "Apply the visible base rule, exception, and precedence rule to this case.",
+  "twin_a_max_stage": 12,
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 1699,
+    "max_per_channel_delta": 204
+   },
+   "twin_a_post_focus_vs_twin_b_post_focus": {
+    "differing_pixels": 70372,
+    "max_per_channel_delta": 225
+   },
+   "twin_a_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     432,
+     832,
+     486
+    ]
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,531)": 2,
+   "KEY(51)": 1
+  },
+  "twin_a_same_stage_actions": [
+   "CLICK(512,459) -> correct_transition",
+   "KEY(51) -> key_without_focus",
+   "CLICK(512,458) -> text_input_focused",
+   "KEY(51) -> text_input_focused",
+   "KEY(7) -> text_input_focused",
+   "KEY(53) -> text_input_focused",
+   "KEY(1) -> text_input_focused"
+  ]
+ },
+ {
+  "logical_id": "calibration-deferred_join-logical-01",
+  "twin_b_task": "v5-bd12a958c63d3d4a642f2388",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 28,
+  "twin_b_band": "frontier",
+  "stall_stage": 1,
+  "twin_b_events": {
+   "correct_transition": 1,
+   "text_input_focused": 27
+  },
+  "twin_b_instruction": "Retain both references and apply their conjunction at the later checks.",
+  "files": {
+   "b_initial": "deferred_join-logical-01__twin_b__initial__stage0.png",
+   "b_stall_entry": "deferred_join-logical-01__twin_b__stall-entry__stage1__step00.png",
+   "b_final": "deferred_join-logical-01__twin_b__final-frame__stage1__step27.png",
+   "a_initial": "deferred_join-logical-01__twin_a__initial__stage0.png",
+   "a_same_stage": "deferred_join-logical-01__twin_a__same-stage__stage1__step00.png",
+   "b_post_focus": "deferred_join-logical-01__twin_b__post-focus__stage1__step01.png",
+   "a_post_focus": "deferred_join-logical-01__twin_a__post-focus__stage1__step01.png"
+  },
+  "twin_a_task": "v5-bfe5707f6b44202a0e7f493e",
+  "twin_a_class": "success_termination",
+  "twin_a_instruction": "Retain both references and apply their conjunction at the later checks.",
+  "twin_a_max_stage": 12,
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   },
+   "twin_a_post_focus_vs_twin_b_post_focus": {
+    "differing_pixels": 70372,
+    "max_per_channel_delta": 225
+   },
+   "twin_a_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     432,
+     832,
+     486
+    ]
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,530)": 9,
+   "CLICK(512,531)": 18,
+   "CLICK(512,528)": 1
+  },
+  "twin_a_same_stage_actions": [
+   "CLICK(512,458) -> correct_transition",
+   "CLICK(512,459) -> text_input_focused",
+   "CLICK(512,457) -> text_input_focused",
+   "CLICK(512,458) -> text_input_focused",
+   "KEY(37) -> text_input_focused",
+   "KEY(5) -> text_input_focused",
+   "KEY(39) -> text_input_focused",
+   "KEY(7) -> text_input_focused"
+  ]
+ },
+ {
+  "logical_id": "calibration-review_and_commit-logical-01",
+  "twin_b_task": "v5-e2e262766fce6bc662d505ff",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 28,
+  "twin_b_band": "frontier",
+  "stall_stage": 1,
+  "twin_b_events": {
+   "correct_transition": 1,
+   "text_input_focused": 27
+  },
+  "twin_b_instruction": "Verify the summary, correct the plausible mismatch, and commit once.",
+  "files": {
+   "b_initial": "review_and_commit-logical-01__twin_b__initial__stage0.png",
+   "b_stall_entry": "review_and_commit-logical-01__twin_b__stall-entry__stage1__step00.png",
+   "b_final": "review_and_commit-logical-01__twin_b__final-frame__stage1__step27.png",
+   "a_initial": "review_and_commit-logical-01__twin_a__initial__stage0.png",
+   "a_same_stage": "review_and_commit-logical-01__twin_a__same-stage__stage1__step00.png",
+   "b_post_focus": "review_and_commit-logical-01__twin_b__post-focus__stage1__step01.png",
+   "a_post_focus": "review_and_commit-logical-01__twin_a__post-focus__stage1__step01.png"
+  },
+  "twin_a_task": "v5-8ed6a65fd1b37ddfb1390872",
+  "twin_a_class": "success_termination",
+  "twin_a_instruction": "Verify the summary, correct the plausible mismatch, and commit once.",
+  "twin_a_max_stage": 12,
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   },
+   "twin_a_post_focus_vs_twin_b_post_focus": {
+    "differing_pixels": 70372,
+    "max_per_channel_delta": 225
+   },
+   "twin_a_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     432,
+     832,
+     486
+    ]
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,530)": 10,
+   "CLICK(512,531)": 18
+  },
+  "twin_a_same_stage_actions": [
+   "CLICK(512,459) -> correct_transition",
+   "CLICK(512,458) -> text_input_focused",
+   "KEY(46) -> text_input_focused",
+   "KEY(2) -> text_input_focused",
+   "KEY(48) -> text_input_focused",
+   "KEY(4) -> text_input_focused"
+  ]
+ },
+ {
+  "logical_id": "calibration-revision_after_reveal-logical-01",
+  "twin_b_task": "v5-3d7d660ccc1f9499de3def52",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 28,
+  "twin_b_band": "frontier",
+  "stall_stage": 4,
+  "twin_b_events": {
+   "correct_transition": 3,
+   "text_input_focused": 24,
+   "text_value_accepted": 1
+  },
+  "twin_b_instruction": "Make a reversible choice, inspect the reveal, and revise if required.",
+  "files": {
+   "b_initial": "revision_after_reveal-logical-01__twin_b__initial__stage0.png",
+   "b_stall_entry": "revision_after_reveal-logical-01__twin_b__stall-entry__stage4__step11.png",
+   "b_final": "revision_after_reveal-logical-01__twin_b__final-frame__stage4__step27.png",
+   "a_initial": "revision_after_reveal-logical-01__twin_a__initial__stage0.png",
+   "a_same_stage": "revision_after_reveal-logical-01__twin_a__same-stage__stage4__step13.png",
+   "b_post_focus": "revision_after_reveal-logical-01__twin_b__post-focus__stage4__step12.png",
+   "a_post_focus": "revision_after_reveal-logical-01__twin_a__post-focus__stage4__step15.png"
+  },
+  "twin_a_task": "v5-988e5eb5bd2f5d95773297ba",
+  "twin_a_class": "success_termination",
+  "twin_a_instruction": "Make a reversible choice, inspect the reveal, and revise if required.",
+  "twin_a_max_stage": 12,
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   },
+   "twin_a_post_focus_vs_twin_b_post_focus": {
+    "differing_pixels": 70372,
+    "max_per_channel_delta": 225
+   },
+   "twin_a_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     432,
+     832,
+     486
+    ]
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,531)": 12,
+   "CLICK(512,530)": 5
+  },
+  "twin_a_same_stage_actions": [
+   "CLICK(512,459) -> correct_transition",
+   "KEY(46) -> key_without_focus",
+   "CLICK(512,459) -> text_input_focused",
+   "KEY(46) -> text_input_focused",
+   "KEY(2) -> text_input_focused",
+   "KEY(48) -> text_input_focused",
+   "KEY(4) -> text_input_focused"
+  ]
+ },
+ {
+  "logical_id": "calibration-visible_error_recovery-logical-01",
+  "twin_b_task": "v5-5852db880cf4dbdcaaf254bf",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 29,
+  "twin_b_band": "frontier",
+  "stall_stage": 1,
+  "twin_b_events": {
+   "correct_transition": 1,
+   "text_input_focused": 28
+  },
+  "twin_b_instruction": "Use the visible error to repair only the implicated entry, then continue.",
+  "files": {
+   "b_initial": "visible_error_recovery-logical-01__twin_b__initial__stage0.png",
+   "b_stall_entry": "visible_error_recovery-logical-01__twin_b__stall-entry__stage1__step00.png",
+   "b_final": "visible_error_recovery-logical-01__twin_b__final-frame__stage1__step28.png",
+   "a_initial": "visible_error_recovery-logical-01__twin_a__initial__stage0.png",
+   "a_same_stage": "visible_error_recovery-logical-01__twin_a__same-stage__stage1__step00.png",
+   "b_post_focus": "visible_error_recovery-logical-01__twin_b__post-focus__stage1__step01.png",
+   "a_post_focus": "visible_error_recovery-logical-01__twin_a__post-focus__stage1__step01.png"
+  },
+  "twin_a_task": "v5-d439dd1631040477ef5a907b",
+  "twin_a_class": "success_termination",
+  "twin_a_instruction": "Use the visible error to repair only the implicated entry, then continue.",
+  "twin_a_max_stage": 12,
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   },
+   "twin_a_post_focus_vs_twin_b_post_focus": {
+    "differing_pixels": 70372,
+    "max_per_channel_delta": 225
+   },
+   "twin_a_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     432,
+     832,
+     486
+    ]
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,531)": 21,
+   "CLICK(512,530)": 8
+  },
+  "twin_a_same_stage_actions": [
+   "CLICK(512,459) -> correct_transition",
+   "CLICK(512,458) -> text_input_focused",
+   "KEY(46) -> text_input_focused",
+   "KEY(2) -> text_input_focused",
+   "KEY(48) -> text_input_focused",
+   "KEY(4) -> text_input_focused"
+  ]
+ },
+ {
+  "logical_id": "calibration-review_and_commit-logical-00",
+  "twin_b_task": "v5-25572b1551ed10079d842b8b",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 26,
+  "twin_b_band": "regression_canary",
+  "stall_stage": 1,
+  "twin_b_events": {
+   "correct_transition": 1,
+   "text_input_focused": 25
+  },
+  "twin_b_instruction": "Verify the summary, correct the plausible mismatch, and commit once.",
+  "files": {
+   "b_initial": "review_and_commit-logical-00__twin_b__initial__stage0.png",
+   "b_stall_entry": "review_and_commit-logical-00__twin_b__stall-entry__stage1__step00.png",
+   "b_final": "review_and_commit-logical-00__twin_b__final-frame__stage1__step25.png",
+   "b_post_focus": "review_and_commit-logical-00__twin_b__post-focus__stage1__step01.png"
+  },
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,530)": 12,
+   "CLICK(512,531)": 13,
+   "CLICK(512,528)": 1
+  }
+ },
+ {
+  "logical_id": "calibration-visible_error_recovery-logical-00",
+  "twin_b_task": "v5-321776e3a5121a93c5651938",
+  "twin_b_class": "step_limit_truncation",
+  "twin_b_limit": 27,
+  "twin_b_band": "regression_canary",
+  "stall_stage": 1,
+  "twin_b_events": {
+   "correct_transition": 1,
+   "text_input_focused": 26
+  },
+  "twin_b_instruction": "Use the visible error to repair only the implicated entry, then continue.",
+  "files": {
+   "b_initial": "visible_error_recovery-logical-00__twin_b__initial__stage0.png",
+   "b_stall_entry": "visible_error_recovery-logical-00__twin_b__stall-entry__stage1__step00.png",
+   "b_final": "visible_error_recovery-logical-00__twin_b__final-frame__stage1__step26.png",
+   "b_post_focus": "visible_error_recovery-logical-00__twin_b__post-focus__stage1__step01.png"
+  },
+  "raw_pixel_diffs_before_tolerance": {
+   "twin_b_entry_vs_post_focus": {
+    "differing_pixels": 34679,
+    "max_per_channel_delta": 11,
+    "changed_region_xyxy": [
+     192,
+     504,
+     832,
+     558
+    ]
+   },
+   "twin_b_post_focus_vs_final": {
+    "differing_pixels": 0,
+    "max_per_channel_delta": 0
+   }
+  },
+  "twin_b_stall_stage_actions": {
+   "CLICK(512,530)": 11,
+   "CLICK(512,531)": 15,
+   "CLICK(524,531)": 1
+  }
+ }
+]

@@ -1,0 +1,62 @@
+{
+  "action_validation": "accepted",
+  "approved_plan_sha256": "sha256:ed1d20d0a43fcba07d58e426f9b8e299d37e7c8a68f0aa241c4b7322b52eadf1",
+  "classification": "dispatched",
+  "cleanup": {
+    "environment_closed": true
+  },
+  "cost_usd": "0.000142116",
+  "dispatch": {
+    "backend_diagnostic": "correct_transition",
+    "reward": 0.0,
+    "terminated": false,
+    "truncated": false
+  },
+  "environment_actions": 1,
+  "failure_code": null,
+  "latency_ms": 1518.2065423578024,
+  "maximum_spend_usd": "5.00",
+  "model": "qwen/qwen3-vl-8b-instruct",
+  "parser_version": "pixelgym-agent-v5-json-action-qwen-normalized-parser-v2",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 1,
+  "publishable_response": {
+    "action_type": 1,
+    "key": 0,
+    "x": 511,
+    "y": 466
+  },
+  "purpose": "development-only transport/parser/action smoke; not calibration evidence",
+  "response_identity": {
+    "response_id_sha256": "sha256:31121fd0d860095c399c0eaa6321c69faba4f10b2cfda34b70d99c4d0f1b17f9",
+    "response_model": "qwen/qwen3-vl-8b-instruct",
+    "upstream_provider": "Alibaba"
+  },
+  "response_sha256": "sha256:bb4045b0ac82154997befbf38287208aa0a7fb8b27629f542fbff4ef655b3442",
+  "schema_version": "pixelgym-agent-v5-provider-smoke-result-v4",
+  "task_id": "v5-c707ae8a64e33f631d6fb210",
+  "usage": {
+    "completion_tokens": 30,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.000142116,
+    "cost_details": {
+      "upstream_inference_completions_cost": 1.365e-05,
+      "upstream_inference_cost": 0.000142116,
+      "upstream_inference_prompt_cost": 0.000128466
+    },
+    "is_byok": false,
+    "prompt_tokens": 1098,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1128
+  }
+}

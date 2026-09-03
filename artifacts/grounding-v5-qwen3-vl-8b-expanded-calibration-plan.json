@@ -1,0 +1,211 @@
+{
+  "allocation_rule": "the same ten frozen calibration tasks as the approved two-action pilot, rerun from reset through each task's complete frozen action horizon",
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "caps": {
+    "aggregate_headroom_usd": "0.569345395",
+    "aggregate_upper_bound_usd": "4.430654605",
+    "environment_action_cap": 261,
+    "maximum_spend_usd": "5.00",
+    "model_attempt_cap": 261,
+    "per_request_theoretical_maximum_usd": "0.016959488",
+    "prior_aggregate_spend_usd": "0.004228237",
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 261,
+    "run_theoretical_maximum_usd": "4.426426368"
+  },
+  "code_revision": "a891136077a381a7463b486daa655b5caa7fd7bb",
+  "completed_pilot_evidence": {
+    "actual_aggregate_spend_usd": "0.004228237",
+    "approved_plan_sha256": "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a",
+    "journal_integrity": {
+      "event_chain_digest": "sha256:2ac576b2296298681f2de00bbaea495296fe1c133f821c4ae470b0107b4507e7",
+      "event_count": 150,
+      "object_count": 185,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/attempts.sqlite",
+    "journal_sha256": "sha256:2ddc0a6f20eb7b72221c88c898860da972e0a7903bf1c0781d99ecfc9397583a",
+    "plan_path": "artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-plan.json",
+    "plan_sha256": "sha256:71669812ad2a7d3abc80c6198acf8d01fd2b8ea8dfc4a1ed77b4dd01d9ca0bbf",
+    "provider_wire_requests": 20,
+    "summary_path": "artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/summary.json",
+    "summary_sha256": "sha256:d2895f3dba6bda96c515990930547b1ea74ed012e651b1456a0c4ca3526d1d0b"
+  },
+  "model": "qwen/qwen3-vl-8b-instruct",
+  "policy_manifest": {
+    "cancellation_mode": "disabled",
+    "code_revision": "a891136077a381a7463b486daa655b5caa7fd7bb",
+    "context_limit": 131072,
+    "coordinate_adapter": "normalized-1000x1000",
+    "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+    "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+    "cross_episode_cache": "disabled",
+    "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+    "dirty_worktree_policy": "reject-tracked-changes",
+    "exact_snapshot": false,
+    "harness_digest": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7",
+    "inference_parameters": [
+      [
+        "allow_fallbacks",
+        "false"
+      ],
+      [
+        "data_collection",
+        "deny"
+      ],
+      [
+        "max_tokens",
+        "4096"
+      ],
+      [
+        "provider",
+        "alibaba"
+      ],
+      [
+        "seed",
+        "20260809"
+      ],
+      [
+        "temperature",
+        "0"
+      ]
+    ],
+    "max_cancellation_requests_per_attempt": 0,
+    "max_model_attempts_per_action": 1,
+    "max_reconciliation_requests_per_attempt": 0,
+    "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+    "model": "qwen/qwen3-vl-8b-instruct",
+    "parser_version": "pixelgym-agent-v5-json-action-qwen-normalized-parser-v2",
+    "policy_id": "policy-614711d56654d43dc68d",
+    "provider": "openrouter/alibaba",
+    "provider_sdk_auto_retries": false,
+    "proxy_auto_retries": false,
+    "reconciliation_deadline_seconds": 1.0,
+    "request_deadline_seconds": 180.0,
+    "response_schema_version": "pixelgym-agent-v5-canonical-response-v1",
+    "sandbox": {
+      "denied_capabilities": [
+        "browser_dom",
+        "cross_policy_channel",
+        "external_search",
+        "inbound_listener",
+        "shared_storage",
+        "shell"
+      ],
+      "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+      "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+      "provider_endpoint": "https://openrouter.ai",
+      "runtime_digest": "sha256:5f2c54f320e0ac25f20e5d3144e806cf1f27031aae647e36e21f648864e9af81"
+    },
+    "state_reducer_version": "pixelgym-agent-v5-qwen-state-reducer-v1",
+    "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+    "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+    "transport_retry_rule": "no-retry-after-send-v1"
+  },
+  "policy_manifest_digest": "sha256:15818f89cd4adbbf89bad3e35823cc47b731692868f7bb5c9bef39d8a52fc8f6",
+  "price_record": {
+    "completion_per_token": "4.55E-7",
+    "currency": "USD",
+    "max_output_tokens": 4096,
+    "max_prompt_tokens": 129024,
+    "observed_at_utc": "2026-08-26T06:49:29Z",
+    "prompt_per_token": "1.17E-7",
+    "source_url": "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints"
+  },
+  "provider": {
+    "allow_fallbacks": false,
+    "automatic_retries": false,
+    "data_collection": "deny",
+    "name": "openrouter",
+    "only": [
+      "alibaba"
+    ],
+    "upstream_provider": "alibaba"
+  },
+  "provider_calls_made": 0,
+  "purpose": "ten-task full-episode expanded single-policy calibration run; not the full D5.6 four-policy calibration",
+  "requires_clean_tracked_worktree": true,
+  "schema_version": "pixelgym-agent-v5-expanded-calibration-plan-v1",
+  "stop_rules": [
+    "stop after the approved model-attempt reservation cap",
+    "continue after a scored success or step-limit truncation so every assigned task remains in the denominator",
+    "stop after the first transport, identity, cost, parse, invalid-action, or evidence-integrity failure",
+    "do not retry or replace a failed or incomplete task",
+    "do not expose confirmatory tasks"
+  ],
+  "tasks": [
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 26,
+      "ordinal": 0,
+      "seed": 5100,
+      "task_id": "v5-4824abc5a01d909661fc2943"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 26,
+      "ordinal": 1,
+      "seed": 5110,
+      "task_id": "v5-d6e956af18afbb1a00091f4c"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 26,
+      "ordinal": 2,
+      "seed": 5120,
+      "task_id": "v5-0c003edeb6d5f8e17aaa6444"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 26,
+      "ordinal": 3,
+      "seed": 5130,
+      "task_id": "v5-ef0ce7557279ac795012f4ac"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 27,
+      "ordinal": 4,
+      "seed": 5140,
+      "task_id": "v5-9fdc730327302d08e2e94fcd"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 26,
+      "ordinal": 5,
+      "seed": 5150,
+      "task_id": "v5-0f4e94641ed16f0c4fdc80e1"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 26,
+      "ordinal": 6,
+      "seed": 5101,
+      "task_id": "v5-c73a8c6f526806dd0108fd56"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 26,
+      "ordinal": 7,
+      "seed": 5111,
+      "task_id": "v5-844bc5a6365a1090f815c575"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 26,
+      "ordinal": 8,
+      "seed": 5121,
+      "task_id": "v5-218f23867c9546478a3c4108"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 26,
+      "ordinal": 9,
+      "seed": 5131,
+      "task_id": "v5-737e9770eae31f2a8bb62ec2"
+    }
+  ]
+}

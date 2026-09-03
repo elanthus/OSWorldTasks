@@ -1,0 +1,46 @@
+{
+  "actual_aggregate_spend_usd": "0.004228237",
+  "approved_plan_sha256": "sha256:7b49a52754b25435f89a534bbd3c02a64963e16cabb60ad1839e3883f9a054fd",
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+  "episode_results": [
+    {
+      "classification": "infrastructure_failure",
+      "environment_actions": 0,
+      "final_policy_checkpoint_digest": "sha256:73641a86cacd745d6a144bc761b458b755458f2a7ab52ab1f0d84109dd5309e2",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "slot": "A-gemini-stateful",
+      "success": false,
+      "task_id": "v5-c707ae8a64e33f631d6fb210",
+      "trial_id": "panel-smoke-A-gemini-stateful-v5-c707ae8a64e33f631d6fb210"
+    }
+  ],
+  "journal_integrity": {
+    "event_chain_digest": "sha256:03fde3081edbfda83c2f0c77c6acb52ed67cb37bcd3d1ade0faff63886a6929b",
+    "event_count": 3,
+    "object_count": 5,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 1,
+  "prior_aggregate_spend_usd": "0.004228237",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "purpose": "one development-only transport/parser/adapter action per frozen D5.6 policy slot; not calibration evidence",
+  "schema_version": "pixelgym-agent-v5-panel-smoke-result-v1",
+  "smoke_incremental_spend_usd": "0E-9",
+  "transport_records": [
+    {
+      "failure_code": "HTTPError",
+      "idempotency_key": "sha256:73d207a1287eeff9b2a8256291102a50f73052f5058e1dece6f1db4d99385ea8",
+      "status": "unknown"
+    }
+  ]
+}

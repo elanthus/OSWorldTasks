@@ -1,0 +1,63 @@
+{
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "caps": {
+    "environment_actions": 1,
+    "maximum_spend_usd": "2.00",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "theoretical_request_maximum_usd": "0.063968320"
+  },
+  "code_revision": "6969ae31f90741afc19d8a38cf184f8fb11ca39c",
+  "dependency_inputs": {
+    "pyproject.toml": "sha256:546aef9594f0f57007093d5f4e21fbddfd72b85055242503510ab3995d28afdb",
+    "requirements/platform-py312.lock": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b"
+  },
+  "inference_parameters": {
+    "max_tokens": 128,
+    "seed": 20260809,
+    "structured_outputs": true,
+    "temperature": 0
+  },
+  "model": "qwen/qwen3.5-flash-02-23",
+  "parser_version": "pixelgym-agent-v5-json-action-parser-v1",
+  "price_record": {
+    "completion_per_token": "2.6E-7",
+    "currency": "USD",
+    "max_prompt_tokens": 983616,
+    "observed_at_utc": "2026-08-26T01:06:43Z",
+    "prompt_per_token": "6.5E-8",
+    "source_url": "https://openrouter.ai/api/v1/models/qwen/qwen3.5-flash-02-23/endpoints"
+  },
+  "prompt": {
+    "sha256": "sha256:6918932ccf812b5c29f80588aee7581b0d58c1061e9c130aac56b1462e7f3a07",
+    "version": "pixelgym-agent-v5-openrouter-action-prompt-v1"
+  },
+  "provider": {
+    "allow_fallbacks": false,
+    "automatic_retries": false,
+    "data_collection": "deny",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "name": "openrouter",
+    "only": [
+      "alibaba"
+    ],
+    "require_parameters": true,
+    "upstream_provider": "alibaba"
+  },
+  "provider_calls_made": 0,
+  "purpose": "development-only transport/parser/action smoke; not calibration evidence",
+  "requires_clean_worktree": true,
+  "response_schema_digest": "sha256:a521cdf934b4ded1f523e006740d3bae7cfc08b07fca08c7410ff4277bb03262",
+  "schema_version": "pixelgym-agent-v5-provider-smoke-plan-v1",
+  "task": {
+    "partition": "development",
+    "screenshot_path": "artifacts/grounding-v5-provider-smoke/development-seed-5000-initial.png",
+    "screenshot_sha256": "sha256:2bc39b43f359da959e6437025d38fd279518a0b1afb7410fc2d18633352e5be2",
+    "seed": 5000,
+    "task_id": "v5-c707ae8a64e33f631d6fb210"
+  }
+}

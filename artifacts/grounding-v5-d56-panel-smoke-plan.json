@@ -1,0 +1,478 @@
+{
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "caps": {
+    "aggregate_theoretical_upper_bound_usd": "0.162186381",
+    "environment_action_cap": 4,
+    "maximum_aggregate_spend_usd": "10.00",
+    "model_attempt_cap": 4,
+    "prior_aggregate_spend_usd": "0.004228237",
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 4,
+    "smoke_theoretical_maximum_usd": "0.157958144"
+  },
+  "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+  "dependency_inputs": {
+    "panel_policy.py": "sha256:328190f642b2bec4e74a6784938e777f51fbaf8bb0a53677e98303ce7d325324",
+    "pyproject.toml": "sha256:546aef9594f0f57007093d5f4e21fbddfd72b85055242503510ab3995d28afdb",
+    "requirements/platform-py312.lock": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+    "runner.py": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7"
+  },
+  "policies": [
+    {
+      "policy_manifest": {
+        "cancellation_mode": "disabled",
+        "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+        "context_limit": 131072,
+        "coordinate_adapter": "normalized-1000x1000",
+        "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+        "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+        "cross_episode_cache": "disabled",
+        "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+        "dirty_worktree_policy": "reject-tracked-changes",
+        "exact_snapshot": false,
+        "harness_digest": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7",
+        "inference_parameters": [
+          [
+            "allow_fallbacks",
+            "false"
+          ],
+          [
+            "data_collection",
+            "deny"
+          ],
+          [
+            "max_tokens",
+            "4096"
+          ],
+          [
+            "provider",
+            "google-ai-studio"
+          ],
+          [
+            "require_parameters",
+            "true"
+          ],
+          [
+            "seed",
+            "20260809"
+          ],
+          [
+            "temperature",
+            "0"
+          ]
+        ],
+        "max_cancellation_requests_per_attempt": 0,
+        "max_model_attempts_per_action": 1,
+        "max_reconciliation_requests_per_attempt": 0,
+        "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+        "model": "google/gemini-3.7-flash",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_id": "policy-7b5bde0e43972fa932a4",
+        "provider": "openrouter/google-ai-studio",
+        "provider_sdk_auto_retries": false,
+        "proxy_auto_retries": false,
+        "reconciliation_deadline_seconds": 1.0,
+        "request_deadline_seconds": 180.0,
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v1",
+        "sandbox": {
+          "denied_capabilities": [
+            "browser_dom",
+            "cross_policy_channel",
+            "external_search",
+            "inbound_listener",
+            "shared_storage",
+            "shell"
+          ],
+          "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+          "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+          "provider_endpoint": "https://openrouter.ai",
+          "runtime_digest": "sha256:6f2a6aa04c774149663f1f172b3082a65d44ae166040574d067f41ab162d6e30"
+        },
+        "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+        "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+        "transport_retry_rule": "no-retry-after-send-v1"
+      },
+      "policy_manifest_digest": "sha256:87f1fc38bcb6e0fd724d6f72b5bf9b46295a20d27c32dfe3cc69e49bcb1e4c14",
+      "price_record": {
+        "completion_per_token": "0.00000375",
+        "currency": "USD",
+        "image_input_billing": "provider input tokens at prompt_per_token",
+        "max_output_tokens": 4096,
+        "max_prompt_tokens": 126976,
+        "observed_at_utc": "2026-08-26T21:26:16Z",
+        "per_request_theoretical_maximum_usd": "0.11059200",
+        "prompt_per_token": "7.5E-7",
+        "source_url": "https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints",
+        "unknown_usage_or_price_rule": "fail_closed"
+      },
+      "provider": {
+        "allow_fallbacks": false,
+        "automatic_retries": false,
+        "data_collection": "deny",
+        "name": "openrouter",
+        "only": [
+          "google-ai-studio"
+        ],
+        "quantizations": [],
+        "require_parameters": true,
+        "upstream_provider": "Google AI Studio"
+      },
+      "slot": "A-gemini-stateful",
+      "task": {
+        "actions": 1,
+        "family": "evidence_aggregation",
+        "partition": "development",
+        "seed": 5000,
+        "task_id": "v5-c707ae8a64e33f631d6fb210"
+      }
+    },
+    {
+      "policy_manifest": {
+        "cancellation_mode": "disabled",
+        "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+        "context_limit": 131072,
+        "coordinate_adapter": "normalized-1000x1000",
+        "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+        "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+        "cross_episode_cache": "disabled",
+        "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+        "dirty_worktree_policy": "reject-tracked-changes",
+        "exact_snapshot": false,
+        "harness_digest": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7",
+        "inference_parameters": [
+          [
+            "allow_fallbacks",
+            "false"
+          ],
+          [
+            "data_collection",
+            "deny"
+          ],
+          [
+            "max_tokens",
+            "4096"
+          ],
+          [
+            "provider",
+            "alibaba"
+          ],
+          [
+            "require_parameters",
+            "true"
+          ],
+          [
+            "seed",
+            "20260809"
+          ],
+          [
+            "temperature",
+            "0"
+          ]
+        ],
+        "max_cancellation_requests_per_attempt": 0,
+        "max_model_attempts_per_action": 1,
+        "max_reconciliation_requests_per_attempt": 0,
+        "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+        "model": "qwen/qwen3-vl-8b-instruct",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_id": "policy-ef0fb3d0bfe7fc8cc8d3",
+        "provider": "openrouter/alibaba",
+        "provider_sdk_auto_retries": false,
+        "proxy_auto_retries": false,
+        "reconciliation_deadline_seconds": 1.0,
+        "request_deadline_seconds": 180.0,
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v1",
+        "sandbox": {
+          "denied_capabilities": [
+            "browser_dom",
+            "cross_policy_channel",
+            "external_search",
+            "inbound_listener",
+            "shared_storage",
+            "shell"
+          ],
+          "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+          "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+          "provider_endpoint": "https://openrouter.ai",
+          "runtime_digest": "sha256:6f2a6aa04c774149663f1f172b3082a65d44ae166040574d067f41ab162d6e30"
+        },
+        "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+        "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+        "transport_retry_rule": "no-retry-after-send-v1"
+      },
+      "policy_manifest_digest": "sha256:99fd78277478ee54d066a1c014c7491c5a55f734583bc39d8cb29a41ae2221ab",
+      "price_record": {
+        "completion_per_token": "4.55E-7",
+        "currency": "USD",
+        "image_input_billing": "provider input tokens at prompt_per_token",
+        "max_output_tokens": 4096,
+        "max_prompt_tokens": 126976,
+        "observed_at_utc": "2026-08-26T21:26:16Z",
+        "per_request_theoretical_maximum_usd": "0.016719872",
+        "prompt_per_token": "1.17E-7",
+        "source_url": "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints",
+        "unknown_usage_or_price_rule": "fail_closed"
+      },
+      "provider": {
+        "allow_fallbacks": false,
+        "automatic_retries": false,
+        "data_collection": "deny",
+        "name": "openrouter",
+        "only": [
+          "alibaba"
+        ],
+        "quantizations": [],
+        "require_parameters": true,
+        "upstream_provider": "Alibaba"
+      },
+      "slot": "B-qwen-stateful",
+      "task": {
+        "actions": 1,
+        "family": "deferred_join",
+        "partition": "development",
+        "seed": 5004,
+        "task_id": "v5-8fae6712750a2c76f9639709"
+      }
+    },
+    {
+      "policy_manifest": {
+        "cancellation_mode": "disabled",
+        "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+        "context_limit": 131072,
+        "coordinate_adapter": "native-1024x768",
+        "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+        "coordinate_input_convention": "integer-pixel/1024x768",
+        "cross_episode_cache": "disabled",
+        "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+        "dirty_worktree_policy": "reject-tracked-changes",
+        "exact_snapshot": false,
+        "harness_digest": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7",
+        "inference_parameters": [
+          [
+            "allow_fallbacks",
+            "false"
+          ],
+          [
+            "data_collection",
+            "deny"
+          ],
+          [
+            "max_tokens",
+            "4096"
+          ],
+          [
+            "provider",
+            "deepinfra"
+          ],
+          [
+            "require_parameters",
+            "true"
+          ],
+          [
+            "seed",
+            "20260809"
+          ],
+          [
+            "temperature",
+            "0"
+          ],
+          [
+            "quantizations",
+            "fp8"
+          ]
+        ],
+        "max_cancellation_requests_per_attempt": 0,
+        "max_model_attempts_per_action": 1,
+        "max_reconciliation_requests_per_attempt": 0,
+        "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+        "model": "meta-llama/llama-4-scout",
+        "parser_version": "pixelgym-agent-v5-json-action-native-1024x768-parser-v1",
+        "policy_id": "policy-2bd297a5fc79dd7103a1",
+        "provider": "openrouter/deepinfra",
+        "provider_sdk_auto_retries": false,
+        "proxy_auto_retries": false,
+        "reconciliation_deadline_seconds": 1.0,
+        "request_deadline_seconds": 180.0,
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v1",
+        "sandbox": {
+          "denied_capabilities": [
+            "browser_dom",
+            "cross_policy_channel",
+            "external_search",
+            "inbound_listener",
+            "shared_storage",
+            "shell"
+          ],
+          "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+          "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+          "provider_endpoint": "https://openrouter.ai",
+          "runtime_digest": "sha256:6f2a6aa04c774149663f1f172b3082a65d44ae166040574d067f41ab162d6e30"
+        },
+        "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+        "system_prompt_digest": "sha256:257c9ad549334ac66200f226c41fb38cce6f6fc41f6b064c1565e2f5cf7b961c",
+        "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+        "transport_retry_rule": "no-retry-after-send-v1"
+      },
+      "policy_manifest_digest": "sha256:19b31d449b6285f9db7c081052fa46e110f9b4fb522126e0cbe18a9912a989d5",
+      "price_record": {
+        "completion_per_token": "3E-7",
+        "currency": "USD",
+        "image_input_billing": "provider input tokens at prompt_per_token",
+        "max_output_tokens": 4096,
+        "max_prompt_tokens": 126976,
+        "observed_at_utc": "2026-08-26T21:26:16Z",
+        "per_request_theoretical_maximum_usd": "0.0139264",
+        "prompt_per_token": "1E-7",
+        "source_url": "https://openrouter.ai/api/v1/models/meta-llama/llama-4-scout/endpoints",
+        "unknown_usage_or_price_rule": "fail_closed"
+      },
+      "provider": {
+        "allow_fallbacks": false,
+        "automatic_retries": false,
+        "data_collection": "deny",
+        "name": "openrouter",
+        "only": [
+          "deepinfra"
+        ],
+        "quantizations": [
+          "fp8"
+        ],
+        "require_parameters": true,
+        "upstream_provider": "DeepInfra"
+      },
+      "slot": "C-llama-stateful",
+      "task": {
+        "actions": 1,
+        "family": "revision_after_reveal",
+        "partition": "development",
+        "seed": 5012,
+        "task_id": "v5-61a28982248bdf76ded018a4"
+      }
+    },
+    {
+      "policy_manifest": {
+        "cancellation_mode": "disabled",
+        "code_revision": "62fc2e3eedb8102603aa3c27db43f2512c728da5",
+        "context_limit": 131072,
+        "coordinate_adapter": "normalized-1000x1000",
+        "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+        "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+        "cross_episode_cache": "disabled",
+        "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+        "dirty_worktree_policy": "reject-tracked-changes",
+        "exact_snapshot": false,
+        "harness_digest": "sha256:5d252f7670e320fb733d764d9a1a50290140c6d29881067b8690f65d93272bb7",
+        "inference_parameters": [
+          [
+            "allow_fallbacks",
+            "false"
+          ],
+          [
+            "data_collection",
+            "deny"
+          ],
+          [
+            "max_tokens",
+            "4096"
+          ],
+          [
+            "provider",
+            "alibaba"
+          ],
+          [
+            "require_parameters",
+            "true"
+          ],
+          [
+            "seed",
+            "20260809"
+          ],
+          [
+            "temperature",
+            "0"
+          ]
+        ],
+        "max_cancellation_requests_per_attempt": 0,
+        "max_model_attempts_per_action": 1,
+        "max_reconciliation_requests_per_attempt": 0,
+        "memory_policy_version": "pixelgym-agent-v5-stateless-within-episode-v1",
+        "model": "qwen/qwen3-vl-8b-instruct",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_id": "policy-a446642d39d30e3370ca",
+        "provider": "openrouter/alibaba",
+        "provider_sdk_auto_retries": false,
+        "proxy_auto_retries": false,
+        "reconciliation_deadline_seconds": 1.0,
+        "request_deadline_seconds": 180.0,
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v1",
+        "sandbox": {
+          "denied_capabilities": [
+            "browser_dom",
+            "cross_policy_channel",
+            "external_search",
+            "inbound_listener",
+            "shared_storage",
+            "shell"
+          ],
+          "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+          "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+          "provider_endpoint": "https://openrouter.ai",
+          "runtime_digest": "sha256:6f2a6aa04c774149663f1f172b3082a65d44ae166040574d067f41ab162d6e30"
+        },
+        "state_reducer_version": "pixelgym-agent-v5-stateless-state-reducer-v1",
+        "system_prompt_digest": "sha256:ff176c8f682f11fe176d0b8e39bd3ad885eca5585de62bebd7e846bc40f43573",
+        "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+        "transport_retry_rule": "no-retry-after-send-v1"
+      },
+      "policy_manifest_digest": "sha256:1f647a1575475e5bae2ce3ad398670a0feaef83b064615a957ee3e83efc706d4",
+      "price_record": {
+        "completion_per_token": "4.55E-7",
+        "currency": "USD",
+        "image_input_billing": "provider input tokens at prompt_per_token",
+        "max_output_tokens": 4096,
+        "max_prompt_tokens": 126976,
+        "observed_at_utc": "2026-08-26T21:26:16Z",
+        "per_request_theoretical_maximum_usd": "0.016719872",
+        "prompt_per_token": "1.17E-7",
+        "source_url": "https://openrouter.ai/api/v1/models/qwen/qwen3-vl-8b-instruct/endpoints",
+        "unknown_usage_or_price_rule": "fail_closed"
+      },
+      "provider": {
+        "allow_fallbacks": false,
+        "automatic_retries": false,
+        "data_collection": "deny",
+        "name": "openrouter",
+        "only": [
+          "alibaba"
+        ],
+        "quantizations": [],
+        "require_parameters": true,
+        "upstream_provider": "Alibaba"
+      },
+      "slot": "D-qwen-stateless",
+      "task": {
+        "actions": 1,
+        "family": "review_and_commit",
+        "partition": "development",
+        "seed": 5020,
+        "task_id": "v5-e507cedbb4f7968f78b53e79"
+      }
+    }
+  ],
+  "provider_calls_made": 0,
+  "purpose": "one development-only transport/parser/adapter action per frozen D5.6 policy slot; not calibration evidence",
+  "requires_clean_tracked_worktree": true,
+  "schema_version": "pixelgym-agent-v5-panel-smoke-plan-v1",
+  "stop_rules": [
+    "run policies sequentially in slot order",
+    "stop after four total model-attempt reservations",
+    "stop after the first transport, identity, cost, parse, adapter, action, or evidence failure",
+    "do not retry or replace a failed or incomplete policy smoke",
+    "do not expose calibration or confirmatory tasks"
+  ]
+}

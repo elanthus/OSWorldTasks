@@ -1,0 +1,100 @@
+{
+  "approved_plan_sha256": "sha256:17851f07709dbd3a270345a15d2fb719355d20be510bbfd41d13cc6c7dad1947",
+  "attempt_journal_integrity": {
+    "event_chain_digest": "sha256:bcb0f0bc3048704d1a2bda131b6e19e9d0a1ed637e6a7875225792f4e87dfc2c",
+    "event_count": 8,
+    "object_count": 9,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "authentication_mode": "chatgpt_subscription",
+  "budget_accounted_aggregate_spend_usd": "4.778164718",
+  "cleanup": {
+    "attempt_journal_closed": true,
+    "invocation_journal_closed": true,
+    "policy_and_environments_closed": true,
+    "subprocesses_closed": true,
+    "temporary_inputs_removed": true
+  },
+  "cli_version": "codex-cli 0.150.1",
+  "code_revision": "2a845237f9078e6c2586a2d29da03e3cc786eae5",
+  "episode_result": {
+    "classification": "pilot_action_limit",
+    "environment_actions": 1,
+    "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "success": false,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "trial_id": "d56-luna-medium-smoke-v5-64ba7d452b3c8d3e43d1d30e"
+  },
+  "execution_error": null,
+  "human_approval_scope": {
+    "aggregate_smoke_process_cap": 3,
+    "authorized_at_local_date": "2026-08-30",
+    "human_gates_unchanged": true,
+    "implemented_smoke_allocation": "one_per_requested_policy_no_retries",
+    "scope": [
+      "one_smoke_for_luna_medium",
+      "one_smoke_for_terra_medium",
+      "one_full_frozen_run_per_policy_only_after_its_smoke_succeeds"
+    ],
+    "sonnet_status": "separate_policy_blocked_until_claude_cli_authentication_exists",
+    "status": "advance_human_authorization_recorded"
+  },
+  "human_gates": {
+    "D4.12": "not_evaluated_human_owned",
+    "D5.10": "not_evaluated_human_owned"
+  },
+  "incremental_experiment_charge_usd": "0.00",
+  "informational_list_price_equivalent_usd": "0.00426090",
+  "invocation_journal_integrity": {
+    "invocation_count": 1,
+    "records": [
+      {
+        "exit_code": 0,
+        "idempotency_key_digest": "sha256:1666afb571a10e5323a458c25dee92b5b588c9de532ca222ce70c1b7884013b6",
+        "outcome_sha256": "sha256:803d9a5851a57a7f49f0850c4d86bcb912bdc7e21633069f705c4663639ac965",
+        "raw_stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "raw_stdout_sha256": "sha256:047116b03adce3991b36704fd2f03ec5071694ce8f4ef3275a05c6d909f26d14",
+        "request_digest": "sha256:3152812931f08d23d19b1d737f5a3b96b736348e068b1313e2396b47a60d9923",
+        "status": "response"
+      }
+    ],
+    "schema_version": "pixelgym-agent-v5-codex-cli-invocation-journal-v2"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model": "gpt-5.6-luna",
+  "model_attempt_reservations": 1,
+  "model_reasoning_effort": "medium",
+  "policy_violation": "none",
+  "provider": "Codex CLI",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_identity": "codex-cli/chatgpt-subscription",
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_evidence_local_only",
+  "purpose": "one development smoke action for luna-medium; not calibration evidence",
+  "schema_version": "pixelgym-agent-v5-d56-codex-subscription-smoke-result-v1",
+  "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+  "transport_records": [
+    {
+      "accepted_cli_diagnostic_count": 1,
+      "authentication_mode": "chatgpt_subscription",
+      "cli_version": "codex-cli 0.150.1",
+      "command_contract_digest": "sha256:c2807c40908707ef72e89ebedc05f85c863b7b9674c44fb3f8940cde00ae1ae0",
+      "experiment_charge_usd": "0.00",
+      "idempotency_key_digest": "sha256:1666afb571a10e5323a458c25dee92b5b588c9de532ca222ce70c1b7884013b6",
+      "informational_list_price_equivalent_usd": "0.00426090",
+      "model": "gpt-5.6-luna",
+      "model_reasoning_effort": "medium",
+      "policy_violation": "none",
+      "price_guard": "subscription_exempt",
+      "status": "response",
+      "usage_telemetry_status": "available"
+    }
+  ],
+  "unresolved_invocation_count": 0,
+  "usage_telemetry_status": "available",
+  "usage_telemetry_unavailable_count": 0
+}
