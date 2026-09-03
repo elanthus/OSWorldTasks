@@ -27,6 +27,23 @@ Open the control plane at <http://localhost:5800> and MLflow at <http://localhos
 ports are configurable in `.env.example`; the PostgreSQL and MinIO API loopback ports are also
 configurable for isolated integration runs.
 
+### Reviewer attribution boundary
+
+The Compose demo remains published on the host loopback interface and attributes every reviewer
+mutation to the fixed `synthetic-demo` identity. That label appears in both rendered pages and the
+append-only audit ledger; it is a local-demo identity, not caller authentication. The migration and
+immutable-verification scripts do not read `PIXELGYM_REVIEWER_ID`, because neither operation makes
+a reviewer decision.
+
+`create_app` resolves `PIXELGYM_BIND_ADDRESS` with a `127.0.0.1` default. A non-loopback value is
+refused unless `PIXELGYM_TRUSTED_PROXY_ADDRESSES` contains a comma-separated allowlist of proxy IP
+addresses or CIDR networks. Only connections from that allowlist may supply the reviewer principal
+through `PIXELGYM_PRINCIPAL_HEADER` (default `X-Forwarded-User`); missing or invalid principals are
+rejected before a mutation. Submitted form and JSON fields never select the actor.
+
+Existing rows attributed to `local-reviewer` remain readable and are rendered as a legacy
+synthetic identity. The migration does not rewrite those append-only rows.
+
 Stop the stack without deleting evidence:
 
 ```bash

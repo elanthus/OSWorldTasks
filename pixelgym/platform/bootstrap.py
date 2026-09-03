@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import os
 import subprocess
@@ -82,7 +83,6 @@ def _build_control(repository_root: Path) -> ControlStore:
         Path(database).parent.mkdir(parents=True, exist_ok=True)
     control = ControlStore(
         database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
     )
     control.require_migrated()
     return control
@@ -190,8 +190,28 @@ def _record_cancellation_intent(
         return True
 
 
-def create_app() -> FastAPI:
+def create_app(bind_address: str | None = None) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
+    resolved_bind_address = (
+        bind_address
+        if bind_address is not None
+        else os.environ.get("PIXELGYM_BIND_ADDRESS", "127.0.0.1")
+    )
+    proxy_allowlist = tuple(
+        address.strip()
+        for address in os.environ.get("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "").split(",")
+        if address.strip()
+    )
+    try:
+        loopback_bind = resolved_bind_address.lower() == "localhost" or ipaddress.ip_address(
+            resolved_bind_address
+        ).is_loopback
+    except ValueError as exc:
+        raise ValueError("PIXELGYM_BIND_ADDRESS must be localhost or an IP address") from exc
+    if not loopback_bind and not proxy_allowlist:
+        raise RuntimeError(
+            "a non-loopback PIXELGYM_BIND_ADDRESS requires PIXELGYM_TRUSTED_PROXY_ADDRESSES"
+        )
     repository_root = _repository_root()
     csrf_secret = os.environ.get("PIXELGYM_CSRF_SECRET")
     if not csrf_secret:
@@ -275,6 +295,9 @@ def create_app() -> FastAPI:
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
+        bind_address=resolved_bind_address,
+        principal_header=os.environ.get("PIXELGYM_PRINCIPAL_HEADER", "X-Forwarded-User"),
+        trusted_proxy_addresses=proxy_allowlist,
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,
         tracking=tracking,

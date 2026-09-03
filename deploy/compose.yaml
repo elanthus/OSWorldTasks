@@ -78,8 +78,6 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.platform
     command: [python, scripts/platform_migrate.py, --database, /state/control.db]
-    environment:
-      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
     volumes: [control-data:/state]
 
   platform:
@@ -93,7 +91,6 @@ services:
     environment:
       PIXELGYM_REPOSITORY_ROOT: /app
       PIXELGYM_CONTROL_DB: /state/control.db
-      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
       PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}
       PIXELGYM_SOURCE_PROVENANCE_PATH: /state/source-provenance.json
       PIXELGYM_IMMUTABLE_BUCKET: pixelgym-immutable

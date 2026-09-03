@@ -10,7 +10,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from pixelgym.platform.contracts import (
     ArtifactRef,
@@ -34,6 +34,15 @@ class ConflictError(RuntimeError):
 
 class AuthorizationError(PermissionError):
     pass
+
+
+class VerifiedPrincipal(str):
+    """Reviewer principal accepted by the request authentication boundary."""
+
+    def __new__(cls, value: str) -> Self:
+        if not value:
+            raise ValueError("verified principal is required")
+        return super().__new__(cls, value)
 
 
 class TransitionError(RuntimeError):
@@ -324,11 +333,11 @@ class ControlStore:
         self,
         database: Path | str,
         *,
-        reviewer_identity: str,
+        reviewer_identity: str | None = None,
         now: Callable[[], str] | None = None,
     ) -> None:
-        if not reviewer_identity:
-            raise ValueError("reviewer identity is required")
+        if reviewer_identity == "":
+            raise ValueError("reviewer identity cannot be empty")
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
@@ -540,7 +549,16 @@ class ControlStore:
             ),
         )
 
-    def submit(self, request: dict[str, Any]) -> str:
+    def _require_reviewer_actor(self, actor: str) -> None:
+        if isinstance(actor, VerifiedPrincipal):
+            return
+        if self.reviewer_identity is not None and actor == self.reviewer_identity:
+            return
+        raise AuthorizationError("reviewer actor was not verified")
+
+    def submit(self, request: dict[str, Any], *, actor: str = "system") -> str:
+        if actor != "system":
+            self._require_reviewer_actor(actor)
         encoded = canonical_json_bytes(request)
         digest = sha256_bytes(encoded)
         submission_id = "submission-" + digest[:24]
@@ -557,7 +575,7 @@ class ControlStore:
                 "INSERT INTO submissions VALUES (?, ?, ?, 'Submitted', NULL, NULL, ?)",
                 (submission_id, digest, encoded.decode(), self._now()),
             )
-            self._audit(connection, "submission.created", "system", submission_id, request)
+            self._audit(connection, "submission.created", actor, submission_id, request)
         return submission_id
 
     def get_submission(self, submission_id: str) -> dict[str, Any]:
@@ -570,8 +588,7 @@ class ControlStore:
             return {**dict(row), "request": json.loads(row["request_json"])}
 
     def cancel_submission(self, submission_id: str, *, actor: str, reason: str) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may cancel")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("cancellation reason is required")
         with self.transaction() as connection:
@@ -893,8 +910,7 @@ class ControlStore:
         reason: str,
         gate_report_sha256: str,
     ) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may approve")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("approval reason is required")
         with self.transaction() as connection:
@@ -1055,8 +1071,7 @@ class ControlStore:
         expected_deployment_id: str | None,
         expected_generation: int,
     ) -> DeploymentRecord:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may deploy or rollback")
+        self._require_reviewer_actor(actor)
         if action not in {"deploy", "rollback"}:
             raise ValueError("unknown deployment action")
         if not reason.strip():
