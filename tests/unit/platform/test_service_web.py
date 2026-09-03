@@ -1273,6 +1273,22 @@ MUTATING_ROUTES = (
 MUTATING_FORM_ROUTES = tuple(route for route in MUTATING_ROUTES if route != "approve_api")
 
 
+def test_csrf_matrix_covers_every_mutating_route(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    app = create_control_app(control, csrf_secret=secrets.token_urlsafe(32))
+
+    mutating_endpoints = {
+        route.endpoint.__name__
+        for route in app.routes
+        if {"POST", "PUT", "PATCH", "DELETE"}.intersection(
+            getattr(route, "methods", ()) or ()
+        )
+    }
+
+    assert mutating_endpoints == set(MUTATING_ROUTES)
+
+
 class MutationProbe:
     def __init__(self) -> None:
         self.calls = {route: 0 for route in MUTATING_ROUTES}
@@ -1551,6 +1567,27 @@ def test_mutating_form_routes_reject_duplicate_csrf_token_fields(
         path,
         content=urlencode(pairs).encode("ascii"),
         headers={"content-type": "application/x-www-form-urlencoded"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "CSRF validation failed"}
+    assert _control_state(control, probe) == before
+
+
+def test_approve_api_rejects_duplicate_csrf_token_headers(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control, probe, client, path, fields, _is_api = _mutating_route_context(
+        tmp_path, passing_evidence, "approve_api"
+    )
+    token = _csrf(client.get("/").text)
+    before = _control_state(control, probe)
+
+    response = client.post(
+        path,
+        json=fields,
+        headers=[("X-CSRF-Token", token), ("X-CSRF-Token", "0" * 64)],
         follow_redirects=False,
     )
 
