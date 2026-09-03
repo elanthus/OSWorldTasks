@@ -1,0 +1,82 @@
+{
+  "actual_aggregate_spend_usd": "2.489953207",
+  "approved_plan_sha256": "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb",
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "6380a4ccb6869a21fe21598527efd6e915601551",
+  "episode_result": {
+    "classification": "pilot_action_limit",
+    "environment_actions": 1,
+    "final_policy_checkpoint_digest": "sha256:1474c617896cc32940c8ce3de62e0630489a062cee2140cd2fdb8da8abbb3ed5",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "slot": "A-gemini-stateful-one-call-smoke",
+    "success": false,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "trial_id": "d56-gemini-one-call-smoke-v5-64ba7d452b3c8d3e43d1d30e"
+  },
+  "execution_error": null,
+  "frozen_glm_json_smoke_evidence": {
+    "actual_aggregate_spend_usd": "2.487339457",
+    "journal_integrity": {
+      "event_chain_digest": "sha256:1f33a7940e19017a22597db86f11500849835091445c715cd228deead458bb60",
+      "event_count": 3,
+      "object_count": 5,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/attempts.sqlite",
+    "journal_sha256": "sha256:67a272f788200db7a2afb894916a14b614ca01c3e66a66c6d0cc08997314087d",
+    "summary_path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/summary.json",
+    "summary_sha256": "sha256:8d1a6d5b29dd64774415c6b5cea71ab3343061292a18877454f7d621d3ba14f3",
+    "terminal": {
+      "classification": "unknown_outcome_infrastructure_failure",
+      "failure_code": "provider_request_unknown",
+      "http_status": 429,
+      "provider_error_code": 429,
+      "request_outcome": "unknown",
+      "retry_eligible": false,
+      "upstream_provider": "Novita"
+    }
+  },
+  "journal_integrity": {
+    "event_chain_digest": "sha256:f8fe491f1d053362098a81c7dd236a95dce3558b41889cc7b97b158db0bd0e75",
+    "event_count": 8,
+    "object_count": 12,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 1,
+  "prior_aggregate_spend_usd": "2.487339457",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "purpose": "one development-only Gemini 3.7 Flash request testing the frozen strict action schema, Vertex routing, local parser, coordinate adapter, and first environment action; not calibration evidence",
+  "reached_model_response": true,
+  "remaining_aggregate_spend_usd": "7.510046793",
+  "schema_version": "pixelgym-agent-v5-d56-gemini-one-call-smoke-result-v1",
+  "semantic_progress": {
+    "diagnostic_event_counts": {
+      "correct_transition": 1
+    },
+    "first_transition_completed": true,
+    "maximum_stage_index_observed": 1
+  },
+  "smoke_incremental_spend_usd": "0.002613750",
+  "transport_records": [
+    {
+      "cost_usd": "0.00261375",
+      "idempotency_key": "sha256:c5145235ebe18fb6cecd8efc418f6d98f16e88b386f8ded71935159d36d0acee",
+      "latency_ms": 4300.307124998653,
+      "pre_send_backoff_seconds": 0.0,
+      "response_id_digest": "sha256:da22e6cfd2d189f7a728a611c68c804197bb9ddc375ce5f8a702d5623034fd63",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful-one-call-smoke",
+      "status": "response",
+      "upstream_provider": "Google"
+    }
+  ]
+}
