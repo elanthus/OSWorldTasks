@@ -246,7 +246,7 @@ class V5AttemptJournal:
         pre_call_checkpoint: bytes,
         approved_caps: CallCaps,
     ) -> tuple[JournalEvent, bool]:
-        """Atomically enforce caps and reserve a model attempt before the wire."""
+        """Atomically reserve an attempt's worst-case wire capacity before the wire."""
 
         checkpoint_digest = "sha256:" + sha256_bytes(pre_call_checkpoint)
         payload = {
@@ -272,6 +272,9 @@ class V5AttemptJournal:
                 payload=payload,
                 model_delta=model_attempt_reservation,
                 control_delta=0,
+                wire_capacity_delta=(
+                    model_attempt_reservation + control_request_reservation
+                ),
                 approved_caps=approved_caps,
             )
 
@@ -298,6 +301,7 @@ class V5AttemptJournal:
                 payload=payload,
                 model_delta=0,
                 control_delta=1,
+                wire_capacity_delta=1,
                 approved_caps=approved_caps,
             )
 
@@ -426,6 +430,7 @@ class V5AttemptJournal:
         payload: dict[str, Any],
         model_delta: int,
         control_delta: int,
+        wire_capacity_delta: int,
         approved_caps: CallCaps,
     ) -> tuple[JournalEvent, bool]:
         encoded = canonical_json_bytes(payload)
@@ -450,8 +455,7 @@ class V5AttemptJournal:
         if (
             model_attempts
             + control_requests
-            + model_delta
-            + control_delta
+            + wire_capacity_delta
             > approved_caps.provider_wire_request_cap
         ):
             raise RuntimeError("approved provider-wire-request cap reached")
