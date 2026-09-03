@@ -31,7 +31,7 @@ def _decimal(value: object, *, field: str) -> Decimal:
 def _amount_or_unknown(value: object, *, field: str) -> str:
     if value == UNKNOWN_SPEND:
         return UNKNOWN_SPEND
-    return str(_decimal(value, field=field))
+    return format(_decimal(value, field=field), "f")
 
 
 def validate_spend_disclosure(value: Mapping[str, Any]) -> dict[str, str]:

@@ -110,6 +110,35 @@ def test_pre_issue_103_ledger_defaults_missing_in_flight_hold_to_zero() -> None:
     assert ledger_spend_disclosure(Ledger())["in_flight_reservation_usd"] == "0"
 
 
+def test_ledger_spend_uses_fixed_point_amounts_accepted_by_packaged_schema() -> None:
+    class Ledger:
+        spent_usd = Decimal("0.0000005")
+        unknown_reservation_usd = Decimal("0.0000000004")
+
+    disclosure = ledger_spend_disclosure(Ledger())
+    schema = json.loads(
+        (
+            ROOT
+            / "pixelgym/grounding/v5/schemas/d56-phase-spend-v2.schema.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    Draft202012Validator(schema).validate(disclosure)
+    assert disclosure["known_spend_usd"] == "0.0000005"
+    assert disclosure["unknown_reservation_usd"] == "0.0000000004"
+    existing_precision = validate_spend_disclosure(
+        {
+            "schema_version": SPEND_SCHEMA_VERSION,
+            "known_spend_usd": "10.00",
+            "unknown_reservation_usd": "2.032875185",
+            "in_flight_reservation_usd": "0",
+            "budget_accounted_spend_usd": "12.032875185",
+        }
+    )
+    assert existing_precision["known_spend_usd"] == "10.00"
+    assert existing_precision["unknown_reservation_usd"] == "2.032875185"
+
+
 def test_known_cost_and_reservations_must_reconcile_to_accounted_spend() -> None:
     with pytest.raises(ValueError, match="does not reconcile"):
         validate_spend_disclosure(
