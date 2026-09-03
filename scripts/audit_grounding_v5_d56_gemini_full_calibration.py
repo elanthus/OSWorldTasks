@@ -15,15 +15,21 @@ from typing import Any
 
 from pixelgym.grounding.v5.contracts import content_digest, sha256_bytes
 from pixelgym.grounding.v5.d56_calibration import _calibration_manifest
-from pixelgym.grounding.v5.evidence import validate_credential_free
+from pixelgym.grounding.v5.evidence import (
+    JOURNAL_DIGEST_VERSION_V1,
+    JOURNAL_DIGEST_VERSION_V2,
+    JOURNAL_INTEGRITY_SCHEMA_VERSION,
+    journal_integrity_audit_record,
+    validate_credential_free,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 AUDIT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-integrity-audit-v1"
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-result-v1"
-JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-journal-integrity-v1"
 
 _REQUIRED_TABLES = {"events", "object_roles", "objects"}
+_DIGEST_VERSION_METADATA_KEY = "event_chain_digest_version"
 _TERMINAL_ATTEMPT_KINDS = {
     "attempt_completed",
     "confirmed_cancellation",
@@ -113,6 +119,19 @@ def _audit_journal(path: Path, expected: dict[str, Any]) -> dict[str, Any]:
             for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
         }
         _require(_REQUIRED_TABLES <= tables, "journal schema is missing a required table")
+        digest_version = JOURNAL_DIGEST_VERSION_V1
+        if "journal_metadata" in tables:
+            digest_version_rows = list(
+                connection.execute(
+                    "SELECT value FROM journal_metadata WHERE key = ?",
+                    (_DIGEST_VERSION_METADATA_KEY,),
+                )
+            )
+            _require(
+                digest_version_rows == [(JOURNAL_DIGEST_VERSION_V2,)],
+                "journal digest version metadata is invalid",
+            )
+            digest_version = JOURNAL_DIGEST_VERSION_V2
 
         roles_by_digest: dict[str, set[str]] = defaultdict(set)
         for digest, role in connection.execute("SELECT digest, kind FROM object_roles"):
@@ -215,14 +234,23 @@ def _audit_journal(path: Path, expected: dict[str, Any]) -> dict[str, Any]:
                     content_digest(intent) == payload.get("sealed_intent_digest"),
                     "sealed action intent digest mismatch",
                 )
-            event_chain.append(
-                {
+            event_record = {
+                "sequence": sequence,
+                "event_key": event_key,
+                "kind": kind,
+                "payload": payload,
+            }
+            if digest_version == JOURNAL_DIGEST_VERSION_V2:
+                event_record = {
                     "sequence": sequence,
                     "event_key": event_key,
                     "kind": kind,
+                    "trial_id": trial_id,
+                    "step_index": step_index,
+                    "attempt_index": attempt_index,
                     "payload": payload,
                 }
-            )
+            event_chain.append(event_record)
             event_counts[kind] += 1
             sequences.append(sequence)
 
@@ -231,11 +259,13 @@ def _audit_journal(path: Path, expected: dict[str, Any]) -> dict[str, Any]:
             "journal event sequence is not contiguous",
         )
         computed = {
-            "schema_version": JOURNAL_SCHEMA_VERSION,
+            "schema_version": JOURNAL_INTEGRITY_SCHEMA_VERSION,
             "object_count": object_count,
             "event_count": len(event_chain),
             "event_chain_digest": content_digest(event_chain),
         }
+        if digest_version == JOURNAL_DIGEST_VERSION_V2:
+            computed["digest_version"] = digest_version
         _require(computed == expected, "recomputed journal integrity differs from summary")
 
         started = set(events_by_kind["attempt_started"])
@@ -292,7 +322,7 @@ def _audit_journal(path: Path, expected: dict[str, Any]) -> dict[str, Any]:
         return {
             "sqlite_integrity_check": "ok",
             "sqlite_foreign_key_violations": 0,
-            "integrity": computed,
+            "integrity": journal_integrity_audit_record(computed),
             "object_bytes_verified": object_bytes,
             "structured_objects_verified": structured_object_count,
             "event_counts": dict(sorted(event_counts.items())),
