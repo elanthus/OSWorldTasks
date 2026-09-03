@@ -1,0 +1,52 @@
+{
+  "action_validation": "not_reached",
+  "approved_plan_sha256": "sha256:2f107917a33e3758e580774a2a88c282324b4e4052b5b625193960c015a986a4",
+  "classification": "transport_failure",
+  "cleanup": {
+    "environment_closed": true
+  },
+  "cost_usd": "0.00010348",
+  "dispatch": null,
+  "environment_actions": 0,
+  "failure_code": "OpenRouter response contained no text",
+  "latency_ms": 2782.5301671400666,
+  "maximum_spend_usd": "2.00",
+  "model": "qwen/qwen3.5-flash-02-23",
+  "parser_version": "pixelgym-agent-v5-json-action-parser-v1",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 1,
+  "publishable_response": null,
+  "purpose": "development-only transport/parser/action smoke; not calibration evidence",
+  "response_identity": {
+    "response_id_sha256": "sha256:3431eb372f2fd6af7c07377ab20eef5574e692b315b394deed9c67e613f79c5f",
+    "response_model": "qwen/qwen3.5-flash-02-23",
+    "upstream_provider": "Alibaba"
+  },
+  "response_sha256": null,
+  "schema_version": "pixelgym-agent-v5-provider-smoke-result-v1",
+  "task_id": "v5-c707ae8a64e33f631d6fb210",
+  "usage": {
+    "completion_tokens": 129,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 128
+    },
+    "cost": 0.00010348,
+    "cost_details": {
+      "upstream_inference_completions_cost": 3.354e-05,
+      "upstream_inference_cost": 0.00010348,
+      "upstream_inference_prompt_cost": 6.994e-05
+    },
+    "is_byok": false,
+    "prompt_tokens": 1076,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 1205
+  }
+}

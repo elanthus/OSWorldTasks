@@ -1,0 +1,2033 @@
+{
+  "actual_aggregate_spend_usd": "0.370889195",
+  "approved_plan_sha256": "sha256:270d4b1941cac585fa51907df170463460e723639372c5f68eee5e1f888857d1",
+  "assigned_policy_task_pairs": 200,
+  "attempted_policy_task_pairs": 8,
+  "calibration_incremental_spend_usd": "0.364863375",
+  "classifications": {
+    "invalid_output": 1,
+    "step_limit_truncation": 2,
+    "success_termination": 5
+  },
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "0541192a9952ab90f9b3dc2d69e413243e5a1bd3",
+  "episode_results": [
+    {
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "final_policy_checkpoint_digest": "sha256:0a9bf5c76a369cad7aab9f90eafe07a2a1e9899c3fb0f466857be3fabc09c39a",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "slot": "A-gemini-stateful",
+      "success": true,
+      "task_id": "v5-b73306ab8214ef62079807e9",
+      "trial_id": "d56-A-gemini-stateful-00-v5-b73306ab8214ef62079807e9"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "final_policy_checkpoint_digest": "sha256:205f30a8998b78148a83e5e8b4fa53165818fd1b300496ec4c767f615a6e1fb9",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "slot": "A-gemini-stateful",
+      "success": false,
+      "task_id": "v5-cdd002542e6961e463e4a22f",
+      "trial_id": "d56-A-gemini-stateful-01-v5-cdd002542e6961e463e4a22f"
+    },
+    {
+      "classification": "success_termination",
+      "environment_actions": 26,
+      "final_policy_checkpoint_digest": "sha256:3c61596c7bd04353add203ebdfc2fa950fced7715cd7cb86a1674a5541fb182c",
+      "model_attempts": 26,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "slot": "A-gemini-stateful",
+      "success": true,
+      "task_id": "v5-5bc4b1ad7d6e4b2765cea217",
+      "trial_id": "d56-A-gemini-stateful-02-v5-5bc4b1ad7d6e4b2765cea217"
+    },
+    {
+      "classification": "success_termination",
+      "environment_actions": 23,
+      "final_policy_checkpoint_digest": "sha256:b42b0e5277d2f1ca93c697b9b7daa9da7663f0da892362b6f5a7b587491f248d",
+      "model_attempts": 23,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 23,
+      "slot": "A-gemini-stateful",
+      "success": true,
+      "task_id": "v5-f7a46ffc516effdec1ed0225",
+      "trial_id": "d56-A-gemini-stateful-03-v5-f7a46ffc516effdec1ed0225"
+    },
+    {
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "final_policy_checkpoint_digest": "sha256:5e3870b11fdae4c50c8c3285569b2007cc0d3144d5f0b974ac1fa9867aa70460",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "slot": "A-gemini-stateful",
+      "success": true,
+      "task_id": "v5-748a1881fa7a31d4eb3b9c8b",
+      "trial_id": "d56-A-gemini-stateful-04-v5-748a1881fa7a31d4eb3b9c8b"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "final_policy_checkpoint_digest": "sha256:d1faf63e7a4b56410ead495377832062410c3e03ade2bb2c0303afe833d6f9b0",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "slot": "A-gemini-stateful",
+      "success": false,
+      "task_id": "v5-1ffd5dfc3a1b15ce6c96d1d3",
+      "trial_id": "d56-A-gemini-stateful-05-v5-1ffd5dfc3a1b15ce6c96d1d3"
+    },
+    {
+      "classification": "success_termination",
+      "environment_actions": 26,
+      "final_policy_checkpoint_digest": "sha256:593086fc22cc715df61e2c019a9c61231dae8c65c12f0e9c1ca5be4d0043e423",
+      "model_attempts": 26,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "slot": "A-gemini-stateful",
+      "success": true,
+      "task_id": "v5-ee25bfd4a0ba4318bb52e6f6",
+      "trial_id": "d56-A-gemini-stateful-06-v5-ee25bfd4a0ba4318bb52e6f6"
+    },
+    {
+      "classification": "invalid_output",
+      "environment_actions": 12,
+      "final_policy_checkpoint_digest": "sha256:7eb79c9663f46005d23991b58e6be0d7cac5db4d245fc7e1687f6040a6a54c33",
+      "model_attempts": 13,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 13,
+      "slot": "A-gemini-stateful",
+      "success": false,
+      "task_id": "v5-aed9a966354eac13d2b9c95b",
+      "trial_id": "d56-A-gemini-stateful-07-v5-aed9a966354eac13d2b9c95b"
+    }
+  ],
+  "journal_integrity": {
+    "event_chain_digest": "sha256:41e417e1665c868151aeac46b8f63f78f90b3df3500a936c747aa85521847acc",
+    "event_count": 1335,
+    "object_count": 1300,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 190,
+  "prior_aggregate_spend_usd": "0.006025820",
+  "provider_calls_made": 190,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 190,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "remaining_aggregate_spend_usd": "9.629110805",
+  "schema_version": "pixelgym-agent-v5-d56-calibration-result-v1",
+  "successful_policy_task_pairs": 5,
+  "transport_records": [
+    {
+      "cost_usd": "0.001374375",
+      "idempotency_key": "sha256:8f29562537cc2a8ca9cd23576e5a2c0b9ded2c19b29d2608c41890b9b4113125",
+      "latency_ms": 4164.091291371733,
+      "response_id_digest": "sha256:4736353a837a06bca7fdb9e63c16737d033d618c97853e2ce8e711c33adeb062",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001295625",
+      "idempotency_key": "sha256:ac22c5f7a8132ad055a2b8673640f552e34f432c762ad7ce3e6976dc7cb2ecf4",
+      "latency_ms": 5468.489250168204,
+      "response_id_digest": "sha256:17ba19f8810e4b725ab14d3cdfaf00da5119dab5b548f5ec5f09286533fdd186",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001432125",
+      "idempotency_key": "sha256:515ffdaf4661138f048df31f53135c4e0b0eca9a1f195ea51c42265696d3fa26",
+      "latency_ms": 4439.054499845952,
+      "response_id_digest": "sha256:953d67d70b96d2478e9fd5437338489d3ff0139e6a996f0840479b9e6fcd405a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001421625",
+      "idempotency_key": "sha256:98884bf57805357ec58a7a2f21e8e1d21cd86425676554f0fbac20c15ea21e0e",
+      "latency_ms": 5858.267417177558,
+      "response_id_digest": "sha256:248a6aaadd5dad34392350a545edd4cf048d532679381d19989373dcdae919cb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00155175",
+      "idempotency_key": "sha256:1ce4ba4d43c0a0a8546c39355b50af2909b18d8ee0fe59ce21fcb9dfa8727729",
+      "latency_ms": 4075.7307088933885,
+      "response_id_digest": "sha256:b0d26e9d97bed6b307a740a975460950419d3ba1991104deaa0c19a567c2820a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00130575",
+      "idempotency_key": "sha256:45618fbc41e9f0cc6e85cefb04a4659cc21b0da3fbc7103d77e554ff81668f41",
+      "latency_ms": 3411.977875046432,
+      "response_id_digest": "sha256:84cb38bc1b5e9cad62560cf63c251bdfc4fb1bdb1490a037110d3a20ed129209",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001284375",
+      "idempotency_key": "sha256:04b73434d00fbcd5c6fd6c447462c7f8bcaa67e3b5e6b10e9267319f7edfc9c5",
+      "latency_ms": 3564.4538747146726,
+      "response_id_digest": "sha256:c99d8d7a449087ca594e275058cacf82625db46a4f0c26ff71aa8c516680c5a1",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00146625",
+      "idempotency_key": "sha256:797a76907d612b799fd4c224f9f7f69d27e66c6940d3c0778d95028736680062",
+      "latency_ms": 4516.293666791171,
+      "response_id_digest": "sha256:fdb41a1d39e8389ba19e828e4b2549d4279c6f2abd529ad842b02041dcdaa19f",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00153525",
+      "idempotency_key": "sha256:1839e1a8970de76f98d58bb95e0964b43f954bf331e2ed3d90036d0512873efd",
+      "latency_ms": 3787.5982499681413,
+      "response_id_digest": "sha256:d6fc40a7ed1bf414c80388f5655b15b050269d2dfb3cda98bed4640533c9118d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0026745",
+      "idempotency_key": "sha256:7b2e53a20ccfafff0500889d15ce32e703b6e35576cddc2efafadf4a66095808",
+      "latency_ms": 11347.109124995768,
+      "response_id_digest": "sha256:9cbc408b2943f079e7cff92dc1909cffdec8998ae0c455651990b6f284e8175b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002791875",
+      "idempotency_key": "sha256:61f68e85aee4d586962fbf369da809cf6bff37f16129cc7b6e2fce5cc43662f7",
+      "latency_ms": 7811.755833681673,
+      "response_id_digest": "sha256:48ee59384308d4a016a9119303db78c2fc3511be587fbaa269434b1785681cc7",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0032325",
+      "idempotency_key": "sha256:569eef79bf2ab4fd5f4dd9da34951c6d315bcfb26e39b9f3407c19f9692a5208",
+      "latency_ms": 9933.442416135222,
+      "response_id_digest": "sha256:7e79dfafe82b5af43663e659fdff293c96e9c4f23b32be3767e6a25560bcad62",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00164625",
+      "idempotency_key": "sha256:3f50103b33ec5023ccb7b30e25bb8ead6cf1425f7754f7fd5ecdb261bf0dba44",
+      "latency_ms": 3545.6066662445664,
+      "response_id_digest": "sha256:ae36a3b23bfe75428c40b543d0560d40c56bfdb341f6f3a6bd8c236ba1983180",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00159075",
+      "idempotency_key": "sha256:01c40589cf8adc062a72157b012e3aa1dab36da8aeb3a58d291cdae35714fe26",
+      "latency_ms": 3082.5074170716107,
+      "response_id_digest": "sha256:8a9826b4b13f709f6cbfd4bf0cde67ce9531739f290e45914e6c5690822bace4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0016335",
+      "idempotency_key": "sha256:2f0c53c7178d3bd272a2a5664069eb01ebf2e5777a296cf0ed584beadc35c3ef",
+      "latency_ms": 3334.9262080155313,
+      "response_id_digest": "sha256:ef0567451f92612f8aedc746d921bd362ed8aa26ee8c86136f367aabc26af840",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.003256875",
+      "idempotency_key": "sha256:8da830af485ba493921f5d414e62f8628f7f7f8a38ed9783b7ed93083e223029",
+      "latency_ms": 8435.924000106752,
+      "response_id_digest": "sha256:eec88486ab995cf19e4f214cac2a1ac4200939fc30956946ee1a653ce32d9ee0",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0018075",
+      "idempotency_key": "sha256:be98ac81372467cc2aeef6485ac031ffc7ef5511a3b4d5ceb8c836acd18af5e0",
+      "latency_ms": 5248.321249615401,
+      "response_id_digest": "sha256:bb454e363f7f82ef275abbb8bfbc661d8571dcd2facd9fa3756c2b7c79c2814b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00209325",
+      "idempotency_key": "sha256:dd0a79cbaa500d73119e613498ca83c77d592bc728e63b4919b41dd1e109d9ca",
+      "latency_ms": 5981.020500417799,
+      "response_id_digest": "sha256:e699f990275964c1967f85b918e20ac0cfc35885fad63d22453bba20ca9c0ef5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001986375",
+      "idempotency_key": "sha256:72a1aad4aaa4311741b22b9f2d4250d95e14bd5c254f4f78a0292a43908db984",
+      "latency_ms": 4011.963250115514,
+      "response_id_digest": "sha256:3c08c9d6475b960eeac0d4aecdbeb277320df33ed62a80f5496c494a667f8d9e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00195",
+      "idempotency_key": "sha256:f6f6134ee7088863a51ba78a33259d641f943b9089d74ce46f41d157655366ea",
+      "latency_ms": 4808.714000042528,
+      "response_id_digest": "sha256:69bfbf524ab2e36d68505596b643c8433841210e944003d1c6e8aeb6cf5f7191",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002021625",
+      "idempotency_key": "sha256:fff612e9d79858ab411f0c64c5e426a7815e5df6e767b2514a9ae46d3d77fae9",
+      "latency_ms": 4488.263249862939,
+      "response_id_digest": "sha256:e73a6be9e36433f1d28c6b3a82fa75aef576772ccbec7b4cb16a4db6640737b1",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001946625",
+      "idempotency_key": "sha256:52c704bdb8e9f97c360a9f5f64cac504f8cdfdc97383c8608ccf69164e879c5d",
+      "latency_ms": 3940.73254102841,
+      "response_id_digest": "sha256:4269a918a40cd90ce20eb14c52465ab453f50dbb2c773b8747ef493174620942",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001239375",
+      "idempotency_key": "sha256:d2f04c10f89808728abf2921dfc6371066f2e90c05f95803efb25ff81b824f2b",
+      "latency_ms": 3994.25937468186,
+      "response_id_digest": "sha256:790d049417a9d443db63ed84233bed3e99379a3de29cadc506622216ef46f9a1",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001431375",
+      "idempotency_key": "sha256:71ba1c4cd4bd4442849265c4f7a4859c9463cc7602fd9fa1de178fb49d938fa7",
+      "latency_ms": 4087.0756250806153,
+      "response_id_digest": "sha256:2095009d2b16e594cee0f921aa9362d67feb39141a11360ceeed68b9d026a6c7",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001808625",
+      "idempotency_key": "sha256:99a69f065caca57efdd5eff0b8d66b08c71405f0dff21a95b1f2a4e427b39021",
+      "latency_ms": 5633.159291930497,
+      "response_id_digest": "sha256:94e8cf36bb4696bee2249a69028228cce122233b69d8d876ee189122d7b403b5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001239375",
+      "idempotency_key": "sha256:91c280fa71b30bc8fbe7cb755a2ad3cff8f785577ba511412d5d728a2136788c",
+      "latency_ms": 3342.0606246218085,
+      "response_id_digest": "sha256:027ea06dd79df91d43b10ad07d2f2612a28b3529d4a11539ee404d91b33ce09c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001545375",
+      "idempotency_key": "sha256:6df2575fe87dc535741b1b45654856111151fed0c88ae89131213b14f7a2d07d",
+      "latency_ms": 4800.331207923591,
+      "response_id_digest": "sha256:d41933c81a878b91ed93df0e6b2d7babbe0b63cfbfd3afac9e7e66689d1f94c3",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001531125",
+      "idempotency_key": "sha256:67dae02d7a3d7da03842e7222335d101064230ceb4557424b80bec8089672bc9",
+      "latency_ms": 6062.458832748234,
+      "response_id_digest": "sha256:8f12a3d6efd904b7c63fc83feeb55520812d807718df491a578ed381c15124f4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001567875",
+      "idempotency_key": "sha256:1864fbd5bda8a9a37d97bf96966d4ab80eb90df71a2a94fbca73b14c6b545634",
+      "latency_ms": 4184.695790987462,
+      "response_id_digest": "sha256:2f0a7431bad21bf4f635c0f87749039fd0283435518959fcacab0b4b5a1dfdaa",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00161775",
+      "idempotency_key": "sha256:c4ae0c6dc2c8aa4f9a748e60dd9fb93ab4823dbadd82065954fe59edaf3ec428",
+      "latency_ms": 3441.6597499512136,
+      "response_id_digest": "sha256:1ca8675fe13d47223a3693b6bd803d02d5515f5862d523e3fa3a2e088341f48a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002025",
+      "idempotency_key": "sha256:75b7a40ccbf538228fe09fe3a2dd2607bbf2c0633eec792902c9e9c9d5c53d0d",
+      "latency_ms": 4778.806708287448,
+      "response_id_digest": "sha256:da15acd973c3faf4b44cbeafeb9cfa5e2923e1be8715a1846fedc44c31a0e60f",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001665",
+      "idempotency_key": "sha256:9a4d25b5278839176ccb380ffdac7e0bfd73fc623a18d6590f030d48488ad488",
+      "latency_ms": 3784.732208121568,
+      "response_id_digest": "sha256:57b6115912d9710ae2327d6e24fafd7119f3ae4f1f217cfd672c8a1da9223992",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001873875",
+      "idempotency_key": "sha256:8cde45e412e1d4263545478a3e38d33b5be8f6a37211c5ec222181f94323b909",
+      "latency_ms": 4124.228707980365,
+      "response_id_digest": "sha256:afb6a92f7b0df1e4fce1bab1c0d2d4b5038265537777c5cb4857a29941f185a4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001736625",
+      "idempotency_key": "sha256:fb5db06afa7122a12bb72c3d9e35659c7bdfd62fdee889e7922a28747797fe85",
+      "latency_ms": 3492.1482503414154,
+      "response_id_digest": "sha256:aedcad674ced63f2435338453328e394de655868c450c396bc5ba5c052839b41",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0018645",
+      "idempotency_key": "sha256:e24945e5915a0f2a1f5b6fcb744afc1a39e3a9d9eb7a2022fc42b7c46366e631",
+      "latency_ms": 3960.5455831624568,
+      "response_id_digest": "sha256:44216b468e6e57d68d778a7c4a56d84897467a8e73a32576f38de6e34d9a5325",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001820625",
+      "idempotency_key": "sha256:85460c91438e5f29254fb220b2b9874c8dbe41ec23a2eb15617658c8ff58f492",
+      "latency_ms": 3661.3713749684393,
+      "response_id_digest": "sha256:80e43a4dda77c7a4a929fa61135c9c35bde70448075e49da50ad71dc319a9938",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001672875",
+      "idempotency_key": "sha256:bcd1a814bbacd0146071bb87e37ad540fbfc1ad7f518afeb6fe96d6fe2f54821",
+      "latency_ms": 2935.1975000463426,
+      "response_id_digest": "sha256:8bafcac36303ff6765dbdc7c1a2f6a19585b51ad16d11b78b7abd6f875b81873",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001972125",
+      "idempotency_key": "sha256:89c460392c4ef6f2e64ed58211f73c114970eeb8a81801ec242c27bf98ca3dd0",
+      "latency_ms": 4032.8888329677284,
+      "response_id_digest": "sha256:506c75c5a39b99f25b510e0aca58e255433ca3b1e3ae418f264bdfc9908291d5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00225225",
+      "idempotency_key": "sha256:1fbf60cb29f3c4403c4bd4ad2d711d9859c1282cfd1bbfa720da3d91ee9091a8",
+      "latency_ms": 6908.132500015199,
+      "response_id_digest": "sha256:60746c194384a4e40feaed754098c3df615a3a839cf672f3df25748a70d01fff",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00246825",
+      "idempotency_key": "sha256:e2f8681754f0cbc17ec16cbbaf28aa5f18bdeaab667fade822b9f2e174d76370",
+      "latency_ms": 6411.510083358735,
+      "response_id_digest": "sha256:cc59a8bec29096813bd2deab8011e6e8bdb4922a7aea73d1cfaa3f15e338ba6c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002031",
+      "idempotency_key": "sha256:110c8acab6fc7892343622adfa80d638a5e22e08c87f3f8080a4434310ebadf7",
+      "latency_ms": 3523.315042257309,
+      "response_id_digest": "sha256:ee19cfaf8c9780b41a57ac816012095aaf645681c6329efbbeb10680353215ea",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00200175",
+      "idempotency_key": "sha256:d382387ecf9f6c5cb3f824184dda3ef08d5b508219b8458d4929b9a34b66f5c8",
+      "latency_ms": 4072.89162511006,
+      "response_id_digest": "sha256:7ab1ff5857a6b76f1dcacb58c7fa41f2ebba6873e0127fc31b371ea22ad05e3a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002693625",
+      "idempotency_key": "sha256:61eb171ca4331c312dd7af6b46077ed45273ee79e415bd20e1e4506fb40045d9",
+      "latency_ms": 5765.042792074382,
+      "response_id_digest": "sha256:768ef0ad23fcb6b645b4224829b4e21977b974c1caf09708c274e82f8c3af21b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.003109875",
+      "idempotency_key": "sha256:f9b0112082f8913d28fe7d599a4b7a5ce2516a18ecb73eb1496a28a7e2115c31",
+      "latency_ms": 6412.146833259612,
+      "response_id_digest": "sha256:0945b768dd5e7e856a9a04c7ac01911a8ff49a0cd9ff922afcc3f5061c3045c2",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002545875",
+      "idempotency_key": "sha256:e3027487381ec1afc14305c148d6f75c9a88b0a533f8c03e66962b73c7146d11",
+      "latency_ms": 4748.915874864906,
+      "response_id_digest": "sha256:9e8d909472f2fcf2d4fed27020b0ec257f601747ced4f80f9f060d2b534520b6",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002167875",
+      "idempotency_key": "sha256:c9b74dab022a2b6e8c5443b2c0becb2f0c3f4a21cb3b630be679262d2b6034a6",
+      "latency_ms": 3879.9432502128184,
+      "response_id_digest": "sha256:f89796ac9e8ced19e6fde8e60083ea6bc813aa97db836b9e8775b5ec30261531",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00197625",
+      "idempotency_key": "sha256:a053a5ddf4ad25b5ed46c17a077e5c0f04762e2519e5a93fbfe544e557637a7a",
+      "latency_ms": 3734.021458309144,
+      "response_id_digest": "sha256:d04a0b059d7b4d8d1dd362dc818b953be1bea5fdeb52bdd959df5268aa6afec4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002051625",
+      "idempotency_key": "sha256:83788dc98cb59d3b236ef343e15310dbf37b91c535ebfaac55082ef7884351e0",
+      "latency_ms": 5347.302709240466,
+      "response_id_digest": "sha256:28b5d81993efc2c9340b9ee1e6e903a9290e5b92154b859f9bf02af65ed05746",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002358375",
+      "idempotency_key": "sha256:e5a276be479021caa36ffc6fbb543ebbc6ff80a086cde95ebcea713f9bb0bde8",
+      "latency_ms": 5700.581000186503,
+      "response_id_digest": "sha256:597a08cab9948182d43d34cf8888febfd7c94347c1b151dbcf27a02e74c26f2d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00246975",
+      "idempotency_key": "sha256:9e932b3c8eab4a2fa26601707efa7564326cbca29b38d5df707f30b566e58e18",
+      "latency_ms": 4378.5144169814885,
+      "response_id_digest": "sha256:4a068bfc5116a8b807eb3a02727ad67c264e776e21ee78851b80858cb634aa7e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00126",
+      "idempotency_key": "sha256:a9e140162f28b8baccdce2508c2f5039860976d50d52676ca6554769f2748ece",
+      "latency_ms": 4498.891333118081,
+      "response_id_digest": "sha256:552d217c9bf2ab4bc4c4df9d02a5b855ed63a40a9e9b50868593cecf0c98f9e0",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00124275",
+      "idempotency_key": "sha256:03f9e9f3a2aa83ecd48f85678a511908cb5dc20a29d9843a65e57bc62a8b16cd",
+      "latency_ms": 3728.411333169788,
+      "response_id_digest": "sha256:7629037887bbf84989b5a729fa15a8a18d5db08d6ca56dce1e85a3b94d53de22",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001340625",
+      "idempotency_key": "sha256:89bdb2b8e59f80d1651ea2f47df14969be9a8d8edc46c137ed630a04168f8586",
+      "latency_ms": 3876.692249905318,
+      "response_id_digest": "sha256:ff080d2bff2a10cd894eeb3da95f9f01a7cf60e36c877722903300b62f1b4d75",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00107925",
+      "idempotency_key": "sha256:dae0a5279dd8626755e5e901185478082a086e3dce5689bd2face8a690217a2d",
+      "latency_ms": 2736.1829169094563,
+      "response_id_digest": "sha256:04d0608965185d3176a77179c9a38793a5df91c9e00deb5d56c362239fe32085",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001635",
+      "idempotency_key": "sha256:76ce9a6b2ed20f00942c58710afbc9ff766a5046670d47186e053502fde7ac78",
+      "latency_ms": 6365.174375008792,
+      "response_id_digest": "sha256:16eb1fb84a3970f4dc96675356778267ae3d485a8a77767821cebe5b45a9450b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001501875",
+      "idempotency_key": "sha256:04cc564b7e1f9e678c5a5f2ba4f11d2a9b26309aafd9256592f09680b616dcbe",
+      "latency_ms": 4157.98604208976,
+      "response_id_digest": "sha256:6cfb6a88e023828b4c0d5d1dac210aced004676810f24ad497511b7586c2cbc0",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001421625",
+      "idempotency_key": "sha256:c489821a9e9bfa0c51e2d42244e53009ab036e3201ce77de84891f603971ca69",
+      "latency_ms": 4131.874207872897,
+      "response_id_digest": "sha256:f7759b99b32e11f6a6f0d211401bf2752e72ae850e35c004944645d630484b14",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001453125",
+      "idempotency_key": "sha256:db23758c1fe9e8bcf4e728cb0b1bd380439123772cde2408a3a1dad523efb368",
+      "latency_ms": 3788.7037922628224,
+      "response_id_digest": "sha256:49558032ab2862e08410cf287181ff97013344057f52e36de343cf04e3829bf7",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00149325",
+      "idempotency_key": "sha256:60a40cf4e88f6d0380b95dcf6f2a0167499a74acf78cd7a542441782d7573f20",
+      "latency_ms": 4181.695417035371,
+      "response_id_digest": "sha256:27d519e4e5996064d46544c9d1417c53968aa818e5af4a473903d03fea135ddb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001567125",
+      "idempotency_key": "sha256:2d692a21400e9ccdd017156273cbbfdb7392810ef2888ffbe8c1ae1f92602ddc",
+      "latency_ms": 3618.26558271423,
+      "response_id_digest": "sha256:5a4d289c62999729fad2e148e7808ab55b8e682bba24d2ef0a57f7452942a999",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001840125",
+      "idempotency_key": "sha256:8a6c5954683236c08bf28f50cf4d62387e2dfc18fc35140475c481f67a1285f5",
+      "latency_ms": 11827.399542089552,
+      "response_id_digest": "sha256:bd9574a2dca74fbf483dfb8ba5ee7ba6f72245005e89c3fedd85beeaa7b92ec4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00413925",
+      "idempotency_key": "sha256:6c89012ad3a556aab2b50f4a2e2b4c9126e0d1e632d55793f7377e6c8b086966",
+      "latency_ms": 12242.946916259825,
+      "response_id_digest": "sha256:0607a424714d598d594c2ca5013ee668f841055e1f7cbf6cbcd56b9dfcb5e280",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002080875",
+      "idempotency_key": "sha256:5f337f2c869dc2e95086f2add670de206ab197052e6a55a8fb9cd1f987957fd3",
+      "latency_ms": 6231.489124707878,
+      "response_id_digest": "sha256:0f2f4698380679f436b5e88e73cc9aca858ee6fc7eb54bf26c44b1c968450ac3",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0036975",
+      "idempotency_key": "sha256:80fd2684499e4756d00b573977ebd12a4a55ce63e99985344268878be211bee3",
+      "latency_ms": 11638.615958858281,
+      "response_id_digest": "sha256:936f46b227ddc8fb50d160da0e4902735c17c46717008f2d3d81e0f0cfb7f626",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002678625",
+      "idempotency_key": "sha256:623d9856779245728d32b653cb2c6d5f56bb6726a132c66beb705220d2a31f14",
+      "latency_ms": 7467.785249929875,
+      "response_id_digest": "sha256:468f6a09c301b4e92514bcc5a6b84ad959eb6692549231ee4a86a3e8a0be9eeb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0015555",
+      "idempotency_key": "sha256:67f13776686e6ddb19fff27b313b0e021d2e8ca7bfde71c08c65e1c44ae5f7af",
+      "latency_ms": 10507.418374996632,
+      "response_id_digest": "sha256:c95fb8ad9842a387a106543c923ff43b5e7339be13d78b5839fe95c62dba2bb7",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0020955",
+      "idempotency_key": "sha256:b008c0522f3566ad06ad804bce299e454bddda36aa88704876c4b092ce4259d2",
+      "latency_ms": 4821.741207968444,
+      "response_id_digest": "sha256:82103630707c79d203cd4dabfb884ab0a4a92869486372a2b739be40622eeeb8",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001857375",
+      "idempotency_key": "sha256:2ff9c8782f5e6d81b8debdc7cacfa64bbb990e31302ec3ff70cfacbe191b1dc6",
+      "latency_ms": 22266.05216693133,
+      "response_id_digest": "sha256:36c85277d69a9d67ddcac733a11418d2311d527c2e6072f086e93965d439be45",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002439375",
+      "idempotency_key": "sha256:164f37e1940a95e198c5ecc81a451cc33888a810ebd89868c410d3ecbd39e21f",
+      "latency_ms": 6883.0529996193945,
+      "response_id_digest": "sha256:781db7b33b7ec5cb7c65dba138a62c177f3f74c32ae9838d17c200c81cc5c6e3",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.003756375",
+      "idempotency_key": "sha256:94dc721b3a224b0c8e4c3aa6c558157752c1123db96427471dc974ec7d54df95",
+      "latency_ms": 10338.603000156581,
+      "response_id_digest": "sha256:1849f9db3e7c6398cb66c1ee476204b24a1f688161c121364d85bf40f9bd7025",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002111625",
+      "idempotency_key": "sha256:cc7395268c905dbf3441caa6257c72c50ae931fbbcca556c11249f097917518f",
+      "latency_ms": 4250.427084043622,
+      "response_id_digest": "sha256:d568eea47b3d35e1024fd99175bf1744aa55114e67b64763a81997f28cf892cf",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002217",
+      "idempotency_key": "sha256:e49f79ad3aa0d901eb00cf5970358e69947ab6b16594e8373a910ee4471ee3af",
+      "latency_ms": 4921.880166977644,
+      "response_id_digest": "sha256:0cca67c1c45f2bcca80f0b9b660e91ed9774ac44ac6c4a3bd402746f30f4e24e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002099625",
+      "idempotency_key": "sha256:32e8509fcb18a35c755150686dbe958843ee89d2c9feb2d9f6cc624e34027c88",
+      "latency_ms": 3593.8123748637736,
+      "response_id_digest": "sha256:f9da1f7f7d21fed0f41c7524f95ca871aca4a60ecb85940c6d1656935f9e9039",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002127375",
+      "idempotency_key": "sha256:be3e6a22528a23e90e17eb1c304bf56b7c01da3fc8e867b44d658c2c89f25314",
+      "latency_ms": 3816.7395419441164,
+      "response_id_digest": "sha256:2711671db72882a0132af9598ff8f2dac29b4ca05fe85e4099dcade37df68f6d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002155875",
+      "idempotency_key": "sha256:7274efb7d1b866655fe784ef520135509494463eb5efdf1ed805b7e8a6587f02",
+      "latency_ms": 4337.70408295095,
+      "response_id_digest": "sha256:d7d5730eda86af0e5398b8bdbfcab8c72a71fbc69377cde513373eff043b4f25",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002194125",
+      "idempotency_key": "sha256:9a4d82babaa84120e66ca859cc6aa702bf9f16dc14fadd1d646045936fbf6bad",
+      "latency_ms": 3688.4016660042107,
+      "response_id_digest": "sha256:7db7d5526e2549a7a9781f449a96d120a03590e1ba36afbb0bfe59f3a3309863",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00109875",
+      "idempotency_key": "sha256:d62880cb8257edb2f44ea0007f75e3497a99301678339c9d8f2cdb32a7e37a12",
+      "latency_ms": 4351.4434159733355,
+      "response_id_digest": "sha256:d5ba19a2dfdd7bb166ce662ecc94401e0b128ee98fc2143957669c798208daec",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00126525",
+      "idempotency_key": "sha256:3fac7210d6cc1e7613dc289bbe8809e8247efd866831c9b5bfe267cc31d3b758",
+      "latency_ms": 4521.074625197798,
+      "response_id_digest": "sha256:418cc4c668715ecbf0c6d9dd218361e45eadde34a72459b97425dbc53fbce303",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001805625",
+      "idempotency_key": "sha256:d7fb2a2917c08ce499098a40eedbf7e7ab1044d34c14e8c75fb445a52b67de69",
+      "latency_ms": 6607.117415871471,
+      "response_id_digest": "sha256:79771f403892d51416ac05c53c6b55b6e4d62d36c1533278818dc6b2127fe7f2",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00135225",
+      "idempotency_key": "sha256:1ff1244d72e84e996a72aeb0a6a402a3b98ff8214970fae6a535dcbd6b9f8787",
+      "latency_ms": 3646.4796252548695,
+      "response_id_digest": "sha256:0940508fd802c43995e53a390c6d646e39412102faa1e5f28ea919e472eba3fc",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001623",
+      "idempotency_key": "sha256:54b386e19add04fafd4207b1006a9929676f4c6d38d67bbb0a424f76afbdc2e4",
+      "latency_ms": 5745.502416044474,
+      "response_id_digest": "sha256:7511d8aec4deccfd40303be3e26bbbded3ba6e6a70474848eb1fb51e8143c5ce",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00136575",
+      "idempotency_key": "sha256:c427c386401a667f1a1807e9ddcc592aedd8cf8ba55e57fa64b268a4f5625355",
+      "latency_ms": 3333.775334060192,
+      "response_id_digest": "sha256:472de4615ace843a464176ee98adec3312b18214b9ebeb15bfd90cf133e90171",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001329",
+      "idempotency_key": "sha256:21dd971fc9cecba4ec786e79ea89f0ec9a827e104d1469f63110fd7e8a469864",
+      "latency_ms": 4066.8192910961807,
+      "response_id_digest": "sha256:a9946ea27f32d92796ba2dcd8f83134e3faebe79bc67d0f917442450e0682f22",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001456875",
+      "idempotency_key": "sha256:1e84700ae929386c18c5a326f567298bf3a313710f410a421123b02dba5b9a4a",
+      "latency_ms": 4390.365708153695,
+      "response_id_digest": "sha256:71e518558020ae3f27382609d1943709672bc8af157a18a69ad98db2de9efb55",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001500375",
+      "idempotency_key": "sha256:3ae835ff58d6c43e67e08171c63adb787bfbc5d6ed779c85c6cc620c15cf45df",
+      "latency_ms": 3665.4922082088888,
+      "response_id_digest": "sha256:8ce4baf11af47a6e74f772360c6abebd683a4471c35cf61ec61629c9b40fa7bb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00209775",
+      "idempotency_key": "sha256:56060848f68c92e9d18e9535dce5eb81cffe0c26d5fe451c112fc481dbe65e4b",
+      "latency_ms": 5493.395084049553,
+      "response_id_digest": "sha256:cf3227e87876af38f18e78b8a7250781a3c61e3284f786326c7f84e840898dc5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001862625",
+      "idempotency_key": "sha256:2e8129e200c1c458e7f9c349d680b4b3b107c03d859547cc9ff468f42ab9c150",
+      "latency_ms": 5299.313333816826,
+      "response_id_digest": "sha256:2d2c3d5bb40430a47f1e73ba34bdd85188044ed95deb1a122774d21e8390a62c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001729875",
+      "idempotency_key": "sha256:076d0da1e95f952d18c7c43552465023f49f08160eec2f48560a10d6393d3662",
+      "latency_ms": 8313.85508319363,
+      "response_id_digest": "sha256:60be0022c6fec25376a3f9682a9bcaef0c5a0434ed9672d569398942c4e3c9dd",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00198675",
+      "idempotency_key": "sha256:ddb47730336d63557ccad94fc144f07bc59b0b797cb99ede481ab45397f027e6",
+      "latency_ms": 4764.268750324845,
+      "response_id_digest": "sha256:7742786d860c02f6a9964b79428ead167b430c72ba1101072b8b281b9d793cd7",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002118375",
+      "idempotency_key": "sha256:f28dcdc186157901396dafe98e593c63d33666b4aca29c4218d3d6818c6235f8",
+      "latency_ms": 5780.1844999194145,
+      "response_id_digest": "sha256:19e83d13eb25c41c7ed66863321c1cfa7e1b8ee3bf6dca34d503aff84abbbaf5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00172575",
+      "idempotency_key": "sha256:7a8de0dd16c2f220911637f31e11cd53c162765114e2e81ced392cb8702236a5",
+      "latency_ms": 4239.650417119265,
+      "response_id_digest": "sha256:12093cd1b7868fa194ae3ba631ba4cefcc054b8de595271fcbe0a06d80d03f0e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0018225",
+      "idempotency_key": "sha256:a9dd04bdf55eddf8bf95f573732086826bc7b1eb213da3064d3aed0bbe972d8f",
+      "latency_ms": 4294.978583231568,
+      "response_id_digest": "sha256:433a54f467996361970f59c1e9b6dd0c36a8c612847a182db5b28c328c94bb78",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00353025",
+      "idempotency_key": "sha256:1c71af46ee09344cc1510b9d5790a1bb481125718d91e2f82fa57e25d0ad2f90",
+      "latency_ms": 9562.750665936619,
+      "response_id_digest": "sha256:2255a7e819a54f95a2049b1000811c0eba078cf0bc4abcedcb5b2b62aef62938",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001856625",
+      "idempotency_key": "sha256:91c62276a3168dc6a637903b9b4b19199be1e2a105d214cf18ea6a1861ca48ec",
+      "latency_ms": 3624.342709314078,
+      "response_id_digest": "sha256:477d87248d765f08ca4baaa117f3dedae1868361aa8ff9d6f7b7f47a38d8d533",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00189975",
+      "idempotency_key": "sha256:0196c8d63c4b01c4767c0e7e5440e051b70b6c0a1584bfccbfafe7c3963cdb38",
+      "latency_ms": 3567.0794579200447,
+      "response_id_digest": "sha256:927bf47c6037ad6f80d040283fc526523af827d4674d7f889d6ac0afe1bc6420",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001967625",
+      "idempotency_key": "sha256:c4fc57467a1c6f7ed45bd0851855a16900e692149ba80dd37be88e1f5629dac1",
+      "latency_ms": 3485.1369159296155,
+      "response_id_digest": "sha256:f1a29e13e6ecafa606454a4c44eb4b9afefadec5b28d6ef4741fdaabb6b42012",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002121375",
+      "idempotency_key": "sha256:ebb6510719c46d95ef859c94f897830bc59583e864db36b461b1afa1acd939b8",
+      "latency_ms": 8595.69983324036,
+      "response_id_digest": "sha256:81892b60a754ba45138b3243e1142a4e1245da4193fc653614663771a8e5f60e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002092125",
+      "idempotency_key": "sha256:c999c3d8ca18fe65fb89ee37c9b121ace4852cd60c1e041315493b2b21aab4a3",
+      "latency_ms": 4567.024750169367,
+      "response_id_digest": "sha256:0c6298867d5c3dfbdf6c196defa8f7bd916c9980f4858511d5d6d0848bb7452b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002186625",
+      "idempotency_key": "sha256:02317b876a26c829b60dbcb1b20ecad43c1f21793f9d8328015f365610388f78",
+      "latency_ms": 3944.3963328376412,
+      "response_id_digest": "sha256:3d27275163d435292ec34f8116010f09d2a6f22b1244e3aaeecd811d1524b431",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001220625",
+      "idempotency_key": "sha256:869df71f458909edeaead2c45af2c25c139c6b3983c32c92461bb2e08aa16681",
+      "latency_ms": 6154.695666860789,
+      "response_id_digest": "sha256:d8a83a734ad5316e8939dbc5ee39a603be8d95204ff4359be1d5a1bc7b4c6d9c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001272375",
+      "idempotency_key": "sha256:b5bbb9127704be86c8255fd212c58ba2d3164c4d6121387a2c15820c5bfd52bd",
+      "latency_ms": 4912.530541885644,
+      "response_id_digest": "sha256:d3719e3a322704b79f596eb41d355a917f5c02a83648bfda1e06a80f887f106a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002962125",
+      "idempotency_key": "sha256:098d54a4e3efff35565b1eea4183f2e754f9c6600c8d1214e438fbc583b8f939",
+      "latency_ms": 10454.424333292991,
+      "response_id_digest": "sha256:0310366210e8b4d207effa00cf5e283759cf22dbc299108fe829f3e7f1f47b61",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001770375",
+      "idempotency_key": "sha256:d01a7c60415ad002bb5dc43ea82a520716f0df2c38b977358e22d0e71e4beef3",
+      "latency_ms": 5485.118499957025,
+      "response_id_digest": "sha256:144ff1b47e753407ec4aabd6f2521e2d849e0dae8780faca20bb71241cb9c419",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00127125",
+      "idempotency_key": "sha256:1604afdc5fd39e4c2197214dfb2aee6bb72b7a401ddc038d8d4213544c3a1e87",
+      "latency_ms": 3736.6272499784827,
+      "response_id_digest": "sha256:cfa82b2e0cca7933b02118bfcb8d55b7ebfd4afef2c99ebdeadcfad44ffd0d4d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00128925",
+      "idempotency_key": "sha256:f96a9af5a7377a4e64af092e4f740c8880c2499244ad10e40ae76b0b64036ef4",
+      "latency_ms": 3573.753083124757,
+      "response_id_digest": "sha256:5b6a53cbf414d7003f7e6304ed42686ec708af807bcb6c3b63e34b7f170b7e02",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001422375",
+      "idempotency_key": "sha256:bc419599c2b57935370c2d60051de8c2891d9c584175c06e7c9b60f63441b4d3",
+      "latency_ms": 3771.3464591652155,
+      "response_id_digest": "sha256:e023f4313d4c96a870963c7e529d1d9877373d2a24a6e688ed6e0ba9d98b5676",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00133725",
+      "idempotency_key": "sha256:8a89bccbcd10d88bd8bd01272b737400e8d643bbb241b56f3816d0368bb5df7b",
+      "latency_ms": 4056.830875109881,
+      "response_id_digest": "sha256:9d10d814f1d6d5da1045b02ff1c38f4ec70f78da2034af1ae06b59b2dc020e62",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00152175",
+      "idempotency_key": "sha256:af8bc67d9be9237f1eb23189a66e3c2df06480a74bf5bb45bf86e9e6e799665e",
+      "latency_ms": 4520.600999705493,
+      "response_id_digest": "sha256:f7d0b28c236223d7ef80af61d6404cfbce11c4855653af455dece39b61c79527",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001678125",
+      "idempotency_key": "sha256:2000b48622e5bc7b0c78b255fa89080ccbfe5d09e04fcfaefce9c1bad38dc50b",
+      "latency_ms": 3686.9529159739614,
+      "response_id_digest": "sha256:7dd9ead26770ef89d55522f7ed9a95096974c1a6060d62a18ed3e5163b2b2784",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00195825",
+      "idempotency_key": "sha256:17059ff53449eda289d478ca9f60005fd20e8371660ef197f98d03c9fb79b932",
+      "latency_ms": 4897.808375302702,
+      "response_id_digest": "sha256:915e4ed6d88a2941c154ea91c70db37e9d5f796c93c38968fde0fb3da31717f1",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0030045",
+      "idempotency_key": "sha256:750c67ce92ac5b6c764c841af5431f2a345bb651636c2e46250ae0fda214b043",
+      "latency_ms": 9331.401749979705,
+      "response_id_digest": "sha256:bc45b13d21af3571d3d142102785d113db3f4e76de690f92c0b05dc5343ba74a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00307425",
+      "idempotency_key": "sha256:301da4c37db59c2ac610d44edfa724184ba9f7b4e688c7e41f3b2435a60fa0c7",
+      "latency_ms": 8936.171124689281,
+      "response_id_digest": "sha256:529f6b7e61d4c65619872ad94d14ec1cf70c116847ee57fa8e8eb6f4d9689759",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001434375",
+      "idempotency_key": "sha256:7610974ff0a63d3f5554dcdbd59997610c0a6d7e090bbe9496ad53081a533e15",
+      "latency_ms": 3634.7410827875137,
+      "response_id_digest": "sha256:57b3eaa2018d1449b07571ba9320ba2b9559125d412fbe5ddb7e9bf0c7557e84",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001690125",
+      "idempotency_key": "sha256:7b01b363b12a758c925b5a4e29a75bee080229c91af8c01a482133a299c29337",
+      "latency_ms": 4126.928416080773,
+      "response_id_digest": "sha256:4ffcb9bc16cdd6a2671df8b02b5731417494721ed77bc1745eff70ed25269bd8",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001918125",
+      "idempotency_key": "sha256:79fd4aedea02e78550baa6d5d786fd2a2e5c4d4a788e5a21721fbde8b86abbbe",
+      "latency_ms": 4234.401625115424,
+      "response_id_digest": "sha256:e50e46d77e25fee6e9cbe29d94bab88c269e2c01875cc3ad8e89d34c7a55012d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001943625",
+      "idempotency_key": "sha256:2590ad941b76766ca915ac573aebfdc8e6d19b91e8afd8de06e3c60d8463fb9d",
+      "latency_ms": 5146.517707966268,
+      "response_id_digest": "sha256:23fd9d45295c06a0e519b6096ba5282f9b9179463c088822b51a99adabf15ba6",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0033015",
+      "idempotency_key": "sha256:87bbcacda39c6cc45132e2ee02589719fdc8c265a76655774d477458ff9813fe",
+      "latency_ms": 8678.140874952078,
+      "response_id_digest": "sha256:3d91a26cf35715f963beb2c0be5fe3c90acbba70a3436ffeeca066afd22f0b23",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001874625",
+      "idempotency_key": "sha256:f1d7aa39764b6196628b348b07f440579e382189da3f9b0669db99ec1bd7a6f7",
+      "latency_ms": 3921.2512499652803,
+      "response_id_digest": "sha256:7a15b2a064cdf09b17f6a3702efde598c23f32a5b36988723f2c288ab593b8eb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002533875",
+      "idempotency_key": "sha256:29b1d405835ba5b7e7ec1ce5595aa0849f8c21d3088f65ed45862df6ec7647a0",
+      "latency_ms": 6531.718708109111,
+      "response_id_digest": "sha256:b2bb60fd2743b3c415523472c4712c12d32cb74fa2595703869c20a1dca02dd9",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00238725",
+      "idempotency_key": "sha256:73cec624377bc750f18039185363b37457261012edf5c4f4f8003d1d9c62c258",
+      "latency_ms": 4730.999624822289,
+      "response_id_digest": "sha256:eb7ca1d29f19ab722d36c82e02dd2a424cb89bc8f2280080cb4246a3c7ac37d2",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00215325",
+      "idempotency_key": "sha256:5bf10f23b7c04184a3e284985fdd2d269d7f15a57ce4464f260d5ab18917818d",
+      "latency_ms": 4471.785624977201,
+      "response_id_digest": "sha256:a74e910e66ed4e315f6d90c86784c21ed6b63b61eb5e26b872994f214cf0b6d5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002058",
+      "idempotency_key": "sha256:d5ba6cd70384457ccf56a9dcb4d5e165711a34193bb16f77ab5595945abfce27",
+      "latency_ms": 3727.9227497056127,
+      "response_id_digest": "sha256:0ec387f381cc91e3c7523155a5ac9ee415fa25bf9607c9a367a147f61ee747ae",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00207825",
+      "idempotency_key": "sha256:24aa212bb287c040567b1bba05a1fc2fbae839ad11a5ab37facd323b503faac9",
+      "latency_ms": 3473.9638748578727,
+      "response_id_digest": "sha256:f42ca4f03ffc28310d59ba5d4d19712814f70bcd4bb36f115786593649df3437",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001138125",
+      "idempotency_key": "sha256:4f40c0de841da632053cba878d6164162aecbdb190dfbb6b9488e34e4afa4b87",
+      "latency_ms": 4992.4762500450015,
+      "response_id_digest": "sha256:268fef067bc85e7b7f840e9858124bffc3cad80484de872e69c6a70408d73038",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00135225",
+      "idempotency_key": "sha256:b4f3b244c70961e9ed02a959120487e3b825752c238e660b99ec383c7fc2b38d",
+      "latency_ms": 4246.9501667656,
+      "response_id_digest": "sha256:87fe6b6e09e1f3c707efbbfeef279ea580562af0209dd2f9629d3202446b0f55",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001333875",
+      "idempotency_key": "sha256:924425be5251bcf14ceec5d737d6adfcf01b1267a1ab226a7ec2256cae11d194",
+      "latency_ms": 5349.667540751398,
+      "response_id_digest": "sha256:830f30792a2e7f55c0c0626de942eefa2a388be48e5c87437e6d5aa8daba653e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002319375",
+      "idempotency_key": "sha256:5dbb540024ec4859d0f89b08b24b3cb40d4ab9eb802319f4da006ca2f418349b",
+      "latency_ms": 8066.673958208412,
+      "response_id_digest": "sha256:7525a3af2eca72d5d3943d04aec47068e3dd21bd9709d6fad3a28e63a9ab030f",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00284625",
+      "idempotency_key": "sha256:ef37ef9ae949ba4ef5189626233904f7ec0554139be27b934604b213d5716973",
+      "latency_ms": 9470.483583398163,
+      "response_id_digest": "sha256:4a68697f29ca0027863040e7f5ed11f92f87e0cfbcd43d0e3ecef5237dd234b1",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0014925",
+      "idempotency_key": "sha256:34d9b81349fc9bdd68d7cf1b300caa9588d3fc16d0904712033d1aa1d31f0a6f",
+      "latency_ms": 3740.618917159736,
+      "response_id_digest": "sha256:5558716e561e5025e9786cd9851e506cc1d3e8be4068614edf5eeb2c4ded1a8e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002652",
+      "idempotency_key": "sha256:5cc85ea8b806b1413a3cef47a868932d4eccd5723446ba8106a6fec872eb8c27",
+      "latency_ms": 6795.23833328858,
+      "response_id_digest": "sha256:2e0c1102cf98477f6be45d4e80454996c37ddfdd5a78a0aa57654442fcd07e0d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001574625",
+      "idempotency_key": "sha256:fcf854e2cf87f6714678e3aec700f5bc4887d2753a36d4355603e0b9337fc7f7",
+      "latency_ms": 3652.2227921523154,
+      "response_id_digest": "sha256:48962a11392dd264cdd39def9529ccedd4fc024b6621a27d5b922c81a69554b9",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0016575",
+      "idempotency_key": "sha256:4725774d9a35fe63d9b6b38d5bf786d941246a7f55842c4821f358d964113fa0",
+      "latency_ms": 3937.716542277485,
+      "response_id_digest": "sha256:666260bf578313677dd165b33447d950d811feb8ee7bb5ac7fccb1d12f1bbbda",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00170175",
+      "idempotency_key": "sha256:c883bcec7c6e6bccd3bd3a7281568a683faafcc5cd9b34f9a74a259264ecd980",
+      "latency_ms": 3732.7511669136584,
+      "response_id_digest": "sha256:aec459efba45e2ce2031c5742eb94bc6562c00742e301baef390dc2e114e01d6",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00182925",
+      "idempotency_key": "sha256:8cba485e368fb7fbf402c581dfb217a6a154c04e2bf1a3f6d8a0e4d1e55b45d0",
+      "latency_ms": 4964.394958224148,
+      "response_id_digest": "sha256:188c19963d8e965271a731ffda5358413ce4fa7560cf7a905cfaa4177d7a045d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00217125",
+      "idempotency_key": "sha256:1e8a6fe094d5729a60f497e09be6efedd309bb86c58e9f18e74d81e1c0a72a7b",
+      "latency_ms": 5253.508000168949,
+      "response_id_digest": "sha256:040fa30bd2a89588456be030e7cd8c60955d118a1bc3b309520d343697880ee8",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00162825",
+      "idempotency_key": "sha256:0e70cf30eb8cb4770d10c0a440daffe3656ce227093a0d2539f77809bb25ca0c",
+      "latency_ms": 5759.405583143234,
+      "response_id_digest": "sha256:0f24e474db6a314f18c699a0d63309526e42097dfcd7142a5bf6e6478e51d739",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001719375",
+      "idempotency_key": "sha256:d8709febde68d42966b407efc8cceec3f2138d214c5619889e04fc69e0f44904",
+      "latency_ms": 3524.013209156692,
+      "response_id_digest": "sha256:46b3b6f65d88ea8a10e75ed1a2dc0c50a66ca68aa17f3dc132367298930f80cb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001592625",
+      "idempotency_key": "sha256:6fcf2783ad2c021b1c9083246225791ec08a05b829ea89fed35853aa6fbcfc44",
+      "latency_ms": 3748.468500096351,
+      "response_id_digest": "sha256:50562a1a7c72d4ab31ab6a678e7f81a107d8ea5dc0e01c8cf4d01e0637eb1985",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0017715",
+      "idempotency_key": "sha256:091c498a867589214355db4ec44880b62a237b8e79fe8b838ebe4ec822d595a1",
+      "latency_ms": 3532.138917129487,
+      "response_id_digest": "sha256:af656f606622ebf860f810b468e5d4bbc1a142af7dacad9a5ce2d8faf4f77481",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001789125",
+      "idempotency_key": "sha256:d554564009ce1f3275a680033ae64ed1342910ed6b6a24cdd1eedabde46ba6cf",
+      "latency_ms": 3759.619084186852,
+      "response_id_digest": "sha256:a12b199064cc2e96afcd2fc099a4b0f5608508e9fc548a42bd344692797f381a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00188925",
+      "idempotency_key": "sha256:87a7191f8c6a5ae6d710bc176b582323ffcdd6232a0749a79885b346790653be",
+      "latency_ms": 3586.5274579264224,
+      "response_id_digest": "sha256:9a70207771bc11bc234b3cd346b46a7b3918152cef2e47840beddece59a0cc12",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001964625",
+      "idempotency_key": "sha256:4de5e2b4262813df76f3467ee2fb45c99a822e65d4932880840231fc337a0c70",
+      "latency_ms": 4368.27770806849,
+      "response_id_digest": "sha256:4cd9eff4aad998a0760ba9a6e7caa337ef93c517868cb3a187ea1ff20cfb49a5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002088",
+      "idempotency_key": "sha256:d3840c6027618aee29c820fb6fe5299923b0d844e1d7e6e9686e2bba43d0f0f4",
+      "latency_ms": 4707.304667215794,
+      "response_id_digest": "sha256:f8471c5c0df1d8495a2248e282147c395f602646f8d2cf4cecce1243eba18898",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001831125",
+      "idempotency_key": "sha256:73566b1a7cf8decc12e37fa43ca399d18a5e64bf3902e7b0caefbbbf09a8185d",
+      "latency_ms": 3075.476166792214,
+      "response_id_digest": "sha256:1db72c1014befd0cf43219d84d2851a553622ffc2d6de1d3fb45f5f04dee3bbf",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002144625",
+      "idempotency_key": "sha256:22ecae4ac6189470e45ed86e307d761aff8064308f7628cd7ea30f66bef0ab5c",
+      "latency_ms": 3899.0430841222405,
+      "response_id_digest": "sha256:28b658fd47f87e7a79eda512e19960f947869293c68d87113cb884c55791de7f",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001834125",
+      "idempotency_key": "sha256:c87ff2bf7f584caa8b18a7ca02ae2a9d6161f24986cd61fbd849a0432d26fa0d",
+      "latency_ms": 3400.2746250480413,
+      "response_id_digest": "sha256:bd47d4849116726e1945099415bd0bab6ae0cdb9597a8bff07899145966619fc",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002067",
+      "idempotency_key": "sha256:ba4b5f0aa2407fad9a01451fba5108a82e4f7e91cf12e4cb49cb2fcc7ede3d71",
+      "latency_ms": 4050.5640828050673,
+      "response_id_digest": "sha256:db0904d562962539d2e72fbc47497cfc619fa164daa0eb251201ee51fe6fc2c4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0031575",
+      "idempotency_key": "sha256:a3b449d7ac34db2ddb60d5366decea9b5b23ee1d2098148586e1efde8e404dbf",
+      "latency_ms": 7222.518375143409,
+      "response_id_digest": "sha256:86014555449453c6e9dc132ddf841c433a291d72c3caee5ae8be8ad6f324c89d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00226575",
+      "idempotency_key": "sha256:b0c7fbcda65f2f98caf3063eb4723885ca37e4f83f12be5495aa00e16dda10cc",
+      "latency_ms": 4024.7771656140685,
+      "response_id_digest": "sha256:b966cf4161586b6f7fc8df00f471c653b62e245775bf5d7fef687425df07f8df",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00226875",
+      "idempotency_key": "sha256:25f469edfb789d5c0f6676cd4d8570d502c853d0cfc24363b1a19d6dfe1e2f14",
+      "latency_ms": 3606.540124863386,
+      "response_id_digest": "sha256:e39deed6b65d23121653c81e7e066fc5c6612daeef6eeaa31b827ce2ab407879",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002293125",
+      "idempotency_key": "sha256:fc898e97dcb16d422ade78e0791ba1ae1408aec0fd4e4a3f97927af3c8a1d82b",
+      "latency_ms": 3141.1884999834,
+      "response_id_digest": "sha256:d0307c729e6b861770042e8ee6253508fe967da39c97c6ff04df6cb6e177e493",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0011175",
+      "idempotency_key": "sha256:a88a35f1654fcec1abab997547ceff7b475847093ab7c273af2a78a6514ed7c3",
+      "latency_ms": 4026.1385831981897,
+      "response_id_digest": "sha256:74f246fbff8621ef7d8dc548e92a6c699c92aa127b162869fef0b3a8b4f85280",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001240875",
+      "idempotency_key": "sha256:561a38cc543c87b89c5a24f9b78a8d3f4a9895ab67e4355a2102a082b04b50cf",
+      "latency_ms": 4654.8906662501395,
+      "response_id_digest": "sha256:2ba64235f0e7eb4c84a65653c84ae28957b0ffe25100b413a1c9246a489db4d5",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001579125",
+      "idempotency_key": "sha256:9a0aeaf9f20cfab6f398e5ecec38a7a1ec6cd9892311b1caa70c755c33b353df",
+      "latency_ms": 5399.593917187303,
+      "response_id_digest": "sha256:85574f26d4f346331932044c2434a89010918a8b96daf3f231fa9c697fe2c0b4",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0013905",
+      "idempotency_key": "sha256:f327c366393ce999b001bca61cfba75bf319ad362cdba5c6bcbf2a5b6ab47a61",
+      "latency_ms": 4165.598750114441,
+      "response_id_digest": "sha256:72fa7ee4c1abfb31310119ad71e66fbbad5e4c25b2de2f0301933dca789bd01d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00172575",
+      "idempotency_key": "sha256:fae3cc6c11f05c6ccd0012dd02f78513d66e93f0db8428e967472f9791255df2",
+      "latency_ms": 38564.02895785868,
+      "response_id_digest": "sha256:e24a349230f18798df3646645e009852e3af62e4630eadb8748e90e7f1cec321",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001401375",
+      "idempotency_key": "sha256:9870ba9bb7a7d7b84e8073dde3b195e805b2dc3faea7cd15299e87354f1d95c6",
+      "latency_ms": 4489.718500059098,
+      "response_id_digest": "sha256:00e82b2967bbc85c8a8bc95cb7b4e1f5ebdf7f2878b93ecf2038641d1bcb2609",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001441875",
+      "idempotency_key": "sha256:c65b977fbf7f5c3aa24d70cdef0548323961c9606281e8338f93bd8f320bfb3d",
+      "latency_ms": 3699.2414579726756,
+      "response_id_digest": "sha256:9f5398be80ccd3a853530f0d1d78e5324bacd8bd4380e1df84292ae19fd4f1fb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0014895",
+      "idempotency_key": "sha256:674e0dc7089cbb40de70c5e6858b957723b77ead27f320e58d4763404dccfefc",
+      "latency_ms": 3561.9217501953244,
+      "response_id_digest": "sha256:ef2b748932dc8c1b3308ce924caee37b419a62a21b61b51a031e69e7e6326502",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001451625",
+      "idempotency_key": "sha256:e3808489e0d62b692b809c486cf07120c91a06939d83a5c4245347fef4294eb1",
+      "latency_ms": 3853.396417107433,
+      "response_id_digest": "sha256:48e52ac0c55ab363a58d79bd5a5954e4cc2a2aa67fb013b82c754963b2fca92d",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00148125",
+      "idempotency_key": "sha256:7fe872b5ea71a273bc313337d15922e6f2e74bf0393e752d8f4335254524d278",
+      "latency_ms": 3888.365666847676,
+      "response_id_digest": "sha256:41ddda7c15530ebd6d71ecd3f0c802755474f7ce032eb3b1056b52124583c7ae",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002260875",
+      "idempotency_key": "sha256:05b20f2b32393d14ec580310e3360093392e844a5332708e940ffca955a3fb31",
+      "latency_ms": 5983.083125203848,
+      "response_id_digest": "sha256:a360f4f6bbe33e9c5e55b89928c3678778969a69ac2b6c4acb916e3581672aad",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.004310625",
+      "idempotency_key": "sha256:5652de6afd41931520da9e691a097e582677d400970c916b4773c5f6939cc6bb",
+      "latency_ms": 12243.051291909069,
+      "response_id_digest": "sha256:fe4bd475d68dafd501414fca9cb20e58f8b0b91dc67ced86f6667fc4d58d84c6",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001407375",
+      "idempotency_key": "sha256:61f046cd505268ffe04b200091d531cc6c3609c124205ab31434dcf82638bc9f",
+      "latency_ms": 3075.5025423131883,
+      "response_id_digest": "sha256:3bd8c0c97f4c9f41d468fded6ad56c70c6f2e3882cb41199b9d7e50482058e57",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001922625",
+      "idempotency_key": "sha256:dcfc05e6db931402f3c75632a93226ad3eccdc998f001effce4b1b1b90e953b4",
+      "latency_ms": 4335.4932917281985,
+      "response_id_digest": "sha256:76745d75c795a4c50af2c79996a91b65e8fa323061324b038514be1dba4b5449",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001579125",
+      "idempotency_key": "sha256:53770e774ced6a7f1aa4f9f4e75db662bbca1d5d19fd696acf8e5dad71d6ddc3",
+      "latency_ms": 3672.1920827403665,
+      "response_id_digest": "sha256:8d7aa356a368feff10c22a084792ed066046024e7287cd3167c9c0f3dfb8e635",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00174525",
+      "idempotency_key": "sha256:8b57c6ff14de958f15876954667ac803b528aa5685906e09d372e66bd4d91744",
+      "latency_ms": 3432.2007917799056,
+      "response_id_digest": "sha256:a01b59dff7d0775244e8729a57ef5d6e4cc05ba607916c3c99b7fda8644c6f6e",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00450825",
+      "idempotency_key": "sha256:2626fe09daba2da7dc5250564af5f197f5dec8179b0e86bc993880ba4cff89e5",
+      "latency_ms": 12450.687374919653,
+      "response_id_digest": "sha256:442dd8cc46be70b77dbbad5cfb6fb82c45ff4b113880dfb855bfb0f59cb8067c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00378675",
+      "idempotency_key": "sha256:e61d1af0fcc0c80c8064de21f407a5c1563d8285dc98301660a07af235ad9917",
+      "latency_ms": 12354.13737501949,
+      "response_id_digest": "sha256:c5dd2b5d64a5d8d258f8f50736d559776fb11e037c464939510bc22c4f7dd783",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00200775",
+      "idempotency_key": "sha256:dc6cb29548c25338e0e195da259399c82bdfa379bafe488badde5fe3e412c93e",
+      "latency_ms": 4151.899457909167,
+      "response_id_digest": "sha256:8eceede7ebbe6f72065ac1b1d7865747c1a4eb74e6f50444509fce6439b75fad",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002536875",
+      "idempotency_key": "sha256:26eb646226d39e850077826c3f34d79635b39a0442d31387d4a41e858d29f3a1",
+      "latency_ms": 5754.475959111005,
+      "response_id_digest": "sha256:63fc7f39b6e288d909d47efc1ea8f57d4b9b87c0e2bed66b041fe1765ff1a08a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002871375",
+      "idempotency_key": "sha256:5e3d69bd42bcecb86be9c45c232f90a2b3d00f47ac395cc0c66a263acb303958",
+      "latency_ms": 6875.221624970436,
+      "response_id_digest": "sha256:f8780ef49a34ce8e08f5f38191eeb1f9ee5dc5d2b7d6f0fb727c2523cf235800",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0021135",
+      "idempotency_key": "sha256:eb5b2f1ae9b97aec5d08d7dca4b76b5cc0f5dafdd69f298ee12b55e1049774f4",
+      "latency_ms": 4332.516124937683,
+      "response_id_digest": "sha256:775b1c41c67b312a1471e7c00fb17ff3e2441d3a198af2d789d7119c9f7ceacb",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002227875",
+      "idempotency_key": "sha256:ddf46cfda23f778faebe368da65512eee9d0792172d5cf15343ff3bce8eb93cd",
+      "latency_ms": 4356.966332998127,
+      "response_id_digest": "sha256:ec88ddee7cdab99222db1406e4b0b8021360259c9e52d3f6756a32f2fbdbd362",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002503875",
+      "idempotency_key": "sha256:63fb96f2eb2d1f305fe363950d2387d871fb91f2bc28b2e1dc355dbdaf67baa5",
+      "latency_ms": 4950.611958280206,
+      "response_id_digest": "sha256:10045531e745ba4701cabcac1b1c77e9ba32a79c4b6eed232d4cd10beb87b9e0",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.002339625",
+      "idempotency_key": "sha256:a1cdf0e761fef5d9acadfbc3e9b8fedebe50d6fc527734986e662303fbb1d67b",
+      "latency_ms": 4764.061375055462,
+      "response_id_digest": "sha256:9d58f58d394fe89a83add9cba5b6a9e27613bd97720ad766a3d89e1f5e5d169a",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0021495",
+      "idempotency_key": "sha256:24a08054224a131ec03eaeda57c44506cd38e1d843d32537e702dc4d7889a6e7",
+      "latency_ms": 3301.9843748770654,
+      "response_id_digest": "sha256:8d12493eb468aa670ff6c768bd99a5ba7814fa61794887de0947be9a293859cd",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.00111",
+      "idempotency_key": "sha256:028079d83740e37c6f28e33d8fa4a8689b45bf91645486704764d505a776b849",
+      "latency_ms": 3547.193415928632,
+      "response_id_digest": "sha256:1ad61422ba946b8b2d931ca13cfe0be6c0ea2879833aeb37386af801d54542a3",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001260375",
+      "idempotency_key": "sha256:323a16c82f29c9fcd6ae07e1ef7a08f6eb599fb9d812677a549b7af68b65b4cd",
+      "latency_ms": 4211.663667112589,
+      "response_id_digest": "sha256:adb83b047b24069c66642f4981e43d4ee904a9ad3ebf83a0c50b587161bda8ff",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001687875",
+      "idempotency_key": "sha256:f857f0605135828344e8381193160b020d139e20b88bee17b7fcee35944d2634",
+      "latency_ms": 5525.777957867831,
+      "response_id_digest": "sha256:554daa1ae376df68f87f9f83fc5bb8b18025c8dc5b42828aec75e845fec94786",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001339875",
+      "idempotency_key": "sha256:84c1e3830d28bcff4d4cd4c6271c5b918c53bab25aaf5a044fb318c851c8119c",
+      "latency_ms": 3937.8688749857247,
+      "response_id_digest": "sha256:62378afb75516d9909856e4c8a15d4c5db648b6303743745466b21ad2e56757c",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001843125",
+      "idempotency_key": "sha256:1ba28b3f52fa2c779cee188b00d3178b5edf219001208ded3e1e195a8a58ea73",
+      "latency_ms": 4794.075875077397,
+      "response_id_digest": "sha256:33a069b0a64e9ee01b2a4bd1d0e3ee403e399ebcd570a8fd0493e8d091493558",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001414125",
+      "idempotency_key": "sha256:191a506559073efbb774bb1a240131eb48f6c86252cb271c8d0ae5604b461ad7",
+      "latency_ms": 7435.243582818657,
+      "response_id_digest": "sha256:9d1f233fed3ba01f48555920ae354682cec90f7a476609e19bf9381f5df76fd8",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001384875",
+      "idempotency_key": "sha256:38c285d553991fdf7ec4c08703811cee7c05cf15a0b88a6454f87bc5ffd37e26",
+      "latency_ms": 3780.987957958132,
+      "response_id_digest": "sha256:fd533a8be2a45a23cb9b3967e2c40570391ed30255db60b7d6b6eb324647fe15",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001459125",
+      "idempotency_key": "sha256:26b5bbfe85c87a0f27568bffb8e96726d5e1fe8c0d49ba8fd4c1cd22407a9b2f",
+      "latency_ms": 4333.8030418381095,
+      "response_id_digest": "sha256:e27588e9ae1571daab71327d68683bd93aecfd517e44815d4dceb655bde77f15",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001435125",
+      "idempotency_key": "sha256:3f54c2d222a22dbebc8233d8169333d1ecad392579115d864014ca675860972b",
+      "latency_ms": 3335.8390419743955,
+      "response_id_digest": "sha256:5d488ce2aac3b6e20eefa2c727463ed0f72b2d2d214474b76269d8e2d1be293b",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001578",
+      "idempotency_key": "sha256:afccaec7a534e84a639678b8aae5d6c70e96e7f3377bf8938c914e798fb57c2c",
+      "latency_ms": 3417.2859583050013,
+      "response_id_digest": "sha256:cfb79035cdefc5abccaf5ff5af207bdc3c1bc45714a591845834f015763e1b95",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.0017595",
+      "idempotency_key": "sha256:88a723b53076ca4491aa5f82e6eccc8415249d48249c14e9fd81da6809c9e825",
+      "latency_ms": 3785.7904587872326,
+      "response_id_digest": "sha256:f44a1d0f5a91f4aeadc2b226adf3ff7c4cc96f591d9b7a657e317ecbfefc9476",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.001599375",
+      "idempotency_key": "sha256:bd8990276dd8eefa363571aaeceec6d0ebc570a54e0ed265d96261a1a2318c9f",
+      "latency_ms": 3337.569040711969,
+      "response_id_digest": "sha256:c80246d6abd63ba9c2f66119d65cf535926c97aa57bf7f4ac23b1cdfb577a312",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0",
+      "idempotency_key": "sha256:0210720553a622ac8c3f3dfec922e2826d85a2549b0778efacda284a2be3a51a",
+      "latency_ms": 3673.3208750374615,
+      "response_id_digest": "sha256:a33c7721b27fcbed35f9997086355b67d61618990ca31e33dc7979b5929f2369",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    }
+  ]
+}

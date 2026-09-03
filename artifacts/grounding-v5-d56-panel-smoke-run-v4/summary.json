@@ -1,0 +1,117 @@
+{
+  "actual_aggregate_spend_usd": "0.372661310",
+  "approved_plan_sha256": "sha256:869ac6c2ae4d1ea68a5329e9457133aa7a450174a39195319378b7fb6910cfc3",
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "a9b35eac1540aa13693b28d37e2bf3397e32b842",
+  "episode_results": [
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 1,
+      "final_policy_checkpoint_digest": "sha256:ab867aac4a117547a9b57779910675ce4eb85d921aba4a79f9f8772add84b6eb",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "slot": "A-gemini-stateful",
+      "success": false,
+      "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+      "trial_id": "panel-smoke-A-gemini-stateful-v5-64ba7d452b3c8d3e43d1d30e"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 1,
+      "final_policy_checkpoint_digest": "sha256:e071ace21d82f210d6816f41d6863c7c882f7d59a4b8379bb8c342be6c24e4f2",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "slot": "B-qwen-stateful",
+      "success": false,
+      "task_id": "v5-3d8efbe34dec1b95afc98079",
+      "trial_id": "panel-smoke-B-qwen-stateful-v5-3d8efbe34dec1b95afc98079"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 1,
+      "final_policy_checkpoint_digest": "sha256:8bfed3aeece9943bfc90958d7491a494320df548534ffef3ec618a724fe37fdc",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "slot": "C-llama-stateful",
+      "success": false,
+      "task_id": "v5-bf8d93604c1ba0da75b32ca8",
+      "trial_id": "panel-smoke-C-llama-stateful-v5-bf8d93604c1ba0da75b32ca8"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 1,
+      "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "slot": "D-qwen-stateless",
+      "success": false,
+      "task_id": "v5-69df97b8e47727553d145737",
+      "trial_id": "panel-smoke-D-qwen-stateless-v5-69df97b8e47727553d145737"
+    }
+  ],
+  "journal_integrity": {
+    "event_chain_digest": "sha256:0d6575d0e9c2417050fbf81146e8e7763fc247406ce1e5dcc25486a484612171",
+    "event_count": 32,
+    "object_count": 45,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 4,
+  "prior_aggregate_spend_usd": "0.370889195",
+  "provider_calls_made": 4,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 4,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "purpose": "one development-only transport/parser/adapter action per frozen D5.6 policy slot; not calibration evidence",
+  "schema_version": "pixelgym-agent-v5-panel-smoke-result-v2",
+  "smoke_incremental_spend_usd": "0.001772115",
+  "transport_records": [
+    {
+      "cost_usd": "0.0011325",
+      "idempotency_key": "sha256:912ffaf970704632496a3e4fcb7078f39340bf49b28d96d3b0558639d32e794b",
+      "latency_ms": 3566.2078326568007,
+      "response_id_digest": "sha256:cc2878f1f024f973f62edc37c742f738522806603fecc779341fac39d38f6a29",
+      "response_model": "google/gemini-3.7-flash",
+      "slot": "A-gemini-stateful",
+      "status": "response",
+      "upstream_provider": "Google"
+    },
+    {
+      "cost_usd": "0.000188799",
+      "idempotency_key": "sha256:e3fba5e598d492ec1621106549da6c76ae391776814cf31f4f78ab907ad2c66a",
+      "latency_ms": 971.9884167425334,
+      "response_id_digest": "sha256:942a739aff35c8c1e1742e570bfa6a0be972edba6e10c09f2dfc20ad76dd7d07",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "slot": "B-qwen-stateful",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.0002593",
+      "idempotency_key": "sha256:62c46fef1966ed2dfd648fb0aad26e69037516632209ccbea696cc7d0ed956bb",
+      "latency_ms": 1079.6963749453425,
+      "response_id_digest": "sha256:19d54a4c12b2795e795b9cbad340b489782fe1165bfa420203ae794ced3b758e",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.000191516",
+      "idempotency_key": "sha256:1c6f96f682a37399bcc619dbc90954715cfa2c1184c5735e9edd9873acea1de8",
+      "latency_ms": 1665.752749890089,
+      "response_id_digest": "sha256:ed733e4b95019b2cdf3f6d7df204717fa43158ca7a29d78956ffb8d717e4ea77",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "slot": "D-qwen-stateless",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    }
+  ]
+}

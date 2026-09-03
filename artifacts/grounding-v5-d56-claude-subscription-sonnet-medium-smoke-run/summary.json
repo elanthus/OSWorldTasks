@@ -1,0 +1,123 @@
+{
+  "approved_plan_sha256": "sha256:36f66a91f827151de23b30230e8ad86aee68f697c9639af357d6361c1a180a67",
+  "assigned_policy_task_pairs": 1,
+  "attempt_journal_integrity": {
+    "event_chain_digest": "sha256:775625817364562e088c81a6d4072a6a3ab09e3223d6e5e2f4f18ff9c74145d8",
+    "event_count": 5,
+    "object_count": 5,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "attempted_policy_task_pairs": 1,
+  "authentication_mode": "claude.ai",
+  "budget_accounted_aggregate_spend_usd": "4.778164718",
+  "classifications": {
+    "invalid_output": 1
+  },
+  "cleanup": {
+    "attempt_journal_closed": true,
+    "invocation_journal_closed": true,
+    "policy_and_environments_closed": true,
+    "subprocesses_closed": true,
+    "temporary_inputs_removed": true
+  },
+  "cli_version": "2.1.236 (Claude Code)",
+  "code_revision": "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2",
+  "completed_all_assigned_pairs": true,
+  "episode_result": {
+    "classification": "invalid_output",
+    "environment_actions": 0,
+    "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "success": false,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "trial_id": "d56-sonnet-medium-smoke-v5-64ba7d452b3c8d3e43d1d30e"
+  },
+  "episode_results": [
+    {
+      "classification": "invalid_output",
+      "environment_actions": 0,
+      "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+      "model_attempts": 1,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 1,
+      "success": false,
+      "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+      "trial_id": "d56-sonnet-medium-smoke-v5-64ba7d452b3c8d3e43d1d30e"
+    }
+  ],
+  "execution_error": null,
+  "human_approval_scope": {
+    "aggregate_smoke_process_cap": 3,
+    "authorized_at_local_date": "2026-08-30",
+    "human_gates_unchanged": true,
+    "implemented_smoke_allocation": "one_per_requested_policy_no_retries",
+    "scope": [
+      "one_smoke_for_luna_medium",
+      "one_smoke_for_terra_medium",
+      "one_smoke_for_sonnet_medium",
+      "one_full_frozen_run_per_policy_only_after_its_smoke_succeeds"
+    ],
+    "sonnet_authentication": "claude_ai_max_subscription_reauthenticated",
+    "status": "advance_human_authorization_recorded"
+  },
+  "human_gates": {
+    "D4.12": "not_evaluated_human_owned",
+    "D5.10": "not_evaluated_human_owned"
+  },
+  "incremental_experiment_charge_usd": "0.00",
+  "informational_cost_telemetry_usd": "0",
+  "invocation_journal_integrity": {
+    "invocation_count": 1,
+    "records": [
+      {
+        "exit_code": 1,
+        "idempotency_key_digest": "sha256:178b6a6ab2bc6bbbe2e60e63415b3a0d5d0ae9c1e4cfdf758a3ede17e12383f8",
+        "outcome_sha256": "sha256:a15f680600988d87b9c9e4f1f766b81f7d5d03b0c3290046262857097cccd9c6",
+        "raw_stderr_sha256": "sha256:527402a1802b7997c67036cd7e8e596f497547ae44b649ce8a135201ebc6f59b",
+        "raw_stdout_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "request_digest": "sha256:6aa859ea9e837982a339c989ccebca743a1402d232e2b0c3c70e50a00db02c06",
+        "status": "policy_violation"
+      }
+    ],
+    "schema_version": "pixelgym-agent-v5-claude-cli-invocation-journal-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model": "claude-sonnet-5",
+  "model_attempt_reservations": 1,
+  "model_reasoning_effort": "medium",
+  "policy_violation": "assistant_event_count_mismatch,claude_result_error,claude_result_subtype_mismatch,nonzero_exit,resolved_model_count_mismatch,result_event_count_mismatch,system_event_count_mismatch",
+  "provider": "Claude Code CLI",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_identity": "claude-code-cli/claude-ai-max-subscription",
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_evidence_local_only",
+  "purpose": "one development smoke action for Sonnet medium; not calibration evidence",
+  "resolved_model": null,
+  "schema_version": "pixelgym-agent-v5-d56-claude-subscription-smoke-result-v1",
+  "subscription_type": "max",
+  "successful_policy_task_pairs": 0,
+  "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+  "transport_records": [
+    {
+      "auth_method": "claude.ai",
+      "cli_version": "2.1.236 (Claude Code)",
+      "command_contract_digest": "sha256:d1b4609daeb09aa850c65591fa538b0442e8d2eaab20eb63a5120e0ab30465f4",
+      "experiment_charge_usd": "0.00",
+      "idempotency_key_digest": "sha256:178b6a6ab2bc6bbbe2e60e63415b3a0d5d0ae9c1e4cfdf758a3ede17e12383f8",
+      "informational_cost_telemetry_usd": null,
+      "model": "claude-sonnet-5",
+      "model_reasoning_effort": "medium",
+      "policy_violation": "assistant_event_count_mismatch,claude_result_error,claude_result_subtype_mismatch,nonzero_exit,resolved_model_count_mismatch,result_event_count_mismatch,system_event_count_mismatch",
+      "resolved_model": null,
+      "status": "policy_violation",
+      "subscription_type": "max",
+      "usage_telemetry_status": "unavailable"
+    }
+  ],
+  "unresolved_invocation_count": 0,
+  "usage_telemetry_status": "unavailable",
+  "usage_telemetry_unavailable_count": 1
+}

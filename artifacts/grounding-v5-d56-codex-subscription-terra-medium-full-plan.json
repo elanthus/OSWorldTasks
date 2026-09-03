@@ -1,0 +1,879 @@
+{
+  "calibration_partition": {
+    "assigned_task_count": 50,
+    "manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+    "manifest_file_sha256": "sha256:7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+    "task_order_rule": "frozen_manifest_order_no_reordering_or_replacement"
+  },
+  "caps": {
+    "assigned_task_cap": 50,
+    "codex_process_invocation_cap": 1431,
+    "environment_action_cap": 1431,
+    "experiment_charge_per_call_usd": "0.00",
+    "maximum_aggregate_spend_usd": "10.00",
+    "maximum_incremental_experiment_charge_usd": "0.00",
+    "model_attempt_cap": 1431,
+    "per_invocation_maximum_informational_list_price_equivalent_usd": "0.97920000",
+    "prior_budget_accounted_spend_usd": "4.778164718",
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 1431,
+    "uncapped_run_informational_list_price_equivalent_ceiling_usd": "1401.23520000"
+  },
+  "code_revision": "2a845237f9078e6c2586a2d29da03e3cc786eae5",
+  "execution_state": "advance_human_authorized_after_successful_smoke",
+  "historical_evidence": {
+    "luna_low_smoke_v1": {
+      "approved_plan_content_sha256": "sha256:1bea6849d3dd619ab481ee21b957975fedac9302119806aaadc90b21ce6be433",
+      "approved_plan_file_sha256": "sha256:f75293b1370d60ac84e1afeaeddf97b01f9fa4193b1b295fd3c1aadb614b6dd3",
+      "attempt_journal_event_chain_sha256": "sha256:c29c9f7b6e6eadbfca55356bfa4f34367a1b26674f32fac37f050a610cb99530",
+      "attempt_journal_file_sha256": "sha256:412350c8211ea077b5bc763aa802ee9553f8496583d26a2b553b062feabbc98e",
+      "classification": "infrastructure_failure",
+      "code_revision": "f3cf861edda5b75d30145739de12e1764923d6b4",
+      "environment_actions": 0,
+      "historical_result_accounting": {
+        "accounting_method": "superseded_conservative_list_price_reservation_v1",
+        "budget_accounted_aggregate_spend_usd": "5.757364718",
+        "incremental_cost_equivalent_usd": "0.97920000",
+        "unresolved_reservation_count": 1
+      },
+      "invocation_journal_file_sha256": "sha256:1487aa1603b84ee6aa54bf228b9bea02e05b58ae03c767579f6aac9bf6d26894",
+      "outcome_sha256": "sha256:5927d5c61ff3b0f495857990feb3d3e70488c5836126061e30f5ee99817e1d66",
+      "provider_calls_made": 1,
+      "raw_stderr_sha256": "sha256:74cb00300ed4a4c23ba979d30d34218cd356e4bfb55b81f10a3dc832d52c56c7",
+      "raw_stdout_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replacement_fix": "remove_unknown_config_key_and_disable_view_image_feature",
+      "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+      "root_cause": "strict_config_rejected_unknown_tools_view_image_key_before_inference",
+      "status": "consumed_immutable_infrastructure_failure",
+      "summary_file_sha256": "sha256:6bff9bfb09f36556133dc1e33ff2c69ce846ad3856b7af89edc2ef5e5f045ebb",
+      "task_id": "v5-64ba7d452b3c8d3e43d1d30e"
+    },
+    "luna_low_smoke_v2": {
+      "approved_plan_content_sha256": "sha256:ec88a91aa1573d9b33aeb840c9deb56147c94c47456169546a9c7c834a6bfc7b",
+      "approved_plan_file_sha256": "sha256:e56dd925fe7fbe0c01e9d2c7c97f1e11ded132fc94504d206ddb36082661e507",
+      "attempt_journal_event_chain_sha256": "sha256:8d8ddd96aefbb48e24086ca84ca831f1657b39d760220015618c8628e66e740b",
+      "attempt_journal_file_sha256": "sha256:320ea82608e78915906104977fda370f8cc6a7e1db9efe090d9228c4270c3adb",
+      "classification": "invalid_output",
+      "code_revision": "af82c6fbb27be82a0ee8ccccb8a3a2f20bc0c5fa",
+      "diagnosis": "unresolved_pre_turn_cli_error_item_with_later_agent_message",
+      "environment_actions": 0,
+      "error_message_sha256": "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b",
+      "event_sequence": [
+        "thread.started",
+        "item.completed:error",
+        "turn.started",
+        "item.completed:agent_message",
+        "turn.completed"
+      ],
+      "experiment_charge_usd": "0.00",
+      "invocation_journal_file_sha256": "sha256:64818ef9ecac914537fc085721e69fd419fd1930f23a91c0d170c32e0afeefd6",
+      "outcome_sha256": "sha256:044d2c18c06845cc4689e3d5175284194bab16b4783ab259d7ed4283668a9fbd",
+      "policy_violation": "unauthorized_item:error",
+      "provider_calls_made": 1,
+      "raw_stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout_sha256": "sha256:11fa917940f8157b9f0d28678298426b51e538925fa79fcf530d59f284dc75eb",
+      "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+      "status": "consumed_immutable_invalid_output",
+      "summary_file_sha256": "sha256:fd7c3c8ab525b1a5e924e6aa7fa1fddd77e203fb805a82d3992515766ecee401",
+      "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+      "usage_telemetry_status": "available"
+    },
+    "luna_low_smoke_v3": {
+      "approved_plan_content_sha256": "sha256:822306dac3987dad1fa744cf773b2f543b4e2624208beeb0ac7491106d87acc4",
+      "approved_plan_file_sha256": "sha256:c1b1a2bd13acc3c1603c6b736c1bf63307c6c008759e2a66fea3afe5a474247f",
+      "attempt_journal_event_chain_sha256": "sha256:999cc6060bd52493362d4fb5ea88e2107cc22db9731ce8fe732ea544af4391b2",
+      "attempt_journal_file_sha256": "sha256:732691041dd4121c67d53b000846dd90ee3514360677daeeeb9d94d0b4697ea7",
+      "classification": "invalid_output",
+      "code_revision": "2a8fcc564c32432d2ccce35397f809063100adb2",
+      "diagnosis": "stable_disabled_code_mode_cli_diagnostic_preceded_valid_action",
+      "environment_actions": 0,
+      "error_message_sha256": "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b",
+      "event_sequence": [
+        "thread.started",
+        "item.completed:error",
+        "turn.started",
+        "item.completed:agent_message",
+        "turn.completed"
+      ],
+      "experiment_charge_usd": "0.00",
+      "historical_result_reinterpreted": false,
+      "invocation_journal_file_sha256": "sha256:617b867214769baea1a2ffb3e028103de67496dc5994c07d66038bd4eedb9546",
+      "outcome_sha256": "sha256:8517c91b16e91bffd46f30af37fa2c6788945967f852306984ccdcbfb7ff9243",
+      "policy_violation": "unauthorized_item:error",
+      "provider_calls_made": 1,
+      "raw_stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout_sha256": "sha256:91c73212b356f04de193b3c15678c8c425043a94f1a4d015cb5cf2e0503009b9",
+      "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+      "schema_valid_action_present_in_restricted_raw_stream": true,
+      "status": "consumed_immutable_invalid_output",
+      "summary_file_sha256": "sha256:4973c4ab6ab28842aa442ca0afdbdb3f588f0b40455461e5e9a73a82bbe33c04",
+      "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+      "usage_telemetry_status": "available"
+    },
+    "luna_low_smoke_v4": {
+      "plan_content_sha256": "sha256:e8e584b40207103f6e53548171e76b194d575aa196ccbc4a2ce7bd48098ebe4c",
+      "plan_file_sha256": "sha256:81c9f8521f895f258a5d29de7e4ba378834553f04c96a66b6b3070c52d295531",
+      "reason": "owner_requested_medium_reasoning_campaign_before_execution",
+      "reuse_rule": "do_not_execute_or_reinterpret",
+      "status": "superseded_unconsumed_no_provider_calls"
+    },
+    "qwen_predecessor": {
+      "approved_plan_content_sha256": "sha256:fc1f41d00df8c847d55765ea6af6b4c688463a893281f995f3eee3b770c43f7c",
+      "approved_plan_file_sha256": "sha256:80f8b7ea4d9809405faf98c9b4ef01193f5456a9d58db243488dd2fe4229133e",
+      "assigned_tasks": 50,
+      "attempted_tasks": 13,
+      "budget_accounted_aggregate_spend_usd": "4.778164718",
+      "classifications": {
+        "invalid_output": 1,
+        "step_limit_truncation": 12
+      },
+      "code_revision": "0e74a791559b5e6636c12e2fa4fd480ab3a8c8fd",
+      "integrity_audit_file_sha256": "sha256:faf1cfb20422fe87456ba2373d48f6e321da50a1ba1b0ceabbc2c9561ceb0afd",
+      "journal_event_chain_sha256": "sha256:6117a1454d0cbe834a2b6a0f46cc0be8536ae44650b687a30ad1360c5ff0999d",
+      "maximum_remaining_incremental_exposure_usd": "5.221835282",
+      "publication_relation_file_sha256": "sha256:7ccc779f0b2204b99296e5fd4f5190646bd523cc7a447ed4236ca22807abc312",
+      "publishable_derivative_file_sha256": "sha256:952e105d4d6f092b2f5a98b98b3ff6e2f784c407ee99f8b7c540ae000134fde6",
+      "report_file_sha256": "sha256:3a380f9f44cae54b6116f426ecbcf2d6bb1cbd038116237e3f80530f4d0169a5",
+      "restricted_journal_file_sha256": "sha256:81e9137cb5c5074c3a0fd02f8f20ef7c2368ede9dbf95f1a92a1805a61818671",
+      "reuse_rule": "do_not_resume_overwrite_reuse_or_reinterpret",
+      "status": "consumed_immutable_incomplete_negative_evidence",
+      "successful_tasks": 0,
+      "summary_file_sha256": "sha256:2fb447acaca1c934a0469fa56d67849f9f5458de21edd506b0e6a63660b67b69",
+      "unattempted_tasks": 37
+    }
+  },
+  "human_approval_scope": {
+    "aggregate_smoke_process_cap": 3,
+    "authorized_at_local_date": "2026-08-30",
+    "human_gates_unchanged": true,
+    "implemented_smoke_allocation": "one_per_requested_policy_no_retries",
+    "scope": [
+      "one_smoke_for_luna_medium",
+      "one_smoke_for_terra_medium",
+      "one_full_frozen_run_per_policy_only_after_its_smoke_succeeds"
+    ],
+    "sonnet_status": "separate_policy_blocked_until_claude_cli_authentication_exists",
+    "status": "advance_human_authorization_recorded"
+  },
+  "human_gates": {
+    "D4.12": "not_evaluated_human_owned",
+    "D5.10": "not_evaluated_human_owned"
+  },
+  "policy": {
+    "command_contract": [
+      "codex",
+      "exec",
+      "--model",
+      "gpt-5.6-terra",
+      "--config",
+      "approval_policy=\"never\"",
+      "--config",
+      "model_provider=\"pixelgym_openai_zero_retry\"",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.name=\"OpenAI\"",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.wire_api=\"responses\"",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.requires_openai_auth=true",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.supports_websockets=false",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.supports_standalone_web_search=false",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.http_headers={version=\"0.150.1\"}",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.request_max_retries=0",
+      "--config",
+      "model_providers.pixelgym_openai_zero_retry.stream_max_retries=0",
+      "--config",
+      "model_reasoning_effort=\"medium\"",
+      "--config",
+      "model_context_window=272000",
+      "--config",
+      "web_search=\"disabled\"",
+      "--config",
+      "tools.web_search=false",
+      "--config",
+      "shell_environment_policy.inherit=\"none\"",
+      "--config",
+      "shell_environment_policy.ignore_default_excludes=false",
+      "--config",
+      "features.rollout_budget.limit_tokens=8192",
+      "--config",
+      "features.rollout_budget.reminder_at_remaining_tokens=[2048]",
+      "--config",
+      "features.rollout_budget.sampling_token_weight=1.0",
+      "--config",
+      "features.rollout_budget.prefill_token_weight=1.0",
+      "--disable",
+      "apps",
+      "--disable",
+      "browser_use",
+      "--disable",
+      "browser_use_external",
+      "--disable",
+      "browser_use_full_cdp_access",
+      "--disable",
+      "code_mode",
+      "--disable",
+      "code_mode_host",
+      "--disable",
+      "computer_use",
+      "--disable",
+      "enable_mcp_apps",
+      "--disable",
+      "goals",
+      "--disable",
+      "hooks",
+      "--disable",
+      "image_generation",
+      "--disable",
+      "in_app_browser",
+      "--disable",
+      "memories",
+      "--disable",
+      "multi_agent",
+      "--disable",
+      "multi_agent_v2",
+      "--disable",
+      "plugins",
+      "--disable",
+      "recommended_plugins",
+      "--disable",
+      "remote_plugin",
+      "--disable",
+      "shell_snapshot",
+      "--disable",
+      "shell_snapshot_v2",
+      "--disable",
+      "shell_tool",
+      "--disable",
+      "skill_mcp_dependency_install",
+      "--disable",
+      "skill_search",
+      "--disable",
+      "standalone_web_search",
+      "--disable",
+      "tool_call_mcp_elicitation",
+      "--disable",
+      "tool_suggest",
+      "--disable",
+      "unbounded_connection_retries",
+      "--disable",
+      "unified_exec",
+      "--disable",
+      "view_image",
+      "--disable",
+      "workspace_dependencies",
+      "--strict-config",
+      "--json",
+      "--output-schema",
+      "<isolated-action-schema>",
+      "--image",
+      "<current-screenshot>",
+      "--ephemeral",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--sandbox",
+      "read-only",
+      "--cd",
+      "<isolated-empty-working-directory>",
+      "--skip-git-repo-check",
+      "-"
+    ],
+    "command_contract_digest": "sha256:0854f1d208c9e0f9c52f03aafc1e51b6fa975aeb1ac102836e686d1607569df6",
+    "evaluated_provider": "Codex CLI",
+    "isolation": {
+      "sandbox": "read-only",
+      "session_persistence": "ephemeral",
+      "shell_web_plugins_mcp_skills_connectors": "disabled_or_unavailable",
+      "user_and_project_rules": "ignored",
+      "working_directory": "isolated_empty_temporary_directory"
+    },
+    "jsonl_diagnostic_policy": {
+      "all_other_error_items": "fail_closed_policy_violation",
+      "allowed_item_type": "error",
+      "allowed_message_sha256": "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b",
+      "allowed_occurrence_cap": 1
+    },
+    "limits": {
+      "context_window_tokens": 272000,
+      "kill_grace_seconds": 2.0,
+      "process_timeout_seconds": 90.0,
+      "rollout_budget_tokens": 8192,
+      "runner_cli_request_and_stream_retries": 0,
+      "runner_request_deadline_seconds": 95.0,
+      "termination_grace_seconds": 2.0
+    },
+    "model": "gpt-5.6-terra",
+    "model_reasoning_effort": "medium",
+    "observation_contract": "task_instruction_plus_current_screenshot_only",
+    "orchestrator_model_excluded": "gpt-5.6-sol",
+    "policy_manifest": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "2a845237f9078e6c2586a2d29da03e3cc786eae5",
+      "context_limit": 272000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:5209e9408a5e4d44c230ed10b185ac4f1ff518881b17bdd964b67ebc8204285a",
+      "inference_parameters": [
+        [
+          "authentication_mode",
+          "chatgpt_subscription"
+        ],
+        [
+          "cli_version",
+          "codex-cli 0.150.1"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:0854f1d208c9e0f9c52f03aafc1e51b6fa975aeb1ac102836e686d1607569df6"
+        ],
+        [
+          "model_catalog_comp_hash",
+          "3000"
+        ],
+        [
+          "model_reasoning_effort",
+          "medium"
+        ],
+        [
+          "allowed_cli_diagnostic_message_sha256",
+          "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+        ],
+        [
+          "request_max_retries",
+          "0"
+        ],
+        [
+          "stream_max_retries",
+          "0"
+        ],
+        [
+          "rollout_budget_tokens",
+          "8192"
+        ],
+        [
+          "shell_tool",
+          "disabled"
+        ],
+        [
+          "web_search",
+          "disabled"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-stateless-current-screenshot-only-v1",
+      "model": "gpt-5.6-terra",
+      "parser_version": "pixelgym-agent-v5-json-action-codex-cli-native-parser-v2",
+      "policy_id": "policy-431388b143b1061ac87b",
+      "provider": "codex-cli/chatgpt-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 95.0,
+      "response_schema_version": "pixelgym-agent-v5-codex-cli-jsonl-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:939034e852696202bbb57ccd4c6d71e947afbd261d6da89dc2a05d49471da540",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://chatgpt.com",
+        "runtime_digest": "sha256:6e244c35419f1288c5f18f33dd59967d5f7838b7ac9477ba506fe6d0178e6437"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1",
+      "system_prompt_digest": "sha256:60f8c5f702454441831e567c0b25a41eb17b82be252d23bfc22a78c6a5c4a324",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "codex-cli-zero-request-zero-stream-zero-runner-retries-v1"
+    },
+    "policy_manifest_digest": "sha256:580993d47e618761ee3e46007fd703f9cd919fc453fd3966dbb20d843d325fdd",
+    "provider_identity": "codex-cli/chatgpt-subscription",
+    "provider_runtime": "non-interactive codex exec",
+    "response_schema_digest": "sha256:c91690a446ed40ed10222d4c21a7828d4fc423799cfb081f22b34159596db9bc",
+    "runtime_identity": {
+      "authentication_mode": "chatgpt_subscription",
+      "cli_version": "codex-cli 0.150.1",
+      "configuration_preflight_validated": true,
+      "context_window_tokens": 272000,
+      "exec_help_sha256": "sha256:e504bac5a6364566fbe408132dec7993639def9258ece34e8352f51f8d43687c",
+      "feature_inventory_sha256": "sha256:d7ffd3db8135a0b404cc85e66a5d1381adb2872ae64c47009d1b8ca07cfc9615",
+      "input_modalities": [
+        "text",
+        "image"
+      ],
+      "model": "gpt-5.6-terra",
+      "model_catalog_comp_hash": "3000",
+      "supported_reasoning_efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max",
+        "ultra"
+      ]
+    },
+    "slot": "terra-medium"
+  },
+  "price_and_cost_accounting": {
+    "accounting_method": "codex_chatgpt_subscription_experiment_charge_zero_v1",
+    "authentication_mode": "chatgpt_subscription",
+    "billing_classification": "ChatGPT_subscription_billed",
+    "experiment_charge_per_call_usd": "0.00",
+    "maximum_aggregate_spend_usd": "10.00",
+    "maximum_remaining_non_subscription_exposure_usd": "5.221835282",
+    "missing_usage_rule": "record_nonblocking_for_subscription_authenticated_calls",
+    "prior_non_subscription_budget_accounted_spend_usd": "4.778164718",
+    "service_subscription_limits": "unchanged_and_not_programmatically_observable",
+    "usage_telemetry": "optional_non_billing_diagnostic"
+  },
+  "provider_calls_made_while_planning": 0,
+  "purpose": "one full frozen fifty-task D5.6 calibration for terra-medium",
+  "raw_evidence_policy": {
+    "provider_response_content": "restricted_local_journals_only",
+    "publication": "response_content_free_derivatives_only_after_integrity_audit",
+    "raw_cli_jsonl": "restricted_local_invocation_journal_only",
+    "raw_cli_stderr": "restricted_local_invocation_journal_only",
+    "screenshots": "restricted_local_attempt_journal_only"
+  },
+  "requires_clean_tracked_worktree": true,
+  "schema_version": "pixelgym-agent-v5-d56-codex-subscription-full-plan-v1",
+  "stop_conditions": [
+    "run tasks only in frozen fifty-task order",
+    "continue after success termination or full step-limit truncation",
+    "stop the policy at the first other classification or evidence mismatch",
+    "never retry or replay a Codex CLI process invocation",
+    "do not expose confirmatory tasks"
+  ],
+  "successful_smoke_evidence": {
+    "approved_smoke_plan_sha256": "sha256:4bbedf487b2c01edb6021813f7817d3e9a994112a6b5a7fa145e7310d1a8be3b",
+    "attempt_journal_file_sha256": "sha256:18094377c6f08fdc3f48d10f4a87f3e260ff5c963185754fa21bb7b3dfa26574",
+    "budget_accounted_aggregate_spend_usd": "4.778164718",
+    "classification": "pilot_action_limit",
+    "cli_version": "codex-cli 0.150.1",
+    "environment_actions": 1,
+    "incremental_experiment_charge_usd": "0.00",
+    "invocation_journal_file_sha256": "sha256:2f8d37bf70f6112f7e8c02987027ca9cf4e1545d1c4316193a935bb51f18ac23",
+    "model": "gpt-5.6-terra",
+    "model_reasoning_effort": "medium",
+    "policy_violation": "none",
+    "provider_calls_made": 1,
+    "summary_file_sha256": "sha256:733a60775e41040946bf7ec53f2cf5572dfe903f4a553cbcc0ef65be8dd4c321",
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "usage_telemetry_status": "available"
+  },
+  "task_order": [
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 0,
+      "seed": 5112,
+      "task_id": "v5-bfe5707f6b44202a0e7f493e",
+      "variant": "twin_a"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 1,
+      "seed": 5113,
+      "task_id": "v5-bd12a958c63d3d4a642f2388",
+      "variant": "twin_b"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 2,
+      "seed": 5114,
+      "task_id": "v5-d988bea3daaaee44bd4a66dd",
+      "variant": "base"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 3,
+      "seed": 5115,
+      "task_id": "v5-40c9c8dad25c35d18fcab3ac",
+      "variant": "base"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 4,
+      "seed": 5116,
+      "task_id": "v5-2dd66e920cec66fc7baa0340",
+      "variant": "base"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 5,
+      "seed": 5117,
+      "task_id": "v5-c8f7b5bf10a2be15e395f872",
+      "variant": "base"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 30,
+      "ordinal": 6,
+      "seed": 5118,
+      "task_id": "v5-f30e93f386d30cede2b72ce0",
+      "variant": "base"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 30,
+      "ordinal": 7,
+      "seed": 5119,
+      "task_id": "v5-0aafe18062befe07f24d8cab",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 8,
+      "seed": 5122,
+      "task_id": "v5-8b44ff7f55397462e532374f",
+      "variant": "twin_a"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 9,
+      "seed": 5123,
+      "task_id": "v5-a3b213b43f485af0c0e40c16",
+      "variant": "twin_b"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 10,
+      "seed": 5124,
+      "task_id": "v5-d0b04b9c0ddb6c2c020e0463",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 11,
+      "seed": 5125,
+      "task_id": "v5-cad52e15b441cb87019ae777",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 12,
+      "seed": 5126,
+      "task_id": "v5-2d305fda4e9ebe2d9075a384",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 13,
+      "seed": 5127,
+      "task_id": "v5-29efce8f49cbc9384485d87b",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 30,
+      "ordinal": 14,
+      "seed": 5128,
+      "task_id": "v5-7e64b6bc5406e56f2c674749",
+      "variant": "base"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 30,
+      "ordinal": 15,
+      "seed": 5129,
+      "task_id": "v5-da795237a0d228c30efffdfa",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 16,
+      "seed": 5132,
+      "task_id": "v5-988e5eb5bd2f5d95773297ba",
+      "variant": "twin_a"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 17,
+      "seed": 5133,
+      "task_id": "v5-3d7d660ccc1f9499de3def52",
+      "variant": "twin_b"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 18,
+      "seed": 5134,
+      "task_id": "v5-f7334ee5d914b46715d56299",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 19,
+      "seed": 5135,
+      "task_id": "v5-325495ed3572932e13e71595",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 20,
+      "seed": 5136,
+      "task_id": "v5-6f12521c75f36647ae21ba6a",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 21,
+      "seed": 5137,
+      "task_id": "v5-1a8a343b209ef6849bca6d5e",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 30,
+      "ordinal": 22,
+      "seed": 5138,
+      "task_id": "v5-7c84fe9903d32bc16a62075a",
+      "variant": "base"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 30,
+      "ordinal": 23,
+      "seed": 5139,
+      "task_id": "v5-7a5342a6b8bc0ccc70df72e8",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 27,
+      "ordinal": 24,
+      "seed": 5141,
+      "task_id": "v5-321776e3a5121a93c5651938",
+      "variant": "twin_b"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 25,
+      "seed": 5142,
+      "task_id": "v5-d439dd1631040477ef5a907b",
+      "variant": "twin_a"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 26,
+      "seed": 5143,
+      "task_id": "v5-5852db880cf4dbdcaaf254bf",
+      "variant": "twin_b"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 27,
+      "seed": 5144,
+      "task_id": "v5-5044beb30209bdf36a0a2d12",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 28,
+      "seed": 5145,
+      "task_id": "v5-260bef26ef62a0d66cae0449",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 29,
+      "seed": 5146,
+      "task_id": "v5-d98bd8f9f5ba030ec79201db",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 30,
+      "seed": 5147,
+      "task_id": "v5-ae6332844ec7190db0b9bd18",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 32,
+      "ordinal": 31,
+      "seed": 5148,
+      "task_id": "v5-dd7009a65e1bff896173378a",
+      "variant": "base"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 32,
+      "ordinal": 32,
+      "seed": 5149,
+      "task_id": "v5-48860ad9b285908aa000a26b",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 26,
+      "ordinal": 33,
+      "seed": 5151,
+      "task_id": "v5-25572b1551ed10079d842b8b",
+      "variant": "twin_b"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 34,
+      "seed": 5152,
+      "task_id": "v5-8ed6a65fd1b37ddfb1390872",
+      "variant": "twin_a"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 35,
+      "seed": 5153,
+      "task_id": "v5-e2e262766fce6bc662d505ff",
+      "variant": "twin_b"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 36,
+      "seed": 5154,
+      "task_id": "v5-b9c743e4f89345b3397ffa1e",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 37,
+      "seed": 5155,
+      "task_id": "v5-12d672051d0ecd6ff95c89ce",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 38,
+      "seed": 5156,
+      "task_id": "v5-ebcf125c0c5332c245a09f0e",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 39,
+      "seed": 5157,
+      "task_id": "v5-46c7d567496ada92c96cee32",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 30,
+      "ordinal": 40,
+      "seed": 5158,
+      "task_id": "v5-af3926afbbb9f3ad94f668a0",
+      "variant": "base"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 30,
+      "ordinal": 41,
+      "seed": 5159,
+      "task_id": "v5-c1e3ad39ecbaa0beb626a8ec",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 42,
+      "seed": 5160,
+      "task_id": "v5-5eb145d169ebee7b66c83a99",
+      "variant": "twin_a"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 43,
+      "seed": 5161,
+      "task_id": "v5-87b2f8109114f0dbf237649e",
+      "variant": "twin_b"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 44,
+      "seed": 5162,
+      "task_id": "v5-33b66723d47aace8c622a202",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 45,
+      "seed": 5163,
+      "task_id": "v5-ee24ce36d84d9fd23e9a997a",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 46,
+      "seed": 5164,
+      "task_id": "v5-ac0f8e633af1f60a2646fd1a",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 47,
+      "seed": 5165,
+      "task_id": "v5-2efb29a2ca94ec51c81c5018",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 30,
+      "ordinal": 48,
+      "seed": 5166,
+      "task_id": "v5-289ad343e824d3ed28d36cbd",
+      "variant": "base"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 30,
+      "ordinal": 49,
+      "seed": 5167,
+      "task_id": "v5-e4ba1dcff8d6223bcb69aa26",
+      "variant": "base"
+    }
+  ]
+}

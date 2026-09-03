@@ -1,0 +1,282 @@
+{
+  "actual_aggregate_spend_usd": "2.487339457",
+  "approved_plan_sha256": "sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15",
+  "assigned_policy_task_pairs": 1,
+  "attempted_policy_task_pairs": 1,
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "b34d7d3ba7163c09b23dc60d06bc8978a49690f2",
+  "episode_result": {
+    "classification": "infrastructure_failure",
+    "environment_actions": 19,
+    "final_policy_checkpoint_digest": "sha256:d16e535fe2ad504b0227fb97128a33ff533765806de449ed5626762d37ed9fb6",
+    "model_attempts": 20,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 20,
+    "slot": "C-llama-stateful",
+    "success": false,
+    "task_id": "v5-bf8d93604c1ba0da75b32ca8",
+    "trial_id": "d56-c-normalized-trial-v5-bf8d93604c1ba0da75b32ca8"
+  },
+  "execution_error": null,
+  "frozen_native_c_evidence": {
+    "actual_aggregate_spend_usd": "2.481019457",
+    "approved_plan_sha256": "sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37",
+    "attempted_policy_task_pairs": 42,
+    "code_revision": "e63c45d8d1a3334d79d4b62659c11a7a64afe689",
+    "journal_integrity": {
+      "event_chain_digest": "sha256:3da77834eda9fa68cc8dc8c03c26a545caa9e3277d3b53c67316135f5e81f77c",
+      "event_count": 8297,
+      "object_count": 7447,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "/Users/mswailes/dev/OSWorldTasks/artifacts/grounding-v5-d56-c-calibration-run/attempts.sqlite",
+    "journal_sha256": "sha256:d67a8c9197e3d2d54f62fd28002e7c9e054c0e5cdb3872b1042ff76537272cf6",
+    "remaining_aggregate_spend_usd": "7.518980543",
+    "successful_policy_task_pairs": 0,
+    "summary_path": "/Users/mswailes/dev/OSWorldTasks/artifacts/grounding-v5-d56-c-calibration-run/summary.json",
+    "summary_sha256": "sha256:73cfd90ae6594a4d826520be3aa971ba049554c5d69196111edb672a78f0da0f",
+    "terminal": {
+      "attempt_index": 0,
+      "classification": "unknown_outcome_infrastructure_failure",
+      "failure_code": "provider_request_unknown",
+      "http_status": 429,
+      "provider_error_code": 429,
+      "request_outcome": "unknown",
+      "retry_eligible": false,
+      "step_index": 6,
+      "trial_id": "d56-c-41-v5-c1e3ad39ecbaa0beb626a8ec"
+    }
+  },
+  "journal_integrity": {
+    "event_chain_digest": "sha256:b68efcdfe838eeb04141e64bb9735af015fa5e8b11aa3e06340e07ff8de24db9",
+    "event_count": 136,
+    "object_count": 123,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 20,
+  "prior_aggregate_spend_usd": "2.481019457",
+  "provider_calls_made": 20,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 20,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "purpose": "one complete development-only Slot C episode to test the normalized coordinate adapter; not calibration evidence",
+  "remaining_aggregate_spend_usd": "7.512660543",
+  "schema_version": "pixelgym-agent-v5-d56-c-normalized-trial-result-v1",
+  "semantic_progress": {
+    "diagnostic_event_counts": {
+      "correct_transition": 1,
+      "text_input_focused": 18
+    },
+    "first_transition_completed": true,
+    "maximum_stage_index_observed": 1
+  },
+  "successful_policy_task_pairs": 0,
+  "transport_records": [
+    {
+      "cost_usd": "0.0002587",
+      "idempotency_key": "sha256:e47fa358165fce9d5f7bc93c5508e4bf65bf3e4e0cbaf955dec538e967158f5b",
+      "latency_ms": 2080.8207909576595,
+      "response_id_digest": "sha256:ec585fb609f7803f84b6d7912d1b22448b494e77b78f55b157e8b722e04fec50",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0002651",
+      "idempotency_key": "sha256:dbcdeb6932b08a3b153882a4ca77165104c4cd328025edefa9e1ba5f84869d23",
+      "latency_ms": 1319.8135420680046,
+      "response_id_digest": "sha256:1f62d8093a6968dd79c3b88549e107a5dbd1386f25abdbb71e9fcc2671ef9f99",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0002735",
+      "idempotency_key": "sha256:6346140cd0358d40c13f21e30a6c78d005f820d61013062f8b73fa0cfc10213d",
+      "latency_ms": 1637.050834018737,
+      "response_id_digest": "sha256:e0d1c3c388bfd7f708011cb57c866c8146181ab13f477c3df7e4606a307eb94f",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0002818",
+      "idempotency_key": "sha256:c76680c33716636d887193c497f2da4f5114caf0cb9e28ccb02fea417cc69ba5",
+      "latency_ms": 995.4823330044746,
+      "response_id_digest": "sha256:b5bc1f0890f9c5aa162f42443e3196e0965b531d27f8b6240f3cb8b7c7c7da82",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0002902",
+      "idempotency_key": "sha256:62bcc7189af9339bbe51af4a16ecc041fdbc41ca91e85a454aee4189caad2031",
+      "latency_ms": 1411.2935420125723,
+      "response_id_digest": "sha256:4984d4d81c0f205e849e49f490bc3a09ba936a9764988267f549f89f0b96775b",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003007",
+      "idempotency_key": "sha256:c3c8a6ad5f77478af4172ce91fe748e1dcb2889a70d3807d1ec14ae85cb8eb58",
+      "latency_ms": 1769.9820003472269,
+      "response_id_digest": "sha256:cdc242b69669b1a567d7ba4e5ecd89dce54df6643f16b4db7f6fbd3a1972af40",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003069",
+      "idempotency_key": "sha256:3e9a59dbdb5700217c992ac3d303ef540ac4cf2e1e5b108e1d1aff738ce3c200",
+      "latency_ms": 1044.2357091233134,
+      "response_id_digest": "sha256:20e53f66260d804ab06e4d609034e61f966bf1638670f95f5f3610cf4cd84f59",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003171",
+      "idempotency_key": "sha256:89d20f405e0d913e70c1b1acc150666c8a05105b03886289a385124efa84fedd",
+      "latency_ms": 1572.4165830761194,
+      "response_id_digest": "sha256:5c091327ab12c63e6dcf6a6ce799d7a3a307d90208452fb225fed29f6f2edd2f",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003237",
+      "idempotency_key": "sha256:1b4502c2bc47bc76208a5433201d553c3a02ea9461175cc45a1fe96c1a88c129",
+      "latency_ms": 1313.71062528342,
+      "response_id_digest": "sha256:b29d06839d8d86584bb9b86568eff1b1b7e80d388dabfa54d9b5f4dfc0baad9a",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003343",
+      "idempotency_key": "sha256:253c6ca3de2ff208fe088282379721b77de690a9fa3b3e463c816611e3c1ae56",
+      "latency_ms": 1672.8555415757,
+      "response_id_digest": "sha256:1d32fe06c3fa79987dbac7cd99c18000b0f7e1b04eb77085b51fdd314b5596f3",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003408",
+      "idempotency_key": "sha256:f0583fdb28d4cc0b6e284da95abb306e6c19f2f1a18a1e308540866a1338c532",
+      "latency_ms": 1395.292832981795,
+      "response_id_digest": "sha256:91d30175878ded9b90a4566a4391056207afb3e7cf65ecbd691bf7cfe88c1a7f",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003495",
+      "idempotency_key": "sha256:5ff9d15836ec69eba18d39b9b352516f74eef2c59d862eece4a9b1052b5486e9",
+      "latency_ms": 1472.842083312571,
+      "response_id_digest": "sha256:cbf9e7bbab71fc44a0867460a1cf2dbbd0a9fb7269b859fa13a4c451f96f48e7",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003576",
+      "idempotency_key": "sha256:bdf7d0ad7e2a133e26dc929f82a2b52e20cfc73e1dcc3e5cdf621a08d44c1688",
+      "latency_ms": 2351.9369158893824,
+      "response_id_digest": "sha256:040229d0bcff233d71efd4fa5288aff81dad6ce132cc6fcc8819fe41f29c9f4d",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.000366",
+      "idempotency_key": "sha256:0269fa39467e4c917f5a52bb296bc6612e6294c15ee5208e5bdca64c449b9fef",
+      "latency_ms": 1548.3640423044562,
+      "response_id_digest": "sha256:3a2d2781d6d6067dc5862cc0cbf238abe5837694bf9b3405e3105e811485a357",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003744",
+      "idempotency_key": "sha256:afac54e77f89a5835e37cb0ab7811c1e6f2c7e1391569e3761a5434483c030a8",
+      "latency_ms": 1137.546124868095,
+      "response_id_digest": "sha256:fd354d2f7f36b004bd05186eb91915ba6464cbb1d29c37942930cae544d0aaff",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003826",
+      "idempotency_key": "sha256:b33fa0ad3968b38374a6327d402944c2aae48d950c864d9876988288a475f60b",
+      "latency_ms": 1078.9700825698674,
+      "response_id_digest": "sha256:259c1766a99ab4b3d45d055a6eaf59a5b91cc98f17941664473711064f1d2625",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0003909",
+      "idempotency_key": "sha256:8a0fbbab789d8375fe9315bb7a0ca38391bfaae067bbb7dd75cb84f95460747e",
+      "latency_ms": 1019.1728328354657,
+      "response_id_digest": "sha256:6b6bb67264595ab9e5704fa7d5698ae102614544172c82042e2aabdac4f7d62b",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.000399",
+      "idempotency_key": "sha256:53839ee6a3055e445d53e05857e19032c7ce2ee3ab2cbb5da4437e7ba183169a",
+      "latency_ms": 858.9609577320516,
+      "response_id_digest": "sha256:61e5726d17164409acfe0edcf48a327cadeab3a404d87ffd8f59abe8260a0c83",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "cost_usd": "0.0004072",
+      "idempotency_key": "sha256:aee10a12aad29aed5bf0573c5ce82e383afae696fbe7e154b4a302ecb23aeafa",
+      "latency_ms": 1713.2560424506664,
+      "response_id_digest": "sha256:75c21e2d056193b5157f6e5d3277e868b3470da1cdaaee9db2fd5f495f25a11d",
+      "response_model": "meta-llama/llama-4-scout",
+      "slot": "C-llama-stateful",
+      "status": "response",
+      "upstream_provider": "DeepInfra"
+    },
+    {
+      "error_body_bytes_read": 647,
+      "error_body_prefix_digest": "sha256:5f7f1528d95a0448340baeddb3d69e9bd2e72a623e3cb21b582303ee4475d4d5",
+      "error_body_truncated": false,
+      "failure_code": "HTTPError",
+      "http_status": 429,
+      "idempotency_key": "sha256:2d6d0d3e66fbfc1f4f665f094ca88f4ae5e785880e2112b54377bc5a6c785f83",
+      "provider_error_code": 429,
+      "status": "unknown",
+      "upstream_provider": "DeepInfra"
+    }
+  ],
+  "trial_incremental_spend_usd": "0.006320000"
+}

@@ -1,0 +1,317 @@
+{
+  "actual_aggregate_spend_usd": "0.004228237",
+  "approved_plan_sha256": "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a",
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "episode_results": [
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:613052939be3ff43547bceba75cd4dc27e1c56f4b4f63e96967db8804400c5d4",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-4824abc5a01d909661fc2943",
+      "trial_id": "qwen3-vl-pilot-00-v5-4824abc5a01d909661fc2943"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:45ce2848456aaf269ad8fbb778823211399fee9491992a9aa3fc8656f592d2d3",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-d6e956af18afbb1a00091f4c",
+      "trial_id": "qwen3-vl-pilot-01-v5-d6e956af18afbb1a00091f4c"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:74bb183dd1df35bb3023a588bc667412d013352e283a82ac99b371c45e2729b1",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-0c003edeb6d5f8e17aaa6444",
+      "trial_id": "qwen3-vl-pilot-02-v5-0c003edeb6d5f8e17aaa6444"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:fdd1584d8b4668cd4e58276e570736d3468101901fa4952f669b941890dcc516",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-ef0ce7557279ac795012f4ac",
+      "trial_id": "qwen3-vl-pilot-03-v5-ef0ce7557279ac795012f4ac"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:0361f323e6dd4c3b092b885e2387fdb158cb915356952b544c1e38f9ad70d41e",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-9fdc730327302d08e2e94fcd",
+      "trial_id": "qwen3-vl-pilot-04-v5-9fdc730327302d08e2e94fcd"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:f62a4f7a4f0f61a183ba9aa218763402bb7dc24d5217bf3607cd331e555fa125",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-0f4e94641ed16f0c4fdc80e1",
+      "trial_id": "qwen3-vl-pilot-05-v5-0f4e94641ed16f0c4fdc80e1"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:bcf81938c6ae53d98bc4cb72be95d79675430969cce1e197a91daace06348de8",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-c73a8c6f526806dd0108fd56",
+      "trial_id": "qwen3-vl-pilot-06-v5-c73a8c6f526806dd0108fd56"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:42993f89f0f9eb0484ff35acbc2299515a650167def19fee725e20cffdfeca02",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-844bc5a6365a1090f815c575",
+      "trial_id": "qwen3-vl-pilot-07-v5-844bc5a6365a1090f815c575"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:0cab8bb91eb99784e23da098819e15435f168677e40fb8218456a779464ed104",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-218f23867c9546478a3c4108",
+      "trial_id": "qwen3-vl-pilot-08-v5-218f23867c9546478a3c4108"
+    },
+    {
+      "classification": "pilot_action_limit",
+      "environment_actions": 2,
+      "final_policy_checkpoint_digest": "sha256:168a22d80dd1ec2cdf6f196fad8aabd73ee6f3ca3005b911b919f24b758ea4cb",
+      "model_attempts": 2,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 2,
+      "success": false,
+      "task_id": "v5-737e9770eae31f2a8bb62ec2",
+      "trial_id": "qwen3-vl-pilot-09-v5-737e9770eae31f2a8bb62ec2"
+    }
+  ],
+  "journal_integrity": {
+    "event_chain_digest": "sha256:2ac576b2296298681f2de00bbaea495296fe1c133f821c4ae470b0107b4507e7",
+    "event_count": 150,
+    "object_count": 185,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_spend_usd": "5.00",
+  "model": "qwen/qwen3-vl-8b-instruct",
+  "model_attempt_reservations": 20,
+  "pilot_incremental_spend_usd": "0.003946930",
+  "provider_calls_made": 20,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 20,
+  "schema_version": "pixelgym-agent-v5-calibration-pilot-result-v1",
+  "transport_records": [
+    {
+      "cost_usd": "0.000191633",
+      "idempotency_key": "sha256:7a9a335bd49fa74a9fcc59bab1ac1ff1c7506ac36056e5cf5b59b2374789b933",
+      "latency_ms": 1571.7734578065574,
+      "response_id_digest": "sha256:0fb665af3f3589c3c7bc9db9f0d4191be6b6aebb69d71ae44fec8f8b2745eafa",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000204152",
+      "idempotency_key": "sha256:a61bad4b726be6dcfd05553fc46b1a54bbedb540dfe71e16b5174eae1d982451",
+      "latency_ms": 975.3602081909776,
+      "response_id_digest": "sha256:8d9074c68c7ff293d51eebada1618812f2df1da156e0711295c2ef64bf103a5f",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000191984",
+      "idempotency_key": "sha256:7527f040d55ec9bcdc3b2efe7103f3f4b2a23ea041d89efef35e219f9b4a1c5a",
+      "latency_ms": 978.5102908499539,
+      "response_id_digest": "sha256:8c29e5bb8b0ad50a0561436df13093218beb3824cd34d62d9c542e9b1b4ee8a9",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000201435",
+      "idempotency_key": "sha256:06113e638dbd4efc10f99bd92976b4363f2c463205c2d2bf89dbfb8a32631093",
+      "latency_ms": 1683.925749734044,
+      "response_id_digest": "sha256:f19f2c573751f840f23099666637ba1621cd1b50d52de306fb465d8fb16e562c",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000192218",
+      "idempotency_key": "sha256:835330b22026d0845dd0848ddfb56504da3e7e7257a812f0ba14705b4753cf4e",
+      "latency_ms": 1048.6595421098173,
+      "response_id_digest": "sha256:376d92c69976435192cb00c6725a88d86607b676cb5e182727906a974d5afbae",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000201201",
+      "idempotency_key": "sha256:14136ac503b0dfa92517c1355abead84b90bfdbd7797e1462ddf23c9d171c7d9",
+      "latency_ms": 1505.599666852504,
+      "response_id_digest": "sha256:ffe2dd66a4d13a175ca53b22dc4db082e0427f7c93771822cce48a7462a8c2f9",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000192101",
+      "idempotency_key": "sha256:14dbced3657af71abd8674d6fac1540bee619fc4900a02bb24a44032b772de80",
+      "latency_ms": 960.2670837193727,
+      "response_id_digest": "sha256:5d615f732911c6501a9dd2780c65655e2a9301e1429c4a7a5e729a30609d36fc",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000201552",
+      "idempotency_key": "sha256:18a87136bc17b1ce7057e573ee4903754480e5bc7add51d57418edd5c4e2a182",
+      "latency_ms": 1078.002582769841,
+      "response_id_digest": "sha256:8a941626b963b0f726b977666632e1761b60813affd7fd95589d79ab97a66a6d",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000192101",
+      "idempotency_key": "sha256:6d605397c82d76ab31d1256c277322378918eaaa7f373a15a6fd5c857b328659",
+      "latency_ms": 995.7341249100864,
+      "response_id_digest": "sha256:12168086b0df2f7a4b8ace8fcb0f5ab593e9d1271d7a65d39af79bc5c7c8d10b",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000201903",
+      "idempotency_key": "sha256:29d8e67b8d7411883b4f7fc1aa7ae3c66ad1624160d44d1c2454c2572c347882",
+      "latency_ms": 1052.1109588444233,
+      "response_id_digest": "sha256:b8b585539e8a02be738d76282ec0a788d2e5633976aecce309710f02efca5897",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000191984",
+      "idempotency_key": "sha256:a149ed3f4f9497a8233e2211a6862a72d6d61051bbb41675514468447c8d7c8d",
+      "latency_ms": 955.4699999280274,
+      "response_id_digest": "sha256:89f26b15d18a672763609b3c64a450649e8f9f715d52b57c5a753877a516799a",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000205205",
+      "idempotency_key": "sha256:3977ba6e0852d503a7d66e814a6e379d738e47dd62cd0ffcec610ac85acf0b97",
+      "latency_ms": 1292.79570793733,
+      "response_id_digest": "sha256:5120e4c76281d34ad18946a3e81dc53843bebf2b0ffbd608a8a930f7cbbadde8",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000191633",
+      "idempotency_key": "sha256:4524daed9a806a44fcd2c7a7d3105ad934dcece1ef4cf42166f1b29d2b6cfc47",
+      "latency_ms": 992.1414591372013,
+      "response_id_digest": "sha256:a67b06525de03ea2d3fa7ea448543200042f22ab9cc3e7f4efd2af9b327ec575",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000200733",
+      "idempotency_key": "sha256:2862a09900f7574a8da5354a254de5c1977741847a4baff9e6fa17f6eec72deb",
+      "latency_ms": 1082.4393746443093,
+      "response_id_digest": "sha256:9d7a2d1abf10a42a21ba3b200974ddd49bd2aa1b7d6408e32d75f05e6e57fcd1",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000191984",
+      "idempotency_key": "sha256:7973f2ed1bff8f28919a88d25b13510f952447a0ae27720ca2e9df77c518575b",
+      "latency_ms": 913.5765000246465,
+      "response_id_digest": "sha256:50a1afcea4ef8a5e1f9fd77320ef051a986df2b75be2a7bdb529e8d9c815b933",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000201435",
+      "idempotency_key": "sha256:8f612b5a89c89eebf1a5e173658cf05b86fca5c0f6a47a259d94b029e530ba94",
+      "latency_ms": 924.6159587055445,
+      "response_id_digest": "sha256:eae1a7b46a99c40b8d92141288586eda8bb13eadbba7541c8332d59a3cbeb23f",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000192218",
+      "idempotency_key": "sha256:c00d98d6455814003a4d5e442bffc356b16cca544fc4f5c9aa4ca70c05766420",
+      "latency_ms": 986.1236247234046,
+      "response_id_digest": "sha256:5aea9f293177ae71a0da988464d4400c51dbcc51625bfea1c2cd0958f9630821",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000204854",
+      "idempotency_key": "sha256:30fa30769d7ddd79db19a9f9ca43e728dd4bbe242554e79299fcb745305db950",
+      "latency_ms": 985.7732909731567,
+      "response_id_digest": "sha256:bb98d2e70972b35e5e5af0a00b3c5296487f5b92ff3e0ab04c9d9ef64f7ebc64",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000192101",
+      "idempotency_key": "sha256:8fb82fd449d4733d9193cc19fde7175ac7ed1787cbd07150b7871a807bcd1e4f",
+      "latency_ms": 1490.4277911409736,
+      "response_id_digest": "sha256:a22938f38ce6ca1c6faf83fb6105a4627db7440927ffc069ebd4217b05a97d7b",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    },
+    {
+      "cost_usd": "0.000204503",
+      "idempotency_key": "sha256:cc309bf2ad42b61db193d5a2d57c13d80dca3812ae80d804a91c2c32ad2454b7",
+      "latency_ms": 1087.6742918044329,
+      "response_id_digest": "sha256:21c00f968a162feea7d4f79cd93abfd5a8c12904ffae9e2aa8e6073edadf071b",
+      "response_model": "qwen/qwen3-vl-8b-instruct",
+      "status": "response",
+      "upstream_provider": "Alibaba"
+    }
+  ],
+  "upstream_provider": "alibaba"
+}

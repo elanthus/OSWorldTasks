@@ -1,0 +1,147 @@
+{
+  "approved_plan_sha256": "sha256:ec88a91aa1573d9b33aeb840c9deb56147c94c47456169546a9c7c834a6bfc7b",
+  "attempt_journal_integrity": {
+    "event_chain_digest": "sha256:8d8ddd96aefbb48e24086ca84ca831f1657b39d760220015618c8628e66e740b",
+    "event_count": 5,
+    "object_count": 5,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "authentication_mode": "chatgpt_subscription",
+  "budget_accounted_aggregate_spend_usd": "4.778164718",
+  "cleanup": {
+    "attempt_journal_closed": true,
+    "invocation_journal_closed": true,
+    "policy_and_environment_closed": true,
+    "subprocesses_closed": true,
+    "temporary_inputs_removed": true
+  },
+  "cli_version": "codex-cli 0.150.1",
+  "code_revision": "af82c6fbb27be82a0ee8ccccb8a3a2f20bc0c5fa",
+  "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
+  "episode_result": {
+    "classification": "invalid_output",
+    "environment_actions": 0,
+    "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "success": false,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "trial_id": "d56-codex-cli-luna-smoke-v5-64ba7d452b3c8d3e43d1d30e"
+  },
+  "execution_error": null,
+  "failed_luna_smoke_evidence": {
+    "approved_plan_content_sha256": "sha256:1bea6849d3dd619ab481ee21b957975fedac9302119806aaadc90b21ce6be433",
+    "approved_plan_file_sha256": "sha256:f75293b1370d60ac84e1afeaeddf97b01f9fa4193b1b295fd3c1aadb614b6dd3",
+    "attempt_journal_event_chain_sha256": "sha256:c29c9f7b6e6eadbfca55356bfa4f34367a1b26674f32fac37f050a610cb99530",
+    "attempt_journal_file_sha256": "sha256:412350c8211ea077b5bc763aa802ee9553f8496583d26a2b553b062feabbc98e",
+    "classification": "infrastructure_failure",
+    "code_revision": "f3cf861edda5b75d30145739de12e1764923d6b4",
+    "environment_actions": 0,
+    "historical_result_accounting": {
+      "accounting_method": "superseded_conservative_list_price_reservation_v1",
+      "budget_accounted_aggregate_spend_usd": "5.757364718",
+      "incremental_cost_equivalent_usd": "0.97920000",
+      "unresolved_reservation_count": 1
+    },
+    "invocation_journal_file_sha256": "sha256:1487aa1603b84ee6aa54bf228b9bea02e05b58ae03c767579f6aac9bf6d26894",
+    "outcome_sha256": "sha256:5927d5c61ff3b0f495857990feb3d3e70488c5836126061e30f5ee99817e1d66",
+    "provider_calls_made": 1,
+    "raw_stderr_sha256": "sha256:74cb00300ed4a4c23ba979d30d34218cd356e4bfb55b81f10a3dc832d52c56c7",
+    "raw_stdout_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "replacement_fix": "remove_unknown_config_key_and_disable_view_image_feature",
+    "reuse_rule": "do_not_resume_overwrite_or_reuse_plan_or_run_directory",
+    "root_cause": "strict_config_rejected_unknown_tools_view_image_key_before_inference",
+    "status": "consumed_immutable_infrastructure_failure",
+    "summary_file_sha256": "sha256:6bff9bfb09f36556133dc1e33ff2c69ce846ad3856b7af89edc2ef5e5f045ebb",
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e"
+  },
+  "human_accounting_override": {
+    "approved_scope": "gpt-5.6-luna_calls_in_this_experiment",
+    "effective_experiment_charge_usd": "0.00",
+    "historical_raw_result_rewritten": false,
+    "rationale": "subscription_billed",
+    "service_subscription_limits_unchanged": true,
+    "superseded_failed_smoke_reservation_excluded_from_current_aggregate": true
+  },
+  "human_gates": {
+    "D4.12": "not_evaluated_human_owned",
+    "D5.10": "not_evaluated_human_owned"
+  },
+  "incremental_luna_experiment_charge_usd": "0.00",
+  "informational_list_price_equivalent_usd": "0.00426390",
+  "invocation_journal_integrity": {
+    "invocation_count": 1,
+    "records": [
+      {
+        "exit_code": 0,
+        "idempotency_key_digest": "sha256:897ef953d23d801828daca0b660e3c34af585cc8f96132e443d156596e39aab3",
+        "outcome_sha256": "sha256:044d2c18c06845cc4689e3d5175284194bab16b4783ab259d7ed4283668a9fbd",
+        "raw_stderr_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "raw_stdout_sha256": "sha256:11fa917940f8157b9f0d28678298426b51e538925fa79fcf530d59f284dc75eb",
+        "request_digest": "sha256:6a01c17981fe6288902ea35220fd4b5194eb4ec53a65ab23674a562a3bd3feee",
+        "status": "policy_violation"
+      }
+    ],
+    "schema_version": "pixelgym-agent-v5-codex-cli-invocation-journal-v2"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model": "gpt-5.6-luna",
+  "model_attempt_reservations": 1,
+  "model_reasoning_effort": "low",
+  "policy_violation": "unauthorized_item:error",
+  "predecessor_evidence": {
+    "approved_plan_content_sha256": "sha256:fc1f41d00df8c847d55765ea6af6b4c688463a893281f995f3eee3b770c43f7c",
+    "approved_plan_file_sha256": "sha256:80f8b7ea4d9809405faf98c9b4ef01193f5456a9d58db243488dd2fe4229133e",
+    "assigned_tasks": 50,
+    "attempted_tasks": 13,
+    "budget_accounted_aggregate_spend_usd": "4.778164718",
+    "classifications": {
+      "invalid_output": 1,
+      "step_limit_truncation": 12
+    },
+    "code_revision": "0e74a791559b5e6636c12e2fa4fd480ab3a8c8fd",
+    "integrity_audit_file_sha256": "sha256:faf1cfb20422fe87456ba2373d48f6e321da50a1ba1b0ceabbc2c9561ceb0afd",
+    "journal_event_chain_sha256": "sha256:6117a1454d0cbe834a2b6a0f46cc0be8536ae44650b687a30ad1360c5ff0999d",
+    "maximum_remaining_incremental_exposure_usd": "5.221835282",
+    "publication_relation_file_sha256": "sha256:7ccc779f0b2204b99296e5fd4f5190646bd523cc7a447ed4236ca22807abc312",
+    "publishable_derivative_file_sha256": "sha256:952e105d4d6f092b2f5a98b98b3ff6e2f784c407ee99f8b7c540ae000134fde6",
+    "report_file_sha256": "sha256:3a380f9f44cae54b6116f426ecbcf2d6bb1cbd038116237e3f80530f4d0169a5",
+    "restricted_journal_file_sha256": "sha256:81e9137cb5c5074c3a0fd02f8f20ef7c2368ede9dbf95f1a92a1805a61818671",
+    "reuse_rule": "do_not_resume_overwrite_reuse_or_reinterpret",
+    "status": "consumed_immutable_incomplete_negative_evidence",
+    "successful_tasks": 0,
+    "summary_file_sha256": "sha256:2fb447acaca1c934a0469fa56d67849f9f5458de21edd506b0e6a63660b67b69",
+    "unattempted_tasks": 37
+  },
+  "prior_non_luna_budget_accounted_spend_usd": "4.778164718",
+  "provider": "Codex CLI",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_runtime": "non-interactive codex exec",
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_evidence_local_only",
+  "purpose": "one development-only Codex CLI action validating image input, isolation, schema-constrained action output, journaling, and subscription-exempt Luna accounting; replacement for one immutable pre-inference infrastructure failure; not calibration evidence",
+  "remaining_non_luna_aggregate_exposure_usd": "5.221835282",
+  "schema_version": "pixelgym-agent-v5-d56-codex-cli-luna-smoke-result-v2",
+  "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+  "transport_records": [
+    {
+      "authentication_mode": "chatgpt_subscription",
+      "cli_version": "codex-cli 0.150.1",
+      "command_contract_digest": "sha256:f0cbd47bcf292e40ccede96d8e20aa8043d82758be116642468c70ed044348a0",
+      "experiment_charge_usd": "0.00",
+      "idempotency_key_digest": "sha256:897ef953d23d801828daca0b660e3c34af585cc8f96132e443d156596e39aab3",
+      "informational_list_price_equivalent_usd": "0.00426390",
+      "model": "gpt-5.6-luna",
+      "model_reasoning_effort": "low",
+      "policy_violation": "unauthorized_item:error",
+      "price_guard": "subscription_exempt",
+      "status": "policy_violation",
+      "usage_telemetry_status": "available"
+    }
+  ],
+  "unresolved_invocation_count": 0,
+  "usage_telemetry_status": "available",
+  "usage_telemetry_unavailable_count": 0
+}

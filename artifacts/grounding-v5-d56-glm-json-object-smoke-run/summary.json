@@ -1,0 +1,96 @@
+{
+  "actual_aggregate_spend_usd": "2.487339457",
+  "approved_plan_sha256": "sha256:495c301d999e045647a8a933634ceae7d59387ff669c451c5bbaae5231d98fca",
+  "cleanup": {
+    "journal_closed": true,
+    "policy_and_environments_closed": true
+  },
+  "code_revision": "968ea744c7258fb3d2c9544e6e60be410663eb3d",
+  "episode_result": {
+    "classification": "infrastructure_failure",
+    "environment_actions": 0,
+    "final_policy_checkpoint_digest": "sha256:63e9da03831c87ca45e2c7b7bbc730fa262decdf49943ad3b6032b212e7348c1",
+    "model_attempts": 1,
+    "provider_control_requests": 0,
+    "provider_wire_requests": 1,
+    "slot": "C-glm-stateful-json-object-smoke-candidate",
+    "success": false,
+    "task_id": "v5-bf8d93604c1ba0da75b32ca8",
+    "trial_id": "d56-glm-json-object-smoke-v5-bf8d93604c1ba0da75b32ca8"
+  },
+  "execution_error": null,
+  "frozen_relaxed_glm_trial_evidence": {
+    "actual_aggregate_spend_usd": "2.487339457",
+    "approved_plan_sha256": "sha256:fcdf25ff8627a5305ab5e02830daf6c63d45ad071c327ff14af5e6cceca7ebd9",
+    "code_revision": "98bfc434553f9c9eb1714c164dd0014e1f3a0f83",
+    "journal_integrity": {
+      "event_chain_digest": "sha256:75edc10fd82795bfc2068a78dae97e6bc07d9339976f6925344c51a367ef72a3",
+      "event_count": 3,
+      "object_count": 5,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "/Users/mswailes/dev/OSWorldTasks/artifacts/grounding-v5-d56-glm-relaxed-trial-run/attempts.sqlite",
+    "journal_sha256": "sha256:1077c5015396b02be32fb3453acca66aa507f236b5824e80638a6efe1242c244",
+    "summary_path": "/Users/mswailes/dev/OSWorldTasks/artifacts/grounding-v5-d56-glm-relaxed-trial-run/summary.json",
+    "summary_sha256": "sha256:3045e479de15ff9ca887950d8e9f612f1e593ff6bea7203dc23282466736df6b",
+    "terminal": {
+      "classification": "unknown_outcome_infrastructure_failure",
+      "failure_code": "provider_request_unknown",
+      "http_status": 404,
+      "provider_error_code": 404,
+      "request_outcome": "unknown",
+      "retry_eligible": false
+    }
+  },
+  "journal_integrity": {
+    "event_chain_digest": "sha256:1f33a7940e19017a22597db86f11500849835091445c715cd228deead458bb60",
+    "event_count": 3,
+    "object_count": 5,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "maximum_aggregate_spend_usd": "10.00",
+  "model_attempt_reservations": 1,
+  "prior_aggregate_spend_usd": "2.487339457",
+  "provider_calls_made": 1,
+  "provider_control_requests": 0,
+  "provider_wire_requests": 1,
+  "publication_status": "restricted_raw_responses_in_local_journal",
+  "purpose": "one development-only request testing exact Novita FP8 routing with OpenRouter JSON mode and the unchanged local exact-action parser; not calibration evidence",
+  "reached_model_response": false,
+  "remaining_aggregate_spend_usd": "7.512660543",
+  "schema_version": "pixelgym-agent-v5-d56-glm-json-object-smoke-result-v1",
+  "semantic_progress": {
+    "diagnostic_event_counts": {},
+    "first_transition_completed": false,
+    "maximum_stage_index_observed": 0
+  },
+  "smoke_incremental_spend_usd": "0E-9",
+  "transport_records": [
+    {
+      "error_body_bytes_read": 856,
+      "error_body_prefix_digest": "sha256:7dd829a2c95697972ce866636e09a9475b90e58de7ff61f6247a7cf4ed6aa29a",
+      "error_body_truncated": false,
+      "failure_code": "HTTPError",
+      "http_status": 429,
+      "idempotency_key": "sha256:939bb0a8b0be5dcebd04f44bd44e8966b8fb6f0377b1afcf44e67aeaa1b31664",
+      "openrouter_metadata": {
+        "attempt": 1,
+        "endpoints": {
+          "available": [
+            {
+              "model": "z-ai/glm-5.3-flash-20260826",
+              "provider": "Novita",
+              "selected": false
+            }
+          ],
+          "total": 14
+        },
+        "requested": "z-ai/glm-5.3-flash",
+        "strategy": "direct"
+      },
+      "provider_error_code": 429,
+      "status": "unknown",
+      "upstream_provider": "Novita"
+    }
+  ]
+}

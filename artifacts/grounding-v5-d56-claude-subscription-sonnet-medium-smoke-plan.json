@@ -1,0 +1,235 @@
+{
+  "caps": {
+    "assigned_task_cap": 1,
+    "claude_process_invocation_cap": 1,
+    "environment_action_cap": 1,
+    "experiment_charge_per_call_usd": "0.00",
+    "maximum_aggregate_spend_usd": "10.00",
+    "model_attempt_cap": 1,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 1
+  },
+  "code_revision": "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2",
+  "execution_state": "advance_human_authorized",
+  "human_approval_scope": {
+    "aggregate_smoke_process_cap": 3,
+    "authorized_at_local_date": "2026-08-30",
+    "human_gates_unchanged": true,
+    "implemented_smoke_allocation": "one_per_requested_policy_no_retries",
+    "scope": [
+      "one_smoke_for_luna_medium",
+      "one_smoke_for_terra_medium",
+      "one_smoke_for_sonnet_medium",
+      "one_full_frozen_run_per_policy_only_after_its_smoke_succeeds"
+    ],
+    "sonnet_authentication": "claude_ai_max_subscription_reauthenticated",
+    "status": "advance_human_authorization_recorded"
+  },
+  "human_gates": {
+    "D4.12": "not_evaluated_human_owned",
+    "D5.10": "not_evaluated_human_owned"
+  },
+  "policy": {
+    "command_contract": [
+      "claude",
+      "--print",
+      "--verbose",
+      "--model",
+      "claude-sonnet-5",
+      "--effort",
+      "medium",
+      "--output-format",
+      "stream-json",
+      "--input-format",
+      "stream-json",
+      "--tools",
+      "",
+      "--disallowedTools",
+      "mcp__*",
+      "--max-turns",
+      "1",
+      "--permission-mode",
+      "dontAsk",
+      "--setting-sources",
+      "",
+      "--safe-mode",
+      "--disable-slash-commands",
+      "--strict-mcp-config",
+      "--mcp-config",
+      "{}",
+      "--no-chrome",
+      "--no-session-persistence",
+      "--exclude-dynamic-system-prompt-sections",
+      "--system-prompt",
+      "You are a stateless pixel-only GUI policy. Use only the user-provided task text and inline screenshot. Do not use tools or request other context. Return exactly one action as a bare JSON object matching the required action contract, with no markdown or prose."
+    ],
+    "command_contract_digest": "sha256:d1b4609daeb09aa850c65591fa538b0442e8d2eaab20eb63a5120e0ab30465f4",
+    "evaluated_provider": "Claude Code CLI",
+    "isolation": {
+      "chrome": "disabled",
+      "filesystem_image_input": "none_inline_base64_only",
+      "mcp": "none",
+      "session_persistence": "disabled",
+      "settings_and_customizations": "disabled",
+      "slash_commands": "disabled",
+      "tools": "none",
+      "working_directory": "isolated_empty_temporary_directory"
+    },
+    "limits": {
+      "context_limit_tokens": 1000000,
+      "kill_grace_seconds": 2.0,
+      "process_timeout_seconds": 120.0,
+      "runner_cli_request_and_stream_retries": 0,
+      "runner_request_deadline_seconds": 125.0,
+      "termination_grace_seconds": 2.0
+    },
+    "model": "claude-sonnet-5",
+    "model_reasoning_effort": "medium",
+    "observation_contract": "task_instruction_plus_current_inline_screenshot_only",
+    "orchestrator_model_excluded": "gpt-5.6-sol",
+    "policy_manifest": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2",
+      "context_limit": 1000000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:5209e9408a5e4d44c230ed10b185ac4f1ff518881b17bdd964b67ebc8204285a",
+      "inference_parameters": [
+        [
+          "auth_method",
+          "claude.ai"
+        ],
+        [
+          "subscription_type",
+          "max"
+        ],
+        [
+          "cli_version",
+          "2.1.236 (Claude Code)"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:d1b4609daeb09aa850c65591fa538b0442e8d2eaab20eb63a5120e0ab30465f4"
+        ],
+        [
+          "model_reasoning_effort",
+          "medium"
+        ],
+        [
+          "resolved_model",
+          "to_be_bound_by_successful_smoke"
+        ],
+        [
+          "tools",
+          "none"
+        ],
+        [
+          "mcp",
+          "none"
+        ],
+        [
+          "claude_max_turns",
+          "1"
+        ],
+        [
+          "structured_output_auto_retry",
+          "disabled_no_json_schema_flag"
+        ],
+        [
+          "runner_retries",
+          "0"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-stateless-current-screenshot-only-v1",
+      "model": "claude-sonnet-5",
+      "parser_version": "pixelgym-agent-v5-claude-stream-json-action-parser-v1",
+      "policy_id": "policy-177bce641e2534f473a9",
+      "provider": "claude-code-cli/claude-ai-max-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 125.0,
+      "response_schema_version": "pixelgym-agent-v5-claude-stream-json-response-v1",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:494d85f8afeb70c9c1f9c7875260108b946b7b3e01ade34a0136c8ec84549b5b",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://api.anthropic.com",
+        "runtime_digest": "sha256:d23f986cbff16f8d0f1498dee8bd7f26ba144638efe4ede6b368f9b402510998"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1",
+      "system_prompt_digest": "sha256:e7dddeac6e10f8420a0dbebd32d64f623018ba1b25b5671b3f5dcf1a58cfb2c9",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "one-claude-cli-process-per-action-no-runner-retry-v1"
+    },
+    "policy_manifest_digest": "sha256:bd7c348b66022e5ef311c9e36561a55447b3be1c9bdfd7b035f94fd43f87da27",
+    "provider_identity": "claude-code-cli/claude-ai-max-subscription",
+    "provider_runtime": "non-interactive claude print stream-json",
+    "resolved_model": null,
+    "response_schema_digest": "sha256:73bd5a4a9ec6bac2da4c38752139306a71b150f0bf0c149ec015390bec312f26",
+    "runtime_identity": {
+      "auth_method": "claude.ai",
+      "cli_version": "2.1.236 (Claude Code)",
+      "help_sha256": "sha256:71ad650f59e08ae40ede14c534db4f49d8590ee5a4f92f6da2882d3a5560fea6",
+      "reasoning_effort": "medium",
+      "requested_model": "claude-sonnet-5",
+      "subscription_type": "max"
+    },
+    "slot": "sonnet-medium"
+  },
+  "price_and_cost_accounting": {
+    "accounting_method": "claude_max_subscription_experiment_charge_zero_v1",
+    "authentication_mode": "claude.ai",
+    "billing_classification": "Claude_Max_subscription_billed",
+    "experiment_charge_per_call_usd": "0.00",
+    "maximum_aggregate_spend_usd": "10.00",
+    "missing_usage_rule": "record_nonblocking_for_subscription_authenticated_calls",
+    "prior_non_subscription_budget_accounted_spend_usd": "4.778164718",
+    "reported_cost_telemetry": "informational_non_billing_diagnostic",
+    "service_subscription_limits": "unchanged_and_not_programmatically_observable",
+    "subscription_type": "max",
+    "usage_telemetry": "optional_non_billing_diagnostic"
+  },
+  "provider_calls_made_while_planning": 0,
+  "purpose": "one development smoke action for Sonnet medium; not calibration evidence",
+  "raw_evidence_policy": {
+    "provider_response_content": "restricted_local_journals_only",
+    "publication": "response_content_free_derivatives_only_after_integrity_audit",
+    "raw_cli_jsonl": "restricted_local_invocation_journal_only",
+    "raw_cli_stderr": "restricted_local_invocation_journal_only",
+    "screenshots": "restricted_local_attempt_journal_only"
+  },
+  "requires_clean_tracked_worktree": true,
+  "schema_version": "pixelgym-agent-v5-d56-claude-subscription-smoke-plan-v1",
+  "stop_conditions": [
+    "send exactly one Claude Code process invocation and never retry it",
+    "stop after the first valid environment action",
+    "stop without dispatch on invalid or unparseable action output",
+    "stop on any tool, MCP, Chrome, filesystem, or unrecognized stream event",
+    "terminate the process group on timeout or interruption",
+    "stop on runtime identity, command contract, auth mode, or evidence mismatch"
+  ],
+  "task": {
+    "action_limit": 1,
+    "family": "evidence_aggregation",
+    "partition": "development",
+    "seed": 5002,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "variant": "base"
+  }
+}
