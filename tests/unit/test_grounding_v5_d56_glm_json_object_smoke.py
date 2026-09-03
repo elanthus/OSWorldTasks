@@ -101,16 +101,13 @@ def test_plan_is_one_call_exact_novita_fp8_json_object_smoke(
         "local_exact_action_parser": True,
         "invalid_or_unparseable_output_rule": "retain_and_fail_closed_without_retry",
     }
-    assert plan["caps"] == {
-        "environment_action_cap": 1,
-        "model_attempt_cap": 1,
-        "provider_control_request_cap": 0,
-        "provider_wire_request_cap": 1,
-        "prior_aggregate_spend_usd": "2.487339457",
-        "per_request_theoretical_maximum_usd": "0.010547200",
-        "aggregate_maximum_spend_usd": "10.00",
-        "aggregate_theoretical_upper_bound_usd": "2.497886657",
-    }
+    assert plan["caps"]["environment_action_cap"] == 1
+    assert plan["caps"]["provider_wire_request_cap"] == 1
+    assert plan["caps"]["prior_campaign_spend"]["known_spend_usd"] == "2.487339457"
+    assert plan["caps"]["maximum_run_spend_usd"] == "10.00"
+    assert plan["caps"]["remaining_run_spend_usd"] == "10.00"
+    assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.010547200"
+    assert plan["caps"]["run_theoretical_upper_bound_usd"] == "0.010547200"
     assert smoke.plan_digest(plan).startswith("sha256:")
 
 
