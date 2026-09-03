@@ -5,6 +5,7 @@ import base64
 import dataclasses
 import importlib
 import io
+import json
 import logging
 import re
 import secrets
@@ -24,6 +25,7 @@ from starlette.requests import Request
 from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.control_store import ControlStore, TransitionError
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import TrackingRunView
@@ -48,7 +50,9 @@ from pixelgym.platform.service import (
 )
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 from pixelgym.platform.web import create_control_app
+from pixelgym.platform.web.app import DEPLOYMENT_AUDIT_WINDOW, RUNS_PAGE_SIZE
 from scripts.capture_platform_api import _safe_body
+from scripts.export_platform_evidence import export_evidence
 
 
 def _image(width: int = 100, height: int = 80, image_format: str = "PNG") -> bytes:
@@ -2135,6 +2139,156 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert 'condition == "marks"' in detail.text
     assert "relabeled" in detail.text
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
+
+
+def _register_bulk_candidates(
+    control: ControlStore,
+    passing_evidence,
+    *,
+    oldest_provider: str | None = None,
+) -> None:
+    policy, _summary, report = passing_evidence
+    for index in range(1_000):
+        run_id = f"bulk-run-{index:04d}"
+        unsigned = dataclasses.replace(
+            policy,
+            model=f"bulk-model-{index:04d}",
+            provider=oldest_provider if oldest_provider and index < 10 else policy.provider,
+            policy_id="",
+        )
+        candidate_policy = dataclasses.replace(
+            unsigned,
+            policy_id="sha256:"
+            + sha256_bytes(canonical_json_bytes(unsigned.identity_dict())),
+        )
+        candidate_report = dataclasses.replace(
+            report,
+            run_id=run_id,
+            policy_id=candidate_policy.policy_id,
+        )
+        control.register_candidate(
+            source_run_id=run_id,
+            policy=candidate_policy,
+            gate_report=candidate_report,
+            artifacts=[],
+        )
+
+
+def test_runs_filter_before_pagination_finds_oldest_provider_candidates(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs?provider=bulk-provider-x")
+
+    assert response.status_code == 200
+    assert response.text.count('<tr><td><a href="/candidates/') == 10
+    assert 'href="/runs?provider=bulk-provider-x&amp;page=2"' not in response.text
+
+
+def test_runs_provider_options_include_providers_outside_first_page(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs")
+
+    assert response.status_code == 200
+    provider_select = re.search(
+        r'<select name="provider">(?P<options>.*?)</select>', response.text
+    )
+    assert provider_select is not None
+    assert 'value="bulk-provider-x"' in provider_select.group("options")
+    table_body = response.text.split("<tbody>", 1)[1].split("</tbody>", 1)[0]
+    assert "bulk-provider-x" not in table_body
+
+
+def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(control, passing_evidence)
+
+    statements: list[str] = []
+    control.connection.set_trace_callback(statements.append)
+    try:
+        response = TestClient(
+            create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+        ).get("/runs")
+    finally:
+        control.connection.set_trace_callback(None)
+
+    selects = [
+        statement
+        for statement in statements
+        if statement.lstrip().upper().startswith("SELECT")
+    ]
+    candidate_selects = [
+        statement for statement in selects if "FROM candidates" in statement
+    ]
+    assert response.status_code == 200
+    assert len(selects) == 3
+    assert len(candidate_selects) == 2
+    assert response.text.count('<tr><td><a href="/candidates/') == RUNS_PAGE_SIZE
+    assert 'href="/runs?page=2"' in response.text
+
+
+def test_deployment_window_links_to_history_and_export_retains_every_audit_event(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    event_count = DEPLOYMENT_AUDIT_WINDOW + 5
+    for index in range(event_count):
+        with control.transaction() as connection:
+            control._audit(
+                connection,
+                "test.event",
+                "system",
+                f"audit-subject-{index:02d}",
+                {"index": index},
+            )
+
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    )
+    deployment = client.get("/deployment")
+    history = client.get("/deployment/audit")
+    export_path = tmp_path / "export"
+    export_evidence(control, export_path)
+    exported = [
+        json.loads(line)
+        for line in (export_path / "demo-audit-events.jsonl").read_text().splitlines()
+    ]
+
+    assert deployment.status_code == history.status_code == 200
+    assert deployment.text.count("<li><span>") == DEPLOYMENT_AUDIT_WINDOW
+    assert f">audit-subject-{event_count - 1:02d}</p>" in deployment.text
+    assert ">audit-subject-00</p>" not in deployment.text
+    assert 'href="/deployment/audit"' in deployment.text
+    assert "View full audit history" in deployment.text
+    assert ">audit-subject-00</p>" in history.text
+    assert len(exported) == event_count
+    assert {event["subject_id"] for event in exported} == {
+        f"audit-subject-{index:02d}" for index in range(event_count)
+    }
 
 
 def test_runs_filter_prompt_model_status_date_and_gate_result(
