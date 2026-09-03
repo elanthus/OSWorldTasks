@@ -260,9 +260,77 @@ def test_integration_metadata_records_release_runtime_and_python(backend):
     assert metadata["task_bundle_sha256"] == "bundle-sha"
 
 
-def test_portable_docker_allocator_skips_host_and_docker_ports(monkeypatch):
+def test_portable_docker_allocator_can_select_maximum_valid_port():
+    probed_ports = []
+
+    selected = _portable_docker_available_port(
+        object(),
+        65_535,
+        published_port_source=lambda _provider: set(),
+        port_probe=lambda port: probed_ports.append(port) or True,
+    )
+
+    assert selected == 65_535
+    assert probed_ports == [65_535]
+
+
+@pytest.mark.parametrize("start_port", [0, 65_536])
+def test_portable_docker_allocator_rejects_invalid_start_port(start_port):
+    published_port_calls = []
+    probed_ports = []
+
+    with pytest.raises(ValueError, match="start_port must be between 1 and 65535 inclusive"):
+        _portable_docker_available_port(
+            object(),
+            start_port,
+            published_port_source=lambda provider: published_port_calls.append(provider) or set(),
+            port_probe=lambda port: probed_ports.append(port) or True,
+        )
+
+    assert published_port_calls == []
+    assert probed_ports == []
+
+
+def test_portable_docker_allocator_skips_bind_failing_and_docker_ports():
     host_port = 50_000
     docker_port = host_port + 1
+    probed_ports = []
+
+    def probe(port):
+        probed_ports.append(port)
+        return port != host_port
+
+    selected = _portable_docker_available_port(
+        object(),
+        host_port,
+        published_port_source=lambda _provider: {docker_port},
+        port_probe=probe,
+    )
+
+    assert selected == docker_port + 1
+    assert probed_ports == [host_port, docker_port + 1]
+
+
+def test_portable_docker_allocator_exhaustion_stops_at_maximum_valid_port():
+    probed_ports = []
+
+    with pytest.raises(
+        OSWorldBackendError,
+        match="no available host port found starting at 65534",
+    ):
+        _portable_docker_available_port(
+            object(),
+            65_534,
+            published_port_source=lambda _provider: {65_534},
+            port_probe=lambda port: probed_ports.append(port) or False,
+        )
+
+    assert probed_ports == [65_535]
+    assert 65_536 not in probed_ports
+
+
+def test_portable_docker_allocator_reads_default_docker_port_source(monkeypatch):
+    docker_port = 50_000
     container = types.SimpleNamespace(
         attrs={"NetworkSettings": {"Ports": {"5000/tcp": [{"HostPort": str(docker_port)}]}}}
     )
@@ -278,12 +346,11 @@ def test_portable_docker_allocator_skips_host_and_docker_ports(monkeypatch):
             return None
 
         def bind(self, address):
-            if address[1] == host_port:
-                raise OSError("occupied")
+            assert address[1] == docker_port + 1
 
     monkeypatch.setattr("pixelgym.backends.osworld.socket.socket", lambda *_args: Probe())
 
-    selected = _portable_docker_available_port(provider, host_port)
+    selected = _portable_docker_available_port(provider, docker_port)
 
     assert selected == docker_port + 1
 
