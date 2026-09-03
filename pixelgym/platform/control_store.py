@@ -793,15 +793,27 @@ class ControlStore:
                 raise KeyError(candidate_id)
             return self._candidate_record(row)
 
-    def list_candidates(self) -> list[CandidateRecord]:
+    def list_candidates(
+        self, *, limit: int | None = None, offset: int = 0
+    ) -> list[CandidateRecord]:
+        if limit is not None and limit <= 0:
+            raise ValueError("candidate limit must be positive")
+        if offset < 0:
+            raise ValueError("candidate offset must be non-negative")
+        query = "SELECT * FROM candidates ORDER BY rowid DESC"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            ids = [
-                row[0]
-                for row in self.connection.execute(
-                    "SELECT candidate_id FROM candidates ORDER BY rowid DESC"
-                )
-            ]
-            return [self.get_candidate(candidate_id) for candidate_id in ids]
+            rows = list(self.connection.execute(query, parameters))
+        # Policy manifests are validated lazily for every returned row. Keeping
+        # validation outside the connection lock prevents schema work from
+        # blocking writers while still detecting out-of-band row corruption.
+        return [self._candidate_record(row) for row in rows]
 
     def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
         try:
@@ -1091,12 +1103,31 @@ class ControlStore:
                 raise TransitionError("there is no previous deployment to roll back to")
             return DeploymentRecord(**dict(row))
 
-    def audit_events(self) -> list[dict[str, Any]]:
+    def audit_events(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        newest_first: bool = False,
+    ) -> list[dict[str, Any]]:
+        if limit is not None and limit <= 0:
+            raise ValueError("audit event limit must be positive")
+        if offset < 0:
+            raise ValueError("audit event offset must be non-negative")
+        direction = "DESC" if newest_first else "ASC"
+        query = f"SELECT * FROM audit_events ORDER BY rowid {direction}"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            return [
-                {**dict(row), "details": json.loads(row["details_json"])}
-                for row in self.connection.execute("SELECT * FROM audit_events ORDER BY rowid")
-            ]
+            rows = list(self.connection.execute(query, parameters))
+        return [
+            {**dict(row), "details": json.loads(row["details_json"])} for row in rows
+        ]
 
     def approval_events(self) -> list[dict[str, Any]]:
         with self._lock:
