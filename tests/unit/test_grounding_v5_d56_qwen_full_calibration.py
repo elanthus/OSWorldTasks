@@ -91,7 +91,10 @@ def test_plan_binds_all_tasks_latest_spend_and_bounded_429_retry(
     assert price["supports_response_format"] is True
     assert price["supports_structured_outputs"] is True
     assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
-    assert any("against this run's ledger" in rule for rule in plan["stop_rules"])
+    assert any(
+        "against this run's approved 1.50 USD ledger" in rule
+        for rule in plan["stop_rules"]
+    )
     assert any(
         "approved maximum_run_spend_usd cap of 1.50 USD" in rule
         for rule in plan["stop_rules"]

@@ -135,7 +135,10 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_per_run_cap(
     assert "v3 policy" in plan["purpose"]
     assert "this v3 policy" in plan["predecessor_relation"]["rule"]
     assert any("confirmed HTTP 429" in rule for rule in plan["stop_rules"])
-    assert any("against this run's ledger" in rule for rule in plan["stop_rules"])
+    assert any(
+        "against this run's approved 3.00 USD ledger" in rule
+        for rule in plan["stop_rules"]
+    )
     assert any(
         "approved maximum_run_spend_usd cap of 3.00 USD" in rule
         for rule in plan["stop_rules"]

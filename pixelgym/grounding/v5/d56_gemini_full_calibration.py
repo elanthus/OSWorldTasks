@@ -306,7 +306,9 @@ def build_plan(
         "stop_rules": [
             "run all fifty tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            bounded_retry_stop_rule(ledger="this run's ledger"),
+            bounded_retry_stop_rule(
+                ledger=f"this run's approved {maximum_spend_usd} USD ledger"
+            ),
             "retain every invalid or unparseable model output, record it as a failed assignment, and continue to the next task",
             "continue after a settled per-task transport or infrastructure failure so the assignment stays in the denominator",
             f"stop after {CONSECUTIVE_FAILURE_LIMIT} consecutive non-normal terminal classifications",
