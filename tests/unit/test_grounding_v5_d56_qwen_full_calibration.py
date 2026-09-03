@@ -117,7 +117,7 @@ def test_plan_rejects_a_non_finite_or_non_positive_run_budget(
 ) -> None:
     _stub_evidence(monkeypatch)
 
-    with pytest.raises(ValueError, match="maximum run spend must be positive"):
+    with pytest.raises(ValueError, match="maximum run spend must be finite and positive"):
         calibration.build_plan(
             ROOT,
             smoke_output_directory=tmp_path / "smoke",

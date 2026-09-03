@@ -54,7 +54,7 @@ def build_plan(
     maximum_spend_usd: Decimal,
 ) -> dict[str, Any]:
     if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
-        raise ValueError("maximum run spend must be positive")
+        raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
