@@ -6,9 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 from collections.abc import Sequence
-from decimal import Decimal
 from pathlib import Path
 
+from pixelgym.grounding.v5.cli import positive_finite_decimal
 from pixelgym.grounding.v5.d56_gemini_full_calibration import (
     build_plan,
     execute_calibration,
@@ -27,7 +27,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--smoke-output", type=Path, required=True)
     parser.add_argument(
         "--maximum-spend-usd",
-        type=Decimal,
+        metavar="USD",
+        type=positive_finite_decimal,
         help=(
             "this run's entire spend budget in USD; required for --plan-only. "
             "It is recorded in the plan and therefore covered by the approved digest."

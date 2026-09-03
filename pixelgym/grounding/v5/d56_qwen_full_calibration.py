@@ -23,11 +23,11 @@ from pixelgym.grounding.v5.d56_calibration import (
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
-    BOUNDED_RETRY_STOP_RULE,
     QWEN_STATEFUL_RETRY_SUCCESSOR,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
+    bounded_retry_stop_rule,
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
@@ -53,8 +53,8 @@ def build_plan(
     frozen_bcd_output_directory: Path,
     maximum_spend_usd: Decimal,
 ) -> dict[str, Any]:
-    if maximum_spend_usd <= 0:
-        raise ValueError("maximum run spend must be positive")
+    if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
+        raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
@@ -149,8 +149,10 @@ def build_plan(
                 "zero_completion_error",
             ],
             "unobservable_charge_rule": (
-                "reserve the per-request theoretical maximum against this run's ledger "
-                "for every send whose charge cannot be observed"
+                "for every send whose charge cannot be observed, hold against this "
+                "run's ledger three times the most expensive response the run has "
+                "priced so far, capped at the per-request theoretical maximum and "
+                "falling back to that maximum before any response has been priced"
             ),
         },
         "caps": {
@@ -183,12 +185,18 @@ def build_plan(
         "stop_rules": [
             "run all fifty tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            BOUNDED_RETRY_STOP_RULE,
+            bounded_retry_stop_rule(
+                ledger=f"this run's approved {maximum_spend_usd} USD ledger"
+            ),
             "retain every invalid or unparseable model output, record it as a failed assignment, and continue to the next task",
             "continue after a settled per-task transport or infrastructure failure so the assignment stays in the denominator",
             f"stop after {CONSECUTIVE_FAILURE_LIMIT} consecutive non-normal terminal classifications",
             "stop immediately on an identity, price-guard, non-retryable HTTP, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            (
+                "stop before any request whose per-request theoretical maximum cannot fit "
+                "under this run's approved maximum_run_spend_usd cap of "
+                f"{maximum_spend_usd} USD"
+            ),
             "do not resume or replay the frozen Qwen 429 request; this is a distinct successor run",
             "do not resume, retry, replace, or reinterpret any frozen Gemini request or assignment",
             "do not expose confirmatory tasks",

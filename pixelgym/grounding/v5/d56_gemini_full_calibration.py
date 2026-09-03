@@ -23,12 +23,13 @@ from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
-    BOUNDED_RETRY_STOP_RULE,
+    GEMINI_FULL_CALIBRATION_POLICY_GENERATION,
     GEMINI_STATEFUL_FULL_CALIBRATION,
     PANEL_MAXIMUM_SPEND_USD,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
+    bounded_retry_stop_rule,
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
@@ -37,6 +38,7 @@ from pixelgym.grounding.v5.runner import V5Runner
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-full-calibration-result-v1"
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T00:32:11Z"
+POLICY_GENERATION = GEMINI_FULL_CALIBRATION_POLICY_GENERATION
 
 FROZEN_SMOKE_PLAN_SHA256 = (
     "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb"
@@ -158,8 +160,8 @@ def build_plan(
     smoke_output_directory: Path,
     maximum_spend_usd: Decimal,
 ) -> dict[str, Any]:
-    if maximum_spend_usd <= 0:
-        raise ValueError("maximum run spend must be positive")
+    if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
+        raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
@@ -180,8 +182,8 @@ def build_plan(
     return {
         "schema_version": PLAN_SCHEMA_VERSION,
         "purpose": (
-            "evaluate the Gemini 3.7 Flash v2 policy on all fifty frozen D5.6 calibration "
-            "tasks as a distinct successor run"
+            f"evaluate the Gemini 3.7 Flash {POLICY_GENERATION} policy on all fifty frozen "
+            "D5.6 calibration tasks as a distinct successor run"
         ),
         "provider_calls_made": 0,
         "code_revision": revision,
@@ -261,8 +263,10 @@ def build_plan(
                 "zero_completion_error",
             ],
             "unobservable_charge_rule": (
-                "reserve the per-request theoretical maximum against the shared ledger "
-                "for every send whose charge cannot be observed"
+                "for every send whose charge cannot be observed, hold against this "
+                "run's ledger three times the most expensive response the run has "
+                "priced so far, capped at the per-request theoretical maximum and "
+                "falling back to that maximum before any response has been priced"
             ),
         },
         "caps": {
@@ -285,8 +289,9 @@ def build_plan(
             "frozen_plan_sha256": FROZEN_PREDECESSOR_SLOT_A_PLAN_SHA256,
             "frozen_summary_sha256": FROZEN_PREDECESSOR_SLOT_A_SUMMARY_SHA256,
             "rule": (
-                "this v2 policy is a distinct successor run; do not resume, retry, replace, "
-                "or reinterpret any frozen predecessor Slot A request or assignment"
+                f"this {POLICY_GENERATION} policy is a distinct successor run; do not "
+                "resume, retry, replace, or reinterpret any frozen predecessor Slot A "
+                "request or assignment"
             ),
         },
         "task_order": [
@@ -302,12 +307,18 @@ def build_plan(
         "stop_rules": [
             "run all fifty tasks in frozen manifest order",
             "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
-            BOUNDED_RETRY_STOP_RULE,
+            bounded_retry_stop_rule(
+                ledger=f"this run's approved {maximum_spend_usd} USD ledger"
+            ),
             "retain every invalid or unparseable model output, record it as a failed assignment, and continue to the next task",
             "continue after a settled per-task transport or infrastructure failure so the assignment stays in the denominator",
             f"stop after {CONSECUTIVE_FAILURE_LIMIT} consecutive non-normal terminal classifications",
             "stop immediately on an identity, price-guard, non-retryable HTTP, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            (
+                "stop before any request whose per-request theoretical maximum cannot fit "
+                "under this run's approved maximum_run_spend_usd cap of "
+                f"{maximum_spend_usd} USD"
+            ),
             "do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment",
             "do not expose confirmatory tasks",
         ],
@@ -378,7 +389,8 @@ def execute_calibration(
                 approved_caps=approved_caps,
             ).run(
                 trial_id=(
-                    f"d56-gemini-v2-{task_record['ordinal']:02d}-{task.task_id}"
+                    f"d56-gemini-{POLICY_GENERATION}-"
+                    f"{task_record['ordinal']:02d}-{task.task_id}"
                 ),
                 task=task,
             )
