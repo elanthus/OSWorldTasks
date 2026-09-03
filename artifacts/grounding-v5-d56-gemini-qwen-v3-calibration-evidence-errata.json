@@ -1,0 +1,105 @@
+{
+  "schema_version": "pixelgym-agent-v5-d56-calibration-evidence-errata-v1",
+  "purpose": "Correct interpretation of immutable Gemini and Qwen v3 calibration evidence without rewriting approved plans or run summaries",
+  "provider_calls_made": 0,
+  "source_artifacts": [
+    {
+      "path": "artifacts/grounding-v5-d56-gemini-v3-full-calibration-plan.json",
+      "file_sha256": "sha256:99225fb86e6ef3e06105884edce9a779f5eb9fa2fb85954d588070eb0103365b",
+      "approved_plan_sha256": "sha256:140750707956aacd90cadce44c7a1638a5cc566fe28c440465f142f680b6f37c"
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-gemini-v3-full-calibration-run/summary.json",
+      "file_sha256": "sha256:88e3a033a17e624ebb13af3892fac3c1df7036562601501e2543d4cf3f93499e"
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-plan.json",
+      "file_sha256": "sha256:86cc8af553f56c06c466f425200383a3bb7bd0bb809f2a10a1750b9e5d2c046b",
+      "approved_plan_sha256": "sha256:4c60f91bdc36bd584954e78bff07d823fab9140a23d172c099df3beb3f7a0e52"
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/summary.json",
+      "file_sha256": "sha256:291b471cc345255c40ed93ec74f3e5b67c5046c375bc80765fee38370a9af53d"
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-plan.json",
+      "file_sha256": "sha256:7c12d121618c7ffcdcd2088830e395f7713d347bc6107d288754cc706ee1270b",
+      "approved_plan_sha256": "sha256:8aa068cdf6ac2b4f3f14d03983dfc21f7edcf5457d0d628a4d65eed1a6a8077b"
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/summary.json",
+      "file_sha256": "sha256:15a229482ffaf136af0a1a0c26922656d5e24e0c16e8c05f5222791e4bfec7ea"
+    }
+  ],
+  "corrections": [
+    {
+      "id": "per-run-ledger-wording",
+      "affected_plans": [
+        {
+          "approved_plan_sha256": "sha256:140750707956aacd90cadce44c7a1638a5cc566fe28c440465f142f680b6f37c",
+          "maximum_run_spend_usd": "7.00"
+        },
+        {
+          "approved_plan_sha256": "sha256:4c60f91bdc36bd584954e78bff07d823fab9140a23d172c099df3beb3f7a0e52",
+          "maximum_run_spend_usd": "7.00"
+        },
+        {
+          "approved_plan_sha256": "sha256:8aa068cdf6ac2b4f3f14d03983dfc21f7edcf5457d0d628a4d65eed1a6a8077b",
+          "maximum_run_spend_usd": "3.00"
+        }
+      ],
+      "stale_text": [
+        "reserve the per-request theoretical maximum against the shared ledger",
+        "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger"
+      ],
+      "correct_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+      "generator_fix_commit": "b2f2cfade6645635af2a0afc8ec49ec0541b33a8"
+    },
+    {
+      "id": "gemini-policy-generation-label",
+      "affected_plan_sha256": [
+        "sha256:140750707956aacd90cadce44c7a1638a5cc566fe28c440465f142f680b6f37c",
+        "sha256:4c60f91bdc36bd584954e78bff07d823fab9140a23d172c099df3beb3f7a0e52"
+      ],
+      "stale_text": "Gemini 3.7 Flash v2 policy",
+      "correct_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+      "generator_fix_commit": "5b3295271715ff5f9b64d548620d5535bf368019"
+    }
+  ],
+  "non_corrections": [
+    {
+      "id": "gemini-v3-zero-unknown-charge-reservations",
+      "summary_file_sha256": "sha256:88e3a033a17e624ebb13af3892fac3c1df7036562601501e2543d4cf3f93499e",
+      "recorded_code_revision": "0ed7ec2c84f510c7ea814024a0785436c808d9ed",
+      "decision": "retain_without_rewrite",
+      "reason": "The summary accurately records the behavior of that historical code revision: the run stopped when an unreadable charge blocked its ledger, before the later reservation mechanism existed. Adding retroactive reservations would falsify the run record. The successor Gemini v3b summary separately records 1.990656000 USD of unknown-charge reservation under revision d534091983db650c0b7c5bd9fe0db0cf32bbc729."
+    },
+    {
+      "id": "restricted-attempt-journals",
+      "decision": "must_not_commit",
+      "reason": "Attempt journals contain restricted raw provider responses and private checkpoints and are intentionally excluded by artifacts/**/*.sqlite. The published summaries retain event counts, object counts, and chained integrity digests, but they do not make a row-level journal audit publicly reproducible; that audit remains a restricted local verification step.",
+      "published_integrity": [
+        {
+          "summary_file_sha256": "sha256:88e3a033a17e624ebb13af3892fac3c1df7036562601501e2543d4cf3f93499e",
+          "event_count": 915,
+          "object_count": 880,
+          "event_chain_digest": "sha256:cfdf7eb78246c63dd64b67bcd9bce917a9e1dfda0d40227dc9b59fe0118195a7"
+        },
+        {
+          "summary_file_sha256": "sha256:291b471cc345255c40ed93ec74f3e5b67c5046c375bc80765fee38370a9af53d",
+          "event_count": 9205,
+          "object_count": 8608,
+          "event_chain_digest": "sha256:1f5e3dc79d545259d25e427b14a1d39f5d09c3a55c12d3d3f7e74071980a0b84"
+        },
+        {
+          "summary_file_sha256": "sha256:15a229482ffaf136af0a1a0c26922656d5e24e0c16e8c05f5222791e4bfec7ea",
+          "event_count": 9669,
+          "object_count": 8775,
+          "event_chain_digest": "sha256:fdd7374f05722d27c95b68950abf410bc364d48ee7b4189e79ccffa77d9a15a0"
+        }
+      ]
+    }
+  ],
+  "immutability_rule": "The source plans and summaries remain byte-for-byte unchanged; this sidecar is the authoritative correction layer for interpretation.",
+  "milestone_gate_verdict": "not_evaluated"
+}

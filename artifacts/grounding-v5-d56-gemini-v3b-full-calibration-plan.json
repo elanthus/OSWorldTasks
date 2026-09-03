@@ -1,0 +1,649 @@
+{
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "assigned_policy_task_pairs": 50,
+  "calibration_partition": {
+    "action_cap": 1431,
+    "episode_count": 50,
+    "excluded_seeds": [
+      5100,
+      5110,
+      5120,
+      5130,
+      5140,
+      5150,
+      5101,
+      5111,
+      5121,
+      5131,
+      5102,
+      5103,
+      5104,
+      5105,
+      5106,
+      5107,
+      5108,
+      5109
+    ],
+    "exclusion_rule": "exclude every task assigned to the approved Qwen two-action pilot and every task exposed by the consumed partial four-policy calibration, independent of outcome",
+    "file_sha256": "sha256:7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+    "manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+    "path": "artifacts/grounding-v5-manifests/calibration-d56.json",
+    "pilot_plan_digest": "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a",
+    "replacement_seeds": [
+      5160,
+      5161,
+      5162,
+      5163,
+      5164,
+      5165,
+      5166,
+      5167
+    ],
+    "source_manifest_digest": "sha256:092e3ad5a13175a33d2b1c2bb34123aae0b34a6b345e43232804a724b609df68"
+  },
+  "caps": {
+    "enforcement": "before each wire request, reserve the highest matching Vertex endpoint's worst-case request cost against this run's own ledger; stop before a request that cannot fit",
+    "environment_action_cap": 1431,
+    "maximum_run_spend_usd": "7.00",
+    "model_attempt_cap": 5724,
+    "per_request_theoretical_maximum_usd": "0.099532800",
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 5724,
+    "spend_lineage": "per-run: this run's ledger starts at zero and is bounded only by the approved maximum_run_spend_usd; no prior run's spend is carried in",
+    "uncapped_run_theoretical_maximum_usd": "569.725747200"
+  },
+  "code_revision": "d534091983db650c0b7c5bd9fe0db0cf32bbc729",
+  "policy": {
+    "live_endpoint_record": {
+      "matching_tags": [
+        "google-vertex/global",
+        "google-vertex/global/flex",
+        "google-vertex/global/priority"
+      ],
+      "maximum_completion_per_token_usd": "0.000003375",
+      "maximum_prompt_per_token_usd": "6.75E-7",
+      "observed_at_utc": "2026-08-28T00:32:11Z",
+      "provider_name": "Google",
+      "requested_tag": "google-vertex/global",
+      "reservation_price_basis": "highest-priced matching Vertex endpoint",
+      "source_url": "https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints",
+      "statuses": [
+        0,
+        0,
+        0
+      ],
+      "supports_response_format": true,
+      "supports_structured_outputs": true
+    },
+    "phase_call_cap_plan": {
+      "approved_calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+      "model": "google/gemini-3.7-flash",
+      "partition_manifest_digests": {
+        "calibration": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "confirmatory": "sha256:e1db5b1d638b7fc946c27a48db405c702674985bba9c2cc3886546f737a251b1",
+        "development": "sha256:284e9eef4d88c6cf4a0b2f930724dafc11a816dbf61c354b066bf4c0a03e4eec"
+      },
+      "phases": {
+        "calibration": {
+          "environment_action_cap": 1431,
+          "model_attempt_cap": 5724,
+          "provider_control_request_cap": 0,
+          "provider_wire_request_cap": 5724
+        },
+        "confirmatory_primary": {
+          "environment_action_cap": 2707,
+          "model_attempt_cap": 10828,
+          "provider_control_request_cap": 0,
+          "provider_wire_request_cap": 10828
+        },
+        "reliability_repeats": {
+          "environment_action_cap": 628,
+          "model_attempt_cap": 2512,
+          "provider_control_request_cap": 0,
+          "provider_wire_request_cap": 2512
+        },
+        "stateless_ablation": {
+          "environment_action_cap": 652,
+          "model_attempt_cap": 2608,
+          "provider_control_request_cap": 0,
+          "provider_wire_request_cap": 2608
+        }
+      },
+      "plan_digest": "sha256:30542bfa6c94b5d2fe40276f144ecd99bd9c9fe1ef3b45f5d580fd6572c56b37",
+      "policy_id": "policy-bbcdcfb50ea5c33ac529",
+      "policy_manifest_digest": "sha256:90bb53a933a13b8bf91631a6590694ef032e8567bf37cd3e349c5c7c54c97f15",
+      "provider": "openrouter/google-vertex/global",
+      "provider_calls_made": 0,
+      "schema_version": "pixelgym-agent-v5-call-cap-plan-v2"
+    },
+    "policy_manifest": {
+      "cancellation_mode": "disabled",
+      "code_revision": "d534091983db650c0b7c5bd9fe0db0cf32bbc729",
+      "context_limit": 131072,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:9c467a130ebc658416fafef20b68eadbfa32765603fe58e0c8bf4fadc7ecdbc5",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "3"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "3"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 4,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+      "model": "google/gemini-3.7-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-bbcdcfb50ea5c33ac529",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:075818c0943959b0be4aa5782d5672c74a7089823a15335e1e87b941889e5cb5"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+      "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    },
+    "policy_manifest_digest": "sha256:90bb53a933a13b8bf91631a6590694ef032e8567bf37cd3e349c5c7c54c97f15",
+    "provider": {
+      "allow_fallbacks": false,
+      "automatic_retries": false,
+      "data_collection": "deny",
+      "name": "openrouter",
+      "only": [
+        "google-vertex/global"
+      ],
+      "require_parameters": true,
+      "router_metadata": "enabled",
+      "upstream_provider": "Google"
+    },
+    "response_validation": {
+      "invalid_or_unparseable_output_rule": "retain_fail_the_assignment_and_continue_without_retry",
+      "local_exact_action_parser": true,
+      "upstream_json_schema_strict": true,
+      "upstream_response_format": "json_schema"
+    },
+    "slot": "A-gemini-stateful-v3"
+  },
+  "predecessor_relation": {
+    "frozen_plan_sha256": "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6",
+    "frozen_summary_sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+    "rule": "this v2 policy is a distinct successor run; do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment"
+  },
+  "provider_calls_made": 0,
+  "purpose": "evaluate the Gemini 3.7 Flash v2 policy on all fifty frozen D5.6 calibration tasks as a distinct successor run",
+  "requires_clean_tracked_worktree": true,
+  "run_continuation": {
+    "consecutive_failure_limit": 5,
+    "hard_stop_conditions": [
+      "run spend ledger blocked",
+      "policy or request identity mismatch",
+      "a charge above the per-request theoretical maximum",
+      "non-retryable HTTP status",
+      "evidence-integrity failure"
+    ],
+    "retryable_send_outcomes": [
+      "http_429_rate_limit",
+      "transient transport fault (dropped connection, timeout, retryable 5xx, unreadable envelope)",
+      "zero_completion_error"
+    ],
+    "rule": "record every non-normal terminal classification as a failed assignment and continue to the next task so all fifty stay in the denominator",
+    "unobservable_charge_rule": "reserve the per-request theoretical maximum against the shared ledger for every send whose charge cannot be observed"
+  },
+  "schema_version": "pixelgym-agent-v5-d56-gemini-full-calibration-plan-v1",
+  "stop_rules": [
+    "run all fifty tasks in frozen manifest order",
+    "continue after success termination or step-limit truncation so assigned tasks remain in the denominator",
+    "retry on the same pinned route, up to the per-action bounded-retry budget declared in the policy manifest, after a confirmed HTTP 429, a transient transport fault (dropped connection, timeout, retryable 5xx, or unreadable envelope), or a canonical zero-token, zero-cost, empty response with finish_reason error; wait for bounded Retry-After or exponential backoff before each retry; reserve the per-request theoretical maximum against the shared ledger for every send whose charge cannot be observed; retain every attempt",
+    "retain every invalid or unparseable model output, record it as a failed assignment, and continue to the next task",
+    "continue after a settled per-task transport or infrastructure failure so the assignment stays in the denominator",
+    "stop after 5 consecutive non-normal terminal classifications",
+    "stop immediately on an identity, price-guard, non-retryable HTTP, or evidence-integrity failure",
+    "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+    "do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment",
+    "do not expose confirmatory tasks"
+  ],
+  "successful_smoke_evidence": {
+    "actual_aggregate_spend_usd": "2.489953207",
+    "approved_plan_sha256": "sha256:6bc241c61122b9fdb69c6298c168fac76c20a5779a5c02e549ff08adaf2bb3eb",
+    "code_revision": "6380a4ccb6869a21fe21598527efd6e915601551",
+    "first_transition_completed": true,
+    "journal_integrity": {
+      "event_chain_digest": "sha256:f8fe491f1d053362098a81c7dd236a95dce3558b41889cc7b97b158db0bd0e75",
+      "event_count": 8,
+      "object_count": 12,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "artifacts/grounding-v5-d56-gemini-v3-one-call-smoke-run/attempts.sqlite",
+    "journal_sha256": "sha256:04ce4b27670371bd1d95f2cc055acab3e1c30ff426f98f38c350b676b42109b0",
+    "model_response_received": true,
+    "remaining_aggregate_spend_usd": "7.510046793",
+    "summary_path": "artifacts/grounding-v5-d56-gemini-v3-one-call-smoke-run/summary.json",
+    "summary_sha256": "sha256:97a8f1fa404999f05d248c8988fe1f2ee595ac2c0459d14efbc73e43bc773815"
+  },
+  "task_order": [
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 0,
+      "seed": 5112,
+      "task_id": "v5-bfe5707f6b44202a0e7f493e"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 1,
+      "seed": 5113,
+      "task_id": "v5-bd12a958c63d3d4a642f2388"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 2,
+      "seed": 5114,
+      "task_id": "v5-d988bea3daaaee44bd4a66dd"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 3,
+      "seed": 5115,
+      "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 4,
+      "seed": 5116,
+      "task_id": "v5-2dd66e920cec66fc7baa0340"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 28,
+      "ordinal": 5,
+      "seed": 5117,
+      "task_id": "v5-c8f7b5bf10a2be15e395f872"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 30,
+      "ordinal": 6,
+      "seed": 5118,
+      "task_id": "v5-f30e93f386d30cede2b72ce0"
+    },
+    {
+      "family": "deferred_join",
+      "max_episode_steps": 30,
+      "ordinal": 7,
+      "seed": 5119,
+      "task_id": "v5-0aafe18062befe07f24d8cab"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 8,
+      "seed": 5122,
+      "task_id": "v5-8b44ff7f55397462e532374f"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 9,
+      "seed": 5123,
+      "task_id": "v5-a3b213b43f485af0c0e40c16"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 10,
+      "seed": 5124,
+      "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 11,
+      "seed": 5125,
+      "task_id": "v5-cad52e15b441cb87019ae777"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 12,
+      "seed": 5126,
+      "task_id": "v5-2d305fda4e9ebe2d9075a384"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 28,
+      "ordinal": 13,
+      "seed": 5127,
+      "task_id": "v5-29efce8f49cbc9384485d87b"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 30,
+      "ordinal": 14,
+      "seed": 5128,
+      "task_id": "v5-7e64b6bc5406e56f2c674749"
+    },
+    {
+      "family": "conditional_precedence",
+      "max_episode_steps": 30,
+      "ordinal": 15,
+      "seed": 5129,
+      "task_id": "v5-da795237a0d228c30efffdfa"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 16,
+      "seed": 5132,
+      "task_id": "v5-988e5eb5bd2f5d95773297ba"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 17,
+      "seed": 5133,
+      "task_id": "v5-3d7d660ccc1f9499de3def52"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 18,
+      "seed": 5134,
+      "task_id": "v5-f7334ee5d914b46715d56299"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 19,
+      "seed": 5135,
+      "task_id": "v5-325495ed3572932e13e71595"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 20,
+      "seed": 5136,
+      "task_id": "v5-6f12521c75f36647ae21ba6a"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 28,
+      "ordinal": 21,
+      "seed": 5137,
+      "task_id": "v5-1a8a343b209ef6849bca6d5e"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 30,
+      "ordinal": 22,
+      "seed": 5138,
+      "task_id": "v5-7c84fe9903d32bc16a62075a"
+    },
+    {
+      "family": "revision_after_reveal",
+      "max_episode_steps": 30,
+      "ordinal": 23,
+      "seed": 5139,
+      "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 27,
+      "ordinal": 24,
+      "seed": 5141,
+      "task_id": "v5-321776e3a5121a93c5651938"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 25,
+      "seed": 5142,
+      "task_id": "v5-d439dd1631040477ef5a907b"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 26,
+      "seed": 5143,
+      "task_id": "v5-5852db880cf4dbdcaaf254bf"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 27,
+      "seed": 5144,
+      "task_id": "v5-5044beb30209bdf36a0a2d12"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 28,
+      "seed": 5145,
+      "task_id": "v5-260bef26ef62a0d66cae0449"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 29,
+      "seed": 5146,
+      "task_id": "v5-d98bd8f9f5ba030ec79201db"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 29,
+      "ordinal": 30,
+      "seed": 5147,
+      "task_id": "v5-ae6332844ec7190db0b9bd18"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 32,
+      "ordinal": 31,
+      "seed": 5148,
+      "task_id": "v5-dd7009a65e1bff896173378a"
+    },
+    {
+      "family": "visible_error_recovery",
+      "max_episode_steps": 32,
+      "ordinal": 32,
+      "seed": 5149,
+      "task_id": "v5-48860ad9b285908aa000a26b"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 26,
+      "ordinal": 33,
+      "seed": 5151,
+      "task_id": "v5-25572b1551ed10079d842b8b"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 34,
+      "seed": 5152,
+      "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 35,
+      "seed": 5153,
+      "task_id": "v5-e2e262766fce6bc662d505ff"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 36,
+      "seed": 5154,
+      "task_id": "v5-b9c743e4f89345b3397ffa1e"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 37,
+      "seed": 5155,
+      "task_id": "v5-12d672051d0ecd6ff95c89ce"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 38,
+      "seed": 5156,
+      "task_id": "v5-ebcf125c0c5332c245a09f0e"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 28,
+      "ordinal": 39,
+      "seed": 5157,
+      "task_id": "v5-46c7d567496ada92c96cee32"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 30,
+      "ordinal": 40,
+      "seed": 5158,
+      "task_id": "v5-af3926afbbb9f3ad94f668a0"
+    },
+    {
+      "family": "review_and_commit",
+      "max_episode_steps": 30,
+      "ordinal": 41,
+      "seed": 5159,
+      "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 42,
+      "seed": 5160,
+      "task_id": "v5-5eb145d169ebee7b66c83a99"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 43,
+      "seed": 5161,
+      "task_id": "v5-87b2f8109114f0dbf237649e"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 44,
+      "seed": 5162,
+      "task_id": "v5-33b66723d47aace8c622a202"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 45,
+      "seed": 5163,
+      "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 46,
+      "seed": 5164,
+      "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 28,
+      "ordinal": 47,
+      "seed": 5165,
+      "task_id": "v5-2efb29a2ca94ec51c81c5018"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 30,
+      "ordinal": 48,
+      "seed": 5166,
+      "task_id": "v5-289ad343e824d3ed28d36cbd"
+    },
+    {
+      "family": "evidence_aggregation",
+      "max_episode_steps": 30,
+      "ordinal": 49,
+      "seed": 5167,
+      "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+    }
+  ]
+}
