@@ -1,0 +1,195 @@
+{
+  "approval_required": {
+    "exact_plan_sha256": "sha256 of canonical plan bytes",
+    "owner": "human"
+  },
+  "caps": {
+    "aggregate_maximum_spend_usd": "10.00",
+    "aggregate_theoretical_upper_bound_usd": "2.586872257",
+    "environment_action_cap": 1,
+    "model_attempt_cap": 1,
+    "per_request_theoretical_maximum_usd": "0.099532800",
+    "prior_aggregate_spend_usd": "2.487339457",
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 1
+  },
+  "code_revision": "6380a4ccb6869a21fe21598527efd6e915601551",
+  "frozen_glm_json_smoke_evidence": {
+    "actual_aggregate_spend_usd": "2.487339457",
+    "journal_integrity": {
+      "event_chain_digest": "sha256:1f33a7940e19017a22597db86f11500849835091445c715cd228deead458bb60",
+      "event_count": 3,
+      "object_count": 5,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "journal_path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/attempts.sqlite",
+    "journal_sha256": "sha256:67a272f788200db7a2afb894916a14b614ca01c3e66a66c6d0cc08997314087d",
+    "summary_path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/summary.json",
+    "summary_sha256": "sha256:8d1a6d5b29dd64774415c6b5cea71ab3343061292a18877454f7d621d3ba14f3",
+    "terminal": {
+      "classification": "unknown_outcome_infrastructure_failure",
+      "failure_code": "provider_request_unknown",
+      "http_status": 429,
+      "provider_error_code": 429,
+      "request_outcome": "unknown",
+      "retry_eligible": false,
+      "upstream_provider": "Novita"
+    }
+  },
+  "policy": {
+    "live_endpoint_record": {
+      "matching_tags": [
+        "google-vertex/global",
+        "google-vertex/global/flex",
+        "google-vertex/global/priority"
+      ],
+      "maximum_completion_per_token_usd": "0.000003375",
+      "maximum_prompt_per_token_usd": "6.75E-7",
+      "observed_at_utc": "2026-08-28T00:32:11Z",
+      "provider_name": "Google",
+      "requested_tag": "google-vertex/global",
+      "reservation_price_basis": "highest-priced matching Vertex endpoint",
+      "source_url": "https://openrouter.ai/api/v1/models/google/gemini-3.7-flash/endpoints",
+      "statuses": [
+        0,
+        0,
+        0
+      ],
+      "supports_response_format": true,
+      "supports_structured_outputs": true
+    },
+    "policy_manifest": {
+      "cancellation_mode": "disabled",
+      "code_revision": "6380a4ccb6869a21fe21598527efd6e915601551",
+      "context_limit": 131072,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:9c467a130ebc658416fafef20b68eadbfa32765603fe58e0c8bf4fadc7ecdbc5",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+      "model": "google/gemini-3.7-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-7fd42404270b0f06ed4b",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 180.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:38f7d6cb71a3595678ff3e08f6b438078f5922fd0bdd2c8f5011d3feeeffb2b2"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+      "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    },
+    "policy_manifest_digest": "sha256:4a5bde7af10bdc09a6372d7787a77f4d54e3941d2471b4d290fdc8022a3f419a",
+    "provider": {
+      "allow_fallbacks": false,
+      "automatic_retries": false,
+      "data_collection": "deny",
+      "name": "openrouter",
+      "only": [
+        "google-vertex/global"
+      ],
+      "require_parameters": true,
+      "router_metadata": "enabled",
+      "upstream_provider": "Google"
+    },
+    "response_validation": {
+      "invalid_or_unparseable_output_rule": "retain_and_fail_closed_without_retry",
+      "local_exact_action_parser": true,
+      "upstream_json_schema_strict": true,
+      "upstream_response_format": "json_schema"
+    },
+    "slot": "A-gemini-stateful-one-call-smoke"
+  },
+  "provider_calls_made": 0,
+  "purpose": "one development-only Gemini 3.7 Flash request testing the frozen strict action schema, Vertex routing, local parser, coordinate adapter, and first environment action; not calibration evidence",
+  "requires_clean_tracked_worktree": true,
+  "schema_version": "pixelgym-agent-v5-d56-gemini-one-call-smoke-plan-v1",
+  "stop_rules": [
+    "send at most one provider wire request",
+    "do not retry any transport failure",
+    "do not retry any invalid or unparseable model output",
+    "stop after the first environment action",
+    "stop before the request if its theoretical maximum cannot fit under the shared ten-dollar ledger"
+  ],
+  "task": {
+    "action_limit": 1,
+    "family": "evidence_aggregation",
+    "partition": "development",
+    "seed": 5002,
+    "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+    "variant": "base"
+  }
+}
