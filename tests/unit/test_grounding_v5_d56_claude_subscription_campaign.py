@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import signal
+import sqlite3
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -48,6 +50,8 @@ class SuccessfulProcess:
         content_block_type: str = "text",
         usage: object = None,
         total_cost_usd: object = 0.01,
+        diagnostic: str | None = None,
+        stderr: str = "",
     ) -> None:
         self.action = action or {"action_type": 1, "x": 100, "y": 100, "key": 0}
         self.content_block_type = content_block_type
@@ -57,6 +61,8 @@ class SuccessfulProcess:
             else usage
         )
         self.total_cost_usd = total_cost_usd
+        self.diagnostic = diagnostic
+        self.stderr = stderr
         self.input_event: dict[str, Any] | None = None
 
     def communicate(
@@ -65,6 +71,14 @@ class SuccessfulProcess:
         del timeout
         if input is not None:
             self.input_event = json.loads(input)
+        system_event: dict[str, Any] = {
+            "type": "system",
+            "subtype": "init",
+            "tools": [],
+            "mcp_servers": [],
+        }
+        if self.diagnostic is not None:
+            system_event["diagnostic"] = self.diagnostic
         events = [
             {
                 "type": "rate_limit_event",
@@ -74,7 +88,7 @@ class SuccessfulProcess:
                     "overageStatus": "rejected",
                 },
             },
-            {"type": "system", "subtype": "init", "tools": [], "mcp_servers": []},
+            system_event,
             {
                 "type": "assistant",
                 "message": {
@@ -93,7 +107,7 @@ class SuccessfulProcess:
                 "total_cost_usd": self.total_cost_usd,
             },
         ]
-        return "\n".join(json.dumps(event) for event in events) + "\n", ""
+        return "\n".join(json.dumps(event) for event in events) + "\n", self.stderr
 
     def poll(self) -> int | None:
         return self.returncode
@@ -175,6 +189,81 @@ def test_successful_smoke_uses_inline_image_and_unlocks_resolved_full_plan(
     assert full["calibration_partition"]["assigned_task_count"] == 50
     assert len(full["task_order"]) == 50
     assert full["caps"]["environment_action_cap"] == 1431
+
+
+def credential_shaped_value() -> str:
+    """Build a detector fixture without retaining credential material in source."""
+
+    return "".join(("s", "k", "-", "synthetic", "0" * 16))
+
+
+@pytest.mark.parametrize("stream_name", ["stdout", "stderr"])
+def test_claude_credential_shaped_raw_stdio_is_redacted_without_changing_outcome(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    stream_name: str,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+    output = tmp_path / stream_name
+    candidate = credential_shaped_value()
+    process = SuccessfulProcess(
+        diagnostic=candidate if stream_name == "stdout" else None,
+        stderr=candidate if stream_name == "stderr" else "",
+    )
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=output,
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: process,
+    )
+
+    assert summary["episode_result"]["classification"] == "pilot_action_limit"
+    original = process.communicate()[0 if stream_name == "stdout" else 1]
+    with sqlite3.connect(output / "claude-code-invocations.sqlite") as connection:
+        row = connection.execute(
+            f"SELECT raw_{stream_name}, raw_{stream_name}_original_sha256, "
+            "credential_redacted FROM invocations"
+        ).fetchone()
+    assert row is not None
+    stored = bytes(row[0]).decode("utf-8")
+    assert candidate not in stored
+    assert row[1] == "sha256:" + hashlib.sha256(original.encode()).hexdigest()
+    assert row[2] == 1
+
+
+def test_claude_clean_raw_stdout_is_stored_unchanged_without_redaction_marker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+    output = tmp_path / "clean"
+    process = SuccessfulProcess()
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=output,
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: process,
+    )
+
+    assert summary["episode_result"]["classification"] == "pilot_action_limit"
+    original_stdout = process.communicate()[0]
+    with sqlite3.connect(output / "claude-code-invocations.sqlite") as connection:
+        row = connection.execute(
+            "SELECT raw_stdout, credential_redacted FROM invocations"
+        ).fetchone()
+    assert row is not None
+    assert bytes(row[0]).decode("utf-8") == original_stdout
+    assert row[1] == 0
 
 
 def test_tool_content_is_fail_closed_before_environment_dispatch(

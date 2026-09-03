@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
-from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest
+from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest, sha256_bytes
 from pixelgym.platform.contracts import ArtifactRef
 from pixelgym.platform.immutable_store import ImmutableStore, LocalImmutableStore
 from pixelgym.serialization import canonical_json_bytes
@@ -25,6 +26,33 @@ _REDACT_KEYS = re.compile(
     r"(?:^|_)host(?:name)?(?:$|_)|username|account_?id|provider_private|policy_state|app_url|endpoint",
     re.IGNORECASE,
 )
+_RAW_STDIO_REDACTION = "[credential-redacted]"
+_RAW_STDIO_EXCLUSION = {
+    "artifact_class": "invocation_journal_raw_stdio",
+    "fields": ["raw_stdout", "raw_stderr"],
+    "restriction": "restricted_local_only",
+}
+
+JOURNAL_INTEGRITY_SCHEMA_VERSION = "pixelgym-agent-v5-journal-integrity-v1"
+JOURNAL_DIGEST_VERSION_V1 = "v1"
+JOURNAL_DIGEST_VERSION_V2 = "v2"
+
+
+def journal_integrity_audit_record(report: Mapping[str, Any]) -> dict[str, Any]:
+    """Make the event-chain digest version explicit in publishable audit evidence.
+
+    Historical v1 journal reports predate the ``digest_version`` field. Their reports
+    must remain unchanged for frozen-evidence comparison, so publication code records
+    the implied v1 version in a separate derivative rather than rewriting the journal
+    report itself.
+    """
+
+    if report.get("schema_version") != JOURNAL_INTEGRITY_SCHEMA_VERSION:
+        raise ValueError("unsupported journal integrity schema version")
+    digest_version = report.get("digest_version", JOURNAL_DIGEST_VERSION_V1)
+    if digest_version not in {JOURNAL_DIGEST_VERSION_V1, JOURNAL_DIGEST_VERSION_V2}:
+        raise ValueError("unsupported journal event-chain digest version")
+    return {**report, "digest_version": digest_version}
 
 
 def repository_relative_path(repository_root: Path, path: Path) -> str:
@@ -83,6 +111,27 @@ def validate_credential_free(value: Any, *, field_class: str = "root") -> None:
             )
 
 
+@dataclass(frozen=True)
+class RedactedRawStdio:
+    """A credential-safe raw stream plus provenance for its original bytes."""
+
+    value: str
+    original_sha256: str
+    credential_redacted: bool
+
+
+def redact_raw_stdio(value: str) -> RedactedRawStdio:
+    """Deterministically redact credential-shaped raw CLI output before persistence."""
+
+    original = value.encode("utf-8", errors="replace")
+    original_sha256 = "sha256:" + sha256_bytes(original)
+    try:
+        validate_credential_free(value, field_class="raw_stdio")
+    except CredentialValidationError:
+        return RedactedRawStdio(_RAW_STDIO_REDACTION, original_sha256, True)
+    return RedactedRawStdio(value, original_sha256, False)
+
+
 def redact_publishable(value: Any) -> Any:
     """Pure deterministic redaction for a checked-in/publishable derivative."""
 
@@ -108,11 +157,12 @@ class EvidenceRelation:
     derivative_digest: str
     redaction_policy_version: str = REDACTION_POLICY_VERSION
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "authoritative_digest": self.authoritative_digest,
             "derivative_digest": self.derivative_digest,
             "redaction_policy_version": self.redaction_policy_version,
+            "excluded_authoritative_artifacts": [dict(_RAW_STDIO_EXCLUSION)],
         }
 
 

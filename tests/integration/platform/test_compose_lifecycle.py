@@ -540,11 +540,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
             assert still_active == restored
 
             page.goto(f"{stack.platform_url}/deployment")
-            page.locator('form[action="/rollback"] textarea[name="reason"]').fill(
-                "missing previous package must block rollback"
-            )
-            page.locator('form[action="/rollback"] button').click()
-            playwright_api.expect(page.locator("main")).to_contain_text("Action blocked")
+            assert page.locator('form[action="/rollback"]').count() == 0
             assert page.context.request.get(
                 f"{stack.platform_url}/api/v1/policy"
             ).json() == restored
