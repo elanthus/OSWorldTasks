@@ -9,6 +9,7 @@ import logging
 import re
 import sys
 import threading
+from http.cookies import SimpleCookie
 from pathlib import Path
 
 import anyio
@@ -1111,7 +1112,14 @@ def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(
     assert captured["retry_max_attempts"] == 1
 
 
-def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
+def _assembled_platform_app(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    *,
+    bind_address: str = "127.0.0.1",
+    session_cookie_secure: bool | None = None,
+):
     from pixelgym.platform import bootstrap
 
     database = tmp_path / "state/control.db"
@@ -1122,7 +1130,50 @@ def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
     monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
     monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
     monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
-    return bootstrap.create_app(), control
+    return (
+        bootstrap.create_app(
+            bind_address=bind_address,
+            session_cookie_secure=session_cookie_secure,
+        ),
+        control,
+    )
+
+
+@pytest.mark.parametrize(
+    ("bind_address", "override", "expected_secure"),
+    [
+        pytest.param("127.0.0.1", None, False, id="ipv4-loopback-default"),
+        pytest.param("::1", None, False, id="ipv6-loopback-default"),
+        pytest.param("localhost", None, False, id="localhost-default"),
+        pytest.param("0.0.0.0", None, True, id="non-loopback-default"),
+        pytest.param("127.0.0.1", True, True, id="explicit-secure-override"),
+        pytest.param("0.0.0.0", False, False, id="explicit-insecure-override"),
+    ],
+)
+def test_bootstrap_configures_session_cookie_from_bind_address_and_override(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    bind_address: str,
+    override: bool | None,
+    expected_secure: bool,
+) -> None:
+    app, _ = _assembled_platform_app(
+        tmp_path,
+        repository_root,
+        monkeypatch,
+        bind_address=bind_address,
+        session_cookie_secure=override,
+    )
+
+    response = TestClient(app).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+    session = cookie["pixelgym_session"]
+
+    assert bool(session["secure"]) is expected_secure
+    assert bool(session["httponly"])
+    assert session["samesite"] == "strict"
 
 
 def _approved_candidate(control: ControlStore, policy, summary, report):
@@ -1258,6 +1309,49 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
 
 def _csrf(text: str) -> str:
     return re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', text).group(1)
+
+
+@pytest.mark.parametrize(
+    "untrusted_cookie",
+    [
+        pytest.param("client-chosen-session", id="unsigned"),
+        pytest.param("A" * 32 + "." + "0" * 64, id="bad-signature"),
+    ],
+)
+def test_untrusted_session_cookie_is_replaced_and_new_csrf_token_validates(
+    tmp_path: Path, untrusted_cookie: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    client.cookies.set("pixelgym_session", untrusted_cookie)
+
+    page = client.get("/")
+    token = _csrf(page.text)
+
+    assert "set-cookie" in page.headers
+    assert client.post(
+        "/api/candidates/missing/approve",
+        json={"reason": "exercise CSRF validation"},
+        headers={"X-CSRF-Token": token},
+    ).status_code == 404
+
+
+def test_server_issued_session_cookie_is_retained_and_csrf_token_validates(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+
+    first_page = client.get("/")
+    second_page = client.get("/")
+
+    assert "set-cookie" in first_page.headers
+    assert "set-cookie" not in second_page.headers
+    assert client.post(
+        "/api/candidates/missing/approve",
+        json={"reason": "exercise CSRF validation"},
+        headers={"X-CSRF-Token": _csrf(second_page.text)},
+    ).status_code == 404
 
 
 def test_api_transcript_html_redaction_excludes_csrf_and_page_chrome() -> None:

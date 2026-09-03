@@ -27,6 +27,22 @@ Open the control plane at <http://localhost:5800> and MLflow at <http://localhos
 ports are configurable in `.env.example`; the PostgreSQL and MinIO API loopback ports are also
 configurable for isolated integration runs.
 
+### Control-plane session cookie
+
+The control-plane bootstrap derives the `pixelgym_session` cookie's `Secure` attribute from the
+bind address supplied to `create_app`: `127.0.0.1`, `::1`, and `localhost` default to `Secure`
+off, while every other address defaults to `Secure` on. Callers may explicitly override that
+choice with the `session_cookie_secure` parameter. Keep the bind address loopback-only when using
+plain HTTP; any non-loopback deployment must terminate TLS before sending this cookie.
+
+The cookie is always server-issued and has the exact format `<session-id>.<tag>`. `session-id` is
+the 32-character URL-safe Base64 output of `secrets.token_urlsafe(24)`. `tag` is the 64-character
+lowercase hexadecimal HMAC-SHA256 digest whose key is the UTF-8 encoded `PIXELGYM_CSRF_SECRET` and
+whose message is the ASCII bytes `pixelgym-session-v1\0<session-id>` (where `\0` is one NUL
+byte). The server retains a presented cookie only when its shape and tag verify; otherwise it
+replaces it with a fresh value. No session table is used. The remaining attributes are always
+`HttpOnly` and `SameSite=Strict`.
+
 Stop the stack without deleting evidence:
 
 ```bash

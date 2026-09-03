@@ -190,7 +190,11 @@ def _record_cancellation_intent(
         return True
 
 
-def create_app() -> FastAPI:
+def create_app(
+    bind_address: str = "127.0.0.1",
+    *,
+    session_cookie_secure: bool | None = None,
+) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
     repository_root = _repository_root()
     csrf_secret = os.environ.get("PIXELGYM_CSRF_SECRET")
@@ -275,6 +279,11 @@ def create_app() -> FastAPI:
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
+        session_cookie_secure=(
+            bind_address.lower() not in {"127.0.0.1", "::1", "localhost"}
+            if session_cookie_secure is None
+            else session_cookie_secure
+        ),
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,
         tracking=tracking,
