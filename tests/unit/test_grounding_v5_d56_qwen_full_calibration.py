@@ -101,7 +101,17 @@ def test_plan_binds_all_tasks_latest_spend_and_bounded_429_retry(
     assert calibration.plan_digest(plan).startswith("sha256:")
 
 
-@pytest.mark.parametrize("budget", [Decimal(0), Decimal(-1), Decimal("NaN"), Decimal("Infinity")])
+@pytest.mark.parametrize(
+    "budget",
+    [
+        Decimal(0),
+        Decimal(-1),
+        Decimal("NaN"),
+        Decimal("sNaN"),
+        Decimal("Infinity"),
+        Decimal("-Infinity"),
+    ],
+)
 def test_plan_rejects_a_non_finite_or_non_positive_run_budget(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, budget: Decimal
 ) -> None:
@@ -116,7 +126,9 @@ def test_plan_rejects_a_non_finite_or_non_positive_run_budget(
         )
 
 
-@pytest.mark.parametrize("value", ["abc", "NaN", "Infinity", "0", "-1"])
+@pytest.mark.parametrize(
+    "value", ["abc", "NaN", "sNaN", "Infinity", "-Infinity", "0", "-1"]
+)
 def test_command_reports_invalid_run_budgets_as_usage_errors(
     value: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -130,8 +142,7 @@ def test_command_reports_invalid_run_budgets_as_usage_errors(
                 "smoke",
                 "--frozen-bcd-output",
                 "bcd",
-                "--maximum-spend-usd",
-                value,
+                f"--maximum-spend-usd={value}",
             ]
         )
 

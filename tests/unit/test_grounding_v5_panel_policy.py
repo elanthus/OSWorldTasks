@@ -38,7 +38,9 @@ ROOT = Path(__file__).parents[2]
     "maximum,spent,reserved,observed",
     [
         (Decimal("Infinity"), Decimal(0), Decimal(0), Decimal(0)),
+        (Decimal("-Infinity"), Decimal(0), Decimal(0), Decimal(0)),
         (Decimal(10), Decimal("NaN"), Decimal(0), Decimal(0)),
+        (Decimal(10), Decimal("sNaN"), Decimal(0), Decimal(0)),
         (Decimal(10), Decimal(0), Decimal("Infinity"), Decimal(0)),
         (Decimal(10), Decimal(0), Decimal(0), Decimal("NaN")),
     ],
