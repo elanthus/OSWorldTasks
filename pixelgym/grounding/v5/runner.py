@@ -319,6 +319,9 @@ class V5Runner:
         self.approved_caps = approved_caps
         self.interrupt_after = interrupt_after
         self.deadline_executor = deadline_executor or DaemonDeadlineExecutor()
+        bind_spend_journal = getattr(transport, "bind_spend_journal", None)
+        if bind_spend_journal is not None:
+            bind_spend_journal(journal)
         parameters = dict(manifest.inference_parameters)
         retry_cap = parameters.get("max_rate_limit_retries_per_action", "0")
         try:
@@ -517,6 +520,13 @@ class V5Runner:
             self._boundary("provider_receipt")
             if transport_outcome.status in RETRYABLE_SEND_STATUSES:
                 rule = RETRYABLE_SEND_STATUSES[transport_outcome.status]
+                if transport_outcome.status == "rate_limited":
+                    self._settle_zero_charge_spend(
+                        idempotency_key,
+                        reason="confirmed_zero_charge_rate_limit",
+                    )
+                else:
+                    self._settle_unknown_spend(idempotency_key)
                 retry_budget = (
                     self.max_rate_limit_retries_per_action
                     if transport_outcome.status == "rate_limited"
@@ -854,6 +864,9 @@ class V5Runner:
                 "unknown" if bounded_cancellation.timed_out else bounded_cancellation.value
             )
             if cancellation == "cancelled":
+                self._settle_zero_charge_spend(
+                    idempotency_key, reason="confirmed_cancellation"
+                )
                 post_state = self.policy.failure_state(state, "confirmed_cancellation")
                 self.journal.seal_attempt_terminal(
                     identity,
@@ -893,6 +906,12 @@ class V5Runner:
             if outcome.status == "pre_send_failure"
             else "unknown_outcome_infrastructure_failure"
         )
+        if kind == "confirmed_no_response_timeout":
+            self._settle_zero_charge_spend(
+                idempotency_key, reason="confirmed_pre_send_failure"
+            )
+        else:
+            self._settle_unknown_spend(idempotency_key)
         self.journal.seal_attempt_terminal(
             identity,
             kind=kind,
@@ -926,6 +945,16 @@ class V5Runner:
             approved_caps=self.approved_caps,
         )
         return created
+
+    def _settle_unknown_spend(self, idempotency_key: str) -> None:
+        callback = getattr(self.transport, "settle_unknown_spend", None)
+        if callback is not None:
+            callback(idempotency_key=idempotency_key)
+
+    def _settle_zero_charge_spend(self, idempotency_key: str, *, reason: str) -> None:
+        callback = getattr(self.transport, "settle_zero_charge_spend", None)
+        if callback is not None:
+            callback(idempotency_key=idempotency_key, reason=reason)
 
     def _boundary(self, name: str) -> None:
         if self.interrupt_after == name:
@@ -1335,6 +1364,7 @@ class V5Runner:
                 expected_kind="policy_checkpoint",
             )
             if self.manifest.max_reconciliation_requests_per_attempt == 0:
+                self._settle_unknown_spend(started.payload["idempotency_key"])
                 post_state = self.policy.failure_state(pre_state, "reconciliation_disabled")
                 self.journal.seal_attempt_terminal(
                     identity,
@@ -1368,6 +1398,13 @@ class V5Runner:
             if not isinstance(reconciled, TransportOutcome):
                 raise TypeError("provider reconciliation returned an invalid outcome")
             if reconciled.status != "response" or reconciled.response is None:
+                if reconciled.status == "pre_send_failure":
+                    self._settle_zero_charge_spend(
+                        started.payload["idempotency_key"],
+                        reason="confirmed_pre_send_failure",
+                    )
+                else:
+                    self._settle_unknown_spend(started.payload["idempotency_key"])
                 post_state = self.policy.failure_state(
                     pre_state, reconciled.failure_code or "outcome_not_recoverable"
                 )
