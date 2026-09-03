@@ -13,6 +13,7 @@ import pytest
 from pixelgym.grounding.v5 import codex_cli_policy as policy
 from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import CallCaps
+from pixelgym.grounding.v5.evidence import V5EvidenceStore, validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
@@ -97,13 +98,14 @@ class FakeProcess:
         self,
         stdout: str,
         *,
+        stderr: str = "",
         failure: BaseException | None = None,
         pid: int = 900_001,
     ) -> None:
         self.pid = pid
         self.returncode: int | None = 0 if failure is None else None
         self.stdout = stdout
-        self.stderr = ""
+        self.stderr = stderr
         self.failure = failure
         self.communicate_calls = 0
         self.terminated = False
@@ -168,6 +170,18 @@ def request() -> dict[str, Any]:
         policy.CodexCliPolicy().reset("Complete the visible task."),
         screenshot,
     )
+
+
+def credential_shaped_value() -> str:
+    """Build a detector fixture without retaining credential material in source."""
+
+    return "".join(("s", "k", "-", "synthetic", "0" * 16))
+
+
+def cli_stream_with_diagnostic(value: str) -> str:
+    events = [json.loads(line) for line in cli_stream().splitlines()]
+    events[0]["diagnostic"] = value
+    return "\n".join(json.dumps(event, separators=(",", ":")) for event in events) + "\n"
 
 
 def test_command_contract_disables_tools_context_and_retries() -> None:
@@ -254,6 +268,86 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
     finally:
         transport.close()
         invocation_journal.close()
+
+
+@pytest.mark.parametrize("stream_name", ["stdout", "stderr"])
+def test_credential_shaped_raw_stdio_is_redacted_without_changing_outcome(
+    tmp_path: Path,
+    stream_name: str,
+) -> None:
+    candidate = credential_shaped_value()
+    clean_stdout = cli_stream()
+    original_stdout = (
+        cli_stream_with_diagnostic(candidate) if stream_name == "stdout" else clean_stdout
+    )
+    original_stderr = candidate if stream_name == "stderr" else ""
+    process = FakeProcess(original_stdout, stderr=original_stderr)
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key=f"sha256:redacted-{stream_name}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        assert outcome.response is not None
+        assert policy.CodexCliPolicy().parse(
+            policy.canonical_json_bytes(outcome.response), b"{}"
+        ) == {"action_type": 1, "x": 100, "y": 100, "key": 0}
+        record = invocation_journal.record(f"sha256:redacted-{stream_name}")
+        assert record is not None
+        assert record["credential_redacted"] is True
+        assert record[f"raw_{stream_name}_original_sha256"] == (
+            "sha256:"
+            + hashlib.sha256(
+                (original_stdout if stream_name == "stdout" else original_stderr).encode()
+            ).hexdigest()
+        )
+        stored = record[f"raw_{stream_name}"]
+        assert candidate not in stored
+        validate_credential_free(stored)
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_clean_raw_stdout_is_stored_unchanged_without_redaction_marker(tmp_path: Path) -> None:
+    original_stdout = cli_stream()
+    process = FakeProcess(original_stdout)
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:clean-stdio",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        record = invocation_journal.record("sha256:clean-stdio")
+        assert record is not None
+        assert record["raw_stdout"] == original_stdout
+        assert record["credential_redacted"] is False
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_generated_publication_relation_names_raw_stdio_as_restricted(tmp_path: Path) -> None:
+    authoritative = {"result": "ok"}
+    store = V5EvidenceStore(tmp_path / "evidence")
+    store.put_authoritative("result.json", authoritative)
+
+    _derivative, relation = store.publish_derivative("result.json", authoritative)
+    relation_document = json.loads(store.store.get_verified(relation))
+
+    assert relation_document["excluded_authoritative_artifacts"] == [
+        {
+            "artifact_class": "invocation_journal_raw_stdio",
+            "fields": ["raw_stdout", "raw_stderr"],
+            "restriction": "restricted_local_only",
+        }
+    ]
 
 
 def test_exact_digest_bound_disabled_code_mode_diagnostic_is_accepted_once(
