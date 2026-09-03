@@ -7,9 +7,11 @@ import importlib
 import io
 import logging
 import re
+import secrets
 import sys
 import threading
 from pathlib import Path
+from urllib.parse import urlencode
 
 import anyio
 import httpx
@@ -1258,6 +1260,303 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
 
 def _csrf(text: str) -> str:
     return re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', text).group(1)
+
+
+MUTATING_ROUTES = (
+    "submit_experiment",
+    "cancel_submission",
+    "approve_form",
+    "approve_api",
+    "deploy_form",
+    "rollback_form",
+)
+MUTATING_FORM_ROUTES = tuple(route for route in MUTATING_ROUTES if route != "approve_api")
+
+
+class MutationProbe:
+    def __init__(self) -> None:
+        self.calls = {route: 0 for route in MUTATING_ROUTES}
+        self.provider_calls = 0
+
+    def submit(self, _submission_id: str, _payload: dict[str, str]) -> None:
+        self.calls["submit_experiment"] += 1
+
+    def cancel(self, _submission_id: str) -> bool:
+        self.calls["cancel_submission"] += 1
+        return True
+
+    def mirror_candidate_status(self, *_args, **_kwargs) -> None:
+        self.provider_calls += 1
+
+    def deploy(self, *_args, **_kwargs) -> None:
+        self.calls["deploy_form"] += 1
+
+    def rollback(self, *_args, **_kwargs) -> None:
+        self.calls["rollback_form"] += 1
+
+
+def _control_state(control: ControlStore, probe: MutationProbe) -> dict[str, object]:
+    candidates = control.list_candidates()
+    submissions = control.list_submissions()
+    approvals = control.approval_events()
+    deployments = control.deployment_history()
+    audit = control.audit_events()
+    return {
+        "candidate_count": len(candidates),
+        "candidate_state": tuple(
+            (item.candidate_id, item.state.value, item.version) for item in candidates
+        ),
+        "approval_count": len(approvals),
+        "approvals": approvals,
+        "deployment_count": len(deployments),
+        "deployments": deployments,
+        "active": control.active(),
+        "submission_count": len(submissions),
+        "submissions": submissions,
+        "worker_count": probe.calls["submit_experiment"],
+        "audit_count": len(audit),
+        "audit": audit,
+        "route_calls": dict(probe.calls),
+        "provider_calls": probe.provider_calls,
+    }
+
+
+def _mutating_route_context(
+    tmp_path: Path,
+    passing_evidence,
+    route: str,
+) -> tuple[ControlStore, MutationProbe, TestClient, str, dict[str, str], bool]:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    probe = MutationProbe()
+    fields: dict[str, str]
+    is_api = route == "approve_api"
+
+    if route == "submit_experiment":
+        path = "/experiments"
+        fields = {
+            "dataset": "day3-frozen-v1",
+            "prompt_version": "2",
+            "model": "day3-replay-revised-v2",
+            "condition": "raw",
+            "maximum_calls": "100",
+            "price_catalog": "pixelgym-demo-prices-v1",
+        }
+    elif route == "cancel_submission":
+        submission_id = control.submit(
+            {
+                "dataset": "day3-frozen-v1",
+                "prompt_version": "2",
+                "model": "day3-replay-revised-v2",
+                "condition": "raw",
+                "maximum_calls": "100",
+                "price_catalog": "pixelgym-demo-prices-v1",
+            }
+        )
+        path = f"/submissions/{submission_id}/cancel"
+        fields = {"reason": "cancel fixture"}
+    elif route in {"approve_form", "approve_api"}:
+        candidate = control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=policy,
+            gate_report=report,
+            artifacts=[],
+        )
+        prefix = "/api" if is_api else ""
+        path = f"{prefix}/candidates/{candidate.candidate_id}/approve"
+        fields = {"reason": "approve fixture"}
+    elif route == "deploy_form":
+        candidate = _approved_candidate(control, policy, summary, report)
+        path = f"/candidates/{candidate.candidate_id}/deploy"
+        fields = {
+            "reason": "deploy fixture",
+            "expected_deployment_id": "",
+            "expected_generation": "0",
+        }
+    else:
+        assert route == "rollback_form"
+        path = "/rollback"
+        fields = {
+            "reason": "rollback fixture",
+            "expected_deployment_id": "deployment-current",
+            "expected_generation": "2",
+        }
+
+    client = TestClient(
+        create_control_app(
+            control,
+            coordinator=probe,
+            csrf_secret=secrets.token_urlsafe(32),
+            submit_callback=probe.submit,
+            cancel_callback=probe.cancel,
+            tracking=probe,
+        )
+    )
+    return control, probe, client, path, fields, is_api
+
+
+def _post_mutating_route(
+    client: TestClient,
+    path: str,
+    fields: dict[str, str],
+    *,
+    is_api: bool,
+    token: str | None,
+):
+    if is_api:
+        header_token: str | bytes | None = token
+        if token is not None and not token.isascii():
+            header_token = token.encode("latin-1")
+        headers = {} if header_token is None else {"X-CSRF-Token": header_token}
+        return client.post(path, json=fields, headers=headers, follow_redirects=False)
+    data = dict(fields)
+    if token is not None:
+        data["csrf_token"] = token
+    return client.post(path, data=data, follow_redirects=False)
+
+
+@pytest.mark.parametrize(
+    "unicode_token",
+    (
+        "\N{LATIN SMALL LETTER E WITH ACUTE}" * 64,
+        "\N{FULLWIDTH DIGIT ZERO}" * 64,
+        "\N{ZERO WIDTH SPACE}" * 64,
+        "\N{COLLISION SYMBOL}" * 16,
+        "a" * 63 + "\N{GREEK SMALL LETTER PI}",
+    ),
+)
+def test_csrf_validation_rejects_arbitrary_unicode_without_raising(
+    tmp_path: Path, passing_evidence, unicode_token: str
+) -> None:
+    control, probe, client, path, fields, is_api = _mutating_route_context(
+        tmp_path, passing_evidence, "submit_experiment"
+    )
+    before = _control_state(control, probe)
+
+    response = _post_mutating_route(
+        client, path, fields, is_api=is_api, token=unicode_token
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "CSRF validation failed"}
+    assert _control_state(control, probe) == before
+
+
+@pytest.mark.parametrize("route", MUTATING_ROUTES)
+@pytest.mark.parametrize(
+    "token_case",
+    ("missing", "empty", "malformed", "overlong", "wrong_ascii", "non_ascii", "stale_session"),
+)
+def test_every_mutating_route_returns_documented_csrf_rejection(
+    tmp_path: Path, passing_evidence, route: str, token_case: str
+) -> None:
+    _control, _probe, client, path, fields, is_api = _mutating_route_context(
+        tmp_path, passing_evidence, route
+    )
+    valid_token = _csrf(client.get("/").text)
+    tokens = {
+        "missing": None,
+        "empty": "",
+        "malformed": "not-hex",
+        "overlong": "a" * 65,
+        "wrong_ascii": ("0" if valid_token[0] != "0" else "1") + valid_token[1:],
+        "non_ascii": "\N{LATIN SMALL LETTER E WITH ACUTE}" * 64,
+        "stale_session": valid_token,
+    }
+    if token_case == "stale_session":
+        client.cookies.clear()
+        client.cookies.set("pixelgym_session", secrets.token_urlsafe(24))
+
+    response = _post_mutating_route(
+        client, path, fields, is_api=is_api, token=tokens[token_case]
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "CSRF validation failed"}
+
+
+@pytest.mark.parametrize("route", MUTATING_ROUTES)
+@pytest.mark.parametrize("token_case", ("missing", "wrong_ascii", "non_ascii", "stale_session"))
+def test_csrf_rejection_precedes_all_control_and_external_mutation(
+    tmp_path: Path, passing_evidence, route: str, token_case: str
+) -> None:
+    control, probe, client, path, fields, is_api = _mutating_route_context(
+        tmp_path, passing_evidence, route
+    )
+    valid_token = _csrf(client.get("/").text)
+    tokens = {
+        "missing": None,
+        "wrong_ascii": ("0" if valid_token[0] != "0" else "1") + valid_token[1:],
+        "non_ascii": "\N{LATIN SMALL LETTER E WITH ACUTE}" * 64,
+        "stale_session": valid_token,
+    }
+    if token_case == "stale_session":
+        client.cookies.clear()
+        client.cookies.set("pixelgym_session", secrets.token_urlsafe(24))
+    before = _control_state(control, probe)
+
+    response = _post_mutating_route(
+        client, path, fields, is_api=is_api, token=tokens[token_case]
+    )
+
+    assert response.status_code == 403
+    assert _control_state(control, probe) == before
+
+
+@pytest.mark.parametrize("route", MUTATING_ROUTES)
+def test_valid_csrf_token_permits_each_intended_action_exactly_once(
+    tmp_path: Path, passing_evidence, route: str
+) -> None:
+    control, probe, client, path, fields, is_api = _mutating_route_context(
+        tmp_path, passing_evidence, route
+    )
+    token = _csrf(client.get("/").text)
+    before = _control_state(control, probe)
+
+    response = _post_mutating_route(client, path, fields, is_api=is_api, token=token)
+
+    assert response.status_code == (200 if is_api else 303)
+    after = _control_state(control, probe)
+    if route == "submit_experiment":
+        assert after["submission_count"] == before["submission_count"] + 1
+        assert after["audit_count"] == before["audit_count"] + 1
+        assert probe.calls[route] == 1
+    elif route == "cancel_submission":
+        assert after["submission_count"] == before["submission_count"]
+        assert after["submissions"][0]["status"] == "Cancelled"
+        assert after["audit_count"] == before["audit_count"] + 1
+        assert probe.calls[route] == 1
+    elif route in {"approve_form", "approve_api"}:
+        assert after["approval_count"] == before["approval_count"] + 1
+        assert after["candidate_state"][0][1] == "Approved"
+        assert after["audit_count"] == before["audit_count"] + 1
+        assert probe.provider_calls == 1
+    else:
+        assert probe.calls[route] == 1
+
+
+@pytest.mark.parametrize("route", MUTATING_FORM_ROUTES)
+def test_mutating_form_routes_reject_duplicate_csrf_token_fields(
+    tmp_path: Path, passing_evidence, route: str
+) -> None:
+    control, probe, client, path, fields, _is_api = _mutating_route_context(
+        tmp_path, passing_evidence, route
+    )
+    token = _csrf(client.get("/").text)
+    pairs = [*fields.items(), ("csrf_token", token), ("csrf_token", "0" * 64)]
+    before = _control_state(control, probe)
+
+    response = client.post(
+        path,
+        content=urlencode(pairs).encode("ascii"),
+        headers={"content-type": "application/x-www-form-urlencoded"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "CSRF validation failed"}
+    assert _control_state(control, probe) == before
 
 
 def test_api_transcript_html_redaction_excludes_csrf_and_page_chrome() -> None:

@@ -7,7 +7,7 @@ import hmac
 import html
 import re
 import secrets
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import asdict
 from datetime import date
 from difflib import HtmlDiff
@@ -54,6 +54,9 @@ ALLOWED_SUBMISSION_FIELDS = {
     "maximum_calls": {"100"},
     "price_catalog": {"pixelgym-demo-prices-v1"},
 }
+CSRF_TOKEN_BYTES = hashlib.sha256().digest_size
+CSRF_TOKEN_HEX_LENGTH = CSRF_TOKEN_BYTES * 2
+CSRF_TOKEN_PATTERN = re.compile(rf"[0-9a-fA-F]{{{CSRF_TOKEN_HEX_LENGTH}}}")
 
 
 class ApprovalBody(BaseModel):
@@ -98,8 +101,8 @@ def _layout(title: str, body: str, *, csrf: str = "") -> str:
 </body></html>"""
 
 
-def _token(secret: bytes, session: str) -> str:
-    return hmac.new(secret, session.encode(), hashlib.sha256).hexdigest()
+def _token(secret: bytes, session: str) -> bytes:
+    return hmac.new(secret, session.encode(), hashlib.sha256).digest()
 
 
 def _short_digest(value: str | None, *, width: int = 12) -> str:
@@ -227,7 +230,8 @@ def create_control_app(
     async def session_cookie(request: Request, call_next: Callable[..., Any]) -> Any:
         session = request.cookies.get("pixelgym_session") or secrets.token_urlsafe(24)
         request.state.pixelgym_session = session
-        request.state.csrf = _token(secret, session)
+        request.state.csrf_digest = _token(secret, session)
+        request.state.csrf = request.state.csrf_digest.hex()
         response = await call_next(request)
         if "pixelgym_session" not in request.cookies:
             response.set_cookie(
@@ -237,8 +241,14 @@ def create_control_app(
         response.headers["X-Frame-Options"] = "DENY"
         return response
 
-    def require_csrf(request: Request, supplied: str | None) -> None:
-        if not supplied or not hmac.compare_digest(request.state.csrf, supplied):
+    def require_csrf(request: Request, supplied: Sequence[str]) -> None:
+        if len(supplied) != 1:
+            raise HTTPException(403, "CSRF validation failed")
+        token = supplied[0]
+        if len(token) != CSRF_TOKEN_HEX_LENGTH or CSRF_TOKEN_PATTERN.fullmatch(token) is None:
+            raise HTTPException(403, "CSRF validation failed")
+        token_bytes = bytes.fromhex(token)
+        if not hmac.compare_digest(request.state.csrf_digest, token_bytes):
             raise HTTPException(403, "CSRF validation failed")
 
     def candidate_or_404(candidate_id: str) -> Any:
@@ -247,7 +257,7 @@ def create_control_app(
         except KeyError as exc:
             raise HTTPException(404, "candidate does not exist") from exc
 
-    async def form_fields(request: Request) -> dict[str, str]:
+    async def csrf_form_fields(request: Request) -> dict[str, str]:
         if request.headers.get("content-type", "").split(";", 1)[0] != "application/x-www-form-urlencoded":
             raise HTTPException(415, "forms must use application/x-www-form-urlencoded")
         body = await request.body()
@@ -259,6 +269,7 @@ def create_control_app(
             values = parse_qs(body.decode("utf-8"), keep_blank_values=True, strict_parsing=True)
         except (UnicodeDecodeError, ValueError) as exc:
             raise HTTPException(422, "form body is malformed") from exc
+        require_csrf(request, values.get("csrf_token", []))
         if any(len(items) != 1 for items in values.values()):
             raise HTTPException(422, "duplicate form fields are not allowed")
         return {key: items[0] for key, items in values.items()}
@@ -290,8 +301,8 @@ def create_control_app(
 
     @app.post("/experiments")
     async def submit_experiment(request: Request) -> RedirectResponse:
-        fields = await form_fields(request)
-        require_csrf(request, fields.pop("csrf_token", None))
+        fields = await csrf_form_fields(request)
+        fields.pop("csrf_token")
         if set(fields) != set(ALLOWED_SUBMISSION_FIELDS):
             raise HTTPException(422, "submission fields do not match the fixed flow contract")
         payload = fields
@@ -330,8 +341,7 @@ def create_control_app(
 
     @app.post("/submissions/{submission_id}/cancel")
     async def cancel_submission(submission_id: str, request: Request) -> RedirectResponse:
-        fields = await form_fields(request)
-        require_csrf(request, fields.get("csrf_token"))
+        fields = await csrf_form_fields(request)
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "cancellation fields do not match the fixed contract")
         try:
@@ -601,8 +611,7 @@ def create_control_app(
 
     @app.post("/candidates/{candidate_id}/approve")
     async def approve_form(candidate_id: str, request: Request) -> RedirectResponse:
-        fields = await form_fields(request)
-        require_csrf(request, fields.get("csrf_token"))
+        fields = await csrf_form_fields(request)
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "approval fields do not match the fixed contract")
         await run_in_threadpool(_approve, candidate_id, fields["reason"])
@@ -610,14 +619,13 @@ def create_control_app(
 
     @app.post("/api/candidates/{candidate_id}/approve")
     def approve_api(candidate_id: str, request: Request, body: ApprovalBody) -> dict[str, str]:
-        require_csrf(request, request.headers.get("x-csrf-token"))
+        require_csrf(request, request.headers.getlist("x-csrf-token"))
         _approve(candidate_id, body.reason)
         return {"candidate_id": candidate_id, "state": "Approved"}
 
     @app.post("/candidates/{candidate_id}/deploy")
     async def deploy_form(candidate_id: str, request: Request) -> RedirectResponse:
-        fields = await form_fields(request)
-        require_csrf(request, fields.get("csrf_token"))
+        fields = await csrf_form_fields(request)
         expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
         if set(fields) != expected_fields:
             raise HTTPException(422, "deployment fields do not match the fixed contract")
@@ -637,8 +645,7 @@ def create_control_app(
 
     @app.post("/rollback")
     async def rollback_form(request: Request) -> RedirectResponse:
-        fields = await form_fields(request)
-        require_csrf(request, fields.get("csrf_token"))
+        fields = await csrf_form_fields(request)
         expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
         if set(fields) != expected_fields:
             raise HTTPException(422, "rollback fields do not match the fixed contract")
