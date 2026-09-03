@@ -10,6 +10,14 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_bytes
+from pixelgym.grounding.v5.d56_spend import (
+    campaign_spend_fields,
+    combine_spend_disclosures,
+    ledger_spend_disclosure,
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+    phase_spend_fields,
+)
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
@@ -29,8 +37,8 @@ from pixelgym.grounding.v5.panel_smoke import PRICE_OBSERVED_AT_UTC
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v2"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v2"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v3"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v3"
 CALIBRATION_MANIFEST = Path("artifacts/grounding-v5-manifests/calibration-d56.json")
 EXPECTED_TASK_COUNT = 50
 EXPECTED_PANEL_SLOTS = tuple(config.slot for config in PANEL)
@@ -180,6 +188,8 @@ def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Pat
         journal.close()
     if journal_integrity != summary.get("journal_integrity"):
         raise ValueError("panel-smoke journal integrity mismatch")
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     return {
         "approved_plan_sha256": approved_plan,
         "summary_path": repository_relative_path(repository_root, summary_path),
@@ -188,6 +198,8 @@ def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Pat
         "journal_sha256": _file_digest(journal_path),
         "provider_wire_requests": provider_requests,
         "actual_aggregate_spend_usd": str(actual_spend),
+        "phase_spend": phase_spend,
+        "campaign_spend": campaign_spend,
         "journal_integrity": journal_integrity,
     }
 
@@ -196,7 +208,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
     revision = _git(repository_root, "rev-parse", "HEAD")
     partition = _calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
-    prior_spend = Decimal(smoke_evidence["actual_aggregate_spend_usd"])
+    prior_campaign_spend = smoke_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
         repository_root / "artifacts/grounding-v5-manifests",
@@ -287,15 +299,19 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
                 0,
                 action_cap * len(PANEL) * 2,
             ).to_dict(),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "remaining_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD - prior_spend),
+            "maximum_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "remaining_run_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "prior_campaign_spend": prior_campaign_spend,
+            "spend_lineage": (
+                "per-run enforcement: this phase starts at zero; predecessor spend is "
+                "carried only as campaign disclosure"
+            ),
             "uncapped_theoretical_request_maximum_usd": str(
                 aggregate_theoretical_maximum
             ),
             "enforcement": (
                 "before each wire request, reserve that slot's worst-case request cost against "
-                "the shared aggregate ledger; stop before a request that cannot fit"
+                "this phase's ledger; stop before a request that cannot fit"
             ),
         },
         "smoke_evidence": smoke_evidence,
@@ -315,7 +331,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
             BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "stop the complete panel after the first other transport, identity, cost, parse, adapter, invalid-action, or evidence-integrity failure",
-            "stop before any request whose per-request theoretical maximum cannot fit under the shared ten-dollar ledger",
+            "stop before any request whose per-request theoretical maximum cannot fit under this phase's ten-dollar ledger",
             "do not retry a parse, action, unknown-outcome, or other provider failure; do not replace or reorder an assignment",
             "do not expose confirmatory tasks",
         ],
@@ -355,8 +371,8 @@ def execute_calibration(
         raise FileExistsError(f"refusing to replace D5.6 output: {output_directory}")
     output_directory.mkdir(parents=True)
     journal = V5AttemptJournal(output_directory / "attempts.sqlite")
-    prior_spend = Decimal(plan["aggregate_caps"]["prior_aggregate_spend_usd"])
-    ledger = SpendLedger(PANEL_MAXIMUM_SPEND_USD, prior_spend)
+    maximum_spend = Decimal(plan["aggregate_caps"]["maximum_run_spend_usd"])
+    ledger = SpendLedger(maximum_spend, Decimal(0))
     aggregate_caps = CallCaps(
         plan["aggregate_caps"]["environment_action_cap"],
         plan["aggregate_caps"]["model_attempt_cap"],
@@ -401,6 +417,11 @@ def execute_calibration(
         classifications = Counter(
             result["classification"] for result in episode_results
         )
+        phase_spend = ledger_spend_disclosure(ledger)
+        prior_campaign_spend = plan["aggregate_caps"]["prior_campaign_spend"]
+        campaign_spend = combine_spend_disclosures(
+            (prior_campaign_spend, phase_spend)
+        )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "approved_plan_sha256": digest,
@@ -409,13 +430,16 @@ def execute_calibration(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": journal.call_counts()[0],
             "provider_control_requests": journal.call_counts()[1],
-            "prior_aggregate_spend_usd": str(prior_spend),
-            "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "calibration_incremental_spend_usd": str(ledger.spent_usd - prior_spend),
-            "remaining_aggregate_spend_usd": str(
-                PANEL_MAXIMUM_SPEND_USD - ledger.spent_usd
+            "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
+            **phase_spend_fields(phase_spend),
+            "prior_campaign_spend": prior_campaign_spend,
+            **campaign_spend_fields(campaign_spend),
+            "actual_aggregate_spend_usd": campaign_spend["known_spend_usd"],
+            "calibration_incremental_spend_usd": phase_spend["known_spend_usd"],
+            "remaining_run_spend_usd": str(
+                maximum_spend - Decimal(phase_spend["budget_accounted_spend_usd"])
             ),
-            "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
+            "maximum_run_spend_usd": str(maximum_spend),
             "assigned_policy_task_pairs": len(PANEL) * EXPECTED_TASK_COUNT,
             "attempted_policy_task_pairs": len(episode_results),
             "successful_policy_task_pairs": sum(
