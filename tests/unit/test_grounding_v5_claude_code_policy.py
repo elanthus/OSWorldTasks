@@ -190,6 +190,8 @@ def test_claude_missing_required_launch_flag_fails_before_process_start(
         assert enforcement["argv_digest"] != policy.content_digest(complete)
         assert enforcement["cli_restrictions_applied"] is False
         assert enforcement["environment_allowlist_applied"] is True
+        assert len(transport.records) == 1
+        assert transport.records[0]["runtime_enforcement"] == enforcement
     finally:
         transport.close()
         journal.close()

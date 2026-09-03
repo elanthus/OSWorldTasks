@@ -763,6 +763,9 @@ class ClaudeCodeTransport:
                     raw_stderr="",
                     outcome=outcome,
                 )
+                self.records.append(
+                    self._record(idempotency_key, "pre_send_failure", outcome)
+                )
                 return TransportOutcome(
                     "pre_send_failure",
                     failure_code="runtime_enforcement_mismatch",
@@ -808,6 +811,9 @@ class ClaudeCodeTransport:
                     raw_stderr="",
                     outcome=outcome,
                 )
+                self.records.append(
+                    self._record(idempotency_key, "pre_send_failure", outcome)
+                )
                 return TransportOutcome("pre_send_failure", failure_code="process_start_failure")
             self.ledger.mark_process_started()
             self.invocation_journal.mark_running(idempotency_key, process.pid)
@@ -834,6 +840,7 @@ class ClaudeCodeTransport:
                     raw_stderr=raw_stderr,
                     outcome=outcome,
                 )
+                self.records.append(self._record(idempotency_key, "timeout", outcome))
                 return TransportOutcome("deadline", failure_code="claude_process_timeout")
             except BaseException as exc:
                 raw_stdout, raw_stderr = self._terminate(process)
@@ -851,6 +858,7 @@ class ClaudeCodeTransport:
                     raw_stderr=raw_stderr,
                     outcome=outcome,
                 )
+                self.records.append(self._record(idempotency_key, "interrupted", outcome))
                 raise
             finally:
                 with self._active_lock:
@@ -924,26 +932,7 @@ class ClaudeCodeTransport:
             raw_stderr=raw_stderr,
             outcome=outcome,
         )
-        self.records.append(
-            {
-                "idempotency_key_digest": content_digest(idempotency_key),
-                "status": status,
-                "cli_version": CLAUDE_CLI_VERSION,
-                "model": MODEL,
-                "model_reasoning_effort": MODEL_REASONING_EFFORT,
-                "auth_method": AUTH_METHOD,
-                "subscription_type": SUBSCRIPTION_TYPE,
-                "command_contract_digest": command_contract_digest(),
-                "runtime_enforcement": enforcement_record,
-                "resolved_model": parsed.resolved_model,
-                "experiment_charge_usd": "0.00",
-                "informational_cost_telemetry_usd": usage_record[
-                    "informational_cost_telemetry_usd"
-                ],
-                "policy_violation": violation_value,
-                "usage_telemetry_status": usage_status,
-            }
-        )
+        self.records.append(self._record(idempotency_key, status, outcome))
         return TransportOutcome("response", canonical)
 
     def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
@@ -1021,6 +1010,28 @@ class ClaudeCodeTransport:
                 return process.communicate(timeout=KILL_GRACE_SECONDS)
             except subprocess.TimeoutExpired:
                 return "", ""
+
+    def _record(
+        self, idempotency_key: str, status: str, outcome: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "idempotency_key_digest": content_digest(idempotency_key),
+            "status": status,
+            "cli_version": CLAUDE_CLI_VERSION,
+            "model": MODEL,
+            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "auth_method": AUTH_METHOD,
+            "subscription_type": SUBSCRIPTION_TYPE,
+            "command_contract_digest": command_contract_digest(),
+            "runtime_enforcement": outcome.get("runtime_enforcement"),
+            "resolved_model": outcome.get("resolved_model"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd"),
+            "informational_cost_telemetry_usd": outcome.get(
+                "informational_cost_telemetry_usd"
+            ),
+            "policy_violation": outcome.get("policy_violation"),
+            "usage_telemetry_status": outcome.get("usage_telemetry_status"),
+        }
 
 
 def _file_digest(path: Path) -> str:
