@@ -53,14 +53,14 @@ def test_reset_with_different_seed_changes_the_task():
     assert first["task_id"] != second["task_id"]
 
 
-def test_public_task_view_includes_attestable_schema_and_seed():
+def test_public_task_view_includes_attestable_schema_without_seed():
     client = _client()
     client.post("/api/reset", json={"seed": 7})
 
     task = client.get("/api/task").json()
 
     assert task["schema_version"] == 1
-    assert task["seed"] == 7
+    assert "seed" not in task
 
 
 def test_page_ready_marker_is_task_bound_and_reset_to_false():

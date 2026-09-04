@@ -38,17 +38,25 @@ _SUBMISSION_FIELDS = (
 )
 
 
+class PayloadValidationError(ValueError):
+    """The request body does not match the public HTTP contract."""
+
+
+class TaskConflictError(ValueError):
+    """The request refers to a task other than the active bundled task."""
+
+
 def _normalized_values(payload: dict[str, Any]) -> dict[str, Any]:
     values: dict[str, Any] = {}
     for name in _SUBMISSION_FIELDS:
         value = payload[name]
         if name == "expedited_onboarding":
             if type(value) is not bool:
-                raise TypeError(f"{name} must be a bool")
+                raise PayloadValidationError(f"{name} must be a bool")
             values[name] = value
         else:
             if not isinstance(value, str):
-                raise TypeError(f"{name} must be a string")
+                raise PayloadValidationError(f"{name} must be a string")
             values[name] = value.strip()
     return values
 
@@ -64,8 +72,10 @@ class GuestTaskState:
 
     def reset(self, seed: int) -> dict[str, Any]:
         with self._lock:
-            if type(seed) is not int or seed != self._task["seed"]:
-                raise ValueError("reset seed does not match the bundled task")
+            if type(seed) is not int:
+                raise PayloadValidationError("reset seed must be an int")
+            if seed != self._task["seed"]:
+                raise TaskConflictError("reset seed does not match the bundled task")
             self._submissions = []
             self._page_ready = False
             return {"task_id": self._task["task_id"], "seed": self._task["seed"]}
@@ -74,6 +84,7 @@ class GuestTaskState:
         with self._lock:
             return {
                 "task_id": self._task["task_id"],
+                "schema_version": self._task["schema_version"],
                 "fields": dict(self._task["fields"]),
                 "options": {name: list(values) for name, values in self._task["options"].items()},
             }
@@ -81,11 +92,13 @@ class GuestTaskState:
     def submit(self, payload: dict[str, Any]) -> dict[str, int]:
         required = {"task_id", *_SUBMISSION_FIELDS}
         if set(payload) != required:
-            raise ValueError(f"submission keys must be exactly {sorted(required)}")
+            raise PayloadValidationError(
+                f"submission keys must be exactly {sorted(required)}"
+            )
 
         with self._lock:
             if payload["task_id"] != self._task["task_id"]:
-                raise ValueError("submission task_id does not match the active task")
+                raise TaskConflictError("submission task_id does not match the active task")
             record = {
                 "task_id": self._task["task_id"],
                 "seed": self._task["seed"],
@@ -99,7 +112,7 @@ class GuestTaskState:
     def mark_page_ready(self, task_id: str) -> None:
         with self._lock:
             if task_id != self._task["task_id"]:
-                raise ValueError("page-ready task_id does not match the active task")
+                raise TaskConflictError("page-ready task_id does not match the active task")
             self._page_ready = True
 
     def page_ready(self) -> bool:
@@ -157,33 +170,42 @@ class VendorFormRequestHandler(BaseHTTPRequestHandler):
             payload = self._read_json()
             if path == "/api/reset":
                 if set(payload) != {"seed"}:
-                    raise ValueError("reset payload must contain only seed")
+                    raise PayloadValidationError("reset payload must contain only seed")
                 result = self.server.state.reset(payload["seed"])
             elif path == "/api/submit":
                 result = self.server.state.submit(payload)
             elif path == "/api/page-ready":
                 if set(payload) != {"task_id"} or not isinstance(payload["task_id"], str):
-                    raise ValueError("page-ready payload must contain only task_id")
+                    raise PayloadValidationError("page-ready payload must contain only task_id")
                 self.server.state.mark_page_ready(payload["task_id"])
                 result = {"ready": True}
             else:
                 self._send_json(HTTPStatus.NOT_FOUND, {"detail": "not found"})
                 return
-        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        except TaskConflictError as exc:
             self._send_json(HTTPStatus.CONFLICT, {"detail": str(exc)})
+            return
+        except PayloadValidationError as exc:
+            self._send_json(HTTPStatus.UNPROCESSABLE_ENTITY, {"detail": str(exc)})
             return
         self._send_json(HTTPStatus.OK, result)
 
     def _read_json(self) -> dict[str, Any]:
         raw_length = self.headers.get("Content-Length")
         if raw_length is None:
-            raise ValueError("Content-Length is required")
-        length = int(raw_length)
+            raise PayloadValidationError("Content-Length is required")
+        try:
+            length = int(raw_length)
+        except ValueError as exc:
+            raise PayloadValidationError("Content-Length must be an int") from exc
         if not 0 <= length <= 64 * 1024:
-            raise ValueError("request body is too large")
-        value = json.loads(self.rfile.read(length).decode("utf-8"))
+            raise PayloadValidationError("request body is too large")
+        try:
+            value = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise PayloadValidationError("request body must be valid UTF-8 JSON") from exc
         if not isinstance(value, dict):
-            raise TypeError("request body must be a JSON object")
+            raise PayloadValidationError("request body must be a JSON object")
         return value
 
     def _send_json(self, status: HTTPStatus, payload: dict[str, Any]) -> None:
@@ -222,7 +244,7 @@ class VendorFormHTTPServer(ThreadingHTTPServer):
 
 def load_task(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
-    required = {"task_id", "seed", "fields", "options"}
+    required = {"task_id", "schema_version", "seed", "fields", "options"}
     if not isinstance(value, dict) or not required.issubset(value):
         raise ValueError(f"task JSON must contain {sorted(required)}")
     return value
