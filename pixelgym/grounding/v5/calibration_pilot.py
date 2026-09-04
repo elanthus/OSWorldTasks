@@ -17,6 +17,7 @@ from pixelgym.grounding.v5.contracts import (
 )
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.manifests import CURRENT_PARTITION_MANIFEST_DIRECTORY
 from pixelgym.grounding.v5.openrouter_policy import (
     COMPLETION_PRICE_PER_TOKEN_USD,
     MAX_OUTPUT_TOKENS,
@@ -34,7 +35,7 @@ from pixelgym.grounding.v5.runner import V5Runner
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-calibration-pilot-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-calibration-pilot-result-v1"
-CALIBRATION_MANIFEST = Path("artifacts/grounding-v5-manifests/calibration.json")
+CALIBRATION_MANIFEST = CURRENT_PARTITION_MANIFEST_DIRECTORY / "calibration.json"
 CORRECTED_SMOKE_PLAN = Path(
     "artifacts/grounding-v5-openrouter-smoke-plan-qwen3-vl-8b-instruct-normalized-v2.json"
 )

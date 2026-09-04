@@ -21,6 +21,7 @@ from pixelgym.grounding.v5.d56_spend import (
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.manifests import CURRENT_D56_CALIBRATION_MANIFEST
 from pixelgym.grounding.v5.panel_policy import (
     BOUNDED_RETRY_STOP_RULE,
     LLAMA_STATEFUL,
@@ -39,7 +40,7 @@ from pixelgym.grounding.v5.runner import V5Runner
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v3"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v3"
-CALIBRATION_MANIFEST = Path("artifacts/grounding-v5-manifests/calibration-d56.json")
+CALIBRATION_MANIFEST = CURRENT_D56_CALIBRATION_MANIFEST
 EXPECTED_TASK_COUNT = 50
 EXPECTED_PANEL_SLOTS = tuple(config.slot for config in PANEL)
 NORMAL_TERMINAL_CLASSIFICATIONS = frozenset(
@@ -211,7 +212,7 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
     prior_campaign_spend = smoke_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
+        repository_root / CALIBRATION_MANIFEST.parent,
         calibration_manifest=repository_root / CALIBRATION_MANIFEST,
     )
     policies: list[dict[str, Any]] = []
