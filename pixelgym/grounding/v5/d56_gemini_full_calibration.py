@@ -15,7 +15,7 @@ from pixelgym.grounding.v5.d56_calibration import (
     CONSECUTIVE_FAILURE_LIMIT,
     EXPECTED_TASK_COUNT,
     ConsecutiveFailureBreaker,
-    _calibration_manifest,
+    _current_calibration_manifest,
     _file_digest,
     _git,
 )
@@ -175,7 +175,7 @@ def build_plan(
     if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
         raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     config = GEMINI_STATEFUL_FULL_CALIBRATION

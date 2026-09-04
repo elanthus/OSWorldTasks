@@ -14,7 +14,7 @@ from pixelgym.grounding.v5.d56_calibration import (
     CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
     NORMAL_TERMINAL_CLASSIFICATIONS,
-    _calibration_manifest,
+    _current_calibration_manifest,
     _file_digest,
     _git,
     _validated_smoke_evidence,
@@ -195,7 +195,7 @@ def build_plan(
     frozen_calibration_output_directory: Path,
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     frozen_evidence = _validated_frozen_calibration_evidence(
         repository_root, frozen_calibration_output_directory

@@ -8,8 +8,12 @@ import pytest
 
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.d56_calibration import (
+    CALIBRATION_MANIFEST,
     CONSECUTIVE_FAILURE_LIMIT,
+    HISTORICAL_CALIBRATION_MANIFEST,
     ConsecutiveFailureBreaker,
+    _calibration_manifest,
+    _current_calibration_manifest,
     build_plan,
     execute_calibration,
     plan_digest,
@@ -111,6 +115,20 @@ def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_per_run_cap(
         "budget_accounted_spend_usd": "unknown",
     }
     assert plan_digest(plan).startswith("sha256:")
+
+
+def test_d56_current_plans_and_historical_validators_use_separate_manifests() -> None:
+    current = _current_calibration_manifest(ROOT)
+    historical = _calibration_manifest(ROOT)
+
+    assert CALIBRATION_MANIFEST.as_posix().endswith(
+        "grounding-v5-manifests/v2/calibration-d56.json"
+    )
+    assert HISTORICAL_CALIBRATION_MANIFEST.as_posix().endswith(
+        "grounding-v5-manifests/calibration-d56.json"
+    )
+    assert current["manifest_digest"] != historical["manifest_digest"]
+    assert current["records"] == historical["records"]
 
 
 def test_d56_plan_discloses_uncapped_maximum_but_enforces_per_run_guard(
