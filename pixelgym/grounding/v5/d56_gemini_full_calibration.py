@@ -181,7 +181,7 @@ def build_plan(
     config = GEMINI_STATEFUL_FULL_CALIBRATION
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
+        repository_root / CALIBRATION_MANIFEST.parent,
         calibration_manifest=repository_root / CALIBRATION_MANIFEST,
     )
     phase_call_cap_plan = call_cap_plan(

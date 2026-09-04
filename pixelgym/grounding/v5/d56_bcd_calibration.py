@@ -203,7 +203,7 @@ def build_plan(
     prior_campaign_spend = frozen_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
+        repository_root / CALIBRATION_MANIFEST.parent,
         calibration_manifest=repository_root / CALIBRATION_MANIFEST,
     )
     policies: list[dict[str, Any]] = []
