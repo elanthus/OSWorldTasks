@@ -4,11 +4,16 @@ Uses FastAPI's in-process TestClient — no sockets, no network, no wall clock.
 """
 
 import dataclasses
+import re
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
+from pixelgym.tasks.vendor_form import ui
 from pixelgym.tasks.vendor_form.app.server import VendorFormState, create_app
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _client() -> TestClient:
@@ -20,6 +25,25 @@ def _submit_payload(task: dict, **overrides) -> dict:
     payload = {**task["fields"], "task_id": task["task_id"]}
     payload.update(overrides)
     return payload
+
+
+def test_incomplete_submission_message_matches_browser_app_literal():
+    app_source = (
+        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
+    ).read_text()
+    match = re.search(
+        r'^\s*var INCOMPLETE_SUBMISSION_MESSAGE = (?P<quote>["\'])'
+        r"(?P<message>[^\r\n]*?)(?P=quote);\s*$",
+        app_source,
+        re.MULTILINE,
+    )
+
+    assert match is not None, "app.js does not define INCOMPLETE_SUBMISSION_MESSAGE as a literal"
+    javascript_message = match.group("message")
+    assert javascript_message == ui.INCOMPLETE_SUBMISSION_MESSAGE, (
+        f"app.js INCOMPLETE_SUBMISSION_MESSAGE={javascript_message!r} does not match "
+        f"ui.INCOMPLETE_SUBMISSION_MESSAGE={ui.INCOMPLETE_SUBMISSION_MESSAGE!r}"
+    )
 
 
 def test_reset_is_idempotent_for_same_seed():
