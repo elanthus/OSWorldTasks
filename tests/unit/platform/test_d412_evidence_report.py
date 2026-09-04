@@ -3,25 +3,54 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 
-from scripts.generate_d412_evidence_report import CHECKLIST, SUPPORTING_PATHS, generate
+from scripts.generate_d412_evidence_report import (
+    CHECKLIST,
+    DOCUMENTATION_PATHS,
+    SUPPORTING_PATHS,
+    _git_file_bytes,
+    generate,
+)
 
 REVISION = "f92e307af7a3830347d50ca63f6a7d481489935c"
+D412_ROOT = Path(__file__).parents[3] / "artifacts/platform/d4.12"
+COMMITTED_REVISIONS = tuple(
+    path.name for path in sorted(D412_ROOT.iterdir()) if path.is_dir()
+)
 
 
-def _isolated_evidence(repository_root: Path, tmp_path: Path) -> tuple[Path, Path]:
+def _isolated_evidence(
+    repository_root: Path, tmp_path: Path, revision: str = REVISION
+) -> tuple[Path, Path]:
     isolated_root = tmp_path / "repository"
-    source_evidence = repository_root / "artifacts/platform/d4.12" / REVISION
-    evidence_dir = isolated_root / "artifacts/platform/d4.12" / REVISION
+    source_evidence = repository_root / "artifacts/platform/d4.12" / revision
+    evidence_dir = isolated_root / "artifacts/platform/d4.12" / revision
     shutil.copytree(source_evidence, evidence_dir)
+    manifest_path = source_evidence / "evidence-manifest.json"
+    manifest_snapshot = subprocess.run(
+        [
+            "git",
+            "log",
+            "-1",
+            "--format=%H",
+            "--",
+            manifest_path.relative_to(repository_root).as_posix(),
+        ],
+        cwd=repository_root,
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout.strip()
     for relative in SUPPORTING_PATHS:
-        source = repository_root / relative
+        if relative in DOCUMENTATION_PATHS:
+            continue
         destination = isolated_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
+        destination.write_bytes(_git_file_bytes(repository_root, manifest_snapshot, relative))
     screenshot_manifest = json.loads(
         (repository_root / "artifacts/platform/screenshots/manifest.json").read_text()
     )
@@ -30,6 +59,9 @@ def _isolated_evidence(repository_root: Path, tmp_path: Path) -> tuple[Path, Pat
         destination = isolated_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(repository_root / relative, destination)
+    (isolated_root / ".git").symlink_to(
+        repository_root / ".git", target_is_directory=(repository_root / ".git").is_dir()
+    )
     return isolated_root, evidence_dir
 
 
@@ -72,7 +104,11 @@ def test_generated_artifact_digests_verify_independently(
         assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     for entry in manifest["supporting_artifacts"]:
-        data = (isolated_root / entry["path"]).read_bytes()
+        data = (
+            _git_file_bytes(isolated_root, REVISION, entry["path"])
+            if entry["path"] in DOCUMENTATION_PATHS
+            else (isolated_root / entry["path"]).read_bytes()
+        )
         assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
 
@@ -107,18 +143,69 @@ def test_generator_rejects_tampered_success_claim(repository_root: Path, tmp_pat
         generate(isolated_root, evidence_dir)
 
 
-def test_generator_reproduces_committed_manifest(repository_root: Path, tmp_path: Path) -> None:
-    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+@pytest.mark.parametrize("revision", COMMITTED_REVISIONS)
+def test_generator_reproduces_committed_manifest(
+    repository_root: Path, tmp_path: Path, revision: str
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path, revision)
 
     generate(isolated_root, evidence_dir)
-    generated = json.loads((evidence_dir / "evidence-manifest.json").read_text())
-    committed = json.loads(
-        (
-            repository_root / "artifacts/platform/d4.12" / REVISION / "evidence-manifest.json"
-        ).read_text()
-    )
 
-    assert generated == committed
+    assert (evidence_dir / "evidence-manifest.json").read_bytes() == (
+        repository_root
+        / "artifacts/platform/d4.12"
+        / revision
+        / "evidence-manifest.json"
+    ).read_bytes()
+
+
+def test_generator_reproduces_manifest_with_modified_live_documentation(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    deployment_readme = isolated_root / "deploy/README.md"
+    assert not deployment_readme.exists()
+    deployment_readme.parent.mkdir(parents=True)
+    deployment_readme.write_text("Later documentation change.\n")
+
+    generate(isolated_root, evidence_dir)
+
+    assert (evidence_dir / "evidence-manifest.json").read_bytes() == (
+        repository_root
+        / "artifacts/platform/d4.12"
+        / REVISION
+        / "evidence-manifest.json"
+    ).read_bytes()
+
+
+def test_documentation_at_head_matches_recorded_git_bytes(repository_root: Path) -> None:
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository_root,
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout.strip()
+
+    for relative in DOCUMENTATION_PATHS:
+        assert (repository_root / relative).read_bytes() == _git_file_bytes(
+            repository_root, head, relative
+        )
+
+
+def test_git_file_read_rejects_missing_revision_and_path(repository_root: Path) -> None:
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository_root,
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout.strip()
+
+    with pytest.raises(ValueError, match="revision is not present"):
+        _git_file_bytes(repository_root, "0" * 40, "deploy/README.md")
+    with pytest.raises(ValueError, match="path is not present"):
+        _git_file_bytes(repository_root, head, "deploy/missing-documentation.md")
 
 
 def test_generator_rejects_dirty_frozen_worktree(repository_root: Path, tmp_path: Path) -> None:
