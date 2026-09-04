@@ -288,8 +288,10 @@ known limitation, with the underlying evidence retained
   full-frame minimum SSIM was 0.999863 ([validation evidence](artifacts/validation-report.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
-- The privileged state endpoint exists inside the guest. The bounded action interface cannot
-  navigate to it, but browser/guest exploitation is outside the threat model.
+- The privileged state endpoint exists inside the guest. The guest Chromium app-mode contract removes
+  address-bar, tab, and desktop navigation affordances from the tested bounded-click observation;
+  containment against a browser or guest OS exploit remains outside the threat model. This wording
+  is presented for owner review and is not an approved public claim.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
 - Target identity is perfectly aliased with screen state in the frozen v1 grounding dataset, so
   v1 control-type slices cannot separate control-type and screen-state effects. The unrun v2

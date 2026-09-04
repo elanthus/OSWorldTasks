@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import json
+import shlex
 import sys
 import types
 import zipfile
 from pathlib import Path
 
-from pixelgym.tasks.vendor_form import generator
+import pytest
+
+from pixelgym.tasks.vendor_form import browser_contract, generator
+from pixelgym.tasks.vendor_form.browser_contract import (
+    ChromiumLaunchPath,
+    build_chromium_argv,
+    chromium_renderer_contract,
+)
 from pixelgym.tasks.vendor_form.osworld_task import build_guest_bundle, create_osworld_task
 
 
@@ -185,6 +193,8 @@ class _SetupController:
             value = (
                 "PAGE_READY\n"
                 if "page-ready" in stdout
+                else "DISPLAY_SIZE_READY\n"
+                if "display-size" in stdout
                 else "DESKTOP_READY\n"
                 if "desktop-ready" in stdout
                 else "READY\n"
@@ -212,13 +222,71 @@ def test_custom_task_setup_uploads_waits_resets_and_opens_browser(monkeypatch, t
     assert controller.launches[0][0:2] == ["bash", "-lc"]
     assert "/tmp/pixelgym-vendor-form/guest_server.py" in controller.launches[0][2]
     assert controller.launches[1][0:2] == ["bash", "-lc"]
-    assert "--user-data-dir=/tmp/pixelgym-chrome-profile" in controller.launches[1][2]
+    guest_command = controller.launches[1][2]
+    assert "--user-data-dir=/tmp/pixelgym-chrome-profile" in guest_command
     assert "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus" in controller.launches[1][2]
     assert "http://127.0.0.1:3000/" in controller.launches[1][2]
+    assert "--app=http://127.0.0.1:3000/" in guest_command
+    assert "--start-fullscreen" in guest_command
+    assert "--window-size=1024,768" in guest_command
+    assert "--kiosk" not in guest_command
+    assert "--start-maximized" not in guest_command
     assert controller.setup_calls == []
     assert any("[g]uest_server.py" in str(command) for command, _kwargs in controller.commands)
     assert any("[g]oogle-chrome" in str(command) for command, _kwargs in controller.commands)
+    assert any("xrandr" in str(command) for command, _kwargs in controller.commands)
     assert all("DONE" not in str(command) for command, _kwargs in controller.commands)
+
+
+def test_guest_launch_contains_each_canonical_renderer_flag_once(monkeypatch, tmp_path):
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    controller = _SetupController(tmp_path, {"task_id": record["task_id"], "seed": record["seed"]})
+
+    task.setup(controller)
+
+    guest_command = controller.launches[1][2]
+    command_tokens = shlex.split(guest_command)
+    guest_metadata = task.browser_launch_metadata
+    for flag in browser_contract.CHROMIUM_RENDERER_ARGS:
+        assert command_tokens.count(flag) == 1
+    assert guest_metadata["renderer_contract"] == chromium_renderer_contract()
+    assert guest_metadata["presentation_mode"] == "app"
+    assert guest_metadata["presentation_mode_fallback_from"] == "kiosk"
+    assert "1024x768" in guest_metadata["presentation_mode_reason"]
+    assert guest_metadata["effective_argv"] == list(
+        build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST)
+    )
+    assert not any(
+        flag.startswith("--app=")
+        for flag in build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)[1:]
+    )
+
+
+def test_canonical_renderer_change_updates_playwright_and_guest_paths(monkeypatch, tmp_path):
+    baseline_identity = chromium_renderer_contract()["identity"]
+    monkeypatch.setattr(
+        browser_contract,
+        "CHROMIUM_RENDERER_ARGS",
+        (*browser_contract.CHROMIUM_RENDERER_ARGS, "--renderer-contract-test-flag"),
+    )
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    controller = _SetupController(tmp_path, {"task_id": record["task_id"], "seed": record["seed"]})
+
+    task.setup(controller)
+
+    playwright_argv = build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)
+    guest_command = controller.launches[1][2]
+    assert "--renderer-contract-test-flag" in playwright_argv
+    assert shlex.split(guest_command).count("--renderer-contract-test-flag") == 1
+    assert task.browser_launch_metadata["renderer_contract"]["identity"] != baseline_identity
+    assert task.browser_launch_metadata["renderer_contract"] == chromium_renderer_contract()
+
+
+def test_chromium_argv_builder_rejects_non_enum_input() -> None:
+    with pytest.raises(TypeError, match="ChromiumLaunchPath"):
+        build_chromium_argv("osworld-guest")  # type: ignore[arg-type]
 
 
 def test_custom_task_setup_rejects_reset_identity_mismatch(monkeypatch, tmp_path):

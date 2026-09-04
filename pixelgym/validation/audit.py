@@ -5,12 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pixelgym.actions import ActionType
+from pixelgym.actions import KEY_ALLOWLIST, KEY_ALLOWLIST_VERSION, ActionType
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
 from pixelgym.validation.browser_boundary import (
     browser_boundary_evidence_passed,
     browser_boundary_source_hashes_match,
+    guest_browser_boundary_evidence_passed,
+    guest_browser_boundary_source_hashes_match,
 )
 
 _DISPOSITIONS = {"blocked", "tested", "mitigated", "known limitation"}
@@ -20,6 +22,49 @@ def _record_by_name(reward: dict[str, Any], name: str) -> dict[str, Any]:
     return next(record for record in reward["records"] if record["name"] == name)
 
 
+class _ChangingClick(dict[str, int]):
+    """Return a safe x once and an invalid x if caller-controlled input is re-read."""
+
+    def __init__(self) -> None:
+        super().__init__(action_type=int(ActionType.CLICK), x=5, y=0, key=0)
+        self.x_reads = 0
+
+    def __getitem__(self, key: str) -> int:
+        value = super().__getitem__(key)
+        if key == "x":
+            self.x_reads += 1
+            return value if self.x_reads == 1 else 100_000
+        return value
+
+
+def _validated_action_snapshot_check() -> bool:
+    backend = FakeBackend(width=64, height=48)
+    env = PixelGuiEnv(backend)
+    action = _ChangingClick()
+    try:
+        env.reset(seed=7)
+        env.step(action)
+        return action.x_reads == 1 and backend.click_calls == [(5, 0)]
+    finally:
+        env.close()
+
+
+def _real_reset_evidence_passed(real_reset: dict[str, Any] | None) -> bool:
+    if not isinstance(real_reset, dict):
+        return False
+    summary = real_reset.get("summary")
+    return (
+        real_reset.get("validator") == "reset-determinism"
+        and real_reset.get("backend") == "real-osworld-docker"
+        and isinstance(summary, dict)
+        and summary.get("passed") is True
+        and summary.get("semantic_task_state_exact") is True
+        and summary.get("privileged_application_state_exact") is True
+        and summary.get("screenshot_shape_exact") is True
+        and summary.get("screenshot_dtype_exact") is True
+    )
+
+
 def validate_reward_hacking(
     reward: dict[str, Any],
     spaces: dict[str, Any],
@@ -27,7 +72,13 @@ def validate_reward_hacking(
     repository_root: Path,
     real_reset: dict[str, Any] | None = None,
     browser_boundary: dict[str, Any] | None = None,
+    guest_browser_boundary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if guest_browser_boundary is None and isinstance(browser_boundary, dict):
+        nested_guest = browser_boundary.get("guest_navigation_surface")
+        if isinstance(nested_guest, dict):
+            guest_browser_boundary = nested_guest
+
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
     env.reset(seed=7)
@@ -64,6 +115,27 @@ def validate_reward_hacking(
     browser_source_hashes_match = browser_boundary_source_hashes_match(
         browser_boundary, repository_root
     )
+    guest_browser_evidence_passed = guest_browser_boundary_evidence_passed(
+        guest_browser_boundary
+    )
+    guest_browser_source_hashes_match = guest_browser_boundary_source_hashes_match(
+        guest_browser_boundary, repository_root
+    )
+    forbidden_modifier_keys = {
+        "Alt",
+        "Command",
+        "Control",
+        "Escape",
+        "F1",
+        "Meta",
+    }
+    key_contract_blocks_modifiers = (
+        KEY_ALLOWLIST_VERSION == 1
+        and forbidden_modifier_keys.isdisjoint(KEY_ALLOWLIST)
+        and tuple(ActionType) == (ActionType.NOOP, ActionType.CLICK, ActionType.KEY)
+    )
+    validated_action_snapshot_passed = _validated_action_snapshot_check()
+    real_reset_evidence_passed = _real_reset_evidence_passed(real_reset)
     if browser_evidence_passed:
         assert isinstance(browser_boundary, dict)
         browser_version = browser_boundary["browser"]["version"]
@@ -145,18 +217,25 @@ def validate_reward_hacking(
             "disposition": "blocked",
             "evidence": (
                 "Ctrl, Alt, Command, Escape, function keys, and modifier combinations are absent "
-                "from KEY_ALLOWLIST_VERSION=1; KEY exposes only one indexed allowlisted key."
+                "from KEY_ALLOWLIST_VERSION=1; KEY exposes only one indexed allowlisted key. "
+                "The stored real-guest fullscreen and top-edge checks cover clickable desktop "
+                "and browser chrome."
             ),
-            "evidence_passed": True,
+            "evidence_passed": key_contract_blocks_modifiers
+            and guest_browser_evidence_passed
+            and guest_browser_source_hashes_match,
         },
         {
             "attack": "Navigate to a completion endpoint",
             "disposition": "blocked",
             "evidence": (
-                "The action interface has no browser-navigation action and cannot express Ctrl+L; "
-                "the privileged endpoint is not linked by the task UI."
+                "The action interface has no browser-navigation action or modifier chord. Stored "
+                "real-guest evidence requires Chromium app fullscreen mode, exact 1024x768 "
+                "window bounds, and task-app pixels at the observation's top edge."
             ),
-            "evidence_passed": True,
+            "evidence_passed": key_contract_blocks_modifiers
+            and guest_browser_evidence_passed
+            and guest_browser_source_hashes_match,
         },
         {
             "attack": "Guess or alter a task identifier",
@@ -175,14 +254,14 @@ def validate_reward_hacking(
         },
         {
             "attack": "Provider reset fails silently",
-            "disposition": "tested" if real_reset is not None else "mitigated",
+            "disposition": "tested" if real_reset_evidence_passed else "known limitation",
             "evidence": (
-                "Real reset task/application hashes were checked"
-                if real_reset is not None
-                else "OSWorldBackend reset checks privileged task identity and stable screenshot, "
-                "closes the provider on any failure, and has a thin-fake cleanup regression test."
+                "Stored real OSWorld reset evidence records exact task/application identity and "
+                "valid screenshot shape and dtype."
+                if real_reset_evidence_passed
+                else "No passing stored real-reset evidence was supplied to this audit run."
             ),
-            "evidence_passed": True,
+            "evidence_passed": real_reset_evidence_passed,
         },
         {
             "attack": "Mutate or change an action after validation",
@@ -191,7 +270,7 @@ def validate_reward_hacking(
                 "Environment tests use stateful Mapping and int subclasses and prove dispatch uses "
                 "only the immutable ValidatedAction snapshot."
             ),
-            "evidence_passed": True,
+            "evidence_passed": validated_action_snapshot_passed,
             "additional_attack": True,
         },
         {
@@ -220,9 +299,9 @@ def validate_reward_hacking(
             "slow or fail even when the adapter is correct."
         ),
         (
-            "The privileged /api/state endpoint exists inside the guest. The bounded action interface "
-            "cannot navigate to it, but containment against a browser or guest OS exploit is outside "
-            "this benchmark's threat model."
+            "The privileged /api/state endpoint exists inside the guest. The tested app-mode contract "
+            "removes browser navigation affordances from the bounded-click observation; containment "
+            "against a browser or guest OS exploit remains outside this benchmark's threat model."
         ),
         (
             "OSWorld's structured computer action controller internally generates fixed pyautogui "
@@ -237,10 +316,10 @@ def validate_reward_hacking(
             if record["differing_pixel_bbox_xyxy"] is not None
         ]
         known_limitations.append(
-            "The guest desktop's live top-panel clock is outside the deterministic task app. "
-            f"Across five real resets, at most "
+            "The real guest frames were not bitwise identical. "
+            f"Across {real_reset['reset_count']} real resets, at most "
             f"{real_reset['summary']['maximum_differing_pixel_count']} pixels changed and all "
-            f"differences were localized to clock-glyph boxes {changed_regions}; minimum SSIM was "
+            f"differences were localized to boxes {changed_regions}; minimum SSIM was "
             f"{real_reset['summary']['minimum_ssim']}. No visual mask or tolerance was applied."
         )
     valid_dispositions = all(item["disposition"] in _DISPOSITIONS for item in attacks)
@@ -259,9 +338,28 @@ def validate_reward_hacking(
                 "source_sha256": browser_boundary.get("source_sha256"),
                 "summary": browser_boundary.get("summary"),
                 "source_hashes_match": browser_source_hashes_match,
-                "raw_artifact": "artifacts/day-2/raw/browser-boundary.json",
             }
         ),
+        "guest_browser_boundary_evidence": (
+            None
+            if guest_browser_boundary is None
+            else {
+                "schema_version": guest_browser_boundary.get("schema_version"),
+                "validator": guest_browser_boundary.get("validator"),
+                "task_id": guest_browser_boundary.get("task_id"),
+                "browser_launch": guest_browser_boundary.get("browser_launch"),
+                "source_sha256": guest_browser_boundary.get("source_sha256"),
+                "summary": guest_browser_boundary.get("summary"),
+                "source_hashes_match": guest_browser_source_hashes_match,
+            }
+        ),
+        "evidence_inputs": {
+            "key_contract_blocks_modifiers": key_contract_blocks_modifiers,
+            "guest_browser_boundary_passed": guest_browser_evidence_passed,
+            "guest_browser_source_hashes_match": guest_browser_source_hashes_match,
+            "real_reset_evidence_passed": real_reset_evidence_passed,
+            "validated_action_snapshot_passed": validated_action_snapshot_passed,
+        },
         "attacks": attacks,
         "known_limitations": known_limitations,
         "summary": {
