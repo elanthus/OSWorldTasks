@@ -6,6 +6,7 @@
   var INCOMPLETE_SUBMISSION_MESSAGE = "Complete all required fields before submitting.";
   var INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE =
     INCOMPLETE_SUBMISSION_MESSAGE + " Submission attempt was not recorded.";
+  var DETERMINISTIC_FONT_FAMILY = '"PixelGym Sans"';
 
   function renderRequestCard(fields) {
     document.getElementById("rc-company_name").textContent = fields.company_name;
@@ -75,29 +76,69 @@
     );
   }
 
-  function init() {
-    fetch("/api/task")
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("no active task");
-        }
-        return response.json();
-      })
-      .then(function (task) {
-        document.getElementById("task_id").value = task.task_id;
-        renderRequestCard(task.fields);
-        populateCountryOptions(task.options.country);
-        populatePaymentTermsOptions(task.options.payment_terms);
-        document.body.dataset.pixelgymReady = "true";
-        return fetch("/api/page-ready", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ task_id: task.task_id }),
-        });
-      })
-      .catch(function () {
-        showStatus("No active task. Reset the environment to load a request.");
+  function clearReadinessMarkers() {
+    delete document.body.dataset.pixelgymReady;
+    delete document.body.dataset.pixelgymReadyError;
+  }
+
+  function markInitializationError(stage) {
+    delete document.body.dataset.pixelgymReady;
+    document.body.dataset.pixelgymReadyError = stage;
+    showStatus("Page initialization failed: " + stage + ".");
+  }
+
+  function deterministicFontsAreActive() {
+    var activeFamily = window.getComputedStyle(document.body).fontFamily;
+    return (
+      activeFamily === DETERMINISTIC_FONT_FAMILY &&
+      document.fonts.check('14px "PixelGym Sans"') &&
+      document.fonts.check('bold 14px "PixelGym Sans"')
+    );
+  }
+
+  async function initializePage() {
+    var failureStage = "task-fetch";
+    clearReadinessMarkers();
+    try {
+      var response = await fetch("/api/task");
+      if (!response.ok) {
+        throw new Error("no active task");
+      }
+      var task = await response.json();
+
+      failureStage = "render";
+      document.getElementById("task_id").value = task.task_id;
+      renderRequestCard(task.fields);
+      populateCountryOptions(task.options.country);
+      populatePaymentTermsOptions(task.options.payment_terms);
+
+      failureStage = "font-load";
+      await document.fonts.ready;
+      if (!deterministicFontsAreActive()) {
+        throw new Error("deterministic font face did not load");
+      }
+
+      failureStage = "page-ready";
+      response = await fetch("/api/page-ready", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id: task.task_id }),
       });
+      if (!response.ok) {
+        throw new Error("page-ready report failed");
+      }
+      var ready = await response.json();
+      if (ready.ready !== true) {
+        throw new Error("page-ready report was not acknowledged");
+      }
+      document.body.dataset.pixelgymReady = "true";
+    } catch (_error) {
+      markInitializationError(failureStage);
+    }
+  }
+
+  function init() {
+    initializePage();
 
     document.getElementById("vendor-form").addEventListener("submit", function (event) {
       event.preventDefault();
