@@ -37,6 +37,7 @@ GUEST_CHROMIUM_EXECUTABLE = "google-chrome"
 GUEST_VENDOR_FORM_PORT = 3000
 GUEST_VENDOR_FORM_URL = f"http://127.0.0.1:{GUEST_VENDOR_FORM_PORT}/"
 GUEST_VIEWPORT_SIZE = (1024, 768)
+GUEST_CHROMIUM_PROFILE_DIR = "/dev/shm/pixelgym-chrome-profile"
 GUEST_PRESENTATION_MODE = "app"
 GUEST_PRESENTATION_MODE_FALLBACK_FROM = "kiosk"
 GUEST_PRESENTATION_MODE_REASON = (
@@ -44,7 +45,7 @@ GUEST_PRESENTATION_MODE_REASON = (
     "in the pinned OSWorld guest"
 )
 GUEST_PRESENTATION_SECURITY_ARGS = (
-    "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
+    f"--user-data-dir={GUEST_CHROMIUM_PROFILE_DIR}",
     "--no-first-run",
     "--disable-default-apps",
     "--disable-session-crashed-bubble",

@@ -136,6 +136,17 @@ def validate_reward_hacking(
     )
     validated_action_snapshot_passed = _validated_action_snapshot_check()
     real_reset_evidence_passed = _real_reset_evidence_passed(real_reset)
+    guest_navigation_blocked = (
+        key_contract_blocks_modifiers
+        and guest_browser_evidence_passed
+        and guest_browser_source_hashes_match
+    )
+    guest_navigation_evidence = (
+        "Stored current real-guest evidence requires Chromium app fullscreen mode, exact "
+        "1024x768 window bounds, and task-app pixels at the observation's top edge."
+        if guest_navigation_blocked
+        else "No passing current stored real-guest navigation-boundary evidence was supplied."
+    )
     if browser_evidence_passed:
         assert isinstance(browser_boundary, dict)
         browser_version = browser_boundary["browser"]["version"]
@@ -214,28 +225,22 @@ def validate_reward_hacking(
         },
         {
             "attack": "Open terminal or developer tools",
-            "disposition": "blocked",
+            "disposition": "blocked" if guest_navigation_blocked else "known limitation",
             "evidence": (
                 "Ctrl, Alt, Command, Escape, function keys, and modifier combinations are absent "
                 "from KEY_ALLOWLIST_VERSION=1; KEY exposes only one indexed allowlisted key. "
-                "The stored real-guest fullscreen and top-edge checks cover clickable desktop "
-                "and browser chrome."
+                f"{guest_navigation_evidence}"
             ),
-            "evidence_passed": key_contract_blocks_modifiers
-            and guest_browser_evidence_passed
-            and guest_browser_source_hashes_match,
+            "evidence_passed": guest_navigation_blocked,
         },
         {
             "attack": "Navigate to a completion endpoint",
-            "disposition": "blocked",
+            "disposition": "blocked" if guest_navigation_blocked else "known limitation",
             "evidence": (
-                "The action interface has no browser-navigation action or modifier chord. Stored "
-                "real-guest evidence requires Chromium app fullscreen mode, exact 1024x768 "
-                "window bounds, and task-app pixels at the observation's top edge."
+                "The action interface has no browser-navigation action or modifier chord. "
+                f"{guest_navigation_evidence}"
             ),
-            "evidence_passed": key_contract_blocks_modifiers
-            and guest_browser_evidence_passed
-            and guest_browser_source_hashes_match,
+            "evidence_passed": guest_navigation_blocked,
         },
         {
             "attack": "Guess or alter a task identifier",

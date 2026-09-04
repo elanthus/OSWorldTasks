@@ -10,11 +10,14 @@ fallback decision, the structural window state, the pixel anchors, and provider 
 failed kiosk attempts and retained kiosk screenshot are indexed by
 `raw/presentation-mode-selection.json`.
 
-The current-contract browser-boundary probe completed successfully in app mode. Two subsequent
-real-reset attempts failed because the guest setup could not acquire its package-manager lock and
-then could not make the replacement VM ready. The accumulated infrastructure time reached the
-owner's 90-minute stop-loss, so real-reset, real-space-smoke, and real-golden-episode evidence is
-absent and the assembled report is explicitly `INCOMPLETE`. The two raw failures are retained in
+The real guest browser-boundary probe completed successfully in app mode with the effective launch
+argv still used by the current contract. A subsequent reset-isolation fix centralized that same
+profile path and changed the recorded source files, so the stored guest source-hash check now fails
+closed and the affected audit rows are `known limitation` until the probe is rerun. Two real-reset
+attempts failed because the guest setup could not acquire its package-manager lock and then could
+not make the replacement VM ready. The accumulated infrastructure time reached the owner's
+90-minute stop-loss, so real-reset, real-space-smoke, and real-golden-episode evidence is absent and
+the assembled report is explicitly `INCOMPLETE`. The two raw failures are retained in
 `commands/validate-day2-real-resets-attempt-{1,2}.txt`.
 
 `raw/renderer-screenshot-differences.json` reports raw differing-pixel counts and maximum

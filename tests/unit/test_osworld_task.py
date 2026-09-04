@@ -221,6 +221,7 @@ def test_custom_task_setup_uploads_waits_resets_and_opens_browser(monkeypatch, t
     assert controller.downloads[0]["url"].endswith(".zip")
     assert controller.launches[0][0:2] == ["bash", "-lc"]
     assert "/tmp/pixelgym-vendor-form/guest_server.py" in controller.launches[0][2]
+    assert "rm -rf /dev/shm/pixelgym-chrome-profile" in controller.commands[0][0][2]
     assert controller.launches[1][0:2] == ["bash", "-lc"]
     guest_command = controller.launches[1][2]
     assert "--user-data-dir=/dev/shm/pixelgym-chrome-profile" in guest_command

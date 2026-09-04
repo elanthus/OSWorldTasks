@@ -28,6 +28,7 @@ from pixelgym.evaluator import evaluate
 from pixelgym.task_spec import Submission, TaskSpec
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.browser_contract import (
+    GUEST_CHROMIUM_PROFILE_DIR,
     GUEST_PRESENTATION_MODE,
     GUEST_PRESENTATION_MODE_FALLBACK_FROM,
     GUEST_PRESENTATION_MODE_REASON,
@@ -152,7 +153,7 @@ class _VendorFormTaskSupport:
                     "pkill -f '[g]oogle-chrome.*pixelgym-chrome-profile' "
                     "2>/dev/null || true; "
                     "rm -rf /tmp/pixelgym-vendor-form; "
-                    "rm -rf /tmp/pixelgym-chrome-profile; "
+                    f"rm -rf {GUEST_CHROMIUM_PROFILE_DIR}; "
                     "mkdir -p /tmp/pixelgym-vendor-form; "
                     "python3 -m zipfile -e /tmp/pixelgym-vendor-form.zip "
                     "/tmp/pixelgym-vendor-form"

@@ -368,6 +368,7 @@ def test_reward_audit_fails_closed_without_real_guest_navigation_evidence() -> N
         row for row in result["attacks"] if row["attack"] == "Provider reset fails silently"
     )
     assert navigation["evidence_passed"] is False
+    assert navigation["disposition"] == "known limitation"
     assert reset == {
         "attack": "Provider reset fails silently",
         "disposition": "known limitation",
