@@ -19,6 +19,8 @@ from pixelgym.tasks.vendor_form.ui import (
     INCOMPLETE_SUBMISSION_MESSAGE,
     TAB_ORDER,
     TEXT_WIDGETS,
+    FormState,
+    Layout,
     WidgetId,
 )
 
@@ -180,13 +182,13 @@ def test_typing_with_nothing_focused_changes_no_field(backend):
     assert all(backend.form.text[widget] == "" for widget in TEXT_WIDGETS)
 
 
-def test_tab_walks_the_document_order_and_wraps(backend):
+def test_tab_walks_the_document_order_then_leaves_the_form(backend):
     seen = []
-    for _ in range(len(TAB_ORDER) + 1):
+    for _ in range(len(TAB_ORDER) + 2):
         backend.key("Tab")
         seen.append(backend.form.focus)
 
-    assert seen == [*TAB_ORDER, TAB_ORDER[0]]
+    assert seen == [*TAB_ORDER, None, TAB_ORDER[0]]
 
 
 def test_arrow_keys_are_inert_inside_a_text_field(backend):
@@ -268,6 +270,21 @@ def test_arrow_up_on_the_placeholder_leaves_it_showing(backend):
     assert backend.form.country_value == ""
 
 
+@pytest.mark.parametrize("country_index", range(6))
+def test_country_selection_uses_the_transferable_click_and_keyboard_contract(
+    backend, country_index
+):
+    """Only the select control has portable geometry; native popup rows do not."""
+    _click(backend, WidgetId.COUNTRY)
+
+    backend.key(backend.form.country_options[country_index][0].lower())
+    backend.key("Enter")
+
+    assert backend.form.country_open is False
+    assert backend.form.country_value == backend.form.country_options[country_index]
+    assert backend.read_submissions() == []
+
+
 # -- Payment-terms radio group ----------------------------------------------
 
 
@@ -295,6 +312,25 @@ def test_arrow_on_an_untouched_radio_group_selects_the_first_option(backend):
     backend.key("ArrowDown")
 
     assert backend.form.payment_terms_value == backend.form.payment_options[0]
+
+
+def test_all_radio_hit_regions_support_varying_label_lengths():
+    payment_options = ("N", "Due on receipt", "Net 123456789")
+    layout = Layout(
+        1024,
+        768,
+        country_option_count=2,
+        payment_option_count=len(payment_options),
+    )
+    state = FormState(
+        layout=layout,
+        country_options=("Canada", "Japan"),
+        payment_options=payment_options,
+    )
+
+    for index, rect in enumerate(layout.payment_options):
+        state.click(*rect.center)
+        assert state.payment_terms_value == payment_options[index], f"payment_terms[{index}]"
 
 
 # -- Checkbox ----------------------------------------------------------------
@@ -379,18 +415,27 @@ def test_repeated_submissions_get_increasing_step_numbers(backend):
     assert [s.submitted_at_step for s in backend.read_submissions()] == [1, 2]
 
 
-def test_enter_in_a_text_field_submits_the_form(backend):
-    """HTML implicit submission: Enter inside a form with a submit button
-    submits it."""
-    _click(backend, WidgetId.COMPANY_NAME)
-    _type(backend, "Blue Harbor Supply Co.")
+@pytest.mark.parametrize(
+    "widget",
+    [*TEXT_WIDGETS, WidgetId.EXPEDITED_ONBOARDING, WidgetId.SUBMIT],
+    ids=lambda widget: widget.value,
+)
+def test_enter_submits_only_from_browser_implicit_submission_controls(backend, widget):
+    backend.form.focus = widget
 
     backend.key("Enter")
 
     assert len(backend.read_submissions()) == 1
 
 
-def test_enter_with_nothing_focused_does_not_submit(backend):
+@pytest.mark.parametrize(
+    "focus",
+    [None, WidgetId.COUNTRY, WidgetId.PAYMENT_TERMS],
+    ids=["no-focus", "country", "payment-terms"],
+)
+def test_enter_does_not_submit_from_other_focus_states(backend, focus):
+    backend.form.focus = focus
+
     backend.key("Enter")
 
     assert backend.read_submissions() == []
@@ -655,8 +700,16 @@ def test_every_control_center_hit_tests_back_to_that_control(backend):
     layout = backend.layout
 
     for widget, rect in layout.controls.items():
+        if widget is WidgetId.PAYMENT_TERMS:
+            continue  # the group includes non-clickable space between radio labels
         hit = layout.hit_test(*rect.center, country_open=False)
         assert hit is not None and hit[0] is widget
+
+    for index, rect in enumerate(layout.payment_options):
+        assert layout.hit_test(*rect.center, country_open=False) == (
+            WidgetId.PAYMENT_TERMS,
+            index,
+        )
 
 
 def test_layout_degrades_without_collapsing_on_a_small_screen():

@@ -60,6 +60,8 @@ body {
 
 h1 {
   font-size: 16px;
+  height: 19px;
+  line-height: 19px;
   margin: 0 0 16px 0;
 }
 
@@ -70,6 +72,8 @@ h1 {
 .field-row label {
   display: block;
   font-weight: bold;
+  height: 16px;
+  line-height: 16px;
   margin-bottom: 4px;
 }
 
@@ -94,15 +98,43 @@ select {
   caret-color: transparent;
 }
 
+input[type="text"],
+input[type="email"] {
+  height: 30px;
+}
+
+select {
+  height: 32px;
+}
+
+.radio-group {
+  height: 23px;
+}
+
 .radio-group label,
 .checkbox-row label {
   display: inline-block;
   font-weight: normal;
+  height: 19px;
+  line-height: 19px;
   margin-right: 12px;
+}
+
+.radio-group label {
+  overflow: hidden;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 68px;
+}
+
+.checkbox-row label {
+  width: 179px;
 }
 
 #submit-button {
   margin-top: 8px;
+  width: 84px;
+  height: 34px;
   padding: 8px 16px;
   border: 1px solid #2f6f4f;
   background: #3c8c5f;

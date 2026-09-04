@@ -41,7 +41,11 @@
 
       <section id="form-panel" aria-label="Vendor onboarding form">
         <h1>Enter Vendor Details</h1>
-        <form id="vendor-form" autocomplete="off">
+        <form
+          id="vendor-form"
+          autocomplete="off"
+          onkeydown="if (event.key === 'Enter' && (event.target.tagName === 'SELECT' || event.target.type === 'radio')) event.preventDefault();"
+        >
           <input type="hidden" id="task_id" name="task_id" />
           <div class="field-row">
             <label for="company_name">Company name</label>
@@ -61,7 +65,13 @@
           </div>
           <div class="field-row">
             <label for="country">Country</label>
-            <select id="country" name="country">
+            <select
+              id="country"
+              name="country"
+              onmousedown="event.preventDefault(); this.focus();"
+              onmouseup="event.preventDefault();"
+              onclick="event.preventDefault(); this.focus();"
+            >
               <option value="" selected disabled>Select a country</option>
             </select>
           </div>

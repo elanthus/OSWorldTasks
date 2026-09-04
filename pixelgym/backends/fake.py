@@ -18,6 +18,14 @@ a privileged test hook. Widget geometry and interaction semantics live in
 
 Fidelity to the real app, where it matters:
 
+- At 1024x768, every form-control and payment-option hit rectangle is pinned
+  to Chromium `getBoundingClientRect()` output by an opt-in build-time test.
+  The fake-only drawing of an open native-select popup has no geometry claim;
+  transferable country interaction is control click plus allowlisted
+  type-ahead and Enter keys.
+- Enter and Tab follow the task app's tested form semantics: Enter submits only
+  from text inputs, the checkbox, and Submit, while Tab from Submit leaves the
+  form with no modeled focus.
 - The submission record is built exactly as `POST /api/submit` builds it --
   same field names, same `submitted_at_step` numbering, same whitespace
   normalization (shared via `pixelgym.tasks.vendor_form.normalization`).
@@ -25,9 +33,10 @@ Fidelity to the real app, where it matters:
   does. Deciding whether it is *correct* is the evaluator's job alone.
 - Unfilled text fields and unmade selections submit as `""`.
 
-What this backend still does not attempt: real browser layout, font
+What this backend still does not attempt: native select-popup geometry, font
 rasterization identical to a browser's, or the timing behavior of a live VM.
-Those properties are measured separately on the OSWorld backend.
+Those properties are outside the transferable contract or measured separately
+on the OSWorld backend.
 
 Two hooks exist for tests only and are not part of the `Backend` protocol:
 `install_form_values` (put the form into a precise state without typing) and

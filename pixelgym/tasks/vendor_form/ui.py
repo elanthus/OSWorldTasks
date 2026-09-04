@@ -10,19 +10,21 @@ by the privileged host-side evaluator.
 
 Two things live here:
 
-- `Layout` -- where every widget is, in pixels. Geometry mirrors the real app's
-  fixed CSS layout (`app/static/style.css`, a 1024x768 two-panel design) and is
-  scaled linearly for any other backend size, so a click that lands on the Tax
-  ID box in the fake lands on the same relative spot in the real app.
+- `Layout` -- where every widget is, in pixels. At the 1024x768 design size,
+  every control and payment-option rectangle is pinned by an opt-in Chromium
+  `getBoundingClientRect()` test. Geometry is scaled linearly for other fake
+  backend sizes. The synthetic country popup is intentionally excluded: native
+  popup rectangles are not exposed portably, so country selection transfers by
+  clicking the select and sending allowlisted type-ahead/Enter keys instead.
 - `FormState` -- focus, typed text, selection, and checkbox state, advanced by
   `click()` and `key()`.
 
-Interaction semantics deliberately mirror an ordinary browser rather than
-inventing shortcuts, because the frozen golden trajectory must resemble
-legitimate UI interaction: Tab walks the tab order and wraps, printable keys
-append to the focused text field, Backspace deletes one character, arrows move
-a `<select>` value or a radio group, Space toggles a focused checkbox, and
-Enter performs HTML implicit form submission from anywhere inside the form.
+Interaction semantics deliberately mirror the task app in Chromium rather than
+inventing shortcuts: Tab walks the form's tab order and leaves the form after
+Submit, printable keys append to the focused text field, Backspace deletes one
+character, arrows move a `<select>` value or a radio group, Space toggles a
+focused checkbox, and Enter submits only from a text input, the checkbox, or
+the Submit button.
 
 What is deliberately *not* modeled, since no allowlisted action can reach it:
 text carets and caret movement (typing always appends -- ArrowLeft/ArrowRight
@@ -109,23 +111,29 @@ browser state; the fake backend uses it directly.
 
 _PAD = 24
 _PANEL_WIDTH = DESIGN_WIDTH // 2
-_H1_HEIGHT = 16
+_H1_HEIGHT = 19
 _H1_MARGIN = 16
-_LABEL_HEIGHT = 18
+_LABEL_HEIGHT = 16
 _LABEL_GAP = 4
 _CONTROL_HEIGHT = 30
+_COUNTRY_HEIGHT = 32
 _ROW_MARGIN = 12
-_ROW_PITCH = _LABEL_HEIGHT + _LABEL_GAP + _CONTROL_HEIGHT + _ROW_MARGIN  # 64
-_FIRST_ROW_Y = _PAD + _H1_HEIGHT + _H1_MARGIN  # 56
+_TEXT_ROW_PITCH = _LABEL_HEIGHT + _LABEL_GAP + _CONTROL_HEIGHT + _ROW_MARGIN  # 62
+_FIRST_ROW_Y = _PAD + _H1_HEIGHT + _H1_MARGIN  # 59
 _FIELD_WIDTH = _PANEL_WIDTH - 2 * _PAD  # 464
 
+# Fake-only visualization dimensions. Native `<select>` popup rectangles are
+# deliberately outside the browser-equivalence contract.
 _OPTION_HEIGHT = 26  # one row of the open country dropdown
-_RADIO_WIDTH = 150
-_RADIO_GAP = 4
-_RADIO_HEIGHT = 24
-_CHECKBOX_ROW_WIDTH = 200
-_CHECKBOX_ROW_HEIGHT = 20
-_SUBMIT_WIDTH = 100
+_RADIO_WIDTH = 68
+_RADIO_GAP = 12
+_RADIO_HEIGHT = 19
+_RADIO_GROUP_HEIGHT = 23
+_CHECKBOX_ROW_WIDTH = 179
+_CHECKBOX_ROW_HEIGHT = 19
+_CHECKBOX_FIELD_HEIGHT = 23
+_SUBMIT_TOP_MARGIN = 8
+_SUBMIT_WIDTH = 84
 _SUBMIT_HEIGHT = 34
 _STATUS_HEIGHT = 16
 
@@ -160,12 +168,19 @@ class Rect:
 class Layout:
     """Widget geometry for a `width` x `height` screen.
 
-    Rectangles are derived from the 1024x768 design constants above and scaled
-    linearly, so the same layout code serves the default size and the small
-    screens unit tests use. Scaling rounds independently per rectangle and
-    clamps extents to at least one pixel; at very small sizes controls become
-    tiny and may abut, which is fine -- those sizes exist to exercise space and
-    validation logic, not to be clicked accurately.
+    Control and payment-option rectangles at the 1024x768 design size are
+    browser-derived CSS-pixel hit regions, with a top-left origin. The opt-in
+    browser integration test is the build-time instrumentation that pins them;
+    no DOM geometry is reachable from an evaluation backend or observation.
+
+    Synthetic country-option rectangles exist only so the fake screenshot can
+    render a deterministic open-select approximation. They are not equivalent
+    to native popup geometry and must not be used by transferable trajectories.
+
+    Rectangles are scaled linearly for the small screens unit tests use.
+    Scaling rounds independently per rectangle and clamps extents to at least
+    one pixel; at very small sizes controls become tiny and may abut, which is
+    fine -- those sizes exercise space and validation logic, not click fidelity.
     """
 
     def __init__(
@@ -196,7 +211,7 @@ class Layout:
         self.request_labels: dict[str, Rect] = {}
         self.request_values: dict[str, Rect] = {}
         for index, field in enumerate(REQUEST_CARD_FIELDS):
-            top = _FIRST_ROW_Y + index * _ROW_PITCH
+            top = _FIRST_ROW_Y + index * _TEXT_ROW_PITCH
             self.request_labels[field] = self._rect(_PAD, top, _FIELD_WIDTH, _LABEL_HEIGHT)
             self.request_values[field] = self._rect(
                 _PAD, top + _LABEL_HEIGHT + _LABEL_GAP, _FIELD_WIDTH, _CONTROL_HEIGHT
@@ -210,16 +225,16 @@ class Layout:
         self.controls: dict[WidgetId, Rect] = {}
 
         for index, widget in enumerate((*TEXT_WIDGETS, WidgetId.COUNTRY)):
-            top = _FIRST_ROW_Y + index * _ROW_PITCH
+            top = _FIRST_ROW_Y + index * _TEXT_ROW_PITCH
             self.labels[widget] = self._rect(form_x, top, _FIELD_WIDTH, _LABEL_HEIGHT)
+            control_height = _COUNTRY_HEIGHT if widget is WidgetId.COUNTRY else _CONTROL_HEIGHT
             self.controls[widget] = self._rect(
-                form_x, top + _LABEL_HEIGHT + _LABEL_GAP, _FIELD_WIDTH, _CONTROL_HEIGHT
+                form_x, top + _LABEL_HEIGHT + _LABEL_GAP, _FIELD_WIDTH, control_height
             )
 
-        country_top = _FIRST_ROW_Y + 4 * _ROW_PITCH + _LABEL_HEIGHT + _LABEL_GAP
-        country_bottom = country_top + _CONTROL_HEIGHT
-        # The open dropdown floats over whatever is beneath it, as a native
-        # `<select>` popup does; `hit_test` gives it priority while open.
+        country_top = _FIRST_ROW_Y + 4 * _TEXT_ROW_PITCH + _LABEL_HEIGHT + _LABEL_GAP
+        country_bottom = country_top + _COUNTRY_HEIGHT
+        # Deterministic fake-only popup rendering; no browser geometry claim.
         self.country_options: tuple[Rect, ...] = tuple(
             self._rect(
                 form_x,
@@ -233,7 +248,7 @@ class Layout:
             form_x, country_bottom, _FIELD_WIDTH, _OPTION_HEIGHT * country_option_count
         )
 
-        payment_label_top = _FIRST_ROW_Y + 5 * _ROW_PITCH
+        payment_label_top = country_bottom + _ROW_MARGIN
         payment_top = payment_label_top + _LABEL_HEIGHT + _LABEL_GAP
         self.labels[WidgetId.PAYMENT_TERMS] = self._rect(
             form_x, payment_label_top, _FIELD_WIDTH, _LABEL_HEIGHT
@@ -250,16 +265,18 @@ class Layout:
         self.controls[WidgetId.PAYMENT_TERMS] = self._rect(
             form_x,
             payment_top,
-            payment_option_count * (_RADIO_WIDTH + _RADIO_GAP) - _RADIO_GAP,
-            _RADIO_HEIGHT,
+            _FIELD_WIDTH,
+            _RADIO_GROUP_HEIGHT,
         )
 
-        checkbox_top = payment_top + _RADIO_HEIGHT + _ROW_MARGIN
+        checkbox_top = payment_top + _RADIO_GROUP_HEIGHT + _ROW_MARGIN
         self.controls[WidgetId.EXPEDITED_ONBOARDING] = self._rect(
             form_x, checkbox_top, _CHECKBOX_ROW_WIDTH, _CHECKBOX_ROW_HEIGHT
         )
 
-        submit_top = checkbox_top + _CHECKBOX_ROW_HEIGHT + _ROW_MARGIN
+        submit_top = (
+            checkbox_top + _CHECKBOX_FIELD_HEIGHT + _ROW_MARGIN + _SUBMIT_TOP_MARGIN
+        )
         self.controls[WidgetId.SUBMIT] = self._rect(
             form_x, submit_top, _SUBMIT_WIDTH, _SUBMIT_HEIGHT
         )
@@ -278,10 +295,9 @@ class Layout:
     def hit_test(self, x: int, y: int, *, country_open: bool) -> tuple[WidgetId, int | None] | None:
         """Which control (and which of its options) a click at `(x, y)` lands on.
 
-        Returns `None` for a click on empty space. While the country dropdown
-        is open it takes priority over everything beneath it, and a click that
-        misses it returns `None` -- a native popup swallows the click that
-        dismisses it rather than passing it through to the control underneath.
+        Returns `None` for a click on empty space. The open-country branch is a
+        fake-only deterministic popup approximation, not native browser popup
+        geometry; transferable interactions use the select rectangle and keys.
         """
         if country_open:
             for index, rect in enumerate(self.country_options):
@@ -440,10 +456,11 @@ class FormState:
             if self.country_open:
                 self.country_open = False  # commit the shown option, close
                 return False
-            # HTML implicit submission: Enter anywhere inside a form with a
-            # submit button submits it. With nothing focused the keystroke
-            # goes to the document, so nothing happens.
-            return self.focus is not None
+            return self.focus in (
+                *TEXT_WIDGETS,
+                WidgetId.EXPEDITED_ONBOARDING,
+                WidgetId.SUBMIT,
+            )
 
         if key == "Backspace":
             if self.focus in TEXT_WIDGETS:
@@ -460,9 +477,20 @@ class FormState:
         if self.focus in TEXT_WIDGETS:
             self.text[self.focus] += key
             return False
+        if self.focus is WidgetId.COUNTRY and key != " ":
+            # Chromium's closed native select supports prefix type-ahead even
+            # when its disabled placeholder is showing. The task's countries
+            # have unique initial letters, so this is the portable selection
+            # path used by trajectories; native popup rows have no geometry
+            # contract.
+            folded = key.casefold()
+            for index, option in enumerate(self.country_options):
+                if option.casefold().startswith(folded):
+                    self.country_index = index
+                    break
+            return False
         if key != " ":
-            # Type-ahead on a `<select>` and other non-space printable keys on
-            # non-text controls do nothing here.
+            # Other non-space printable keys on non-text controls do nothing.
             return False
         # Space activates the focused control, as it does in a browser.
         if self.focus is WidgetId.EXPEDITED_ONBOARDING:
@@ -502,7 +530,10 @@ class FormState:
         if self.focus is None:
             self.focus = TAB_ORDER[0]
             return
-        self.focus = TAB_ORDER[(TAB_ORDER.index(self.focus) + 1) % len(TAB_ORDER)]
+        if self.focus is WidgetId.SUBMIT:
+            self.focus = None
+            return
+        self.focus = TAB_ORDER[TAB_ORDER.index(self.focus) + 1]
 
 
 def layout_for(task_record: Mapping[str, Any], width: int, height: int) -> Layout:
