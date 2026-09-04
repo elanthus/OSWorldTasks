@@ -1,0 +1,335 @@
+{
+  "backend": "real-osworld-docker",
+  "backend_metadata": {
+    "browser_launch": {
+      "effective_argv": [
+        "google-chrome",
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--user-data-dir=/tmp/pixelgym-chrome-profile",
+        "--no-first-run",
+        "--disable-default-apps",
+        "--disable-session-crashed-bubble",
+        "--disable-dev-shm-usage",
+        "--app=http://127.0.0.1:3000/",
+        "--start-fullscreen",
+        "--window-position=0,0",
+        "--window-size=1024,768"
+      ],
+      "presentation_mode": "app",
+      "presentation_mode_fallback_from": "kiosk",
+      "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      }
+    },
+    "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+    "guest_artifact_repository": "xlangai/v2-image",
+    "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+    "guest_artifact_tag": "v2026.06.24",
+    "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "guest_volume_size_gb": 50,
+    "host_port_allocator": "socket-bind-plus-docker-port-map",
+    "provider": "docker-local",
+    "python_version": "3.12.14",
+    "release": "osworld-v2-2026.06.24",
+    "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+    "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+    "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+    "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+    "screen_size": [
+      1024,
+      768
+    ],
+    "task_bundle_sha256": "f603d8a7675793bf2773f6ac67d3abe7d9080e4b616daa56e8464af6efb5c6df",
+    "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+    "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+    "upstream_tag": "v2026.06.24"
+  },
+  "empty_submit": {
+    "passed": true,
+    "rewards": [
+      {
+        "reward": 0.0,
+        "step": 1,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 2,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 3,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 4,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 5,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 6,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 7,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 8,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 9,
+        "terminated": false,
+        "truncated": false
+      },
+      {
+        "reward": 0.0,
+        "step": 10,
+        "terminated": false,
+        "truncated": false
+      }
+    ],
+    "submission_count": 1,
+    "submitted_values_were_empty": true
+  },
+  "invalid_actions": [
+    {
+      "error": "action['x']=-1 is out of range [0, 1024)",
+      "name": "negative-x",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['x']=1024 is out of range [0, 1024)",
+      "name": "x-equals-width",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['y']=-1 is out of range [0, 768)",
+      "name": "negative-y",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['y']=768 is out of range [0, 768)",
+      "name": "y-equals-height",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['key']=-1 is out of range [0, 102)",
+      "name": "negative-key",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['key']=102 is out of range [0, 102)",
+      "name": "key-equals-count",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['action_type']=3 is out of range [0, 3)",
+      "name": "unknown-action-type",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action['x'] must be a canonical int (not bool, float, str, or array), got 1.0 of type float",
+      "name": "float-x",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action must have exactly the keys ['action_type', 'key', 'x', 'y'], got ['action_type', 'x', 'y']",
+      "name": "missing-key",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    },
+    {
+      "error": "action must have exactly the keys ['action_type', 'key', 'x', 'y'], got ['action_type', 'extra', 'key', 'x', 'y']",
+      "name": "extra-key",
+      "rejected": true,
+      "rejected_before_backend_execution": true,
+      "structured_action_count_after": 10,
+      "structured_action_count_before": 10
+    }
+  ],
+  "observations": [
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "reset",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-1",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-2",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-3",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-4",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-5",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-6",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-7",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-8",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-9",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    },
+    {
+      "contained": true,
+      "dtype": "uint8",
+      "name": "valid-action-10",
+      "shape": [
+        768,
+        1024,
+        3
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "seed": 7,
+  "summary": {
+    "empty_submit_no_reward": true,
+    "invalid_inputs_rejected_before_backend": true,
+    "observations_contained": true,
+    "passed": true,
+    "provider_closed": true
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "valid_action_count": 10,
+  "validator": "real-space-smoke"
+}

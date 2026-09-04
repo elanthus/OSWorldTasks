@@ -1,0 +1,100 @@
+{
+  "decision": {
+    "reason": "Kiosk mode did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest.",
+    "selected_mode": "app"
+  },
+  "final_evidence": "artifacts/day-2-rev-2026-09-04-issues-95-101/raw/browser-boundary.json",
+  "human_gate_verdict": null,
+  "owner_policy": "Try kiosk first; use app mode if kiosk breaks the 1024x768 viewport or page-ready detection.",
+  "probe_attempts": [
+    {
+      "exit_status": 1,
+      "mode": "kiosk",
+      "observation_shape": [
+        1080,
+        1920,
+        3
+      ],
+      "outcome": "The backend rejected the raw screenshot because it did not match the configured 1024x768 observation.",
+      "provider_closed": true,
+      "retained_output": "console result summarized here; no screenshot was accepted"
+    },
+    {
+      "exit_status": 1,
+      "mode": "kiosk",
+      "navigation_checks_passed": 4,
+      "navigation_checks_total": 8,
+      "observation_shape": [
+        768,
+        1024,
+        3
+      ],
+      "outcome": "The fixed-size guest frame still exposed desktop pixels around the task window.",
+      "provider_closed": true,
+      "retained_output": "console result summarized here"
+    },
+    {
+      "active_window_bounds": {
+        "height": 642,
+        "width": 853,
+        "x": 192,
+        "y": 94
+      },
+      "exit_status": 1,
+      "mode": "kiosk",
+      "navigation_checks_passed": 6,
+      "navigation_checks_total": 8,
+      "observation_shape": [
+        768,
+        1024,
+        3
+      ],
+      "outcome": "Chromium reported fullscreen but did not fill the observation or reach the top-edge anchors.",
+      "provider_closed": true,
+      "retained_output": "console result summarized here"
+    },
+    {
+      "active_window_bounds": {
+        "height": 658,
+        "width": 853,
+        "x": 160,
+        "y": 74
+      },
+      "exit_status": 1,
+      "mode": "kiosk",
+      "navigation_checks_passed": 6,
+      "navigation_checks_total": 8,
+      "observation_shape": [
+        768,
+        1024,
+        3
+      ],
+      "outcome": "Chromium reported fullscreen but did not fill the observation or reach the top-edge anchors.",
+      "provider_closed": true,
+      "retained_output": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/guest-kiosk.png",
+      "retained_output_sha256": "08629bdc5bf4e4eb24e5c0d198ef8f3d2ef6fe974961f98ddf81976e8e3c4ba1"
+    },
+    {
+      "active_window_bounds": {
+        "height": 768,
+        "width": 1024,
+        "x": 0,
+        "y": 0
+      },
+      "exit_status": 0,
+      "mode": "app",
+      "navigation_checks_passed": 8,
+      "navigation_checks_total": 8,
+      "observation_shape": [
+        768,
+        1024,
+        3
+      ],
+      "outcome": "The task window filled the observation, used fullscreen app mode, and matched all top-edge anchors.",
+      "provider_closed": true,
+      "retained_output": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/guest-app.png",
+      "retained_output_sha256": "0b624484a4935902753907c394a8dbc2378713422d4aa9a302f943742111ced2"
+    }
+  ],
+  "schema_version": "pixelgym-presentation-mode-selection-v1"
+}

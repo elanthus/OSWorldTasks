@@ -1,0 +1,3559 @@
+{
+  "action_count": 112,
+  "backend_metadata": {
+    "browser_launch": {
+      "effective_argv": [
+        "google-chrome",
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--user-data-dir=/tmp/pixelgym-chrome-profile",
+        "--no-first-run",
+        "--disable-default-apps",
+        "--disable-session-crashed-bubble",
+        "--disable-dev-shm-usage",
+        "--app=http://127.0.0.1:3000/",
+        "--start-fullscreen",
+        "--window-position=0,0",
+        "--window-size=1024,768"
+      ],
+      "presentation_mode": "app",
+      "presentation_mode_fallback_from": "kiosk",
+      "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      }
+    },
+    "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+    "guest_artifact_repository": "xlangai/v2-image",
+    "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+    "guest_artifact_tag": "v2026.06.24",
+    "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "guest_volume_size_gb": 50,
+    "host_port_allocator": "socket-bind-plus-docker-port-map",
+    "provider": "docker-local",
+    "python_version": "3.12.14",
+    "release": "osworld-v2-2026.06.24",
+    "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+    "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+    "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+    "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+    "screen_size": [
+      1024,
+      768
+    ],
+    "task_bundle_sha256": "f603d8a7675793bf2773f6ac67d3abe7d9080e4b616daa56e8464af6efb5c6df",
+    "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+    "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+    "upstream_tag": "v2026.06.24"
+  },
+  "contact_sheet_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/contact-sheet.png",
+  "fixture_path": "tests/integration/fixtures/osworld_golden_trajectory_seed7.json",
+  "real_reward_timing_subset": [
+    {
+      "name": "correct-fields-without-submit",
+      "passed": true,
+      "reward": 0.0,
+      "step": 111,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "name": "complete-golden-trajectory",
+      "passed": true,
+      "reward": 1.0,
+      "step": 112,
+      "terminated": true,
+      "truncated": false
+    }
+  ],
+  "schema_version": 1,
+  "seed": 7,
+  "summary": {
+    "first_positive_reward_step": 112,
+    "passed": true,
+    "positive_reward_count": 1,
+    "provider_closed": true,
+    "terminal_step": 112
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "trace": [
+    {
+      "action": {
+        "action_type": 0,
+        "key": 0,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-001.png",
+      "step": 1,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-002.png",
+      "step": 2,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 42,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-003.png",
+      "step": 3,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 27,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-004.png",
+      "step": 4,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-005.png",
+      "step": 5,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 23,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-006.png",
+      "step": 6,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-007.png",
+      "step": 7,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 29,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-008.png",
+      "step": 8,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 14,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-009.png",
+      "step": 9,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 94,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-010.png",
+      "step": 10,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 37,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-011.png",
+      "step": 11,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-012.png",
+      "step": 12,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 34,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-013.png",
+      "step": 13,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 94,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-014.png",
+      "step": 14,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 47,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-015.png",
+      "step": 15,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-016.png",
+      "step": 16,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 16,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-017.png",
+      "step": 17,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-018.png",
+      "step": 18,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 28,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-019.png",
+      "step": 19,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 29,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-020.png",
+      "step": 20,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-021.png",
+      "step": 21,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 12,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-022.png",
+      "step": 22,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 28,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-023.png",
+      "step": 23,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 94,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-024.png",
+      "step": 24,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 42,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-025.png",
+      "step": 25,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 27,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-026.png",
+      "step": 26,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-027.png",
+      "step": 27,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 30,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-028.png",
+      "step": 28,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 25,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-029.png",
+      "step": 29,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-030.png",
+      "step": 30,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-031.png",
+      "step": 31,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 23,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-032.png",
+      "step": 32,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 11,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-033.png",
+      "step": 33,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-034.png",
+      "step": 34,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-035.png",
+      "step": 35,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 27,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-036.png",
+      "step": 36,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 13,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-037.png",
+      "step": 37,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-038.png",
+      "step": 38,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 23,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-039.png",
+      "step": 39,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 16,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-040.png",
+      "step": 40,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 83,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-041.png",
+      "step": 41,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 16,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-042.png",
+      "step": 42,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 27,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-043.png",
+      "step": 43,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-044.png",
+      "step": 44,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 23,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-045.png",
+      "step": 45,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-046.png",
+      "step": 46,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 29,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-047.png",
+      "step": 47,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 14,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-048.png",
+      "step": 48,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-049.png",
+      "step": 49,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 11,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-050.png",
+      "step": 50,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-051.png",
+      "step": 51,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 34,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-052.png",
+      "step": 52,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-053.png",
+      "step": 53,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 21,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-054.png",
+      "step": 54,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-055.png",
+      "step": 55,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 16,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-056.png",
+      "step": 56,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-057.png",
+      "step": 57,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 28,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-058.png",
+      "step": 58,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 29,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-059.png",
+      "step": 59,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 18,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-060.png",
+      "step": 60,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 12,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-061.png",
+      "step": 61,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 28,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-062.png",
+      "step": 62,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-063.png",
+      "step": 63,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 16,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-064.png",
+      "step": 64,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 27,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-065.png",
+      "step": 65,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 24,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-066.png",
+      "step": 66,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 30,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-067.png",
+      "step": 67,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 25,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-068.png",
+      "step": 68,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 75,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-069.png",
+      "step": 69,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 14,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-070.png",
+      "step": 70,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 33,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-071.png",
+      "step": 71,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 10,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-072.png",
+      "step": 72,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 22,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-073.png",
+      "step": 73,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 25,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-074.png",
+      "step": 74,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 21,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-075.png",
+      "step": 75,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 14,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-076.png",
+      "step": 76,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-077.png",
+      "step": 77,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 72,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-078.png",
+      "step": 78,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 1,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-079.png",
+      "step": 79,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-080.png",
+      "step": 80,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 5,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-081.png",
+      "step": 81,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 5,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-082.png",
+      "step": 82,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 5,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-083.png",
+      "step": 83,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-084.png",
+      "step": 84,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 4,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-085.png",
+      "step": 85,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 0,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-086.png",
+      "step": 86,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 4,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-087.png",
+      "step": 87,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-088.png",
+      "step": 88,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 0,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-089.png",
+      "step": 89,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 7,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-090.png",
+      "step": 90,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 9,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-091.png",
+      "step": 91,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 1,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-092.png",
+      "step": 92,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-093.png",
+      "step": 93,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 55,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-094.png",
+      "step": 94,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 36,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-095.png",
+      "step": 95,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 59,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-096.png",
+      "step": 96,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 74,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-097.png",
+      "step": 97,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 2,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-098.png",
+      "step": 98,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 45,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-099.png",
+      "step": 99,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 38,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-100.png",
+      "step": 100,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 1,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-101.png",
+      "step": 101,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 43,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-102.png",
+      "step": 102,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 1,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-103.png",
+      "step": 103,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 40,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-104.png",
+      "step": 104,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 2,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-105.png",
+      "step": 105,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-106.png",
+      "step": 106,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 101,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-107.png",
+      "step": 107,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-108.png",
+      "step": 108,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 98,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-109.png",
+      "step": 109,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-110.png",
+      "step": 110,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 95,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [
+          "company_name",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "expedited_onboarding",
+          "payment_terms",
+          "tax_id"
+        ],
+        "score": 0.0,
+        "submitted": false,
+        "success": false,
+        "task_id_matches": false
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 0.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-111.png",
+      "step": 111,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "action": {
+        "action_type": 2,
+        "key": 96,
+        "x": 0,
+        "y": 0
+      },
+      "evaluator": {
+        "mismatched_fields": [],
+        "score": 1.0,
+        "submitted": true,
+        "success": true,
+        "task_id_matches": true
+      },
+      "info": {
+        "task_id": "vf-6bed55ed612d3c5a"
+      },
+      "reward": 1.0,
+      "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/real-golden/frames/step-112.png",
+      "step": 112,
+      "terminated": true,
+      "truncated": false
+    }
+  ],
+  "validator": "real-golden-episode"
+}

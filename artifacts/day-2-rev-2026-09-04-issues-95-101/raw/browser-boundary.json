@@ -1,0 +1,397 @@
+{
+  "boundary": {
+    "evaluation": {
+      "derived_environment_reward": 0.0,
+      "mismatched_fields": [
+        "company_name",
+        "contact_email",
+        "contact_phone",
+        "country",
+        "payment_terms",
+        "tax_id"
+      ],
+      "score": 0.14285714285714285,
+      "submitted": true,
+      "success": false,
+      "task_id_matches": true
+    },
+    "submission": {
+      "final": true,
+      "seed": 7,
+      "submitted_at_step": 1,
+      "task_id": "vf-6bed55ed612d3c5a",
+      "values": {
+        "company_name": "",
+        "contact_email": "",
+        "contact_phone": "",
+        "country": "",
+        "expedited_onboarding": false,
+        "payment_terms": "",
+        "tax_id": ""
+      }
+    },
+    "submission_count": 1,
+    "submit_response_body": {
+      "submission_number": 1
+    },
+    "submit_response_status": 200,
+    "visible_status": "Complete all required fields before submitting."
+  },
+  "browser": {
+    "args": [
+      "--disable-font-subpixel-positioning",
+      "--disable-gpu",
+      "--disable-lcd-text",
+      "--disable-skia-runtime-opts",
+      "--force-color-profile=srgb",
+      "--force-device-scale-factor=1",
+      "--hide-scrollbars"
+    ],
+    "device_scale_factor": 1.0,
+    "engine": "chromium",
+    "renderer_contract": {
+      "flags": [
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1"
+      ],
+      "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+      "version": "pixelgym-chromium-renderer-v1"
+    },
+    "version": "151.0.7922.34",
+    "viewport": [
+      1024,
+      768
+    ]
+  },
+  "checks": [
+    {
+      "name": "submit_response_ok",
+      "passed": true
+    },
+    {
+      "name": "submit_response_body_exact",
+      "passed": true
+    },
+    {
+      "name": "visible_validation_state_settled",
+      "passed": true
+    },
+    {
+      "name": "one_privileged_submission_recorded",
+      "passed": true
+    },
+    {
+      "name": "privileged_submission_exact",
+      "passed": true
+    },
+    {
+      "name": "evaluator_observed_submission",
+      "passed": true
+    },
+    {
+      "name": "evaluator_matched_task_identity",
+      "passed": true
+    },
+    {
+      "name": "evaluator_rejected_incomplete_submission",
+      "passed": true
+    },
+    {
+      "name": "derived_environment_reward_zero",
+      "passed": true
+    },
+    {
+      "name": "evaluator_mismatches_exact",
+      "passed": true
+    }
+  ],
+  "guest_navigation_surface": {
+    "backend_metadata": {
+      "browser_launch": {
+        "effective_argv": [
+          "google-chrome",
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1",
+          "--user-data-dir=/tmp/pixelgym-chrome-profile",
+          "--no-first-run",
+          "--disable-default-apps",
+          "--disable-session-crashed-bubble",
+          "--disable-dev-shm-usage",
+          "--app=http://127.0.0.1:3000/",
+          "--start-fullscreen",
+          "--window-position=0,0",
+          "--window-size=1024,768"
+        ],
+        "presentation_mode": "app",
+        "presentation_mode_fallback_from": "kiosk",
+        "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+        "renderer_contract": {
+          "flags": [
+            "--disable-font-subpixel-positioning",
+            "--disable-gpu",
+            "--disable-lcd-text",
+            "--disable-skia-runtime-opts",
+            "--force-color-profile=srgb",
+            "--force-device-scale-factor=1"
+          ],
+          "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+          "version": "pixelgym-chromium-renderer-v1"
+        }
+      },
+      "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+      "guest_artifact_repository": "xlangai/v2-image",
+      "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+      "guest_artifact_tag": "v2026.06.24",
+      "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "guest_volume_size_gb": 50,
+      "host_port_allocator": "socket-bind-plus-docker-port-map",
+      "provider": "docker-local",
+      "python_version": "3.12.14",
+      "release": "osworld-v2-2026.06.24",
+      "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+      "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+      "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+      "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+      "screen_size": [
+        1024,
+        768
+      ],
+      "task_bundle_sha256": "f603d8a7675793bf2773f6ac67d3abe7d9080e4b616daa56e8464af6efb5c6df",
+      "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+      "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+      "upstream_tag": "v2026.06.24"
+    },
+    "browser_launch": {
+      "effective_argv": [
+        "google-chrome",
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--user-data-dir=/tmp/pixelgym-chrome-profile",
+        "--no-first-run",
+        "--disable-default-apps",
+        "--disable-session-crashed-bubble",
+        "--disable-dev-shm-usage",
+        "--app=http://127.0.0.1:3000/",
+        "--start-fullscreen",
+        "--window-position=0,0",
+        "--window-size=1024,768"
+      ],
+      "presentation_mode": "app",
+      "presentation_mode_fallback_from": "kiosk",
+      "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      }
+    },
+    "captured_at": "2026-09-04T09:06:42.741107+00:00",
+    "checks": [
+      {
+        "name": "active_window_fills_observation",
+        "passed": true
+      },
+      {
+        "name": "active_window_identified",
+        "passed": true
+      },
+      {
+        "name": "active_window_is_chromium",
+        "passed": true
+      },
+      {
+        "name": "active_window_uses_protected_presentation",
+        "passed": true
+      },
+      {
+        "name": "observation_shape_exact",
+        "passed": true
+      },
+      {
+        "name": "provider_closed",
+        "passed": true
+      },
+      {
+        "name": "renderer_contract_matches_guest_launch",
+        "passed": true
+      },
+      {
+        "name": "task_app_reaches_top_edge",
+        "passed": true
+      }
+    ],
+    "navigation_surface": {
+      "active_window": {
+        "class": "127.0.0.1.Google-chrome",
+        "desktop": "0",
+        "height": 768,
+        "id": "0x02800004",
+        "title": "user-virtual-machine Vendor Onboarding",
+        "width": 1024,
+        "x": 0,
+        "y": 0
+      },
+      "active_window_fullscreen": true,
+      "active_window_id": "0x2800004",
+      "active_window_properties": "_NET_WM_STATE(ATOM) = _NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT, _NET_WM_STATE_FULLSCREEN, _NET_WM_STATE_FOCUSED\nWM_CLASS(STRING) = \"127.0.0.1\", \"Google-chrome\"\n_NET_WM_NAME(UTF8_STRING) = \"Vendor Onboarding\"",
+      "expected_bounds": {
+        "height": 768,
+        "width": 1024,
+        "x": 0,
+        "y": 0
+      },
+      "observation_dtype": "uint8",
+      "observation_shape": [
+        768,
+        1024,
+        3
+      ],
+      "top_edge_anchors": [
+        {
+          "expected_rgb": [
+            238,
+            241,
+            246
+          ],
+          "matched": true,
+          "observed_rgb": [
+            238,
+            241,
+            246
+          ],
+          "xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "expected_rgb": [
+            199,
+            205,
+            214
+          ],
+          "matched": true,
+          "observed_rgb": [
+            199,
+            205,
+            214
+          ],
+          "xy": [
+            511,
+            0
+          ]
+        },
+        {
+          "expected_rgb": [
+            255,
+            255,
+            255
+          ],
+          "matched": true,
+          "observed_rgb": [
+            255,
+            255,
+            255
+          ],
+          "xy": [
+            512,
+            0
+          ]
+        },
+        {
+          "expected_rgb": [
+            255,
+            255,
+            255
+          ],
+          "matched": true,
+          "observed_rgb": [
+            255,
+            255,
+            255
+          ],
+          "xy": [
+            1023,
+            0
+          ]
+        }
+      ],
+      "windows": [
+        {
+          "class": "gjs.Gjs",
+          "desktop": "-1",
+          "height": 768,
+          "id": "0x00e00003",
+          "title": "user-virtual-machine @!0,0;BDHF",
+          "width": 1024,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "class": "127.0.0.1.Google-chrome",
+          "desktop": "0",
+          "height": 768,
+          "id": "0x02800004",
+          "title": "user-virtual-machine Vendor Onboarding",
+          "width": 1024,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    "schema_version": "pixelgym-guest-browser-boundary-v1",
+    "screenshot_path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/guest-app.png",
+    "seed": 7,
+    "source_sha256": {
+      "pixelgym/backends/osworld.py": "c473cef3bad225915c861e22b8201acec2084d2e7b90a31267cf1de896390790",
+      "pixelgym/tasks/vendor_form/browser_contract.py": "4a0d4a6cd9282b13c7d554a68b822831fd8efd6c43eef834f5212f952fe4b58b",
+      "pixelgym/tasks/vendor_form/osworld_task.py": "4a96307beda156299b65ca595cf2f3a8af15989570ab7b595f4b011c15fc5032",
+      "pixelgym/validation/browser_boundary.py": "4f285062222cfef085bbaae63d8a6ea0fe9984754664cd82e1e4145c1aae1326"
+    },
+    "summary": {
+      "check_count": 8,
+      "failed_count": 0,
+      "passed": true,
+      "passed_count": 8
+    },
+    "task_id": "vf-6bed55ed612d3c5a",
+    "validator": "vendor-form-guest-navigation-boundary"
+  },
+  "schema_version": "pixelgym-browser-boundary-v2",
+  "seed": 7,
+  "source_sha256": {
+    "pixelgym/env.py": "36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+    "pixelgym/evaluator.py": "35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+    "pixelgym/tasks/vendor_form/app/server.py": "507ee4fd71e247d07b96f6268da1299f5268ad3cebd2a1c211bfa2f090a8e9e5",
+    "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "4a0d4a6cd9282b13c7d554a68b822831fd8efd6c43eef834f5212f952fe4b58b",
+    "pixelgym/validation/browser_boundary.py": "4f285062222cfef085bbaae63d8a6ea0fe9984754664cd82e1e4145c1aae1326"
+  },
+  "summary": {
+    "check_count": 10,
+    "failed_count": 0,
+    "passed": true,
+    "passed_count": 10
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "validator": "vendor-form-browser-boundary"
+}
