@@ -8,6 +8,8 @@ import types
 import zipfile
 from pathlib import Path
 
+import pytest
+
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.osworld_task import build_guest_bundle, create_osworld_task
 
@@ -159,8 +161,6 @@ def test_privileged_state_identity_mismatch_is_rejected(monkeypatch, tmp_path):
         controller=_EvaluationController({"task": stale, "submissions": []})
     )
 
-    import pytest
-
     with pytest.raises(RuntimeError, match="does not match"):
         task.read_privileged_state(env)
 
@@ -201,10 +201,17 @@ class _SetupController:
         return True
 
 
-def test_custom_task_setup_uploads_waits_resets_and_opens_browser(monkeypatch, tmp_path):
+def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch, tmp_path):
     _install_fake_osworld(monkeypatch)
     task, record = create_osworld_task(7, cache_dir=tmp_path)
-    controller = _SetupController(tmp_path, {"task_id": record["task_id"], "seed": record["seed"]})
+    controller = _SetupController(
+        tmp_path,
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "requires_reload": True,
+        },
+    )
 
     task.setup(controller)
 
@@ -224,9 +231,25 @@ def test_custom_task_setup_uploads_waits_resets_and_opens_browser(monkeypatch, t
 def test_custom_task_setup_rejects_reset_identity_mismatch(monkeypatch, tmp_path):
     _install_fake_osworld(monkeypatch)
     task, _record = create_osworld_task(7, cache_dir=tmp_path)
-    controller = _SetupController(tmp_path, {"task_id": "vf-stale", "seed": 7})
-
-    import pytest
+    controller = _SetupController(
+        tmp_path,
+        {"task_id": "vf-stale", "seed": 7, "requires_reload": True},
+    )
 
     with pytest.raises(RuntimeError, match="identity mismatch"):
+        task.setup(controller)
+
+
+@pytest.mark.parametrize("requires_reload", [None, False])
+def test_custom_task_setup_rejects_missing_or_false_reload_contract(
+    monkeypatch, tmp_path, requires_reload
+):
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    reset_result = {"task_id": record["task_id"], "seed": record["seed"]}
+    if requires_reload is not None:
+        reset_result["requires_reload"] = requires_reload
+    controller = _SetupController(tmp_path, reset_result)
+
+    with pytest.raises(RuntimeError, match="did not require a page reload"):
         task.setup(controller)
