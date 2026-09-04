@@ -85,3 +85,34 @@ def test_incomplete_browser_submit_reports_when_attempt_was_not_recorded() -> No
         state = _json_request(f"{base_url}/api/state")
 
     assert state["submissions"] == []
+
+
+def test_reset_requires_reload_to_render_the_new_task() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        first_reset = _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True)
+        try:
+            page = browser.new_page(viewport={"width": 1024, "height": 768})
+            page.goto(base_url)
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+            assert page.locator("#task_id").input_value() == first_reset["task_id"]
+
+            second_reset = _json_request(f"{base_url}/api/reset", payload={"seed": 8})
+            second_task = _json_request(f"{base_url}/api/task")
+            assert second_reset == {
+                "task_id": second_task["task_id"],
+                "seed": 8,
+                "requires_reload": True,
+            }
+
+            page.reload()
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+
+            assert page.locator("#task_id").input_value() == second_task["task_id"]
+            for field_name, value in second_task["fields"].items():
+                expected = "Yes" if value is True else "No" if value is False else value
+                playwright_api.expect(page.locator(f"#rc-{field_name}")).to_have_text(expected)
+        finally:
+            browser.close()
