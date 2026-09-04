@@ -793,15 +793,37 @@ class ControlStore:
                 raise KeyError(candidate_id)
             return self._candidate_record(row)
 
-    def list_candidates(self) -> list[CandidateRecord]:
+    def list_candidates(
+        self, *, limit: int | None = None, offset: int = 0
+    ) -> list[CandidateRecord]:
+        if limit is not None and limit <= 0:
+            raise ValueError("candidate limit must be positive")
+        if offset < 0:
+            raise ValueError("candidate offset must be non-negative")
+        query = "SELECT * FROM candidates ORDER BY rowid DESC"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            ids = [
-                row[0]
-                for row in self.connection.execute(
-                    "SELECT candidate_id FROM candidates ORDER BY rowid DESC"
-                )
-            ]
-            return [self.get_candidate(candidate_id) for candidate_id in ids]
+            rows = list(self.connection.execute(query, parameters))
+        # Policy manifests are validated lazily for every returned row. Keeping
+        # validation outside the connection lock prevents schema work from
+        # blocking writers while still detecting out-of-band row corruption.
+        return [self._candidate_record(row) for row in rows]
+
+    def list_candidate_providers(self) -> list[str]:
+        with self._lock:
+            rows = self.connection.execute(
+                """SELECT DISTINCT json_extract(policy_json, '$.provider') AS provider
+                FROM candidates
+                WHERE json_type(policy_json, '$.provider') = 'text'
+                ORDER BY provider"""
+            ).fetchall()
+        return [row["provider"] for row in rows]
 
     def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
         try:
@@ -972,6 +994,57 @@ class ControlStore:
                 raise KeyError(deployment_id)
             return DeploymentRecord(**dict(row))
 
+    def _previous_target_row(
+        self, connection: sqlite3.Connection, current: sqlite3.Row | DeploymentRecord
+    ) -> sqlite3.Row:
+        """Resolve the last known-good deploy outside the active rollback chain.
+
+        A deploy starts a new chain. Each later rollback abandons its source and
+        restores another candidate, so every candidate from that deploy through the
+        current event is ineligible for the next rollback. Deriving the chain from
+        immutable rows also gives pre-lineage databases the new semantics without
+        rewriting their stored events.
+        """
+        current_generation = (
+            current.generation
+            if isinstance(current, DeploymentRecord)
+            else int(current["generation"])
+        )
+        current_deployment_id = (
+            current.deployment_id
+            if isinstance(current, DeploymentRecord)
+            else str(current["deployment_id"])
+        )
+        rows: list[sqlite3.Row] = list(
+            connection.execute(
+                "SELECT * FROM deployments WHERE generation <= ? "
+                "ORDER BY generation DESC",
+                (current_generation,),
+            )
+        )
+        if not rows or rows[0]["deployment_id"] != current_deployment_id:
+            raise TransitionError("active deployment event does not exist")
+
+        abandoned_candidates: set[str] = set()
+        chain_start = None
+        for index, row in enumerate(rows):
+            abandoned_candidates.add(str(row["candidate_id"]))
+            if row["action"] == "deploy":
+                chain_start = index
+                break
+        if chain_start is None:
+            raise TransitionError("rollback history has no explicit deploy origin")
+
+        for row in rows[chain_start + 1 :]:
+            if (
+                row["action"] == "deploy"
+                and row["candidate_id"] not in abandoned_candidates
+            ):
+                return row
+        raise TransitionError(
+            "there is no eligible known-good deployment to roll back to"
+        )
+
     def activate(
         self,
         candidate_id: str,
@@ -1003,6 +1076,7 @@ class ControlStore:
             self._validate_candidate_approval_evidence(candidate, approval)
             if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
                 raise ConflictError("active deployment changed concurrently")
+            rollback_lineage: dict[str, str] = {}
             if action == "rollback":
                 if expected_deployment_id is None:
                     raise TransitionError("there is no active deployment to roll back")
@@ -1012,14 +1086,15 @@ class ControlStore:
                 ).fetchone()
                 if current is None:
                     raise TransitionError("active deployment event does not exist")
-                target = connection.execute(
-                    "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
-                    (current["generation"],),
-                ).fetchone()
-                if target is None:
-                    raise TransitionError("there is no previous deployment to roll back to")
+                target = self._previous_target_row(connection, current)
                 if target["candidate_id"] != candidate_id:
-                    raise TransitionError("rollback target is not the previous deployment event")
+                    raise TransitionError(
+                        "rollback target is not the eligible known-good deployment"
+                    )
+                rollback_lineage = {
+                    "abandoned_deployment_id": str(current["deployment_id"]),
+                    "restored_deployment_id": str(target["deployment_id"]),
+                }
             generation = expected_generation + 1
             material = {
                 "candidate_id": candidate_id,
@@ -1070,33 +1145,41 @@ class ControlStore:
                 f"deployment.{action}",
                 actor,
                 deployment_id,
-                {**material, "reason": reason.strip()},
+                {**material, **rollback_lineage, "reason": reason.strip()},
             )
         return self.get_deployment(deployment_id)
 
     def previous_target(self, current: DeploymentRecord) -> DeploymentRecord:
-        """Return the immutable event immediately preceding the active event.
-
-        Rollback deliberately follows the ledger's generation order, rather than a
-        mutable-looking per-row link.  A rollback is itself a new event, so this lets
-        repeated rollbacks traverse the recorded activation sequence without losing
-        the event that was just restored.
-        """
+        """Return the latest explicit deploy outside the active rollback chain."""
         with self._lock:
-            row = self.connection.execute(
-                "SELECT * FROM deployments WHERE generation < ? ORDER BY generation DESC LIMIT 1",
-                (current.generation,),
-            ).fetchone()
-            if row is None:
-                raise TransitionError("there is no previous deployment to roll back to")
+            row = self._previous_target_row(self.connection, current)
             return DeploymentRecord(**dict(row))
 
-    def audit_events(self) -> list[dict[str, Any]]:
+    def audit_events(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        newest_first: bool = False,
+    ) -> list[dict[str, Any]]:
+        if limit is not None and limit <= 0:
+            raise ValueError("audit event limit must be positive")
+        if offset < 0:
+            raise ValueError("audit event offset must be non-negative")
+        direction = "DESC" if newest_first else "ASC"
+        query = f"SELECT * FROM audit_events ORDER BY rowid {direction}"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            return [
-                {**dict(row), "details": json.loads(row["details_json"])}
-                for row in self.connection.execute("SELECT * FROM audit_events ORDER BY rowid")
-            ]
+            rows = list(self.connection.execute(query, parameters))
+        return [
+            {**dict(row), "details": json.loads(row["details_json"])} for row in rows
+        ]
 
     def approval_events(self) -> list[dict[str, Any]]:
         with self._lock:

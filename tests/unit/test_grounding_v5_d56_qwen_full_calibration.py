@@ -82,7 +82,11 @@ def test_plan_binds_all_tasks_latest_spend_and_bounded_429_retry(
     # The budget is exactly the approved value; no prior run contributes to it.
     assert plan["caps"]["maximum_run_spend_usd"] == "1.50"
     assert "no prior run's spend is carried in" in plan["caps"]["spend_lineage"]
-    assert not [key for key in plan["caps"] if "prior" in key or "aggregate" in key]
+    assert plan["caps"]["remaining_run_spend_usd"] == "1.50"
+    assert plan["caps"]["prior_campaign_spend"]["known_spend_usd"] == "2.040917557"
+    assert plan["caps"]["prior_campaign_spend"]["unknown_reservation_usd"] == (
+        "unknown"
+    )
     price = plan["policy"]["price_record"]
     assert price["observed_at_utc"] == "2026-08-28T13:34:08Z"
     assert price["endpoint_context_length"] == 131_072

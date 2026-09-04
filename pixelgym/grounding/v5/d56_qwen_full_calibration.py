@@ -20,6 +20,13 @@ from pixelgym.grounding.v5.d56_calibration import (
     _git,
     _validated_smoke_evidence,
 )
+from pixelgym.grounding.v5.d56_spend import (
+    campaign_spend_fields,
+    combine_spend_disclosures,
+    ledger_spend_disclosure,
+    legacy_campaign_spend_disclosure,
+    phase_spend_fields,
+)
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -33,8 +40,8 @@ from pixelgym.grounding.v5.panel_policy import (
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
 from pixelgym.grounding.v5.runner import V5Runner
 
-PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-plan-v1"
-RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-result-v1"
+PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-plan-v2"
+RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-result-v2"
 
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T13:34:08Z"
 
@@ -63,6 +70,7 @@ def build_plan(
     qwen_predecessor = _validated_frozen_bcd_evidence(
         repository_root, frozen_bcd_output_directory
     )
+    prior_campaign_spend = legacy_campaign_spend_disclosure(qwen_predecessor)
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     config = QWEN_STATEFUL_RETRY_SUCCESSOR
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
@@ -158,6 +166,8 @@ def build_plan(
         "caps": {
             **CallCaps(action_cap, attempt_cap, 0, attempt_cap).to_dict(),
             "maximum_run_spend_usd": str(maximum_spend_usd),
+            "prior_campaign_spend": prior_campaign_spend,
+            "remaining_run_spend_usd": str(maximum_spend_usd),
             "spend_lineage": (
                 "per-run: this run's ledger starts at zero and is bounded only by the "
                 "approved maximum_run_spend_usd; no prior run's spend is carried in"
@@ -287,6 +297,11 @@ def execute_calibration(
         integrity = journal.integrity_report()
         call_counts = journal.call_counts()
         journal.close()
+        phase_spend = ledger_spend_disclosure(ledger)
+        prior_campaign_spend = plan["caps"]["prior_campaign_spend"]
+        campaign_spend = combine_spend_disclosures(
+            (prior_campaign_spend, phase_spend)
+        )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "purpose": plan["purpose"],
@@ -296,14 +311,21 @@ def execute_calibration(
             "provider_wire_requests": ledger.wire_requests_sent,
             "model_attempt_reservations": call_counts[0],
             "provider_control_requests": call_counts[1],
-            "run_spend_usd": str(ledger.spent_usd),
-            "budget_accounted_run_spend_usd": str(ledger.budget_accounted_spend_usd),
-            "unknown_charge_reservation_usd": str(ledger.unknown_reservation_usd),
+            **phase_spend_fields(phase_spend),
+            "prior_campaign_spend": prior_campaign_spend,
+            **campaign_spend_fields(campaign_spend),
+            "run_spend_usd": phase_spend["known_spend_usd"],
+            "budget_accounted_run_spend_usd": phase_spend[
+                "budget_accounted_spend_usd"
+            ],
+            "unknown_charge_reservation_usd": phase_spend[
+                "unknown_reservation_usd"
+            ],
             "unknown_charge_outcomes": ledger.unknown_charge_outcomes,
             "run_spend_ledger_blocked": ledger.blocked,
             "run_continuation": breaker.to_dict(),
             "remaining_run_spend_usd": str(
-                maximum_spend_usd - ledger.budget_accounted_spend_usd
+                maximum_spend_usd - Decimal(phase_spend["budget_accounted_spend_usd"])
             ),
             "maximum_run_spend_usd": str(maximum_spend_usd),
             "assigned_policy_task_pairs": EXPECTED_TASK_COUNT,

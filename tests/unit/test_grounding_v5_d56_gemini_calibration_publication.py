@@ -3,6 +3,8 @@ from __future__ import annotations
 from decimal import Decimal
 
 from scripts.generate_grounding_v5_d56_gemini_calibration_publication import (
+    DERIVATIVE_SCHEMA_VERSION,
+    _format_cost,
     _known_cost,
     _latency_summary,
     render_report,
@@ -44,6 +46,7 @@ def test_latency_summary_discloses_missing_unknown_outcome() -> None:
 
 def test_report_is_rendered_only_from_publishable_derivative() -> None:
     derivative = {
+        "schema_version": DERIVATIVE_SCHEMA_VERSION,
         "coverage": {
             "assigned_tasks": 1,
             "attempted_tasks": 1,
@@ -88,6 +91,18 @@ def test_report_is_rendered_only_from_publishable_derivative() -> None:
             },
         },
         "cost": {
+            "phase_spend": {
+                "known_spend_usd": "0.100000000",
+                "unknown_reservation_usd": "unknown",
+                "in_flight_reservation_usd": "unknown",
+                "budget_accounted_spend_usd": "unknown",
+            },
+            "campaign_spend": {
+                "known_spend_usd": "0.200000000",
+                "unknown_reservation_usd": "unknown",
+                "in_flight_reservation_usd": "unknown",
+                "budget_accounted_spend_usd": "unknown",
+            },
             "known_calibration_incremental_spend_usd": "0.100000000",
             "known_actual_aggregate_spend_usd": "0.200000000",
             "recorded_remaining_aggregate_spend_usd": "9.800000000",
@@ -145,7 +160,12 @@ def test_report_is_rendered_only_from_publishable_derivative() -> None:
     assert "| `review_and_commit` | 1 | 1 | 0 | 0 | 1 | 0 |" in report
     assert "| `infrastructure_failure` | 1 |" in report
     assert "$0.100000000" in report
+    assert "| Phase unknown reservation | unknown |" in report
+    assert "| Campaign budget-accounted spend | unknown |" in report
     assert "10.0 / 12.0" in report
     assert "sha256:journal" in report
     assert Decimal(derivative["cost"]["known_actual_aggregate_spend_usd"]) == Decimal("0.200000000")
 
+
+def test_unknown_spend_renders_without_decimal_coercion() -> None:
+    assert _format_cost("unknown") == "unknown"

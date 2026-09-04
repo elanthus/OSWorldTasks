@@ -129,7 +129,11 @@ def test_plan_binds_all_fifty_tasks_successful_smoke_and_per_run_cap(
     # The budget is exactly the approved value; no prior run contributes to it.
     assert plan["caps"]["maximum_run_spend_usd"] == "3.00"
     assert "no prior run's spend is carried in" in plan["caps"]["spend_lineage"]
-    assert not [key for key in plan["caps"] if "prior" in key or "aggregate" in key]
+    assert plan["caps"]["remaining_run_spend_usd"] == "3.00"
+    assert plan["caps"]["prior_campaign_spend"]["known_spend_usd"] == "2.489953207"
+    assert plan["caps"]["prior_campaign_spend"]["unknown_reservation_usd"] == (
+        "unknown"
+    )
     assert plan["caps"]["per_request_theoretical_maximum_usd"] == "0.099532800"
     assert plan["caps"]["uncapped_run_theoretical_maximum_usd"] == "569.725747200"
     assert "v3 policy" in plan["purpose"]
