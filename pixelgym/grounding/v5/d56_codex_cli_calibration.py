@@ -48,7 +48,7 @@ from pixelgym.grounding.v5.contracts import CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_calibration import (
     CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
-    _calibration_manifest,
+    _current_calibration_manifest,
 )
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
@@ -861,7 +861,7 @@ def _raw_evidence_policy() -> dict[str, Any]:
 
 
 def _task_order(repository_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     records = [
         {
             "ordinal": ordinal,
