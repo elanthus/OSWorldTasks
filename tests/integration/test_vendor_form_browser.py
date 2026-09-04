@@ -9,11 +9,17 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
+from io import BytesIO
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
-from pixelgym.tasks.vendor_form.browser_contract import READY_SELECTOR, local_vendor_form_server
+from pixelgym.tasks.vendor_form.browser_contract import (
+    BROWSER_ARGS,
+    READY_SELECTOR,
+    local_vendor_form_server,
+)
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 from pixelgym.validation.browser_boundary import (
     browser_boundary_evidence_passed,
@@ -24,6 +30,8 @@ from pixelgym.validation.browser_boundary import (
 _INCOMPLETE_RECORDING_FAILED_MESSAGE = (
     f"{INCOMPLETE_SUBMISSION_MESSAGE} Submission attempt was not recorded."
 )
+_READY_ERROR_SELECTOR = "body[data-pixelgym-ready-error]"
+_DETERMINISTIC_FONT = '"PixelGym Sans"'
 
 pytestmark = [
     pytest.mark.browser_integration,
@@ -44,6 +52,171 @@ def _json_request(url: str, *, payload: dict | None = None) -> dict:
     )
     with urllib.request.urlopen(request, timeout=5.0) as response:
         return json.load(response)
+
+
+def _assert_label_text_pixels(
+    image_bytes: bytes,
+    bounding_box: dict[str, float],
+    *,
+    background: tuple[int, int, int],
+) -> None:
+    with Image.open(BytesIO(image_bytes)) as image:
+        rgb = image.convert("RGB")
+        left = int(bounding_box["x"])
+        top = int(bounding_box["y"])
+        right = int(bounding_box["x"] + bounding_box["width"])
+        bottom = int(bounding_box["y"] + bounding_box["height"])
+        crop_bytes = rgb.crop((left, top, right, bottom)).tobytes()
+        background_bytes = bytes(background)
+        assert (
+            sum(
+                crop_bytes[offset : offset + 3] != background_bytes
+                for offset in range(0, len(crop_bytes), 3)
+            )
+            > 20
+        )
+
+
+def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            context = browser.new_context(viewport={"width": 1024, "height": 768})
+            page = context.new_page()
+            held_font_routes = []
+            page_ready_posts = []
+            page.on(
+                "request",
+                lambda request: page_ready_posts.append(request)
+                if request.method == "POST" and request.url.endswith("/api/page-ready")
+                else None,
+            )
+            page.add_init_script(
+                """
+                window.__pixelgymReadySetCount = 0;
+                document.addEventListener("DOMContentLoaded", () => {
+                  window.__pixelgymReadyObserver = new MutationObserver((records) => {
+                    for (const record of records) {
+                      if (record.target.dataset.pixelgymReady === "true") {
+                        window.__pixelgymReadySetCount += 1;
+                      }
+                    }
+                  });
+                  window.__pixelgymReadyObserver.observe(document.body, {
+                    attributes: true,
+                    attributeFilter: ["data-pixelgym-ready"],
+                  });
+                }, { once: true });
+                """
+            )
+            page.route("**/*.ttf", lambda route: held_font_routes.append(route))
+
+            page.goto(base_url, wait_until="domcontentloaded")
+            page.wait_for_function("() => document.fonts.status === 'loading'")
+
+            assert len(held_font_routes) == 2
+            assert page.locator(READY_SELECTOR).count() == 0
+            assert page.locator(_READY_ERROR_SELECTOR).count() == 0
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
+            assert page_ready_posts == []
+
+            for route in held_font_routes:
+                route.continue_()
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": True}
+            assert len(page_ready_posts) == 1
+            assert page.evaluate("() => window.__pixelgymReadySetCount") == 1
+            assert page.evaluate("() => getComputedStyle(document.body).fontFamily") == (
+                _DETERMINISTIC_FONT
+            )
+            assert page.evaluate(
+                "() => document.fonts.check('14px \\\"PixelGym Sans\\\"')"
+            )
+            assert page.evaluate(
+                "() => document.fonts.check('bold 14px \\\"PixelGym Sans\\\"')"
+            )
+
+            screenshot = page.screenshot(type="png", animations="disabled")
+            request_label_box = page.locator('label[for="rc-company_name"]').bounding_box()
+            form_label_box = page.locator('label[for="company_name"]').bounding_box()
+            assert request_label_box is not None
+            assert form_label_box is not None
+            _assert_label_text_pixels(screenshot, request_label_box, background=(238, 241, 246))
+            _assert_label_text_pixels(screenshot, form_label_box, background=(255, 255, 255))
+        finally:
+            browser.close()
+
+
+@pytest.mark.parametrize("failure_stage", ["task-fetch", "render", "font-load", "page-ready"])
+def test_initialization_failure_never_sets_ready(failure_stage: str) -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            page = browser.new_page(viewport={"width": 1024, "height": 768})
+            if failure_stage == "task-fetch":
+                page.route("**/api/task", lambda route: route.abort())
+            elif failure_stage == "render":
+                malformed_task = _json_request(f"{base_url}/api/task")
+                malformed_task["options"]["country"] = None
+                page.route(
+                    "**/api/task",
+                    lambda route: route.fulfill(
+                        status=200,
+                        content_type="application/json",
+                        body=json.dumps(malformed_task),
+                    ),
+                )
+            elif failure_stage == "font-load":
+                page.route("**/*.ttf", lambda route: route.abort())
+            else:
+                page.route("**/api/page-ready", lambda route: route.abort())
+
+            page.goto(base_url, wait_until="domcontentloaded")
+            page.locator(
+                f'body[data-pixelgym-ready-error="{failure_stage}"]'
+            ).wait_for(state="attached")
+
+            assert page.locator(READY_SELECTOR).count() == 0
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
+        finally:
+            browser.close()
+
+
+def test_reset_and_navigation_clear_stale_ready_marker() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            page = browser.new_page(viewport={"width": 1024, "height": 768})
+            page.goto(base_url)
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": True}
+
+            _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+            held_task_routes = []
+            page.route("**/api/task", lambda route: held_task_routes.append(route))
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_function("() => document.readyState === 'complete'")
+
+            assert len(held_task_routes) == 1
+            assert page.locator(READY_SELECTOR).count() == 0
+            assert page.locator(_READY_ERROR_SELECTOR).count() == 0
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
+
+            held_task_routes[0].continue_()
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": True}
+        finally:
+            browser.close()
 
 
 def test_incomplete_browser_submit_is_recorded_and_rejected_by_evaluator() -> None:
