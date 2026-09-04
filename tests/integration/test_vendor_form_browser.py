@@ -92,6 +92,18 @@ def _browser_rects(page: Any) -> tuple[dict[WidgetId, dict[str, float]], list[di
     return widgets, payment_options
 
 
+def _assert_payment_labels_do_not_clip(page: Any, values: list[str]) -> None:
+    widths = page.locator("#payment_terms label").evaluate_all(
+        "elements => elements.map(element => ({scroll: element.scrollWidth, client: element.clientWidth}))"
+    )
+    assert len(widths) == len(values)
+    for index, (value, width) in enumerate(zip(values, widths, strict=True)):
+        assert width["scroll"] <= width["client"], (
+            f"payment_terms[{index}]={value}: label content width {width['scroll']} "
+            f"exceeds client width {width['client']}"
+        )
+
+
 def _assert_rect_matches_browser(name: str, actual: dict[str, float], expected: Rect) -> None:
     for field in ("x", "y", "width", "height"):
         browser_value = actual[field]
@@ -150,6 +162,7 @@ def test_fake_layout_matches_browser_control_hit_regions() -> None:
 
             payment_values = task["options"]["payment_terms"]
             assert len(browser_options) == len(payment_values) == len(layout.payment_options)
+            _assert_payment_labels_do_not_clip(page, payment_values)
             for index, (value, browser_rect, layout_rect) in enumerate(
                 zip(payment_values, browser_options, layout.payment_options, strict=True)
             ):
@@ -181,13 +194,15 @@ def test_payment_option_geometry_is_stable_for_varying_label_lengths() -> None:
         browser, page, task = _load_form_page(base_url, playwright)
         try:
             layout = layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT)
+            varied_values = ["N", "Due on receipt", "Net 123456789"]
             page.evaluate(
                 """values => document.querySelectorAll("#payment_terms label").forEach(
                   (label, index) => label.lastChild.textContent = values[index]
                 )""",
-                ["N", "Due on receipt", "Net 123456789"],
+                varied_values,
             )
             _widgets, browser_options = _browser_rects(page)
+            _assert_payment_labels_do_not_clip(page, varied_values)
             for index, (browser_rect, layout_rect) in enumerate(
                 zip(browser_options, layout.payment_options, strict=True)
             ):

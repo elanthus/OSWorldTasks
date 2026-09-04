@@ -204,42 +204,32 @@ def test_arrow_keys_are_inert_inside_a_text_field(backend):
     assert backend.form.text[WidgetId.COMPANY_NAME] == "abcd"
 
 
-# -- Country dropdown --------------------------------------------------------
+# -- Country select ----------------------------------------------------------
 
 
-def test_clicking_the_select_opens_the_dropdown(backend):
+def test_clicking_the_select_focuses_a_closed_control(backend):
     _click(backend, WidgetId.COUNTRY)
 
-    assert backend.form.country_open is True
-    assert backend.form.country_value == ""
-
-
-def test_clicking_an_option_selects_it_and_closes_the_dropdown(backend):
-    _click(backend, WidgetId.COUNTRY)
-
-    backend.click(*backend.layout.country_options[2].center)
-
-    assert backend.form.country_open is False
-    assert backend.form.country_value == backend.form.country_options[2]
-
-
-def test_clicking_outside_an_open_dropdown_dismisses_it_without_selecting(backend):
-    _click(backend, WidgetId.COUNTRY)
-
-    backend.click(backend.layout.request_panel.center[0], backend.height - 1)
-
+    assert backend.form.focus is WidgetId.COUNTRY
     assert backend.form.country_open is False
     assert backend.form.country_value == ""
 
 
-def test_a_click_that_dismisses_the_dropdown_does_not_reach_the_control_beneath(backend):
-    """A native popup swallows the click that closes it. The Submit button sits
-    under the open list, so this also proves a stray click cannot submit."""
+def test_country_click_does_not_render_a_popup_below_the_control(backend):
+    before = backend.screenshot()
+    _click(backend, WidgetId.COUNTRY)
+    after = backend.screenshot()
+    country_bottom = backend.layout.controls[WidgetId.COUNTRY].bottom
+
+    assert np.array_equal(before[country_bottom:], after[country_bottom:])
+
+
+def test_click_after_country_focus_reaches_the_next_control(backend):
     _click(backend, WidgetId.COUNTRY)
 
     _click(backend, WidgetId.SUBMIT)
 
-    assert backend.read_submissions() == []
+    assert len(backend.read_submissions()) == 1
 
 
 def test_arrow_down_moves_the_selection_and_clamps_at_the_end(backend):
@@ -280,7 +270,6 @@ def test_country_selection_uses_the_transferable_click_and_keyboard_contract(
     backend.key(backend.form.country_options[country_index][0].lower())
     backend.key("Enter")
 
-    assert backend.form.country_open is False
     assert backend.form.country_value == backend.form.country_options[country_index]
     assert backend.read_submissions() == []
 
@@ -319,7 +308,6 @@ def test_all_radio_hit_regions_support_varying_label_lengths():
     layout = Layout(
         1024,
         768,
-        country_option_count=2,
         payment_option_count=len(payment_options),
     )
     state = FormState(
@@ -441,13 +429,12 @@ def test_enter_does_not_submit_from_other_focus_states(backend, focus):
     assert backend.read_submissions() == []
 
 
-def test_enter_while_the_dropdown_is_open_closes_it_without_submitting(backend):
+def test_enter_after_country_keyboard_selection_does_not_submit(backend):
     _click(backend, WidgetId.COUNTRY)
     backend.key("ArrowDown")
 
     backend.key("Enter")
 
-    assert backend.form.country_open is False
     assert backend.form.country_value == backend.form.country_options[0]
     assert backend.read_submissions() == []
 
@@ -702,11 +689,11 @@ def test_every_control_center_hit_tests_back_to_that_control(backend):
     for widget, rect in layout.controls.items():
         if widget is WidgetId.PAYMENT_TERMS:
             continue  # the group includes non-clickable space between radio labels
-        hit = layout.hit_test(*rect.center, country_open=False)
+        hit = layout.hit_test(*rect.center)
         assert hit is not None and hit[0] is widget
 
     for index, rect in enumerate(layout.payment_options):
-        assert layout.hit_test(*rect.center, country_open=False) == (
+        assert layout.hit_test(*rect.center) == (
             WidgetId.PAYMENT_TERMS,
             index,
         )

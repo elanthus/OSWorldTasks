@@ -44,7 +44,8 @@ def build_value_actions(
 
     actions.append(_click(backend.layout.controls[WidgetId.COUNTRY].center))
     country_index = backend.form.country_options.index(values["country"])
-    actions.append(_click(backend.layout.country_options[country_index].center))
+    country = backend.form.country_options[country_index]
+    actions.extend((_key(country[0].lower()), _key("Enter")))
     payment_index = backend.form.payment_options.index(values["payment_terms"])
     actions.append(_click(backend.layout.payment_options[payment_index].center))
     if values["expedited_onboarding"]:

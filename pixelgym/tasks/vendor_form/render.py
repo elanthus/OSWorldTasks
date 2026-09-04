@@ -194,13 +194,6 @@ def _render_form(painter: _Painter, state: FormState, layout: Layout) -> None:
     if state.status:
         painter.text_in(layout.status, state.status, font=painter.body)
 
-    # Last, so the open dropdown occludes the controls it floats over -- the
-    # same z-order a native `<select>` popup has, and the one `Layout.hit_test`
-    # assumes when it gives the popup priority for clicks.
-    if state.country_open:
-        _render_country_popup(painter, state, layout)
-
-
 def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None:
     painter.label(layout.labels[WidgetId.COUNTRY], _LABELS["country"])
     rect = layout.controls[WidgetId.COUNTRY]
@@ -227,14 +220,6 @@ def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None
         ],
         fill=CONTROL_BORDER,
     )
-
-
-def _render_country_popup(painter: _Painter, state: FormState, layout: Layout) -> None:
-    painter.box(layout.country_popup, fill=FORM_PANEL_BG, outline=CONTROL_BORDER)
-    for index, option_rect in enumerate(layout.country_options):
-        if index == state.country_index:
-            painter.box(option_rect, fill=HIGHLIGHT_BG, outline=None)
-        painter.text_in(option_rect, state.country_options[index], font=painter.body)
 
 
 def _render_payment_terms(painter: _Painter, state: FormState, layout: Layout) -> None:

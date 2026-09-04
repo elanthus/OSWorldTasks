@@ -13,9 +13,9 @@ Two things live here:
 - `Layout` -- where every widget is, in pixels. At the 1024x768 design size,
   every control and payment-option rectangle is pinned by an opt-in Chromium
   `getBoundingClientRect()` test. Geometry is scaled linearly for other fake
-  backend sizes. The synthetic country popup is intentionally excluded: native
-  popup rectangles are not exposed portably, so country selection transfers by
-  clicking the select and sending allowlisted type-ahead/Enter keys instead.
+  backend sizes. Native country-popup geometry is not modeled: clicking the
+  select leaves it focused and closed, and selection transfers through
+  allowlisted type-ahead followed by Enter.
 - `FormState` -- focus, typed text, selection, and checkbox state, advanced by
   `click()` and `key()`.
 
@@ -122,10 +122,9 @@ _TEXT_ROW_PITCH = _LABEL_HEIGHT + _LABEL_GAP + _CONTROL_HEIGHT + _ROW_MARGIN  # 
 _FIRST_ROW_Y = _PAD + _H1_HEIGHT + _H1_MARGIN  # 59
 _FIELD_WIDTH = _PANEL_WIDTH - 2 * _PAD  # 464
 
-# Fake-only visualization dimensions. Native `<select>` popup rectangles are
-# deliberately outside the browser-equivalence contract.
-_OPTION_HEIGHT = 26  # one row of the open country dropdown
-_RADIO_WIDTH = 68
+# Fixed widths are shared with `style.css`; the browser test also proves every
+# payment label's content fits rather than being clipped to its hit rectangle.
+_RADIO_WIDTH = 140
 _RADIO_GAP = 12
 _RADIO_HEIGHT = 19
 _RADIO_GROUP_HEIGHT = 23
@@ -173,9 +172,9 @@ class Layout:
     browser integration test is the build-time instrumentation that pins them;
     no DOM geometry is reachable from an evaluation backend or observation.
 
-    Synthetic country-option rectangles exist only so the fake screenshot can
-    render a deterministic open-select approximation. They are not equivalent
-    to native popup geometry and must not be used by transferable trajectories.
+    The native country popup is deliberately absent. A click focuses the same
+    closed select in both models; allowlisted type-ahead followed by Enter is
+    the transferable selection contract.
 
     Rectangles are scaled linearly for the small screens unit tests use.
     Scaling rounds independently per rectangle and clamps extents to at least
@@ -188,13 +187,12 @@ class Layout:
         width: int,
         height: int,
         *,
-        country_option_count: int,
         payment_option_count: int,
     ) -> None:
         if width <= 0 or height <= 0:
             raise ValueError(f"width and height must be positive, got {width}x{height}")
-        if country_option_count <= 0 or payment_option_count <= 0:
-            raise ValueError("option counts must be positive")
+        if payment_option_count <= 0:
+            raise ValueError("payment option count must be positive")
 
         self.width = width
         self.height = height
@@ -234,19 +232,6 @@ class Layout:
 
         country_top = _FIRST_ROW_Y + 4 * _TEXT_ROW_PITCH + _LABEL_HEIGHT + _LABEL_GAP
         country_bottom = country_top + _COUNTRY_HEIGHT
-        # Deterministic fake-only popup rendering; no browser geometry claim.
-        self.country_options: tuple[Rect, ...] = tuple(
-            self._rect(
-                form_x,
-                country_bottom + index * _OPTION_HEIGHT,
-                _FIELD_WIDTH,
-                _OPTION_HEIGHT,
-            )
-            for index in range(country_option_count)
-        )
-        self.country_popup = self._rect(
-            form_x, country_bottom, _FIELD_WIDTH, _OPTION_HEIGHT * country_option_count
-        )
 
         payment_label_top = country_bottom + _ROW_MARGIN
         payment_top = payment_label_top + _LABEL_HEIGHT + _LABEL_GAP
@@ -292,19 +277,13 @@ class Layout:
             height=max(1, round(height * self.scale_y)),
         )
 
-    def hit_test(self, x: int, y: int, *, country_open: bool) -> tuple[WidgetId, int | None] | None:
+    def hit_test(self, x: int, y: int) -> tuple[WidgetId, int | None] | None:
         """Which control (and which of its options) a click at `(x, y)` lands on.
 
-        Returns `None` for a click on empty space. The open-country branch is a
-        fake-only deterministic popup approximation, not native browser popup
-        geometry; transferable interactions use the select rectangle and keys.
+        Returns `None` for a click on empty space. Only browser-pinned control
+        and payment-option rectangles participate; there are no synthetic
+        native-select popup hit regions.
         """
-        if country_open:
-            for index, rect in enumerate(self.country_options):
-                if rect.contains(x, y):
-                    return WidgetId.COUNTRY, index
-            return None
-
         for index, rect in enumerate(self.payment_options):
             if rect.contains(x, y):
                 return WidgetId.PAYMENT_TERMS, index
@@ -346,10 +325,14 @@ class FormState:
         self.payment_index: int | None = None
         self.expedited: bool = False
         self.focus: WidgetId | None = None
-        self.country_open: bool = False
         self.status: str = ""
 
     # -- Reads -------------------------------------------------------------
+
+    @property
+    def country_open(self) -> bool:
+        """The native select popup is outside the fake model and never opens."""
+        return False
 
     @property
     def country_value(self) -> str:
@@ -407,17 +390,7 @@ class FormState:
         Coordinates are already validated against the action space by
         `PixelGuiEnv`; this method does not re-check or clip them.
         """
-        hit = self.layout.hit_test(x, y, country_open=self.country_open)
-
-        if self.country_open:
-            # Any click closes the popup. One that landed on an option also
-            # commits it; one that missed just dismisses.
-            self.country_open = False
-            if hit is not None:
-                _widget, index = hit
-                self.focus = WidgetId.COUNTRY
-                self.country_index = index
-            return False
+        hit = self.layout.hit_test(x, y)
 
         if hit is None:
             self.focus = None  # clicking the page background blurs
@@ -429,7 +402,6 @@ class FormState:
         if widget in TEXT_WIDGETS:
             return False
         if widget is WidgetId.COUNTRY:
-            self.country_open = True
             return False
         if widget is WidgetId.PAYMENT_TERMS:
             self.payment_index = index
@@ -448,14 +420,10 @@ class FormState:
         resolved from the action's allowlist index by `PixelGuiEnv`.
         """
         if key == "Tab":
-            self.country_open = False
             self._advance_focus()
             return False
 
         if key == "Enter":
-            if self.country_open:
-                self.country_open = False  # commit the shown option, close
-                return False
             return self.focus in (
                 *TEXT_WIDGETS,
                 WidgetId.EXPEDITED_ONBOARDING,
@@ -481,8 +449,7 @@ class FormState:
             # Chromium's closed native select supports prefix type-ahead even
             # when its disabled placeholder is showing. The task's countries
             # have unique initial letters, so this is the portable selection
-            # path used by trajectories; native popup rows have no geometry
-            # contract.
+            # path used by trajectories; the fake never opens popup rows.
             folded = key.casefold()
             for index, option in enumerate(self.country_options):
                 if option.casefold().startswith(folded):
@@ -495,8 +462,6 @@ class FormState:
         # Space activates the focused control, as it does in a browser.
         if self.focus is WidgetId.EXPEDITED_ONBOARDING:
             self.expedited = not self.expedited
-        elif self.focus is WidgetId.COUNTRY:
-            self.country_open = not self.country_open
         elif self.focus is WidgetId.SUBMIT:
             return True
         return False
@@ -542,6 +507,5 @@ def layout_for(task_record: Mapping[str, Any], width: int, height: int) -> Layou
     return Layout(
         width,
         height,
-        country_option_count=len(options["country"]),
         payment_option_count=len(options["payment_terms"]),
     )

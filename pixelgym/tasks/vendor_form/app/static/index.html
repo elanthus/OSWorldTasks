@@ -41,6 +41,8 @@
 
       <section id="form-panel" aria-label="Vendor onboarding form">
         <h1>Enter Vendor Details</h1>
+        <!-- Match the fake contract: Enter submits from text, checkbox, and Submit,
+             but not from the country select or payment radios. -->
         <form
           id="vendor-form"
           autocomplete="off"
@@ -65,6 +67,8 @@
           </div>
           <div class="field-row">
             <label for="country">Country</label>
+            <!-- Keep mouse activation focused and closed; country selection uses
+                 allowlisted type-ahead followed by Enter in both backends. -->
             <select
               id="country"
               name="country"

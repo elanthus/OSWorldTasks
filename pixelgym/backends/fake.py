@@ -20,9 +20,8 @@ Fidelity to the real app, where it matters:
 
 - At 1024x768, every form-control and payment-option hit rectangle is pinned
   to Chromium `getBoundingClientRect()` output by an opt-in build-time test.
-  The fake-only drawing of an open native-select popup has no geometry claim;
-  transferable country interaction is control click plus allowlisted
-  type-ahead and Enter keys.
+  The country select remains focused and closed after a click in both models;
+  transferable selection is allowlisted type-ahead followed by Enter.
 - Enter and Tab follow the task app's tested form semantics: Enter submits only
   from text inputs, the checkbox, and Submit, while Tab from Submit leaves the
   form with no modeled focus.
@@ -33,10 +32,10 @@ Fidelity to the real app, where it matters:
   does. Deciding whether it is *correct* is the evaluator's job alone.
 - Unfilled text fields and unmade selections submit as `""`.
 
-What this backend still does not attempt: native select-popup geometry, font
-rasterization identical to a browser's, or the timing behavior of a live VM.
-Those properties are outside the transferable contract or measured separately
-on the OSWorld backend.
+What this backend still does not attempt: rendering or hit-testing a native
+select popup, font rasterization identical to a browser's, or the timing
+behavior of a live VM. Those properties are outside the transferable contract
+or measured separately on the OSWorld backend.
 
 Two hooks exist for tests only and are not part of the `Backend` protocol:
 `install_form_values` (put the form into a precise state without typing) and
@@ -231,6 +230,8 @@ class FakeBackend:
             raise ValueError("core fake-backend checkpoint is missing required fields")
         if (value["width"], value["height"]) != (self.width, self.height):
             raise ValueError("fake-backend checkpoint screen mismatch")
+        if value["country_open"] is not False:
+            raise ValueError("fake-backend checkpoint contains unsupported country popup state")
         self.closed = False
         record = self.reset(value["seed"])
         if record["task_id"] != value["task_id"]:
@@ -241,7 +242,6 @@ class FakeBackend:
         form.payment_index = value["payment_index"]
         form.expedited = value["expedited"]
         form.focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
-        form.country_open = value["country_open"]
         form.status = value["status"]
         self._submissions = [Submission.from_record(row) for row in value["submissions"]]
         self.click_calls = [tuple(call) for call in value["click_calls"]]
