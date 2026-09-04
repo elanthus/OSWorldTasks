@@ -12,6 +12,7 @@ from pixelgym.tasks.vendor_form.browser_contract import (
     build_chromium_argv,
     chromium_renderer_contract,
 )
+from pixelgym.validation import browser_boundary as browser_boundary_module
 from pixelgym.validation.audit import validate_reward_hacking
 from pixelgym.validation.browser_boundary import (
     BROWSER_BOUNDARY_SCHEMA_VERSION,
@@ -199,6 +200,30 @@ def test_ordinary_browser_chrome_fixture_fails_navigation_surface_check() -> Non
     assert result["checks"]["task_app_reaches_top_edge"] is False
 
 
+def test_malformed_window_ids_fail_navigation_surface_check() -> None:
+    screenshot = np.zeros((768, 1024, 3), dtype=np.uint8)
+    window_state = {
+        "active_window_id": "not-a-window-id",
+        "windows": [
+            {
+                "id": "also-not-a-window-id",
+                "x": 0,
+                "y": 0,
+                "width": 1024,
+                "height": 768,
+                "class": "google-chrome.Google-chrome",
+                "title": "Vendor Onboarding",
+            }
+        ],
+        "active_window_properties": "_NET_WM_STATE_FULLSCREEN",
+    }
+
+    result = inspect_navigation_surface(window_state, screenshot)
+
+    assert result["active_window"] is None
+    assert result["checks"]["active_window_identified"] is False
+
+
 def test_guest_navigation_evidence_requires_every_named_check(tmp_path: Path) -> None:
     for relative in GUEST_SOURCE_PATHS:
         path = tmp_path / relative
@@ -216,6 +241,37 @@ def test_guest_navigation_evidence_requires_every_named_check(tmp_path: Path) ->
         "passed": False,
     }
     assert guest_browser_boundary_evidence_passed(evidence) is False
+
+
+def test_guest_cli_fails_closed_for_stale_guest_source_hashes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repository_root = Path(__file__).resolve().parents[2]
+    local_evidence = _evidence(repository_root)
+    guest_evidence = _guest_evidence(repository_root)
+    guest_evidence["source_sha256"][GUEST_SOURCE_PATHS[0]] = "0" * 64
+    local_path = tmp_path / "local.json"
+    local_path.write_text(json.dumps(local_evidence), encoding="utf-8")
+    monkeypatch.setattr(
+        browser_boundary_module,
+        "validate_guest_browser_boundary",
+        lambda *_args, **_kwargs: guest_evidence,
+    )
+
+    exit_status = browser_boundary_module._guest_cli(
+        [
+            "--local-evidence",
+            str(local_path),
+            "--output",
+            str(tmp_path / "combined.json"),
+            "--screenshot",
+            str(tmp_path / "guest.png"),
+            "--guest-image",
+            str(tmp_path / "guest.qcow2"),
+        ]
+    )
+
+    assert exit_status == 1
 
 
 def test_playwright_and_guest_evidence_report_same_renderer_identity(tmp_path: Path) -> None:

@@ -226,11 +226,12 @@ def inspect_navigation_surface(
             return None
 
     normalized_active_id = normalized_window_id(active_id)
-    if isinstance(active_id, str) and isinstance(windows, list):
+    if normalized_active_id is not None and isinstance(windows, list):
         matches = [
             item
             for item in windows
             if isinstance(item, dict)
+            and normalized_window_id(item.get("id")) is not None
             and normalized_window_id(item.get("id")) == normalized_active_id
         ]
         if len(matches) == 1:
@@ -592,10 +593,12 @@ def _guest_cli(argv: list[str] | None = None) -> int:
         json.dumps(local_evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(json.dumps(evidence, indent=2, sort_keys=True))
+    repository_root = Path(__file__).resolve().parents[2]
     passed = (
-        evidence["summary"]["passed"]
+        guest_browser_boundary_evidence_passed(evidence)
+        and guest_browser_boundary_source_hashes_match(evidence, repository_root)
         and browser_boundary_evidence_passed(local_evidence)
-        and browser_boundary_source_hashes_match(local_evidence, Path(__file__).resolve().parents[2])
+        and browser_boundary_source_hashes_match(local_evidence, repository_root)
     )
     return 0 if passed else 1
 

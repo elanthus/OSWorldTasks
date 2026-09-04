@@ -126,7 +126,7 @@
       "pixelgym/tasks/vendor_form/app/server.py": "507ee4fd71e247d07b96f6268da1299f5268ad3cebd2a1c211bfa2f090a8e9e5",
       "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
       "pixelgym/tasks/vendor_form/browser_contract.py": "4a0d4a6cd9282b13c7d554a68b822831fd8efd6c43eef834f5212f952fe4b58b",
-      "pixelgym/validation/browser_boundary.py": "4f285062222cfef085bbaae63d8a6ea0fe9984754664cd82e1e4145c1aae1326"
+      "pixelgym/validation/browser_boundary.py": "d61d94dad5c744c1d6af2feb6df771f7f8efae11dfe18c3a9b1d728db31ad68f"
     },
     "summary": {
       "check_count": 10,
@@ -186,7 +186,7 @@
       "pixelgym/backends/osworld.py": "c473cef3bad225915c861e22b8201acec2084d2e7b90a31267cf1de896390790",
       "pixelgym/tasks/vendor_form/browser_contract.py": "4a0d4a6cd9282b13c7d554a68b822831fd8efd6c43eef834f5212f952fe4b58b",
       "pixelgym/tasks/vendor_form/osworld_task.py": "4a96307beda156299b65ca595cf2f3a8af15989570ab7b595f4b011c15fc5032",
-      "pixelgym/validation/browser_boundary.py": "4f285062222cfef085bbaae63d8a6ea0fe9984754664cd82e1e4145c1aae1326"
+      "pixelgym/validation/browser_boundary.py": "d61d94dad5c744c1d6af2feb6df771f7f8efae11dfe18c3a9b1d728db31ad68f"
     },
     "summary": {
       "check_count": 8,
