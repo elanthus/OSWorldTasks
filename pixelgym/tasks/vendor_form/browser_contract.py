@@ -44,7 +44,7 @@ GUEST_PRESENTATION_MODE_REASON = (
     "in the pinned OSWorld guest"
 )
 GUEST_PRESENTATION_SECURITY_ARGS = (
-    "--user-data-dir=/tmp/pixelgym-chrome-profile",
+    "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
     "--no-first-run",
     "--disable-default-apps",
     "--disable-session-crashed-bubble",

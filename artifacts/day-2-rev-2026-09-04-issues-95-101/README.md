@@ -10,8 +10,17 @@ fallback decision, the structural window state, the pixel anchors, and provider 
 failed kiosk attempts and retained kiosk screenshot are indexed by
 `raw/presentation-mode-selection.json`.
 
-The real reset records report raw differing-pixel counts and maximum per-channel deltas before
-the separately named SSIM metric. No mask or tolerance was applied.
+The current-contract browser-boundary probe completed successfully in app mode. Two subsequent
+real-reset attempts failed because the guest setup could not acquire its package-manager lock and
+then could not make the replacement VM ready. The accumulated infrastructure time reached the
+owner's 90-minute stop-loss, so real-reset, real-space-smoke, and real-golden-episode evidence is
+absent and the assembled report is explicitly `INCOMPLETE`. The two raw failures are retained in
+`commands/validate-day2-real-resets-attempt-{1,2}.txt`.
+
+`raw/renderer-screenshot-differences.json` reports raw differing-pixel counts and maximum
+per-channel deltas before the separately named SSIM metric. No mask or tolerance was applied.
+Those comparisons include partial outputs from the failed current-contract runs and retained
+outputs from the superseded run; they are diagnostic data, not reset-determinism evidence.
 
 ## Commands
 
@@ -25,3 +34,7 @@ the separately named SSIM metric. No mask or tolerance was applied.
 .venv/bin/python scripts/validate_day2.py audit --raw-dir artifacts/day-2-rev-2026-09-04-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-04-issues-95-101/validation-report.json
 .venv/bin/python scripts/validate_day2.py assemble --raw-dir artifacts/day-2-rev-2026-09-04-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-04-issues-95-101/validation-report.json
 ```
+
+The listed real-space and real-golden commands describe the remaining owner rerun sequence after
+the stop-loss resets. They were not rerun under the final `/dev/shm` guest-profile contract in this
+revision.

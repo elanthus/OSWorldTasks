@@ -116,7 +116,7 @@
     "pixelgym/evaluator.py": "35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
     "pixelgym/tasks/vendor_form/app/server.py": "507ee4fd71e247d07b96f6268da1299f5268ad3cebd2a1c211bfa2f090a8e9e5",
     "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
-    "pixelgym/tasks/vendor_form/browser_contract.py": "4a0d4a6cd9282b13c7d554a68b822831fd8efd6c43eef834f5212f952fe4b58b",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "9bf8f1fdd5addbd7fc6e78748045cfe6790b1a5a413c6d9a32b7e1780284e03b",
     "pixelgym/validation/browser_boundary.py": "d61d94dad5c744c1d6af2feb6df771f7f8efae11dfe18c3a9b1d728db31ad68f"
   },
   "summary": {

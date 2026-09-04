@@ -223,7 +223,10 @@ def test_custom_task_setup_uploads_waits_resets_and_opens_browser(monkeypatch, t
     assert "/tmp/pixelgym-vendor-form/guest_server.py" in controller.launches[0][2]
     assert controller.launches[1][0:2] == ["bash", "-lc"]
     guest_command = controller.launches[1][2]
-    assert "--user-data-dir=/tmp/pixelgym-chrome-profile" in guest_command
+    assert "--user-data-dir=/dev/shm/pixelgym-chrome-profile" in guest_command
+    assert not any(
+        "/tmp/" in token for token in task.browser_launch_metadata["effective_argv"]
+    )
     assert "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus" in controller.launches[1][2]
     assert "http://127.0.0.1:3000/" in controller.launches[1][2]
     assert "--app=http://127.0.0.1:3000/" in guest_command

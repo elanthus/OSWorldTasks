@@ -1,0 +1,4 @@
+Exit status: 1
+
+Error stopping container: 404 Client Error for http+docker://localhost/v1.55/containers/58b014f08fba9a08b817bfbf73803cf3cddf62ad78ae42ccf22bc61d2d27a130/stop: Not Found ("No such container: 58b014f08fba9a08b817bfbf73803cf3cddf62ad78ae42ccf22bc61d2d27a130")
+Day 2 validation failed: TimeoutError: VM failed to become ready within timeout period
