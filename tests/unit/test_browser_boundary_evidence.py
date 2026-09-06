@@ -108,14 +108,23 @@ def test_browser_boundary_evidence_requires_browser_version(tmp_path: Path) -> N
     assert browser_boundary_evidence_passed(evidence) is False
 
 
-def test_browser_boundary_source_hashes_detect_stale_code(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "changed_relative",
+    [
+        "pixelgym/tasks/vendor_form/app/static/index.html",
+        "pixelgym/tasks/vendor_form/app/static/style.css",
+    ],
+)
+def test_browser_boundary_source_hashes_detect_stale_inline_behavior_and_layout(
+    tmp_path: Path, changed_relative: str
+) -> None:
     for relative in SOURCE_PATHS:
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(relative, encoding="utf-8")
     evidence = _evidence(tmp_path)
 
-    changed = tmp_path / SOURCE_PATHS[1]
+    changed = tmp_path / changed_relative
     changed.write_text("changed", encoding="utf-8")
 
     assert browser_boundary_evidence_passed(evidence) is True

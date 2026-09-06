@@ -18,6 +18,17 @@ a privileged test hook. Widget geometry and interaction semantics live in
 
 Fidelity to the real app, where it matters:
 
+- At 1024x768, every form-control and payment-option hit rectangle is pinned
+  to Chromium `getBoundingClientRect()` output by an opt-in build-time test.
+  The country select remains focused and closed after a click in both models;
+  transferable selection is one allowlisted initial-letter keystroke followed
+  by Enter. Distinct initial-letter keys are handled independently; Chromium's
+  timed multi-key type-ahead buffer is outside the equivalence contract.
+- Enter and Tab follow the task app's tested form semantics: Enter submits only
+  from text inputs, the checkbox, and Submit, while Tab from Submit leaves the
+  form with no modeled focus. The browser check proves that exit in headless
+  Chromium only; Tab-based re-entry is outside the contract, and the fake
+  requires a control click to re-enter.
 - The submission record is built exactly as `POST /api/submit` builds it --
   same field names, same `submitted_at_step` numbering, same whitespace
   normalization (shared via `pixelgym.tasks.vendor_form.normalization`).
@@ -25,9 +36,10 @@ Fidelity to the real app, where it matters:
   does. Deciding whether it is *correct* is the evaluator's job alone.
 - Unfilled text fields and unmade selections submit as `""`.
 
-What this backend still does not attempt: real browser layout, font
-rasterization identical to a browser's, or the timing behavior of a live VM.
-Those properties are measured separately on the OSWorld backend.
+What this backend still does not attempt: rendering or hit-testing a native
+select popup, font rasterization identical to a browser's, or the timing
+behavior of a live VM. Those properties are outside the transferable contract
+or measured separately on the OSWorld backend.
 
 Two hooks exist for tests only and are not part of the `Backend` protocol:
 `install_form_values` (put the form into a precise state without typing) and
@@ -171,6 +183,7 @@ class FakeBackend:
                 "payment_index": form.payment_index,
                 "expedited": form.expedited,
                 "focus": None if form.focus is None else form.focus.value,
+                "tab_exited_form": form.tab_exited_form,
                 "country_open": form.country_open,
                 "status": form.status,
                 "submissions": [
@@ -221,6 +234,8 @@ class FakeBackend:
             raise ValueError("core fake-backend checkpoint is missing required fields")
         if (value["width"], value["height"]) != (self.width, self.height):
             raise ValueError("fake-backend checkpoint screen mismatch")
+        if value["country_open"] is not False:
+            raise ValueError("fake-backend checkpoint contains unsupported country popup state")
         self.closed = False
         record = self.reset(value["seed"])
         if record["task_id"] != value["task_id"]:
@@ -231,7 +246,7 @@ class FakeBackend:
         form.payment_index = value["payment_index"]
         form.expedited = value["expedited"]
         form.focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
-        form.country_open = value["country_open"]
+        form.tab_exited_form = value.get("tab_exited_form", False)
         form.status = value["status"]
         self._submissions = [Submission.from_record(row) for row in value["submissions"]]
         self.click_calls = [tuple(call) for call in value["click_calls"]]

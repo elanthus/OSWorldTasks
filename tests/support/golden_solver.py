@@ -65,8 +65,10 @@ def build_dynamic_solve_actions(backend: FakeBackend, *, include_submit: bool = 
 
     Derived from the backend's privileged state at call time -- not a golden
     trajectory. The interaction is the one a person would perform: click a
-    field, type it, pick the country from the dropdown, pick the radio, tick
-    the box if the request card says Yes, press Submit.
+    field, type it, focus the country control and select by allowlisted
+    type-ahead plus Enter, pick the radio, tick the box if the request card
+    says Yes, press Submit. Native country-popup rows deliberately have no
+    transferable geometry contract.
     """
     fields = backend.current_fields()
     layout = backend.layout
@@ -76,10 +78,13 @@ def build_dynamic_solve_actions(backend: FakeBackend, *, include_submit: bool = 
         actions.append(_click_widget(backend, widget))
         actions.extend(key_action(character) for character in fields[widget.value])
 
-    # The country dropdown: one click opens it, one click picks an option.
+    # Native select-popup rows do not expose portable geometry. Focus the
+    # control, use the countries' unique initial letters for type-ahead, then
+    # commit with Enter; key_action verifies both keys are allowlisted.
     actions.append(_click_widget(backend, WidgetId.COUNTRY))
     country_index = backend.form.country_options.index(fields["country"])
-    actions.append(click_action(*layout.country_options[country_index].center))
+    country = backend.form.country_options[country_index]
+    actions.extend((key_action(country[0].lower()), key_action("Enter")))
 
     payment_index = backend.form.payment_options.index(fields["payment_terms"])
     actions.append(click_action(*layout.payment_options[payment_index].center))

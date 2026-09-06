@@ -9,7 +9,7 @@
     "width": 1024,
     "height": 768
   },
-  "action_count": 109,
+  "action_count": 110,
   "actions": [
     {
       "action_type": 0,
@@ -20,7 +20,7 @@
     {
       "action_type": 1,
       "x": 768,
-      "y": 93,
+      "y": 94,
       "key": 0
     },
     {
@@ -188,7 +188,7 @@
     {
       "action_type": 1,
       "x": 768,
-      "y": 157,
+      "y": 156,
       "key": 0
     },
     {
@@ -470,7 +470,7 @@
     {
       "action_type": 1,
       "x": 768,
-      "y": 221,
+      "y": 218,
       "key": 0
     },
     {
@@ -566,7 +566,7 @@
     {
       "action_type": 1,
       "x": 768,
-      "y": 285,
+      "y": 280,
       "key": 0
     },
     {
@@ -644,25 +644,31 @@
     {
       "action_type": 1,
       "x": 768,
-      "y": 349,
+      "y": 343,
+      "key": 0
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 10
+    },
+    {
+      "action_type": 2,
+      "x": 0,
+      "y": 0,
+      "key": 96
+    },
+    {
+      "action_type": 1,
+      "x": 910,
+      "y": 400,
       "key": 0
     },
     {
       "action_type": 1,
-      "x": 768,
-      "y": 377,
-      "key": 0
-    },
-    {
-      "action_type": 1,
-      "x": 919,
-      "y": 410,
-      "key": 0
-    },
-    {
-      "action_type": 1,
-      "x": 586,
-      "y": 483,
+      "x": 578,
+      "y": 486,
       "key": 0
     }
   ],
@@ -1411,20 +1417,27 @@
     },
     {
       "step": 107,
-      "action_type": "CLICK",
+      "action_type": "KEY",
       "reward": 0.0,
       "terminated": false,
       "truncated": false
     },
     {
       "step": 108,
-      "action_type": "CLICK",
+      "action_type": "KEY",
       "reward": 0.0,
       "terminated": false,
       "truncated": false
     },
     {
       "step": 109,
+      "action_type": "CLICK",
+      "reward": 0.0,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "step": 110,
       "action_type": "CLICK",
       "reward": 1.0,
       "terminated": true,

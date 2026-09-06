@@ -19,6 +19,8 @@ from pixelgym.tasks.vendor_form.ui import (
     INCOMPLETE_SUBMISSION_MESSAGE,
     TAB_ORDER,
     TEXT_WIDGETS,
+    FormState,
+    Layout,
     WidgetId,
 )
 
@@ -180,13 +182,29 @@ def test_typing_with_nothing_focused_changes_no_field(backend):
     assert all(backend.form.text[widget] == "" for widget in TEXT_WIDGETS)
 
 
-def test_tab_walks_the_document_order_and_wraps(backend):
+def test_tab_walks_the_document_order_then_leaves_the_form(backend):
     seen = []
-    for _ in range(len(TAB_ORDER) + 1):
+    for _ in range(len(TAB_ORDER) + 2):
         backend.key("Tab")
         seen.append(backend.form.focus)
 
-    assert seen == [*TAB_ORDER, TAB_ORDER[0]]
+    assert seen == [*TAB_ORDER, None, None]
+
+    _click(backend, WidgetId.CONTACT_EMAIL)
+    backend.key("Tab")
+    assert backend.form.focus is WidgetId.CONTACT_PHONE
+
+
+def test_checkpoint_preserves_focus_that_left_the_form(backend):
+    for _ in range(len(TAB_ORDER) + 1):
+        backend.key("Tab")
+    assert backend.form.focus is None
+
+    restored = FakeBackend()
+    restored.restore(backend.checkpoint())
+    restored.key("Tab")
+
+    assert restored.form.focus is None
 
 
 def test_arrow_keys_are_inert_inside_a_text_field(backend):
@@ -202,42 +220,32 @@ def test_arrow_keys_are_inert_inside_a_text_field(backend):
     assert backend.form.text[WidgetId.COMPANY_NAME] == "abcd"
 
 
-# -- Country dropdown --------------------------------------------------------
+# -- Country select ----------------------------------------------------------
 
 
-def test_clicking_the_select_opens_the_dropdown(backend):
+def test_clicking_the_select_focuses_a_closed_control(backend):
     _click(backend, WidgetId.COUNTRY)
 
-    assert backend.form.country_open is True
-    assert backend.form.country_value == ""
-
-
-def test_clicking_an_option_selects_it_and_closes_the_dropdown(backend):
-    _click(backend, WidgetId.COUNTRY)
-
-    backend.click(*backend.layout.country_options[2].center)
-
-    assert backend.form.country_open is False
-    assert backend.form.country_value == backend.form.country_options[2]
-
-
-def test_clicking_outside_an_open_dropdown_dismisses_it_without_selecting(backend):
-    _click(backend, WidgetId.COUNTRY)
-
-    backend.click(backend.layout.request_panel.center[0], backend.height - 1)
-
+    assert backend.form.focus is WidgetId.COUNTRY
     assert backend.form.country_open is False
     assert backend.form.country_value == ""
 
 
-def test_a_click_that_dismisses_the_dropdown_does_not_reach_the_control_beneath(backend):
-    """A native popup swallows the click that closes it. The Submit button sits
-    under the open list, so this also proves a stray click cannot submit."""
+def test_country_click_does_not_render_a_popup_below_the_control(backend):
+    before = backend.screenshot()
+    _click(backend, WidgetId.COUNTRY)
+    after = backend.screenshot()
+    country_bottom = backend.layout.controls[WidgetId.COUNTRY].bottom
+
+    assert np.array_equal(before[country_bottom:], after[country_bottom:])
+
+
+def test_click_after_country_focus_reaches_the_next_control(backend):
     _click(backend, WidgetId.COUNTRY)
 
     _click(backend, WidgetId.SUBMIT)
 
-    assert backend.read_submissions() == []
+    assert len(backend.read_submissions()) == 1
 
 
 def test_arrow_down_moves_the_selection_and_clamps_at_the_end(backend):
@@ -268,6 +276,33 @@ def test_arrow_up_on_the_placeholder_leaves_it_showing(backend):
     assert backend.form.country_value == ""
 
 
+@pytest.mark.parametrize(
+    "country_index", range(len(generator.generate_task(0)["options"]["country"]))
+)
+def test_country_selection_uses_the_transferable_click_and_keyboard_contract(
+    backend, country_index
+):
+    """Only the select control has portable geometry; native popup rows do not."""
+    _click(backend, WidgetId.COUNTRY)
+
+    backend.key(backend.form.country_options[country_index][0].lower())
+    backend.key("Enter")
+
+    assert backend.form.country_value == backend.form.country_options[country_index]
+    assert backend.read_submissions() == []
+
+
+def test_distinct_country_initials_are_independent_single_keystrokes(backend):
+    """The fake has no Chromium-style timed multi-key type-ahead buffer."""
+    _click(backend, WidgetId.COUNTRY)
+
+    backend.key("c")
+    assert backend.form.country_value == "Canada"
+    backend.key("j")
+
+    assert backend.form.country_value == "Japan"
+
+
 # -- Payment-terms radio group ----------------------------------------------
 
 
@@ -295,6 +330,24 @@ def test_arrow_on_an_untouched_radio_group_selects_the_first_option(backend):
     backend.key("ArrowDown")
 
     assert backend.form.payment_terms_value == backend.form.payment_options[0]
+
+
+def test_all_radio_hit_regions_support_varying_label_lengths():
+    payment_options = ("N", "Due on receipt", "Net 123456789")
+    layout = Layout(
+        1024,
+        768,
+        payment_option_count=len(payment_options),
+    )
+    state = FormState(
+        layout=layout,
+        country_options=("Canada", "Japan"),
+        payment_options=payment_options,
+    )
+
+    for index, rect in enumerate(layout.payment_options):
+        state.click(*rect.center)
+        assert state.payment_terms_value == payment_options[index], f"payment_terms[{index}]"
 
 
 # -- Checkbox ----------------------------------------------------------------
@@ -379,30 +432,38 @@ def test_repeated_submissions_get_increasing_step_numbers(backend):
     assert [s.submitted_at_step for s in backend.read_submissions()] == [1, 2]
 
 
-def test_enter_in_a_text_field_submits_the_form(backend):
-    """HTML implicit submission: Enter inside a form with a submit button
-    submits it."""
-    _click(backend, WidgetId.COMPANY_NAME)
-    _type(backend, "Blue Harbor Supply Co.")
+@pytest.mark.parametrize(
+    "widget",
+    [*TEXT_WIDGETS, WidgetId.EXPEDITED_ONBOARDING, WidgetId.SUBMIT],
+    ids=lambda widget: widget.value,
+)
+def test_enter_submits_only_from_browser_implicit_submission_controls(backend, widget):
+    backend.form.focus = widget
 
     backend.key("Enter")
 
     assert len(backend.read_submissions()) == 1
 
 
-def test_enter_with_nothing_focused_does_not_submit(backend):
+@pytest.mark.parametrize(
+    "focus",
+    [None, WidgetId.COUNTRY, WidgetId.PAYMENT_TERMS],
+    ids=["no-focus", "country", "payment-terms"],
+)
+def test_enter_does_not_submit_from_other_focus_states(backend, focus):
+    backend.form.focus = focus
+
     backend.key("Enter")
 
     assert backend.read_submissions() == []
 
 
-def test_enter_while_the_dropdown_is_open_closes_it_without_submitting(backend):
+def test_enter_after_country_keyboard_selection_does_not_submit(backend):
     _click(backend, WidgetId.COUNTRY)
     backend.key("ArrowDown")
 
     backend.key("Enter")
 
-    assert backend.form.country_open is False
     assert backend.form.country_value == backend.form.country_options[0]
     assert backend.read_submissions() == []
 
@@ -655,8 +716,14 @@ def test_every_control_center_hit_tests_back_to_that_control(backend):
     layout = backend.layout
 
     for widget, rect in layout.controls.items():
-        hit = layout.hit_test(*rect.center, country_open=False)
+        hit = layout.hit_test(*rect.center)
         assert hit is not None and hit[0] is widget
+
+    for index, rect in enumerate(layout.payment_options):
+        assert layout.hit_test(*rect.center) == (
+            WidgetId.PAYMENT_TERMS,
+            index,
+        )
 
 
 def test_layout_degrades_without_collapsing_on_a_small_screen():
