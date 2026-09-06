@@ -36,7 +36,15 @@ from pixelgym.grounding.v5.evidence import (
     validate_credential_free,
 )
 from pixelgym.grounding.v5.runner import TransportOutcome
-from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
+from pixelgym.grounding.v5.sandbox import (
+    DECLARED_UNAVAILABLE_CAPABILITIES,
+    PolicyClaim,
+    RuntimeEnforcement,
+    build_sandbox_manifest,
+    runtime_enforcement,
+    unbound_runtime_enforcement,
+    validate_runtime_enforcement,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 CLAUDE_CLI_VERSION = "2.1.236 (Claude Code)"
@@ -201,20 +209,39 @@ def _runtime_command() -> list[str]:
     return list(sanitized_command_contract())
 
 
+_ALLOWED_ENVIRONMENT_VARIABLES = (
+    "PATH",
+    "HOME",
+    "TMPDIR",
+    "LANG",
+    "LC_ALL",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "NO_PROXY",
+)
+
+
 def _minimal_environment(environment: Mapping[str, str]) -> dict[str, str]:
-    allowed = (
-        "PATH",
-        "HOME",
-        "TMPDIR",
-        "LANG",
-        "LC_ALL",
-        "SSL_CERT_FILE",
-        "SSL_CERT_DIR",
-        "HTTPS_PROXY",
-        "HTTP_PROXY",
-        "NO_PROXY",
+    return {
+        name: environment[name]
+        for name in _ALLOWED_ENVIRONMENT_VARIABLES
+        if environment.get(name)
+    }
+
+
+def _claude_launch_enforcement(
+    command: Sequence[str], environment: Mapping[str, str]
+) -> RuntimeEnforcement:
+    controls_match = tuple(command) == sanitized_command_contract()
+    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    return runtime_enforcement(
+        argv=command,
+        environment=environment,
+        cli_restrictions_applied=controls_match,
+        environment_allowlist_applied=environment_is_allowlisted,
     )
-    return {name: environment[name] for name in allowed if environment.get(name)}
 
 
 def action_prompt(task_instruction: str) -> str:
@@ -716,6 +743,34 @@ class ClaudeCodeTransport:
         outcome: dict[str, Any]
         with tempfile.TemporaryDirectory(prefix="pixelgym-claude-cli-") as temporary:
             command = _runtime_command()
+            launch_enforcement = _claude_launch_enforcement(command, self.environment)
+            enforcement_record = launch_enforcement.to_dict()
+            try:
+                validate_runtime_enforcement(
+                    PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES),
+                    launch_enforcement,
+                )
+            except ValueError:
+                self.ledger.release_pre_send(idempotency_key)
+                outcome = {
+                    "failure_code": "runtime_enforcement_mismatch",
+                    "runtime_enforcement": enforcement_record,
+                }
+                self.invocation_journal.finish(
+                    idempotency_key,
+                    status="pre_send_failure",
+                    exit_code=None,
+                    raw_stdout="",
+                    raw_stderr="",
+                    outcome=outcome,
+                )
+                self.records.append(
+                    self._record(idempotency_key, "pre_send_failure", outcome)
+                )
+                return TransportOutcome(
+                    "pre_send_failure",
+                    failure_code="runtime_enforcement_mismatch",
+                )
             image_block = {
                 "type": "image",
                 "source": {
@@ -744,7 +799,11 @@ class ClaudeCodeTransport:
                 )
             except (OSError, ValueError) as exc:
                 self.ledger.release_pre_send(idempotency_key)
-                outcome = {"failure_code": "process_start_failure", "type": type(exc).__name__}
+                outcome = {
+                    "failure_code": "process_start_failure",
+                    "type": type(exc).__name__,
+                    "runtime_enforcement": enforcement_record,
+                }
                 self.invocation_journal.finish(
                     idempotency_key,
                     status="pre_send_failure",
@@ -752,6 +811,9 @@ class ClaudeCodeTransport:
                     raw_stdout="",
                     raw_stderr="",
                     outcome=outcome,
+                )
+                self.records.append(
+                    self._record(idempotency_key, "pre_send_failure", outcome)
                 )
                 return TransportOutcome("pre_send_failure", failure_code="process_start_failure")
             self.ledger.mark_process_started()
@@ -767,7 +829,10 @@ class ClaudeCodeTransport:
             except subprocess.TimeoutExpired:
                 raw_stdout, raw_stderr = self._terminate(process)
                 self.ledger.retain_unresolved_and_block(idempotency_key)
-                outcome = {"failure_code": "claude_process_timeout"}
+                outcome = {
+                    "failure_code": "claude_process_timeout",
+                    "runtime_enforcement": enforcement_record,
+                }
                 self.invocation_journal.finish(
                     idempotency_key,
                     status="timeout",
@@ -776,11 +841,16 @@ class ClaudeCodeTransport:
                     raw_stderr=raw_stderr,
                     outcome=outcome,
                 )
+                self.records.append(self._record(idempotency_key, "timeout", outcome))
                 return TransportOutcome("deadline", failure_code="claude_process_timeout")
             except BaseException as exc:
                 raw_stdout, raw_stderr = self._terminate(process)
                 self.ledger.retain_unresolved_and_block(idempotency_key)
-                outcome = {"failure_code": "claude_process_interrupted", "type": type(exc).__name__}
+                outcome = {
+                    "failure_code": "claude_process_interrupted",
+                    "type": type(exc).__name__,
+                    "runtime_enforcement": enforcement_record,
+                }
                 self.invocation_journal.finish(
                     idempotency_key,
                     status="interrupted",
@@ -789,6 +859,7 @@ class ClaudeCodeTransport:
                     raw_stderr=raw_stderr,
                     outcome=outcome,
                 )
+                self.records.append(self._record(idempotency_key, "interrupted", outcome))
                 raise
             finally:
                 with self._active_lock:
@@ -843,6 +914,7 @@ class ClaudeCodeTransport:
         outcome = {
             "event_counts": parsed.event_counts,
             "exit_code": process.returncode,
+            "runtime_enforcement": enforcement_record,
             "resolved_model": parsed.resolved_model,
             "policy_violation": violation_value,
             "experiment_charge_usd": "0.00",
@@ -861,25 +933,7 @@ class ClaudeCodeTransport:
             raw_stderr=raw_stderr,
             outcome=outcome,
         )
-        self.records.append(
-            {
-                "idempotency_key_digest": content_digest(idempotency_key),
-                "status": status,
-                "cli_version": CLAUDE_CLI_VERSION,
-                "model": MODEL,
-                "model_reasoning_effort": MODEL_REASONING_EFFORT,
-                "auth_method": AUTH_METHOD,
-                "subscription_type": SUBSCRIPTION_TYPE,
-                "command_contract_digest": command_contract_digest(),
-                "resolved_model": parsed.resolved_model,
-                "experiment_charge_usd": "0.00",
-                "informational_cost_telemetry_usd": usage_record[
-                    "informational_cost_telemetry_usd"
-                ],
-                "policy_violation": violation_value,
-                "usage_telemetry_status": usage_status,
-            }
-        )
+        self.records.append(self._record(idempotency_key, status, outcome))
         return TransportOutcome("response", canonical)
 
     def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
@@ -958,6 +1012,30 @@ class ClaudeCodeTransport:
             except subprocess.TimeoutExpired:
                 return "", ""
 
+    def _record(
+        self, idempotency_key: str, status: str, outcome: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "idempotency_key_digest": content_digest(idempotency_key),
+            "status": status,
+            "cli_version": CLAUDE_CLI_VERSION,
+            "model": MODEL,
+            "model_reasoning_effort": MODEL_REASONING_EFFORT,
+            "auth_method": AUTH_METHOD,
+            "subscription_type": SUBSCRIPTION_TYPE,
+            "command_contract_digest": command_contract_digest(),
+            "runtime_enforcement": outcome.get("runtime_enforcement"),
+            "resolved_model": outcome.get("resolved_model"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
+            "informational_cost_telemetry_usd": outcome.get(
+                "informational_cost_telemetry_usd"
+            ),
+            "policy_violation": outcome.get("policy_violation", "none"),
+            "usage_telemetry_status": outcome.get(
+                "usage_telemetry_status", "unavailable"
+            ),
+        }
+
 
 def _file_digest(path: Path) -> str:
     return "sha256:" + sha256_bytes(path.read_bytes())
@@ -985,6 +1063,8 @@ def build_claude_policy_manifest(
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
+        launch_enforcement=unbound_runtime_enforcement(),
+        policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
         ("auth_method", AUTH_METHOD),

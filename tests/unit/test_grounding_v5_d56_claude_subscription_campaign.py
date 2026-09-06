@@ -365,6 +365,9 @@ def test_cleanup_does_not_claim_a_stubborn_process_was_closed(
     )
 
     assert summary["episode_result"]["environment_actions"] == 0
+    assert summary["policy_violation"] == "none"
+    assert summary["incremental_experiment_charge_usd"] == "0.00"
+    assert summary["usage_telemetry_status"] == "unavailable"
     assert summary["cleanup"]["subprocesses_closed"] is False
 
 
