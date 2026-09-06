@@ -88,6 +88,11 @@ RETRYABLE_EVENT_KINDS = frozenset(
 RETRYABLE_SEND_RULES_BY_EVENT_KIND = {
     rule.event_kind: rule for rule in RETRYABLE_SEND_STATUSES.values()
 }
+TERMINAL_FAILURE_CLASSIFICATIONS: dict[str, str] = {
+    "confirmed_cancellation": "request_failure",
+    "confirmed_no_response_timeout": "request_failure",
+    "unknown_outcome_infrastructure_failure": "infrastructure_failure",
+}
 
 
 class ProviderTransport(Protocol):
@@ -868,11 +873,25 @@ class V5Runner:
                     idempotency_key, reason="confirmed_cancellation"
                 )
                 post_state = self.policy.failure_state(state, "confirmed_cancellation")
-                self.journal.seal_attempt_terminal(
+                terminal = self.journal.seal_attempt_terminal(
                     identity,
                     kind="confirmed_cancellation",
                     post_attempt_checkpoint=post_state,
                     failure_code="request_deadline",
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/sealed_unsuccessful_result",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=identity.trial_id,
+                    step_index=identity.step_index,
+                    attempt_index=identity.attempt_index,
+                    payload={
+                        "failure_code": "request_deadline",
+                        "attempt_identities": [identity.key],
+                        "policy_checkpoint_digest": terminal.payload[
+                            "post_attempt_checkpoint_digest"
+                        ],
+                    },
                 )
                 self._boundary("attempt_terminal")
                 return {
@@ -912,11 +931,25 @@ class V5Runner:
             )
         else:
             self._settle_unknown_spend(idempotency_key)
-        self.journal.seal_attempt_terminal(
+        terminal = self.journal.seal_attempt_terminal(
             identity,
             kind=kind,
             post_attempt_checkpoint=post_state,
             failure_code=failure_code,
+        )
+        self.journal.append_event(
+            event_key=f"{identity.key}/sealed_unsuccessful_result",
+            kind="sealed_unsuccessful_result",
+            trial_id=identity.trial_id,
+            step_index=identity.step_index,
+            attempt_index=identity.attempt_index,
+            payload={
+                "failure_code": failure_code,
+                "attempt_identities": [identity.key],
+                "policy_checkpoint_digest": terminal.payload[
+                    "post_attempt_checkpoint_digest"
+                ],
+            },
         )
         self._boundary("attempt_terminal")
         return {
@@ -987,11 +1020,6 @@ class V5Runner:
             return {
                 "classification": "infrastructure_failure",
                 "reason": "dispatch_started_without_commit",
-                "redispatched": False,
-            }
-        if "sealed_unsuccessful_result" in by_kind:
-            return {
-                "classification": "sealed_unsuccessful_result",
                 "redispatched": False,
             }
         if "sealed_action_intent" in by_kind:
@@ -1112,6 +1140,45 @@ class V5Runner:
             None,
         )
         latest_started = started_events[-1] if started_events else None
+        latest_identity = (
+            AttemptIdentity(
+                trial_id,
+                step_index,
+                int(
+                    latest_started.attempt_index
+                    if latest_started is not None
+                    and latest_started.attempt_index is not None
+                    else 0
+                ),
+            )
+            if latest_started is not None
+            else None
+        )
+        latest_terminal = (
+            self.journal.terminal_attempt(latest_identity)
+            if latest_identity is not None
+            else None
+        )
+        terminal_classification = (
+            TERMINAL_FAILURE_CLASSIFICATIONS.get(latest_terminal.kind)
+            if latest_terminal is not None
+            else None
+        )
+        terminal_is_retryable = (
+            retryable_event is not None
+            and latest_terminal is not None
+            and retryable_event.attempt_index == latest_terminal.attempt_index
+        )
+        if terminal_classification is not None and not terminal_is_retryable:
+            return {
+                "classification": terminal_classification,
+                "redispatched": False,
+            }
+        if "sealed_unsuccessful_result" in by_kind:
+            return {
+                "classification": "sealed_unsuccessful_result",
+                "redispatched": False,
+            }
         if (
             retryable_event is not None
             and latest_started is not None
@@ -1425,6 +1492,19 @@ class V5Runner:
                 task=task,
                 backend=backend,
             )
+        prior_environment_boundary = (
+            self.journal.event(f"{trial_id}/initial_screenshot")
+            if step_index == 0
+            else self.journal.event(
+                f"{trial_id}/step-{step_index - 1:04d}/dispatch_committed"
+            )
+        )
+        if prior_environment_boundary is not None and set(by_kind) <= {"initial_screenshot"}:
+            return {
+                "classification": "attempt_not_started",
+                "reason": "no_attempt_reservation",
+                "redispatched": False,
+            }
         raise RuntimeError("no durable v5 recovery boundary exists for this step")
 
     def _restore_current_environment(

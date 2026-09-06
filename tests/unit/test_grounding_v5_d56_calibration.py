@@ -9,7 +9,11 @@ import pytest
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.d56_calibration import (
     CONSECUTIVE_FAILURE_LIMIT,
+    CURRENT_CALIBRATION_MANIFEST,
+    HISTORICAL_CALIBRATION_MANIFEST,
     ConsecutiveFailureBreaker,
+    _current_calibration_manifest,
+    _historical_calibration_manifest,
     build_plan,
     execute_calibration,
     plan_digest,
@@ -68,7 +72,7 @@ def fake_smoke_output(tmp_path: Path) -> Path:
     return output
 
 
-def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_shared_cap(
+def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_per_run_cap(
     tmp_path: Path,
 ) -> None:
     plan = build_plan(ROOT, smoke_output_directory=fake_smoke_output(tmp_path))
@@ -101,12 +105,33 @@ def test_d56_plan_binds_four_policies_fifty_clean_tasks_and_shared_cap(
     assert plan["aggregate_caps"]["model_attempt_cap"] == 11448
     assert plan["aggregate_caps"]["provider_control_request_cap"] == 0
     assert plan["aggregate_caps"]["provider_wire_request_cap"] == 11448
-    assert plan["aggregate_caps"]["maximum_aggregate_spend_usd"] == "10.00"
-    assert plan["aggregate_caps"]["prior_aggregate_spend_usd"] == "0.38"
+    assert plan["aggregate_caps"]["maximum_run_spend_usd"] == "10.00"
+    assert plan["aggregate_caps"]["remaining_run_spend_usd"] == "10.00"
+    assert plan["aggregate_caps"]["prior_campaign_spend"] == {
+        "schema_version": "pixelgym-agent-v5-d56-phase-spend-v1",
+        "known_spend_usd": "0.38",
+        "unknown_reservation_usd": "unknown",
+        "in_flight_reservation_usd": "unknown",
+        "budget_accounted_spend_usd": "unknown",
+    }
     assert plan_digest(plan).startswith("sha256:")
 
 
-def test_d56_plan_discloses_uncapped_maximum_but_enforces_ten_dollar_guard(
+def test_d56_current_plans_and_historical_validators_use_separate_manifests() -> None:
+    current = _current_calibration_manifest(ROOT)
+    historical = _historical_calibration_manifest(ROOT)
+
+    assert CURRENT_CALIBRATION_MANIFEST.as_posix().endswith(
+        "grounding-v5-manifests/v2/calibration-d56.json"
+    )
+    assert HISTORICAL_CALIBRATION_MANIFEST.as_posix().endswith(
+        "grounding-v5-manifests/calibration-d56.json"
+    )
+    assert current["manifest_digest"] != historical["manifest_digest"]
+    assert current["records"] == historical["records"]
+
+
+def test_d56_plan_discloses_uncapped_maximum_but_enforces_per_run_guard(
     tmp_path: Path,
 ) -> None:
     plan = build_plan(ROOT, smoke_output_directory=fake_smoke_output(tmp_path))
@@ -114,7 +139,7 @@ def test_d56_plan_discloses_uncapped_maximum_but_enforces_ten_dollar_guard(
     assert Decimal(
         plan["aggregate_caps"]["uncapped_theoretical_request_maximum_usd"]
     ) > Decimal(10)
-    assert "before each wire request" in plan["aggregate_caps"]["enforcement"]
+    assert "this phase's ledger" in plan["aggregate_caps"]["enforcement"]
     assert all(
         record["price_record"]["unknown_usage_or_price_rule"] == "fail_closed"
         for record in plan["policies"]

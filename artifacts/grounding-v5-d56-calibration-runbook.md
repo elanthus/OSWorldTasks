@@ -21,7 +21,9 @@ confirmatory tasks or declare D4.12 or D5.6 passed.
 - Replacement Slot C: the same model, route, and state policy with normalized coordinates; this is
   a new policy identity and requires a new exact approval.
 - Slot D: `qwen/qwen3-vl-8b-instruct`, Alibaba only, stateless, normalized coordinates.
-- Calibration manifest: `artifacts/grounding-v5-manifests/calibration-d56.json`.
+- Calibration manifest for new plans: `artifacts/grounding-v5-manifests/v2/calibration-d56.json`;
+  already-recorded evidence remains bound to the original
+  `artifacts/grounding-v5-manifests/calibration-d56.json`.
 - Task count: 50 per policy; action cap: 1,431 per policy.
 - Retry rule: at most one same-route retry only when a canonical response has matching model and
   upstream identities, `finish_reason=error`, empty content, zero completion tokens, zero cost, and

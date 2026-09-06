@@ -46,9 +46,9 @@ from pixelgym.grounding.v5.codex_cli_policy import (
 )
 from pixelgym.grounding.v5.contracts import CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_calibration import (
-    CALIBRATION_MANIFEST,
+    CURRENT_CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
-    _calibration_manifest,
+    _current_calibration_manifest,
 )
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
@@ -861,7 +861,7 @@ def _raw_evidence_policy() -> dict[str, Any]:
 
 
 def _task_order(repository_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     records = [
         {
             "ordinal": ordinal,
@@ -1121,7 +1121,9 @@ def build_successor_calibration_plan(
             runtime_identity=runtime,
         ),
         "calibration_partition": {
-            "manifest_file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "manifest_file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "assigned_task_count": EXPECTED_TASK_COUNT,
             "task_order_rule": "frozen_manifest_order_no_reordering_or_replacement",

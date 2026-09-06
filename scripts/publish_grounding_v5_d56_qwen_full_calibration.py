@@ -16,7 +16,11 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest
-from pixelgym.grounding.v5.d56_calibration import _calibration_manifest
+from pixelgym.grounding.v5.d56_calibration import _historical_calibration_manifest
+from pixelgym.grounding.v5.d56_spend import (
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+)
 from pixelgym.grounding.v5.evidence import validate_credential_free
 
 try:
@@ -36,7 +40,7 @@ APPROVED_PLAN_SHA256 = "sha256:fc1f41d00df8c847d55765ea6af6b4c688463a893281f995f
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-result-v1"
 AUDIT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-integrity-audit-v1"
-DERIVATIVE_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-calibration-publishable-v1"
+DERIVATIVE_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-calibration-publishable-v2"
 RELATION_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-publication-relation-v1"
 REPORT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-calibration-report-v1"
 LATENCY_METHOD = "linear-interpolation-over-completed-response-latencies-v1"
@@ -284,7 +288,7 @@ def build_audit(
         },
     )
 
-    manifest = _calibration_manifest(repository_root)
+    manifest = _historical_calibration_manifest(repository_root)
     manifest_path = repository_root / plan["calibration_partition"]["path"]
     manifest_file = _file_record(repository_root, manifest_path)
     _require(
@@ -655,6 +659,8 @@ def build_derivative(
         "retry_permitted_by_approved_plan": False,
     }
     policy_manifest = plan["policy"]["policy_manifest"]
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     derivative = {
         "schema_version": DERIVATIVE_SCHEMA_VERSION,
         "purpose": "publishable derivative of the incomplete Qwen3-VL D5.6 calibration run",
@@ -707,6 +713,8 @@ def build_derivative(
             "latency": _latency_summary(summary["transport_records"]),
         },
         "cost": {
+            "phase_spend": phase_spend,
+            "campaign_spend": campaign_spend,
             "known_calibration_incremental_spend_usd": summary["calibration_incremental_spend_usd"],
             "known_prior_aggregate_spend_usd": summary["known_prior_aggregate_spend_usd"],
             "prior_unknown_charge_reservation_usd": summary["unknown_prior_charge_reservation_usd"],
@@ -781,6 +789,8 @@ def _format_ms(value: float | None) -> str:
 
 
 def _format_cost(value: str) -> str:
+    if value == "unknown":
+        return "unknown"
     return f"${Decimal(value):.9f}"
 
 
@@ -797,6 +807,37 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     cost = derivative["cost"]
     invalid = derivative["failure_routes"]["invalid_output"]
     structure = invalid["response_structure"]
+    spend_disclosure_rows: list[str] = []
+    if derivative.get("schema_version") == DERIVATIVE_SCHEMA_VERSION:
+        phase_spend = cost["phase_spend"]
+        campaign_spend = cost["campaign_spend"]
+        spend_disclosure_rows = [
+            f"| Phase known spend | {_format_cost(phase_spend['known_spend_usd'])} |",
+            (
+                "| Phase unknown reservation | "
+                f"{_format_cost(phase_spend['unknown_reservation_usd'])} |"
+            ),
+            (
+                "| Phase in-flight reservation | "
+                f"{_format_cost(phase_spend['in_flight_reservation_usd'])} |"
+            ),
+            (
+                "| Phase budget-accounted spend | "
+                f"{_format_cost(phase_spend['budget_accounted_spend_usd'])} |"
+            ),
+            (
+                "| Campaign known spend | "
+                f"{_format_cost(campaign_spend['known_spend_usd'])} |"
+            ),
+            (
+                "| Campaign unknown reservation | "
+                f"{_format_cost(campaign_spend['unknown_reservation_usd'])} |"
+            ),
+            (
+                "| Campaign budget-accounted spend | "
+                f"{_format_cost(campaign_spend['budget_accounted_spend_usd'])} |"
+            ),
+        ]
     lines = [
         "# Qwen3-VL 8B v5 Calibration Report",
         "",
@@ -880,6 +921,7 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             f"| Reserved prior Gemini exposure | {_format_cost(cost['prior_unknown_charge_reservation_usd'])} |",
             f"| Budget-accounted aggregate spend | {_format_cost(cost['budget_accounted_aggregate_spend_usd'])} |",
             f"| Remaining shared cap | {_format_cost(cost['recorded_remaining_aggregate_spend_usd'])} |",
+            *spend_disclosure_rows,
             "",
             "## Terminal invalid output",
             "",

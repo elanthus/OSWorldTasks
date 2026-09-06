@@ -7,12 +7,23 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
 COMMAND_SCHEMA = "pixelgym-d412-command-record-v1"
 MANIFEST_SCHEMA = "pixelgym-d412-evidence-manifest-v1"
 LEGACY_EVIDENCE_REVISION = "f92e307af7a3830347d50ca63f6a7d481489935c"
+CREDENTIALS_ABSENT_REVISIONS = {
+    LEGACY_EVIDENCE_REVISION,
+    "0d161893f9e0cd500bd57cecde2ce5d80e991730",
+    "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+}
+PRE_FINAL_REDACTION_REVISIONS = {
+    LEGACY_EVIDENCE_REVISION,
+    "0d161893f9e0cd500bd57cecde2ce5d80e991730",
+    "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+}
 PYTEST_SUMMARY = re.compile(
     r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
     r"(?:, (?P<warnings>\d+) warnings?)? in (?P<runtime>[0-9.]+)s"
@@ -224,6 +235,11 @@ SUPPORTING_PATHS = (
     "deploy/README.md",
 )
 
+DOCUMENTATION_PATHS = (
+    "README.md",
+    "deploy/README.md",
+)
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -231,6 +247,35 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _git_file_bytes(repository_root: Path, revision: str, relative: str) -> bytes:
+    if re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+        raise ValueError(f"recorded evidence revision is not a full lowercase SHA: {revision}")
+    try:
+        revision_check = subprocess.run(
+            ["git", "cat-file", "-e", f"{revision}^{{commit}}"],
+            cwd=repository_root,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise ValueError("could not inspect the repository with git") from error
+    if revision_check.returncode != 0:
+        raise ValueError(
+            f"recorded evidence revision is not present in the repository: {revision}"
+        )
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{relative}"],
+        cwd=repository_root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f"path is not present at recorded evidence revision: {revision}:{relative}"
+        )
+    return result.stdout
 
 
 def _json(path: Path) -> Any:
@@ -261,6 +306,15 @@ def _index(path: Path, root: Path) -> dict[str, Any]:
         "path": path.relative_to(root).as_posix(),
         "sha256": _sha256(path),
         "size": path.stat().st_size,
+    }
+
+
+def _index_git_file(repository_root: Path, revision: str, relative: str) -> dict[str, Any]:
+    data = _git_file_bytes(repository_root, revision, relative)
+    return {
+        "path": relative,
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "size": len(data),
     }
 
 
@@ -423,7 +477,7 @@ def _validate_commands(
     if records["commands/40-redaction-scan.json"]["argv"][0] != ("<path-2>/dev-venv/bin/python"):
         raise ValueError("redaction scan was not run with the recorded clean dev environment")
     inventory = records["commands/15-boundary-inventory.json"]["output"].splitlines()
-    expected_credentials_present = revision != LEGACY_EVIDENCE_REVISION
+    expected_credentials_present = revision not in CREDENTIALS_ABSENT_REVISIONS
     if inventory != [
         "osworld_installed=false",
         "provider_credentials_present_before_sanitization="
@@ -618,7 +672,9 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
     }
 
 
-def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
+def _redaction_scan(
+    repository_root: Path, evidence_dir: Path, revision: str
+) -> dict[str, Any]:
     paths = [path for path in evidence_dir.rglob("*") if path.is_file()]
     paths.extend(repository_root / path for path in SUPPORTING_PATHS)
     paths.extend((repository_root / "artifacts/platform/screenshots").glob("*.png"))
@@ -645,7 +701,15 @@ def _redaction_scan(repository_root: Path, evidence_dir: Path) -> dict[str, Any]
     for path in unique_paths:
         if path.name == "redaction-scan.json":
             continue
-        data = path.read_bytes()
+        try:
+            relative = path.relative_to(repository_root).as_posix()
+        except ValueError:
+            relative = ""
+        data = (
+            _git_file_bytes(repository_root, revision, relative)
+            if relative in DOCUMENTATION_PATHS
+            else path.read_bytes()
+        )
         scanned += 1
         for name, pattern in patterns.items():
             findings[name] += len(pattern.findall(data))
@@ -724,7 +788,7 @@ def _observations(
 
     redaction_observation = {"pre_generation_scan": prior_redaction}
     revision = records["commands/00-git-revision.json"]["output"].strip()
-    if revision != LEGACY_EVIDENCE_REVISION:
+    if revision not in PRE_FINAL_REDACTION_REVISIONS:
         redaction_observation["generated_final_deliverable_scan"] = generated_redaction
 
     return {
@@ -843,7 +907,12 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         raise ValueError("stored source provenance does not match the frozen clean revision")
 
     supporting = [
-        _index(repository_root / relative, repository_root) for relative in SUPPORTING_PATHS
+        (
+            _index_git_file(repository_root, revision, relative)
+            if relative in DOCUMENTATION_PATHS
+            else _index(repository_root / relative, repository_root)
+        )
+        for relative in SUPPORTING_PATHS
     ]
     screenshots = _json(repository_root / "artifacts/platform/screenshots/manifest.json")
     for item in screenshots["screenshots"]:
@@ -857,7 +926,7 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     # Keep these files present during both scans so the count and result are stable.
     (evidence_dir / "evidence-manifest.json").write_text("{}\n")
     (evidence_dir / "REPORT.md").write_text("")
-    preliminary_redaction = _redaction_scan(repository_root, evidence_dir)
+    preliminary_redaction = _redaction_scan(repository_root, evidence_dir, revision)
     if any(preliminary_redaction["finding_counts"].values()):
         raise ValueError(f"redaction scan found prohibited data: {preliminary_redaction}")
     (evidence_dir / "redaction-scan.json").write_text(
@@ -981,7 +1050,7 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     if "- [ ]" in report or "- [x]" in report.lower():
         raise ValueError("generated report must not contain checklist boxes")
     (evidence_dir / "REPORT.md").write_text(report)
-    final_redaction = _redaction_scan(repository_root, evidence_dir)
+    final_redaction = _redaction_scan(repository_root, evidence_dir, revision)
     if final_redaction != preliminary_redaction:
         raise ValueError(
             "redaction result changed after writing the final report and manifest: "

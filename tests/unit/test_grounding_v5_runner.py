@@ -73,6 +73,15 @@ def policy_manifest() -> PolicyManifest:
     )
 
 
+def reconciliation_manifest(limit: int) -> PolicyManifest:
+    values = policy_manifest().__dict__.copy()
+    values.pop("policy_id")
+    values["max_cancellation_requests_per_attempt"] = 0
+    values["max_reconciliation_requests_per_attempt"] = limit
+    values["reconciliation_deadline_seconds"] = float(limit)
+    return PolicyManifest.build(**values)
+
+
 def episode_caps(seed: int) -> CallCaps:
     task = generate_task(seed)
     return CallCaps.calculate(
@@ -279,6 +288,9 @@ def test_v5_deadline_settles_once_without_hidden_retry(tmp_path: Path) -> None:
     assert Counter(event.kind for event in journal.events("trial-timeout"))[
         "confirmed_cancellation"
     ] == 1
+    assert Counter(event.kind for event in journal.events("trial-timeout"))[
+        "sealed_unsuccessful_result"
+    ] == 1
 
 
 @pytest.mark.parametrize(
@@ -406,6 +418,129 @@ def test_v5_unknown_post_send_outcome_is_not_retried(tmp_path: Path) -> None:
     assert result.classification == "infrastructure_failure"
     assert len(transport.model_requests) == 1
     assert [kind for kind, _identity in transport.control_requests] == ["reconcile"]
+
+
+@pytest.mark.parametrize("reconciliation_limit", [0, 1])
+def test_v5_recover_step_returns_settled_failure_without_appending(
+    tmp_path: Path, reconciliation_limit: int
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = f"trial-settled-http-400-{reconciliation_limit}"
+    journal = V5AttemptJournal(tmp_path / f"settled-{reconciliation_limit}.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("unknown", failure_code="http_400_bad_request")]
+    )
+    manifest = reconciliation_manifest(reconciliation_limit)
+    caps = CallCaps(
+        task.max_episode_steps,
+        1,
+        reconciliation_limit,
+        1 + reconciliation_limit,
+    )
+
+    with pytest.raises(InjectedInterruption, match="attempt_terminal"):
+        V5Runner(
+            journal=journal,
+            manifest=manifest,
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=caps,
+            interrupt_after="attempt_terminal",
+        ).run(trial_id=trial_id, task=task, action_limit=1)
+
+    events = journal.events(trial_id)
+    assert [event.kind for event in events][-2:] == [
+        "unknown_outcome_infrastructure_failure",
+        "sealed_unsuccessful_result",
+    ]
+    before = journal.integrity_report()
+    before_event_chain_digest = before["event_chain_digest"]
+    recovered = V5Runner(
+        journal=journal,
+        manifest=manifest,
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=caps,
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "infrastructure_failure",
+        "redispatched": False,
+    }
+    after = journal.integrity_report()
+    assert after["event_chain_digest"] == before_event_chain_digest
+    assert after == before
+    assert len(transport.model_requests) == 1
+    assert len(transport.control_requests) == reconciliation_limit
+
+
+@pytest.mark.parametrize("reconciliation_limit", [0, 1])
+def test_v5_recover_step_preserves_old_sealed_terminal_event_chain(
+    tmp_path: Path, reconciliation_limit: int
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = f"old-sealed-http-400-{reconciliation_limit}"
+    identity = AttemptIdentity(trial_id, 0, 0)
+    journal = V5AttemptJournal(tmp_path / f"old-sealed-{reconciliation_limit}.sqlite")
+    policy = scripted_policy(seed)
+    pre_state = policy.reset(task.instruction)
+    journal.record_attempt_started(
+        identity,
+        provider_endpoint_identity="http://127.0.0.1:9999",
+        request_digest="sha256:" + "a" * 64,
+        idempotency_key="old-http-400",
+        model_attempt_reservation=1,
+        control_request_reservation=reconciliation_limit,
+        pre_call_checkpoint=pre_state,
+    )
+    journal.seal_attempt_terminal(
+        identity,
+        kind="unknown_outcome_infrastructure_failure",
+        post_attempt_checkpoint=policy.failure_state(
+            pre_state, "http_400_bad_request"
+        ),
+        failure_code="http_400_bad_request",
+    )
+    assert "sealed_unsuccessful_result" not in {
+        event.kind for event in journal.events(trial_id)
+    }
+    before = journal.integrity_report()
+    before_event_chain_digest = before["event_chain_digest"]
+    transport = ScriptedTransport()
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=reconciliation_manifest(reconciliation_limit),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(
+            task.max_episode_steps,
+            1,
+            reconciliation_limit,
+            1 + reconciliation_limit,
+        ),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "infrastructure_failure",
+        "redispatched": False,
+    }
+    after = journal.integrity_report()
+    assert after["event_chain_digest"] == before_event_chain_digest
+    assert after == before
+    assert not transport.control_requests
 
 
 def test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts(
@@ -914,6 +1049,73 @@ def test_v5_model_cap_is_checked_before_attempt_started_or_transport(tmp_path: P
     assert "attempt_started" not in {
         event.kind for event in journal.events("trial-zero-cap")
     }
+
+
+def test_v5_control_reservation_is_checked_before_attempt_started_or_transport(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "control-reservation-cap.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("deadline", failure_code="request_deadline")]
+    )
+    runner = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 1, 2, 1),
+    )
+
+    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+        runner.run(trial_id="trial-control-reservation-cap", task=task, action_limit=1)
+
+    events = journal.events("trial-control-reservation-cap")
+    assert "attempt_started" not in {event.kind for event in events}
+    assert len(transport.model_requests) + len(transport.control_requests) == 0
+
+
+def test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    trial_id = "trial-control-reservation-recovery"
+    journal = V5AttemptJournal(tmp_path / "control-reservation-recovery.sqlite")
+    transport = ScriptedTransport(
+        [TransportOutcome("deadline", failure_code="request_deadline")]
+    )
+    runner = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=CallCaps(1, 1, 2, 1),
+    )
+
+    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+        runner.run(trial_id=trial_id, task=task, action_limit=1)
+    wire_requests_before_recovery = len(transport.model_requests) + len(
+        transport.control_requests
+    )
+
+    recovered = runner.recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=task,
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "attempt_not_started",
+        "reason": "no_attempt_reservation",
+        "redispatched": False,
+    }
+    assert len(transport.model_requests) + len(transport.control_requests) == (
+        wire_requests_before_recovery
+    )
+    assert wire_requests_before_recovery == 0
 
 
 def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(

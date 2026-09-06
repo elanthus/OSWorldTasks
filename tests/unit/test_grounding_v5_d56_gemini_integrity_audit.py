@@ -14,6 +14,37 @@ from scripts.audit_grounding_v5_d56_gemini_full_calibration import (
 )
 
 
+def _create_markerless_journal_schema(path: Path) -> None:
+    connection = sqlite3.connect(path)
+    try:
+        connection.executescript(
+            """
+            CREATE TABLE objects (
+                digest TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                data BLOB NOT NULL
+            );
+            CREATE TABLE object_roles (
+                digest TEXT NOT NULL,
+                kind TEXT NOT NULL,
+                PRIMARY KEY (digest, kind),
+                FOREIGN KEY (digest) REFERENCES objects(digest)
+            );
+            CREATE TABLE events (
+                sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_key TEXT NOT NULL UNIQUE,
+                kind TEXT NOT NULL,
+                trial_id TEXT NOT NULL,
+                step_index INTEGER NOT NULL,
+                attempt_index INTEGER,
+                payload BLOB NOT NULL
+            );
+            """
+        )
+    finally:
+        connection.close()
+
+
 def _complete_journal(path: Path) -> dict[str, object]:
     journal = V5AttemptJournal(path)
     identity = AttemptIdentity("trial-1", 0, 0)
@@ -160,6 +191,22 @@ def test_read_only_audit_verifies_objects_events_and_lineage(tmp_path: Path) -> 
     assert report["model_attempt_reservations"] == 1
     assert report["provider_control_request_reservations"] == 0
     assert report["event_counts"]["dispatch_committed"] == 1
+
+
+def test_read_only_audit_reports_recorded_digest_version(tmp_path: Path) -> None:
+    v1_path = tmp_path / "v1.sqlite"
+    _create_markerless_journal_schema(v1_path)
+    v1_expected = _complete_journal(v1_path)
+    v2_path = tmp_path / "v2.sqlite"
+    v2_expected = _complete_journal(v2_path)
+
+    v1_report = _audit_journal(v1_path, v1_expected)
+    v2_report = _audit_journal(v2_path, v2_expected)
+
+    assert "digest_version" not in v1_expected
+    assert v1_report["integrity"]["digest_version"] == "v1"
+    assert v2_expected["digest_version"] == "v2"
+    assert v2_report["integrity"]["digest_version"] == "v2"
 
 
 def test_read_only_audit_rejects_changed_object_bytes(tmp_path: Path) -> None:

@@ -227,10 +227,14 @@ class _VendorFormTaskSupport:
             "task_id": self._record["task_id"],
             "seed": self._record["seed"],
         }
-        if reset_result != expected_identity:
+        expected_reset = {**expected_identity, "requires_reload": True}
+        if reset_result != expected_reset:
             raise OSWorldTaskError(
-                f"guest reset identity mismatch: expected {expected_identity}, got {reset_result}"
+                f"guest reset response mismatch: expected {expected_reset}, got {reset_result}"
             )
+
+        # This setup path satisfies the reload contract because it always starts
+        # from a freshly wiped Chrome profile and loads the task page anew below.
 
         desktop_ready_name = "pixelgym-vendor-form-desktop-ready.txt"
         desktop_ready_path = Path(setup_controller.cache_dir) / desktop_ready_name
