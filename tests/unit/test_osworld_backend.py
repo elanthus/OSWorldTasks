@@ -331,6 +331,7 @@ def test_portable_docker_allocator_exhaustion_stops_at_maximum_valid_port():
 
 def test_portable_docker_allocator_reads_default_docker_port_source(monkeypatch):
     docker_port = 50_000
+    bind_attempts = []
     container = types.SimpleNamespace(
         attrs={"NetworkSettings": {"Ports": {"5000/tcp": [{"HostPort": str(docker_port)}]}}}
     )
@@ -346,13 +347,17 @@ def test_portable_docker_allocator_reads_default_docker_port_source(monkeypatch)
             return None
 
         def bind(self, address):
-            assert address[1] == docker_port + 1
+            port = address[1]
+            bind_attempts.append(port)
+            if port == docker_port + 1:
+                raise OSError("occupied")
 
     monkeypatch.setattr("pixelgym.backends.osworld.socket.socket", lambda *_args: Probe())
 
     selected = _portable_docker_available_port(provider, docker_port)
 
-    assert selected == docker_port + 1
+    assert selected == docker_port + 2
+    assert bind_attempts == [docker_port + 1, docker_port + 2]
 
 
 def test_runtime_reference_selects_native_host_only_for_apple_silicon(monkeypatch, tmp_path):
