@@ -49,6 +49,12 @@ its redacted transcript is retained. The identical command succeeded through the
 path. The 112-action integration fixture remained valid under blind fake replay and its real episode;
 it was not replaced by the separate 110-action coordinate-based unit fixture.
 
+Fake-backend reset frames are not retained because they can be regenerated in seconds without
+Docker. Run `.venv/bin/python scripts/validate_day2.py fake --raw-dir <scratch>/raw --report-json
+<scratch>/validation-report.json`, which writes `<scratch>/screenshots/fake-resets/`; those frames
+must match the SHA-256 entries in `raw/fake-reset-frames.sha256` (compare the manifest with
+`(cd <scratch> && sha256sum screenshots/fake-resets/*.png)`).
+
 ## Commands
 
 Each transcript in `commands/` begins with the exact command and exit status and ends with

@@ -14,6 +14,12 @@ fallback decision, the structural window state, the pixel anchors, and provider 
 failed kiosk attempts and retained kiosk screenshot are indexed by
 `raw/presentation-mode-selection.json`.
 
+Fake-backend reset frames are not retained because they can be regenerated in seconds without
+Docker. Run `.venv/bin/python scripts/validate_day2.py fake --raw-dir <scratch>/raw --report-json
+<scratch>/validation-report.json`, which writes `<scratch>/screenshots/fake-resets/`; those frames
+must match the SHA-256 entries in `raw/fake-reset-frames.sha256` (compare the manifest with
+`(cd <scratch> && sha256sum screenshots/fake-resets/*.png)`).
+
 The real guest browser-boundary probe completed successfully in app mode with the effective launch
 argv still used by the current contract. A subsequent reset-isolation fix centralized that same
 profile path and changed the recorded source files, so the stored guest source-hash check now fails
