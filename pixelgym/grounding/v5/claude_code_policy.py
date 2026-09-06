@@ -42,6 +42,7 @@ from pixelgym.grounding.v5.sandbox import (
     RuntimeEnforcement,
     build_sandbox_manifest,
     runtime_enforcement,
+    unbound_runtime_enforcement,
     validate_runtime_enforcement,
 )
 from pixelgym.serialization import canonical_json_bytes
@@ -1025,12 +1026,14 @@ class ClaudeCodeTransport:
             "command_contract_digest": command_contract_digest(),
             "runtime_enforcement": outcome.get("runtime_enforcement"),
             "resolved_model": outcome.get("resolved_model"),
-            "experiment_charge_usd": outcome.get("experiment_charge_usd"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
             "informational_cost_telemetry_usd": outcome.get(
                 "informational_cost_telemetry_usd"
             ),
-            "policy_violation": outcome.get("policy_violation"),
-            "usage_telemetry_status": outcome.get("usage_telemetry_status"),
+            "policy_violation": outcome.get("policy_violation", "none"),
+            "usage_telemetry_status": outcome.get(
+                "usage_telemetry_status", "unavailable"
+            ),
         }
 
 
@@ -1060,10 +1063,8 @@ def build_claude_policy_manifest(
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
-        launch_enforcement=_claude_launch_enforcement(
-            sanitized_command_contract(),
-            {name: "<allowlisted>" for name in _ALLOWED_ENVIRONMENT_VARIABLES},
-        ),
+        launch_enforcement=unbound_runtime_enforcement(),
+        policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
         ("auth_method", AUTH_METHOD),

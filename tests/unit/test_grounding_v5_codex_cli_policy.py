@@ -240,11 +240,11 @@ def test_codex_policy_manifest_emits_declared_v3_sandbox_contract() -> None:
 
     assert sandbox["schema_version"] == "pixelgym-agent-v5-sandbox-v3"
     assert sandbox["probe_result"]["status"] == "not_run"
-    assert sandbox["runtime_enforcement"]["mechanism_name"] == (
-        "cli_flags_and_environment_allowlist"
-    )
+    assert sandbox["runtime_enforcement"]["mechanism_name"] == "not_bound_to_cli_launch"
+    assert sandbox["runtime_enforcement"]["cli_restrictions_applied"] is False
+    assert sandbox["runtime_enforcement"]["environment_allowlist_applied"] is False
     assert sandbox["runtime_enforcement"]["os_sandbox_applied"] is False
-    assert "declared_unavailable_capabilities" in sandbox["policy_claim"]
+    assert sandbox["policy_claim"]["declared_unavailable_capabilities"] == []
     assert "denied_capabilities" not in sandbox
 
 
@@ -286,7 +286,9 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         assert recorded_enforcement["mechanism_name"] == (
             "cli_flags_and_environment_allowlist"
         )
-        assert recorded_enforcement["argv_digest"] == policy.content_digest(command)
+        assert recorded_enforcement["argv_digest"] == policy.content_digest(
+            list(policy.sanitized_command_contract())
+        )
         assert recorded_enforcement["environment_allowlist_digest"] == (
             environment_allowlist_digest(captured["environment"])
         )
@@ -306,15 +308,12 @@ def test_missing_required_launch_restriction_changes_evidence_and_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     original_runtime_command = policy._runtime_command
-    commands: dict[str, list[str]] = {}
 
     def command_without_read_only_sandbox(**kwargs: Any) -> list[str]:
         complete = original_runtime_command(**kwargs)
         restricted = list(complete)
         sandbox_index = restricted.index("--sandbox")
         del restricted[sandbox_index : sandbox_index + 2]
-        commands["complete"] = complete
-        commands["restricted"] = restricted
         return restricted
 
     monkeypatch.setattr(policy, "_runtime_command", command_without_read_only_sandbox)
@@ -333,8 +332,12 @@ def test_missing_required_launch_restriction_changes_evidence_and_fails_closed(
         record = invocation_journal.record("sha256:missing-restriction")
         assert record is not None
         enforcement = record["outcome"]["runtime_enforcement"]
-        assert enforcement["argv_digest"] == policy.content_digest(commands["restricted"])
-        assert enforcement["argv_digest"] != policy.content_digest(commands["complete"])
+        approved_contract = list(policy.sanitized_command_contract())
+        altered_contract = list(approved_contract)
+        sandbox_index = altered_contract.index("--sandbox")
+        del altered_contract[sandbox_index : sandbox_index + 2]
+        assert enforcement["argv_digest"] == policy.content_digest(altered_contract)
+        assert enforcement["argv_digest"] != policy.content_digest(approved_contract)
         assert enforcement["cli_restrictions_applied"] is False
         assert enforcement["environment_allowlist_applied"] is True
     finally:
@@ -678,6 +681,9 @@ def test_timeout_and_interruption_terminate_process_and_retain_raw_journal(
         assert record is not None
         assert record["status"] == expected_status
         assert "partial-jsonl" in record["raw_stdout"]
+        assert transport.records[-1]["policy_violation"] == "none"
+        assert transport.records[-1]["experiment_charge_usd"] == "0.00"
+        assert transport.records[-1]["usage_telemetry_status"] == "unavailable"
         assert transport.reconcile(idempotency_key=key, deadline_seconds=1).status == "unknown"
     finally:
         transport.close()

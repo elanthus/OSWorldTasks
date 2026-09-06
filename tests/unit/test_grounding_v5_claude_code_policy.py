@@ -114,11 +114,11 @@ def test_claude_policy_manifest_emits_declared_v3_sandbox_contract() -> None:
 
     assert sandbox["schema_version"] == "pixelgym-agent-v5-sandbox-v3"
     assert sandbox["probe_result"]["status"] == "not_run"
-    assert sandbox["runtime_enforcement"]["mechanism_name"] == (
-        "cli_flags_and_environment_allowlist"
-    )
+    assert sandbox["runtime_enforcement"]["mechanism_name"] == "not_bound_to_cli_launch"
+    assert sandbox["runtime_enforcement"]["cli_restrictions_applied"] is False
+    assert sandbox["runtime_enforcement"]["environment_allowlist_applied"] is False
     assert sandbox["runtime_enforcement"]["os_sandbox_applied"] is False
-    assert "declared_unavailable_capabilities" in sandbox["policy_claim"]
+    assert sandbox["policy_claim"]["declared_unavailable_capabilities"] == []
     assert "denied_capabilities" not in sandbox
 
 

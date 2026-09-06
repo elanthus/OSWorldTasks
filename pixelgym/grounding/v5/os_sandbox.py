@@ -12,7 +12,11 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from pixelgym.grounding.v5.contracts import sha256_bytes
-from pixelgym.grounding.v5.sandbox import SANDBOX_POLICY_VERSION, ProbeResult
+from pixelgym.grounding.v5.sandbox import ProbeResult
+
+# This identity is independent of the manifest schema and preserves the frozen
+# profile bytes until the SBPL policy itself changes.
+SBPL_PROBE_PROFILE_VERSION = "pixelgym-agent-v5-sandbox-v2"
 
 
 @dataclass(frozen=True)
@@ -65,7 +69,7 @@ def darwin_profile(
     escaped_workspace = _escaped_sbpl_path(policy_workspace)
     return "\n".join(
         (
-            f";; {SANDBOX_POLICY_VERSION}",
+            f";; {SBPL_PROBE_PROFILE_VERSION}",
             "(version 1)",
             "(deny default)",
             '(import "system.sb")',

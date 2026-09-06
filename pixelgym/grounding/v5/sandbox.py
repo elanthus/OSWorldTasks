@@ -16,8 +16,8 @@ from pixelgym.grounding.v5.contracts import (
 
 LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION = "pixelgym-agent-v5-sandbox-v2"
 SANDBOX_MANIFEST_SCHEMA_VERSION = "pixelgym-agent-v5-sandbox-v3"
-# Retained as the public policy-version name used by the probe profile.
-SANDBOX_POLICY_VERSION = SANDBOX_MANIFEST_SCHEMA_VERSION
+# Compatibility name for callers which still construct the immutable v2 contract.
+SANDBOX_POLICY_VERSION = LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION
 DECLARED_UNAVAILABLE_CAPABILITIES = tuple(sorted(LegacySandboxManifest.REQUIRED_DENIALS))
 # Compatibility for callers which only use the values, not the old evidence claim.
 DENIED_CAPABILITIES = DECLARED_UNAVAILABLE_CAPABILITIES
@@ -213,10 +213,13 @@ def build_sandbox_manifest(
     provider_endpoint: str,
     launch_enforcement: RuntimeEnforcement | None = None,
     probe_result: ProbeResult | None = None,
+    policy_claim: PolicyClaim | None = None,
 ) -> SandboxManifestVersion:
     if launch_enforcement is None:
         if probe_result is not None:
             raise ValueError("legacy sandbox manifests cannot record a v3 probe result")
+        if policy_claim is not None:
+            raise ValueError("legacy sandbox manifests cannot record a v3 policy claim")
         return LegacySandboxManifest(
             runtime_digest=runtime_digest,
             network_policy_version=LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION,
@@ -227,6 +230,8 @@ def build_sandbox_manifest(
             ),
             denied_capabilities=DECLARED_UNAVAILABLE_CAPABILITIES,
         )
+    effective_claim = policy_claim or PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES)
+    validate_runtime_enforcement(effective_claim, launch_enforcement)
     return DeclaredSandboxManifest(
         schema_version=SANDBOX_MANIFEST_SCHEMA_VERSION,
         runtime_digest=runtime_digest,
@@ -234,7 +239,7 @@ def build_sandbox_manifest(
         provider_endpoint_allowlist_digest=endpoint_allowlist_digest(provider_endpoint),
         probe_result=probe_result or ProbeResult(status="not_run"),
         runtime_enforcement=launch_enforcement,
-        policy_claim=PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES),
+        policy_claim=effective_claim,
     )
 
 
@@ -303,7 +308,7 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
         raise ValueError("runtime enforcement fields differ from the v3 schema")
     if set(claim) != {"declared_unavailable_capabilities"}:
         raise ValueError("sandbox policy claim fields differ from the v3 schema")
-    return DeclaredSandboxManifest(
+    manifest = DeclaredSandboxManifest(
         schema_version=str(schema_version),
         runtime_digest=str(value.get("runtime_digest", "")),
         provider_endpoint=str(value.get("provider_endpoint", "")),
@@ -339,6 +344,8 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
             tuple(claim.get("declared_unavailable_capabilities", ()))
         ),
     )
+    validate_runtime_enforcement(manifest.policy_claim, manifest.runtime_enforcement)
+    return manifest
 
 
 def validate_capability_handles(handles: dict[str, object]) -> None:

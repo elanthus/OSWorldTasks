@@ -41,6 +41,7 @@ from pixelgym.grounding.v5.sandbox import (
     RuntimeEnforcement,
     build_sandbox_manifest,
     runtime_enforcement,
+    unbound_runtime_enforcement,
     validate_runtime_enforcement,
 )
 from pixelgym.serialization import canonical_json_bytes
@@ -462,15 +463,19 @@ def _codex_launch_enforcement(
         ("--image", "<current-screenshot>"),
         ("--cd", "<isolated-empty-working-directory>"),
     ):
-        try:
-            normalized[normalized.index(flag) + 1] = replacement
-        except (ValueError, IndexError):
-            normalized = []
-            break
+        start = 0
+        while True:
+            try:
+                flag_index = normalized.index(flag, start)
+            except ValueError:
+                break
+            if flag_index + 1 < len(normalized):
+                normalized[flag_index + 1] = replacement
+            start = flag_index + 1
     controls_match = tuple(normalized) == sanitized_command_contract(config)
     environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES)
     return runtime_enforcement(
-        argv=command,
+        argv=normalized,
         environment=environment,
         cli_restrictions_applied=controls_match,
         environment_allowlist_applied=environment_is_allowlisted,
@@ -1359,13 +1364,15 @@ class CodexCliTransport:
             "model_reasoning_effort": self.config.model_reasoning_effort,
             "authentication_mode": AUTH_MODE,
             "command_contract_digest": command_contract_digest(self.config),
-            "experiment_charge_usd": outcome.get("experiment_charge_usd"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
             "informational_list_price_equivalent_usd": outcome.get(
                 "informational_list_price_equivalent_usd"
             ),
-            "policy_violation": outcome.get("policy_violation"),
+            "policy_violation": outcome.get("policy_violation", "none"),
             "price_guard": outcome.get("price_guard"),
-            "usage_telemetry_status": outcome.get("usage_telemetry_status"),
+            "usage_telemetry_status": outcome.get(
+                "usage_telemetry_status", "unavailable"
+            ),
             "accepted_cli_diagnostic_count": outcome.get("accepted_cli_diagnostic_count"),
             "runtime_enforcement": outcome.get("runtime_enforcement"),
         }
@@ -1398,11 +1405,8 @@ def build_codex_cli_policy_manifest(
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
-        launch_enforcement=_codex_launch_enforcement(
-            sanitized_command_contract(config),
-            {name: "<allowlisted>" for name in _ALLOWED_ENVIRONMENT_VARIABLES},
-            config,
-        ),
+        launch_enforcement=unbound_runtime_enforcement(),
+        policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
         ("authentication_mode", AUTH_MODE),
