@@ -1,0 +1,53 @@
+Command: .venv/bin/python scripts/validate_vendor_form_browser_boundary.py --output artifacts/day-2-rev-2026-09-06-issues-95-101/raw/browser-boundary-local.json
+Execution: restricted sandbox attempt
+Exit status: 1
+
+Traceback (most recent call last):
+  File "<worktree>/pixelgym/validation/browser_boundary.py", line 460, in validate_browser_boundary
+    browser = playwright.chromium.launch(**launch_options)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.venv/lib/python3.12/site-packages/playwright/sync_api/_generated.py", line 16702, in launch
+    self._sync(
+  File "<worktree>/.venv/lib/python3.12/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ^^^^^^^^^^^^^
+  File "<worktree>/.venv/lib/python3.12/site-packages/playwright/_impl/_browser_type.py", line 97, in launch
+    await self._channel.send(
+  File "<worktree>/.venv/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.venv/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: BrowserType.launch: Target page, context or browser has been closed
+Browser logs:
+
+<launching> <user-cache>/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-font-subpixel-positioning --disable-gpu --disable-lcd-text --disable-skia-runtime-opts --force-color-profile=srgb --force-device-scale-factor=1 --hide-scrollbars --user-data-dir=<temp>/playwright_chromiumdev_profile-JZEGD4 --remote-debugging-pipe --no-startup-window
+<launched> pid=69957
+Call log:
+  - <launching> <user-cache>/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --disable-font-subpixel-positioning --disable-gpu --disable-lcd-text --disable-skia-runtime-opts --force-color-profile=srgb --force-device-scale-factor=1 --hide-scrollbars --user-data-dir=<temp>/playwright_chromiumdev_profile-JZEGD4 --remote-debugging-pipe --no-startup-window
+  - <launched> pid=69957
+  - [pid=69957] <gracefully close start>
+  - [pid=69957] <kill>
+  - [pid=69957] <will force kill>
+  - [pid=69957] exception while trying to kill process: Error: kill EPERM
+  - [pid=69957] <process did exit: exitCode=null, signal=SIGABRT>
+  - [pid=69957] starting temporary directories cleanup
+  - [pid=69957] finished temporary directories cleanup
+  - [pid=69957] <gracefully close end>
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<worktree>/scripts/validate_vendor_form_browser_boundary.py", line 27, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "<worktree>/scripts/validate_vendor_form_browser_boundary.py", line 19, in main
+    evidence = validate_browser_boundary(repository_root, seed=args.seed)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/pixelgym/validation/browser_boundary.py", line 462, in validate_browser_boundary
+    raise RuntimeError(
+RuntimeError: browser validation requires Playwright Chromium; run `python -m playwright install chromium`
+real 2.78
+user 1.12
+sys 3.07

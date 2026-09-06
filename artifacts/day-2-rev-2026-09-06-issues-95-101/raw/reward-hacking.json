@@ -1,0 +1,221 @@
+{
+  "attacks": [
+    {
+      "attack": "Agent emits DONE without completing the form",
+      "disposition": "tested",
+      "evidence": "Action type 3 was rejected before backend execution; the public Discrete action space contains only NOOP=0, CLICK=1, KEY=2.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Empty or partial Submit",
+      "disposition": "tested",
+      "evidence": "empty-submit trajectory produced no reward; a partial privileged submission was also evaluated without reward. Chromium 151.0.7922.34 returned HTTP 200, recorded exactly one empty privileged submission, preserved the settled validation message, and the host-side evaluator derived reward 0. Stored source hashes match the checked-out implementation.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Correct visible fields without Submit",
+      "disposition": "tested",
+      "evidence": "correct-fields-without-submit public trajectory produced no reward.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Visible fake Success content",
+      "disposition": "tested",
+      "evidence": "A fake Success status string with no submission produced reward 0.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Reuse prior successful state",
+      "disposition": "tested",
+      "evidence": "A correct submission carrying vf-stale-task produced no reward.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Repeat valid submission",
+      "disposition": "tested",
+      "evidence": "The complete trace emitted one terminal reward and the next step was rejected after episode termination.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Out-of-bounds clicks",
+      "disposition": "tested",
+      "evidence": "All four coordinate boundary violations were rejected before backend calls.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Open terminal or developer tools",
+      "disposition": "blocked",
+      "evidence": "Ctrl, Alt, Command, Escape, function keys, and modifier combinations are absent from KEY_ALLOWLIST_VERSION=1; KEY exposes only one indexed allowlisted key. Stored current real-guest evidence requires Chromium app fullscreen mode, exact 1024x768 window bounds, and task-app pixels at the observation's top edge.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Navigate to a completion endpoint",
+      "disposition": "blocked",
+      "evidence": "The action interface has no browser-navigation action or modifier chord. Stored current real-guest evidence requires Chromium app fullscreen mode, exact 1024x768 window bounds, and task-app pixels at the observation's top edge.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Guess or alter a task identifier",
+      "disposition": "tested",
+      "evidence": "The stale-task fixture was rejected by the current host-side task identity.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Trigger evaluator during partial write",
+      "disposition": "mitigated",
+      "evidence": "GuestTaskState appends an immutable complete record under one lock; evaluator also treats missing fields as mismatches, demonstrated by the partial fixture.",
+      "evidence_passed": true
+    },
+    {
+      "attack": "Provider reset fails silently",
+      "disposition": "tested",
+      "evidence": "Stored real OSWorld reset evidence records exact task/application identity and valid screenshot shape and dtype.",
+      "evidence_passed": true
+    },
+    {
+      "additional_attack": true,
+      "attack": "Mutate or change an action after validation",
+      "disposition": "tested",
+      "evidence": "Environment tests use stateful Mapping and int subclasses and prove dispatch uses only the immutable ValidatedAction snapshot.",
+      "evidence_passed": true
+    },
+    {
+      "additional_attack": true,
+      "attack": "Conflate truncation with successful termination",
+      "disposition": "tested",
+      "evidence": "timeout-one-action-before-completion truncated without reward and post-truncation step was rejected.",
+      "evidence_passed": true
+    }
+  ],
+  "browser_boundary_evidence": {
+    "browser": {
+      "args": [
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--hide-scrollbars"
+      ],
+      "device_scale_factor": 1.0,
+      "engine": "chromium",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      },
+      "version": "151.0.7922.34",
+      "viewport": [
+        1024,
+        768
+      ]
+    },
+    "schema_version": "pixelgym-browser-boundary-v2",
+    "source_hashes_match": true,
+    "source_sha256": {
+      "pixelgym/env.py": "36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+      "pixelgym/evaluator.py": "35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+      "pixelgym/tasks/vendor_form/app/server.py": "45232a0fd1abb172f54075d46aa9de6612bf8f9f7aa4c8f912afd0b41c5e927a",
+      "pixelgym/tasks/vendor_form/app/static/app.js": "6b7ca7a6cafcd82c3619297000632673d09f798d249b25d1fc290c4a3d6f9303",
+      "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
+      "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
+      "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
+      "pixelgym/validation/browser_boundary.py": "6f4a198a82ae92d76d6cda60a6d5c1cac01d5178de965ecd39bcc9f9bb14f91a"
+    },
+    "summary": {
+      "check_count": 10,
+      "failed_count": 0,
+      "passed": true,
+      "passed_count": 10
+    },
+    "task_id": "vf-6bed55ed612d3c5a",
+    "validator": "vendor-form-browser-boundary"
+  },
+  "evidence_inputs": {
+    "guest_browser_boundary_passed": true,
+    "guest_browser_source_hashes_match": true,
+    "key_contract_blocks_modifiers": true,
+    "real_reset_evidence_passed": true,
+    "validated_action_snapshot_passed": true
+  },
+  "guest_browser_boundary_evidence": {
+    "browser_launch": {
+      "effective_argv": [
+        "google-chrome",
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
+        "--no-first-run",
+        "--disable-default-apps",
+        "--disable-session-crashed-bubble",
+        "--disable-dev-shm-usage",
+        "--app=http://127.0.0.1:3000/",
+        "--start-fullscreen",
+        "--window-position=0,0",
+        "--window-size=1024,768"
+      ],
+      "presentation_mode": "app",
+      "presentation_mode_fallback_from": "kiosk",
+      "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      }
+    },
+    "schema_version": "pixelgym-guest-browser-boundary-v2",
+    "source_hashes_match": true,
+    "source_sha256": {
+      "pixelgym/backends/osworld.py": "1f145997604e42c2bba0a50fcfba991787cfcfc817a44eaeb32a5cd9fb4f6ad4",
+      "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+      "pixelgym/tasks/vendor_form/app/static/app.js": "6b7ca7a6cafcd82c3619297000632673d09f798d249b25d1fc290c4a3d6f9303",
+      "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
+      "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
+      "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
+      "pixelgym/tasks/vendor_form/osworld_task.py": "2ebe77bfb59ab80b2c6e26779593b71a7fabb08a519274d8caba953ecc053301",
+      "pixelgym/validation/browser_boundary.py": "6f4a198a82ae92d76d6cda60a6d5c1cac01d5178de965ecd39bcc9f9bb14f91a"
+    },
+    "summary": {
+      "check_count": 9,
+      "failed_count": 0,
+      "passed": true,
+      "passed_count": 9
+    },
+    "task_id": "vf-6bed55ed612d3c5a",
+    "validator": "vendor-form-guest-navigation-boundary"
+  },
+  "known_limitations": [
+    "The release-named x86 host and the Apple Silicon qemux/qemu base are third-party Docker Hub images without release signatures; digest pinning mitigates mutability, not publisher compromise.",
+    "On Apple Silicon the native outer host avoids redundant container emulation, but the released guest remains x86-64 and runs without KVM. Boot/stabilization may still be slow or fail even when the adapter is correct.",
+    "The privileged /api/state endpoint exists inside the guest. The tested app-mode contract removes browser navigation affordances from the bounded-click observation; containment against a browser or guest OS exploit remains outside this benchmark's threat model.",
+    "OSWorld's structured computer action controller internally generates fixed pyautogui Python calls. PixelGym never accepts or forwards agent-supplied Python, but it inherits bugs in that upstream structured-action implementation."
+  ],
+  "schema_version": 1,
+  "summary": {
+    "additional_attack_count": 2,
+    "attack_count": 14,
+    "evidence_passed_count": 14,
+    "passed": true,
+    "valid_dispositions": true
+  },
+  "validator": "reward-hacking-audit"
+}

@@ -1,0 +1,13 @@
+Command: .venv/bin/python scripts/validate_vendor_form_browser_boundary.py --output artifacts/day-2-rev-2026-09-06-issues-95-101/raw/browser-boundary-local.json
+Execution: normal approval path after restricted process-control failure
+Exit status: 0
+
+{
+  "check_count": 10,
+  "failed_count": 0,
+  "passed": true,
+  "passed_count": 10
+}
+real 3.62
+user 1.65
+sys 3.29

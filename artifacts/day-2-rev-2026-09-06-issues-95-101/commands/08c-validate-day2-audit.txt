@@ -1,0 +1,23 @@
+Command: .venv/bin/python scripts/validate_day2.py audit --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json
+Reason: Repeated after refreshing the stale local browser-boundary record and recombining it with the current guest record.
+Exit status: 0
+
+{
+  "audit": {
+    "additional_attack_count": 2,
+    "attack_count": 14,
+    "evidence_passed_count": 14,
+    "passed": true,
+    "valid_dispositions": true
+  },
+  "automated_validation": {
+    "completed_section_count": 8,
+    "failed_sections": [],
+    "missing_sections": [],
+    "required_section_count": 8,
+    "status": "PASS"
+  }
+}
+real 0.63
+user 0.78
+sys 3.27

@@ -1,0 +1,66 @@
+{
+  "comparisons": [
+    {
+      "differing_pixel_bbox_xyxy": [253, 0, 770, 147],
+      "differing_pixel_count": 75895,
+      "max_per_channel_delta": 223,
+      "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/real-resets/real-osworld-docker-seed-7-reset-0.png",
+      "sha256": "dfa9333b0dc5aaf939661ca3736f6da2cb352651dd991b1127c2def5dc2036b2",
+      "ssim": 0.9465235387281821
+    },
+    {
+      "differing_pixel_bbox_xyxy": [24, 99, 763, 505],
+      "differing_pixel_count": 115149,
+      "max_per_channel_delta": 227,
+      "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/real-resets/real-osworld-docker-seed-7-reset-1.png",
+      "sha256": "b0be00e8917719afc960eeb238bb2def3514d89cd7fe2fa7540e8a3e07027a36",
+      "ssim": 0.8367553162508502
+    },
+    {
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
+      "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/real-resets/real-osworld-docker-seed-7-reset-2.png",
+      "sha256": "0b624484a4935902753907c394a8dbc2378713422d4aa9a302f943742111ced2",
+      "ssim": 1.0
+    },
+    {
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
+      "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/real-resets/real-osworld-docker-seed-7-reset-3.png",
+      "sha256": "0b624484a4935902753907c394a8dbc2378713422d4aa9a302f943742111ced2",
+      "ssim": 1.0
+    },
+    {
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
+      "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/real-resets/real-osworld-docker-seed-7-reset-4.png",
+      "sha256": "0b624484a4935902753907c394a8dbc2378713422d4aa9a302f943742111ced2",
+      "ssim": 1.0
+    }
+  ],
+  "metric_definition": {
+    "perceptual": "11x11 uniform-window luminance SSIM; never used as bitwise evidence",
+    "raw": "RGB differing-pixel count and maximum absolute per-channel delta"
+  },
+  "no_mask_or_tolerance_applied": true,
+  "reference": {
+    "dtype": "uint8",
+    "path": "artifacts/day-2-rev-2026-09-04-issues-95-101/screenshots/guest-app.png",
+    "renderer_contract_identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+    "sha256": "0b624484a4935902753907c394a8dbc2378713422d4aa9a302f943742111ced2",
+    "shape": [768, 1024, 3]
+  },
+  "schema_version": "pixelgym-renderer-screenshot-differences-v1",
+  "summary": {
+    "bitwise_visual_determinism": false,
+    "failed_real_reset_attempts": 2,
+    "maximum_differing_pixel_count": 115149,
+    "maximum_per_channel_delta": 227,
+    "minimum_ssim": 0.8367553162508502,
+    "passed": false,
+    "reason": "The 90-minute infrastructure stop-loss was reached before a complete current-contract reset run; these are retained partial outputs and are not reset-determinism evidence."
+  }
+}

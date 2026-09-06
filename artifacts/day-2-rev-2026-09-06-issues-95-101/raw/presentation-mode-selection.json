@@ -1,0 +1,31 @@
+{
+  "current_source_probe": {
+    "active_window_bounds": {
+      "height": 768,
+      "width": 1024,
+      "x": 0,
+      "y": 0
+    },
+    "evidence": "raw/browser-boundary.json",
+    "exit_status": 0,
+    "mode": "app",
+    "navigation_checks_passed": 8,
+    "navigation_checks_total": 8,
+    "observation_shape": [
+      768,
+      1024,
+      3
+    ],
+    "provider_closed": true,
+    "screenshot": "screenshots/guest-app.png",
+    "screenshot_sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4"
+  },
+  "decision": {
+    "reason": "The first allocation established that kiosk did not preserve the required full-frame 1024x768 observation; the current-source app fallback filled the observation and passed all navigation-surface checks.",
+    "selected_mode": "app"
+  },
+  "human_gate_verdict": null,
+  "kiosk_first_evidence": "../day-2-rev-2026-09-04-issues-95-101/raw/presentation-mode-selection.json",
+  "owner_policy": "Try kiosk first; use app mode if kiosk breaks the 1024x768 viewport or page-ready detection.",
+  "schema_version": "pixelgym-presentation-mode-selection-v1"
+}

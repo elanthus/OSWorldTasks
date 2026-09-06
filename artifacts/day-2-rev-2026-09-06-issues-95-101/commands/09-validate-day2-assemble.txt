@@ -1,0 +1,13 @@
+Command: .venv/bin/python scripts/validate_day2.py assemble --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json
+Exit status: 0
+
+{
+  "completed_section_count": 8,
+  "failed_sections": [],
+  "missing_sections": [],
+  "required_section_count": 8,
+  "status": "PASS"
+}
+real 0.57
+user 1.07
+sys 2.90

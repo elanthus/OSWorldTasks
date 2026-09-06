@@ -1,0 +1,37 @@
+Command: .venv/bin/python -c "import signal,sys; signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(TimeoutError('real-reset validation exceeded remaining shared budget'))); signal.alarm(5198); from scripts.validate_day2 import main; raise SystemExit(main(sys.argv[1:]))" real-resets --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json --guest-image .cache/osworld/osworld-v2-ubuntu-x86.qcow2
+Exit status: 0
+
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+Failed to load proxies from evaluation_examples/settings/proxy/dataimpulse.json: [Errno 2] No such file or directory: 'evaluation_examples/settings/proxy/dataimpulse.json'
+KVM device not found, running without hardware acceleration (will be slower)
+KVM device not found, running without hardware acceleration (will be slower)
+KVM device not found, running without hardware acceleration (will be slower)
+KVM device not found, running without hardware acceleration (will be slower)
+KVM device not found, running without hardware acceleration (will be slower)
+{
+  "automated_validation": {
+    "completed_section_count": 6,
+    "failed_sections": [],
+    "missing_sections": [
+      "real_space_smoke",
+      "real_golden_episode"
+    ],
+    "required_section_count": 8,
+    "status": "INCOMPLETE"
+  },
+  "real_reset": {
+    "bitwise_visual_determinism": true,
+    "maximum_differing_pixel_count": 0,
+    "maximum_per_channel_delta": 0,
+    "maximum_reset_to_stable_frame_seconds": 192.46226191695314,
+    "minimum_ssim": 1.0,
+    "passed": true,
+    "privileged_application_state_exact": true,
+    "screenshot_dtype_exact": true,
+    "screenshot_shape_exact": true,
+    "semantic_task_state_exact": true
+  }
+}
+real 904.31
+user 4.22
+sys 3.22

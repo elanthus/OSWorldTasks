@@ -1,0 +1,16 @@
+Command: .venv/bin/python -c "import signal,sys; signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(TimeoutError('real golden episode exceeded remaining shared budget'))); signal.alarm(4052); from scripts.osworld_golden_trajectory import main; raise SystemExit(main(sys.argv[1:]))" record --fixture tests/integration/fixtures/osworld_golden_trajectory_seed7.json --guest-image .cache/osworld/osworld-v2-ubuntu-x86.qcow2 --output-dir artifacts/day-2-rev-2026-09-06-issues-95-101/real-golden
+Exit status: 0
+
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+Failed to load proxies from evaluation_examples/settings/proxy/dataimpulse.json: [Errno 2] No such file or directory: 'evaluation_examples/settings/proxy/dataimpulse.json'
+KVM device not found, running without hardware acceleration (will be slower)
+{
+  "first_positive_reward_step": 112,
+  "passed": true,
+  "positive_reward_count": 1,
+  "provider_closed": true,
+  "terminal_step": 112
+}
+real 408.21
+user 12.59
+sys 3.96

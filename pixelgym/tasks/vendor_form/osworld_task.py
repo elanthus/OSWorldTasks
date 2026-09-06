@@ -18,6 +18,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import shlex
 import zipfile
 from pathlib import Path
 from typing import Any, cast
@@ -26,13 +27,26 @@ from pixelgym.env import DEFAULT_INSTRUCTION, DEFAULT_MAX_EPISODE_STEPS
 from pixelgym.evaluator import evaluate
 from pixelgym.task_spec import Submission, TaskSpec
 from pixelgym.tasks.vendor_form import generator
+from pixelgym.tasks.vendor_form.browser_contract import (
+    GUEST_CHROMIUM_PROFILE_DIR,
+    GUEST_PRESENTATION_MODE,
+    GUEST_PRESENTATION_MODE_FALLBACK_FROM,
+    GUEST_PRESENTATION_MODE_REASON,
+    GUEST_VENDOR_FORM_PORT,
+    GUEST_VENDOR_FORM_URL,
+    GUEST_VIEWPORT_SIZE,
+    ChromiumLaunchPath,
+    build_chromium_argv,
+    chromium_renderer_contract,
+)
 
-APP_PORT = 3000
-APP_URL = f"http://127.0.0.1:{APP_PORT}/"
+APP_PORT = GUEST_VENDOR_FORM_PORT
+APP_URL = GUEST_VENDOR_FORM_URL
 GUEST_ROOT = Path("/tmp/pixelgym-vendor-form")
 GUEST_BUNDLE = Path("/tmp/pixelgym-vendor-form.zip")
 GUEST_SERVER_LOG = Path("/tmp/pixelgym-vendor-form-server.log")
 GUEST_CHROME_LOG = Path("/tmp/pixelgym-vendor-form-chrome.log")
+_PAGE_READY_ERROR_MARKER = "body[data-pixelgym-ready-error]"
 
 _APP_DIR = Path(__file__).parent / "app"
 _BUNDLE_FILES = (
@@ -111,6 +125,16 @@ class _VendorFormTaskSupport:
     def bundle_sha256(self) -> str:
         return self._bundle_sha256
 
+    @property
+    def browser_launch_metadata(self) -> dict[str, Any]:
+        return {
+            "presentation_mode": GUEST_PRESENTATION_MODE,
+            "presentation_mode_fallback_from": GUEST_PRESENTATION_MODE_FALLBACK_FROM,
+            "presentation_mode_reason": GUEST_PRESENTATION_MODE_REASON,
+            "renderer_contract": chromium_renderer_contract(),
+            "effective_argv": list(build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST)),
+        }
+
     def setup(self, setup_controller: Any, use_proxy: bool = False) -> None:
         if use_proxy:
             raise OSWorldTaskError("the open vendor task does not use a proxy")
@@ -130,7 +154,7 @@ class _VendorFormTaskSupport:
                     "pkill -f '[g]oogle-chrome.*pixelgym-chrome-profile' "
                     "2>/dev/null || true; "
                     "rm -rf /tmp/pixelgym-vendor-form; "
-                    "rm -rf /tmp/pixelgym-chrome-profile; "
+                    f"rm -rf {GUEST_CHROMIUM_PROFILE_DIR}; "
                     "mkdir -p /tmp/pixelgym-vendor-form; "
                     "python3 -m zipfile -e /tmp/pixelgym-vendor-form.zip "
                     "/tmp/pixelgym-vendor-form"
@@ -235,6 +259,8 @@ class _VendorFormTaskSupport:
 
         # This setup path satisfies the reload contract because it always starts
         # from a freshly wiped Chrome profile and loads the task page anew below.
+        # The profile lives in /dev/shm to avoid persistent guest-disk browser state;
+        # --disable-dev-shm-usage separately redirects renderer shared-memory files.
 
         desktop_ready_name = "pixelgym-vendor-form-desktop-ready.txt"
         desktop_ready_path = Path(setup_controller.cache_dir) / desktop_ready_name
@@ -269,9 +295,45 @@ class _VendorFormTaskSupport:
         ):
             raise OSWorldTaskError("guest window manager/session bus did not become ready")
 
+        display_size_name = "pixelgym-vendor-form-display-size.txt"
+        display_size_path = Path(setup_controller.cache_dir) / display_size_name
+        display_size_path.unlink(missing_ok=True)
+        display_width, display_height = GUEST_VIEWPORT_SIZE
+        display_size_script = (
+            "import os,re,subprocess\n"
+            "env=os.environ.copy(); env['DISPLAY']=':0'\n"
+            "query=subprocess.run(['xrandr','--query'],env=env,capture_output=True,text=True,"
+            "timeout=5,check=True).stdout\n"
+            "outputs=[line.split()[0] for line in query.splitlines() if ' connected' in line]\n"
+            "if len(outputs) != 1: raise RuntimeError(outputs)\n"
+            f"subprocess.run(['xrandr','--output',outputs[0],'--mode','{display_width}x"
+            f"{display_height}','--scale','1x1','--panning','{display_width}x{display_height}',"
+            f"'--fb','{display_width}x{display_height}'],env=env,capture_output=True,text=True,"
+            "timeout=10,check=True)\n"
+            "verified=subprocess.run(['xrandr','--current'],env=env,capture_output=True,text=True,"
+            "timeout=5,check=True).stdout\n"
+            f"if re.search(r'current {display_width} x {display_height}',verified) is None: "
+            "raise RuntimeError(verified)\n"
+            "print('DISPLAY_SIZE_READY')\n"
+        )
+        setup_controller.execute(
+            ["python3", "-c", display_size_script],
+            stdout=display_size_name,
+            quiet=True,
+            timeout=30,
+        )
+        if (
+            not display_size_path.is_file()
+            or display_size_path.read_text(encoding="utf-8").strip() != "DISPLAY_SIZE_READY"
+        ):
+            raise OSWorldTaskError(
+                f"guest display did not enter fixed {display_width}x{display_height} mode"
+            )
+
         # Launch directly into the task through the guest's real graphical
-        # session.  This is the normal path for an accelerated OSWorld host;
-        # the page reports its own task-bound render-complete marker below.
+        # session. The argv is composed only from validated constants before
+        # crossing the fixed shell boundary; no task or agent value enters it.
+        chromium_command = shlex.join(build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST))
         setup_controller.launch(
             [
                 "bash",
@@ -279,41 +341,53 @@ class _VendorFormTaskSupport:
                 (
                     "export DISPLAY=:0; "
                     "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus; "
-                    "exec google-chrome --user-data-dir=/tmp/pixelgym-chrome-profile "
-                    "--no-first-run --disable-default-apps "
-                    "--disable-session-crashed-bubble --disable-gpu "
-                    "--disable-dev-shm-usage --start-maximized "
-                    f"{APP_URL} >{GUEST_CHROME_LOG} 2>&1"
+                    f"exec {chromium_command} >{GUEST_CHROME_LOG} 2>&1"
                 ),
             ]
         )
-        page_ready_name = "pixelgym-vendor-form-page-ready.txt"
+        # The service being healthy does not mean Chromium has fetched and rendered
+        # the task. Require two consecutive acknowledgements of the sentinel POST so
+        # the browser can consume its response and present the completed paint before
+        # DesktopEnv is allowed to return an observation.
+        page_ready_name = "pixelgym-vendor-form-page-ready.json"
         page_ready_path = Path(setup_controller.cache_dir) / page_ready_name
         page_ready_path.unlink(missing_ok=True)
+        page_ready_error_name = "pixelgym-vendor-form-page-ready-error.txt"
+        page_ready_error_path = Path(setup_controller.cache_dir) / page_ready_error_name
+        page_ready_error_path.unlink(missing_ok=True)
         page_ready_script = (
             "import json,time,urllib.request\n"
-            "last = None\n"
+            "last_error = None\n"
+            "ready_streak = 0\n"
             "for attempt in range(240):\n"
             " try:\n"
             f"  value=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=1))\n"
             "  if value == {'ready': True}:\n"
-            "   print('PAGE_READY')\n"
-            "   break\n"
+            "   ready_streak += 1\n"
+            "   if ready_streak == 2:\n"
+            "    print(json.dumps(value,sort_keys=True,separators=(',',':')))\n"
+            "    break\n"
+            "  else:\n"
+            "   ready_streak = 0\n"
+            "   last_error = 'page-ready response: ' + repr(value)\n"
             " except Exception as exc:\n"
-            "  last = repr(exc)\n"
-            " if attempt == 239: raise RuntimeError(last or 'page did not report ready')\n"
+            "  ready_streak = 0\n"
+            "  last_error = repr(exc)\n"
+            " if attempt == 239: raise RuntimeError(last_error or 'page did not report ready')\n"
             " time.sleep(0.25)\n"
         )
         setup_controller.execute(
             ["python3", "-c", page_ready_script],
             stdout=page_ready_name,
+            stderr=page_ready_error_name,
             quiet=True,
             timeout=75,
         )
-        if (
-            not page_ready_path.is_file()
-            or page_ready_path.read_text(encoding="utf-8").strip() != "PAGE_READY"
-        ):
+        try:
+            page_ready = json.loads(page_ready_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            page_ready = None
+        if page_ready != {"ready": True}:
             diagnostic_name = "pixelgym-vendor-form-chrome-diagnostic.txt"
             diagnostic_path = Path(setup_controller.cache_dir) / diagnostic_name
             diagnostic_path.unlink(missing_ok=True)
@@ -336,8 +410,15 @@ class _VendorFormTaskSupport:
                 if diagnostic_path.is_file()
                 else "missing"
             )
+            page_ready_error = (
+                page_ready_error_path.read_text(encoding="utf-8").strip()
+                if page_ready_error_path.is_file()
+                else "missing"
+            )
             raise OSWorldTaskError(
                 "managed Chromium task page did not report render completion; "
+                f"page_ready_error_marker={_PAGE_READY_ERROR_MARKER!r}; "
+                f"probe_error={page_ready_error[-2000:]!r}; "
                 f"guest_diagnostic={diagnostic[-6000:]!r}"
             )
         setup_controller.execute(
@@ -346,7 +427,7 @@ class _VendorFormTaskSupport:
                 "-lc",
                 (
                     "wmctrl -a 'Vendor Onboarding' 2>/dev/null || true; "
-                    "wmctrl -r 'Vendor Onboarding' -b add,maximized_vert,maximized_horz "
+                    "wmctrl -r 'Vendor Onboarding' -b add,fullscreen "
                     "2>/dev/null || true"
                 ),
             ],
@@ -387,6 +468,46 @@ class _VendorFormTaskSupport:
         if not isinstance(state.get("submissions"), list):
             raise OSWorldTaskError("privileged submission state is not a list")
         return cast(dict[str, Any], state)
+
+    def read_browser_window_state(self, env: Any) -> dict[str, Any]:
+        """Read validation-only window-mode evidence from the trusted guest controller."""
+
+        script = (
+            "python3 - <<'PY'\n"
+            "import json,os,re,subprocess,urllib.request\n"
+            "env=os.environ.copy(); env['DISPLAY']=':0'\n"
+            "def run(argv):\n"
+            " result=subprocess.run(argv,env=env,capture_output=True,text=True,timeout=5)\n"
+            " if result.returncode != 0: raise RuntimeError(result.stderr.strip() or argv[0])\n"
+            " return result.stdout.strip()\n"
+            "active_raw=run(['xprop','-root','_NET_ACTIVE_WINDOW'])\n"
+            "match=re.search(r'0x[0-9a-fA-F]+',active_raw)\n"
+            "if match is None: raise RuntimeError(active_raw)\n"
+            "active_id=match.group(0).lower()\n"
+            "windows=[]\n"
+            "for line in run(['wmctrl','-lGx']).splitlines():\n"
+            " parts=line.split(None,7)\n"
+            " if len(parts) != 8: continue\n"
+            " windows.append({'id':parts[0].lower(),'desktop':parts[1],"
+            "'x':int(parts[2]),'y':int(parts[3]),'width':int(parts[4]),"
+            "'height':int(parts[5]),'class':parts[6],'title':parts[7]})\n"
+            "properties=run(['xprop','-id',active_id,'_NET_WM_STATE','WM_CLASS','_NET_WM_NAME'])\n"
+            f"page_ready=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=5))\n"
+            "print(json.dumps({'active_window_id':active_id,'windows':windows,"
+            "'active_window_properties':properties,'task_app_page_ready':page_ready},"
+            "sort_keys=True))\n"
+            "PY\n"
+        )
+        result = env.controller.run_bash_script(script, timeout=15)
+        if not isinstance(result, dict) or result.get("returncode") != 0:
+            raise OSWorldTaskError(f"browser window-state query failed: {result!r}")
+        try:
+            value = json.loads(result.get("output", "").strip())
+        except json.JSONDecodeError as exc:
+            raise OSWorldTaskError("browser window-state query returned invalid JSON") from exc
+        if not isinstance(value, dict):
+            raise OSWorldTaskError("browser window-state query returned a non-object")
+        return cast(dict[str, Any], value)
 
     def read_submissions(self, env: Any) -> list[Submission]:
         state = self.read_privileged_state(env)

@@ -1,0 +1,130 @@
+{
+  "boundary": {
+    "evaluation": {
+      "derived_environment_reward": 0.0,
+      "mismatched_fields": [
+        "company_name",
+        "contact_email",
+        "contact_phone",
+        "country",
+        "payment_terms",
+        "tax_id"
+      ],
+      "score": 0.14285714285714285,
+      "submitted": true,
+      "success": false,
+      "task_id_matches": true
+    },
+    "submission": {
+      "final": true,
+      "seed": 7,
+      "submitted_at_step": 1,
+      "task_id": "vf-6bed55ed612d3c5a",
+      "values": {
+        "company_name": "",
+        "contact_email": "",
+        "contact_phone": "",
+        "country": "",
+        "expedited_onboarding": false,
+        "payment_terms": "",
+        "tax_id": ""
+      }
+    },
+    "submission_count": 1,
+    "submit_response_body": {
+      "submission_number": 1
+    },
+    "submit_response_status": 200,
+    "visible_status": "Complete all required fields before submitting."
+  },
+  "browser": {
+    "args": [
+      "--disable-font-subpixel-positioning",
+      "--disable-gpu",
+      "--disable-lcd-text",
+      "--disable-skia-runtime-opts",
+      "--force-color-profile=srgb",
+      "--force-device-scale-factor=1",
+      "--hide-scrollbars"
+    ],
+    "device_scale_factor": 1.0,
+    "engine": "chromium",
+    "renderer_contract": {
+      "flags": [
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1"
+      ],
+      "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+      "version": "pixelgym-chromium-renderer-v1"
+    },
+    "version": "151.0.7922.34",
+    "viewport": [
+      1024,
+      768
+    ]
+  },
+  "checks": [
+    {
+      "name": "submit_response_ok",
+      "passed": true
+    },
+    {
+      "name": "submit_response_body_exact",
+      "passed": true
+    },
+    {
+      "name": "visible_validation_state_settled",
+      "passed": true
+    },
+    {
+      "name": "one_privileged_submission_recorded",
+      "passed": true
+    },
+    {
+      "name": "privileged_submission_exact",
+      "passed": true
+    },
+    {
+      "name": "evaluator_observed_submission",
+      "passed": true
+    },
+    {
+      "name": "evaluator_matched_task_identity",
+      "passed": true
+    },
+    {
+      "name": "evaluator_rejected_incomplete_submission",
+      "passed": true
+    },
+    {
+      "name": "derived_environment_reward_zero",
+      "passed": true
+    },
+    {
+      "name": "evaluator_mismatches_exact",
+      "passed": true
+    }
+  ],
+  "schema_version": "pixelgym-browser-boundary-v2",
+  "seed": 7,
+  "source_sha256": {
+    "pixelgym/env.py": "36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+    "pixelgym/evaluator.py": "35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+    "pixelgym/tasks/vendor_form/app/server.py": "507ee4fd71e247d07b96f6268da1299f5268ad3cebd2a1c211bfa2f090a8e9e5",
+    "pixelgym/tasks/vendor_form/app/static/app.js": "037f5a91a76ae091d2363e47176590414b7c04ba4c2e2b51c47a89b870d86ec3",
+    "pixelgym/tasks/vendor_form/browser_contract.py": "f4b82a38f719a91ef0cf53adbd89290a4ab9cf7b155b02a8db06397443e61051",
+    "pixelgym/validation/browser_boundary.py": "d61d94dad5c744c1d6af2feb6df771f7f8efae11dfe18c3a9b1d728db31ad68f"
+  },
+  "summary": {
+    "check_count": 10,
+    "failed_count": 0,
+    "passed": true,
+    "passed_count": 10
+  },
+  "task_id": "vf-6bed55ed612d3c5a",
+  "validator": "vendor-form-browser-boundary"
+}

@@ -12,15 +12,17 @@ generation, and stored validation evidence for a synthetic vendor-onboarding wor
 |---|---|---|
 | Real OSWorld episode | 112 actions; reward `1.0` once on the terminal submission | [`real-golden-episode.json`](artifacts/day-2/raw/real-golden-episode.json) |
 | Fake reset repeatability | 10/10 semantically and bitwise identical; 0 differing pixels | [`validation-report.json`](artifacts/validation-report.json) |
-| Real reset stability | 5/5 semantically exact; at most 155 clock-region pixels differed; minimum SSIM 0.999863 | [`validation-report.json`](artifacts/validation-report.json) |
+| Historical real reset stability | 5/5 semantically exact; at most 155 clock-region pixels differed; minimum SSIM 0.999863 | [`validation-report.json`](artifacts/validation-report.json) |
+| 2026-09-06 real reset stability | 5/5 semantically and bitwise identical at 1024×768 on one local Docker host; portability is not established | [`real-reset.json`](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json) |
 | Reward timing | 122/122 stored trajectories met their expected reward/termination outcome | [`reward-timing.json`](artifacts/day-2/raw/reward-timing.json) |
 | Space integrity | Gymnasium checker; 500 sampled actions; 14 invalid and 4 boundary probes | [`space-integrity.json`](artifacts/day-2/raw/space-integrity.json) |
-| Reward-hacking audit | 14/14 surfaces have evidence and a classified disposition | [`reward-hacking.json`](artifacts/day-2/raw/reward-hacking.json) |
+| Reward-hacking audit | 14/14 surfaces have evidence and a classified disposition | [`reward-hacking.json`](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json) |
 | Grounding experiment | Raw 56/100; marks 100/100; +44.0 points, paired bootstrap 95% CI [+35.0, +54.0] | [`grounding-results.json`](artifacts/grounding-results.json) |
 
-The project owner reviewed the stored Day 2 evidence and declared that gate `PASS`. Automated
-status is not substituted for the human verdict. Reset determinism here is semantic, **not
-bitwise visual**; see [Limitations](#limitations) for what the stored frames do and do not show.
+The project owner reviewed the historical Day 2 evidence and declared that gate `PASS`. Automated
+status is not substituted for the human verdict. That historical reset result is semantic, **not
+bitwise visual**. The 2026-09-06 revision records five bitwise-identical frames on one local Docker
+host, which does not establish bitwise portability; see [Limitations](#limitations).
 
 ## Grounding benchmark
 
@@ -208,7 +210,8 @@ frozen browser dataset additionally requires Playwright's Chromium binary, insta
 
 ```bash
 python -m playwright install chromium
-python scripts/validate_vendor_form_browser_boundary.py
+python scripts/validate_vendor_form_browser_boundary.py \
+  --output artifacts/local/browser-boundary.json
 python scripts/capture_grounding_dataset.py
 ```
 
@@ -233,16 +236,19 @@ terminates rather than truncates.
 ## Real OSWorld-V2 integration
 
 The integration is pinned to OSWorld-V2 tag `v2026.06.24` at commit
-`2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6`. The stored run used Python 3.12.13,
-1920×1080 screenshots, and a digest-pinned native ARM64 QEMU host around the release's unchanged
-x86-64 guest. Full provider and image metadata are recorded in the
-[validation artifact](artifacts/validation-report.json).
+`2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6`. The historical Day 2 run used Python 3.12.13 and
+1920×1080 screenshots. The 2026-09-06 revision used Python 3.12.14 and 1024×768 observations; both
+used a digest-pinned native ARM64 QEMU host around the release's unchanged x86-64 guest. Full
+provider and image metadata are recorded in the historical
+[validation artifact](artifacts/validation-report.json) and the
+[current revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json).
 
 ```bash
 source .venv/bin/activate
 pip install -e ".[osworld]"
 python scripts/prepare_osworld_docker.py
-python scripts/validate_vendor_form_browser_boundary.py
+python scripts/validate_vendor_form_browser_boundary.py \
+  --output artifacts/local/browser-boundary.json
 python scripts/smoke_osworld_reset.py
 python scripts/osworld_space_smoke.py
 python scripts/osworld_golden_trajectory.py check
@@ -277,19 +283,26 @@ visible fake success text, stale task identity, repeated submission, coordinate 
 post-episode calls, modifier/devtools access, direct navigation, action mutation after validation,
 and termination/truncation confusion. Each is classified as `blocked`, `tested`, `mitigated`, or a
 known limitation, with the underlying evidence retained
-([reward-hacking evidence](artifacts/day-2/raw/reward-hacking.json)).
+([reward-hacking evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)).
 
 ## Limitations
 
 - This is one deterministic synthetic form, not a broad desktop-task distribution.
-- Real OSWorld frames are semantically stable but not bitwise identical because the guest desktop
-  clock is live, which changed a small localized pixel region; no mask or tolerance was applied to
-  the reported raw differences. Semantic task state was exact across resets, and the unmasked
-  full-frame minimum SSIM was 0.999863 ([validation evidence](artifacts/validation-report.json)).
+- The current app-mode reset evidence records five mutually bitwise-identical 1024x768 frames,
+  without a mask or tolerance. That single local-Docker run does not establish bitwise portability
+  across hosts. The retained `04b` navigation-boundary frame was captured before page
+  initialization completed because the prior launch/readiness path did not prevent an intermediate
+  paint from becoming the observation. The launch now requires two consecutive page-ready
+  acknowledgements; the evidence probe independently verifies `ready: true` after reset and then
+  captures a fresh stable frame. The replacement `04c` frame is bitwise-identical to all five reset
+  frames: 0 differing pixels and maximum per-channel delta 0 before the separately reported SSIM.
+  The immutable historical evidence also retains its earlier live-clock differences
+  ([current comparison](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
-- The privileged state endpoint exists inside the guest. The bounded action interface cannot
-  navigate to it, but browser/guest exploitation is outside the threat model.
+- The privileged state endpoint exists inside the guest. The guest Chromium app-mode contract removes
+  address-bar, tab, and desktop navigation affordances from the tested bounded-click observation;
+  containment against a browser or guest OS exploit remains outside the threat model.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
 - Target identity is perfectly aliased with screen state in the frozen v1 grounding dataset, so
   v1 control-type slices cannot separate control-type and screen-state effects. The unrun v2

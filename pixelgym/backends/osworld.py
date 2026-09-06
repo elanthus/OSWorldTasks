@@ -148,8 +148,8 @@ def _install_darwin_docker_port_allocator() -> None:
 class OSWorldBackendConfig:
     guest_image_path: Path
     cache_dir: Path = Path(".cache/osworld/pixelgym")
-    width: int = 1920
-    height: int = 1080
+    width: int = 1024
+    height: int = 768
     client_password: str = "osworld-public-evaluation"
     stabilization_timeout: float = 12.0
     stabilization_poll_interval: float = 0.1
@@ -332,6 +332,14 @@ class OSWorldBackend:
             raise OSWorldBackendError("OSWorld task is not installed")
         return cast(dict[str, Any], self._task.read_privileged_state(env))
 
+    def read_browser_window_state(self) -> dict[str, Any]:
+        """Validation-only guest window evidence; never exposed to the agent."""
+
+        env = self._require_active()
+        if self._task is None:
+            raise OSWorldBackendError("OSWorld task is not installed")
+        return cast(dict[str, Any], self._task.read_browser_window_state(env))
+
     def read_guest_root_disk(self) -> dict[str, int]:
         """Validation-only root-volume evidence; never exposed to the agent."""
 
@@ -381,6 +389,11 @@ class OSWorldBackend:
             "guest_image_path": str(self.config.guest_image_path),
             "guest_volume_size_gb": self.config.guest_volume_size_gb,
             "task_bundle_sha256": (self._task.bundle_sha256 if self._task is not None else None),
+            "browser_launch": (
+                getattr(self._task, "browser_launch_metadata", None)
+                if self._task is not None
+                else None
+            ),
             "host_port_allocator": (
                 "socket-bind-plus-docker-port-map"
                 if platform.system() == "Darwin"
