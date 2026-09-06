@@ -27,6 +27,22 @@ def _submit_payload(task: dict, **overrides) -> dict:
     return payload
 
 
+def test_ready_sentinel_follows_render_and_exact_font_loads():
+    app_source = (
+        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
+    ).read_text(encoding="utf-8")
+
+    render_positions = [
+        app_source.index("renderRequestCard(task.fields);"),
+        app_source.index("populateCountryOptions(task.options.country);"),
+        app_source.index("populatePaymentTermsOptions(task.options.payment_terms);"),
+    ]
+    font_load_position = app_source.index("document.fonts.load(")
+    ready_position = app_source.index('dataset.pixelgymReady = "true"')
+
+    assert max(render_positions) < font_load_position < ready_position
+
+
 def test_incomplete_submission_message_matches_browser_app_literal():
     app_source = (
         REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
