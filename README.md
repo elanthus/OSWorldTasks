@@ -291,11 +291,12 @@ known limitation, with the underlying evidence retained
 - The current app-mode reset evidence records five mutually bitwise-identical 1024x768 frames,
   without a mask or tolerance. That single local-Docker run does not establish bitwise portability
   across hosts. The retained `04b` navigation-boundary frame was captured before page
-  initialization completed because the guest launch did not prove the page-ready sentinel before
-  accepting the observation. The launch now waits for that sentinel, and the replacement `04c`
-  comparison records the resulting raw pixel count and maximum channel delta before any separately
-  named similarity metric. The immutable historical evidence also retains its earlier live-clock
-  differences
+  initialization completed because the prior launch/readiness path did not prevent an intermediate
+  paint from becoming the observation. The launch now requires two consecutive page-ready
+  acknowledgements; the evidence probe independently verifies `ready: true` after reset and then
+  captures a fresh stable frame. The replacement `04c` frame is bitwise-identical to all five reset
+  frames: 0 differing pixels and maximum per-channel delta 0 before the separately reported SSIM.
+  The immutable historical evidence also retains its earlier live-clock differences
   ([current comparison](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.

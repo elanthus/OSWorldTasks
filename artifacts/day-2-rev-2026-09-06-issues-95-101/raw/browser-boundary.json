@@ -204,7 +204,7 @@
         "version": "pixelgym-chromium-renderer-v1"
       }
     },
-    "captured_at": "2026-09-06T08:15:02.898311+00:00",
+    "captured_at": "2026-09-06T08:49:23.804039+00:00",
     "checks": [
       {
         "name": "active_window_fills_observation",
@@ -236,6 +236,10 @@
       },
       {
         "name": "task_app_reaches_top_edge",
+        "passed": true
+      },
+      {
+        "name": "task_app_reported_ready",
         "passed": true
       }
     ],
@@ -358,7 +362,7 @@
         }
       ]
     },
-    "schema_version": "pixelgym-guest-browser-boundary-v1",
+    "schema_version": "pixelgym-guest-browser-boundary-v2",
     "screenshot_path": "artifacts/day-2-rev-2026-09-06-issues-95-101/screenshots/guest-app.png",
     "seed": 7,
     "source_sha256": {
@@ -368,14 +372,17 @@
       "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
       "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
       "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-      "pixelgym/tasks/vendor_form/osworld_task.py": "021f6249dd7276337d159effef45e747dacd101820793d4c28668149dadb7f5c",
-      "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
+      "pixelgym/tasks/vendor_form/osworld_task.py": "2ebe77bfb59ab80b2c6e26779593b71a7fabb08a519274d8caba953ecc053301",
+      "pixelgym/validation/browser_boundary.py": "6f4a198a82ae92d76d6cda60a6d5c1cac01d5178de965ecd39bcc9f9bb14f91a"
     },
     "summary": {
-      "check_count": 8,
+      "check_count": 9,
       "failed_count": 0,
       "passed": true,
-      "passed_count": 8
+      "passed_count": 9
+    },
+    "task_app_page_ready": {
+      "ready": true
     },
     "task_id": "vf-6bed55ed612d3c5a",
     "validator": "vendor-form-guest-navigation-boundary"
@@ -390,7 +397,7 @@
     "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
     "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
     "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-    "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
+    "pixelgym/validation/browser_boundary.py": "6f4a198a82ae92d76d6cda60a6d5c1cac01d5178de965ecd39bcc9f9bb14f91a"
   },
   "summary": {
     "check_count": 10,

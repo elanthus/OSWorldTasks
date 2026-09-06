@@ -1,69 +1,44 @@
 {
   "comparisons": [
     {
-      "differing_pixel_bbox_xyxy": [
-        24,
-        87,
-        907,
-        490
-      ],
-      "differing_pixel_count": 113094,
-      "max_per_channel_delta": 255,
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
       "path": "screenshots/real-resets/real-osworld-docker-seed-7-reset-0.png",
       "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
-      "ssim": 0.8362671387854251
+      "ssim": 1.0
     },
     {
-      "differing_pixel_bbox_xyxy": [
-        24,
-        87,
-        907,
-        490
-      ],
-      "differing_pixel_count": 113094,
-      "max_per_channel_delta": 255,
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
       "path": "screenshots/real-resets/real-osworld-docker-seed-7-reset-1.png",
       "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
-      "ssim": 0.8362671387854251
+      "ssim": 1.0
     },
     {
-      "differing_pixel_bbox_xyxy": [
-        24,
-        87,
-        907,
-        490
-      ],
-      "differing_pixel_count": 113094,
-      "max_per_channel_delta": 255,
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
       "path": "screenshots/real-resets/real-osworld-docker-seed-7-reset-2.png",
       "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
-      "ssim": 0.8362671387854251
+      "ssim": 1.0
     },
     {
-      "differing_pixel_bbox_xyxy": [
-        24,
-        87,
-        907,
-        490
-      ],
-      "differing_pixel_count": 113094,
-      "max_per_channel_delta": 255,
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
       "path": "screenshots/real-resets/real-osworld-docker-seed-7-reset-3.png",
       "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
-      "ssim": 0.8362671387854251
+      "ssim": 1.0
     },
     {
-      "differing_pixel_bbox_xyxy": [
-        24,
-        87,
-        907,
-        490
-      ],
-      "differing_pixel_count": 113094,
-      "max_per_channel_delta": 255,
+      "differing_pixel_bbox_xyxy": null,
+      "differing_pixel_count": 0,
+      "max_per_channel_delta": 0,
       "path": "screenshots/real-resets/real-osworld-docker-seed-7-reset-4.png",
       "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
-      "ssim": 0.8362671387854251
+      "ssim": 1.0
     }
   ],
   "metric_definition": {
@@ -75,7 +50,7 @@
     "dtype": "uint8",
     "path": "screenshots/guest-app.png",
     "renderer_contract_identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
-    "sha256": "aff6c753174388d47cf731c0895ff88be032b60629f8ea9010de79154da6b129",
+    "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4",
     "shape": [
       768,
       1024,
@@ -85,10 +60,10 @@
   "schema_version": "pixelgym-renderer-screenshot-differences-v1",
   "source_evidence": "raw/real-reset.json",
   "summary": {
-    "bitwise_visual_determinism": false,
-    "maximum_differing_pixel_count": 113094,
-    "maximum_per_channel_delta": 255,
-    "minimum_ssim": 0.8362671387854251,
-    "passed": false
+    "bitwise_visual_determinism": true,
+    "maximum_differing_pixel_count": 0,
+    "maximum_per_channel_delta": 0,
+    "minimum_ssim": 1.0,
+    "passed": true
   }
 }

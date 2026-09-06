@@ -119,7 +119,7 @@
     "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
     "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
     "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-    "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
+    "pixelgym/validation/browser_boundary.py": "6f4a198a82ae92d76d6cda60a6d5c1cac01d5178de965ecd39bcc9f9bb14f91a"
   },
   "summary": {
     "check_count": 10,

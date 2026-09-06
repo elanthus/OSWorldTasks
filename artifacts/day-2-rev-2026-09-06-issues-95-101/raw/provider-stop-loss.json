@@ -17,6 +17,20 @@
       "real_seconds": 178.95
     },
     {
+      "command_record": "commands/04c-guest-browser-boundary-attempt-1-stale-local.txt",
+      "exit_status": 1,
+      "hard_limit_seconds": 3533,
+      "provider_closed": true,
+      "real_seconds": 168.58
+    },
+    {
+      "command_record": "commands/04c-guest-browser-boundary.txt",
+      "exit_status": 0,
+      "hard_limit_seconds": 3365,
+      "provider_closed": true,
+      "real_seconds": 169.41
+    },
+    {
       "command_record": "commands/05-validate-day2-real-resets.txt",
       "exit_status": 0,
       "hard_limit_seconds": 5198,
@@ -38,11 +52,11 @@
       "real_seconds": 408.21
     }
   ],
-  "consumed_seconds": 1866.15,
+  "consumed_seconds": 2204.14,
   "no_cloud_provider": true,
   "no_paid_model_calls": true,
   "refused_below_seconds": 600,
-  "remaining_seconds": 3533.85,
+  "remaining_seconds": 3195.86,
   "schema_version": "pixelgym-provider-stop-loss-v1",
   "started_at": "2026-09-06T07:15:14Z"
 }
