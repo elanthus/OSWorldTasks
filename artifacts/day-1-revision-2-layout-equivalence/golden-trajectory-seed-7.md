@@ -65,6 +65,10 @@ the expected values never enter this artifact.
 
 ## Reproduce
 
+This revision is superseded by revision 3: the commands below now replay the
+current 110-action trajectory and must write a new artifact revision rather
+than overwriting this frozen revision-2 record.
+
 ```bash
 python scripts/golden_trajectory.py verify --fixture tests/unit/fixtures/golden_trajectory_seed7.json
 ```

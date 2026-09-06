@@ -15,7 +15,9 @@ Two things live here:
   `getBoundingClientRect()` test. Geometry is scaled linearly for other fake
   backend sizes. Native country-popup geometry is not modeled: clicking the
   select leaves it focused and closed, and selection transfers through
-  allowlisted type-ahead followed by Enter.
+  one allowlisted initial-letter keystroke followed by Enter. Each distinct
+  initial letter is interpreted independently; Chromium's timed multi-key
+  type-ahead buffer is outside the equivalence contract.
 - `FormState` -- focus, typed text, selection, and checkbox state, advanced by
   `click()` and `key()`.
 
@@ -24,7 +26,9 @@ inventing shortcuts: Tab walks the form's tab order and leaves the form after
 Submit, printable keys append to the focused text field, Backspace deletes one
 character, arrows move a `<select>` value or a radio group, Space toggles a
 focused checkbox, and Enter submits only from a text input, the checkbox, or
-the Submit button.
+the Submit button. The browser test verifies leaving the form in headless
+Chromium only; Tab-based re-entry is outside the equivalence contract, and the
+fake keeps focus outside until a control is clicked.
 
 What is deliberately *not* modeled, since no allowlisted action can reach it:
 text carets and caret movement (typing always appends -- ArrowLeft/ArrowRight
@@ -173,8 +177,9 @@ class Layout:
     no DOM geometry is reachable from an evaluation backend or observation.
 
     The native country popup is deliberately absent. A click focuses the same
-    closed select in both models; allowlisted type-ahead followed by Enter is
-    the transferable selection contract.
+    closed select in both models; one allowlisted initial-letter keystroke
+    followed by Enter is the transferable selection contract. Timed multi-key
+    type-ahead sequences are not modeled.
 
     Rectangles are scaled linearly for the small screens unit tests use.
     Scaling rounds independently per rectangle and clamps extents to at least
@@ -325,6 +330,7 @@ class FormState:
         self.payment_index: int | None = None
         self.expedited: bool = False
         self.focus: WidgetId | None = None
+        self.tab_exited_form: bool = False
         self.status: str = ""
 
     # -- Reads -------------------------------------------------------------
@@ -398,6 +404,7 @@ class FormState:
 
         widget, index = hit
         self.focus = widget
+        self.tab_exited_form = False
 
         if widget in TEXT_WIDGETS:
             return False
@@ -446,10 +453,9 @@ class FormState:
             self.text[self.focus] += key
             return False
         if self.focus is WidgetId.COUNTRY and key != " ":
-            # Chromium's closed native select supports prefix type-ahead even
-            # when its disabled placeholder is showing. The task's countries
-            # have unique initial letters, so this is the portable selection
-            # path used by trajectories; the fake never opens popup rows.
+            # The transferable contract is one initial-letter keystroke at a
+            # time. Chromium buffers multi-key type-ahead on a wall clock, but
+            # the deterministic fake deliberately treats each key independently.
             folded = key.casefold()
             for index, option in enumerate(self.country_options):
                 if option.casefold().startswith(folded):
@@ -493,10 +499,12 @@ class FormState:
 
     def _advance_focus(self) -> None:
         if self.focus is None:
-            self.focus = TAB_ORDER[0]
+            if not self.tab_exited_form:
+                self.focus = TAB_ORDER[0]
             return
         if self.focus is WidgetId.SUBMIT:
             self.focus = None
+            self.tab_exited_form = True
             return
         self.focus = TAB_ORDER[TAB_ORDER.index(self.focus) + 1]
 

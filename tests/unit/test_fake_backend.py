@@ -188,7 +188,23 @@ def test_tab_walks_the_document_order_then_leaves_the_form(backend):
         backend.key("Tab")
         seen.append(backend.form.focus)
 
-    assert seen == [*TAB_ORDER, None, TAB_ORDER[0]]
+    assert seen == [*TAB_ORDER, None, None]
+
+    _click(backend, WidgetId.CONTACT_EMAIL)
+    backend.key("Tab")
+    assert backend.form.focus is WidgetId.CONTACT_PHONE
+
+
+def test_checkpoint_preserves_focus_that_left_the_form(backend):
+    for _ in range(len(TAB_ORDER) + 1):
+        backend.key("Tab")
+    assert backend.form.focus is None
+
+    restored = FakeBackend()
+    restored.restore(backend.checkpoint())
+    restored.key("Tab")
+
+    assert restored.form.focus is None
 
 
 def test_arrow_keys_are_inert_inside_a_text_field(backend):
@@ -260,7 +276,9 @@ def test_arrow_up_on_the_placeholder_leaves_it_showing(backend):
     assert backend.form.country_value == ""
 
 
-@pytest.mark.parametrize("country_index", range(6))
+@pytest.mark.parametrize(
+    "country_index", range(len(generator.generate_task(0)["options"]["country"]))
+)
 def test_country_selection_uses_the_transferable_click_and_keyboard_contract(
     backend, country_index
 ):
@@ -272,6 +290,17 @@ def test_country_selection_uses_the_transferable_click_and_keyboard_contract(
 
     assert backend.form.country_value == backend.form.country_options[country_index]
     assert backend.read_submissions() == []
+
+
+def test_distinct_country_initials_are_independent_single_keystrokes(backend):
+    """The fake has no Chromium-style timed multi-key type-ahead buffer."""
+    _click(backend, WidgetId.COUNTRY)
+
+    backend.key("c")
+    assert backend.form.country_value == "Canada"
+    backend.key("j")
+
+    assert backend.form.country_value == "Japan"
 
 
 # -- Payment-terms radio group ----------------------------------------------
@@ -687,8 +716,6 @@ def test_every_control_center_hit_tests_back_to_that_control(backend):
     layout = backend.layout
 
     for widget, rect in layout.controls.items():
-        if widget is WidgetId.PAYMENT_TERMS:
-            continue  # the group includes non-clickable space between radio labels
         hit = layout.hit_test(*rect.center)
         assert hit is not None and hit[0] is widget
 

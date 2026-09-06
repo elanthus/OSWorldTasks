@@ -46,7 +46,7 @@
         <form
           id="vendor-form"
           autocomplete="off"
-          onkeydown="if (event.key === 'Enter' && (event.target.tagName === 'SELECT' || event.target.type === 'radio')) event.preventDefault();"
+          onkeydown="if ((event.key === 'Enter' && (event.target.tagName === 'SELECT' || event.target.type === 'radio')) || (event.key === ' ' && event.target.tagName === 'SELECT')) event.preventDefault();"
         >
           <input type="hidden" id="task_id" name="task_id" />
           <div class="field-row">

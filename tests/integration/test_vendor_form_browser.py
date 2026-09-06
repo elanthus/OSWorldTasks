@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 import os
 import urllib.request
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +21,7 @@ from pixelgym.tasks.vendor_form.ui import (
     DESIGN_WIDTH,
     INCOMPLETE_SUBMISSION_MESSAGE,
     TEXT_WIDGETS,
+    Layout,
     Rect,
     WidgetId,
     layout_for,
@@ -92,7 +92,7 @@ def _browser_rects(page: Any) -> tuple[dict[WidgetId, dict[str, float]], list[di
     return widgets, payment_options
 
 
-def _assert_payment_labels_do_not_clip(page: Any, values: list[str]) -> None:
+def _assert_fixed_width_controls_do_not_clip(page: Any, values: list[str]) -> None:
     widths = page.locator("#payment_terms label").evaluate_all(
         "elements => elements.map(element => ({scroll: element.scrollWidth, client: element.clientWidth}))"
     )
@@ -101,6 +101,17 @@ def _assert_payment_labels_do_not_clip(page: Any, values: list[str]) -> None:
         assert width["scroll"] <= width["client"], (
             f"payment_terms[{index}]={value}: label content width {width['scroll']} "
             f"exceeds client width {width['client']}"
+        )
+
+    for name, selector in (
+        ("expedited_onboarding", ".checkbox-row label"),
+        ("submit", "#submit-button"),
+    ):
+        width = page.locator(selector).evaluate(
+            "element => ({scroll: element.scrollWidth, client: element.clientWidth})"
+        )
+        assert width["scroll"] <= width["client"], (
+            f"{name}: content width {width['scroll']} exceeds client width {width['client']}"
         )
 
 
@@ -112,6 +123,28 @@ def _assert_rect_matches_browser(name: str, actual: dict[str, float], expected: 
             f"{name}: browser {field}={browser_value} differs from "
             f"Layout {field}={layout_value} by more than 0.5 CSS px"
         )
+
+
+def _assert_layout_matches_browser(
+    page: Any, task: dict
+) -> tuple[Layout, list[dict[str, float]]]:
+    layout = layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT)
+    browser_widgets, browser_options = _browser_rects(page)
+
+    for widget in WidgetId:
+        _assert_rect_matches_browser(widget.value, browser_widgets[widget], layout.controls[widget])
+
+    payment_values = task["options"]["payment_terms"]
+    assert len(browser_options) == len(payment_values) == len(layout.payment_options)
+    _assert_fixed_width_controls_do_not_clip(page, payment_values)
+    for index, (value, browser_rect, layout_rect) in enumerate(
+        zip(payment_values, browser_options, layout.payment_options, strict=True)
+    ):
+        _assert_rect_matches_browser(
+            f"payment_terms[{index}]={value}", browser_rect, layout_rect
+        )
+
+    return layout, browser_options
 
 
 def _semantic_control_at(page: Any, center: tuple[int, int]) -> str | None:
@@ -152,23 +185,7 @@ def test_fake_layout_matches_browser_control_hit_regions() -> None:
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
         browser, page, task = _load_form_page(base_url, playwright)
         try:
-            layout = layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT)
-            browser_widgets, browser_options = _browser_rects(page)
-
-            for widget in WidgetId:
-                _assert_rect_matches_browser(
-                    widget.value, browser_widgets[widget], layout.controls[widget]
-                )
-
-            payment_values = task["options"]["payment_terms"]
-            assert len(browser_options) == len(payment_values) == len(layout.payment_options)
-            _assert_payment_labels_do_not_clip(page, payment_values)
-            for index, (value, browser_rect, layout_rect) in enumerate(
-                zip(payment_values, browser_options, layout.payment_options, strict=True)
-            ):
-                _assert_rect_matches_browser(
-                    f"payment_terms[{index}]={value}", browser_rect, layout_rect
-                )
+            layout, _browser_options = _assert_layout_matches_browser(page, task)
 
             expected_centers = {
                 widget: widget.value for widget in (*TEXT_WIDGETS, WidgetId.COUNTRY)
@@ -202,7 +219,7 @@ def test_payment_option_geometry_is_stable_for_varying_label_lengths() -> None:
                 varied_values,
             )
             _widgets, browser_options = _browser_rects(page)
-            _assert_payment_labels_do_not_clip(page, varied_values)
+            _assert_fixed_width_controls_do_not_clip(page, varied_values)
             for index, (browser_rect, layout_rect) in enumerate(
                 zip(browser_options, layout.payment_options, strict=True)
             ):
@@ -219,23 +236,18 @@ def test_layout_drift_failure_names_the_mismatched_widget() -> None:
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
         browser, page, task = _load_form_page(base_url, playwright)
         try:
-            layout = layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT)
-            browser_widgets, _browser_options = _browser_rects(page)
             widget = WidgetId.CONTACT_EMAIL
-            original = layout.controls[widget]
-            layout.controls[widget] = replace(original, x=original.x + 1)
+            page.add_style_tag(content="#contact_email { position: relative; left: 1px; }")
 
             with pytest.raises(AssertionError, match=widget.value):
-                _assert_rect_matches_browser(
-                    widget.value, browser_widgets[widget], layout.controls[widget]
-                )
+                _assert_layout_matches_browser(page, task)
         finally:
             browser.close()
 
 
 def test_country_and_keyboard_focus_contract_matches_browser() -> None:
     playwright_api = pytest.importorskip("playwright.sync_api")
-    assert {"c", "Enter", "Tab"} <= set(KEY_ALLOWLIST)
+    assert {"c", " ", "Enter", "Tab"} <= set(KEY_ALLOWLIST)
 
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
         browser, page, task = _load_form_page(base_url, playwright)
@@ -251,9 +263,15 @@ def test_country_and_keyboard_focus_contract_matches_browser() -> None:
             )
 
             page.mouse.click(*layout.controls[WidgetId.COUNTRY].center)
+            country = page.locator("#country")
+            value_before_space = country.input_value()
+            page.keyboard.press("Space")
+            assert page.evaluate("document.activeElement.id") == "country"
+            assert country.input_value() == value_before_space
+
             page.keyboard.press("c")
             page.keyboard.press("Enter")
-            assert page.locator("#country").input_value() == task["options"]["country"][2]
+            assert country.input_value() == task["options"]["country"][2]
             assert page.evaluate("window.pixelgymSubmitCount") == 0
 
             cases = [
