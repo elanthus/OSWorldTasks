@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest
-from pixelgym.grounding.v5.d56_calibration import _calibration_manifest
+from pixelgym.grounding.v5.d56_calibration import _historical_calibration_manifest
 from pixelgym.grounding.v5.d56_spend import (
     legacy_campaign_spend_disclosure,
     legacy_summary_spend_disclosure,
@@ -288,7 +288,7 @@ def build_audit(
         },
     )
 
-    manifest = _calibration_manifest(repository_root)
+    manifest = _historical_calibration_manifest(repository_root)
     manifest_path = repository_root / plan["calibration_partition"]["path"]
     manifest_file = _file_record(repository_root, manifest_path)
     _require(

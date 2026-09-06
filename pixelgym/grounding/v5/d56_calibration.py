@@ -40,7 +40,7 @@ from pixelgym.grounding.v5.runner import V5Runner
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v3"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v3"
-CALIBRATION_MANIFEST = CURRENT_D56_CALIBRATION_MANIFEST
+CURRENT_CALIBRATION_MANIFEST = CURRENT_D56_CALIBRATION_MANIFEST
 HISTORICAL_CALIBRATION_MANIFEST = Path(
     "artifacts/grounding-v5-manifests/calibration-d56.json"
 )
@@ -142,7 +142,7 @@ def _load_calibration_manifest(
     return value
 
 
-def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
+def _historical_calibration_manifest(repository_root: Path) -> dict[str, Any]:
     """Load the historical manifest used to validate already-recorded evidence."""
 
     return _load_calibration_manifest(repository_root, HISTORICAL_CALIBRATION_MANIFEST)
@@ -151,7 +151,7 @@ def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
 def _current_calibration_manifest(repository_root: Path) -> dict[str, Any]:
     """Load the current-source manifest used when building a new plan."""
 
-    return _load_calibration_manifest(repository_root, CALIBRATION_MANIFEST)
+    return _load_calibration_manifest(repository_root, CURRENT_CALIBRATION_MANIFEST)
 
 
 def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Path) -> dict[str, Any]:
@@ -229,8 +229,8 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
     prior_campaign_spend = smoke_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
-        repository_root / CALIBRATION_MANIFEST.parent,
-        calibration_manifest=repository_root / CALIBRATION_MANIFEST,
+        repository_root / CURRENT_CALIBRATION_MANIFEST.parent,
+        calibration_manifest=repository_root / CURRENT_CALIBRATION_MANIFEST,
     )
     policies: list[dict[str, Any]] = []
     aggregate_theoretical_maximum = Decimal(0)
@@ -292,8 +292,10 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
         "code_revision": revision,
         "requires_clean_tracked_worktree": True,
         "calibration_partition": {
-            "path": CALIBRATION_MANIFEST.as_posix(),
-            "file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "path": CURRENT_CALIBRATION_MANIFEST.as_posix(),
+            "file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "source_manifest_digest": partition["derivation"]["source_manifest_digest"],
             "pilot_plan_digest": partition["derivation"]["pilot_plan_digest"],
