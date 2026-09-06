@@ -1206,7 +1206,8 @@ class CodexCliTransport:
                     stream_malformed=False,
                     error_type=type(exc).__name__,
                 )
-                assert classified_fault is not None
+                if classified_fault is None:
+                    raise RuntimeError("CLI process exception was not classified") from exc
                 fault = classified_fault
                 transport_outcome = cli_fault_outcome(fault)
                 failure_outcome: dict[str, Any] = {
@@ -1237,7 +1238,8 @@ class CodexCliTransport:
                     stream_malformed=False,
                     error_type=type(exc).__name__,
                 )
-                assert classified_fault is not None
+                if classified_fault is None:
+                    raise RuntimeError("CLI process interruption was not classified") from exc
                 fault = classified_fault
                 interrupt_outcome: dict[str, Any] = {
                     "failure_code": fault.code,
@@ -1289,12 +1291,15 @@ class CodexCliTransport:
         if parsed.usage is not None:
             list_price_equivalent = informational_list_price_equivalent(parsed.usage)
             accounting_ok = self.ledger.record_usage(idempotency_key, list_price_equivalent)
-        elif completed_fault is not None and completed_fault.cost_knowledge.value == "unknown":
-            self.ledger.retain_unresolved_and_block(idempotency_key)
         else:
             accounting_ok = self.ledger.mark_usage_telemetry_unavailable(idempotency_key)
         if not accounting_ok:
             policy_violations.append("cost_accounting_failure")
+        violation_value = (
+            "none"
+            if not policy_violations
+            else ",".join(sorted(set(policy_violations)))
+        )
         if completed_fault is not None:
             fault = completed_fault
             transport_outcome = cli_fault_outcome(fault)
@@ -1303,7 +1308,7 @@ class CodexCliTransport:
                 "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
                 "exit_code": process.returncode,
                 "runtime_enforcement": enforcement_record,
-                "policy_violation": "none",
+                "policy_violation": violation_value,
                 "stream_violations": policy_violations,
                 "cli_fault": fault.to_dict(),
                 "price_guard": "subscription_exempt",
@@ -1328,9 +1333,6 @@ class CodexCliTransport:
                 self._record(idempotency_key, fault.classification, outcome_record)
             )
             return transport_outcome
-        violation_value = (
-            "none" if not policy_violations else ",".join(sorted(set(policy_violations)))
-        )
         usage_record: dict[str, Any] = {
             **(parsed.usage or {}),
             "authentication_mode": AUTH_MODE,

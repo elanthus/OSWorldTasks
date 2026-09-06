@@ -15,6 +15,7 @@ from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
     AttemptIdentity,
     CallCaps,
+    CliFault,
     PolicyManifest,
     V5Task,
     content_digest,
@@ -167,15 +168,32 @@ class EpisodeResult:
 
 def summarize_outcome_denominators(
     episode_results: Sequence[Mapping[str, Any]],
+    *,
+    attempted_episodes: int | None = None,
 ) -> dict[str, int]:
-    """Expose stable denominators even when a failure class has zero observations."""
+    """Count started episodes separately from completed episode classifications."""
 
     classifications = [str(result["classification"]) for result in episode_results]
+    attempted = len(classifications) if attempted_episodes is None else attempted_episodes
+    if attempted < len(classifications):
+        raise ValueError("attempted episodes cannot be fewer than completed results")
     return {
-        "attempted": len(classifications),
+        "attempted": attempted,
         "invalid_output": classifications.count("invalid_output"),
         "infrastructure_failure": classifications.count("infrastructure_failure"),
     }
+
+
+def attempted_episode_count(journal: V5AttemptJournal) -> int:
+    """Reconstruct started episode count from durable initial-observation events."""
+
+    return len(
+        {
+            event.trial_id
+            for event in journal.events()
+            if event.kind == "initial_screenshot"
+        }
+    )
 
 
 class InjectedInterruption(RuntimeError):
@@ -1251,7 +1269,11 @@ class V5Runner:
         if "sealed_unsuccessful_result" in by_kind:
             sealed = by_kind["sealed_unsuccessful_result"]
             failure_code = sealed.payload.get("failure_code")
-            if failure_code == "policy_violation":
+            raw_cli_fault = sealed.payload.get("cli_fault")
+            classification: str
+            if isinstance(raw_cli_fault, Mapping):
+                classification = CliFault.from_dict(dict(raw_cli_fault)).classification
+            elif failure_code == "policy_violation":
                 classification = "policy_violation"
             elif failure_code in {"parse_failure", "invalid_action"}:
                 classification = "invalid_output"

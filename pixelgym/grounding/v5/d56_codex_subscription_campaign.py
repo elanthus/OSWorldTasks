@@ -58,7 +58,11 @@ from pixelgym.grounding.v5.d56_codex_cli_calibration import (
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.runner import V5Runner, summarize_outcome_denominators
+from pixelgym.grounding.v5.runner import (
+    V5Runner,
+    attempted_episode_count,
+    summarize_outcome_denominators,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-subscription-smoke-plan-v1"
@@ -598,6 +602,7 @@ def execute_smoke(
         attempt_integrity = attempt_journal.integrity_report()
         invocation_integrity = invocation_journal.integrity_report()
         call_counts = attempt_journal.call_counts()
+        attempted_episodes = attempted_episode_count(attempt_journal)
         transport_records = [] if transport is None else list(transport.records)
         attempt_journal.close()
         invocation_journal.close()
@@ -618,7 +623,8 @@ def execute_smoke(
             "task_id": plan["task"]["task_id"],
             "episode_result": episode_result,
             "outcome_denominators": summarize_outcome_denominators(
-                [] if episode_result is None else [episode_result]
+                [] if episode_result is None else [episode_result],
+                attempted_episodes=attempted_episodes,
             ),
             "policy_violation": (
                 str(transport_records[-1].get("policy_violation"))
@@ -730,6 +736,7 @@ def execute_full(
         attempt_integrity = attempt_journal.integrity_report()
         invocation_integrity = invocation_journal.integrity_report()
         call_counts = attempt_journal.call_counts()
+        attempted_episodes = attempted_episode_count(attempt_journal)
         transport_records = [] if transport is None else list(transport.records)
         attempt_journal.close()
         invocation_journal.close()
@@ -754,7 +761,8 @@ def execute_full(
             ),
             "completed_all_assigned_pairs": len(episode_results) == EXPECTED_TASK_COUNT,
             "outcome_denominators": summarize_outcome_denominators(
-                episode_results
+                episode_results,
+                attempted_episodes=attempted_episodes,
             ),
             "classifications": dict(sorted(classifications.items())),
             "episode_results": episode_results,

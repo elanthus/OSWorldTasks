@@ -384,7 +384,7 @@ def test_nonzero_exit_is_infrastructure_not_model_invalid_output(
         stderr="synthetic CLI failure",
         returncode=2,
     )
-    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    transport, ledger, invocation_journal, _captured = make_transport(tmp_path, process)
     journal = V5AttemptJournal(tmp_path / "attempts.sqlite")
     task = generate_task(5002)
     manifest = policy.build_codex_cli_policy_manifest(
@@ -421,6 +421,9 @@ def test_nonzero_exit_is_infrastructure_not_model_invalid_output(
         assert "parse_failure" not in {
             event.payload.get("failure_code") for event in journal.events()
         }
+        if not include_usage:
+            assert ledger.blocked is False
+            assert len(ledger.usage_telemetry_unavailable) == 1
     finally:
         transport.close()
         journal.close()
@@ -428,12 +431,24 @@ def test_nonzero_exit_is_infrastructure_not_model_invalid_output(
 
 
 @pytest.mark.parametrize(
-    ("stderr", "expected_kind", "expected_code"),
+    ("stderr", "returncode", "expected_kind", "expected_code"),
     [
-        ("connection reset by peer", CliFaultKind.CONNECTION_RESET, "cli_connection_reset"),
-        ("TLS handshake failed", CliFaultKind.TLS_FAILURE, "cli_tls_failure"),
+        (
+            "connection reset by peer",
+            1,
+            CliFaultKind.CONNECTION_RESET,
+            "cli_connection_reset",
+        ),
+        ("TLS handshake failed", 1, CliFaultKind.TLS_FAILURE, "cli_tls_failure"),
         (
             "synthetic CLI failure",
+            1,
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+        (
+            "",
+            0,
             CliFaultKind.MALFORMED_EVENT_STREAM,
             "cli_malformed_event_stream",
         ),
@@ -442,10 +457,11 @@ def test_nonzero_exit_is_infrastructure_not_model_invalid_output(
 def test_transport_diagnostics_have_stable_infrastructure_faults(
     tmp_path: Path,
     stderr: str,
+    returncode: int,
     expected_kind: CliFaultKind,
     expected_code: str,
 ) -> None:
-    process = FakeProcess("partial-event\n", stderr=stderr, returncode=1)
+    process = FakeProcess("partial-event\n", stderr=stderr, returncode=returncode)
     transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
     try:
         outcome = transport.send(
@@ -460,6 +476,31 @@ def test_transport_diagnostics_have_stable_infrastructure_faults(
         record = invocation_journal.record(f"sha256:{expected_kind.value}")
         assert record is not None
         assert record["outcome"]["cli_fault"] == outcome.fault.to_dict()
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_codex_fault_record_keeps_detected_security_violation_visible(
+    tmp_path: Path,
+) -> None:
+    process = FakeProcess(
+        cli_stream_with_content(credential_shaped_value()),
+        stderr="subscription rate limit rejected",
+        returncode=0,
+    )
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:rate-limit-security-violation",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "rate_limited"
+        assert outcome.fault is not None
+        assert outcome.fault.classification == "request_failure"
+        assert transport.records[-1]["policy_violation"] == "credential_shaped_output"
     finally:
         transport.close()
         invocation_journal.close()

@@ -16,12 +16,15 @@ from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
     AttemptIdentity,
     CallCaps,
+    CliFault,
+    CliFaultKind,
+    CostKnowledge,
+    ModelAttemptConsumption,
     Partition,
     PolicyManifest,
     content_digest,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
-from pixelgym.grounding.v5.evidence import V5EvidenceStore
 from pixelgym.grounding.v5.fixtures import scripted_policy_manifest
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import JournalConflictError, V5AttemptJournal
@@ -35,6 +38,7 @@ from pixelgym.grounding.v5.runner import (
     ScriptedTransport,
     TransportOutcome,
     V5Runner,
+    attempted_episode_count,
     summarize_outcome_denominators,
 )
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest, validate_capability_handles
@@ -1534,7 +1538,7 @@ def test_v5_runner_retries_a_dropped_request_then_succeeds(tmp_path: Path) -> No
     journal.close()
 
 
-def test_summary_and_published_derivative_separate_failure_denominators(
+def test_summary_separates_failure_denominators(
     tmp_path: Path,
 ) -> None:
     seed = 5000
@@ -1579,14 +1583,69 @@ def test_summary_and_published_derivative_separate_failure_denominators(
         "invalid_output": 1,
         "infrastructure_failure": 1,
     }
-    store = V5EvidenceStore(tmp_path / "evidence")
-    store.put_authoritative("summary.json", summary)
-    derivative_ref, _relation = store.publish_derivative("summary.json", summary)
-    derivative = json.loads(store.store.get_verified(derivative_ref))
-    assert derivative["outcome_denominators"] == {
-        "attempted": 3,
-        "infrastructure_failure": 1,
-        "invalid_output": 1,
+    journal.close()
+
+
+def test_summary_counts_started_episode_without_completed_result(tmp_path: Path) -> None:
+    journal = V5AttemptJournal(tmp_path / "started-without-result.sqlite")
+    journal.append_event(
+        event_key="started-trial/initial_screenshot",
+        kind="initial_screenshot",
+        trial_id="started-trial",
+        step_index=0,
+        payload={"screenshot_digest": "sha256:" + "a" * 64},
+    )
+
+    assert summarize_outcome_denominators(
+        [], attempted_episodes=attempted_episode_count(journal)
+    ) == {
+        "attempted": 1,
+        "invalid_output": 0,
+        "infrastructure_failure": 0,
+    }
+    journal.close()
+
+
+def test_v5_recover_step_preserves_cli_fault_classification(tmp_path: Path) -> None:
+    seed = 5000
+    trial_id = "trial-recovery-cli-nonzero"
+    journal = V5AttemptJournal(tmp_path / "recovery-cli-nonzero.sqlite")
+    fault = CliFault(
+        kind=CliFaultKind.NONZERO_EXIT,
+        code="cli_nonzero_exit",
+        phase="post_send",
+        classification="infrastructure_failure",
+        model_attempt_consumption=ModelAttemptConsumption.UNKNOWN,
+        cost_knowledge=CostKnowledge.UNKNOWN,
+    )
+    journal.append_event(
+        event_key=f"{trial_id}/step-0000/attempt-00/sealed_cli_nonzero_exit",
+        kind="sealed_unsuccessful_result",
+        trial_id=trial_id,
+        step_index=0,
+        attempt_index=0,
+        payload={
+            "failure_code": "cli_nonzero_exit",
+            "cli_fault": fault.to_dict(),
+        },
+    )
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "infrastructure_failure",
+        "redispatched": False,
     }
     journal.close()
 

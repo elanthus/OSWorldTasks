@@ -250,8 +250,6 @@ def classify_cli_process_fault(
 ) -> CliFault | None:
     """Classify a failed CLI execution without treating its text as model output."""
 
-    if return_code == 0 and error_type is None and not subscription_rate_limited:
-        return None
     diagnostic = f"{error_type or ''} {stderr}".lower()
     if subscription_rate_limited or any(marker in diagnostic for marker in _RATE_LIMIT_MARKERS):
         return CliFault(
@@ -279,6 +277,8 @@ def classify_cli_process_fault(
     elif stream_malformed:
         kind = CliFaultKind.MALFORMED_EVENT_STREAM
         code = "cli_malformed_event_stream"
+    elif return_code == 0 and error_type is None:
+        return None
     elif return_code not in (None, 0):
         kind = CliFaultKind.NONZERO_EXIT
         code = "cli_nonzero_exit"

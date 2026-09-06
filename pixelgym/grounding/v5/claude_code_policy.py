@@ -881,7 +881,8 @@ class ClaudeCodeTransport:
                     stream_malformed=False,
                     error_type=type(exc).__name__,
                 )
-                assert classified_fault is not None
+                if classified_fault is None:
+                    raise RuntimeError("CLI process exception was not classified") from exc
                 fault = classified_fault
                 transport_outcome = cli_fault_outcome(fault)
                 outcome = {
@@ -912,7 +913,8 @@ class ClaudeCodeTransport:
                     stream_malformed=False,
                     error_type=type(exc).__name__,
                 )
-                assert classified_fault is not None
+                if classified_fault is None:
+                    raise RuntimeError("CLI process interruption was not classified") from exc
                 fault = classified_fault
                 outcome = {
                     "failure_code": fault.code,
@@ -961,17 +963,12 @@ class ClaudeCodeTransport:
             content = ""
             violations.append("credential_shaped_output")
         if parsed.usage is None:
-            if (
-                completed_fault is not None
-                and completed_fault.cost_knowledge.value == "unknown"
-            ):
-                self.ledger.retain_unresolved_and_block(idempotency_key)
-            else:
-                self.ledger.mark_usage_telemetry_unavailable(idempotency_key)
+            self.ledger.mark_usage_telemetry_unavailable(idempotency_key)
             usage_status = "unavailable"
         else:
             self.ledger.record_usage(idempotency_key, Decimal("0.00"))
             usage_status = "available"
+        violation_value = "none" if not violations else ",".join(sorted(set(violations)))
         if completed_fault is not None:
             fault = completed_fault
             transport_outcome = cli_fault_outcome(fault)
@@ -980,7 +977,7 @@ class ClaudeCodeTransport:
                 "exit_code": process.returncode,
                 "runtime_enforcement": enforcement_record,
                 "resolved_model": parsed.resolved_model,
-                "policy_violation": "none",
+                "policy_violation": violation_value,
                 "stream_violations": violations,
                 "cli_fault": fault.to_dict(),
                 "experiment_charge_usd": "0.00",
@@ -1004,7 +1001,6 @@ class ClaudeCodeTransport:
                 self._record(idempotency_key, fault.classification, outcome)
             )
             return transport_outcome
-        violation_value = "none" if not violations else ",".join(sorted(set(violations)))
         usage_record = {
             **(parsed.usage or {}),
             "auth_method": AUTH_METHOD,

@@ -408,6 +408,9 @@ def test_claude_nonzero_exit_is_reported_as_infrastructure_failure(
     assert fault["model_attempt_consumption"] == attempt_consumption
     assert fault["cost_knowledge"] == cost_knowledge
     assert "parse_failure" not in json.dumps(summary)
+    if usage == "unavailable":
+        assert summary["unresolved_invocation_count"] == 0
+        assert summary["usage_telemetry_unavailable_count"] == 1
 
 
 class ConnectionResetProcess(SuccessfulProcess):
@@ -519,6 +522,11 @@ def test_claude_process_start_failure_is_pre_send_and_costs_zero(
     [
         (
             RawExitProcess("partial-event\n", returncode=1),
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+        (
+            RawExitProcess("partial-event\n", returncode=0),
             CliFaultKind.MALFORMED_EVENT_STREAM,
             "cli_malformed_event_stream",
         ),
@@ -663,6 +671,54 @@ def test_claude_subscription_rejection_is_request_failure(tmp_path: Path) -> Non
         assert outcome.fault.classification == "request_failure"
         assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
         assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_fault_record_and_summary_keep_model_mismatch_visible(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "combined.sqlite")
+    ledger = policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00"))
+    transport = policy.ClaudeCodeTransport(
+        ledger=ledger,
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        expected_resolved_model=RESOLVED_MODEL,
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(
+            rate_limit_status="rejected",
+            resolved_model="claude-sonnet-5-20260901",
+        ),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:rate-limit-model-mismatch",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+        record = transport.records[0]
+        summary = campaign._summary_common(
+            plan={"code_revision": "revision", "human_approval_scope": {}},
+            digest="sha256:" + "a" * 64,
+            ledger=ledger,
+            attempt_integrity={},
+            invocation_integrity=invocation_journal.integrity_report(),
+            call_counts=(1, 0),
+            transport_records=list(transport.records),
+            execution_error=None,
+            subprocesses_closed=True,
+        )
+
+        assert outcome.status == "rate_limited"
+        assert record["cli_fault"]["classification"] == "request_failure"
+        assert "resolved_model_differs_from_smoke" in record["policy_violation"]
+        assert "resolved_model_differs_from_smoke" in summary["policy_violation"]
     finally:
         transport.close()
         invocation_journal.close()
