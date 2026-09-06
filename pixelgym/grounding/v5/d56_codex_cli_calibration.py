@@ -53,7 +53,7 @@ from pixelgym.grounding.v5.d56_calibration import (
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.runner import V5Runner, summarize_outcome_denominators
 from pixelgym.serialization import canonical_json_bytes
 
 SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v4"
@@ -1312,6 +1312,9 @@ def execute_smoke(
             "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
             "task_id": plan["task"]["task_id"],
             "episode_result": result_record,
+            "outcome_denominators": summarize_outcome_denominators(
+                [] if result_record is None else [result_record]
+            ),
             "execution_error": execution_error,
             "policy_violation": policy_violation,
             "transport_records": transport_records,

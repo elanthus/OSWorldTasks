@@ -58,7 +58,7 @@ from pixelgym.grounding.v5.d56_codex_cli_calibration import (
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.runner import V5Runner, summarize_outcome_denominators
 from pixelgym.serialization import canonical_json_bytes
 
 SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-subscription-smoke-plan-v1"
@@ -617,6 +617,9 @@ def execute_smoke(
             ),
             "task_id": plan["task"]["task_id"],
             "episode_result": episode_result,
+            "outcome_denominators": summarize_outcome_denominators(
+                [] if episode_result is None else [episode_result]
+            ),
             "policy_violation": (
                 str(transport_records[-1].get("policy_violation"))
                 if transport_records
@@ -750,6 +753,9 @@ def execute_full(
                 bool(result["success"]) for result in episode_results
             ),
             "completed_all_assigned_pairs": len(episode_results) == EXPECTED_TASK_COUNT,
+            "outcome_denominators": summarize_outcome_denominators(
+                episode_results
+            ),
             "classifications": dict(sorted(classifications.items())),
             "episode_results": episode_results,
             "successful_smoke_evidence": plan["successful_smoke_evidence"],

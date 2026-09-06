@@ -52,7 +52,7 @@ from pixelgym.grounding.v5.d56_codex_cli_calibration import (
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.runner import V5Runner, summarize_outcome_denominators
 
 SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-claude-subscription-smoke-plan-v1"
 SMOKE_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-claude-subscription-smoke-result-v1"
@@ -597,6 +597,9 @@ def _execute(
             ),
             "completed_all_assigned_pairs": len(episode_results)
             == (1 if smoke else EXPECTED_TASK_COUNT),
+            "outcome_denominators": summarize_outcome_denominators(
+                episode_results
+            ),
             "classifications": dict(sorted(classifications.items())),
             "episode_results": episode_results,
         }

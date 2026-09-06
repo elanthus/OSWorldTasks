@@ -57,6 +57,256 @@ class StageKind(StrEnum):
     COMMIT = "commit"
 
 
+class CliFaultKind(StrEnum):
+    """Stable process/request fault kinds shared by every CLI transport."""
+
+    PRE_SEND = "pre_send"
+    PROCESS_START = "process_start"
+    PROCESS_TIMEOUT = "process_timeout"
+    PROCESS_SIGNAL = "process_signal"
+    CONNECTION_RESET = "connection_reset"
+    TLS_FAILURE = "tls_failure"
+    SUBSCRIPTION_RATE_LIMIT = "subscription_rate_limit"
+    MALFORMED_EVENT_STREAM = "malformed_event_stream"
+    NONZERO_EXIT = "nonzero_exit"
+    POST_SEND = "post_send"
+
+
+class ModelAttemptConsumption(StrEnum):
+    NOT_CONSUMED = "not_consumed"
+    CONSUMED = "consumed"
+    UNKNOWN = "unknown"
+
+
+class CostKnowledge(StrEnum):
+    ZERO = "zero"
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class CliFault:
+    """Scoring-neutral facts about one CLI infrastructure/request failure."""
+
+    kind: CliFaultKind
+    code: str
+    phase: Literal["pre_send", "post_send"]
+    classification: Literal["request_failure", "infrastructure_failure"]
+    model_attempt_consumption: ModelAttemptConsumption
+    cost_knowledge: CostKnowledge
+
+    def __post_init__(self) -> None:
+        if not self.code:
+            raise ValueError("CLI fault code is required")
+        if self.phase == "pre_send" and (
+            self.model_attempt_consumption is not ModelAttemptConsumption.NOT_CONSUMED
+            or self.cost_knowledge is not CostKnowledge.ZERO
+        ):
+            raise ValueError("pre-send CLI faults consume no model attempt and cost zero")
+
+    @property
+    def transport_status(
+        self,
+    ) -> Literal["pre_send_failure", "deadline", "rate_limited", "transport_fault"]:
+        if self.phase == "pre_send":
+            return "pre_send_failure"
+        if self.kind is CliFaultKind.PROCESS_TIMEOUT:
+            return "deadline"
+        if self.kind is CliFaultKind.SUBSCRIPTION_RATE_LIMIT:
+            return "rate_limited"
+        return "transport_fault"
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "kind": self.kind.value,
+            "code": self.code,
+            "phase": self.phase,
+            "classification": self.classification,
+            "model_attempt_consumption": self.model_attempt_consumption.value,
+            "cost_knowledge": self.cost_knowledge.value,
+        }
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> CliFault:
+        return cls(
+            kind=CliFaultKind(value["kind"]),
+            code=str(value["code"]),
+            phase=value["phase"],
+            classification=value["classification"],
+            model_attempt_consumption=ModelAttemptConsumption(
+                value["model_attempt_consumption"]
+            ),
+            cost_knowledge=CostKnowledge(value["cost_knowledge"]),
+        )
+
+
+@dataclass(frozen=True)
+class TransportOutcome:
+    status: Literal[
+        "response",
+        "policy_violation",
+        "pre_send_failure",
+        "deadline",
+        "rate_limited",
+        "transport_fault",
+        "unknown",
+    ]
+    response: dict[str, Any] | None = None
+    failure_code: str | None = None
+    retry_after_seconds: float | None = None
+    backoff_source: str | None = None
+    fault: CliFault | None = None
+
+    def __post_init__(self) -> None:
+        if self.status in {"response", "policy_violation"} and self.response is None:
+            raise ValueError(f"{self.status} transport outcome requires a response")
+        if self.fault is not None and self.status != self.fault.transport_status:
+            raise ValueError("CLI fault and transport status disagree")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "response": self.response,
+            "failure_code": self.failure_code,
+            "retry_after_seconds": self.retry_after_seconds,
+            "backoff_source": self.backoff_source,
+            "fault": None if self.fault is None else self.fault.to_dict(),
+        }
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> TransportOutcome:
+        raw_fault = value.get("fault")
+        return cls(
+            status=value["status"],
+            response=value.get("response"),
+            failure_code=value.get("failure_code"),
+            retry_after_seconds=value.get("retry_after_seconds"),
+            backoff_source=value.get("backoff_source"),
+            fault=(
+                CliFault.from_dict(raw_fault)
+                if isinstance(raw_fault, dict)
+                else None
+            ),
+        )
+
+
+def cli_pre_send_fault(
+    code: str, *, kind: CliFaultKind = CliFaultKind.PRE_SEND
+) -> CliFault:
+    """Describe a failure proven to occur before a CLI process can send a request."""
+
+    return CliFault(
+        kind=kind,
+        code=code,
+        phase="pre_send",
+        classification="request_failure",
+        model_attempt_consumption=ModelAttemptConsumption.NOT_CONSUMED,
+        cost_knowledge=CostKnowledge.ZERO,
+    )
+
+
+def cli_timeout_fault(code: str) -> CliFault:
+    return CliFault(
+        kind=CliFaultKind.PROCESS_TIMEOUT,
+        code=code,
+        phase="post_send",
+        classification="infrastructure_failure",
+        model_attempt_consumption=ModelAttemptConsumption.UNKNOWN,
+        cost_knowledge=CostKnowledge.UNKNOWN,
+    )
+
+
+_CONNECTION_RESET_MARKERS = (
+    "connection reset",
+    "connection closed",
+    "broken pipe",
+    "econnreset",
+    "socket hang up",
+)
+_TLS_FAILURE_MARKERS = (
+    "certificate verify failed",
+    "ssl error",
+    "tls error",
+    "tls handshake",
+)
+_RATE_LIMIT_MARKERS = (
+    "rate limit",
+    "rate_limit",
+    "too many requests",
+    "usage limit",
+    "subscription limit",
+)
+
+
+def classify_cli_process_fault(
+    *,
+    return_code: int | None,
+    stderr: str,
+    stream_malformed: bool,
+    subscription_rate_limited: bool = False,
+    error_type: str | None = None,
+    usage_observed: bool = False,
+    cost_observed: bool = False,
+) -> CliFault | None:
+    """Classify a failed CLI execution without treating its text as model output."""
+
+    if return_code == 0 and error_type is None and not subscription_rate_limited:
+        return None
+    diagnostic = f"{error_type or ''} {stderr}".lower()
+    if subscription_rate_limited or any(marker in diagnostic for marker in _RATE_LIMIT_MARKERS):
+        return CliFault(
+            kind=CliFaultKind.SUBSCRIPTION_RATE_LIMIT,
+            code="cli_subscription_rate_limit",
+            phase="post_send",
+            classification="request_failure",
+            model_attempt_consumption=ModelAttemptConsumption.NOT_CONSUMED,
+            cost_knowledge=CostKnowledge.ZERO,
+        )
+    if any(marker in diagnostic for marker in _TLS_FAILURE_MARKERS) or (
+        error_type is not None and "ssl" in error_type.lower()
+    ):
+        kind = CliFaultKind.TLS_FAILURE
+        code = "cli_tls_failure"
+    elif any(marker in diagnostic for marker in _CONNECTION_RESET_MARKERS) or (
+        error_type is not None
+        and error_type.lower() in {"connectionreseterror", "brokenpipeerror"}
+    ):
+        kind = CliFaultKind.CONNECTION_RESET
+        code = "cli_connection_reset"
+    elif return_code is not None and return_code < 0:
+        kind = CliFaultKind.PROCESS_SIGNAL
+        code = "cli_process_signal"
+    elif stream_malformed:
+        kind = CliFaultKind.MALFORMED_EVENT_STREAM
+        code = "cli_malformed_event_stream"
+    elif return_code not in (None, 0):
+        kind = CliFaultKind.NONZERO_EXIT
+        code = "cli_nonzero_exit"
+    else:
+        kind = CliFaultKind.POST_SEND
+        code = "cli_post_send_failure"
+    return CliFault(
+        kind=kind,
+        code=code,
+        phase="post_send",
+        classification="infrastructure_failure",
+        model_attempt_consumption=(
+            ModelAttemptConsumption.CONSUMED
+            if usage_observed
+            else ModelAttemptConsumption.UNKNOWN
+        ),
+        cost_knowledge=(CostKnowledge.KNOWN if cost_observed else CostKnowledge.UNKNOWN),
+    )
+
+
+def cli_fault_outcome(fault: CliFault) -> TransportOutcome:
+    return TransportOutcome(
+        fault.transport_status,
+        failure_code=fault.code,
+        fault=fault,
+    )
+
+
 def sandbox_endpoint_allowlist_digest(endpoint: str, *, policy_version: str) -> str:
     """Validate one credential-free provider origin and bind it to a policy version."""
 

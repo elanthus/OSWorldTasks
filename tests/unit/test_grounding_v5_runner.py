@@ -21,6 +21,7 @@ from pixelgym.grounding.v5.contracts import (
     content_digest,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
+from pixelgym.grounding.v5.evidence import V5EvidenceStore
 from pixelgym.grounding.v5.fixtures import scripted_policy_manifest
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import JournalConflictError, V5AttemptJournal
@@ -34,6 +35,7 @@ from pixelgym.grounding.v5.runner import (
     ScriptedTransport,
     TransportOutcome,
     V5Runner,
+    summarize_outcome_denominators,
 )
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest, validate_capability_handles
 from pixelgym.serialization import canonical_json_bytes
@@ -864,6 +866,64 @@ def test_v5_recovery_seals_parse_failure_without_dispatch(tmp_path: Path) -> Non
     assert len(transport.model_requests) == 1
 
 
+def test_v5_recovery_preserves_policy_violation_classification(tmp_path: Path) -> None:
+    seed = 5000
+    response = {
+        "response_id": "policy-violation-recovery",
+        "model": "no-cost-scripted-policy",
+        "content": "",
+        "finish_reason": "policy_violation",
+        "usage": {
+            "prompt_tokens": 1,
+            "completion_tokens": 1,
+            "policy_violation": "credential_shaped_output",
+        },
+    }
+    journal = V5AttemptJournal(tmp_path / "recovery-policy.sqlite")
+    transport = ScriptedTransport([TransportOutcome("policy_violation", response)])
+    trial_id = "trial-recovery-policy"
+    with pytest.raises(InjectedInterruption, match="canonical_response_persisted"):
+        V5Runner(
+            journal=journal,
+            manifest=policy_manifest(),
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=episode_caps(seed),
+            interrupt_after="canonical_response_persisted",
+        ).run(trial_id=trial_id, task=generate_task(seed))
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered["classification"] == "policy_violation"
+    assert recovered["redispatched"] is False
+    assert len(transport.model_requests) == 1
+    sealed_recovery = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=scripted_policy(seed),
+        approved_caps=episode_caps(seed),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=V5FakeBackend(),
+    )
+    assert sealed_recovery["classification"] == "policy_violation"
+    journal.close()
+
+
 def test_v5_journal_enforces_one_terminal_record_and_verified_objects(tmp_path: Path) -> None:
     journal = V5AttemptJournal(tmp_path / "journal.sqlite")
     identity = AttemptIdentity("trial", 0, 0)
@@ -1471,6 +1531,63 @@ def test_v5_runner_retries_a_dropped_request_then_succeeds(tmp_path: Path) -> No
     assert fault.payload["failure_code"] == "URLError"
     assert fault.payload["next_attempt_permitted"] is True
     assert fault.payload["bounded_retry_budget"] == 3
+    journal.close()
+
+
+def test_summary_and_published_derivative_separate_failure_denominators(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "mixed-outcomes.sqlite")
+    caps = CallCaps(3, 3, 3, 6)
+    response = {
+        "response_id": "malformed-model-output",
+        "model": "no-cost-scripted-policy",
+        "content": "not-json",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+    }
+    outcomes = (
+        ScriptedTransport(),
+        ScriptedTransport([TransportOutcome("response", response)]),
+        ScriptedTransport(
+            [TransportOutcome("transport_fault", failure_code="connection_reset")]
+        ),
+    )
+    results = []
+    for index, transport in enumerate(outcomes):
+        result = V5Runner(
+            journal=journal,
+            manifest=policy_manifest(),
+            transport=transport,
+            policy=scripted_policy(seed),
+            approved_caps=caps,
+        ).run(
+            trial_id=f"mixed-outcome-{index}",
+            task=task,
+            action_limit=1,
+        )
+        results.append(result.to_dict())
+
+    summary = {
+        "outcome_denominators": summarize_outcome_denominators(results),
+        "journal_integrity": journal.integrity_report(),
+    }
+    assert summary["outcome_denominators"] == {
+        "attempted": 3,
+        "invalid_output": 1,
+        "infrastructure_failure": 1,
+    }
+    store = V5EvidenceStore(tmp_path / "evidence")
+    store.put_authoritative("summary.json", summary)
+    derivative_ref, _relation = store.publish_derivative("summary.json", summary)
+    derivative = json.loads(store.store.get_verified(derivative_ref))
+    assert derivative["outcome_denominators"] == {
+        "attempted": 3,
+        "infrastructure_failure": 1,
+        "invalid_output": 1,
+    }
     journal.close()
 
 
