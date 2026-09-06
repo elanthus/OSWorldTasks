@@ -236,7 +236,6 @@ SUPPORTING_PATHS = (
 )
 
 DOCUMENTATION_PATHS = (
-    "README.md",
     "deploy/README.md",
 )
 
@@ -249,7 +248,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _git_file_bytes(repository_root: Path, revision: str, relative: str) -> bytes:
+def _require_git_revision(repository_root: Path, revision: str) -> None:
     if re.fullmatch(r"[0-9a-f]{40}", revision) is None:
         raise ValueError(f"recorded evidence revision is not a full lowercase SHA: {revision}")
     try:
@@ -265,15 +264,47 @@ def _git_file_bytes(repository_root: Path, revision: str, relative: str) -> byte
         raise ValueError(
             f"recorded evidence revision is not present in the repository: {revision}"
         )
-    result = subprocess.run(
-        ["git", "show", f"{revision}:{relative}"],
-        cwd=repository_root,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
+
+
+def _git_file_bytes(
+    repository_root: Path,
+    revision: str,
+    relative: str,
+    *,
+    revision_validated: bool = False,
+) -> bytes:
+    if not revision_validated:
+        _require_git_revision(repository_root, revision)
+    object_name = f"{revision}:{relative}"
+    try:
+        object_type = subprocess.run(
+            ["git", "cat-file", "-t", object_name],
+            cwd=repository_root,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise ValueError("could not inspect the repository with git") from error
+    if object_type.returncode != 0:
         raise ValueError(
             f"path is not present at recorded evidence revision: {revision}:{relative}"
+        )
+    if object_type.stdout.strip() != b"blob":
+        raise ValueError(
+            f"path is not a blob at recorded evidence revision: {revision}:{relative}"
+        )
+    try:
+        result = subprocess.run(
+            ["git", "cat-file", "blob", object_name],
+            cwd=repository_root,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise ValueError("could not inspect the repository with git") from error
+    if result.returncode != 0:
+        raise ValueError(
+            f"could not read path at recorded evidence revision: {revision}:{relative}"
         )
     return result.stdout
 
@@ -284,6 +315,23 @@ def _json(path: Path) -> Any:
 
 def _jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def _git_json(repository_root: Path, revision: str, relative: str) -> Any:
+    return json.loads(
+        _git_file_bytes(
+            repository_root, revision, relative, revision_validated=True
+        )
+    )
+
+
+def _git_jsonl(
+    repository_root: Path, revision: str, relative: str
+) -> list[dict[str, Any]]:
+    data = _git_file_bytes(
+        repository_root, revision, relative, revision_validated=True
+    ).decode("utf-8")
+    return [json.loads(line) for line in data.splitlines() if line.strip()]
 
 
 def _artifact_key(item: dict[str, Any]) -> tuple[str, str, str]:
@@ -310,7 +358,9 @@ def _index(path: Path, root: Path) -> dict[str, Any]:
 
 
 def _index_git_file(repository_root: Path, revision: str, relative: str) -> dict[str, Any]:
-    data = _git_file_bytes(repository_root, revision, relative)
+    data = _git_file_bytes(
+        repository_root, revision, relative, revision_validated=True
+    )
     return {
         "path": relative,
         "sha256": hashlib.sha256(data).hexdigest(),
@@ -560,17 +610,34 @@ def _validate_resume_ledgers(records: dict[str, dict[str, Any]]) -> dict[str, An
     return evidence
 
 
-def _reconcile(repository_root: Path) -> dict[str, Any]:
-    base = repository_root / "artifacts/platform"
-    manifests = _jsonl(base / "demo-run-manifests.jsonl")
-    lineage = _jsonl(base / "demo-mlflow-lineage.jsonl")
-    gates = _jsonl(base / "demo-gate-reports.jsonl")
-    approvals = _jsonl(base / "demo-approval-events.jsonl")
-    deployments = _jsonl(base / "demo-deployment-events.jsonl")
-    audit = _jsonl(base / "demo-audit-events.jsonl")
-    api = _jsonl(base / "demo-api-transcript.jsonl")
-    verification = _json(base / "immutable-artifact-verification.json")
-    screenshots = _json(base / "screenshots/manifest.json")
+def _reconcile(repository_root: Path, revision: str) -> dict[str, Any]:
+    manifests = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-run-manifests.jsonl"
+    )
+    lineage = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-mlflow-lineage.jsonl"
+    )
+    gates = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-gate-reports.jsonl"
+    )
+    approvals = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-approval-events.jsonl"
+    )
+    deployments = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-deployment-events.jsonl"
+    )
+    audit = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-audit-events.jsonl"
+    )
+    api = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl"
+    )
+    verification = _git_json(
+        repository_root, revision, "artifacts/platform/immutable-artifact-verification.json"
+    )
+    screenshots = _git_json(
+        repository_root, revision, "artifacts/platform/screenshots/manifest.json"
+    )
 
     manifest_identity = {
         (row["mlflow_run_id"], row["metaflow_pathspec"], row["policy_id"]) for row in manifests
@@ -616,7 +683,7 @@ def _reconcile(repository_root: Path) -> dict[str, Any]:
 
     screenshot_hashes_match = True
     for item in screenshots["screenshots"]:
-        image = base / "screenshots" / item["path"]
+        image = repository_root / "artifacts/platform/screenshots" / item["path"]
         screenshot_hashes_match &= (
             image.stat().st_size == item["size"] and _sha256(image) == item["sha256"]
         )
@@ -706,8 +773,10 @@ def _redaction_scan(
         except ValueError:
             relative = ""
         data = (
-            _git_file_bytes(repository_root, revision, relative)
-            if relative in DOCUMENTATION_PATHS
+            _git_file_bytes(
+                repository_root, revision, relative, revision_validated=True
+            )
+            if relative in SUPPORTING_PATHS
             else path.read_bytes()
         )
         scanned += 1
@@ -750,7 +819,10 @@ def _observations(
     confirmation = _json(evidence_dir / "d411-human-confirmation.json")
     if confirmation["confirmation_count"] != 4 or confirmation["d412_verdict"] is not None:
         raise ValueError("D4.11 human confirmation is incomplete or contains a D4.12 verdict")
-    environment = _json(repository_root / "artifacts/platform/rehearsal-environment.json")
+    revision = records["commands/00-git-revision.json"]["output"].strip()
+    environment = _git_json(
+        repository_root, revision, "artifacts/platform/rehearsal-environment.json"
+    )
     provider = environment["provider"]
     if provider != {
         "type": "deterministic scripted replay",
@@ -759,7 +831,9 @@ def _observations(
         "external_deployment": False,
     }:
         raise ValueError(f"unexpected stored provider environment: {provider}")
-    api = _jsonl(repository_root / "artifacts/platform/demo-api-transcript.jsonl")
+    api = _git_jsonl(
+        repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl"
+    )
     blocked = [row for row in api if row["event"] == "blocked-approval"]
     if len(blocked) != 1 or blocked[0]["response"]["status"] != 409:
         raise ValueError("stored blocked-approval exchange is not exactly one HTTP 409")
@@ -787,7 +861,6 @@ def _observations(
         return json.dumps(fields, separators=(",", ":"), sort_keys=True)
 
     redaction_observation = {"pre_generation_scan": prior_redaction}
-    revision = records["commands/00-git-revision.json"]["output"].strip()
     if revision not in PRE_FINAL_REDACTION_REVISIONS:
         redaction_observation["generated_final_deliverable_scan"] = generated_redaction
 
@@ -905,21 +978,20 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         raise ValueError("the frozen checkout status observation is not empty")
     if source["revision"] != revision or source["state"] != "clean":
         raise ValueError("stored source provenance does not match the frozen clean revision")
+    _require_git_revision(repository_root, revision)
 
     supporting = [
-        (
-            _index_git_file(repository_root, revision, relative)
-            if relative in DOCUMENTATION_PATHS
-            else _index(repository_root / relative, repository_root)
-        )
+        _index_git_file(repository_root, revision, relative)
         for relative in SUPPORTING_PATHS
     ]
-    screenshots = _json(repository_root / "artifacts/platform/screenshots/manifest.json")
+    screenshots = _git_json(
+        repository_root, revision, "artifacts/platform/screenshots/manifest.json"
+    )
     for item in screenshots["screenshots"]:
         relative = Path("artifacts/platform/screenshots") / item["path"]
         supporting.append(_index(repository_root / relative, repository_root))
 
-    reconciliation = _reconcile(repository_root)
+    reconciliation = _reconcile(repository_root, revision)
     (evidence_dir / "identity-reconciliation.json").write_text(
         json.dumps(reconciliation, indent=2, sort_keys=True) + "\n"
     )
@@ -981,8 +1053,10 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         "source_tree_sha256": source["source_tree_sha256"],
         "started_at_utc": started,
         "ended_at_utc": ended,
-        "provider_environment": _json(
-            repository_root / "artifacts/platform/rehearsal-environment.json"
+        "provider_environment": _git_json(
+            repository_root,
+            revision,
+            "artifacts/platform/rehearsal-environment.json",
         )["provider"],
         "command_records": commands,
         "supporting_artifacts": supporting,
