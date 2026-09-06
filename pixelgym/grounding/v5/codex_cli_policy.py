@@ -35,7 +35,15 @@ from pixelgym.grounding.v5.evidence import (
     validate_credential_free,
 )
 from pixelgym.grounding.v5.runner import TransportOutcome
-from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
+from pixelgym.grounding.v5.sandbox import (
+    DECLARED_UNAVAILABLE_CAPABILITIES,
+    PolicyClaim,
+    RuntimeEnforcement,
+    build_sandbox_manifest,
+    runtime_enforcement,
+    unbound_runtime_enforcement,
+    validate_runtime_enforcement,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 CODEX_CLI_VERSION = "codex-cli 0.150.1"
@@ -421,21 +429,57 @@ def _runtime_command(
     ]
 
 
+_ALLOWED_ENVIRONMENT_VARIABLES = (
+    "PATH",
+    "HOME",
+    "CODEX_HOME",
+    "TMPDIR",
+    "LANG",
+    "LC_ALL",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "NO_PROXY",
+)
+
+
 def _minimal_environment(environment: Mapping[str, str]) -> dict[str, str]:
-    allowed = (
-        "PATH",
-        "HOME",
-        "CODEX_HOME",
-        "TMPDIR",
-        "LANG",
-        "LC_ALL",
-        "SSL_CERT_FILE",
-        "SSL_CERT_DIR",
-        "HTTPS_PROXY",
-        "HTTP_PROXY",
-        "NO_PROXY",
+    return {
+        name: environment[name]
+        for name in _ALLOWED_ENVIRONMENT_VARIABLES
+        if environment.get(name)
+    }
+
+
+def _codex_launch_enforcement(
+    command: Sequence[str],
+    environment: Mapping[str, str],
+    config: CodexPolicyConfig = DEFAULT_CODEX_POLICY,
+) -> RuntimeEnforcement:
+    normalized = list(command)
+    for flag, replacement in (
+        ("--output-schema", "<isolated-action-schema>"),
+        ("--image", "<current-screenshot>"),
+        ("--cd", "<isolated-empty-working-directory>"),
+    ):
+        start = 0
+        while True:
+            try:
+                flag_index = normalized.index(flag, start)
+            except ValueError:
+                break
+            if flag_index + 1 < len(normalized):
+                normalized[flag_index + 1] = replacement
+            start = flag_index + 1
+    controls_match = tuple(normalized) == sanitized_command_contract(config)
+    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    return runtime_enforcement(
+        argv=normalized,
+        environment=environment,
+        cli_restrictions_applied=controls_match,
+        environment_allowlist_applied=environment_is_allowlisted,
     )
-    return {name: environment[name] for name in allowed if environment.get(name)}
 
 
 def action_prompt(task_instruction: str) -> str:
@@ -1040,6 +1084,36 @@ class CodexCliTransport:
                 working_directory=working_directory,
                 config=self.config,
             )
+            launch_enforcement = _codex_launch_enforcement(
+                command,
+                self.environment,
+                self.config,
+            )
+            enforcement_record = launch_enforcement.to_dict()
+            try:
+                validate_runtime_enforcement(
+                    PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES),
+                    launch_enforcement,
+                )
+            except ValueError:
+                self.ledger.release_pre_send(idempotency_key)
+                outcome = {
+                    "failure_code": "runtime_enforcement_mismatch",
+                    "runtime_enforcement": enforcement_record,
+                }
+                self.invocation_journal.finish(
+                    idempotency_key,
+                    status="pre_send_failure",
+                    exit_code=None,
+                    raw_stdout="",
+                    raw_stderr="",
+                    outcome=outcome,
+                )
+                self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
+                return TransportOutcome(
+                    "pre_send_failure",
+                    failure_code="runtime_enforcement_mismatch",
+                )
             try:
                 process = self.process_factory(
                     command,
@@ -1053,7 +1127,11 @@ class CodexCliTransport:
                 )
             except (OSError, ValueError) as exc:
                 self.ledger.release_pre_send(idempotency_key)
-                outcome = {"failure_code": "process_start_failure", "type": type(exc).__name__}
+                outcome = {
+                    "failure_code": "process_start_failure",
+                    "type": type(exc).__name__,
+                    "runtime_enforcement": enforcement_record,
+                }
                 self.invocation_journal.finish(
                     idempotency_key,
                     status="pre_send_failure",
@@ -1079,6 +1157,7 @@ class CodexCliTransport:
                 timeout_outcome: dict[str, Any] = {
                     "failure_code": "codex_process_timeout",
                     "process_confirmed_stopped": process.poll() is not None,
+                    "runtime_enforcement": enforcement_record,
                 }
                 self.invocation_journal.finish(
                     idempotency_key,
@@ -1097,6 +1176,7 @@ class CodexCliTransport:
                     "failure_code": "codex_process_interrupted",
                     "process_confirmed_stopped": process.poll() is not None,
                     "type": type(exc).__name__,
+                    "runtime_enforcement": enforcement_record,
                 }
                 self.invocation_journal.finish(
                     idempotency_key,
@@ -1167,6 +1247,7 @@ class CodexCliTransport:
             "event_counts": parsed.event_counts,
             "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
             "exit_code": process.returncode,
+            "runtime_enforcement": enforcement_record,
             "policy_violation": violation_value,
             "price_guard": "subscription_exempt",
             "experiment_charge_usd": usage_record["experiment_charge_usd"],
@@ -1283,14 +1364,17 @@ class CodexCliTransport:
             "model_reasoning_effort": self.config.model_reasoning_effort,
             "authentication_mode": AUTH_MODE,
             "command_contract_digest": command_contract_digest(self.config),
-            "experiment_charge_usd": outcome.get("experiment_charge_usd"),
+            "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
             "informational_list_price_equivalent_usd": outcome.get(
                 "informational_list_price_equivalent_usd"
             ),
-            "policy_violation": outcome.get("policy_violation"),
+            "policy_violation": outcome.get("policy_violation", "none"),
             "price_guard": outcome.get("price_guard"),
-            "usage_telemetry_status": outcome.get("usage_telemetry_status"),
+            "usage_telemetry_status": outcome.get(
+                "usage_telemetry_status", "unavailable"
+            ),
             "accepted_cli_diagnostic_count": outcome.get("accepted_cli_diagnostic_count"),
+            "runtime_enforcement": outcome.get("runtime_enforcement"),
         }
 
 
@@ -1321,6 +1405,8 @@ def build_codex_cli_policy_manifest(
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
+        launch_enforcement=unbound_runtime_enforcement(),
+        policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
         ("authentication_mode", AUTH_MODE),
