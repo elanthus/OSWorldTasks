@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import sqlite3
 import threading
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, NoReturn, Self
 
 from pixelgym.platform.contracts import (
     ArtifactRef,
@@ -30,6 +31,10 @@ from pixelgym.platform.schema_validation import (
 
 class ConflictError(RuntimeError):
     pass
+
+
+class ContentionError(RuntimeError):
+    """A control-store lock remained unavailable for the configured wait bound."""
 
 
 class AuthorizationError(PermissionError):
@@ -113,6 +118,99 @@ class _DeploymentSchema:
     indexes: frozenset[tuple[int, str, int, tuple[str, ...]]]
     checks: frozenset[str]
     triggers: frozenset[tuple[str, str]]
+
+
+DEFAULT_BUSY_TIMEOUT_MS = 5_000
+SQLITE_BUSY_TIMEOUT_ENV = "PIXELGYM_SQLITE_BUSY_TIMEOUT_MS"
+_CONTENTION_MESSAGE = "control database is temporarily busy; retry the request"
+
+
+def _is_memory_database(target: str) -> bool:
+    if target == ":memory:" or target.startswith("file::memory:"):
+        return True
+    query = target.partition("?")[2]
+    return target.startswith("file:") and "mode=memory" in query.split("&")
+
+
+def _is_lock_contention(exc: sqlite3.OperationalError) -> bool:
+    error_code = getattr(exc, "sqlite_errorcode", None)
+    return isinstance(error_code, int) and error_code & 0xFF == sqlite3.SQLITE_BUSY
+
+
+def configured_busy_timeout_ms() -> int:
+    """Read and validate the process-wide SQLite contention wait bound."""
+    raw_value = os.environ.get(SQLITE_BUSY_TIMEOUT_ENV)
+    if raw_value is None:
+        return DEFAULT_BUSY_TIMEOUT_MS
+    try:
+        value = int(raw_value)
+    except ValueError:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        ) from None
+    if value <= 0:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        )
+    return value
+
+
+def _raise_mapped_contention(exc: sqlite3.OperationalError) -> NoReturn:
+    if _is_lock_contention(exc):
+        raise ContentionError(_CONTENTION_MESSAGE) from None
+    raise exc
+
+
+def _apply_connection_pragmas(
+    connection: sqlite3.Connection,
+    *,
+    target: str,
+    busy_timeout_ms: int,
+) -> None:
+    """Apply the control-store contract to every SQLite connection."""
+    connection.execute(f"PRAGMA busy_timeout = {busy_timeout_ms}")
+    connection.execute("PRAGMA foreign_keys = ON")
+    journal_mode = "MEMORY" if _is_memory_database(target) else "WAL"
+    actual_journal_mode = str(
+        connection.execute(f"PRAGMA journal_mode = {journal_mode}").fetchone()[0]
+    ).lower()
+    connection.execute("PRAGMA synchronous = NORMAL")
+    actual = (
+        actual_journal_mode,
+        int(connection.execute("PRAGMA synchronous").fetchone()[0]),
+        int(connection.execute("PRAGMA foreign_keys").fetchone()[0]),
+        int(connection.execute("PRAGMA busy_timeout").fetchone()[0]),
+    )
+    expected = (journal_mode.lower(), 1, 1, busy_timeout_ms)
+    if actual != expected:
+        raise RuntimeError("control database rejected required SQLite pragmas")
+
+
+def _open_connection(
+    target: str,
+    *,
+    busy_timeout_ms: int,
+) -> sqlite3.Connection:
+    connection = sqlite3.connect(
+        target,
+        timeout=busy_timeout_ms / 1_000,
+        check_same_thread=False,
+        isolation_level=None,
+        uri=target.startswith("file:"),
+    )
+    try:
+        _apply_connection_pragmas(
+            connection,
+            target=target,
+            busy_timeout_ms=busy_timeout_ms,
+        )
+    except sqlite3.OperationalError as exc:
+        connection.close()
+        _raise_mapped_contention(exc)
+    except (sqlite3.DatabaseError, RuntimeError):
+        connection.close()
+        raise
+    return connection
 
 
 SCHEMA = """
@@ -318,7 +416,9 @@ def _deployment_schema(connection: sqlite3.Connection) -> _DeploymentSchema:
 
 
 def _fresh_deployment_schema(*, legacy: bool = False) -> _DeploymentSchema:
-    with sqlite3.connect(":memory:") as connection:
+    with _open_connection(
+        ":memory:", busy_timeout_ms=DEFAULT_BUSY_TIMEOUT_MS
+    ) as connection:
         connection.executescript(SCHEMA)
         if legacy:
             connection.execute(
@@ -367,22 +467,23 @@ class ControlStore:
         *,
         reviewer_identity: str | None = None,
         now: Callable[[], str] | None = None,
+        busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
     ) -> None:
         if reviewer_identity == "":
             raise ValueError("reviewer identity cannot be empty")
+        if (
+            isinstance(busy_timeout_ms, bool)
+            or not isinstance(busy_timeout_ms, int)
+            or busy_timeout_ms <= 0
+        ):
+            raise ValueError("busy timeout must be a positive integer number of milliseconds")
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
         self.schemas = PlatformSchemas()
         target = str(database)
-        self.connection = sqlite3.connect(
-            target,
-            check_same_thread=False,
-            isolation_level=None,
-            uri=target.startswith("file:"),
-        )
+        self.connection = _open_connection(target, busy_timeout_ms=busy_timeout_ms)
         self.connection.row_factory = sqlite3.Row
-        self.connection.execute("PRAGMA foreign_keys = ON")
 
     def _migrate_legacy_deployments(self, expected_schema: _DeploymentSchema) -> None:
         """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
@@ -527,14 +628,19 @@ class ControlStore:
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
         with self._lock:
-            self.connection.execute("BEGIN IMMEDIATE")
             try:
-                yield self.connection
-            except BaseException:
-                self.connection.rollback()
-                raise
-            else:
-                self.connection.commit()
+                self.connection.execute("BEGIN IMMEDIATE")
+                try:
+                    yield self.connection
+                except BaseException:
+                    self.connection.rollback()
+                    raise
+                else:
+                    self.connection.commit()
+            except sqlite3.OperationalError as exc:
+                if self.connection.in_transaction:
+                    self.connection.rollback()
+                _raise_mapped_contention(exc)
 
     def _audit(
         self,

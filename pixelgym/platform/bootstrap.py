@@ -17,7 +17,11 @@ from typing import Any
 from fastapi import FastAPI
 
 from pixelgym.platform.contracts import PolicyManifest
-from pixelgym.platform.control_store import ControlStore, DeploymentRecord
+from pixelgym.platform.control_store import (
+    ControlStore,
+    DeploymentRecord,
+    configured_busy_timeout_ms,
+)
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -139,6 +143,7 @@ def _build_control(repository_root: Path) -> ControlStore:
         Path(database).parent.mkdir(parents=True, exist_ok=True)
     control = ControlStore(
         database,
+        busy_timeout_ms=configured_busy_timeout_ms(),
     )
     control.require_migrated()
     return control

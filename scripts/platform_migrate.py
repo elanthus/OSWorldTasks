@@ -6,7 +6,7 @@ import argparse
 import os
 from pathlib import Path
 
-from pixelgym.platform.control_store import ControlStore
+from pixelgym.platform.control_store import ControlStore, configured_busy_timeout_ms
 
 
 def main() -> None:
@@ -15,7 +15,10 @@ def main() -> None:
     args = parser.parse_args()
     if args.database != ":memory:" and not args.database.startswith("file:"):
         Path(args.database).parent.mkdir(parents=True, exist_ok=True)
-    store = ControlStore(args.database)
+    store = ControlStore(
+        args.database,
+        busy_timeout_ms=configured_busy_timeout_ms(),
+    )
     store.migrate()
     print(f"control migration complete: {args.database}")
 
