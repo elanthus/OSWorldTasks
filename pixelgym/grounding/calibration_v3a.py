@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -79,6 +80,19 @@ def calibration_capture_source_hashes(repository_root: Path) -> dict[str, str]:
         }
     )
     return dict(sorted(hashes.items()))
+
+
+def _canonical_task_from_public_view(
+    task: Mapping[str, Any], seed: int
+) -> dict[str, Any]:
+    """Restore the capture-controlled seed omitted from the public task view."""
+    return {
+        "task_id": task["task_id"],
+        "schema_version": task["schema_version"],
+        "seed": seed,
+        "fields": task["fields"],
+        "options": task["options"],
+    }
 
 
 def calibration_target(seed: int, screen_state: str) -> TargetSpec:
@@ -280,18 +294,13 @@ def _capture_one_pass(
                     reset = _post_reset(base_url, seed)
                     page.goto(base_url, wait_until="networkidle")
                     page.locator(READY_SELECTOR).wait_for(state="attached")
+                    # Redundant now; retained to preserve the pinned v3a source hash contract.
                     page.evaluate("() => document.fonts.ready")
                     task = page.evaluate(
                         "() => fetch('/api/task').then(response => response.json())"
                     )
                     expected_task = generator.generate_task(seed)
-                    observed_task = {
-                        "task_id": task["task_id"],
-                        "schema_version": task["schema_version"],
-                        "seed": task["seed"],
-                        "fields": task["fields"],
-                        "options": task["options"],
-                    }
+                    observed_task = _canonical_task_from_public_view(task, seed)
                     if observed_task != expected_task or reset["task_id"] != task["task_id"]:
                         raise RuntimeError("capture server task does not match its canonical spec")
                     canonical_task_json = generator.canonical_json(

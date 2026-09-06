@@ -34,6 +34,8 @@ GUEST_BROWSER_BOUNDARY_VALIDATOR = "vendor-form-guest-navigation-boundary"
 SOURCE_PATHS = (
     "pixelgym/validation/browser_boundary.py",
     "pixelgym/tasks/vendor_form/app/static/app.js",
+    "pixelgym/tasks/vendor_form/app/static/index.html",
+    "pixelgym/tasks/vendor_form/app/static/style.css",
     "pixelgym/tasks/vendor_form/app/server.py",
     "pixelgym/tasks/vendor_form/browser_contract.py",
     "pixelgym/evaluator.py",

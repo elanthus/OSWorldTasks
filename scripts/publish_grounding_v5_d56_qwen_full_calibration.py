@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest
-from pixelgym.grounding.v5.d56_calibration import _calibration_manifest
+from pixelgym.grounding.v5.d56_calibration import _historical_calibration_manifest
 from pixelgym.grounding.v5.d56_spend import (
     legacy_campaign_spend_disclosure,
     legacy_summary_spend_disclosure,
@@ -140,7 +140,10 @@ def _journal_projection(journal_path: Path) -> dict[str, Any]:
                 response_by_identity[(str(trial_id), int(step_index), int(attempt_index))] = str(
                     payload["canonical_response_digest"]
                 )
-            elif kind == "sealed_unsuccessful_result":
+            elif (
+                kind == "sealed_unsuccessful_result"
+                and payload.get("failure_code") == "parse_failure"
+            ):
                 parse_failures.append(
                     {
                         "trial_id": str(trial_id),
@@ -288,7 +291,7 @@ def build_audit(
         },
     )
 
-    manifest = _calibration_manifest(repository_root)
+    manifest = _historical_calibration_manifest(repository_root)
     manifest_path = repository_root / plan["calibration_partition"]["path"]
     manifest_file = _file_record(repository_root, manifest_path)
     _require(
@@ -577,6 +580,8 @@ def build_derivative(
                 "successful_tasks": outcomes["success_termination"],
                 "step_limit_truncations": outcomes["step_limit_truncation"],
                 "invalid_outputs": outcomes["invalid_output"],
+                "infrastructure_failures": outcomes["infrastructure_failure"],
+                "policy_violations": outcomes["policy_violation"],
                 "unattempted_tasks": outcomes["unattempted_due_to_prior_invalid_output_stop"],
                 "assigned_action_cap": sum(int(row["max_episode_steps"]) for row in rows),
                 "attempted_action_cap": attempted_cap,
@@ -695,6 +700,12 @@ def build_derivative(
                 row["outcome"] == "step_limit_truncation" for row in tasks
             ),
             "invalid_outputs": sum(row["outcome"] == "invalid_output" for row in tasks),
+            "infrastructure_failures": sum(
+                row["outcome"] == "infrastructure_failure" for row in tasks
+            ),
+            "policy_violations": sum(
+                row["outcome"] == "policy_violation" for row in tasks
+            ),
             "unattempted_tasks": sum(not row["attempted"] for row in tasks),
             "completed_all_assigned_tasks": False,
         },
@@ -807,6 +818,17 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     cost = derivative["cost"]
     invalid = derivative["failure_routes"]["invalid_output"]
     structure = invalid["response_structure"]
+    has_cli_failure_counts = (
+        "infrastructure_failures" in coverage and "policy_violations" in coverage
+    )
+    cli_failure_rows = (
+        [
+            f"| Infrastructure failures | {coverage['infrastructure_failures']} |",
+            f"| Policy violations | {coverage['policy_violations']} |",
+        ]
+        if has_cli_failure_counts
+        else []
+    )
     spend_disclosure_rows: list[str] = []
     if derivative.get("schema_version") == DERIVATIVE_SCHEMA_VERSION:
         phase_spend = cost["phase_spend"]
@@ -862,6 +884,7 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         ),
         f"| Step-limit truncations | {coverage['step_limit_truncations']} |",
         f"| Invalid outputs | {coverage['invalid_outputs']} |",
+        *cli_failure_rows,
         f"| Unattempted assignments | {coverage['unattempted_tasks']} |",
         "| Completed all assigned tasks | no |",
         "",
@@ -872,14 +895,31 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         "",
         "## Family breakdown",
         "",
-        "| Family | Assigned | Attempted | Success | Truncated | Invalid | Unattempted | Actions / attempted cap | Known cost | Median / P95 latency (ms) |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        (
+            "| Family | Assigned | Attempted | Success | Truncated | Invalid | "
+            "Infrastructure | Policy violations | Unattempted | Actions / attempted cap | "
+            "Known cost | Median / P95 latency (ms) |"
+            if has_cli_failure_counts
+            else "| Family | Assigned | Attempted | Success | Truncated | Invalid | "
+            "Unattempted | Actions / attempted cap | Known cost | Median / P95 latency (ms) |"
+        ),
+        (
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
+            if has_cli_failure_counts
+            else "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
+        ),
     ]
     for family in derivative["families"]:
+        cli_failure_cells = (
+            f"{family['infrastructure_failures']} | {family['policy_violations']} | "
+            if has_cli_failure_counts
+            else ""
+        )
         lines.append(
             f"| `{family['family']}` | {family['assigned_tasks']} | "
             f"{family['attempted_tasks']} | {family['successful_tasks']} | "
             f"{family['step_limit_truncations']} | {family['invalid_outputs']} | "
+            f"{cli_failure_cells}"
             f"{family['unattempted_tasks']} | {family['environment_actions']} / "
             f"{family['attempted_action_cap']} | {_format_cost(family['known_cost_usd'])} | "
             f"{_format_ms(family['latency']['median_ms'])} / "

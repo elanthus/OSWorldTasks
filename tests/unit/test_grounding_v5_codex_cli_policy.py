@@ -12,11 +12,17 @@ import pytest
 
 from pixelgym.grounding.v5 import codex_cli_policy as policy
 from pixelgym.grounding.v5.backend import V5FakeBackend
-from pixelgym.grounding.v5.contracts import CallCaps
+from pixelgym.grounding.v5.contracts import (
+    CallCaps,
+    CliFaultKind,
+    CostKnowledge,
+    ModelAttemptConsumption,
+)
 from pixelgym.grounding.v5.evidence import V5EvidenceStore, validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.sandbox import environment_allowlist_digest
 
 ROOT = Path(__file__).parents[2]
 
@@ -100,10 +106,11 @@ class FakeProcess:
         *,
         stderr: str = "",
         failure: BaseException | None = None,
+        returncode: int = 0,
         pid: int = 900_001,
     ) -> None:
         self.pid = pid
-        self.returncode: int | None = 0 if failure is None else None
+        self.returncode: int | None = returncode if failure is None else None
         self.stdout = stdout
         self.stderr = stderr
         self.failure = failure
@@ -184,6 +191,18 @@ def cli_stream_with_diagnostic(value: str) -> str:
     return "\n".join(json.dumps(event, separators=(",", ":")) for event in events) + "\n"
 
 
+def cli_stream_with_content(value: str) -> str:
+    events = [json.loads(line) for line in cli_stream().splitlines()]
+    agent_message = next(
+        event
+        for event in events
+        if event.get("type") == "item.completed"
+        and event.get("item", {}).get("type") == "agent_message"
+    )
+    agent_message["item"]["text"] = value
+    return "\n".join(json.dumps(event, separators=(",", ":")) for event in events) + "\n"
+
+
 def test_command_contract_disables_tools_context_and_retries() -> None:
     contract = policy.sanitized_command_contract()
     joined = " ".join(contract)
@@ -229,6 +248,24 @@ def test_command_contract_disables_tools_context_and_retries() -> None:
     )
 
 
+def test_codex_policy_manifest_emits_declared_v3_sandbox_contract() -> None:
+    manifest = policy.build_codex_cli_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+    )
+    sandbox = manifest.to_dict()["sandbox"]
+
+    assert sandbox["schema_version"] == "pixelgym-agent-v5-sandbox-v3"
+    assert sandbox["probe_result"]["status"] == "not_run"
+    assert sandbox["runtime_enforcement"]["mechanism_name"] == "not_bound_to_cli_launch"
+    assert sandbox["runtime_enforcement"]["cli_restrictions_applied"] is False
+    assert sandbox["runtime_enforcement"]["environment_allowlist_applied"] is False
+    assert sandbox["runtime_enforcement"]["os_sandbox_applied"] is False
+    assert sandbox["policy_claim"]["declared_unavailable_capabilities"] == []
+    assert "denied_capabilities" not in sandbox
+
+
 def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted(
     tmp_path: Path,
 ) -> None:
@@ -263,8 +300,233 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         record = invocation_journal.record("sha256:one")
         assert record is not None
         assert record["status"] == "response"
+        recorded_enforcement = record["outcome"]["runtime_enforcement"]
+        assert recorded_enforcement["mechanism_name"] == (
+            "cli_flags_and_environment_allowlist"
+        )
+        assert recorded_enforcement["argv_digest"] == policy.content_digest(
+            list(policy.sanitized_command_contract())
+        )
+        assert recorded_enforcement["environment_allowlist_digest"] == (
+            environment_allowlist_digest(captured["environment"])
+        )
+        assert recorded_enforcement["environment_variable_names"] == sorted(
+            captured["environment"]
+        )
+        assert recorded_enforcement["os_sandbox_applied"] is False
         assert "private-thread-id" in record["raw_stdout"]
         assert "private-thread-id" not in json.dumps(transport.records)
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_missing_required_launch_restriction_changes_evidence_and_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_runtime_command = policy._runtime_command
+
+    def command_without_read_only_sandbox(**kwargs: Any) -> list[str]:
+        complete = original_runtime_command(**kwargs)
+        restricted = list(complete)
+        sandbox_index = restricted.index("--sandbox")
+        del restricted[sandbox_index : sandbox_index + 2]
+        return restricted
+
+    monkeypatch.setattr(policy, "_runtime_command", command_without_read_only_sandbox)
+    process = FakeProcess(cli_stream())
+    transport, _ledger, invocation_journal, captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:missing-restriction",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "pre_send_failure"
+        assert outcome.failure_code == "runtime_enforcement_mismatch"
+        assert outcome.fault is not None
+        assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
+        assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+        assert captured == {}
+        record = invocation_journal.record("sha256:missing-restriction")
+        assert record is not None
+        enforcement = record["outcome"]["runtime_enforcement"]
+        approved_contract = list(policy.sanitized_command_contract())
+        altered_contract = list(approved_contract)
+        sandbox_index = altered_contract.index("--sandbox")
+        del altered_contract[sandbox_index : sandbox_index + 2]
+        assert enforcement["argv_digest"] == policy.content_digest(altered_contract)
+        assert enforcement["argv_digest"] != policy.content_digest(approved_contract)
+        assert enforcement["cli_restrictions_applied"] is False
+        assert enforcement["environment_allowlist_applied"] is True
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("include_usage", "attempt_consumption", "cost_knowledge"),
+    [
+        (True, ModelAttemptConsumption.CONSUMED, CostKnowledge.KNOWN),
+        (False, ModelAttemptConsumption.UNKNOWN, CostKnowledge.UNKNOWN),
+    ],
+)
+def test_nonzero_exit_is_infrastructure_not_model_invalid_output(
+    tmp_path: Path,
+    include_usage: bool,
+    attempt_consumption: ModelAttemptConsumption,
+    cost_knowledge: CostKnowledge,
+) -> None:
+    process = FakeProcess(
+        cli_stream(include_usage=include_usage),
+        stderr="synthetic CLI failure",
+        returncode=2,
+    )
+    transport, ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    journal = V5AttemptJournal(tmp_path / "attempts.sqlite")
+    task = generate_task(5002)
+    manifest = policy.build_codex_cli_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+    )
+    try:
+        result = V5Runner(
+            journal=journal,
+            manifest=manifest,
+            transport=transport,
+            policy=policy.CodexCliPolicy(),
+            approved_caps=CallCaps(1, 1, 0, 1),
+        ).run(trial_id=f"codex-nonzero-{include_usage}", task=task, action_limit=1)
+
+        assert result.classification == "infrastructure_failure"
+        assert result.environment_actions == 0
+        outcome = transport.reconcile(
+            idempotency_key=policy.content_digest(
+                {
+                    "attempt": f"codex-nonzero-{include_usage}/step-0000/attempt-00",
+                    "policy": manifest.policy_id,
+                }
+            ),
+            deadline_seconds=1,
+        )
+        assert outcome.status == "transport_fault"
+        assert outcome.failure_code == "cli_nonzero_exit"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.NONZERO_EXIT
+        assert outcome.fault.model_attempt_consumption is attempt_consumption
+        assert outcome.fault.cost_knowledge is cost_knowledge
+        assert "parse_failure" not in {
+            event.payload.get("failure_code") for event in journal.events()
+        }
+        if not include_usage:
+            assert ledger.blocked is False
+            assert len(ledger.usage_telemetry_unavailable) == 1
+    finally:
+        transport.close()
+        journal.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("stderr", "returncode", "expected_kind", "expected_code"),
+    [
+        (
+            "connection reset by peer",
+            1,
+            CliFaultKind.CONNECTION_RESET,
+            "cli_connection_reset",
+        ),
+        ("TLS handshake failed", 1, CliFaultKind.TLS_FAILURE, "cli_tls_failure"),
+        (
+            "synthetic CLI failure",
+            1,
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+        (
+            "",
+            0,
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+    ],
+)
+def test_transport_diagnostics_have_stable_infrastructure_faults(
+    tmp_path: Path,
+    stderr: str,
+    returncode: int,
+    expected_kind: CliFaultKind,
+    expected_code: str,
+) -> None:
+    process = FakeProcess("partial-event\n", stderr=stderr, returncode=returncode)
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key=f"sha256:{expected_kind.value}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "transport_fault"
+        assert outcome.failure_code == expected_code
+        assert outcome.fault is not None and outcome.fault.kind is expected_kind
+        record = invocation_journal.record(f"sha256:{expected_kind.value}")
+        assert record is not None
+        assert record["outcome"]["cli_fault"] == outcome.fault.to_dict()
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_codex_fault_record_keeps_detected_security_violation_visible(
+    tmp_path: Path,
+) -> None:
+    process = FakeProcess(
+        cli_stream_with_content(credential_shaped_value()),
+        stderr="subscription rate limit rejected",
+        returncode=0,
+    )
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:rate-limit-security-violation",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "rate_limited"
+        assert outcome.fault is not None
+        assert outcome.fault.classification == "request_failure"
+        assert transport.records[-1]["policy_violation"] == "credential_shaped_output"
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_connection_reset_after_possible_send_is_journaled_and_recoverable(
+    tmp_path: Path,
+) -> None:
+    process = FakeProcess("", failure=ConnectionResetError("synthetic reset"))
+    transport, ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:connection-reset",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "transport_fault"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.CONNECTION_RESET
+        assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.UNKNOWN
+        assert outcome.fault.cost_knowledge is CostKnowledge.UNKNOWN
+        assert ledger.unresolved == {"sha256:connection-reset"}
+        assert transport.reconcile(
+            idempotency_key="sha256:connection-reset", deadline_seconds=1
+        ) == outcome
     finally:
         transport.close()
         invocation_journal.close()
@@ -410,7 +672,7 @@ def test_unmatched_or_repeated_error_items_remain_fail_closed(
             idempotency_key=f"sha256:rejected-diagnostic-{count}",
             deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
         )
-        assert outcome.status == "response"
+        assert outcome.status == "policy_violation"
         assert outcome.response is not None
         assert expected_violation in outcome.response["usage"]["policy_violation"]
         with pytest.raises(ValueError, match="policy boundary"):
@@ -425,7 +687,7 @@ def test_unmatched_or_repeated_error_items_remain_fail_closed(
 @pytest.mark.parametrize(
     ("stream", "expected_classification"),
     [
-        (cli_stream(tool_item_type="command_execution"), "invalid_output"),
+        (cli_stream(tool_item_type="command_execution"), "policy_violation"),
         (
             cli_stream({"action_type": 1, "x": policy.SCREEN_WIDTH, "y": 0, "key": 0}),
             "invalid_output",
@@ -462,6 +724,49 @@ def test_tool_use_and_invalid_actions_fail_before_backend_execution(
         )
         assert result.classification == expected_classification
         assert backend.action_count == 0
+    finally:
+        transport.close()
+        journal.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("content", "expected_classification"),
+    [
+        ("not-json", "invalid_output"),
+        (credential_shaped_value(), "policy_violation"),
+    ],
+)
+def test_exit_zero_model_json_and_security_failures_remain_distinct(
+    tmp_path: Path,
+    content: str,
+    expected_classification: str,
+) -> None:
+    process = FakeProcess(cli_stream_with_content(content))
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    journal = V5AttemptJournal(tmp_path / "attempts-distinct.sqlite")
+    backend = V5FakeBackend()
+    task = generate_task(5002)
+    try:
+        result = V5Runner(
+            journal=journal,
+            manifest=policy.build_codex_cli_policy_manifest(
+                ROOT,
+                code_revision="revision-test",
+                runtime_identity=runtime_identity(),
+            ),
+            transport=transport,
+            policy=policy.CodexCliPolicy(),
+            approved_caps=CallCaps(1, 1, 0, 1),
+        ).run(
+            trial_id=f"codex-distinct-{expected_classification}",
+            task=task,
+            backend=backend,
+            action_limit=1,
+        )
+
+        assert result.classification == expected_classification
+        assert result.environment_actions == backend.action_count == 0
     finally:
         transport.close()
         journal.close()
@@ -606,7 +911,18 @@ def test_timeout_and_interruption_terminate_process_and_retain_raw_journal(
         assert record is not None
         assert record["status"] == expected_status
         assert "partial-jsonl" in record["raw_stdout"]
-        assert transport.reconcile(idempotency_key=key, deadline_seconds=1).status == "unknown"
+        assert transport.records[-1]["policy_violation"] == "none"
+        assert transport.records[-1]["experiment_charge_usd"] == "0.00"
+        assert transport.records[-1]["usage_telemetry_status"] == "unavailable"
+        expected_fault_kind = (
+            CliFaultKind.PROCESS_TIMEOUT
+            if expected_status == "timeout"
+            else CliFaultKind.PROCESS_SIGNAL
+        )
+        assert transport.records[-1]["cli_fault"]["kind"] == expected_fault_kind
+        assert transport.reconcile(idempotency_key=key, deadline_seconds=1).status == (
+            "deadline" if expected_status == "timeout" else "transport_fault"
+        )
     finally:
         transport.close()
         invocation_journal.close()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import queue
 import re
 import tempfile
@@ -17,7 +18,17 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 
 EXPERIMENT_NAME = "pixelgym-grounding"
 REGISTERED_POLICY_NAME = "pixelgym-grounding-policy"
+COMPATIBLE_SEARCH_CAPACITY = 4
+"""Maximum number of MLflow compatible-run calls that may remain outstanding."""
+
+COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS = 0.05
+"""Maximum time a compatible-run request waits for bounded worker capacity."""
+
 _SUBMISSION_ID_RE = re.compile(r"^submission-[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_LOGGER = logging.getLogger(__name__)
+_COMPATIBLE_SEARCH_SLOTS = threading.BoundedSemaphore(COMPATIBLE_SEARCH_CAPACITY)
+_COMPATIBLE_SEARCH_OCCUPANCY_LOCK = threading.Lock()
+_compatible_search_occupancy = 0
 
 RUN_PARAM_KEYS = (
     "dataset_name",
@@ -67,6 +78,15 @@ PRIMARY_METRIC = "accuracy"
 
 class TrackingMirrorError(RuntimeError):
     """A recoverable failure while mirroring authoritative lifecycle state."""
+
+
+class CompatibleSearchCapacityError(RuntimeError):
+    """The bounded pool of compatible-run workers has no available slot."""
+
+    def __init__(self, *, capacity: int, occupancy: int) -> None:
+        super().__init__(f"compatible-run search capacity exhausted ({occupancy}/{capacity})")
+        self.capacity = capacity
+        self.occupancy = occupancy
 
 
 @dataclass(frozen=True)
@@ -775,16 +795,65 @@ def _filter_literal(value: str) -> str:
 
 
 def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
-    """Return a tracking result without letting one remote request hold the caller."""
+    """Return promptly while capping MLflow calls that outlive their request."""
+    global _compatible_search_occupancy
+
+    with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
+        acquired = _COMPATIBLE_SEARCH_SLOTS.acquire(
+            timeout=COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS
+        )
+        if acquired:
+            _compatible_search_occupancy += 1
+        occupancy = _compatible_search_occupancy
+    if not acquired:
+        _LOGGER.warning(
+            "compatible-run search capacity rejected",
+            extra={
+                "compatible_search_capacity": COMPATIBLE_SEARCH_CAPACITY,
+                "compatible_search_occupancy": occupancy,
+            },
+        )
+        raise CompatibleSearchCapacityError(
+            capacity=COMPATIBLE_SEARCH_CAPACITY,
+            occupancy=occupancy,
+        )
     result: queue.Queue[tuple[bool, Any]] = queue.Queue(maxsize=1)
+    release_lock = threading.Lock()
+    released = False
+    start_failed = threading.Event()
+
+    def release_capacity() -> None:
+        global _compatible_search_occupancy
+        nonlocal released
+
+        with release_lock:
+            if released:
+                return
+            released = True
+            _COMPATIBLE_SEARCH_SLOTS.release()
+            with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
+                _compatible_search_occupancy -= 1
 
     def invoke() -> None:
         try:
             result.put((True, call()))
         except Exception as exc:  # noqa: BLE001 - preserve the adapter's original exception.
             result.put((False, exc))
+        finally:
+            if not start_failed.is_set():
+                release_capacity()
 
-    threading.Thread(target=invoke, daemon=True, name="mlflow-compatible-run-search").start()
+    worker = threading.Thread(
+        target=invoke,
+        daemon=True,
+        name="mlflow-compatible-run-search",
+    )
+    try:
+        worker.start()
+    except BaseException:
+        start_failed.set()
+        release_capacity()
+        raise
     try:
         succeeded, value = result.get(timeout=timeout_seconds)
     except queue.Empty as exc:

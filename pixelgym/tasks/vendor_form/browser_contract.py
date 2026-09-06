@@ -1,4 +1,13 @@
-"""Public deterministic-browser settings shared by capture and validation."""
+"""Public deterministic-browser settings shared by capture and validation.
+
+``POST /api/reset`` invalidates the currently rendered page and returns
+``requires_reload: true``. Consumers must reload the document after every
+successful reset and must not treat the old ``READY_SELECTOR`` match as current.
+The reload fetches the active task and posts its ``task_id`` to
+``/api/page-ready``. Until the current task's post succeeds,
+``GET /api/page-ready`` reports ``ready: false``; a post for a task displayed
+before the reset is rejected as stale.
+"""
 
 from __future__ import annotations
 

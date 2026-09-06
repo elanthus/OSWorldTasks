@@ -53,11 +53,9 @@ TEXT_COLOR = (28, 30, 33)  # #1c1e21
 BUTTON_BG = (60, 140, 95)  # #3c8c5f
 BUTTON_BORDER = (47, 111, 79)  # #2f6f4f
 BUTTON_TEXT = (255, 255, 255)
-# Not in style.css: focus and dropdown-highlight styling exist only in the
-# fake, which has to make focus visible without a caret.
+# Not in style.css: the fake makes focus visible without a caret.
 FOCUS_BORDER = (47, 111, 159)
 PLACEHOLDER_TEXT = (130, 138, 150)
-HIGHLIGHT_BG = (222, 233, 245)
 
 _BASE_FONT_SIZE = 14
 _HEADING_FONT_SIZE = 16
@@ -194,12 +192,6 @@ def _render_form(painter: _Painter, state: FormState, layout: Layout) -> None:
     if state.status:
         painter.text_in(layout.status, state.status, font=painter.body)
 
-    # Last, so the open dropdown occludes the controls it floats over -- the
-    # same z-order a native `<select>` popup has, and the one `Layout.hit_test`
-    # assumes when it gives the popup priority for clicks.
-    if state.country_open:
-        _render_country_popup(painter, state, layout)
-
 
 def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None:
     painter.label(layout.labels[WidgetId.COUNTRY], _LABELS["country"])
@@ -227,14 +219,6 @@ def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None
         ],
         fill=CONTROL_BORDER,
     )
-
-
-def _render_country_popup(painter: _Painter, state: FormState, layout: Layout) -> None:
-    painter.box(layout.country_popup, fill=FORM_PANEL_BG, outline=CONTROL_BORDER)
-    for index, option_rect in enumerate(layout.country_options):
-        if index == state.country_index:
-            painter.box(option_rect, fill=HIGHLIGHT_BG, outline=None)
-        painter.text_in(option_rect, state.country_options[index], font=painter.body)
 
 
 def _render_payment_terms(painter: _Painter, state: FormState, layout: Layout) -> None:

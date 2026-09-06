@@ -7,11 +7,16 @@ import platform
 import subprocess
 import tempfile
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from pixelgym.grounding.v5.sandbox import SANDBOX_POLICY_VERSION
+from pixelgym.grounding.v5.contracts import sha256_bytes
+from pixelgym.grounding.v5.sandbox import ProbeResult
+
+# This identity is independent of the manifest schema and preserves the frozen
+# profile bytes until the SBPL policy itself changes.
+SBPL_PROBE_PROFILE_VERSION = "pixelgym-agent-v5-sandbox-v2"
 
 
 @dataclass(frozen=True)
@@ -23,6 +28,23 @@ class SandboxProbeResult:
     runner_storage_denied: bool
     shell_denied: bool
     returncode: int
+    profile_digest: str | None = None
+
+    def declared_result(self) -> ProbeResult:
+        passed = self.returncode == 0 and all(
+            (
+                self.provider_reachable,
+                self.unauthorized_egress_denied,
+                self.listener_denied,
+                self.cross_policy_file_denied,
+                self.runner_storage_denied,
+                self.shell_denied,
+            )
+        )
+        return ProbeResult(
+            status="passed" if passed else "failed",
+            profile_digest=self.profile_digest,
+        )
 
 
 def _escaped_sbpl_path(path: Path) -> str:
@@ -47,7 +69,7 @@ def darwin_profile(
     escaped_workspace = _escaped_sbpl_path(policy_workspace)
     return "\n".join(
         (
-            f";; {SANDBOX_POLICY_VERSION}",
+            f";; {SBPL_PROBE_PROFILE_VERSION}",
             "(version 1)",
             "(deny default)",
             '(import "system.sb")',
@@ -211,4 +233,8 @@ def run_darwin_probe(
             "OS sandbox probe could not execute; run outside a parent process sandbox: "
             f"exit {completed.returncode}: {completed.stderr.strip()}"
         )
-    return _decode_probe_result(completed.stdout, returncode=completed.returncode)
+    result = _decode_probe_result(completed.stdout, returncode=completed.returncode)
+    return replace(
+        result,
+        profile_digest="sha256:" + sha256_bytes(profile.encode("utf-8")),
+    )

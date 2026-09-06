@@ -642,8 +642,6 @@ def _label_actions(fixture: dict[str, Any]) -> list[str]:
     """A short label per action: the widget a click lands on, the key a
     keystroke sends. Privileged (it reads the layout and live focus state), and
     used only for the human-readable trace -- never for replay."""
-    from pixelgym.tasks.vendor_form.ui import WidgetId
-
     backend = FakeBackend()
     backend.reset(fixture["seed"])
     labels: list[str] = []
@@ -660,19 +658,14 @@ def _label_actions(fixture: dict[str, Any]) -> list[str]:
             continue
 
         x, y = action["x"], action["y"]
-        hit = backend.layout.hit_test(x, y, country_open=backend.form.country_open)
+        hit = backend.layout.hit_test(x, y)
         if hit is None:
-            target = "(background)" if not backend.form.country_open else "(dismiss dropdown)"
+            target = "(background)"
         else:
             widget, index = hit
             target = widget.value
             if index is not None:
-                options = (
-                    backend.form.country_options
-                    if widget is WidgetId.COUNTRY
-                    else backend.form.payment_options
-                )
-                target = f"{widget.value}={options[index]}"
+                target = f"{widget.value}={backend.form.payment_options[index]}"
         labels.append(f"CLICK({x},{y}) {target}")
         backend.click(x, y)
 

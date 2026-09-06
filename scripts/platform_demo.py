@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,10 +28,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     root = Path(__file__).parents[1]
-    control = ControlStore(
-        args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-    )
+    control = ControlStore(args.database)
     for prompt_version, model, lifecycle_role in FIXTURES:
         if args.fixture != "all" and lifecycle_role != args.fixture:
             continue

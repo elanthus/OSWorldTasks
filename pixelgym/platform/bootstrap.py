@@ -3,19 +3,25 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
+import logging
 import os
 import subprocess
 import sys
 import threading
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
 
 from pixelgym.platform.contracts import PolicyManifest
-from pixelgym.platform.control_store import ControlStore, DeploymentRecord
+from pixelgym.platform.control_store import (
+    ControlStore,
+    DeploymentRecord,
+    configured_busy_timeout_ms,
+)
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -25,6 +31,61 @@ from pixelgym.platform.operational_log import ImmutableOperationalLog
 from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
 from pixelgym.platform.web import create_control_app
 from pixelgym.serialization import load_jsonl
+
+LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class DeploymentExposure:
+    bind_address: str
+    loopback_only_attested: bool
+    treated_as_loopback: bool
+
+
+def _environment_bool(name: str) -> bool | None:
+    value = os.environ.get(name)
+    if value is None:
+        return None
+    normalized = value.casefold()
+    if normalized not in {"true", "false"}:
+        raise ValueError(f"{name} must be 'true' or 'false'")
+    return normalized == "true"
+
+
+def _is_loopback_address(bind_address: str) -> bool:
+    candidate = bind_address.strip()
+    if candidate.casefold() == "localhost":
+        return True
+    if candidate.startswith("[") and candidate.endswith("]"):
+        candidate = candidate[1:-1]
+    try:
+        return ipaddress.ip_address(candidate).is_loopback
+    except ValueError:
+        return False
+
+
+def resolve_deployment_exposure(bind_address: str | None = None) -> DeploymentExposure:
+    """Resolve the connection-level deployment exposure declared by the operator."""
+    if "FORWARDED_ALLOW_IPS" in os.environ:
+        raise ValueError(
+            "FORWARDED_ALLOW_IPS must be unset; the control plane resolves client addresses "
+            "from the connection, not forwarded headers"
+        )
+    resolved_bind_address = (
+        bind_address
+        if bind_address is not None
+        else os.environ.get("PIXELGYM_BIND_ADDRESS") or "127.0.0.1"
+    )
+    loopback_only_attested = (
+        _environment_bool("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT") or False
+    )
+    return DeploymentExposure(
+        bind_address=resolved_bind_address,
+        loopback_only_attested=loopback_only_attested,
+        treated_as_loopback=(
+            loopback_only_attested or _is_loopback_address(resolved_bind_address)
+        ),
+    )
 
 
 class DemoReplayServingProvider:
@@ -82,7 +143,7 @@ def _build_control(repository_root: Path) -> ControlStore:
         Path(database).parent.mkdir(parents=True, exist_ok=True)
     control = ControlStore(
         database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
+        busy_timeout_ms=configured_busy_timeout_ms(),
     )
     control.require_migrated()
     return control
@@ -190,8 +251,34 @@ def _record_cancellation_intent(
         return True
 
 
-def create_app() -> FastAPI:
+def create_app(
+    bind_address: str | None = None,
+    *,
+    session_cookie_secure: bool | None = None,
+) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
+    exposure = resolve_deployment_exposure(bind_address)
+    proxy_allowlist = tuple(
+        address.strip()
+        for address in os.environ.get("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "").split(",")
+        if address.strip()
+    )
+    if not exposure.treated_as_loopback and not proxy_allowlist:
+        raise RuntimeError(
+            "a non-loopback PIXELGYM_BIND_ADDRESS requires PIXELGYM_TRUSTED_PROXY_ADDRESSES"
+        )
+    secure_environment = _environment_bool("PIXELGYM_SESSION_COOKIE_SECURE")
+    if exposure.loopback_only_attested:
+        LOGGER.warning(
+            "Operator attested host-loopback-only port publishing; this attestation is "
+            "unverifiable by the application"
+        )
+    if session_cookie_secure is None:
+        session_cookie_secure = (
+            secure_environment
+            if secure_environment is not None
+            else not exposure.treated_as_loopback
+        )
     repository_root = _repository_root()
     csrf_secret = os.environ.get("PIXELGYM_CSRF_SECRET")
     if not csrf_secret:
@@ -275,6 +362,10 @@ def create_app() -> FastAPI:
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
+        loopback_deployment=exposure.treated_as_loopback,
+        principal_header=os.environ.get("PIXELGYM_PRINCIPAL_HEADER", "X-Forwarded-User"),
+        trusted_proxy_addresses=proxy_allowlist,
+        session_cookie_secure=session_cookie_secure,
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,
         tracking=tracking,
