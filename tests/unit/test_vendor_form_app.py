@@ -73,7 +73,9 @@ def test_reset_is_idempotent_for_same_seed():
     assert second_reset.status_code == 200
     assert second_reset.json() == expected_reset
     assert second_task == first_task
-    assert state == {"task": first_task, "submissions": []}
+    # The privileged /api/state view keeps the seed; the public /api/task view
+    # withholds it (owner decision on issue #124), so compare accordingly.
+    assert state == {"task": {**first_task, "seed": 7}, "submissions": []}
 
 
 def test_reset_installs_a_new_task_and_clears_prior_submissions():
