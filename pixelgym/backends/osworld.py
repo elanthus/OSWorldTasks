@@ -70,7 +70,7 @@ _NAMED_KEY_MAP = {
     "ArrowUp": "up",
     "ArrowDown": "down",
 }
-_MAX_PORT = 65_354
+_MAX_VALID_TCP_PORT = 65_535
 
 
 def _default_runtime_image_reference() -> str:
@@ -83,25 +83,46 @@ class OSWorldBackendError(RuntimeError):
     """OSWorld failed or returned data outside the PixelGym contract."""
 
 
-def _portable_docker_available_port(provider: Any, start_port: int) -> int:
-    """Find an unused host port without macOS's privileged process scan."""
-
+def _docker_published_ports(provider: Any) -> set[int]:
     docker_ports: set[int] = set()
     for container in provider.client.containers.list():
         mappings = container.attrs.get("NetworkSettings", {}).get("Ports") or {}
         for published in mappings.values():
             if published:
                 docker_ports.update(int(item["HostPort"]) for item in published)
+    return docker_ports
 
-    for port in range(start_port, _MAX_PORT):
+
+def _can_bind_host_port(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        try:
+            probe.bind(("", port))
+        except OSError:
+            return False
+    return True
+
+
+def _portable_docker_available_port(
+    provider: Any,
+    start_port: int,
+    *,
+    published_port_source: Callable[[Any], set[int]] = _docker_published_ports,
+    port_probe: Callable[[int], bool] = _can_bind_host_port,
+) -> int:
+    """Find an unused host port without macOS's privileged process scan."""
+
+    if not 1 <= start_port <= _MAX_VALID_TCP_PORT:
+        raise ValueError(
+            f"start_port must be between 1 and {_MAX_VALID_TCP_PORT} inclusive"
+        )
+
+    docker_ports = published_port_source(provider)
+
+    for port in range(start_port, _MAX_VALID_TCP_PORT + 1):
         if port in docker_ports:
             continue
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
-            try:
-                probe.bind(("", port))
-            except OSError:
-                continue
-        return port
+        if port_probe(port):
+            return port
     raise OSWorldBackendError(f"no available host port found starting at {start_port}")
 
 

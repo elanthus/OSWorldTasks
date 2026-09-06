@@ -16,8 +16,12 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_digest
+from pixelgym.grounding.v5.d56_spend import (
+    legacy_campaign_spend_disclosure,
+    legacy_summary_spend_disclosure,
+)
 
-DERIVATIVE_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-calibration-publishable-v1"
+DERIVATIVE_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-calibration-publishable-v2"
 RELATION_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-publication-relation-v1"
 REPORT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-gemini-calibration-report-v1"
 LATENCY_METHOD = "linear-interpolation-over-completed-response-latencies-v1"
@@ -375,6 +379,8 @@ def build_derivative(
     )
 
     policy_manifest = plan["policy"]["policy_manifest"]
+    phase_spend = legacy_summary_spend_disclosure(summary)
+    campaign_spend = legacy_campaign_spend_disclosure(summary)
     return {
         "schema_version": DERIVATIVE_SCHEMA_VERSION,
         "purpose": "publishable derivative of the incomplete Gemini v2 D5.6 calibration run",
@@ -431,6 +437,8 @@ def build_derivative(
             "latency": _latency_summary(all_transport),
         },
         "cost": {
+            "phase_spend": phase_spend,
+            "campaign_spend": campaign_spend,
             "known_calibration_incremental_spend_usd": response_cost,
             "prior_aggregate_spend_usd": summary["prior_aggregate_spend_usd"],
             "known_actual_aggregate_spend_usd": summary["actual_aggregate_spend_usd"],
@@ -501,6 +509,8 @@ def _format_ms(value: float | None) -> str:
 
 
 def _format_cost(value: str) -> str:
+    if value == "unknown":
+        return "unknown"
     return f"${Decimal(value):.9f}"
 
 
@@ -595,6 +605,37 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             "Step-limit truncations consumed their full task horizons. Successful episodes "
             "could terminate earlier."
         )
+    spend_disclosure_rows: list[str] = []
+    if derivative.get("schema_version") == DERIVATIVE_SCHEMA_VERSION:
+        phase_spend = derivative["cost"]["phase_spend"]
+        campaign_spend = derivative["cost"]["campaign_spend"]
+        spend_disclosure_rows = [
+            f"| Phase known spend | {_format_cost(phase_spend['known_spend_usd'])} |",
+            (
+                "| Phase unknown reservation | "
+                f"{_format_cost(phase_spend['unknown_reservation_usd'])} |"
+            ),
+            (
+                "| Phase in-flight reservation | "
+                f"{_format_cost(phase_spend['in_flight_reservation_usd'])} |"
+            ),
+            (
+                "| Phase budget-accounted spend | "
+                f"{_format_cost(phase_spend['budget_accounted_spend_usd'])} |"
+            ),
+            (
+                "| Campaign known spend | "
+                f"{_format_cost(campaign_spend['known_spend_usd'])} |"
+            ),
+            (
+                "| Campaign unknown reservation | "
+                f"{_format_cost(campaign_spend['unknown_reservation_usd'])} |"
+            ),
+            (
+                "| Campaign budget-accounted spend | "
+                f"{_format_cost(campaign_spend['budget_accounted_spend_usd'])} |"
+            ),
+        ]
     lines.extend(
         [
             "",
@@ -630,6 +671,7 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             f"| Known incremental calibration spend | {_format_cost(derivative['cost']['known_calibration_incremental_spend_usd'])} |",
             f"| Known aggregate spend | {_format_cost(derivative['cost']['known_actual_aggregate_spend_usd'])} |",
             f"| Recorded remaining shared cap | {_format_cost(derivative['cost']['recorded_remaining_aggregate_spend_usd'])} |",
+            *spend_disclosure_rows,
             (
                 "| Possible additional charge | "
                 f"{request['unknown_outcomes']} unknown request(s); unconfirmed |"

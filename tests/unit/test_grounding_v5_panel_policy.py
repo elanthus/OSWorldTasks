@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import threading
 import urllib.error
 from decimal import Decimal
 from pathlib import Path
@@ -643,6 +644,9 @@ def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
     assert timeouts == [9.0, 6.0]
     assert ledger.wire_requests_sent == 2
     assert not ledger.blocked
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_reservation_usd == 0
+    assert ledger.spent_usd == Decimal("0.001")
     assert transport.records[0]["status"] == "rate_limited"
     assert transport.records[0]["cost_usd"] == "0"
     assert transport.records[1]["pre_send_backoff_seconds"] == 3.0
@@ -890,7 +894,8 @@ def test_non_retryable_http_status_still_blocks_the_ledger() -> None:
     # A credential or route defect cannot be retried away; it must stop the run.
     assert outcome.status == "unknown"
     assert ledger.blocked
-    assert ledger.unknown_charge_outcomes == 0
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_charge_outcomes == 1
 
 
 def test_a_dropped_request_does_not_poison_the_requests_that_follow() -> None:
@@ -967,15 +972,16 @@ def test_transport_fault_backoff_grows_and_resets_after_a_response() -> None:
 def test_unknown_charge_reservations_fail_closed_at_the_aggregate_cap() -> None:
     ledger = SpendLedger(Decimal(10), Decimal(0))
 
-    ledger.reserve_unknown_charge(Decimal("9.99"))
+    assert ledger.reserve_wire("unknown-large", Decimal("9.99"))
+    ledger.reserve_unknown_charge("unknown-large", Decimal("9.99"))
     assert not ledger.blocked
     # A reservation consumes budget, so it must gate the next send.
-    assert not ledger.reserve_wire(Decimal("0.02"))
-    assert ledger.reserve_wire(Decimal("0.005"))
+    assert not ledger.reserve_wire("too-large", Decimal("0.02"))
+    assert ledger.reserve_wire("small", Decimal("0.005"))
 
-    ledger.reserve_unknown_charge(Decimal("1.00"))
+    assert not ledger.record_cost("small", Decimal("0.02"), Decimal("0.005"))
     assert ledger.blocked
-    assert not ledger.reserve_wire(Decimal("0.001"))
+    assert not ledger.reserve_wire("after-block", Decimal("0.001"))
 
 
 def degenerate_envelope() -> dict[str, Any]:
@@ -1064,19 +1070,25 @@ def test_reservation_falls_back_to_the_theoretical_maximum_without_evidence() ->
 
     # No response has been priced, so there is nothing to reason from.
     assert ledger.unknown_charge_reservation_usd(request_maximum) == request_maximum
-    assert ledger.reserve_unknown_charge(request_maximum) == request_maximum
+    assert ledger.reserve_wire("unknown", request_maximum)
+    assert ledger.reserve_unknown_charge("unknown", request_maximum) == request_maximum
 
 
 def test_reservation_tightens_to_the_observed_ceiling() -> None:
     request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
     ledger = SpendLedger(Decimal(10), Decimal(0))
 
-    ledger.record_cost(Decimal("0.004"), request_maximum)
-    ledger.record_cost(Decimal("0.011"), request_maximum)
-    ledger.record_cost(Decimal("0.002"), request_maximum)
+    for key, cost in (
+        ("priced-1", Decimal("0.004")),
+        ("priced-2", Decimal("0.011")),
+        ("priced-3", Decimal("0.002")),
+    ):
+        assert ledger.reserve_wire(key, request_maximum)
+        assert ledger.record_cost(key, cost, request_maximum)
 
     assert ledger.max_observed_cost_usd == Decimal("0.011")
-    assert ledger.reserve_unknown_charge(request_maximum) == Decimal("0.033")
+    assert ledger.reserve_wire("unknown", request_maximum)
+    assert ledger.reserve_unknown_charge("unknown", request_maximum) == Decimal("0.033")
     assert ledger.unknown_reservation_usd == Decimal("0.033")
 
 
@@ -1086,9 +1098,11 @@ def test_reservation_never_exceeds_the_theoretical_maximum() -> None:
 
     # Three times this observation is far above the modelled per-request ceiling,
     # which must still cap the hold.
-    ledger.record_cost(Decimal("0.05"), request_maximum)
+    assert ledger.reserve_wire("priced", request_maximum)
+    assert ledger.record_cost("priced", Decimal("0.05"), request_maximum)
 
-    assert ledger.reserve_unknown_charge(request_maximum) == request_maximum
+    assert ledger.reserve_wire("unknown", request_maximum)
+    assert ledger.reserve_unknown_charge("unknown", request_maximum) == request_maximum
 
 
 def test_observed_ceiling_reservation_matches_the_v3b_run_shape() -> None:
@@ -1096,10 +1110,15 @@ def test_observed_ceiling_reservation_matches_the_v3b_run_shape() -> None:
 
     request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
     ledger = SpendLedger(Decimal("7.00"), Decimal(0))
-    ledger.record_cost(Decimal("0.011250"), request_maximum)  # the run's priciest
+    assert ledger.reserve_wire("priced", request_maximum)
+    assert ledger.record_cost(
+        "priced", Decimal("0.011250"), request_maximum
+    )  # the run's priciest
 
-    for _ in range(20):
-        ledger.reserve_unknown_charge(request_maximum)
+    for index in range(20):
+        key = f"unknown-{index}"
+        assert ledger.reserve_wire(key, request_maximum)
+        ledger.reserve_unknown_charge(key, request_maximum)
 
     assert ledger.unknown_reservation_usd == Decimal("0.675000")
     assert not ledger.blocked
@@ -1113,9 +1132,190 @@ def test_transport_records_the_amount_actually_held() -> None:
 
     request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
     ledger = SpendLedger(Decimal(10), Decimal(0))
-    ledger.record_cost(Decimal("0.01"), request_maximum)
+    assert ledger.reserve_wire("priced", request_maximum)
+    assert ledger.record_cost("priced", Decimal("0.01"), request_maximum)
     transport = gemini_transport(urlopen, ledger=ledger)
 
     one_send(transport, "attempt-held")
 
     assert transport.records[-1]["unknown_charge_reservation_usd"] == "0.03"
+
+
+def test_one_request_maximum_cap_refuses_a_second_in_flight_send() -> None:
+    request_maximum = Decimal("1.00")
+    ledger = SpendLedger(request_maximum, Decimal(0))
+
+    assert ledger.reserve_wire("first", request_maximum)
+    assert not ledger.reserve_wire("second", request_maximum)
+    assert ledger.spent_usd == 0
+    assert ledger.in_flight_reservation_usd == request_maximum
+    assert ledger.unknown_reservation_usd == 0
+    assert ledger.budget_accounted_spend_usd == request_maximum
+
+
+def test_known_cost_atomically_replaces_hold_and_duplicate_callback_is_idempotent() -> None:
+    ledger = SpendLedger(Decimal("1.00"), Decimal(0))
+
+    assert ledger.reserve_wire("known", Decimal("1.00"))
+    assert ledger.record_cost("known", Decimal("0.25"), Decimal("1.00"))
+    assert ledger.record_cost("known", Decimal("0.25"), Decimal("1.00"))
+
+    assert ledger.spent_usd == Decimal("0.25")
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_reservation_usd == 0
+    assert ledger.wire_requests_sent == 1
+
+
+def test_proven_zero_charge_releases_hold_and_unknown_outcome_converts_it() -> None:
+    ledger = SpendLedger(Decimal("2.00"), Decimal(0))
+
+    assert ledger.reserve_wire("pre-send", Decimal("1.00"))
+    assert ledger.release_wire("pre-send", reason="confirmed_pre_send_failure")
+    assert ledger.release_wire("pre-send", reason="duplicate_callback")
+    assert ledger.reserve_wire("unknown", Decimal("1.00"))
+    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal(
+        "1.00"
+    )
+    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal(
+        "1.00"
+    )
+
+    assert ledger.spent_usd == 0
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_reservation_usd == Decimal("1.00")
+    assert ledger.unknown_charge_outcomes == 1
+
+
+def test_reconciliation_handles_pre_reservation_crash_and_converts_existing_hold() -> None:
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    ledger = SpendLedger(Decimal("1.00"), Decimal(0))
+    transport = gemini_transport(lambda: None, ledger=ledger)
+
+    missing = transport.reconcile(idempotency_key="not-sent", deadline_seconds=1.0)
+    assert missing.status == "unknown"
+    assert ledger.budget_accounted_spend_usd == 0
+
+    assert ledger.reserve_wire("possibly-sent", request_maximum)
+    first = transport.reconcile(idempotency_key="possibly-sent", deadline_seconds=1.0)
+    duplicate = transport.reconcile(
+        idempotency_key="possibly-sent", deadline_seconds=1.0
+    )
+
+    assert first == duplicate
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_reservation_usd == request_maximum
+    assert ledger.unknown_charge_outcomes == 1
+
+
+def test_late_confirmed_zero_charge_replaces_unknown_reservation_once() -> None:
+    ledger = SpendLedger(Decimal("1.00"), Decimal(0))
+    assert ledger.reserve_wire("late-zero", Decimal("1.00"))
+    assert ledger.reserve_unknown_charge("late-zero", Decimal("1.00")) == Decimal(
+        "1.00"
+    )
+
+    assert ledger.release_wire("late-zero", reason="late_http_429")
+    assert ledger.release_wire("late-zero", reason="duplicate_callback")
+
+    assert ledger.spent_usd == 0
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.unknown_reservation_usd == 0
+    assert ledger.unknown_charge_outcomes == 1
+
+
+def test_concurrent_reserve_and_complete_keep_projection_within_cap() -> None:
+    ledger = SpendLedger(Decimal("1.00"), Decimal(0))
+    assert ledger.reserve_wire("first", Decimal("1.00"))
+    first_attempt_done = threading.Event()
+    completion_allowed = threading.Event()
+    completion_done = threading.Event()
+    results: list[bool] = []
+
+    def reserve_contender() -> None:
+        results.append(ledger.reserve_wire("second", Decimal("0.75")))
+        first_attempt_done.set()
+        assert completion_done.wait(timeout=1.0)
+        results.append(ledger.reserve_wire("second", Decimal("0.75")))
+
+    def complete_first() -> None:
+        assert completion_allowed.wait(timeout=1.0)
+        results.append(
+            ledger.record_cost("first", Decimal("0.25"), Decimal("1.00"))
+        )
+        completion_done.set()
+
+    reserver = threading.Thread(target=reserve_contender)
+    completer = threading.Thread(target=complete_first)
+    reserver.start()
+    completer.start()
+    assert first_attempt_done.wait(timeout=1.0)
+    completion_allowed.set()
+    reserver.join(timeout=1.0)
+    completer.join(timeout=1.0)
+
+    assert not reserver.is_alive() and not completer.is_alive()
+    assert results == [False, True, True]
+    assert ledger.spent_usd == Decimal("0.25")
+    assert ledger.in_flight_reservation_usd == Decimal("0.75")
+    assert ledger.budget_accounted_spend_usd == ledger.maximum_spend_usd
+
+
+def test_abandoned_streaming_send_blocks_immediate_retry_at_cap() -> None:
+    request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
+    entered_wire = threading.Event()
+    release_wire = threading.Event()
+    first_outcomes: list[TransportOutcome] = []
+
+    def urlopen(*_args: object, **_kwargs: object) -> FakeHttpResponse:
+        entered_wire.set()
+        assert release_wire.wait(timeout=1.0)
+        return FakeHttpResponse(
+            {
+                "id": "first-response",
+                "model": GEMINI_STATEFUL_FULL_CALIBRATION.model,
+                "provider": "Google",
+                "choices": [
+                    {
+                        "message": {
+                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
+                        },
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 5, "cost": "0.01"},
+            }
+        )
+
+    ledger = SpendLedger(request_maximum, Decimal(0))
+    transport = gemini_transport(urlopen, ledger=ledger)
+    first = threading.Thread(
+        target=lambda: first_outcomes.append(one_send(transport, "streaming-first"))
+    )
+    first.start()
+    assert entered_wire.wait(timeout=1.0)
+
+    retry = one_send(transport, "streaming-retry")
+    assert retry.status == "pre_send_failure"
+    assert retry.failure_code == "aggregate_spend_guard"
+    assert ledger.in_flight_reservation_usd == request_maximum
+
+    release_wire.set()
+    first.join(timeout=1.0)
+    assert not first.is_alive()
+    assert first_outcomes[0].status == "response"
+    assert ledger.in_flight_reservation_usd == 0
+    assert ledger.spent_usd == Decimal("0.01")
+
+
+def test_spend_ledger_summary_reports_each_balance_separately() -> None:
+    ledger = SpendLedger(Decimal("3.00"), Decimal("0.25"))
+    assert ledger.reserve_wire("in-flight", Decimal("1.00"))
+    assert ledger.reserve_wire("unknown", Decimal("1.00"))
+    ledger.reserve_unknown_charge("unknown", Decimal("1.00"))
+
+    summary = ledger.to_dict()
+
+    assert summary["spent_usd"] == "0.25"
+    assert summary["in_flight_reservation_usd"] == "1.00"
+    assert summary["unknown_reservation_usd"] == "1.00"
+    assert summary["budget_accounted_spend_usd"] == "2.25"

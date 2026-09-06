@@ -68,7 +68,11 @@ class GuestTaskState:
                 raise ValueError("reset seed does not match the bundled task")
             self._submissions = []
             self._page_ready = False
-            return {"task_id": self._task["task_id"], "seed": self._task["seed"]}
+            return {
+                "task_id": self._task["task_id"],
+                "seed": self._task["seed"],
+                "requires_reload": True,
+            }
 
     def public_task(self) -> dict[str, Any]:
         with self._lock:
