@@ -3,9 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from pixelgym.grounding.v5.contracts import AttemptIdentity
+from pixelgym.grounding.v5.journal import V5AttemptJournal
 from scripts.publish_grounding_v5_d56_qwen_full_calibration import (
     _file_digest,
     _format_cost,
+    _journal_projection,
+    build_derivative,
     render_report,
 )
 
@@ -149,3 +153,192 @@ def test_qwen_publication_relation_excludes_restricted_journal() -> None:
 
 def test_qwen_report_formatter_preserves_unknown_spend() -> None:
     assert _format_cost("unknown") == "unknown"
+
+
+def test_generated_derivative_and_report_separate_failure_counts(
+    tmp_path: Path,
+) -> None:
+    journal_path = tmp_path / "mixed-outcomes.sqlite"
+    journal = V5AttemptJournal(journal_path)
+    classifications = (
+        "infrastructure_failure",
+        "policy_violation",
+        "invalid_output",
+    )
+    task_ids = tuple(f"task-{index}" for index in range(len(classifications)))
+    trial_ids = tuple(f"trial-{index}" for index in range(len(classifications)))
+    idempotency_keys = tuple(
+        f"journal-attempt-{index}" for index in range(len(classifications))
+    )
+    for index, (classification, trial_id, idempotency_key) in enumerate(
+        zip(classifications, trial_ids, idempotency_keys, strict=True)
+    ):
+        identity = AttemptIdentity(trial_id, 0, 0)
+        journal.record_attempt_started(
+            identity,
+            provider_endpoint_identity="https://provider.invalid",
+            request_digest="sha256:" + str(index) * 64,
+            idempotency_key=idempotency_key,
+            model_attempt_reservation=1,
+            control_request_reservation=0,
+            pre_call_checkpoint=b"{}",
+        )
+        if classification == "invalid_output":
+            journal.persist_canonical_response(
+                identity,
+                {
+                    "response_id": "synthetic-malformed-response",
+                    "model": "synthetic-model",
+                    "content": "{",
+                    "finish_reason": "stop",
+                    "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+                },
+            )
+            journal.append_event(
+                event_key=f"{identity.key}/sealed_parser_failure",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=0,
+                attempt_index=0,
+                payload={
+                    "failure_code": "parse_failure",
+                    "sanitized_reason": "JSONDecodeError",
+                    "parser_version": "synthetic-parser-v1",
+                },
+            )
+        else:
+            journal.append_event(
+                event_key=f"{identity.key}/sealed_{classification}",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=0,
+                attempt_index=0,
+                payload={"failure_code": classification},
+            )
+    journal.close()
+
+    task_order = [
+        {
+            "ordinal": index,
+            "task_id": task_id,
+            "family": "synthetic_family",
+            "max_episode_steps": 1,
+        }
+        for index, task_id in enumerate(task_ids)
+    ]
+    plan = {
+        "task_order": task_order,
+        "policy": {
+            "slot": "synthetic-slot",
+            "policy_manifest_digest": "sha256:" + "a" * 64,
+            "policy_manifest": {
+                "policy_id": "synthetic-policy",
+                "model": "synthetic-model",
+                "provider": "synthetic-provider",
+                "coordinate_adapter": "identity",
+                "memory_policy_version": "synthetic-memory-v1",
+                "parser_version": "synthetic-parser-v1",
+                "response_schema_version": "synthetic-response-v1",
+                "max_model_attempts_per_action": 1,
+                "transport_retry_rule": "none",
+            },
+        },
+    }
+    summary = {
+        "episode_results": [
+            {
+                "trial_id": trial_id,
+                "task_id": task_id,
+                "classification": classification,
+                "success": False,
+                "environment_actions": 0,
+                "model_attempts": 1,
+                "provider_wire_requests": 1,
+            }
+            for task_id, trial_id, classification in zip(
+                task_ids, trial_ids, classifications, strict=True
+            )
+        ],
+        "transport_records": [
+            {
+                "idempotency_key": idempotency_key,
+                "status": (
+                    "response"
+                    if classification == "invalid_output"
+                    else classification
+                ),
+                "latency_ms": 1.0,
+                "cost_usd": "0.00",
+            }
+            for idempotency_key, classification in zip(
+                idempotency_keys, classifications, strict=True
+            )
+        ],
+        "approved_plan_sha256": "sha256:" + "b" * 64,
+        "journal_integrity": {"event_chain_digest": "sha256:" + "c" * 64},
+        "code_revision": "synthetic-revision",
+        "provider_control_requests": 0,
+        "phase_spend": {
+            "schema_version": "pixelgym-agent-v5-d56-phase-spend-v2",
+            "known_spend_usd": "0",
+            "unknown_reservation_usd": "0",
+            "in_flight_reservation_usd": "0",
+            "budget_accounted_spend_usd": "0",
+        },
+        "campaign_spend": {
+            "schema_version": "pixelgym-agent-v5-d56-phase-spend-v2",
+            "known_spend_usd": "0",
+            "unknown_reservation_usd": "0",
+            "in_flight_reservation_usd": "0",
+            "budget_accounted_spend_usd": "0",
+        },
+        "calibration_incremental_spend_usd": "0",
+        "known_prior_aggregate_spend_usd": "0",
+        "unknown_prior_charge_reservation_usd": "0",
+        "prior_aggregate_spend_usd": "0",
+        "actual_aggregate_spend_usd": "0",
+        "budget_accounted_aggregate_spend_usd": "0",
+        "remaining_aggregate_spend_usd": "1",
+        "maximum_aggregate_spend_usd": "1",
+    }
+    manifest = {
+        "manifest_digest": "sha256:" + "d" * 64,
+        "records": [
+            {
+                "task_id": task_id,
+                "seed_record": {
+                    "family": "synthetic_family",
+                    "difficulty_band": "synthetic_band",
+                    "logical_id": f"logical-{index}",
+                    "variant": "base",
+                },
+            }
+            for index, task_id in enumerate(task_ids)
+        ],
+    }
+    derivative = build_derivative(
+        plan=plan,
+        summary=summary,
+        manifest=manifest,
+        audit={
+            "result": {"checks_failed": 0},
+            "artifacts": {
+                "run_summary": {"sha256": "sha256:" + "e" * 64},
+                "attempt_journal": {"sha256": "sha256:" + "f" * 64},
+            },
+        },
+        projection=_journal_projection(journal_path),
+        audit_file_sha256="sha256:" + "1" * 64,
+    )
+
+    assert derivative["coverage"]["attempted_tasks"] == 3
+    assert derivative["coverage"]["invalid_outputs"] == 1
+    assert derivative["coverage"]["infrastructure_failures"] == 1
+    assert derivative["coverage"]["policy_violations"] == 1
+    family = derivative["families"][0]
+    assert family["invalid_outputs"] == 1
+    assert family["infrastructure_failures"] == 1
+    assert family["policy_violations"] == 1
+    report = render_report(derivative, derivative_sha256="sha256:" + "2" * 64)
+    assert "| Infrastructure failures | 1 |" in report
+    assert "| Policy violations | 1 |" in report

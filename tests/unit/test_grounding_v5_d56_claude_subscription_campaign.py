@@ -5,13 +5,19 @@ import json
 import signal
 import sqlite3
 import subprocess
+from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import pytest
 
 from pixelgym.grounding.v5 import claude_code_policy as policy
 from pixelgym.grounding.v5 import d56_claude_subscription_campaign as campaign
+from pixelgym.grounding.v5.contracts import (
+    CliFaultKind,
+    CostKnowledge,
+    ModelAttemptConsumption,
+)
 
 ROOT = Path(__file__).parents[2]
 RESOLVED_MODEL = "claude-sonnet-5-20260801"
@@ -52,6 +58,10 @@ class SuccessfulProcess:
         total_cost_usd: object = 0.01,
         diagnostic: str | None = None,
         stderr: str = "",
+        returncode: int = 0,
+        resolved_model: str = RESOLVED_MODEL,
+        rate_limit_status: str = "allowed",
+        result_text: str | None = None,
     ) -> None:
         self.action = action or {"action_type": 1, "x": 100, "y": 100, "key": 0}
         self.content_block_type = content_block_type
@@ -63,6 +73,10 @@ class SuccessfulProcess:
         self.total_cost_usd = total_cost_usd
         self.diagnostic = diagnostic
         self.stderr = stderr
+        self.returncode = returncode
+        self.resolved_model = resolved_model
+        self.rate_limit_status = rate_limit_status
+        self.result_text = result_text
         self.input_event: dict[str, Any] | None = None
 
     def communicate(
@@ -83,7 +97,7 @@ class SuccessfulProcess:
             {
                 "type": "rate_limit_event",
                 "rate_limit_info": {
-                    "status": "allowed",
+                    "status": self.rate_limit_status,
                     "isUsingOverage": False,
                     "overageStatus": "rejected",
                 },
@@ -92,7 +106,7 @@ class SuccessfulProcess:
             {
                 "type": "assistant",
                 "message": {
-                    "model": RESOLVED_MODEL,
+                    "model": self.resolved_model,
                     "content": [{"type": self.content_block_type, "text": "action"}],
                 },
             },
@@ -101,9 +115,15 @@ class SuccessfulProcess:
                 "subtype": "success",
                 "is_error": False,
                 "num_turns": 1,
-                "result": json.dumps(self.action, separators=(",", ":")),
+                "result": (
+                    json.dumps(self.action, separators=(",", ":"))
+                    if self.result_text is None
+                    else self.result_text
+                ),
                 "usage": self.usage,
-                "modelUsage": {RESOLVED_MODEL: {"inputTokens": 1000, "outputTokens": 50}},
+                "modelUsage": {
+                    self.resolved_model: {"inputTokens": 1000, "outputTokens": 50}
+                },
                 "total_cost_usd": self.total_cost_usd,
             },
         ]
@@ -168,6 +188,11 @@ def test_successful_smoke_uses_inline_image_and_unlocks_resolved_full_plan(
     assert summary["provider_calls_made"] == 1
     assert summary["episode_result"]["classification"] == "pilot_action_limit"
     assert summary["episode_result"]["environment_actions"] == 1
+    assert summary["outcome_denominators"] == {
+        "attempted": 1,
+        "invalid_output": 0,
+        "infrastructure_failure": 0,
+    }
     assert summary["policy_violation"] == "none"
     assert summary["resolved_model"] == RESOLVED_MODEL
     assert summary["incremental_experiment_charge_usd"] == "0.00"
@@ -287,6 +312,7 @@ def test_tool_content_is_fail_closed_before_environment_dispatch(
 
     assert summary["provider_calls_made"] == 1
     assert summary["episode_result"]["environment_actions"] == 0
+    assert summary["episode_result"]["classification"] == "policy_violation"
     assert "unauthorized_content_block:tool_use" in summary["policy_violation"]
     with pytest.raises(ValueError, match="successful bounded policy action"):
         campaign.successful_smoke_evidence_from_files(tmp_path / "tool-violation")
@@ -325,6 +351,377 @@ def test_malformed_telemetry_is_fail_closed_before_environment_dispatch(
     assert summary["provider_calls_made"] == 1
     assert summary["episode_result"]["environment_actions"] == 0
     assert summary["policy_violation"] != "none"
+
+
+@pytest.mark.parametrize(
+    ("usage", "total_cost", "attempt_consumption", "cost_knowledge"),
+    [
+        (
+            {"input_tokens": 1000, "output_tokens": 50},
+            0.01,
+            ModelAttemptConsumption.CONSUMED,
+            CostKnowledge.KNOWN,
+        ),
+        (
+            "unavailable",
+            None,
+            ModelAttemptConsumption.UNKNOWN,
+            CostKnowledge.UNKNOWN,
+        ),
+    ],
+)
+def test_claude_nonzero_exit_is_reported_as_infrastructure_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    usage: object,
+    total_cost: object,
+    attempt_consumption: ModelAttemptConsumption,
+    cost_knowledge: CostKnowledge,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+    process = SuccessfulProcess(
+        usage=usage,
+        total_cost_usd=total_cost,
+        stderr="synthetic CLI failure",
+        returncode=2,
+    )
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=tmp_path / f"nonzero-{cost_knowledge.value}",
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: process,
+    )
+
+    assert summary["episode_result"]["classification"] == "infrastructure_failure"
+    assert summary["outcome_denominators"] == {
+        "attempted": 1,
+        "invalid_output": 0,
+        "infrastructure_failure": 1,
+    }
+    fault = summary["transport_records"][0]["cli_fault"]
+    assert fault["kind"] == CliFaultKind.NONZERO_EXIT
+    assert fault["model_attempt_consumption"] == attempt_consumption
+    assert fault["cost_knowledge"] == cost_knowledge
+    assert "parse_failure" not in json.dumps(summary)
+    if usage == "unavailable":
+        assert summary["unresolved_invocation_count"] == 0
+        assert summary["usage_telemetry_unavailable_count"] == 1
+
+
+class ConnectionResetProcess(SuccessfulProcess):
+    def __init__(self) -> None:
+        super().__init__()
+        self.returncode = None
+        self.calls = 0
+
+    def communicate(
+        self, input: str | None = None, timeout: float | None = None
+    ) -> tuple[str, str]:
+        del input, timeout
+        self.calls += 1
+        if self.calls == 1:
+            raise ConnectionResetError("synthetic reset")
+        return "", "connection reset by peer"
+
+
+class RawExitProcess(SuccessfulProcess):
+    def __init__(self, stdout: str, *, returncode: int) -> None:
+        super().__init__(returncode=returncode)
+        self.stdout = stdout
+
+    def communicate(
+        self, input: str | None = None, timeout: float | None = None
+    ) -> tuple[str, str]:
+        del input, timeout
+        return self.stdout, "synthetic CLI failure"
+
+
+def test_claude_connection_reset_is_stable_and_recoverable(tmp_path: Path) -> None:
+    process = ConnectionResetProcess()
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "reset.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-reset",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "transport_fault"
+        assert outcome.failure_code == "cli_connection_reset"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.CONNECTION_RESET
+        assert transport.reconcile(
+            idempotency_key="sha256:claude-reset", deadline_seconds=1
+        ) == outcome
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_process_start_failure_is_pre_send_and_costs_zero(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "start-failure.sqlite")
+    process_starts = 0
+
+    def fail_to_start(_command: list[str], **_kwargs: object) -> NoReturn:
+        nonlocal process_starts
+        process_starts += 1
+        raise OSError("synthetic process start failure")
+
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=fail_to_start,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-start-failure",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert process_starts == 1
+        assert outcome.status == "pre_send_failure"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.PROCESS_START
+        assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
+        assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+        assert transport.reconcile(
+            idempotency_key="sha256:claude-start-failure", deadline_seconds=1
+        ) == outcome
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("process", "expected_kind", "expected_code"),
+    [
+        (
+            RawExitProcess("partial-event\n", returncode=1),
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+        (
+            RawExitProcess("partial-event\n", returncode=0),
+            CliFaultKind.MALFORMED_EVENT_STREAM,
+            "cli_malformed_event_stream",
+        ),
+        (
+            SuccessfulProcess(returncode=-signal.SIGTERM),
+            CliFaultKind.PROCESS_SIGNAL,
+            "cli_process_signal",
+        ),
+    ],
+)
+def test_claude_process_failures_use_shared_fault_taxonomy(
+    tmp_path: Path,
+    process: SuccessfulProcess,
+    expected_kind: CliFaultKind,
+    expected_code: str,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(
+        tmp_path / f"{expected_kind.value}.sqlite"
+    )
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key=f"sha256:claude-{expected_kind.value}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "transport_fault"
+        assert outcome.failure_code == expected_code
+        assert outcome.fault is not None and outcome.fault.kind is expected_kind
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("process", "expected_classification"),
+    [
+        (SuccessfulProcess(result_text="not-json"), "invalid_output"),
+        (
+            SuccessfulProcess(resolved_model="claude-opus-unapproved"),
+            "policy_violation",
+        ),
+        (
+            SuccessfulProcess(result_text=credential_shaped_value()),
+            "policy_violation",
+        ),
+    ],
+)
+def test_claude_exit_zero_output_and_identity_failures_remain_distinct(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    process: SuccessfulProcess,
+    expected_classification: str,
+) -> None:
+    stub_git(monkeypatch)
+    runtime = runtime_identity()
+    plan = campaign.build_smoke_plan(ROOT, runtime_identity=runtime)
+
+    summary = campaign.execute_smoke(
+        ROOT,
+        plan=plan,
+        approved_plan_sha256=campaign.plan_digest(plan),
+        output_directory=tmp_path / expected_classification,
+        runtime_identity=runtime,
+        process_factory=lambda _command, **_kwargs: process,
+    )
+
+    assert summary["episode_result"]["classification"] == expected_classification
+    assert summary["episode_result"]["environment_actions"] == 0
+
+
+def test_claude_resolved_model_differs_from_smoke_is_policy_violation(
+    tmp_path: Path,
+) -> None:
+    process = SuccessfulProcess(resolved_model="claude-sonnet-5-20260901")
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "model.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        expected_resolved_model=RESOLVED_MODEL,
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-model-mismatch",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "policy_violation"
+        assert outcome.response is not None
+        assert "resolved_model_differs_from_smoke" in (
+            outcome.response["usage"]["policy_violation"]
+        )
+        assert outcome.fault is None
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_subscription_rejection_is_request_failure(tmp_path: Path) -> None:
+    process = SuccessfulProcess(rate_limit_status="rejected")
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "rate-limit.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-rate-limit",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "rate_limited"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.SUBSCRIPTION_RATE_LIMIT
+        assert outcome.fault.classification == "request_failure"
+        assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
+        assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_fault_record_and_summary_keep_model_mismatch_visible(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "combined.sqlite")
+    ledger = policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00"))
+    transport = policy.ClaudeCodeTransport(
+        ledger=ledger,
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        expected_resolved_model=RESOLVED_MODEL,
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(
+            rate_limit_status="rejected",
+            resolved_model="claude-sonnet-5-20260901",
+        ),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:rate-limit-model-mismatch",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+        record = transport.records[0]
+        summary = campaign._summary_common(
+            plan={"code_revision": "revision", "human_approval_scope": {}},
+            digest="sha256:" + "a" * 64,
+            ledger=ledger,
+            attempt_integrity={},
+            invocation_integrity=invocation_journal.integrity_report(),
+            call_counts=(1, 0),
+            transport_records=list(transport.records),
+            execution_error=None,
+            subprocesses_closed=True,
+        )
+
+        assert outcome.status == "rate_limited"
+        assert record["cli_fault"]["classification"] == "request_failure"
+        assert "resolved_model_differs_from_smoke" in record["policy_violation"]
+        assert "resolved_model_differs_from_smoke" in summary["policy_violation"]
+    finally:
+        transport.close()
+        invocation_journal.close()
 
 
 class StubbornProcess:
@@ -368,6 +765,12 @@ def test_cleanup_does_not_claim_a_stubborn_process_was_closed(
     assert summary["policy_violation"] == "none"
     assert summary["incremental_experiment_charge_usd"] == "0.00"
     assert summary["usage_telemetry_status"] == "unavailable"
+    assert summary["transport_records"][0]["cli_fault"]["kind"] == (
+        CliFaultKind.PROCESS_TIMEOUT
+    )
+    assert summary["transport_records"][0]["cli_fault"]["cost_knowledge"] == (
+        CostKnowledge.UNKNOWN
+    )
     assert summary["cleanup"]["subprocesses_closed"] is False
 
 

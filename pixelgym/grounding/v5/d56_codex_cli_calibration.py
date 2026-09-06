@@ -53,7 +53,11 @@ from pixelgym.grounding.v5.d56_calibration import (
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.runner import (
+    V5Runner,
+    attempted_episode_count,
+    summarize_outcome_denominators,
+)
 from pixelgym.serialization import canonical_json_bytes
 
 SMOKE_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-codex-cli-luna-smoke-plan-v4"
@@ -835,6 +839,7 @@ def _failure_classifications() -> dict[str, str]:
         "success_termination": "normal_terminal_continue_in_calibration",
         "step_limit_truncation": "normal_terminal_continue_in_calibration",
         "invalid_output": "retain_and_stop_without_retry",
+        "policy_violation": "retain_and_stop_without_retry",
         "request_failure": "retain_and_stop_without_retry",
         "infrastructure_failure": "retain_raw_evidence_and_stop",
         "tool_or_unauthorized_observation": "invalid_output_retain_and_stop",
@@ -1272,6 +1277,7 @@ def execute_smoke(
         attempt_integrity = attempt_journal.integrity_report()
         invocation_integrity = invocation_journal.integrity_report()
         call_counts = attempt_journal.call_counts()
+        attempted_episodes = attempted_episode_count(attempt_journal)
         transport_records = [] if transport is None else list(transport.records)
         attempt_journal.close()
         invocation_journal.close()
@@ -1312,6 +1318,10 @@ def execute_smoke(
             "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
             "task_id": plan["task"]["task_id"],
             "episode_result": result_record,
+            "outcome_denominators": summarize_outcome_denominators(
+                [] if result_record is None else [result_record],
+                attempted_episodes=attempted_episodes,
+            ),
             "execution_error": execution_error,
             "policy_violation": policy_violation,
             "transport_records": transport_records,
