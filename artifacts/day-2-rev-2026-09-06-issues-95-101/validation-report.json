@@ -213,7 +213,7 @@
             "version": "pixelgym-chromium-renderer-v1"
           }
         },
-        "captured_at": "2026-09-06T07:15:26.751619+00:00",
+        "captured_at": "2026-09-06T08:15:02.898311+00:00",
         "checks": [
           {
             "name": "active_window_fills_observation",
@@ -372,9 +372,13 @@
         "seed": 7,
         "source_sha256": {
           "pixelgym/backends/osworld.py": "1f145997604e42c2bba0a50fcfba991787cfcfc817a44eaeb32a5cd9fb4f6ad4",
+          "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+          "pixelgym/tasks/vendor_form/app/static/app.js": "6b7ca7a6cafcd82c3619297000632673d09f798d249b25d1fc290c4a3d6f9303",
+          "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
+          "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
           "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-          "pixelgym/tasks/vendor_form/osworld_task.py": "3fbc6e7cf9595f885304c6a3c946c9e588521b7be1e30b2caab67c3ad2550f15",
-          "pixelgym/validation/browser_boundary.py": "24b088780504959bc447335e2a5ff7324fd25a1c4a343d1c0d39bfc7f457de10"
+          "pixelgym/tasks/vendor_form/osworld_task.py": "021f6249dd7276337d159effef45e747dacd101820793d4c28668149dadb7f5c",
+          "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
         },
         "summary": {
           "check_count": 8,
@@ -395,7 +399,7 @@
         "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
         "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
         "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-        "pixelgym/validation/browser_boundary.py": "24b088780504959bc447335e2a5ff7324fd25a1c4a343d1c0d39bfc7f457de10"
+        "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
       },
       "summary": {
         "check_count": 10,
@@ -4809,7 +4813,7 @@
           "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
           "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
           "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-          "pixelgym/validation/browser_boundary.py": "24b088780504959bc447335e2a5ff7324fd25a1c4a343d1c0d39bfc7f457de10"
+          "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
         },
         "summary": {
           "check_count": 10,
@@ -4867,9 +4871,13 @@
         "source_hashes_match": true,
         "source_sha256": {
           "pixelgym/backends/osworld.py": "1f145997604e42c2bba0a50fcfba991787cfcfc817a44eaeb32a5cd9fb4f6ad4",
+          "pixelgym/grounding/schema.py": "4c2fc53625294b032e5bb0583ae23a827282a77bf5813552d1fefdbb460fe6f1",
+          "pixelgym/tasks/vendor_form/app/static/app.js": "6b7ca7a6cafcd82c3619297000632673d09f798d249b25d1fc290c4a3d6f9303",
+          "pixelgym/tasks/vendor_form/app/static/index.html": "97a6c0114843dc0b6802f908cb4f6f093a4d37ba2f2ae224b8ea44f7ec7340e6",
+          "pixelgym/tasks/vendor_form/app/static/style.css": "c577a2dd6fd79055f768589b7e772c19e7c25dbf10e09ca7b68cc523dfed1ab4",
           "pixelgym/tasks/vendor_form/browser_contract.py": "81078717d72e9325ca7720038810ff89d03fbb56787fc9010110ab9a7b09a8da",
-          "pixelgym/tasks/vendor_form/osworld_task.py": "3fbc6e7cf9595f885304c6a3c946c9e588521b7be1e30b2caab67c3ad2550f15",
-          "pixelgym/validation/browser_boundary.py": "24b088780504959bc447335e2a5ff7324fd25a1c4a343d1c0d39bfc7f457de10"
+          "pixelgym/tasks/vendor_form/osworld_task.py": "021f6249dd7276337d159effef45e747dacd101820793d4c28668149dadb7f5c",
+          "pixelgym/validation/browser_boundary.py": "25b7c4b19600a83a36a98803a738889d8aa73a2a06598395e213e34e79c1c4f4"
         },
         "summary": {
           "check_count": 8,
@@ -8380,7 +8388,7 @@
     }
   },
   "gate_disclaimer": "Automated validation status is not the D2.11 human acceptance verdict.",
-  "generated_at": "2026-09-06T07:48:52.156420+00:00",
+  "generated_at": "2026-09-06T08:24:14.750790+00:00",
   "human_gate": null,
   "reproduction_commands": [
     "python scripts/prepare_osworld_docker.py",
@@ -8412,6 +8420,13 @@
           "real_seconds": 179.4
         },
         {
+          "command_record": "commands/04b-guest-browser-boundary.txt",
+          "exit_status": 0,
+          "hard_limit_seconds": 3712,
+          "provider_closed": true,
+          "real_seconds": 178.95
+        },
+        {
           "command_record": "commands/05-validate-day2-real-resets.txt",
           "exit_status": 0,
           "hard_limit_seconds": 5198,
@@ -8433,11 +8448,11 @@
           "real_seconds": 408.21
         }
       ],
-      "consumed_seconds": 1687.2,
+      "consumed_seconds": 1866.15,
       "no_cloud_provider": true,
       "no_paid_model_calls": true,
       "refused_below_seconds": 600,
-      "remaining_seconds": 3712.8,
+      "remaining_seconds": 3533.85,
       "schema_version": "pixelgym-provider-stop-loss-v1",
       "started_at": "2026-09-06T07:15:14Z"
     },

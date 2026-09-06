@@ -14,9 +14,20 @@ evidence from the superseded first allocation and the current-source app-mode ev
 
 The current Playwright and guest launches record renderer contract
 `sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5`.
-The guest frame and all five real-reset frames were byte-identical PNGs. The stored comparison reports
-raw differing-pixel count 0 and maximum per-channel delta 0 before separately naming SSIM 1.0. No
-mask or tolerance was applied.
+The five real-reset frames were byte-identical PNGs. The guest navigation frame re-emitted after the
+source-pin review differed from each reset frame by a raw 113,094 pixels with maximum per-channel
+delta 255 before separately naming SSIM 0.8362671387854251. No mask or tolerance was applied.
+
+After review widened `GUEST_SOURCE_PATHS` to cover `app.js`, `index.html`, `style.css`, and the
+viewport schema, the guest probe was re-emitted as `commands/04b-guest-browser-boundary.txt` under
+the remaining allocation. Both the original and re-emitted command records are retained. The
+re-emitted record passed all eight navigation-boundary checks and records provider closure.
+The first refreshed audit then failed closed because the local Playwright record also depended on
+the changed validator source. Its restricted failure and successful approved rerun are retained as
+`commands/02b-validate-browser-boundary-local.txt` and
+`commands/03b-validate-browser-boundary-local-unsandboxed.txt`; the failed and successful audit
+attempts are likewise retained as `commands/08b-validate-day2-audit-stale-local.txt` and
+`commands/08c-validate-day2-audit.txt`.
 
 The first restricted local Playwright attempt failed because macOS denied browser process control;
 its redacted transcript is retained. The identical command succeeded through the normal approval
@@ -38,6 +49,13 @@ Each transcript in `commands/` begins with the exact command and exit status and
 8. `.venv/bin/python scripts/validate_day2.py assemble --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json`
 9. The same `assemble` command after recording `raw/provider-stop-loss.json`, so the report embeds
    that stored allocation record.
+10. The guest navigation command in item 3 was repeated after widening the guest source pins, with
+    `--stop-loss-seconds 3712`; its transcript is retained as
+    `commands/04b-guest-browser-boundary.txt`.
+11. The local browser-boundary command in item 2 was repeated after its source hash became stale,
+    first in the restricted sandbox and then on the approved process-control path.
+12. The audit retained its fail-closed stale-local attempt and successful retry, followed by one
+    final assembly in `commands/09b-validate-day2-assemble.txt`.
 
 ## Scope notes
 
