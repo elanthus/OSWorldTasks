@@ -381,7 +381,6 @@ def capture_dataset(repository_root: Path) -> dict[str, Any]:
                     reset = _post_reset(base_url, seed)
                     page.goto(base_url, wait_until="networkidle")
                     page.locator(READY_SELECTOR).wait_for(state="attached")
-                    page.evaluate("() => document.fonts.ready")
                     task = page.evaluate(
                         "() => fetch('/api/task').then(response => response.json())"
                     )
