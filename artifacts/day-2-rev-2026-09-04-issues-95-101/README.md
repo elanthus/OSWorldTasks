@@ -1,5 +1,9 @@
 # Day 2 evidence revision — issues #95 and #101
 
+This revision records the first, exhausted local-Docker allocation. It is superseded by
+`artifacts/day-2-rev-2026-09-06-issues-95-101/`, which reruns the evidence against the current
+merged source under the separately authorized second allocation.
+
 This directory is a new, immutable evidence revision. It does not replace the historical
 `artifacts/day-2` evidence. The automated report's status is not a D2.11 human verdict;
 `validation-report.json` deliberately contains `human_gate: null`.

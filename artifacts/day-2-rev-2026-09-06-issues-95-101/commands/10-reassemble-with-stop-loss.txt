@@ -1,0 +1,14 @@
+Command: .venv/bin/python scripts/validate_day2.py assemble --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json
+Reason: Reassemble after recording raw/provider-stop-loss.json.
+Exit status: 0
+
+{
+  "completed_section_count": 8,
+  "failed_sections": [],
+  "missing_sections": [],
+  "required_section_count": 8,
+  "status": "PASS"
+}
+real 0.97
+user 1.21
+sys 2.68

@@ -1,0 +1,58 @@
+Command: .venv/bin/python scripts/validate_day2.py fake --raw-dir artifacts/day-2-rev-2026-09-06-issues-95-101/raw --report-json artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json
+Exit status: 0
+
+{
+  "automated_validation": {
+    "completed_section_count": 4,
+    "failed_sections": [
+      "reward_hacking"
+    ],
+    "missing_sections": [
+      "real_reset",
+      "browser_boundary",
+      "real_space_smoke",
+      "real_golden_episode"
+    ],
+    "required_section_count": 8,
+    "status": "INCOMPLETE"
+  },
+  "fake": {
+    "audit": {
+      "additional_attack_count": 2,
+      "attack_count": 14,
+      "evidence_passed_count": 10,
+      "passed": false,
+      "valid_dispositions": true
+    },
+    "reset": {
+      "bitwise_visual_determinism": true,
+      "maximum_differing_pixel_count": 0,
+      "maximum_per_channel_delta": 0,
+      "maximum_reset_to_stable_frame_seconds": 0.012637083069421351,
+      "minimum_ssim": 1.0,
+      "passed": true,
+      "privileged_application_state_exact": true,
+      "screenshot_dtype_exact": true,
+      "screenshot_shape_exact": true,
+      "semantic_task_state_exact": true
+    },
+    "reward": {
+      "failed_count": 0,
+      "golden_prefix_count": 110,
+      "near_miss_count": 7,
+      "passed": true,
+      "passed_count": 123,
+      "trajectory_count": 123
+    },
+    "spaces": {
+      "invalid_inputs_rejected_before_backend": true,
+      "observations_contained": true,
+      "passed": true,
+      "post_episode_calls_rejected": true,
+      "valid_boundaries_accepted": true
+    }
+  }
+}
+real 53.12
+user 52.73
+sys 3.28

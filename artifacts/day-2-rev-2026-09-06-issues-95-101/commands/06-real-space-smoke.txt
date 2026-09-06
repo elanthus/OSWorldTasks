@@ -1,0 +1,16 @@
+Command: .venv/bin/python -c "import signal,sys; signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(TimeoutError('real-space smoke exceeded remaining shared budget'))); signal.alarm(4268); from scripts.osworld_space_smoke import main; raise SystemExit(main(sys.argv[1:]))" --guest-image .cache/osworld/osworld-v2-ubuntu-x86.qcow2 --output artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-space-smoke.json
+Exit status: 0
+
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+Failed to load proxies from evaluation_examples/settings/proxy/dataimpulse.json: [Errno 2] No such file or directory: 'evaluation_examples/settings/proxy/dataimpulse.json'
+KVM device not found, running without hardware acceleration (will be slower)
+{
+  "empty_submit_no_reward": true,
+  "invalid_inputs_rejected_before_backend": true,
+  "observations_contained": true,
+  "passed": true,
+  "provider_closed": true
+}
+real 195.28
+user 2.79
+sys 3.56
