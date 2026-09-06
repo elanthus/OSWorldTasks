@@ -282,16 +282,18 @@ known limitation, with the underlying evidence retained
 ## Limitations
 
 - This is one deterministic synthetic form, not a broad desktop-task distribution.
-- Real OSWorld frames are semantically stable but not bitwise identical because the guest desktop
-  clock is live, which changed a small localized pixel region; no mask or tolerance was applied to
-  the reported raw differences. Semantic task state was exact across resets, and the unmasked
-  full-frame minimum SSIM was 0.999863 ([validation evidence](artifacts/validation-report.json)).
+- The current app-mode evidence records five bitwise-identical 1024x768 reset frames (zero differing
+  pixels, maximum per-channel delta zero, and SSIM 1.0), without a mask or tolerance. That single
+  local-Docker run does not establish bitwise portability across hosts; the immutable historical
+  evidence retains its earlier live-clock differences
+  ([current revision](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
 - The privileged state endpoint exists inside the guest. The guest Chromium app-mode contract removes
   address-bar, tab, and desktop navigation affordances from the tested bounded-click observation;
   containment against a browser or guest OS exploit remains outside the threat model. This wording
-  is presented for owner review and is not an approved public claim.
+  and the current-renderer wording above are presented for owner review and are not approved public
+  claims.
 - The grounding model identifier may be a moving alias rather than an immutable snapshot.
 - Target identity is perfectly aliased with screen state in the frozen v1 grounding dataset, so
   v1 control-type slices cannot separate control-type and screen-state effects. The unrun v2
