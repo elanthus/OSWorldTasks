@@ -26,7 +26,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
@@ -37,10 +37,14 @@ _NO_ACTIVE_TASK = "No active task. Call POST /api/reset first."
 
 
 class ResetRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     seed: int
 
 
 class SubmitRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     task_id: str
     company_name: str
     contact_email: str
@@ -52,6 +56,8 @@ class SubmitRequest(BaseModel):
 
 
 class PageReadyRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     task_id: str
 
 
@@ -143,7 +149,6 @@ def create_app() -> FastAPI:
         return {
             "task_id": task["task_id"],
             "schema_version": task["schema_version"],
-            "seed": task["seed"],
             "fields": task["fields"],
             "options": task["options"],
         }
