@@ -1,4 +1,9 @@
-"""Shared HTTP contract tests for the local and OSWorld guest task servers."""
+"""Shared HTTP contract tests for the local and OSWorld guest task servers.
+
+The guest is deliberately a single-task appliance, so two lifecycle behaviors differ:
+before reset its bundled task is available while FastAPI has no active task, and it
+rejects reset seeds other than the bundled seed while FastAPI generates a new task.
+"""
 
 from __future__ import annotations
 
@@ -16,13 +21,6 @@ from pixelgym.tasks.vendor_form.app.server import create_app
 
 _SEED = 7
 _PUBLIC_TASK_KEYS = {"task_id", "schema_version", "fields", "options"}
-_EXPECTED_VALUE_KEYS = {
-    "answers",
-    "expected_fields",
-    "expected_submission",
-    "expected_values",
-    "seed",
-}
 
 
 class _Response(Protocol):
@@ -62,7 +60,8 @@ def server_clients() -> Iterator[Mapping[str, _Client]]:
         guest_server.shutdown()
         guest_thread.join(timeout=2)
         guest_server.server_close()
-        assert not guest_thread.is_alive()
+        if guest_thread.is_alive():
+            raise RuntimeError(f"guest server thread {guest_thread.name!r} did not stop")
 
 
 def _responses(
@@ -84,7 +83,9 @@ def _assert_matching_status(
 def _reset(clients: Mapping[str, _Client]) -> dict[str, dict[str, Any]]:
     responses = _responses(clients, "POST", "/api/reset", json={"seed": _SEED})
     _assert_matching_status(responses, 200)
-    return {name: response.json() for name, response in responses.items()}
+    bodies = {name: response.json() for name, response in responses.items()}
+    assert bodies["fastapi"] == bodies["guest"]
+    return bodies
 
 
 def _public_tasks(clients: Mapping[str, _Client]) -> dict[str, dict[str, Any]]:
@@ -158,6 +159,12 @@ def test_submit_contract_matches_between_servers(
             "fastapi": {"submission_number": 1},
             "guest": {"submission_number": 1},
         }
+        states = _responses(server_clients, "GET", "/api/state")
+        _assert_matching_status(states, 200)
+        submissions = {
+            name: response.json()["submissions"] for name, response in states.items()
+        }
+        assert submissions["fastapi"] == submissions["guest"]
     else:
         states = _responses(server_clients, "GET", "/api/state")
         assert all(response.json()["submissions"] == [] for response in states.values())
@@ -173,9 +180,29 @@ def test_public_task_contract_matches_and_exposes_only_request_card_values(
     assert tasks["fastapi"] == tasks["guest"]
     for task in tasks.values():
         assert set(task) == _PUBLIC_TASK_KEYS
-        assert _EXPECTED_VALUE_KEYS.isdisjoint(task)
+        assert "seed" not in task  # Owner decision: public responses must omit the seed.
         assert set(task["fields"]) == set(generator.FIELD_NAMES)
         assert set(task["options"]) == {"country", "payment_terms"}
+
+
+def test_single_task_guest_deliberately_differs_on_lifecycle_endpoints(
+    server_clients: Mapping[str, _Client],
+) -> None:
+    # A bundled guest task exists before reset; FastAPI requires an explicit reset.
+    before_reset = _responses(server_clients, "GET", "/api/task")
+    assert {name: response.status_code for name, response in before_reset.items()} == {
+        "fastapi": 409,
+        "guest": 200,
+    }
+
+    # The guest cannot generate tasks, while FastAPI accepts any valid integer seed.
+    other_seed = _responses(
+        server_clients, "POST", "/api/reset", json={"seed": _SEED + 1}
+    )
+    assert {name: response.status_code for name, response in other_seed.items()} == {
+        "fastapi": 200,
+        "guest": 409,
+    }
 
 
 def test_page_ready_contract_matches_before_and_after_reset(
