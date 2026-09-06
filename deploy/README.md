@@ -57,6 +57,27 @@ byte). The server retains a presented cookie only when its shape and tag verify;
 replaces it with a fresh value. No session table is used. The remaining attributes are always
 `HttpOnly` and `SameSite=Strict`.
 
+### Reviewer attribution
+
+Every control-plane mutation resolves its reviewer identity once from the connection context. A
+configured header, `X-Forwarded-User` by default (override with `PIXELGYM_PRINCIPAL_HEADER`), is
+accepted only when the connection peer belongs to `PIXELGYM_TRUSTED_PROXY_ADDRESSES`, a
+comma-separated IP/CIDR allowlist. Default routes are rejected. Duplicate, malformed, missing, or
+reserved identities from a trusted proxy are rejected before mutation, and submitted form or JSON
+fields cannot select the actor. Uvicorn is started with `--no-proxy-headers`; bootstrap also refuses
+`FORWARDED_ALLOW_IPS`, so forwarded client-address headers do not participate in this decision.
+
+When `resolve_deployment_exposure()` treats the deployment as loopback—because the bind address is
+loopback or `PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT=true` attests that the container port is published
+only on host loopback—requests not arriving through an allowlisted identity proxy use the fixed
+`synthetic-demo` actor. Without that attestation, a non-loopback bind requires a nonempty trusted
+proxy allowlist or startup fails. Compose keeps the platform port published on `127.0.0.1` and sets
+the attestation because the process itself listens on the container interface.
+
+New audit events record `actor_verification_source` in `details_json` as `proxy_header`,
+`synthetic_demo`, or an internal source. Append-only rows created before this change are not
+rewritten; rows without the field remain readable and the UI labels them `legacy/unverified`.
+
 Stop the stack without deleting evidence:
 
 ```bash

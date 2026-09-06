@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import html
+import ipaddress
 import re
 import secrets
 from collections.abc import Callable, Sequence
@@ -24,10 +25,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from pixelgym.platform.contracts import CandidateState
 from pixelgym.platform.control_store import (
+    ACTOR_VERIFICATION_SOURCE_KEY,
+    RESERVED_ACTOR_NAMES,
     AuthorizationError,
     ConflictError,
     ControlStore,
+    SyntheticDemoPrincipal,
     TransitionError,
+    VerifiedPrincipal,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
@@ -64,6 +69,7 @@ CSRF_TOKEN_PATTERN = re.compile(rf"[0-9a-fA-F]{{{CSRF_TOKEN_HEX_LENGTH}}}")
 RUNS_PAGE_SIZE = 50
 DEPLOYMENT_AUDIT_WINDOW = 25
 AUDIT_HISTORY_PAGE_SIZE = 100
+PRINCIPAL_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@:/+-]{0,254}")
 
 
 class ApprovalBody(BaseModel):
@@ -77,6 +83,16 @@ def _escape(value: object) -> str:
 
 def _badge(label: str, tone: str = "neutral") -> str:
     return f'<span class="badge badge--{_escape(tone)}">{_escape(label)}</span>'
+
+
+def _actor_label(actor: object, details: dict[str, Any]) -> str:
+    value = str(actor)
+    source = details.get(ACTOR_VERIFICATION_SOURCE_KEY, "legacy_unverified")
+    if source == "synthetic_demo":
+        return f"{value} (synthetic demo)"
+    if source == "legacy_unverified":
+        return f"{value} (legacy/unverified)"
+    return value
 
 
 def _numeric(value: object) -> float:
@@ -97,14 +113,14 @@ def _milliseconds(value: object) -> str:
     return "missing" if value is None else f"{_numeric(value):.1f} ms"
 
 
-def _layout(title: str, body: str, *, csrf: str = "") -> str:
+def _layout(title: str, body: str, *, csrf: str = "", principal: str = "unverified") -> str:
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{_escape(title)} · PixelGym Control</title><link rel="stylesheet" href="/static/platform.css">
 <meta name="csrf-token" content="{_escape(csrf)}"></head>
 <body><header class="shell"><a class="brand" href="/">PIXELGYM <span>CONTROL</span></a>
 <nav aria-label="Primary"><a href="/">Submit</a><a href="/runs">Runs</a><a href="/compare">Compare</a><a href="/deployment">Deployment</a></nav></header>
-<main class="shell">{body}</main><footer class="shell">Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
+<main class="shell">{body}</main><footer class="shell">Reviewer: {_escape(principal)} · Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
 </body></html>"""
 
 
@@ -231,6 +247,9 @@ def create_control_app(
     *,
     coordinator: DeploymentCoordinator[Any] | None = None,
     csrf_secret: str,
+    loopback_deployment: bool = True,
+    principal_header: str = "X-Forwarded-User",
+    trusted_proxy_addresses: Sequence[str] = (),
     session_cookie_secure: bool = False,
     submit_callback: Callable[[str, dict[str, str]], None] | None = None,
     cancel_callback: Callable[[str], bool] | None = None,
@@ -240,12 +259,46 @@ def create_control_app(
     if len(csrf_secret) < 16:
         raise ValueError("CSRF secret must be at least 16 characters")
     secret = csrf_secret.encode()
+    if re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", principal_header) is None:
+        raise ValueError("principal header must be a valid HTTP field name")
+    try:
+        trusted_proxies = tuple(
+            ipaddress.ip_network(address, strict=False) for address in trusted_proxy_addresses
+        )
+    except ValueError as exc:
+        raise ValueError("trusted proxy allowlist must contain IP addresses or CIDR networks") from exc
+    if any(network.prefixlen == 0 for network in trusted_proxies):
+        raise ValueError("trusted proxy allowlist must not contain a default route")
     app = FastAPI(title="PixelGym Grounding Control Plane", docs_url=None, redoc_url=None)
     static = Path(__file__).with_name("static")
     app.mount("/static", StaticFiles(directory=static), name="static")
 
     @app.middleware("http")
     async def session_cookie(request: Request, call_next: Callable[..., Any]) -> Any:
+        supplied_principals = request.headers.getlist(principal_header)
+        client_address = request.client.host if request.client is not None else ""
+        try:
+            client_ip = ipaddress.ip_address(client_address)
+        except ValueError:
+            client_ip = None
+        if isinstance(client_ip, ipaddress.IPv6Address) and client_ip.ipv4_mapped is not None:
+            client_ip = client_ip.ipv4_mapped
+        trusted_source = client_ip is not None and any(
+            client_ip in network for network in trusted_proxies
+        )
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = None
+        if trusted_source:
+            if len(supplied_principals) == 1:
+                supplied_principal = supplied_principals[0]
+                if (
+                    PRINCIPAL_PATTERN.fullmatch(supplied_principal) is not None
+                    and supplied_principal not in RESERVED_ACTOR_NAMES
+                ):
+                    principal = VerifiedPrincipal(supplied_principal)
+        elif loopback_deployment:
+            # Untrusted identity headers cannot override the fixed local-demo identity.
+            principal = SyntheticDemoPrincipal()
+        request.state.reviewer_principal = principal
         supplied_session = request.cookies.get("pixelgym_session")
         session_id, separator, supplied_tag = (supplied_session or "").rpartition(".")
         session_shape_is_valid = (
@@ -287,6 +340,30 @@ def create_control_app(
         response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self'"
         response.headers["X-Frame-Options"] = "DENY"
         return response
+
+    def require_principal(
+        request: Request,
+    ) -> VerifiedPrincipal | SyntheticDemoPrincipal:
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = (
+            request.state.reviewer_principal
+        )
+        if principal is None:
+            raise HTTPException(403, "verified reviewer principal is required")
+        return principal
+
+    def layout(request: Request, title: str, body: str) -> str:
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = (
+            request.state.reviewer_principal
+        )
+        label = (
+            "unverified"
+            if principal is None
+            else _actor_label(
+                principal,
+                {ACTOR_VERIFICATION_SOURCE_KEY: principal.verification_source},
+            )
+        )
+        return _layout(title, body, csrf=request.state.csrf, principal=label)
 
     def require_csrf(request: Request, supplied: Sequence[str]) -> None:
         if len(supplied) != 1:
@@ -344,10 +421,11 @@ def create_control_app(
 <label>Price catalog<input name="price_catalog" value="pixelgym-demo-prices-v1" readonly></label>
 <div class="form-summary"><span>Maximum estimated spend</span><strong>$0.00</strong><small>No provider credentials or network calls.</small></div>
 <button type="submit">Submit fixed evaluation →</button></form></section>"""
-        return _layout("Submit experiment", body, csrf=request.state.csrf)
+        return layout(request, "Submit experiment", body)
 
     @app.post("/experiments")
     async def submit_experiment(request: Request) -> RedirectResponse:
+        principal = require_principal(request)
         fields = await csrf_form_fields(request)
         fields.pop("csrf_token")
         if set(fields) != set(ALLOWED_SUBMISSION_FIELDS):
@@ -356,7 +434,7 @@ def create_control_app(
         invalid = [key for key, value in payload.items() if value not in ALLOWED_SUBMISSION_FIELDS[key]]
         if invalid:
             raise HTTPException(422, f"submission contains non-allowlisted options: {', '.join(invalid)}")
-        submission_id = await run_in_threadpool(control.submit, payload)
+        submission_id = await run_in_threadpool(control.submit, payload, actor=principal)
         if submit_callback is not None:
             submit_callback(submission_id, payload)
         return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
@@ -384,10 +462,11 @@ def create_control_app(
             for key, value in submission["request"].items()
         )
         body = f"""<section class="page-title"><p class="eyebrow">SUBMISSION</p><h1>{_escape(submission_id)}</h1><p>{_badge(submission['status'], 'good' if submission['status'] == 'Complete' else 'neutral')}</p></section><div class="detail-grid"><section class="panel"><h2>Execution lineage</h2><dl><dt>Status</dt><dd>{_escape(submission['status'])}</dd><dt>Metaflow pathspec</dt><dd class="mono">{_escape(pathspec)}</dd><dt>Tracking</dt><dd>{run_link}</dd></dl><h3>Resolved request</h3><dl>{request_rows}</dl></section><aside class="panel action-panel"><h2>Cancellation</h2>{cancellation}</aside></div>"""
-        return _layout("Submission", body, csrf=request.state.csrf)
+        return layout(request, "Submission", body)
 
     @app.post("/submissions/{submission_id}/cancel")
     async def cancel_submission(submission_id: str, request: Request) -> RedirectResponse:
+        principal = require_principal(request)
         fields = await csrf_form_fields(request)
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "cancellation fields do not match the fixed contract")
@@ -400,7 +479,7 @@ def create_control_app(
         await run_in_threadpool(
             control.cancel_submission,
             submission_id,
-            actor=control.reviewer_identity,
+            actor=principal,
             reason=fields["reason"],
         )
         if cancel_callback is not None and submission["status"] != "Cancelled":
@@ -540,7 +619,7 @@ def create_control_app(
         pagination = " · ".join(link for link in (previous_link, next_link) if link)
         body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Every result stays visible.</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
 <section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table>{f'<nav aria-label="Run pages">{pagination}</nav>' if pagination else ''}</section>"""
-        return _layout("Runs", body, csrf=request.state.csrf)
+        return layout(request, "Runs", body)
 
     @app.get("/api/tracking/runs/compatible")
     def compatible_tracking_runs(
@@ -626,7 +705,7 @@ def create_control_app(
                 prompt_diff = f'<p><a href="/compare/prompt-diff?{_escape(query)}">Prompt diff (recorded versions)</a></p>'
             comparison = f'<section class="comparison-head">{warning}<p>{explanation}</p>{prompt_diff}</section><div class="metric-grid">{cards}</div>'
         body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>No favorable metric gets to travel alone.</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
-        return _layout("Compare", body, csrf=request.state.csrf)
+        return layout(request, "Compare", body)
 
     @app.get("/compare/prompt-diff", response_class=HTMLResponse)
     def prompt_diff_view(
@@ -649,7 +728,7 @@ def create_control_app(
             context=True,
         )
         body = f"""<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>This is rendered from each candidate's stored prompt version and digest using the frozen local templates; no separate immutable prompt-diff artifact was recorded.</p></section><section class="panel diff-table">{diff}</section>"""
-        return _layout("Prompt diff", body, csrf=request.state.csrf)
+        return layout(request, "Prompt diff", body)
 
     @app.get("/candidates/{candidate_id}/evidence/raw-responses", response_class=HTMLResponse)
     def raw_response_index(candidate_id: str, request: Request) -> str:
@@ -660,7 +739,7 @@ def create_control_app(
             for reference in raw
         ) or "<li>No raw-response references were stored for this candidate.</li>"
         body = f"""<section class="page-title"><p class="eyebrow">IMMUTABLE EVIDENCE</p><h1>Raw-response index.</h1><p>{len(raw)} stored raw-response object references for {_escape(candidate_id)}.</p></section><section class="panel"><ul class="evidence-index">{rows}</ul></section>"""
-        return _layout("Raw-response index", body, csrf=request.state.csrf)
+        return layout(request, "Raw-response index", body)
 
     @app.get("/candidates/{candidate_id}", response_class=HTMLResponse)
     def candidate_view(candidate_id: str, request: Request) -> str:
@@ -681,13 +760,17 @@ def create_control_app(
         if item.policy.provider == "scripted-demo" and item.policy.model == "day3-replay-revised-v2":
             disclosure = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
         body = f"""<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1><p class="mono">{_escape(item.policy.policy_id)}</p><p>{_escape(item.policy.provider)} · code {_escape(_short_digest(item.policy.code_revision))} · invalid outputs {invalid}</p>{_candidate_badges(item)}{disclosure}</section><div class="detail-grid"><section class="panel"><h2>Gate report</h2><div class="metric-strip"><div><span>Accuracy</span><strong>{_percentage(report['accuracy']['observed'])}</strong><small>minimum {_percentage(report['accuracy']['threshold'])}</small></div><div><span>Cost / 100</span><strong>{_money(report['cost_usd_per_100']['observed'])}</strong><small>maximum {_money(report['cost_usd_per_100']['threshold'])}</small></div><div><span>Provider p95</span><strong>{_milliseconds(report['provider_latency_p95_ms']['observed'])}</strong><small>maximum {_milliseconds(report['provider_latency_p95_ms']['threshold'])}</small></div></div><h3>Evidence</h3>{_evidence_links(item, mlflow_base_url)}<h3>Decision details</h3><ul>{reasons}</ul></section><aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p><h2>{_escape(item.state.value)}</h2><p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>{controls}</aside></div>"""
-        return _layout("Candidate", body, csrf=request.state.csrf)
+        return layout(request, "Candidate", body)
 
-    def _approve(candidate_id: str, reason: str) -> None:
+    def _approve(
+        candidate_id: str,
+        reason: str,
+        actor: VerifiedPrincipal | SyntheticDemoPrincipal,
+    ) -> None:
         item = candidate_or_404(candidate_id)
         control.approve(
             candidate_id,
-            actor=control.reviewer_identity,
+            actor=actor,
             reason=reason,
             gate_report_sha256=item.gate_report_sha256,
         )
@@ -708,20 +791,23 @@ def create_control_app(
 
     @app.post("/candidates/{candidate_id}/approve")
     async def approve_form(candidate_id: str, request: Request) -> RedirectResponse:
+        principal = require_principal(request)
         fields = await csrf_form_fields(request)
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "approval fields do not match the fixed contract")
-        await run_in_threadpool(_approve, candidate_id, fields["reason"])
+        await run_in_threadpool(_approve, candidate_id, fields["reason"], principal)
         return RedirectResponse(f"/candidates/{candidate_id}", status_code=303)
 
     @app.post("/api/candidates/{candidate_id}/approve")
     def approve_api(candidate_id: str, request: Request, body: ApprovalBody) -> dict[str, str]:
+        principal = require_principal(request)
         require_csrf(request, request.headers.getlist("x-csrf-token"))
-        _approve(candidate_id, body.reason)
+        _approve(candidate_id, body.reason, principal)
         return {"candidate_id": candidate_id, "state": "Approved"}
 
     @app.post("/candidates/{candidate_id}/deploy")
     async def deploy_form(candidate_id: str, request: Request) -> RedirectResponse:
+        principal = require_principal(request)
         fields = await csrf_form_fields(request)
         expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
         if set(fields) != expected_fields:
@@ -733,7 +819,7 @@ def create_control_app(
         await run_in_threadpool(
             coordinator.deploy,
             candidate_id,
-            actor=control.reviewer_identity,
+            actor=principal,
             reason=fields["reason"],
             expected_deployment_id=expected_deployment_id,
             expected_generation=expected_generation,
@@ -742,6 +828,7 @@ def create_control_app(
 
     @app.post("/rollback")
     async def rollback_form(request: Request) -> RedirectResponse:
+        principal = require_principal(request)
         fields = await csrf_form_fields(request)
         expected_fields = {"csrf_token", "reason", "expected_deployment_id", "expected_generation"}
         if set(fields) != expected_fields:
@@ -751,7 +838,7 @@ def create_control_app(
         expected_deployment_id, expected_generation = active_precondition(fields)
         await run_in_threadpool(
             coordinator.rollback,
-            actor=control.reviewer_identity,
+            actor=principal,
             reason=fields["reason"],
             expected_deployment_id=expected_deployment_id,
             expected_generation=expected_generation,
@@ -777,9 +864,9 @@ def create_control_app(
                 has_rollback_target = True
             if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
-        timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>' for event in events)
+        timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>' for event in events)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
-        return _layout("Deployment", body, csrf=request.state.csrf)
+        return layout(request, "Deployment", body)
 
     @app.get("/deployment/audit", response_class=HTMLResponse)
     def deployment_audit_view(
@@ -794,7 +881,7 @@ def create_control_app(
         has_next_page = len(event_window) > AUDIT_HISTORY_PAGE_SIZE
         events = event_window[:AUDIT_HISTORY_PAGE_SIZE]
         timeline = "".join(
-            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>'
+            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>'
             for event in events
         )
         previous_link = (
@@ -809,7 +896,7 @@ def create_control_app(
         )
         pagination = " · ".join(link for link in (previous_link, next_link) if link)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Full audit history.</h1><p>Newest lifecycle events appear first.</p></section><section class="panel"><ol class="timeline">{timeline or '<li>No lifecycle events on this page.</li>'}</ol>{f'<nav aria-label="Audit pages">{pagination}</nav>' if pagination else ''}<p><a href="/deployment">← Back to deployment</a></p></section>"""
-        return _layout("Audit history", body, csrf=request.state.csrf)
+        return layout(request, "Audit history", body)
 
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
@@ -819,7 +906,7 @@ def create_control_app(
     async def lifecycle_error(request: Request, exc: Exception) -> HTMLResponse:
         status = 403 if isinstance(exc, AuthorizationError) else 409
         return HTMLResponse(
-            _layout("Action blocked", f'<section class="error-summary"><h1>Action blocked</h1><p>{_escape(exc)}</p><a href="/runs">Return to runs</a></section>', csrf=request.state.csrf),
+            layout(request, "Action blocked", f'<section class="error-summary"><h1>Action blocked</h1><p>{_escape(exc)}</p><a href="/runs">Return to runs</a></section>'),
             status_code=status,
         )
 

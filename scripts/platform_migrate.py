@@ -15,10 +15,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.database != ":memory:" and not args.database.startswith("file:"):
         Path(args.database).parent.mkdir(parents=True, exist_ok=True)
-    store = ControlStore(
-        args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-    )
+    store = ControlStore(args.database)
     store.migrate()
     print(f"control migration complete: {args.database}")
 
