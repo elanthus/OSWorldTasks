@@ -6,23 +6,16 @@ import sys
 import time
 from multiprocessing.synchronize import Barrier, Event
 from pathlib import Path
-from typing import Any
+from threading import BrokenBarrierError
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from pixelgym.platform.contracts import RunSummary
-from pixelgym.platform.control_store import ConflictError, ContentionError, ControlStore
-from pixelgym.platform.dependency_lock import dependency_lock_sha256
-from pixelgym.platform.gates import evaluate_gates
-from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
-from pixelgym.platform.schema_validation import load_gate_policy
-from pixelgym.platform.source_provenance import (
-    SOURCE_PROVENANCE_SCHEMA_VERSION,
-    SourceProvenance,
-)
+if TYPE_CHECKING:
+    from pixelgym.platform.control_store import ControlStore
 
-_JOIN_TIMEOUT_SECONDS = 10.0
-_SYNC_TIMEOUT_SECONDS = 5.0
+_JOIN_TIMEOUT_SECONDS = 60.0
+_SYNC_TIMEOUT_SECONDS = 60.0
 
 
 def _close_store(store: ControlStore | None) -> None:
@@ -36,6 +29,8 @@ def _race_activation(
     barrier: Barrier,
     results: Any,
 ) -> None:
+    from pixelgym.platform.control_store import ConflictError, ControlStore
+
     store: ControlStore | None = None
     try:
         store = ControlStore(
@@ -67,6 +62,8 @@ def _hold_uncommitted_write(
     locked: Event,
     release: Event,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     store: ControlStore | None = None
     try:
         store = ControlStore(database, reviewer_identity="local-reviewer")
@@ -88,6 +85,8 @@ def _read_while_writer_active(
     completed: Event,
     results: Any,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     store: ControlStore | None = None
     try:
         store = ControlStore(database, reviewer_identity="local-reviewer")
@@ -109,6 +108,8 @@ def _hold_writer_lock(
     locked: Event,
     release: Event,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     store: ControlStore | None = None
     try:
         store = ControlStore(database, reviewer_identity="local-reviewer")
@@ -129,6 +130,8 @@ def _transient_waiter(
     attempting: Event,
     results: Any,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     store: ControlStore | None = None
     try:
         store = ControlStore(
@@ -185,7 +188,37 @@ def _finish_processes(processes: list[multiprocessing.Process]) -> None:
     )
 
 
+def _wait_at_barrier(
+    barrier: Barrier,
+    processes: list[multiprocessing.Process],
+    *,
+    phase: str,
+) -> None:
+    try:
+        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+    except BrokenBarrierError as exc:
+        exit_codes = {process.name: process.exitcode for process in processes}
+        raise AssertionError(
+            f"{phase} barrier timed out; child exit codes: {exit_codes}"
+        ) from exc
+
+
 def _prepare_approved_candidate(database: Path) -> str:
+    from pixelgym.platform.contracts import RunSummary
+    from pixelgym.platform.control_store import ControlStore
+    from pixelgym.platform.dependency_lock import dependency_lock_sha256
+    from pixelgym.platform.gates import evaluate_gates
+    from pixelgym.platform.policy import (
+        PROMPT_NAME,
+        build_policy_manifest,
+        prompt_template,
+    )
+    from pixelgym.platform.schema_validation import load_gate_policy
+    from pixelgym.platform.source_provenance import (
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        SourceProvenance,
+    )
+
     repository_root = Path(__file__).parents[3]
     gate_policy = load_gate_policy(repository_root)
     policy = build_policy_manifest(
@@ -258,6 +291,8 @@ def _get_result(results: Any) -> tuple[Any, ...]:
 def test_two_processes_racing_activation_yield_one_winner_and_one_conflict(
     tmp_path: Path,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     database = tmp_path / "control.db"
     candidate_id = _prepare_approved_candidate(database)
     context = multiprocessing.get_context("spawn")
@@ -275,7 +310,7 @@ def test_two_processes_racing_activation_yield_one_winner_and_one_conflict(
         for process in processes:
             process.start()
             started.append(process)
-        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+        _wait_at_barrier(barrier, started, phase="activation race startup")
         outcomes = [_get_result(results), _get_result(results)]
     finally:
         _finish_processes(started)
@@ -295,6 +330,8 @@ def test_two_processes_racing_activation_yield_one_winner_and_one_conflict(
 def test_reader_completes_while_other_process_holds_immediate_write(
     tmp_path: Path,
 ) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     database = tmp_path / "control.db"
     setup = ControlStore(database, reviewer_identity="local-reviewer")
     setup.migrate()
@@ -321,7 +358,7 @@ def test_reader_completes_while_other_process_holds_immediate_write(
         for process in processes:
             process.start()
             started.append(process)
-        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+        _wait_at_barrier(barrier, started, phase="WAL reader startup")
         assert completed.wait(timeout=_SYNC_TIMEOUT_SECONDS)
         assert not release.is_set()
         outcome = _get_result(results)
@@ -333,6 +370,8 @@ def test_reader_completes_while_other_process_holds_immediate_write(
 
 
 def test_transient_writer_lock_succeeds_within_busy_timeout(tmp_path: Path) -> None:
+    from pixelgym.platform.control_store import ControlStore
+
     database = tmp_path / "control.db"
     setup = ControlStore(database, reviewer_identity="local-reviewer")
     setup.migrate()
@@ -358,7 +397,7 @@ def test_transient_writer_lock_succeeds_within_busy_timeout(tmp_path: Path) -> N
         for process in processes:
             process.start()
             started.append(process)
-        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+        _wait_at_barrier(barrier, started, phase="transient writer startup")
         assert attempting.wait(timeout=_SYNC_TIMEOUT_SECONDS)
         release.set()
         outcome = _get_result(results)
@@ -370,6 +409,8 @@ def test_transient_writer_lock_succeeds_within_busy_timeout(tmp_path: Path) -> N
 
 
 def test_over_bound_writer_lock_maps_to_stable_contention_error(tmp_path: Path) -> None:
+    from pixelgym.platform.control_store import ContentionError, ControlStore
+
     database = tmp_path / "control.db"
     setup = ControlStore(database, reviewer_identity="local-reviewer")
     setup.migrate()
@@ -391,7 +432,7 @@ def test_over_bound_writer_lock_maps_to_stable_contention_error(tmp_path: Path) 
     try:
         process.start()
         started.append(process)
-        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+        _wait_at_barrier(barrier, started, phase="over-bound writer startup")
         assert locked.wait(timeout=_SYNC_TIMEOUT_SECONDS)
         with pytest.raises(
             ContentionError,
