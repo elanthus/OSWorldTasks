@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
@@ -146,10 +145,7 @@ def main() -> None:
     parser.add_argument("--database", required=True)
     parser.add_argument("--output", default="artifacts/platform")
     args = parser.parse_args()
-    control = ControlStore(
-        args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-    )
+    control = ControlStore(args.database)
     export_evidence(control, Path(args.output))
 
 

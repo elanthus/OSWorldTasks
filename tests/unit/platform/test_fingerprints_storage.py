@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import shutil
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -123,6 +124,28 @@ def test_interrupted_commit_is_repaired_by_a_new_store_instance(
     assert second_store.get_verified(reference) == b"evidence"
 
 
+def test_missing_payload_is_repaired_only_by_identical_bytes(tmp_path: Path) -> None:
+    store = LocalImmutableStore(tmp_path)
+    repaired_reference = store.put_once(
+        "raw/repair.json", b"evidence", media_type="application/json"
+    )
+    conflicting_reference = store.put_once(
+        "raw/conflict.json", b"evidence", media_type="application/json"
+    )
+    (tmp_path / "objects/raw/repair.json").unlink()
+    (tmp_path / "objects/raw/conflict.json").unlink()
+
+    assert (
+        store.put_once("raw/repair.json", b"evidence", media_type="application/json")
+        == repaired_reference
+    )
+    assert store.get_verified(repaired_reference) == b"evidence"
+    with pytest.raises(ImmutableStoreError, match="conflicting bytes"):
+        store.put_once("raw/conflict.json", b"different", media_type="application/json")
+    with pytest.raises(ImmutableStoreError, match="missing"):
+        store.get_verified(conflicting_reference)
+
+
 def test_multiple_store_instances_serialize_same_key_without_inode_mutation(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -176,8 +199,10 @@ class _MissingObject(Exception):
 class _FakeS3:
     def __init__(self) -> None:
         self.objects: dict[str, dict] = {}
+        self.operations: list[str] = []
 
     def head_object(self, *, Bucket, Key, VersionId=None):
+        self.operations.append("head_object")
         del Bucket, VersionId
         if Key not in self.objects:
             raise _MissingObject
@@ -191,6 +216,7 @@ class _FakeS3:
         }
 
     def put_object(self, **arguments):
+        self.operations.append("put_object")
         key = arguments["Key"]
         if key in self.objects:
             raise RuntimeError("precondition failed")
@@ -198,10 +224,149 @@ class _FakeS3:
         return {"VersionId": "version-1"}
 
     def get_object(self, *, Bucket, Key, VersionId=None):
+        self.operations.append("get_object")
         del Bucket, VersionId
         if Key not in self.objects:
             raise _MissingObject
         return {"Body": io.BytesIO(self.objects[Key]["Body"])}
+
+
+class _RecordingLocalStore(LocalImmutableStore):
+    def __init__(self, root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        super().__init__(root)
+        self.operations: list[str] = []
+        objects_root = (root / "objects").resolve()
+        original_read_bytes = Path.read_bytes
+
+        def record_read_bytes(path: Path) -> bytes:
+            try:
+                path.resolve().relative_to(objects_root)
+            except ValueError:
+                pass
+            else:
+                self.operations.append("payload_read")
+            return original_read_bytes(path)
+
+        monkeypatch.setattr(Path, "read_bytes", record_read_bytes)
+
+    def get_reference(self, logical_key: str):
+        self.operations.append("get_reference")
+        return super().get_reference(logical_key)
+
+    def _get_verified_unlocked(self, reference):
+        self.operations.append("get_verified")
+        return super()._get_verified_unlocked(reference)
+
+
+@pytest.fixture(params=["local", "s3"])
+def recording_store(
+    request: pytest.FixtureRequest, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    if request.param == "local":
+        store = _RecordingLocalStore(tmp_path / "local", monkeypatch)
+        return (
+            store,
+            store.operations,
+            "get_reference",
+            "payload_read",
+            ["get_reference", "get_verified", "payload_read"],
+        )
+    client = _FakeS3()
+    store = S3ImmutableStore(bucket="immutable", client=client, retention_days=30)
+    return (
+        store,
+        client.operations,
+        "head_object",
+        "get_object",
+        ["head_object", "get_object"],
+    )
+
+
+@pytest.mark.parametrize(
+    ("data", "media_type", "conflicts"),
+    [
+        (b"one", "application/json", False),
+        (b"two", "application/json", True),
+        (b"one-more", "application/json", True),
+        (b"one", "text/plain", True),
+    ],
+    ids=["identical", "digest", "size", "media-type"],
+)
+def test_adapters_match_under_existing_object_fingerprint_mutations(
+    recording_store, data: bytes, media_type: str, conflicts: bool
+) -> None:
+    (
+        store,
+        operations,
+        lookup_operation,
+        payload_get_operation,
+        verified_existing_operations,
+    ) = recording_store
+    reference = store.put_once("raw/one.json", b"one", media_type="application/json")
+    assert operations[-1] == payload_get_operation
+
+    operations.clear()
+    assert store.get_reference("raw/one.json") == reference
+    assert operations == [lookup_operation]
+    assert payload_get_operation not in operations
+
+    operations.clear()
+    if conflicts:
+        with pytest.raises(ImmutableStoreError, match="conflicting"):
+            store.put_once("raw/one.json", data, media_type=media_type)
+        assert operations == [lookup_operation]
+    else:
+        assert store.put_once("raw/one.json", data, media_type=media_type) == reference
+        assert operations == verified_existing_operations
+        assert operations.count(payload_get_operation) == 1
+
+
+def test_local_reference_lookup_fails_closed_for_missing_or_corrupt_metadata(
+    tmp_path: Path,
+) -> None:
+    store = LocalImmutableStore(tmp_path)
+    store.put_once("raw/a.json", b"one", media_type="application/json")
+    metadata_path = tmp_path / "metadata/raw/a.json.metadata.json"
+    metadata_path.write_text("{not-json")
+
+    with pytest.raises(ImmutableStoreError, match="metadata is malformed"):
+        store.get_reference("raw/a.json")
+
+    metadata_path.unlink()
+    assert store.get_reference("raw/a.json") is None
+
+
+def test_local_reference_lookup_rejects_metadata_for_another_key(tmp_path: Path) -> None:
+    store = LocalImmutableStore(tmp_path)
+    store.put_once("raw/a.json", b"one", media_type="application/json")
+    store.put_once("raw/b.json", b"two", media_type="application/json")
+    shutil.copyfile(
+        tmp_path / "metadata/raw/a.json.metadata.json",
+        tmp_path / "metadata/raw/b.json.metadata.json",
+    )
+
+    with pytest.raises(ImmutableStoreError, match="does not match lookup key"):
+        store.get_reference("raw/b.json")
+
+
+def test_s3_reference_lookup_requires_media_type_metadata() -> None:
+    client = _FakeS3()
+    store = S3ImmutableStore(bucket="immutable", client=client, retention_days=30)
+    store.put_once("raw/one.json", b"one", media_type="application/json")
+    del client.objects["pixelgym/raw/one.json"]["Metadata"]["media-type"]
+
+    with pytest.raises(ImmutableStoreError, match="missing identity fields"):
+        store.get_reference("raw/one.json")
+
+
+def test_s3_reference_lookup_rejects_media_type_mismatch_with_head() -> None:
+    client = _FakeS3()
+    store = S3ImmutableStore(bucket="immutable", client=client, retention_days=30)
+    store.put_once("raw/one.json", b"one", media_type="application/json")
+    client.objects["pixelgym/raw/one.json"]["ContentType"] = "text/plain"
+
+    with pytest.raises(ImmutableStoreError, match="does not match HEAD"):
+        store.get_reference("raw/one.json")
 
 
 def test_s3_adapter_pins_version_and_object_lock_and_rejects_conflicts() -> None:

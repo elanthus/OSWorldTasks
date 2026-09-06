@@ -10,7 +10,8 @@ COPY pixelgym ./pixelgym
 COPY flows ./flows
 COPY config ./config
 COPY scripts ./scripts
+COPY --chmod=0755 deploy/platform-entrypoint.sh /usr/local/bin/platform-entrypoint.sh
 COPY artifacts/grounding-dataset.jsonl artifacts/grounding-overlays.jsonl artifacts/grounding-predictions.jsonl ./artifacts/
 COPY artifacts/grounding ./artifacts/grounding
 RUN pip install --no-cache-dir --no-deps .
-CMD ["uvicorn", "pixelgym.platform.bootstrap:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/usr/local/bin/platform-entrypoint.sh"]

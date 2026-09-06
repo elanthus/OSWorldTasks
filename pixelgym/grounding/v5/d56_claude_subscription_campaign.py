@@ -37,10 +37,10 @@ from pixelgym.grounding.v5.claude_code_policy import (
 from pixelgym.grounding.v5.codex_cli_policy import SubscriptionExemptLedger
 from pixelgym.grounding.v5.contracts import CallCaps, Partition, content_digest
 from pixelgym.grounding.v5.d56_calibration import (
-    CALIBRATION_MANIFEST,
+    CURRENT_CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
     NORMAL_TERMINAL_CLASSIFICATIONS,
-    _calibration_manifest,
+    _current_calibration_manifest,
 )
 from pixelgym.grounding.v5.d56_codex_cli_calibration import (
     PRIOR_BUDGET_ACCOUNTED_SPEND_USD,
@@ -166,7 +166,7 @@ def _policy_record(
 
 
 def _task_order(repository_root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     records = [
         {
             "ordinal": ordinal,
@@ -368,7 +368,9 @@ def build_full_plan(
             resolved_model=str(smoke["resolved_model"]),
         ),
         "calibration_partition": {
-            "manifest_file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "manifest_file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "assigned_task_count": EXPECTED_TASK_COUNT,
             "task_order_rule": "frozen_manifest_order_no_reordering_or_replacement",

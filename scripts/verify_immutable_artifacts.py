@@ -21,10 +21,7 @@ def main() -> None:
     parser.add_argument("--local-root")
     parser.add_argument("--output")
     args = parser.parse_args()
-    control = ControlStore(
-        args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-    )
+    control = ControlStore(args.database)
     if args.local_root:
         store = LocalImmutableStore(Path(args.local_root))
     else:

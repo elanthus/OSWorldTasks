@@ -27,6 +27,57 @@ Open the control plane at <http://localhost:5800> and MLflow at <http://localhos
 ports are configurable in `.env.example`; the PostgreSQL and MinIO API loopback ports are also
 configurable for isolated integration runs.
 
+### Control-plane session cookie
+
+The control-plane bootstrap derives the `pixelgym_session` cookie's `Secure` attribute from its
+deployment exposure. `localhost` and any IP address for which Python's `ipaddress` module reports
+`is_loopback` (including the full `127.0.0.0/8` range, `::1`, bracketed IPv6, and IPv4-mapped IPv6
+loopback) default to `Secure` off; every other address defaults to `Secure` on. Keep the deployment
+loopback-only when using plain HTTP; any non-loopback deployment must terminate TLS before sending
+this cookie. A loopback-bound app behind a TLS-terminating proxy must set
+`PIXELGYM_SESSION_COOKIE_SECURE=true`.
+
+`PIXELGYM_BIND_ADDRESS` is the single source of truth for both Uvicorn's listening address and the
+bootstrap exposure decision, and defaults to `127.0.0.1`. The image entrypoint disables proxy-header
+trust, and bootstrap rejects `FORWARDED_ALLOW_IPS`; the control plane resolves client addresses from
+the connection rather than forwarded headers. `PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT` accepts only
+case-insensitive `true` or `false` and is unset by default. Setting it to `true` is an explicit
+operator attestation that a non-loopback-bound process is published only on host loopback, as in
+the Compose demo; bootstrap logs a warning because the app cannot verify that publishing rule.
+Cookie security precedence is: an explicit `session_cookie_secure` argument, then
+`PIXELGYM_SESSION_COOKIE_SECURE` (`true` or `false`, case-insensitive), then the loopback-only
+attestation, then the bind-address default. Environment values are validated even when a
+higher-precedence setting wins.
+
+The cookie is always server-issued and has the exact format `<session-id>.<tag>`. `session-id` is
+the 32-character URL-safe Base64 output of `secrets.token_urlsafe(24)`. `tag` is the 64-character
+lowercase hexadecimal HMAC-SHA256 digest whose key is the UTF-8 encoded `PIXELGYM_CSRF_SECRET` and
+whose message is the ASCII bytes `pixelgym-session-v1\0<session-id>` (where `\0` is one NUL
+byte). The server retains a presented cookie only when its shape and tag verify; otherwise it
+replaces it with a fresh value. No session table is used. The remaining attributes are always
+`HttpOnly` and `SameSite=Strict`.
+
+### Reviewer attribution
+
+Every control-plane mutation resolves its reviewer identity once from the connection context. A
+configured header, `X-Forwarded-User` by default (override with `PIXELGYM_PRINCIPAL_HEADER`), is
+accepted only when the connection peer belongs to `PIXELGYM_TRUSTED_PROXY_ADDRESSES`, a
+comma-separated IP/CIDR allowlist. Default routes are rejected. Duplicate, malformed, missing, or
+reserved identities from a trusted proxy are rejected before mutation, and submitted form or JSON
+fields cannot select the actor. Uvicorn is started with `--no-proxy-headers`; bootstrap also refuses
+`FORWARDED_ALLOW_IPS`, so forwarded client-address headers do not participate in this decision.
+
+When `resolve_deployment_exposure()` treats the deployment as loopback—because the bind address is
+loopback or `PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT=true` attests that the container port is published
+only on host loopback—requests not arriving through an allowlisted identity proxy use the fixed
+`synthetic-demo` actor. Without that attestation, a non-loopback bind requires a nonempty trusted
+proxy allowlist or startup fails. Compose keeps the platform port published on `127.0.0.1` and sets
+the attestation because the process itself listens on the container interface.
+
+New audit events record `actor_verification_source` in `details_json` as `proxy_header`,
+`synthetic_demo`, or an internal source. Append-only rows created before this change are not
+rewritten; rows without the field remain readable and the UI labels them `legacy/unverified`.
+
 Stop the stack without deleting evidence:
 
 ```bash

@@ -2,12 +2,13 @@
 
 Endpoints:
 
-- ``POST /api/reset``  — install a new task for a seed; clears submissions.
+- ``POST /api/reset``  — install a new task for a seed; clears submissions and
+  requires consumers to reload the page.
 - ``GET  /api/task``   — public "request card" view (the values a human/agent
   is meant to read and transcribe; not secret).
 - ``POST /api/submit`` — record an immutable submission event.
 - ``GET  /api/state``  — privileged view for the host-side evaluator (task +
-  every submission). Not linked from the UI.
+  every submission). Returns 409 before reset. Not linked from the UI.
 - ``GET  /``           — the form itself, served as static HTML.
 
 State is held in-process per app instance (no database, no clock, no
@@ -25,7 +26,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.normalization import normalize_submitted_values
@@ -36,10 +37,14 @@ _NO_ACTIVE_TASK = "No active task. Call POST /api/reset first."
 
 
 class ResetRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     seed: int
 
 
 class SubmitRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     task_id: str
     company_name: str
     contact_email: str
@@ -51,6 +56,8 @@ class SubmitRequest(BaseModel):
 
 
 class PageReadyRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     task_id: str
 
 
@@ -130,7 +137,11 @@ def create_app() -> FastAPI:
     @app.post("/api/reset")
     def reset(payload: ResetRequest) -> dict[str, Any]:
         task = state.reset(payload.seed)
-        return {"task_id": task["task_id"], "seed": task["seed"]}
+        return {
+            "task_id": task["task_id"],
+            "seed": task["seed"],
+            "requires_reload": True,
+        }
 
     @app.get("/api/task")
     def get_task() -> dict[str, Any]:
@@ -138,7 +149,6 @@ def create_app() -> FastAPI:
         return {
             "task_id": task["task_id"],
             "schema_version": task["schema_version"],
-            "seed": task["seed"],
             "fields": task["fields"],
             "options": task["options"],
         }
@@ -163,8 +173,9 @@ def create_app() -> FastAPI:
     @app.get("/api/state")
     def get_state() -> dict[str, Any]:
         """Privileged evaluator view. Not reachable from any UI link."""
+        task = state.require_task()
         return {
-            "task": state.task,
+            "task": task,
             "submissions": [record.to_dict() for record in state.submissions],
         }
 

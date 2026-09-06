@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 
 import pytest
+from fastapi.testclient import TestClient
 
 from pixelgym.tasks.vendor_form import generator
 from pixelgym.tasks.vendor_form.app.guest_server import GuestTaskState
+from pixelgym.tasks.vendor_form.app.server import create_app
 
 
 @pytest.fixture
@@ -28,8 +30,19 @@ def test_reset_is_idempotent_and_clears_submissions(state):
     first = state.reset(7)
     second = state.reset(7)
 
-    assert first == second == {"task_id": task["task_id"], "seed": 7}
+    assert first == second == {
+        "task_id": task["task_id"],
+        "seed": 7,
+        "requires_reload": True,
+    }
     assert state.privileged_state()["submissions"] == []
+
+
+def test_reset_response_keys_match_fastapi_contract(state):
+    fastapi_response = TestClient(create_app()).post("/api/reset", json={"seed": 7})
+
+    assert fastapi_response.status_code == 200
+    assert set(state.reset(7)) == set(fastapi_response.json())
 
 
 def test_page_ready_marker_is_task_bound_and_reset_to_false(state):

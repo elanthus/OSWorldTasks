@@ -19,6 +19,11 @@ from pixelgym.grounding.v5.contracts import (
 from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition
 from pixelgym.grounding.v5.seeds import D56_REPLACEMENT_CALIBRATION_SEEDS
 
+CURRENT_PARTITION_MANIFEST_DIRECTORY = Path("artifacts/grounding-v5-manifests/v2")
+CURRENT_D56_CALIBRATION_MANIFEST = (
+    CURRENT_PARTITION_MANIFEST_DIRECTORY / "calibration-d56.json"
+)
+
 D56_PILOT_PLAN_DIGEST = (
     "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a"
 )

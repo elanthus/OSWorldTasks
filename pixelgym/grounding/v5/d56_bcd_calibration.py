@@ -11,10 +11,10 @@ from typing import Any
 
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, content_digest
 from pixelgym.grounding.v5.d56_calibration import (
-    CALIBRATION_MANIFEST,
+    CURRENT_CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
     NORMAL_TERMINAL_CLASSIFICATIONS,
-    _calibration_manifest,
+    _current_calibration_manifest,
     _file_digest,
     _git,
     _validated_smoke_evidence,
@@ -195,7 +195,7 @@ def build_plan(
     frozen_calibration_output_directory: Path,
 ) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     frozen_evidence = _validated_frozen_calibration_evidence(
         repository_root, frozen_calibration_output_directory
@@ -203,8 +203,8 @@ def build_plan(
     prior_campaign_spend = frozen_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
-        calibration_manifest=repository_root / CALIBRATION_MANIFEST,
+        repository_root / CURRENT_CALIBRATION_MANIFEST.parent,
+        calibration_manifest=repository_root / CURRENT_CALIBRATION_MANIFEST,
     )
     policies: list[dict[str, Any]] = []
     aggregate_theoretical_maximum = Decimal(0)
@@ -271,8 +271,10 @@ def build_plan(
         "requires_clean_tracked_worktree": True,
         "assigned_policy_task_pairs": successor_count * EXPECTED_TASK_COUNT,
         "calibration_partition": {
-            "path": CALIBRATION_MANIFEST.as_posix(),
-            "file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "path": CURRENT_CALIBRATION_MANIFEST.as_posix(),
+            "file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "source_manifest_digest": partition["derivation"]["source_manifest_digest"],
             "pilot_plan_digest": partition["derivation"]["pilot_plan_digest"],

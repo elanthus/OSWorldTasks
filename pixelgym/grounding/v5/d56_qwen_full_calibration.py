@@ -11,11 +11,11 @@ from typing import Any
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.d56_c_calibration import _validated_frozen_bcd_evidence
 from pixelgym.grounding.v5.d56_calibration import (
-    CALIBRATION_MANIFEST,
     CONSECUTIVE_FAILURE_LIMIT,
+    CURRENT_CALIBRATION_MANIFEST,
     EXPECTED_TASK_COUNT,
     ConsecutiveFailureBreaker,
-    _calibration_manifest,
+    _current_calibration_manifest,
     _file_digest,
     _git,
     _validated_smoke_evidence,
@@ -63,7 +63,7 @@ def build_plan(
     if not maximum_spend_usd.is_finite() or maximum_spend_usd <= 0:
         raise ValueError("maximum run spend must be finite and positive")
     revision = _git(repository_root, "rev-parse", "HEAD")
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     # The frozen B/C/D evidence pins the withdrawn 429 attempt so this successor
     # cannot replay or reinterpret it. It carries no spend into this run.
@@ -75,8 +75,8 @@ def build_plan(
     config = QWEN_STATEFUL_RETRY_SUCCESSOR
     manifest = build_panel_policy_manifest(repository_root, config=config, code_revision=revision)
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
-        calibration_manifest=repository_root / CALIBRATION_MANIFEST,
+        repository_root / CURRENT_CALIBRATION_MANIFEST.parent,
+        calibration_manifest=repository_root / CURRENT_CALIBRATION_MANIFEST,
     )
     phase_call_cap_plan = call_cap_plan(
         manifest,
@@ -96,8 +96,10 @@ def build_plan(
         "requires_clean_tracked_worktree": True,
         "assigned_policy_task_pairs": EXPECTED_TASK_COUNT,
         "calibration_partition": {
-            "path": CALIBRATION_MANIFEST.as_posix(),
-            "file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "path": CURRENT_CALIBRATION_MANIFEST.as_posix(),
+            "file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "source_manifest_digest": partition["derivation"]["source_manifest_digest"],
             "pilot_plan_digest": partition["derivation"]["pilot_plan_digest"],
