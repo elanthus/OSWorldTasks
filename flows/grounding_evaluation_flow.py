@@ -69,8 +69,7 @@ def _tracking() -> object:
 
 def _control() -> ControlStore:
     return ControlStore(
-        os.environ.get("PIXELGYM_CONTROL_DB", str(_root() / ".cache/platform/control.db")),
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
+        os.environ.get("PIXELGYM_CONTROL_DB", str(_root() / ".cache/platform/control.db"))
     )
 
 

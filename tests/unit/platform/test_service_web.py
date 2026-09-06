@@ -25,7 +25,13 @@ from PIL import Image
 from starlette.requests import Request
 
 from pixelgym.platform.contracts import ArtifactRef
-from pixelgym.platform.control_store import ControlStore, TransitionError, VerifiedPrincipal
+from pixelgym.platform.control_store import (
+    ACTOR_VERIFICATION_SOURCE_KEY,
+    ControlStore,
+    SyntheticDemoPrincipal,
+    TransitionError,
+    VerifiedPrincipal,
+)
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
@@ -1193,6 +1199,7 @@ def test_cancel_waiting_for_process_lock_does_not_block_serving(tmp_path: Path) 
     assert len(cancellation_events) == 1
     assert cancellation_events[0]["subject_id"] == submission_id
     assert cancellation_events[0]["details"] == {
+        ACTOR_VERIFICATION_SOURCE_KEY: "synthetic_demo",
         "previous_status": "Submitted",
         "reason": "stop concurrent fixture",
     }
@@ -1242,6 +1249,8 @@ def _assembled_platform_app(
     bootstrap, control = _configure_bootstrap_environment(
         tmp_path, repository_root, monkeypatch
     )
+    if not bootstrap.resolve_deployment_exposure(bind_address).treated_as_loopback:
+        monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
     return (
         bootstrap.create_app(
             bind_address=bind_address,
@@ -1298,6 +1307,7 @@ def test_bootstrap_uses_environment_bind_address_for_session_cookie(
 ) -> None:
     bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
     monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
 
     response = TestClient(bootstrap.create_app()).get("/")
     cookie = SimpleCookie()
@@ -1312,6 +1322,7 @@ def test_bootstrap_environment_can_disable_secure_session_cookie(
     bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
     monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
     monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "false")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
 
     response = TestClient(bootstrap.create_app(bind_address="0.0.0.0")).get("/")
     cookie = SimpleCookie()
@@ -1460,7 +1471,7 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     candidate = _approved_candidate(control, policy, summary, report)
 
     deployed = app.state.deployment_coordinator.deploy(
-        candidate.candidate_id, actor=VerifiedPrincipal("synthetic-demo"), reason="first deploy"
+        candidate.candidate_id, actor=SyntheticDemoPrincipal(), reason="first deploy"
     )
 
     runtime = app.state.policy_runtime.loaded
@@ -1484,11 +1495,11 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     )
     second = app.state.deployment_coordinator.deploy(
         rollback_candidate.candidate_id,
-        actor=VerifiedPrincipal("synthetic-demo"),
+        actor=SyntheticDemoPrincipal(),
         reason="second deploy",
     )
     restored = app.state.deployment_coordinator.rollback(
-        actor=VerifiedPrincipal("synthetic-demo"), reason="deterministic rollback"
+        actor=SyntheticDemoPrincipal(), reason="deterministic rollback"
     )
     runtime = app.state.policy_runtime.loaded
     assert runtime is not None
@@ -1501,7 +1512,7 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     assert "Rollback to previous approved version" not in deployment_page.text
     with pytest.raises(TransitionError, match="no eligible known-good"):
         app.state.deployment_coordinator.rollback(
-            actor=VerifiedPrincipal("synthetic-demo"), reason="repeat deterministic rollback"
+            actor=SyntheticDemoPrincipal(), reason="repeat deterministic rollback"
         )
 
 
@@ -1513,7 +1524,7 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     policy, summary, report = passing_evidence
     first = _approved_candidate(control, policy, summary, report)
     active = app.state.deployment_coordinator.deploy(
-        first.candidate_id, actor=VerifiedPrincipal("synthetic-demo"), reason="first deploy"
+        first.candidate_id, actor=SyntheticDemoPrincipal(), reason="first deploy"
     )
     # Rebuild a valid, distinct policy instead of mutating identity fields.
     from pixelgym.platform.policy import build_policy_manifest, prompt_template
@@ -1559,7 +1570,7 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     with pytest.raises((DeploymentSmokeError, TransitionError)):
         app.state.deployment_coordinator.deploy(
             second.candidate_id,
-            actor=VerifiedPrincipal("synthetic-demo"),
+            actor=SyntheticDemoPrincipal(),
             reason="must not activate",
         )
 
@@ -1768,7 +1779,7 @@ def _mutating_route_context(
             control,
             coordinator=probe,
             csrf_secret=secrets.token_urlsafe(32),
-            bind_address="0.0.0.0" if verified_proxy else "127.0.0.1",
+            loopback_deployment=not verified_proxy,
             trusted_proxy_addresses=("10.10.0.0/24",) if verified_proxy else (),
             submit_callback=probe.submit,
             cancel_callback=probe.cancel,
@@ -1821,7 +1832,7 @@ def _proxy_client(control: ControlStore, *, client_address: str = "10.10.0.5") -
         create_control_app(
             control,
             csrf_secret="test-secret-at-least-sixteen",
-            bind_address="0.0.0.0",
+            loopback_deployment=False,
             trusted_proxy_addresses=("10.10.0.0/24",),
         ),
         client=(client_address, 50000),
@@ -1848,6 +1859,59 @@ def test_allowlisted_proxy_header_attributes_submission_to_verified_principal(
     created = [event for event in control.audit_events() if event["event_type"] == "submission.created"]
     assert len(created) == 1
     assert created[0]["actor"] == "reviewer.alice"
+    assert created[0]["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "proxy_header"
+
+
+def test_attested_loopback_deployment_attributes_bridge_peer_to_synthetic_demo(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setattr(bootstrap, "_run_flow", lambda *_args, **_kwargs: None)
+    client = TestClient(bootstrap.create_app(), client=("172.18.0.4", 50000))
+    page = client.get("/")
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": _csrf(page.text)},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert "Reviewer: synthetic-demo (synthetic demo)" in page.text
+    event = control.audit_events()[-1]
+    assert event["actor"] == "synthetic-demo"
+    assert event["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "synthetic_demo"
+
+
+def test_attested_loopback_deployment_prefers_trusted_proxy_principal(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "172.18.0.0/16")
+    monkeypatch.setattr(bootstrap, "_run_flow", lambda *_args, **_kwargs: None)
+    client = TestClient(bootstrap.create_app(), client=("172.18.0.4", 50000))
+    headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=headers).text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    event = control.audit_events()[-1]
+    assert event["actor"] == "reviewer.alice"
+    assert event["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "proxy_header"
 
 
 @pytest.mark.parametrize("route", MUTATING_ROUTES)
@@ -1899,6 +1963,121 @@ def test_untrusted_proxy_header_is_rejected_before_nonloopback_mutation(tmp_path
     assert response.json() == {"detail": "verified reviewer principal is required"}
     assert control.audit_events() == before
     assert control.list_submissions() == []
+
+
+def test_forwarded_for_does_not_change_peer_used_for_principal_trust(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control, client_address="198.51.100.9")
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers={
+            "X-Forwarded-For": "10.10.0.5",
+            "X-Forwarded-User": "reviewer.alice",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+@pytest.mark.parametrize(
+    ("client_address", "allowlist"),
+    (
+        ("10.10.0.5", "10.10.0.0/24"),
+        ("127.0.0.1", "127.0.0.1/32"),
+    ),
+)
+def test_duplicate_principal_headers_from_trusted_peer_are_rejected(
+    tmp_path: Path, client_address: str, allowlist: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            loopback_deployment=client_address.startswith("127."),
+            trusted_proxy_addresses=(allowlist,),
+        ),
+        client=(client_address, 50000),
+    )
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=[
+            ("X-Forwarded-User", "reviewer.alice"),
+            ("X-Forwarded-User", "reviewer.bob"),
+        ],
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+@pytest.mark.parametrize("reserved_principal", ("system", "synthetic-demo", "local-reviewer"))
+def test_reserved_actor_names_are_rejected_as_proxy_principals(
+    tmp_path: Path, reserved_principal: str
+) -> None:
+    with pytest.raises(ValueError, match="reserved actor name"):
+        VerifiedPrincipal(reserved_principal)
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers={"X-Forwarded-User": reserved_principal},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+def test_ipv4_mapped_proxy_peer_matches_ipv4_allowlist(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control, client_address="::ffff:10.10.0.5")
+    headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=headers).text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert control.audit_events()[-1]["actor"] == "reviewer.alice"
+
+
+@pytest.mark.parametrize("default_route", ("0.0.0.0/0", "::/0"))
+def test_default_route_is_rejected_from_trusted_proxy_allowlist(
+    tmp_path: Path, default_route: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+
+    with pytest.raises(ValueError, match="default route"):
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            trusted_proxy_addresses=(default_route,),
+        )
 
 
 @pytest.mark.parametrize("principal", (None, "reviewer alice", "-reviewer"))
@@ -2012,6 +2191,100 @@ def test_two_verified_principals_produce_distinct_attributed_events(tmp_path: Pa
     ]
 
 
+def test_identical_submission_by_second_principal_records_resubmission(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+
+    for reviewer in ("reviewer.alice", "reviewer.bob"):
+        headers = {"X-Forwarded-User": reviewer}
+        token = _csrf(client.get("/", headers=headers).text)
+        response = client.post(
+            "/experiments",
+            data={**_submission_fields(), "csrf_token": token},
+            headers=headers,
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+
+    assert len(control.list_submissions()) == 1
+    events = control.audit_events()
+    assert [(event["event_type"], event["actor"]) for event in events] == [
+        ("submission.created", "reviewer.alice"),
+        ("submission.resubmitted", "reviewer.bob"),
+    ]
+
+
+def test_two_principals_are_distinctly_attributed_across_approve_and_deploy(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+
+    class LedgerCoordinator:
+        def deploy(self, candidate_id: str, **kwargs):
+            return control.activate(candidate_id, action="deploy", **kwargs)
+
+    client = TestClient(
+        create_control_app(
+            control,
+            coordinator=LedgerCoordinator(),
+            csrf_secret="test-secret-at-least-sixteen",
+            loopback_deployment=False,
+            trusted_proxy_addresses=("10.10.0.0/24",),
+        ),
+        client=("10.10.0.5", 50000),
+    )
+    alice_headers = {"X-Forwarded-User": "reviewer.alice"}
+    approval_page = client.get(
+        f"/candidates/{candidate.candidate_id}", headers=alice_headers
+    )
+    approved = client.post(
+        f"/candidates/{candidate.candidate_id}/approve",
+        data={"csrf_token": _csrf(approval_page.text), "reason": "alice reviewed evidence"},
+        headers=alice_headers,
+        follow_redirects=False,
+    )
+    bob_headers = {"X-Forwarded-User": "reviewer.bob"}
+    deployment_page = client.get(
+        f"/candidates/{candidate.candidate_id}", headers=bob_headers
+    )
+    deployed = client.post(
+        f"/candidates/{candidate.candidate_id}/deploy",
+        data={
+            "csrf_token": _csrf(deployment_page.text),
+            "reason": "bob activates approved policy",
+            "expected_deployment_id": "",
+            "expected_generation": "0",
+        },
+        headers=bob_headers,
+        follow_redirects=False,
+    )
+
+    assert approved.status_code == deployed.status_code == 303
+    assert control.approval_events()[0]["actor"] == "reviewer.alice"
+    assert control.deployment_history()[0]["actor"] == "reviewer.bob"
+    privileged_events = [
+        event
+        for event in control.audit_events()
+        if event["event_type"] in {"candidate.approved", "deployment.deploy"}
+    ]
+    assert [(event["event_type"], event["actor"]) for event in privileged_events] == [
+        ("candidate.approved", "reviewer.alice"),
+        ("deployment.deploy", "reviewer.bob"),
+    ]
+    assert {
+        event["details"][ACTOR_VERIFICATION_SOURCE_KEY] for event in privileged_events
+    } == {"proxy_header"}
+
+
 def test_principal_middleware_does_not_log_or_audit_unrelated_header_values(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -2045,6 +2318,7 @@ def test_nonloopback_bootstrap_without_proxy_allowlist_fails_closed(
 
     monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
     monkeypatch.delenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", raising=False)
+    monkeypatch.delenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", raising=False)
 
     with pytest.raises(RuntimeError, match="non-loopback.*TRUSTED_PROXY"):
         bootstrap.create_app()
@@ -2056,12 +2330,16 @@ def test_prechange_local_reviewer_audit_row_remains_readable_and_legacy_labeled(
     control = ControlStore(tmp_path / "control.db")
     control.migrate()
     with control.transaction() as connection:
-        control._audit(
-            connection,
-            "candidate.approved",
-            "local-reviewer",
-            "candidate-legacy",
-            {"reason": "pre-change fixture"},
+        connection.execute(
+            "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                "audit-prechange",
+                "candidate.approved",
+                "local-reviewer",
+                "candidate-legacy",
+                '{"reason":"pre-change fixture"}',
+                "2026-09-01T00:00:00+00:00",
+            ),
         )
     client = TestClient(
         create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
@@ -2071,7 +2349,7 @@ def test_prechange_local_reviewer_audit_row_remains_readable_and_legacy_labeled(
     response = client.get("/deployment/audit")
 
     assert response.status_code == 200
-    assert "local-reviewer (legacy synthetic)" in response.text
+    assert "local-reviewer (legacy/unverified)" in response.text
     assert control.audit_events()[0]["actor"] == "local-reviewer"
 
 

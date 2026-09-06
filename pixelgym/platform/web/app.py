@@ -25,9 +25,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from pixelgym.platform.contracts import CandidateState
 from pixelgym.platform.control_store import (
+    ACTOR_VERIFICATION_SOURCE_KEY,
+    RESERVED_ACTOR_NAMES,
     AuthorizationError,
     ConflictError,
     ControlStore,
+    SyntheticDemoPrincipal,
     TransitionError,
     VerifiedPrincipal,
 )
@@ -62,7 +65,6 @@ CSRF_TOKEN_PATTERN = re.compile(rf"[0-9a-fA-F]{{{CSRF_TOKEN_HEX_LENGTH}}}")
 RUNS_PAGE_SIZE = 50
 DEPLOYMENT_AUDIT_WINDOW = 25
 AUDIT_HISTORY_PAGE_SIZE = 100
-SYNTHETIC_DEMO_PRINCIPAL = "synthetic-demo"
 PRINCIPAL_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@:/+-]{0,254}")
 
 
@@ -79,12 +81,13 @@ def _badge(label: str, tone: str = "neutral") -> str:
     return f'<span class="badge badge--{_escape(tone)}">{_escape(label)}</span>'
 
 
-def _actor_label(actor: object) -> str:
+def _actor_label(actor: object, details: dict[str, Any]) -> str:
     value = str(actor)
-    if value == "local-reviewer":
-        return "local-reviewer (legacy synthetic)"
-    if value == SYNTHETIC_DEMO_PRINCIPAL:
-        return "synthetic-demo (synthetic demo)"
+    source = details.get(ACTOR_VERIFICATION_SOURCE_KEY, "legacy_unverified")
+    if source == "synthetic_demo":
+        return f"{value} (synthetic demo)"
+    if source == "legacy_unverified":
+        return f"{value} (legacy/unverified)"
     return value
 
 
@@ -240,7 +243,7 @@ def create_control_app(
     *,
     coordinator: DeploymentCoordinator[Any] | None = None,
     csrf_secret: str,
-    bind_address: str = "127.0.0.1",
+    loopback_deployment: bool = True,
     principal_header: str = "X-Forwarded-User",
     trusted_proxy_addresses: Sequence[str] = (),
     session_cookie_secure: bool = False,
@@ -260,12 +263,8 @@ def create_control_app(
         )
     except ValueError as exc:
         raise ValueError("trusted proxy allowlist must contain IP addresses or CIDR networks") from exc
-    try:
-        loopback_bind = bind_address.lower() == "localhost" or ipaddress.ip_address(
-            bind_address
-        ).is_loopback
-    except ValueError as exc:
-        raise ValueError("bind address must be localhost or an IP address") from exc
+    if any(network.prefixlen == 0 for network in trusted_proxies):
+        raise ValueError("trusted proxy allowlist must not contain a default route")
     app = FastAPI(title="PixelGym Grounding Control Plane", docs_url=None, redoc_url=None)
     static = Path(__file__).with_name("static")
     app.mount("/static", StaticFiles(directory=static), name="static")
@@ -278,20 +277,23 @@ def create_control_app(
             client_ip = ipaddress.ip_address(client_address)
         except ValueError:
             client_ip = None
+        if isinstance(client_ip, ipaddress.IPv6Address) and client_ip.ipv4_mapped is not None:
+            client_ip = client_ip.ipv4_mapped
         trusted_source = client_ip is not None and any(
             client_ip in network for network in trusted_proxies
         )
-        principal: VerifiedPrincipal | None = None
-        if supplied_principals:
-            if trusted_source and len(supplied_principals) == 1:
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = None
+        if trusted_source:
+            if len(supplied_principals) == 1:
                 supplied_principal = supplied_principals[0]
-                if PRINCIPAL_PATTERN.fullmatch(supplied_principal) is not None:
+                if (
+                    PRINCIPAL_PATTERN.fullmatch(supplied_principal) is not None
+                    and supplied_principal not in RESERVED_ACTOR_NAMES
+                ):
                     principal = VerifiedPrincipal(supplied_principal)
-            elif loopback_bind and client_ip is not None and client_ip.is_loopback:
-                # An untrusted forwarded header cannot override the fixed local-demo identity.
-                principal = VerifiedPrincipal(SYNTHETIC_DEMO_PRINCIPAL)
-        elif loopback_bind and client_ip is not None and client_ip.is_loopback:
-            principal = VerifiedPrincipal(SYNTHETIC_DEMO_PRINCIPAL)
+        elif loopback_deployment:
+            # Untrusted identity headers cannot override the fixed local-demo identity.
+            principal = SyntheticDemoPrincipal()
         request.state.reviewer_principal = principal
         supplied_session = request.cookies.get("pixelgym_session")
         session_id, separator, supplied_tag = (supplied_session or "").rpartition(".")
@@ -335,17 +337,28 @@ def create_control_app(
         response.headers["X-Frame-Options"] = "DENY"
         return response
 
-    def require_principal(request: Request) -> VerifiedPrincipal:
-        principal: VerifiedPrincipal | None = request.state.reviewer_principal
+    def require_principal(
+        request: Request,
+    ) -> VerifiedPrincipal | SyntheticDemoPrincipal:
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = (
+            request.state.reviewer_principal
+        )
         if principal is None:
             raise HTTPException(403, "verified reviewer principal is required")
         return principal
 
     def layout(request: Request, title: str, body: str) -> str:
-        principal: VerifiedPrincipal | None = request.state.reviewer_principal
-        label = "unverified" if principal is None else str(principal)
-        if label == SYNTHETIC_DEMO_PRINCIPAL:
-            label += " (synthetic demo)"
+        principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = (
+            request.state.reviewer_principal
+        )
+        label = (
+            "unverified"
+            if principal is None
+            else _actor_label(
+                principal,
+                {ACTOR_VERIFICATION_SOURCE_KEY: principal.verification_source},
+            )
+        )
         return _layout(title, body, csrf=request.state.csrf, principal=label)
 
     def require_csrf(request: Request, supplied: Sequence[str]) -> None:
@@ -735,7 +748,11 @@ def create_control_app(
         body = f"""<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1><p class="mono">{_escape(item.policy.policy_id)}</p><p>{_escape(item.policy.provider)} · code {_escape(_short_digest(item.policy.code_revision))} · invalid outputs {invalid}</p>{_candidate_badges(item)}{disclosure}</section><div class="detail-grid"><section class="panel"><h2>Gate report</h2><div class="metric-strip"><div><span>Accuracy</span><strong>{_percentage(report['accuracy']['observed'])}</strong><small>minimum {_percentage(report['accuracy']['threshold'])}</small></div><div><span>Cost / 100</span><strong>{_money(report['cost_usd_per_100']['observed'])}</strong><small>maximum {_money(report['cost_usd_per_100']['threshold'])}</small></div><div><span>Provider p95</span><strong>{_milliseconds(report['provider_latency_p95_ms']['observed'])}</strong><small>maximum {_milliseconds(report['provider_latency_p95_ms']['threshold'])}</small></div></div><h3>Evidence</h3>{_evidence_links(item, mlflow_base_url)}<h3>Decision details</h3><ul>{reasons}</ul></section><aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p><h2>{_escape(item.state.value)}</h2><p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>{controls}</aside></div>"""
         return layout(request, "Candidate", body)
 
-    def _approve(candidate_id: str, reason: str, actor: VerifiedPrincipal) -> None:
+    def _approve(
+        candidate_id: str,
+        reason: str,
+        actor: VerifiedPrincipal | SyntheticDemoPrincipal,
+    ) -> None:
         item = candidate_or_404(candidate_id)
         control.approve(
             candidate_id,
@@ -833,7 +850,7 @@ def create_control_app(
                 has_rollback_target = True
             if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
-        timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"]))}</p></li>' for event in events)
+        timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>' for event in events)
         body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
         return layout(request, "Deployment", body)
 
@@ -850,7 +867,7 @@ def create_control_app(
         has_next_page = len(event_window) > AUDIT_HISTORY_PAGE_SIZE
         events = event_window[:AUDIT_HISTORY_PAGE_SIZE]
         timeline = "".join(
-            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"]))}</p></li>'
+            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>'
             for event in events
         )
         previous_link = (

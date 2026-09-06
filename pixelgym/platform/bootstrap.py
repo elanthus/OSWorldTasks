@@ -357,7 +357,7 @@ def create_app(
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
-        bind_address=exposure.bind_address,
+        loopback_deployment=exposure.treated_as_loopback,
         principal_header=os.environ.get("PIXELGYM_PRINCIPAL_HEADER", "X-Forwarded-User"),
         trusted_proxy_addresses=proxy_allowlist,
         session_cookie_secure=session_cookie_secure,
