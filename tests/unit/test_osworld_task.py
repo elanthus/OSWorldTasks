@@ -251,7 +251,14 @@ def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch
 def test_guest_launch_contains_each_canonical_renderer_flag_once(monkeypatch, tmp_path):
     _install_fake_osworld(monkeypatch)
     task, record = create_osworld_task(7, cache_dir=tmp_path)
-    controller = _SetupController(tmp_path, {"task_id": record["task_id"], "seed": record["seed"]})
+    controller = _SetupController(
+        tmp_path,
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "requires_reload": True,
+        },
+    )
 
     task.setup(controller)
 
@@ -282,7 +289,14 @@ def test_canonical_renderer_change_updates_playwright_and_guest_paths(monkeypatc
     )
     _install_fake_osworld(monkeypatch)
     task, record = create_osworld_task(7, cache_dir=tmp_path)
-    controller = _SetupController(tmp_path, {"task_id": record["task_id"], "seed": record["seed"]})
+    controller = _SetupController(
+        tmp_path,
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "requires_reload": True,
+        },
+    )
 
     task.setup(controller)
 
