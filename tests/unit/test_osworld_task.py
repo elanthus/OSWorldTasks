@@ -206,6 +206,7 @@ def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch
     task, record = create_osworld_task(7, cache_dir=tmp_path)
     controller = _SetupController(
         tmp_path,
+        # Guest reset body source of truth: test_vendor_form_guest_server.py.
         {
             "task_id": record["task_id"],
             "seed": record["seed"],
@@ -236,7 +237,7 @@ def test_custom_task_setup_rejects_reset_identity_mismatch(monkeypatch, tmp_path
         {"task_id": "vf-stale", "seed": 7, "requires_reload": True},
     )
 
-    with pytest.raises(RuntimeError, match="identity mismatch"):
+    with pytest.raises(RuntimeError, match="response mismatch"):
         task.setup(controller)
 
 
@@ -251,5 +252,22 @@ def test_custom_task_setup_rejects_missing_or_false_reload_contract(
         reset_result["requires_reload"] = requires_reload
     controller = _SetupController(tmp_path, reset_result)
 
-    with pytest.raises(RuntimeError, match="did not require a page reload"):
+    with pytest.raises(RuntimeError, match="response mismatch"):
+        task.setup(controller)
+
+
+def test_custom_task_setup_rejects_unexpected_reset_field(monkeypatch, tmp_path):
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    controller = _SetupController(
+        tmp_path,
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "requires_reload": True,
+            "unexpected": "field",
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="response mismatch"):
         task.setup(controller)

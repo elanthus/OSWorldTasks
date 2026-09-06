@@ -227,17 +227,11 @@ class _VendorFormTaskSupport:
             "task_id": self._record["task_id"],
             "seed": self._record["seed"],
         }
-        reset_identity = (
-            {name: reset_result.get(name) for name in expected_identity}
-            if isinstance(reset_result, dict)
-            else reset_result
-        )
-        if reset_identity != expected_identity:
+        expected_reset = {**expected_identity, "requires_reload": True}
+        if reset_result != expected_reset:
             raise OSWorldTaskError(
-                f"guest reset identity mismatch: expected {expected_identity}, got {reset_result}"
+                f"guest reset response mismatch: expected {expected_reset}, got {reset_result}"
             )
-        if reset_result.get("requires_reload") is not True:
-            raise OSWorldTaskError("guest reset did not require a page reload")
 
         # This setup path satisfies the reload contract because it always starts
         # from a freshly wiped Chrome profile and loads the task page anew below.

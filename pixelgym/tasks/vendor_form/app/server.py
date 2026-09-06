@@ -8,7 +8,7 @@ Endpoints:
   is meant to read and transcribe; not secret).
 - ``POST /api/submit`` — record an immutable submission event.
 - ``GET  /api/state``  — privileged view for the host-side evaluator (task +
-  every submission). Not linked from the UI.
+  every submission). Returns 409 before reset. Not linked from the UI.
 - ``GET  /``           — the form itself, served as static HTML.
 
 State is held in-process per app instance (no database, no clock, no

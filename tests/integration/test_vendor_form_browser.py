@@ -106,6 +106,8 @@ def test_reset_requires_reload_to_render_the_new_task() -> None:
                 "seed": 8,
                 "requires_reload": True,
             }
+            assert page.locator("#task_id").input_value() == first_reset["task_id"]
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
 
             page.reload()
             page.locator(READY_SELECTOR).wait_for(state="attached")
