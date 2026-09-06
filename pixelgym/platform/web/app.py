@@ -243,6 +243,7 @@ def create_control_app(
     bind_address: str = "127.0.0.1",
     principal_header: str = "X-Forwarded-User",
     trusted_proxy_addresses: Sequence[str] = (),
+    session_cookie_secure: bool = False,
     submit_callback: Callable[[str, dict[str, str]], None] | None = None,
     cancel_callback: Callable[[str], bool] | None = None,
     tracking: Tracking | None = None,
@@ -292,14 +293,43 @@ def create_control_app(
         elif loopback_bind and client_ip is not None and client_ip.is_loopback:
             principal = VerifiedPrincipal(SYNTHETIC_DEMO_PRINCIPAL)
         request.state.reviewer_principal = principal
-        session = request.cookies.get("pixelgym_session") or secrets.token_urlsafe(24)
+        supplied_session = request.cookies.get("pixelgym_session")
+        session_id, separator, supplied_tag = (supplied_session or "").rpartition(".")
+        session_shape_is_valid = (
+            bool(separator)
+            and re.fullmatch(r"[A-Za-z0-9_-]{32}", session_id) is not None
+            and re.fullmatch(r"[0-9a-f]{64}", supplied_tag) is not None
+        )
+        if session_shape_is_valid:
+            expected_tag = hmac.new(
+                secret,
+                b"pixelgym-session-v1\0" + session_id.encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            session_is_valid = hmac.compare_digest(expected_tag, supplied_tag)
+        else:
+            session_is_valid = False
+        if session_is_valid and supplied_session is not None:
+            session = supplied_session
+        else:
+            session_id = secrets.token_urlsafe(24)
+            session_tag = hmac.new(
+                secret,
+                b"pixelgym-session-v1\0" + session_id.encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            session = f"{session_id}.{session_tag}"
         request.state.pixelgym_session = session
         request.state.csrf_digest = _token(secret, session)
         request.state.csrf = request.state.csrf_digest.hex()
         response = await call_next(request)
-        if "pixelgym_session" not in request.cookies:
+        if not session_is_valid:
             response.set_cookie(
-                "pixelgym_session", session, httponly=True, samesite="strict", secure=False
+                "pixelgym_session",
+                session,
+                httponly=True,
+                samesite="strict",
+                secure=session_cookie_secure,
             )
         response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self'"
         response.headers["X-Frame-Options"] = "DENY"

@@ -90,6 +90,9 @@ services:
       minio-init: {condition: service_completed_successfully}
     environment:
       PIXELGYM_REPOSITORY_ROOT: /app
+      PIXELGYM_BIND_ADDRESS: 0.0.0.0
+      # The published platform port is restricted to host loopback over plain HTTP.
+      PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT: "true"
       PIXELGYM_CONTROL_DB: /state/control.db
       PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}
       PIXELGYM_SOURCE_PROVENANCE_PATH: /state/source-provenance.json
