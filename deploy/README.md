@@ -29,15 +29,25 @@ configurable for isolated integration runs.
 
 ### Control-plane session cookie
 
-The control-plane bootstrap derives the `pixelgym_session` cookie's `Secure` attribute from the
-bind address supplied to `create_app`: `127.0.0.1`, `::1`, and `localhost` default to `Secure`
-off, while every other address defaults to `Secure` on. Callers may explicitly override that
-choice with the `session_cookie_secure` parameter. Keep the bind address loopback-only when using
-plain HTTP; any non-loopback deployment must terminate TLS before sending this cookie.
-When no `bind_address` argument is supplied, `PIXELGYM_BIND_ADDRESS` supplies the bind address and
-defaults to `127.0.0.1` when unset. An explicit `session_cookie_secure` argument takes precedence
-over `PIXELGYM_SESSION_COOKIE_SECURE` (`true` or `false`, case-insensitive), after which the resolved
-bind address determines the default as described above.
+The control-plane bootstrap derives the `pixelgym_session` cookie's `Secure` attribute from its
+deployment exposure. `localhost` and any IP address for which Python's `ipaddress` module reports
+`is_loopback` (including the full `127.0.0.0/8` range, `::1`, bracketed IPv6, and IPv4-mapped IPv6
+loopback) default to `Secure` off; every other address defaults to `Secure` on. Keep the deployment
+loopback-only when using plain HTTP; any non-loopback deployment must terminate TLS before sending
+this cookie. A loopback-bound app behind a TLS-terminating proxy must set
+`PIXELGYM_SESSION_COOKIE_SECURE=true`.
+
+`PIXELGYM_BIND_ADDRESS` is the single source of truth for both Uvicorn's listening address and the
+bootstrap exposure decision, and defaults to `127.0.0.1`. The image entrypoint disables proxy-header
+trust, and bootstrap rejects `FORWARDED_ALLOW_IPS`; the control plane resolves client addresses from
+the connection rather than forwarded headers. `PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT` accepts only
+case-insensitive `true` or `false` and is unset by default. Setting it to `true` is an explicit
+operator attestation that a non-loopback-bound process is published only on host loopback, as in
+the Compose demo; bootstrap logs a warning because the app cannot verify that publishing rule.
+Cookie security precedence is: an explicit `session_cookie_secure` argument, then
+`PIXELGYM_SESSION_COOKIE_SECURE` (`true` or `false`, case-insensitive), then the loopback-only
+attestation, then the bind-address default. Environment values are validated even when a
+higher-precedence setting wins.
 
 The cookie is always server-issued and has the exact format `<session-id>.<tag>`. `session-id` is
 the 32-character URL-safe Base64 output of `secrets.token_urlsafe(24)`. `tag` is the 64-character

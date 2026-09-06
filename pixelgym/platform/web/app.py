@@ -244,17 +244,20 @@ def create_control_app(
     async def session_cookie(request: Request, call_next: Callable[..., Any]) -> Any:
         supplied_session = request.cookies.get("pixelgym_session")
         session_id, separator, supplied_tag = (supplied_session or "").rpartition(".")
-        expected_tag = hmac.new(
-            secret,
-            b"pixelgym-session-v1\0" + session_id.encode(),
-            hashlib.sha256,
-        ).hexdigest()
-        session_is_valid = (
+        session_shape_is_valid = (
             bool(separator)
             and re.fullmatch(r"[A-Za-z0-9_-]{32}", session_id) is not None
             and re.fullmatch(r"[0-9a-f]{64}", supplied_tag) is not None
-            and hmac.compare_digest(expected_tag, supplied_tag)
         )
+        if session_shape_is_valid:
+            expected_tag = hmac.new(
+                secret,
+                b"pixelgym-session-v1\0" + session_id.encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            session_is_valid = hmac.compare_digest(expected_tag, supplied_tag)
+        else:
+            session_is_valid = False
         if session_is_valid and supplied_session is not None:
             session = supplied_session
         else:

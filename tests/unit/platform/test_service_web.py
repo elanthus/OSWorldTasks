@@ -9,6 +9,7 @@ import json
 import logging
 import re
 import secrets
+import stat
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -1254,7 +1255,12 @@ def _assembled_platform_app(
     ("bind_address", "override", "expected_secure"),
     [
         pytest.param("127.0.0.1", None, False, id="ipv4-loopback-default"),
+        pytest.param("127.42.0.9", None, False, id="ipv4-loopback-range-default"),
         pytest.param("::1", None, False, id="ipv6-loopback-default"),
+        pytest.param("[::1]", None, False, id="bracketed-ipv6-loopback-default"),
+        pytest.param(
+            "::ffff:127.0.0.1", None, False, id="ipv4-mapped-ipv6-loopback-default"
+        ),
         pytest.param("localhost", None, False, id="localhost-default"),
         pytest.param("0.0.0.0", None, True, id="non-loopback-default"),
         pytest.param("127.0.0.1", True, True, id="explicit-secure-override"),
@@ -1322,6 +1328,112 @@ def test_bootstrap_rejects_invalid_environment_session_cookie_secure(
 
     with pytest.raises(ValueError, match="PIXELGYM_SESSION_COOKIE_SECURE"):
         bootstrap.create_app()
+
+
+def test_explicit_cookie_secure_argument_wins_over_environment(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "false")
+
+    response = TestClient(bootstrap.create_app(session_cookie_secure=True)).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert cookie["pixelgym_session"]["secure"]
+
+
+def test_cookie_secure_environment_is_validated_when_explicit_argument_wins(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_SESSION_COOKIE_SECURE"):
+        bootstrap.create_app(session_cookie_secure=True)
+
+
+def test_loopback_only_attestation_disables_secure_cookie_for_non_loopback_bind(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "TrUe")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert not cookie["pixelgym_session"]["secure"]
+
+
+def test_cookie_secure_environment_wins_over_loopback_only_attestation(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "true")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert cookie["pixelgym_session"]["secure"]
+
+
+def test_bootstrap_rejects_invalid_loopback_only_attestation(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT"):
+        bootstrap.create_app()
+
+
+def test_loopback_only_attestation_logs_one_startup_warning(
+    tmp_path: Path, repository_root: Path, monkeypatch, caplog
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+
+    with caplog.at_level(logging.WARNING, logger=bootstrap.__name__):
+        bootstrap.create_app()
+
+    records = [
+        record
+        for record in caplog.records
+        if record.name == bootstrap.__name__
+        and "host-loopback-only port publishing" in record.getMessage()
+    ]
+    assert len(records) == 1
+    assert "unverifiable by the application" in records[0].getMessage()
+
+
+def test_bootstrap_rejects_forwarded_header_trust_configuration(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("FORWARDED_ALLOW_IPS", "127.0.0.1")
+
+    with pytest.raises(ValueError, match="resolves client addresses from the connection"):
+        bootstrap.create_app()
+
+
+def test_platform_entrypoint_uses_bootstrap_bind_address_without_proxy_headers(
+    repository_root: Path,
+) -> None:
+    entrypoint_path = repository_root / "deploy/platform-entrypoint.sh"
+    entrypoint = entrypoint_path.read_text()
+    dockerfile = (repository_root / "deploy/Dockerfile.platform").read_text()
+
+    assert entrypoint_path.stat().st_mode & stat.S_IXUSR
+    assert '--host "$PIXELGYM_BIND_ADDRESS"' in entrypoint
+    assert "--no-proxy-headers" in entrypoint
+    assert "PIXELGYM_BIND_ADDRESS:-127.0.0.1" in entrypoint
+    assert 'CMD ["/usr/local/bin/platform-entrypoint.sh"]' in dockerfile
 
 
 def _approved_candidate(control: ControlStore, policy, summary, report):
@@ -1475,8 +1587,12 @@ def test_untrusted_session_cookie_is_replaced_and_new_csrf_token_validates(
 
     page = client.get("/")
     token = _csrf(page.text)
+    cookie = SimpleCookie()
+    cookie.load(page.headers["set-cookie"])
+    issued_session = cookie["pixelgym_session"].value
 
-    assert "set-cookie" in page.headers
+    assert issued_session != untrusted_cookie
+    assert re.fullmatch(r"[A-Za-z0-9_-]{32}\.[0-9a-f]{64}", issued_session)
     assert client.post(
         "/api/candidates/missing/approve",
         json={"reason": "exercise CSRF validation"},
