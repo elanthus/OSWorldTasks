@@ -1,18 +1,34 @@
 from __future__ import annotations
 
 import dataclasses
+import logging
 import math
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 
 import pytest
 
+from pixelgym.platform import mlflow_tracking
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.mlflow_tracking import (
+    COMPATIBLE_SEARCH_CAPACITY,
+    CompatibleSearchCapacityError,
     DatasetInputContract,
     InMemoryTracking,
     MlflowTracking,
 )
 from pixelgym.platform.policy import is_verified_clean_revision, verify_policy_manifest
+
+
+@pytest.fixture(autouse=True)
+def _reset_compatible_search_capacity(monkeypatch) -> None:
+    monkeypatch.setattr(
+        mlflow_tracking,
+        "_COMPATIBLE_SEARCH_SLOTS",
+        threading.BoundedSemaphore(COMPATIBLE_SEARCH_CAPACITY),
+    )
+    monkeypatch.setattr(mlflow_tracking, "_compatible_search_occupancy", 0)
 
 
 @pytest.mark.parametrize(
@@ -336,3 +352,102 @@ def test_mlflow_policy_version_scan_consumes_every_page() -> None:
 
     assert tracking._all_policy_versions() == [first, second]
     assert tracking.client.tokens == [None, "next"]
+
+
+def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -> None:
+    started = threading.Barrier(COMPATIBLE_SEARCH_CAPACITY + 1)
+    release = threading.Event()
+    calls_lock = threading.Lock()
+    baseline_threads = {
+        thread
+        for thread in threading.enumerate()
+        if thread.name == "mlflow-compatible-run-search"
+    }
+
+    class BlockingClient:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def search_runs(self, *_args, **_kwargs):
+            with calls_lock:
+                self.calls += 1
+            started.wait(timeout=10)
+            assert release.wait(timeout=10)
+            return []
+
+    tracking = object.__new__(MlflowTracking)
+    tracking.client = BlockingClient()
+    tracking.experiment_id = "experiment-1"
+
+    def search_until_request_timeout() -> None:
+        with pytest.raises(TimeoutError, match="exceeded its deadline"):
+            tracking.search_compatible_runs(
+                dataset_fingerprint="sha256:" + "a" * 64,
+                scorer_version="scorer-v1",
+                target_semantics="target-v1",
+                timeout_seconds=0.01,
+            )
+
+    worker_threads: list[threading.Thread] = []
+    try:
+        with (
+            caplog.at_level(logging.WARNING, logger="pixelgym.platform.mlflow_tracking"),
+            ThreadPoolExecutor(max_workers=COMPATIBLE_SEARCH_CAPACITY) as executor,
+        ):
+            requests = [
+                executor.submit(search_until_request_timeout)
+                for _ in range(COMPATIBLE_SEARCH_CAPACITY)
+            ]
+            started.wait(timeout=10)
+            for request in requests:
+                request.result(timeout=10)
+
+            worker_threads = [
+                thread
+                for thread in threading.enumerate()
+                if thread.name == "mlflow-compatible-run-search"
+                and thread not in baseline_threads
+            ]
+            assert len(worker_threads) == COMPATIBLE_SEARCH_CAPACITY
+
+            with pytest.raises(CompatibleSearchCapacityError) as rejected:
+                tracking.search_compatible_runs(
+                    dataset_fingerprint="sha256:" + "b" * 64,
+                    scorer_version="scorer-v1",
+                    target_semantics="target-v1",
+                    timeout_seconds=0.01,
+                )
+            assert rejected.value.capacity == COMPATIBLE_SEARCH_CAPACITY
+            assert rejected.value.occupancy == COMPATIBLE_SEARCH_CAPACITY
+            assert tracking.client.calls == COMPATIBLE_SEARCH_CAPACITY
+            threads_after_rejection = [
+                thread
+                for thread in threading.enumerate()
+                if thread.name == "mlflow-compatible-run-search"
+                and thread not in baseline_threads
+            ]
+            assert len(threads_after_rejection) == COMPATIBLE_SEARCH_CAPACITY
+    finally:
+        release.set()
+        for thread in worker_threads:
+            thread.join(timeout=10)
+
+    current_threads = {
+        thread
+        for thread in threading.enumerate()
+        if thread.name == "mlflow-compatible-run-search"
+    }
+    assert current_threads == baseline_threads
+    capacity_records = [
+        record
+        for record in caplog.records
+        if record.message.startswith("compatible-run search capacity")
+    ]
+    assert [record.message for record in capacity_records] == [
+        "compatible-run search capacity rejected"
+    ]
+    assert all(
+        record.compatible_search_capacity == COMPATIBLE_SEARCH_CAPACITY
+        for record in capacity_records
+    )
+    assert capacity_records[-1].compatible_search_occupancy == COMPATIBLE_SEARCH_CAPACITY
