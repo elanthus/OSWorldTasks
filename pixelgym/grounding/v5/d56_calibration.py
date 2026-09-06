@@ -21,6 +21,7 @@ from pixelgym.grounding.v5.d56_spend import (
 from pixelgym.grounding.v5.evidence import repository_relative_path
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.manifests import CURRENT_D56_CALIBRATION_MANIFEST
 from pixelgym.grounding.v5.panel_policy import (
     BOUNDED_RETRY_STOP_RULE,
     LLAMA_STATEFUL,
@@ -39,7 +40,10 @@ from pixelgym.grounding.v5.runner import V5Runner
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-plan-v3"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-result-v3"
-CALIBRATION_MANIFEST = Path("artifacts/grounding-v5-manifests/calibration-d56.json")
+CURRENT_CALIBRATION_MANIFEST = CURRENT_D56_CALIBRATION_MANIFEST
+HISTORICAL_CALIBRATION_MANIFEST = Path(
+    "artifacts/grounding-v5-manifests/calibration-d56.json"
+)
 EXPECTED_TASK_COUNT = 50
 EXPECTED_PANEL_SLOTS = tuple(config.slot for config in PANEL)
 NORMAL_TERMINAL_CLASSIFICATIONS = frozenset(
@@ -111,8 +115,10 @@ def _file_digest(path: Path) -> str:
     return "sha256:" + sha256_bytes(path.read_bytes())
 
 
-def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
-    path = repository_root / CALIBRATION_MANIFEST
+def _load_calibration_manifest(
+    repository_root: Path, manifest_path: Path
+) -> dict[str, Any]:
+    path = repository_root / manifest_path
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise TypeError("D5.6 calibration manifest must be an object")
@@ -134,6 +140,18 @@ def _calibration_manifest(repository_root: Path) -> dict[str, Any]:
     ):
         raise ValueError("D5.6 calibration manifest action caps are invalid")
     return value
+
+
+def _historical_calibration_manifest(repository_root: Path) -> dict[str, Any]:
+    """Load the historical manifest used to validate already-recorded evidence."""
+
+    return _load_calibration_manifest(repository_root, HISTORICAL_CALIBRATION_MANIFEST)
+
+
+def _current_calibration_manifest(repository_root: Path) -> dict[str, Any]:
+    """Load the current-source manifest used when building a new plan."""
+
+    return _load_calibration_manifest(repository_root, CURRENT_CALIBRATION_MANIFEST)
 
 
 def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Path) -> dict[str, Any]:
@@ -206,13 +224,13 @@ def _validated_smoke_evidence(repository_root: Path, smoke_output_directory: Pat
 
 def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[str, Any]:
     revision = _git(repository_root, "rev-parse", "HEAD")
-    partition = _calibration_manifest(repository_root)
+    partition = _current_calibration_manifest(repository_root)
     smoke_evidence = _validated_smoke_evidence(repository_root, smoke_output_directory)
     prior_campaign_spend = smoke_evidence["campaign_spend"]
     action_cap = sum(record["max_episode_steps"] for record in partition["records"])
     partition_manifests = load_partition_manifests(
-        repository_root / "artifacts/grounding-v5-manifests",
-        calibration_manifest=repository_root / CALIBRATION_MANIFEST,
+        repository_root / CURRENT_CALIBRATION_MANIFEST.parent,
+        calibration_manifest=repository_root / CURRENT_CALIBRATION_MANIFEST,
     )
     policies: list[dict[str, Any]] = []
     aggregate_theoretical_maximum = Decimal(0)
@@ -274,8 +292,10 @@ def build_plan(repository_root: Path, *, smoke_output_directory: Path) -> dict[s
         "code_revision": revision,
         "requires_clean_tracked_worktree": True,
         "calibration_partition": {
-            "path": CALIBRATION_MANIFEST.as_posix(),
-            "file_sha256": _file_digest(repository_root / CALIBRATION_MANIFEST),
+            "path": CURRENT_CALIBRATION_MANIFEST.as_posix(),
+            "file_sha256": _file_digest(
+                repository_root / CURRENT_CALIBRATION_MANIFEST
+            ),
             "manifest_digest": partition["manifest_digest"],
             "source_manifest_digest": partition["derivation"]["source_manifest_digest"],
             "pilot_plan_digest": partition["derivation"]["pilot_plan_digest"],

@@ -50,8 +50,7 @@ import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from pixelgym.backends.base import Frame
-from pixelgym.grounding.v5.contracts import EnvironmentResumeRecord, content_digest, sha256_bytes
+from pixelgym.backends.base import EnvironmentResumeRecord, Frame, content_digest, sha256_bytes
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form import generator, render, ui

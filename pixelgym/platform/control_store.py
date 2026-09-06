@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import sqlite3
 import threading
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn, Self
 
 from pixelgym.platform.contracts import (
     ArtifactRef,
@@ -32,8 +33,53 @@ class ConflictError(RuntimeError):
     pass
 
 
+class ContentionError(RuntimeError):
+    """A control-store lock remained unavailable for the configured wait bound."""
+
+
 class AuthorizationError(PermissionError):
     pass
+
+
+RESERVED_ACTOR_NAMES = frozenset({"system", "synthetic-demo", "local-reviewer"})
+ACTOR_VERIFICATION_SOURCE_KEY = "actor_verification_source"
+
+
+class VerifiedPrincipal(str):
+    """Reviewer principal accepted by the request authentication boundary."""
+
+    def __new__(cls, value: str) -> Self:
+        if not value:
+            raise ValueError("verified principal is required")
+        if value in RESERVED_ACTOR_NAMES:
+            raise ValueError("reserved actor name cannot be a verified principal")
+        return super().__new__(cls, value)
+
+    @property
+    def verification_source(self) -> str:
+        return "proxy_header"
+
+
+class SyntheticDemoPrincipal(str):
+    """Fixed reviewer identity for an attested loopback-only demo deployment."""
+
+    def __new__(cls) -> Self:
+        return super().__new__(cls, "synthetic-demo")
+
+    @property
+    def verification_source(self) -> str:
+        return "synthetic_demo"
+
+
+class _InternalActor(str):
+    """Unforgeable-by-input marker for host-initiated control-plane work."""
+
+    @property
+    def verification_source(self) -> str:
+        return "internal_system"
+
+
+SYSTEM_ACTOR = _InternalActor("system")
 
 
 class TransitionError(RuntimeError):
@@ -72,6 +118,99 @@ class _DeploymentSchema:
     indexes: frozenset[tuple[int, str, int, tuple[str, ...]]]
     checks: frozenset[str]
     triggers: frozenset[tuple[str, str]]
+
+
+DEFAULT_BUSY_TIMEOUT_MS = 5_000
+SQLITE_BUSY_TIMEOUT_ENV = "PIXELGYM_SQLITE_BUSY_TIMEOUT_MS"
+_CONTENTION_MESSAGE = "control database is temporarily busy; retry the request"
+
+
+def _is_memory_database(target: str) -> bool:
+    if target == ":memory:" or target.startswith("file::memory:"):
+        return True
+    query = target.partition("?")[2]
+    return target.startswith("file:") and "mode=memory" in query.split("&")
+
+
+def _is_lock_contention(exc: sqlite3.OperationalError) -> bool:
+    error_code = getattr(exc, "sqlite_errorcode", None)
+    return isinstance(error_code, int) and error_code & 0xFF == sqlite3.SQLITE_BUSY
+
+
+def configured_busy_timeout_ms() -> int:
+    """Read and validate the process-wide SQLite contention wait bound."""
+    raw_value = os.environ.get(SQLITE_BUSY_TIMEOUT_ENV)
+    if raw_value is None:
+        return DEFAULT_BUSY_TIMEOUT_MS
+    try:
+        value = int(raw_value)
+    except ValueError:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        ) from None
+    if value <= 0:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        )
+    return value
+
+
+def _raise_mapped_contention(exc: sqlite3.OperationalError) -> NoReturn:
+    if _is_lock_contention(exc):
+        raise ContentionError(_CONTENTION_MESSAGE) from None
+    raise exc
+
+
+def _apply_connection_pragmas(
+    connection: sqlite3.Connection,
+    *,
+    target: str,
+    busy_timeout_ms: int,
+) -> None:
+    """Apply the control-store contract to every SQLite connection."""
+    connection.execute(f"PRAGMA busy_timeout = {busy_timeout_ms}")
+    connection.execute("PRAGMA foreign_keys = ON")
+    journal_mode = "MEMORY" if _is_memory_database(target) else "WAL"
+    actual_journal_mode = str(
+        connection.execute(f"PRAGMA journal_mode = {journal_mode}").fetchone()[0]
+    ).lower()
+    connection.execute("PRAGMA synchronous = NORMAL")
+    actual = (
+        actual_journal_mode,
+        int(connection.execute("PRAGMA synchronous").fetchone()[0]),
+        int(connection.execute("PRAGMA foreign_keys").fetchone()[0]),
+        int(connection.execute("PRAGMA busy_timeout").fetchone()[0]),
+    )
+    expected = (journal_mode.lower(), 1, 1, busy_timeout_ms)
+    if actual != expected:
+        raise RuntimeError("control database rejected required SQLite pragmas")
+
+
+def _open_connection(
+    target: str,
+    *,
+    busy_timeout_ms: int,
+) -> sqlite3.Connection:
+    connection = sqlite3.connect(
+        target,
+        timeout=busy_timeout_ms / 1_000,
+        check_same_thread=False,
+        isolation_level=None,
+        uri=target.startswith("file:"),
+    )
+    try:
+        _apply_connection_pragmas(
+            connection,
+            target=target,
+            busy_timeout_ms=busy_timeout_ms,
+        )
+    except sqlite3.OperationalError as exc:
+        connection.close()
+        _raise_mapped_contention(exc)
+    except (sqlite3.DatabaseError, RuntimeError):
+        connection.close()
+        raise
+    return connection
 
 
 SCHEMA = """
@@ -277,7 +416,9 @@ def _deployment_schema(connection: sqlite3.Connection) -> _DeploymentSchema:
 
 
 def _fresh_deployment_schema(*, legacy: bool = False) -> _DeploymentSchema:
-    with sqlite3.connect(":memory:") as connection:
+    with _open_connection(
+        ":memory:", busy_timeout_ms=DEFAULT_BUSY_TIMEOUT_MS
+    ) as connection:
         connection.executescript(SCHEMA)
         if legacy:
             connection.execute(
@@ -324,24 +465,25 @@ class ControlStore:
         self,
         database: Path | str,
         *,
-        reviewer_identity: str,
+        reviewer_identity: str | None = None,
         now: Callable[[], str] | None = None,
+        busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
     ) -> None:
-        if not reviewer_identity:
-            raise ValueError("reviewer identity is required")
+        if reviewer_identity == "":
+            raise ValueError("reviewer identity cannot be empty")
+        if (
+            isinstance(busy_timeout_ms, bool)
+            or not isinstance(busy_timeout_ms, int)
+            or busy_timeout_ms <= 0
+        ):
+            raise ValueError("busy timeout must be a positive integer number of milliseconds")
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
         self.schemas = PlatformSchemas()
         target = str(database)
-        self.connection = sqlite3.connect(
-            target,
-            check_same_thread=False,
-            isolation_level=None,
-            uri=target.startswith("file:"),
-        )
+        self.connection = _open_connection(target, busy_timeout_ms=busy_timeout_ms)
         self.connection.row_factory = sqlite3.Row
-        self.connection.execute("PRAGMA foreign_keys = ON")
 
     def _migrate_legacy_deployments(self, expected_schema: _DeploymentSchema) -> None:
         """Rebuild the ledger without its obsolete predecessor link on any SQLite version."""
@@ -486,14 +628,19 @@ class ControlStore:
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
         with self._lock:
-            self.connection.execute("BEGIN IMMEDIATE")
             try:
-                yield self.connection
-            except BaseException:
-                self.connection.rollback()
-                raise
-            else:
-                self.connection.commit()
+                self.connection.execute("BEGIN IMMEDIATE")
+                try:
+                    yield self.connection
+                except BaseException:
+                    self.connection.rollback()
+                    raise
+                else:
+                    self.connection.commit()
+            except sqlite3.OperationalError as exc:
+                if self.connection.in_transaction:
+                    self.connection.rollback()
+                _raise_mapped_contention(exc)
 
     def _audit(
         self,
@@ -503,28 +650,34 @@ class ControlStore:
         subject_id: str,
         details: dict[str, Any],
     ) -> None:
+        actor_name = str(actor)
+        verification_source = getattr(actor, "verification_source", "legacy_unverified")
+        attributed_details = {
+            **details,
+            ACTOR_VERIFICATION_SOURCE_KEY: verification_source,
+        }
         sequence = int(
             connection.execute("SELECT COALESCE(MAX(rowid), 0) + 1 FROM audit_events").fetchone()[0]
         )
         material = {
             "event_type": event_type,
-            "actor": actor,
+            "actor": actor_name,
             "subject_id": subject_id,
-            "details": details,
+            "details": attributed_details,
             "created_at_utc": self._now(),
             "sequence": sequence,
         }
         event_id = "audit-" + sha256_bytes(canonical_json_bytes(material))[:24]
-        details_json = canonical_json_bytes(details).decode()
+        details_json = canonical_json_bytes(attributed_details).decode()
         self.schemas.validate(
             "audit_event",
             {
                 "event_id": event_id,
                 "event_type": event_type,
-                "actor": actor,
+                "actor": actor_name,
                 "subject_id": subject_id,
                 "details_json": details_json,
-                "details": details,
+                "details": attributed_details,
                 "created_at_utc": material["created_at_utc"],
             },
         )
@@ -533,14 +686,28 @@ class ControlStore:
             (
                 event_id,
                 event_type,
-                actor,
+                actor_name,
                 subject_id,
                 details_json,
                 material["created_at_utc"],
             ),
         )
 
-    def submit(self, request: dict[str, Any]) -> str:
+    def _require_reviewer_actor(self, actor: str) -> None:
+        if isinstance(actor, (VerifiedPrincipal, SyntheticDemoPrincipal)):
+            return
+        if self.reviewer_identity is not None and actor == self.reviewer_identity:
+            return
+        raise AuthorizationError("reviewer actor was not verified")
+
+    def submit(
+        self,
+        request: dict[str, Any],
+        *,
+        actor: str | _InternalActor = SYSTEM_ACTOR,
+    ) -> str:
+        if not isinstance(actor, _InternalActor):
+            self._require_reviewer_actor(actor)
         encoded = canonical_json_bytes(request)
         digest = sha256_bytes(encoded)
         submission_id = "submission-" + digest[:24]
@@ -552,12 +719,19 @@ class ControlStore:
             if existing:
                 if existing["request_json"].encode() != encoded:
                     raise ConflictError("submission hash collision")
+                self._audit(
+                    connection,
+                    "submission.resubmitted",
+                    actor,
+                    str(existing["submission_id"]),
+                    request,
+                )
                 return str(existing["submission_id"])
             connection.execute(
                 "INSERT INTO submissions VALUES (?, ?, ?, 'Submitted', NULL, NULL, ?)",
                 (submission_id, digest, encoded.decode(), self._now()),
             )
-            self._audit(connection, "submission.created", "system", submission_id, request)
+            self._audit(connection, "submission.created", actor, submission_id, request)
         return submission_id
 
     def get_submission(self, submission_id: str) -> dict[str, Any]:
@@ -570,8 +744,7 @@ class ControlStore:
             return {**dict(row), "request": json.loads(row["request_json"])}
 
     def cancel_submission(self, submission_id: str, *, actor: str, reason: str) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may cancel")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("cancellation reason is required")
         with self.transaction() as connection:
@@ -614,7 +787,7 @@ class ControlStore:
             self._audit(
                 connection,
                 event_type,
-                "system",
+                SYSTEM_ACTOR,
                 subject_id,
                 {"operation": operation, "error": error, "resolved": resolved},
             )
@@ -744,7 +917,7 @@ class ControlStore:
                 self._audit(
                     connection,
                     "candidate.gates_evaluated",
-                    "system",
+                    SYSTEM_ACTOR,
                     candidate_id,
                     {"state": state.value, "gate_report_sha256": report_sha},
                 )
@@ -893,8 +1066,7 @@ class ControlStore:
         reason: str,
         gate_report_sha256: str,
     ) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may approve")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("approval reason is required")
         with self.transaction() as connection:
@@ -1055,8 +1227,7 @@ class ControlStore:
         expected_deployment_id: str | None,
         expected_generation: int,
     ) -> DeploymentRecord:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may deploy or rollback")
+        self._require_reviewer_actor(actor)
         if action not in {"deploy", "rollback"}:
             raise ValueError("unknown deployment action")
         if not reason.strip():
