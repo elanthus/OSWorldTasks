@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -29,6 +30,8 @@ from pixelgym.grounding.v5.evidence import (
 )
 from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition, validate_generator
 from pixelgym.grounding.v5.manifests import (
+    CURRENT_D56_CALIBRATION_MANIFEST,
+    CURRENT_PARTITION_MANIFEST_DIRECTORY,
     D56_CONSUMED_CALIBRATION_SEEDS,
     D56_EXCLUDED_CALIBRATION_SEEDS,
     d56_calibration_manifest,
@@ -55,6 +58,13 @@ from pixelgym.grounding.v5.seeds import (
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
+HISTORICAL_MANIFEST_DIRECTORY = Path("artifacts/grounding-v5-manifests")
+HISTORICAL_MANIFEST_SHA256 = {
+    "development.json": "1ddb4f663f4dfd4b59409d744e8218f25ecde94510db2610c5c9ca33051c1496",
+    "calibration.json": "6b9fb7832ce560a58da5c2a08576b8f063226fc1fa5d6e88d27bd4a339fff5fd",
+    "confirmatory.json": "b801fc5617d2df1ad05114f116adb62bbb017ce9dd01c4918a6d0999f0b50f08",
+    "calibration-d56.json": "7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+}
 
 
 def _nested_keys(value: object) -> set[str]:
@@ -88,7 +98,7 @@ def test_v5_seed_and_generator_contract_freezes_allocations() -> None:
 def test_v5_checked_in_partition_manifests_match_current_sources(
     partition: Partition,
 ) -> None:
-    stored = ROOT / "artifacts/grounding-v5-manifests" / f"{partition.value}.json"
+    stored = ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / f"{partition.value}.json"
     assert stored.read_bytes() == canonical_json_bytes(partition_manifest(partition)) + b"\n"
 
 
@@ -112,8 +122,61 @@ def test_v5_d56_calibration_manifest_replaces_every_exposed_task() -> None:
     assert set(D56_REPLACEMENT_CALIBRATION_SEEDS).issubset(
         record["seed_record"]["seed"] for record in derived["records"]
     )
-    stored = ROOT / "artifacts/grounding-v5-manifests/calibration-d56.json"
+    stored = ROOT / CURRENT_D56_CALIBRATION_MANIFEST
     assert stored.read_bytes() == canonical_json_bytes(derived) + b"\n"
+
+
+@pytest.mark.parametrize("filename, expected_sha256", HISTORICAL_MANIFEST_SHA256.items())
+def test_v5_historical_partition_manifests_remain_byte_stable(
+    filename: str, expected_sha256: str
+) -> None:
+    stored = ROOT / HISTORICAL_MANIFEST_DIRECTORY / filename
+    assert hashlib.sha256(stored.read_bytes()).hexdigest() == expected_sha256
+
+
+@pytest.mark.parametrize("partition", tuple(Partition))
+def test_v5_versioned_partition_manifests_preserve_task_records(
+    partition: Partition,
+) -> None:
+    filename = f"{partition.value}.json"
+    historical = json.loads(
+        (ROOT / HISTORICAL_MANIFEST_DIRECTORY / filename).read_text(encoding="utf-8")
+    )
+    current = json.loads(
+        (ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / filename).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert current["generator_source_digest"] != historical["generator_source_digest"]
+    assert current["manifest_digest"] != historical["manifest_digest"]
+    for manifest in (historical, current):
+        manifest.pop("generator_source_digest")
+        manifest.pop("manifest_digest")
+    assert current == historical
+
+
+def test_v5_versioned_d56_manifest_preserves_task_records_and_derivation() -> None:
+    historical = json.loads(
+        (
+            ROOT / HISTORICAL_MANIFEST_DIRECTORY / "calibration-d56.json"
+        ).read_text(encoding="utf-8")
+    )
+    current = json.loads(
+        (ROOT / CURRENT_D56_CALIBRATION_MANIFEST).read_text(encoding="utf-8")
+    )
+
+    assert current["generator_source_digest"] != historical["generator_source_digest"]
+    assert current["manifest_digest"] != historical["manifest_digest"]
+    assert (
+        current["derivation"]["source_manifest_digest"]
+        != historical["derivation"]["source_manifest_digest"]
+    )
+    for manifest in (historical, current):
+        manifest.pop("generator_source_digest")
+        manifest.pop("manifest_digest")
+        manifest["derivation"].pop("source_manifest_digest")
+    assert current == historical
 
 
 def test_v5_generated_difficulty_bounds_and_exact_slack() -> None:
