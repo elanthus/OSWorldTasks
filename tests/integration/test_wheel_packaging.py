@@ -89,6 +89,45 @@ def test_static_assets_are_packaged_in_the_wheel(installed_wheel_site_dir):
         assert (app_static / relative_path).is_file(), relative_path
 
 
+def test_neutral_backend_contracts_are_packaged_in_the_wheel(
+    installed_wheel_site_dir, tmp_path
+):
+    outside_cwd = tmp_path / "neutral-contract-import"
+    outside_cwd.mkdir()
+    script = textwrap.dedent(
+        """
+        import sys
+
+        from pixelgym.backends.base import EnvironmentResumeRecord, content_digest
+
+        record = EnvironmentResumeRecord(
+            task_id="task-wheel",
+            backend_identity="fake-v1",
+            step_count=0,
+            screenshot_digest="sha256:screenshot",
+            application_state_digest="sha256:state",
+            mechanism="checkpoint_restore",
+            checkpoint_digest="sha256:checkpoint",
+        )
+        assert content_digest(record.to_dict()).startswith("sha256:")
+        assert not any(name.startswith("pixelgym.grounding") for name in sys.modules)
+        print("OK")
+        """
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=outside_cwd,
+        env={**os.environ, "PYTHONPATH": str(installed_wheel_site_dir)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "OK" in result.stdout
+
+
 def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
     schemas = installed_wheel_site_dir / "pixelgym" / "platform" / "schemas"
     expected = {path.name for path in (REPO_ROOT / "config").glob("*.schema.json")}

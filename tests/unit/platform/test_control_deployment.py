@@ -365,6 +365,28 @@ def test_candidate_registration_rejects_mismatched_or_self_inconsistent_evidence
         )
 
 
+def test_candidate_reads_lazily_revalidate_a_manifest_corrupted_after_registration(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+    control.connection.execute(
+        "UPDATE candidates SET policy_json = '{}' WHERE candidate_id = ?",
+        (candidate.candidate_id,),
+    )
+
+    with pytest.raises(ContractValidationError, match="policy_package"):
+        control.get_candidate(candidate.candidate_id)
+    with pytest.raises(ContractValidationError, match="policy_package"):
+        control.list_candidates(limit=1)
+
+
 def test_distinct_source_provenance_diagnostics_have_distinct_candidate_identities(
     tmp_path: Path, passing_evidence, gate_policy
 ) -> None:

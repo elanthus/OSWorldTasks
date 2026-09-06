@@ -15,11 +15,13 @@ from pixelgym.grounding.calibration_v3a import (
     CALIBRATION_EXAMPLE_SCHEMA_VERSION,
     CALIBRATION_SEEDS,
     V3A_PROTOCOL_VERSION,
+    _canonical_task_from_public_view,
     calibration_target,
     compare_calibration_non_image_evidence,
     validate_calibration_dataset,
 )
 from pixelgym.grounding.schema import SCREEN_STATES, TARGET_SPECS, TASK_SEEDS
+from pixelgym.tasks.vendor_form import generator
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,6 +29,16 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 def test_calibration_seeds_are_disjoint_from_frozen_task_seeds() -> None:
     assert set(CALIBRATION_SEEDS).isdisjoint(set(TASK_SEEDS))
     assert CALIBRATION_SEEDS == (20, 21, 22, 23)
+
+
+def test_canonical_task_restores_capture_seed_missing_from_public_view() -> None:
+    expected = generator.generate_task(20)
+    public_task = {key: value for key, value in expected.items() if key != "seed"}
+
+    observed = _canonical_task_from_public_view(public_task, seed=20)
+
+    assert set(public_task) == {"task_id", "schema_version", "fields", "options"}
+    assert observed == expected
 
 
 def test_calibration_target_uses_crossed_allocation_over_all_seeds() -> None:

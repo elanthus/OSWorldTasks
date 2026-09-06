@@ -57,6 +57,9 @@ ALLOWED_SUBMISSION_FIELDS = {
 CSRF_TOKEN_BYTES = hashlib.sha256().digest_size
 CSRF_TOKEN_HEX_LENGTH = CSRF_TOKEN_BYTES * 2
 CSRF_TOKEN_PATTERN = re.compile(rf"[0-9a-fA-F]{{{CSRF_TOKEN_HEX_LENGTH}}}")
+RUNS_PAGE_SIZE = 50
+DEPLOYMENT_AUDIT_WINDOW = 25
+AUDIT_HISTORY_PAGE_SIZE = 100
 
 
 class ApprovalBody(BaseModel):
@@ -116,6 +119,16 @@ def _safe_link(uri: str, label: str) -> str:
     if urlsplit(uri).scheme not in {"http", "https", "s3"}:
         return f'<span class="muted">{_escape(label)} unavailable</span>'
     return f'<a href="{_escape(uri)}">{_escape(label)} ↗</a>'
+
+
+def _page_href(request: Request, path: str, page: int) -> str:
+    parameters = [
+        (key, value)
+        for key, value in request.query_params.multi_items()
+        if key != "page"
+    ]
+    parameters.append(("page", str(page)))
+    return f"{path}?{urlencode(parameters)}"
 
 
 def _artifact(candidate: Any, suffix: str) -> Any | None:
@@ -214,6 +227,7 @@ def create_control_app(
     *,
     coordinator: DeploymentCoordinator[Any] | None = None,
     csrf_secret: str,
+    session_cookie_secure: bool = False,
     submit_callback: Callable[[str, dict[str, str]], None] | None = None,
     cancel_callback: Callable[[str], bool] | None = None,
     tracking: Tracking | None = None,
@@ -228,14 +242,43 @@ def create_control_app(
 
     @app.middleware("http")
     async def session_cookie(request: Request, call_next: Callable[..., Any]) -> Any:
-        session = request.cookies.get("pixelgym_session") or secrets.token_urlsafe(24)
+        supplied_session = request.cookies.get("pixelgym_session")
+        session_id, separator, supplied_tag = (supplied_session or "").rpartition(".")
+        session_shape_is_valid = (
+            bool(separator)
+            and re.fullmatch(r"[A-Za-z0-9_-]{32}", session_id) is not None
+            and re.fullmatch(r"[0-9a-f]{64}", supplied_tag) is not None
+        )
+        if session_shape_is_valid:
+            expected_tag = hmac.new(
+                secret,
+                b"pixelgym-session-v1\0" + session_id.encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            session_is_valid = hmac.compare_digest(expected_tag, supplied_tag)
+        else:
+            session_is_valid = False
+        if session_is_valid and supplied_session is not None:
+            session = supplied_session
+        else:
+            session_id = secrets.token_urlsafe(24)
+            session_tag = hmac.new(
+                secret,
+                b"pixelgym-session-v1\0" + session_id.encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            session = f"{session_id}.{session_tag}"
         request.state.pixelgym_session = session
         request.state.csrf_digest = _token(secret, session)
         request.state.csrf = request.state.csrf_digest.hex()
         response = await call_next(request)
-        if "pixelgym_session" not in request.cookies:
+        if not session_is_valid:
             response.set_cookie(
-                "pixelgym_session", session, httponly=True, samesite="strict", secure=False
+                "pixelgym_session",
+                session,
+                httponly=True,
+                samesite="strict",
+                secure=session_cookie_secure,
             )
         response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self'"
         response.headers["X-Frame-Options"] = "DENY"
@@ -345,7 +388,7 @@ def create_control_app(
         if set(fields) != {"csrf_token", "reason"}:
             raise HTTPException(422, "cancellation fields do not match the fixed contract")
         try:
-            submission = control.get_submission(submission_id)
+            submission = await run_in_threadpool(control.get_submission, submission_id)
         except KeyError as exc:
             raise HTTPException(404, "submission does not exist") from exc
         if submission["status"] == "Running" and cancel_callback is None:
@@ -356,13 +399,14 @@ def create_control_app(
             actor=control.reviewer_identity,
             reason=fields["reason"],
         )
-        if cancel_callback is not None:
-            cancel_callback(submission_id)
+        if cancel_callback is not None and submission["status"] != "Cancelled":
+            await run_in_threadpool(cancel_callback, submission_id)
         return RedirectResponse(f"/submissions/{submission_id}", status_code=303)
 
     @app.get("/runs", response_class=HTMLResponse)
     def runs_view(
         request: Request,
+        page: Annotated[int, Query(ge=1)] = 1,
         submitted: str | None = None,
         provider: str | None = None,
         lifecycle: str | None = None,
@@ -387,7 +431,31 @@ def create_control_app(
                     raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date")
         if gate_result is not None and gate_result not in {"passed", "failed"}:
             raise HTTPException(422, "gate_result must be passed or failed")
-        candidates = control.list_candidates()
+        filters_active = any(
+            (
+                provider,
+                lifecycle,
+                dataset,
+                code_revision,
+                prompt_version is not None,
+                model,
+                status,
+                date_from,
+                date_to,
+                gate_result,
+            )
+        )
+        if filters_active:
+            candidates = control.list_candidates()
+            has_next_page = False
+        else:
+            candidate_window = control.list_candidates(
+                limit=RUNS_PAGE_SIZE + 1,
+                offset=(page - 1) * RUNS_PAGE_SIZE,
+            )
+            has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
+            candidates = candidate_window[:RUNS_PAGE_SIZE]
+        provider_options = control.list_candidate_providers()
         submissions = control.list_submissions()
         submission_by_run = {
             item["mlflow_run_id"]: item for item in submissions if item["mlflow_run_id"]
@@ -439,11 +507,15 @@ def create_control_app(
             candidates = [
                 item for item in candidates if item.gate_report["overall_passed"] is expected
             ]
+        if filters_active:
+            offset = (page - 1) * RUNS_PAGE_SIZE
+            candidate_window = candidates[offset : offset + RUNS_PAGE_SIZE + 1]
+            has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
+            candidates = candidate_window[:RUNS_PAGE_SIZE]
         notice = f'<div class="notice">Submission {_escape(submitted)} accepted.</div>' if submitted else ""
         rows = "".join(_candidate_row(item, mlflow_base_url) for item in candidates)
         if not rows:
             rows = '<tr><td colspan="8" class="empty">No evaluated candidates match these filters.</td></tr>'
-        provider_options = sorted({item.policy.provider for item in control.list_candidates()})
         lifecycle_options = [item.value for item in CandidateState]
         filter_form = f"""<form method="get" action="/runs" class="filter-grid"><label>Provider<select name="provider"><option value="">All providers</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == provider else ''}>{_escape(value)}</option>' for value in provider_options)}</select></label>
 <label>Lifecycle<select name="lifecycle"><option value="">All states</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == lifecycle else ''}>{_escape(value)}</option>' for value in lifecycle_options)}</select></label>
@@ -451,8 +523,19 @@ def create_control_app(
 <label>Prompt version<input name="prompt_version" type="number" min="1" value="{_escape(prompt_version or '')}"></label><label>Model<input name="model" value="{_escape(model or '')}"></label>
 <label>Submission status<input name="status" value="{_escape(status or '')}"></label><label>From date<input name="date_from" type="date" value="{_escape(date_from or '')}"></label><label>Through date<input name="date_to" type="date" value="{_escape(date_to or '')}"></label><label>Gate result<select name="gate_result"><option value="">All results</option><option value="passed" {'selected' if gate_result == 'passed' else ''}>Passed</option><option value="failed" {'selected' if gate_result == 'failed' else ''}>Failed</option></select></label>
 <label>Code revision prefix<input name="code_revision" value="{_escape(code_revision or '')}" pattern="[0-9a-f]*" maxlength="40"></label><button type="submit">Filter runs</button></form>"""
+        previous_link = (
+            f'<a href="{_escape(_page_href(request, "/runs", page - 1))}">← Previous page</a>'
+            if page > 1
+            else ""
+        )
+        next_link = (
+            f'<a href="{_escape(_page_href(request, "/runs", page + 1))}">Next page →</a>'
+            if has_next_page
+            else ""
+        )
+        pagination = " · ".join(link for link in (previous_link, next_link) if link)
         body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Every result stays visible.</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
-<section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table></section>"""
+<section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table>{f'<nav aria-label="Run pages">{pagination}</nav>' if pagination else ''}</section>"""
         return _layout("Runs", body, csrf=request.state.csrf)
 
     @app.get("/api/tracking/runs/compatible")
@@ -664,7 +747,10 @@ def create_control_app(
     @app.get("/deployment", response_class=HTMLResponse)
     def deployment_view(request: Request) -> str:
         active, generation = control.active()
-        events = control.audit_events()
+        events = control.audit_events(
+            limit=DEPLOYMENT_AUDIT_WINDOW,
+            newest_first=True,
+        )
         active_html = '<div class="empty">No policy is active.</div>'
         rollback = ""
         if active:
@@ -678,8 +764,38 @@ def create_control_app(
             if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
         timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>' for event in events)
-        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol></section></div>"""
+        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
         return _layout("Deployment", body, csrf=request.state.csrf)
+
+    @app.get("/deployment/audit", response_class=HTMLResponse)
+    def deployment_audit_view(
+        request: Request,
+        page: Annotated[int, Query(ge=1)] = 1,
+    ) -> str:
+        event_window = control.audit_events(
+            limit=AUDIT_HISTORY_PAGE_SIZE + 1,
+            offset=(page - 1) * AUDIT_HISTORY_PAGE_SIZE,
+            newest_first=True,
+        )
+        has_next_page = len(event_window) > AUDIT_HISTORY_PAGE_SIZE
+        events = event_window[:AUDIT_HISTORY_PAGE_SIZE]
+        timeline = "".join(
+            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p></li>'
+            for event in events
+        )
+        previous_link = (
+            f'<a href="{_escape(_page_href(request, "/deployment/audit", page - 1))}">← Previous page</a>'
+            if page > 1
+            else ""
+        )
+        next_link = (
+            f'<a href="{_escape(_page_href(request, "/deployment/audit", page + 1))}">Next page →</a>'
+            if has_next_page
+            else ""
+        )
+        pagination = " · ".join(link for link in (previous_link, next_link) if link)
+        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Full audit history.</h1><p>Newest lifecycle events appear first.</p></section><section class="panel"><ol class="timeline">{timeline or '<li>No lifecycle events on this page.</li>'}</ol>{f'<nav aria-label="Audit pages">{pagination}</nav>' if pagination else ''}<p><a href="/deployment">← Back to deployment</a></p></section>"""
+        return _layout("Audit history", body, csrf=request.state.csrf)
 
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
