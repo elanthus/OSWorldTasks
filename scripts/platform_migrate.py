@@ -17,7 +17,6 @@ def main() -> None:
         Path(args.database).parent.mkdir(parents=True, exist_ok=True)
     store = ControlStore(
         args.database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
         busy_timeout_ms=configured_busy_timeout_ms(),
     )
     store.migrate()

@@ -143,7 +143,6 @@ def _build_control(repository_root: Path) -> ControlStore:
         Path(database).parent.mkdir(parents=True, exist_ok=True)
     control = ControlStore(
         database,
-        reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
         busy_timeout_ms=configured_busy_timeout_ms(),
     )
     control.require_migrated()
@@ -259,6 +258,15 @@ def create_app(
 ) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
     exposure = resolve_deployment_exposure(bind_address)
+    proxy_allowlist = tuple(
+        address.strip()
+        for address in os.environ.get("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "").split(",")
+        if address.strip()
+    )
+    if not exposure.treated_as_loopback and not proxy_allowlist:
+        raise RuntimeError(
+            "a non-loopback PIXELGYM_BIND_ADDRESS requires PIXELGYM_TRUSTED_PROXY_ADDRESSES"
+        )
     secure_environment = _environment_bool("PIXELGYM_SESSION_COOKIE_SECURE")
     if exposure.loopback_only_attested:
         LOGGER.warning(
@@ -354,6 +362,9 @@ def create_app(
         control,
         coordinator=coordinator,
         csrf_secret=csrf_secret,
+        loopback_deployment=exposure.treated_as_loopback,
+        principal_header=os.environ.get("PIXELGYM_PRINCIPAL_HEADER", "X-Forwarded-User"),
+        trusted_proxy_addresses=proxy_allowlist,
         session_cookie_secure=session_cookie_secure,
         submit_callback=schedule_submission,
         cancel_callback=cancel_submission,

@@ -79,7 +79,6 @@ services:
       dockerfile: deploy/Dockerfile.platform
     command: [python, scripts/platform_migrate.py, --database, /state/control.db]
     environment:
-      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
       PIXELGYM_SQLITE_BUSY_TIMEOUT_MS: ${PIXELGYM_SQLITE_BUSY_TIMEOUT_MS:-5000}
     volumes: [control-data:/state]
 
@@ -97,7 +96,6 @@ services:
       # The published platform port is restricted to host loopback over plain HTTP.
       PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT: "true"
       PIXELGYM_CONTROL_DB: /state/control.db
-      PIXELGYM_REVIEWER_ID: ${PIXELGYM_REVIEWER_ID}
       PIXELGYM_SQLITE_BUSY_TIMEOUT_MS: ${PIXELGYM_SQLITE_BUSY_TIMEOUT_MS:-5000}
       PIXELGYM_CSRF_SECRET: ${PIXELGYM_CSRF_SECRET}
       PIXELGYM_SOURCE_PROVENANCE_PATH: /state/source-provenance.json
