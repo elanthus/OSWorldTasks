@@ -55,10 +55,25 @@ def test_incomplete_submission_message_matches_browser_app_literal():
 def test_reset_is_idempotent_for_same_seed():
     client = _client()
 
-    first = client.post("/api/reset", json={"seed": 7}).json()
-    second = client.post("/api/reset", json={"seed": 7}).json()
+    first_reset = client.post("/api/reset", json={"seed": 7})
+    first_task = client.get("/api/task").json()
+    client.post("/api/submit", json=_submit_payload(first_task))
 
-    assert first == second
+    second_reset = client.post("/api/reset", json={"seed": 7})
+    second_task = client.get("/api/task").json()
+    state = client.get("/api/state").json()
+
+    expected_reset = {
+        "task_id": first_task["task_id"],
+        "seed": 7,
+        "requires_reload": True,
+    }
+    assert first_reset.status_code == 200
+    assert first_reset.json() == expected_reset
+    assert second_reset.status_code == 200
+    assert second_reset.json() == expected_reset
+    assert second_task == first_task
+    assert state == {"task": first_task, "submissions": []}
 
 
 def test_reset_installs_a_new_task_and_clears_prior_submissions():
@@ -93,19 +108,49 @@ def test_public_task_view_includes_attestable_schema_and_seed():
     assert task["seed"] == 7
 
 
-def test_page_ready_marker_is_task_bound_and_reset_to_false():
+def test_page_ready_requires_reload_with_the_active_task_id_after_reset():
     client = _client()
-    active = client.post("/api/reset", json={"seed": 7}).json()
-    assert client.get("/api/page-ready").json() == {"ready": False}
+    initial_reset = client.post("/api/reset", json={"seed": 7})
+    assert initial_reset.status_code == 200
+    before_reset = initial_reset.json()
+    assert before_reset == {
+        "task_id": before_reset["task_id"],
+        "seed": 7,
+        "requires_reload": True,
+    }
+    marked_before_reset = client.post(
+        "/api/page-ready", json={"task_id": before_reset["task_id"]}
+    )
+    assert marked_before_reset.status_code == 200
+    assert marked_before_reset.json() == {"ready": True}
 
-    stale = client.post("/api/page-ready", json={"task_id": "vf-stale"})
-    marked = client.post("/api/page-ready", json={"task_id": active["task_id"]})
+    reset = client.post("/api/reset", json={"seed": 8})
+    assert reset.status_code == 200
+    after_reset = reset.json()
+    assert after_reset == {
+        "task_id": after_reset["task_id"],
+        "seed": 8,
+        "requires_reload": True,
+    }
+    assert after_reset["task_id"] != before_reset["task_id"]
 
+    not_ready = client.get("/api/page-ready")
+    assert not_ready.status_code == 200
+    assert not_ready.json() == {"ready": False}
+
+    stale = client.post("/api/page-ready", json={"task_id": before_reset["task_id"]})
     assert stale.status_code == 409
+    assert stale.json() == {"detail": "page-ready task_id is stale"}
+    still_not_ready = client.get("/api/page-ready")
+    assert still_not_ready.status_code == 200
+    assert still_not_ready.json() == {"ready": False}
+
+    marked = client.post("/api/page-ready", json={"task_id": after_reset["task_id"]})
+    assert marked.status_code == 200
     assert marked.json() == {"ready": True}
-    assert client.get("/api/page-ready").json() == {"ready": True}
-    client.post("/api/reset", json={"seed": 7})
-    assert client.get("/api/page-ready").json() == {"ready": False}
+    ready = client.get("/api/page-ready")
+    assert ready.status_code == 200
+    assert ready.json() == {"ready": True}
 
 
 def test_request_card_endpoint_exposes_desired_values_without_secrecy():
@@ -154,6 +199,17 @@ def test_submit_before_reset_is_rejected():
     )
 
     assert resp.status_code == 409
+
+
+def test_privileged_state_before_reset_is_rejected():
+    client = _client()
+
+    resp = client.get("/api/state")
+
+    assert resp.status_code == 409
+    assert resp.json() == {
+        "detail": "No active task. Call POST /api/reset first.",
+    }
 
 
 def test_submit_records_an_immutable_submission_event():
