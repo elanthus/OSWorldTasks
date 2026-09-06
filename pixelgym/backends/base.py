@@ -16,15 +16,52 @@ and does not decide reward -- those stay in `PixelGuiEnv` and
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Mapping, Sequence
-from typing import Any, Protocol, runtime_checkable
+from dataclasses import dataclass
+from typing import Any, Literal, Protocol, runtime_checkable
 
 import numpy as np
 import numpy.typing as npt
 
+from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 
 Frame = npt.NDArray[np.uint8]
+
+
+def sha256_bytes(data: bytes) -> str:
+    """Return the lowercase SHA-256 hex digest for backend evidence bytes."""
+    return hashlib.sha256(data).hexdigest()
+
+
+def content_digest(value: Any) -> str:
+    """Hash canonical JSON used in backend evidence bindings."""
+    return "sha256:" + sha256_bytes(canonical_json_bytes(value))
+
+
+@dataclass(frozen=True)
+class EnvironmentResumeRecord:
+    """Content-addressed state binding shared by resumable backends."""
+
+    task_id: str
+    backend_identity: str
+    step_count: int
+    screenshot_digest: str
+    application_state_digest: str
+    mechanism: Literal["checkpoint_restore", "live_reconnect"]
+    checkpoint_digest: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "task_id": self.task_id,
+            "backend_identity": self.backend_identity,
+            "step_count": self.step_count,
+            "screenshot_digest": self.screenshot_digest,
+            "application_state_digest": self.application_state_digest,
+            "mechanism": self.mechanism,
+            "checkpoint_digest": self.checkpoint_digest,
+        }
 
 
 @runtime_checkable
