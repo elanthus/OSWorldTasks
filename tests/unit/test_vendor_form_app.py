@@ -4,11 +4,14 @@ Uses FastAPI's in-process TestClient — no sockets, no network, no wall clock.
 """
 
 import dataclasses
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
 from pixelgym.tasks.vendor_form.app.server import VendorFormState, create_app
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _client() -> TestClient:
@@ -20,6 +23,22 @@ def _submit_payload(task: dict, **overrides) -> dict:
     payload = {**task["fields"], "task_id": task["task_id"]}
     payload.update(overrides)
     return payload
+
+
+def test_ready_sentinel_follows_render_and_exact_font_loads():
+    app_source = (
+        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
+    ).read_text(encoding="utf-8")
+
+    render_positions = [
+        app_source.index("renderRequestCard(task.fields);"),
+        app_source.index("populateCountryOptions(task.options.country);"),
+        app_source.index("populatePaymentTermsOptions(task.options.payment_terms);"),
+    ]
+    font_load_position = app_source.index("document.fonts.load(")
+    ready_position = app_source.index('dataset.pixelgymReady = "true"')
+
+    assert max(render_positions) < font_load_position < ready_position
 
 
 def test_reset_is_idempotent_for_same_seed():

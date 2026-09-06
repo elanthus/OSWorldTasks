@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.request
 from io import BytesIO
 from pathlib import Path
@@ -32,6 +33,8 @@ _INCOMPLETE_RECORDING_FAILED_MESSAGE = (
 )
 _READY_ERROR_SELECTOR = "body[data-pixelgym-ready-error]"
 _DETERMINISTIC_FONT = '"PixelGym Sans"'
+_FONT_FILENAMES = {"DejaVuSans.ttf", "DejaVuSans-Bold.ttf"}
+_FONT_FACE_RULE = re.compile(r"@font-face\s*\{[^}]*\}", re.DOTALL)
 
 pytestmark = [
     pytest.mark.browser_integration,
@@ -86,7 +89,7 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
         try:
             context = browser.new_context(viewport={"width": 1024, "height": 768})
             page = context.new_page()
-            held_font_routes = []
+            held_font_routes = {}
             page_ready_posts = []
             page.on(
                 "request",
@@ -112,18 +115,28 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
                 }, { once: true });
                 """
             )
-            page.route("**/*.ttf", lambda route: held_font_routes.append(route))
+            def hold_font(route):
+                held_font_routes[route.request.url.rsplit("/", 1)[-1]] = route
 
-            page.goto(base_url, wait_until="domcontentloaded")
+            page.route("**/*.ttf", hold_font)
+
+            with (
+                page.expect_request("**/DejaVuSans.ttf"),
+                page.expect_request("**/DejaVuSans-Bold.ttf"),
+            ):
+                page.goto(base_url, wait_until="domcontentloaded")
             page.wait_for_function("() => document.fonts.status === 'loading'")
+            page.wait_for_function(
+                "() => document.getElementById('rc-company_name').textContent.length > 0"
+            )
 
-            assert len(held_font_routes) == 2
+            assert set(held_font_routes) == _FONT_FILENAMES
             assert page.locator(READY_SELECTOR).count() == 0
             assert page.locator(_READY_ERROR_SELECTOR).count() == 0
             assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
             assert page_ready_posts == []
 
-            for route in held_font_routes:
+            for route in held_font_routes.values():
                 route.continue_()
             page.locator(READY_SELECTOR).wait_for(state="attached")
 
@@ -147,6 +160,33 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
             assert form_label_box is not None
             _assert_label_text_pixels(screenshot, request_label_box, background=(238, 241, 246))
             _assert_label_text_pixels(screenshot, form_label_box, background=(255, 255, 255))
+        finally:
+            browser.close()
+
+
+def test_missing_font_faces_end_in_font_load_error_never_ready() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            page = browser.new_page(viewport={"width": 1024, "height": 768})
+
+            def remove_font_faces(route):
+                response = route.fetch()
+                stylesheet, count = _FONT_FACE_RULE.subn("", response.text())
+                assert count == 2
+                route.fulfill(response=response, body=stylesheet)
+
+            page.route("**/static/style.css", remove_font_faces)
+            page.goto(base_url, wait_until="domcontentloaded")
+            page.locator(
+                'body[data-pixelgym-ready-error="font-load"]'
+            ).wait_for(state="attached")
+
+            assert page.locator(READY_SELECTOR).count() == 0
+            assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
         finally:
             browser.close()
 
@@ -189,7 +229,7 @@ def test_initialization_failure_never_sets_ready(failure_stage: str) -> None:
             browser.close()
 
 
-def test_reset_and_navigation_clear_stale_ready_marker() -> None:
+def test_fresh_document_starts_without_stale_ready_marker_after_reset() -> None:
     playwright_api = pytest.importorskip("playwright.sync_api")
 
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:

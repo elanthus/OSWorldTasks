@@ -6,7 +6,6 @@
   var INCOMPLETE_SUBMISSION_MESSAGE = "Complete all required fields before submitting.";
   var INCOMPLETE_SUBMISSION_RECORDING_FAILED_MESSAGE =
     INCOMPLETE_SUBMISSION_MESSAGE + " Submission attempt was not recorded.";
-  var DETERMINISTIC_FONT_FAMILY = '"PixelGym Sans"';
 
   function renderRequestCard(fields) {
     document.getElementById("rc-company_name").textContent = fields.company_name;
@@ -76,29 +75,14 @@
     );
   }
 
-  function clearReadinessMarkers() {
-    delete document.body.dataset.pixelgymReady;
-    delete document.body.dataset.pixelgymReadyError;
-  }
-
   function markInitializationError(stage) {
     delete document.body.dataset.pixelgymReady;
     document.body.dataset.pixelgymReadyError = stage;
     showStatus("Page initialization failed: " + stage + ".");
   }
 
-  function deterministicFontsAreActive() {
-    var activeFamily = window.getComputedStyle(document.body).fontFamily;
-    return (
-      activeFamily === DETERMINISTIC_FONT_FAMILY &&
-      document.fonts.check('14px "PixelGym Sans"') &&
-      document.fonts.check('bold 14px "PixelGym Sans"')
-    );
-  }
-
   async function initializePage() {
     var failureStage = "task-fetch";
-    clearReadinessMarkers();
     try {
       var response = await fetch("/api/task");
       if (!response.ok) {
@@ -113,8 +97,15 @@
       populatePaymentTermsOptions(task.options.payment_terms);
 
       failureStage = "font-load";
-      await document.fonts.ready;
-      if (!deterministicFontsAreActive()) {
+      var loadedFaces = await Promise.all([
+        document.fonts.load('14px "PixelGym Sans"'),
+        document.fonts.load('bold 14px "PixelGym Sans"'),
+      ]);
+      if (
+        !loadedFaces.every(function (faces) {
+          return faces.length === 1 && faces[0].status === "loaded";
+        })
+      ) {
         throw new Error("deterministic font face did not load");
       }
 
