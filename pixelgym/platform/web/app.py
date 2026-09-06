@@ -37,7 +37,11 @@ from pixelgym.platform.control_store import (
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.immutable_store import ImmutableStoreError
-from pixelgym.platform.mlflow_tracking import Tracking, TrackingMirrorError
+from pixelgym.platform.mlflow_tracking import (
+    CompatibleSearchCapacityError,
+    Tracking,
+    TrackingMirrorError,
+)
 from pixelgym.platform.policy import prompt_template
 
 DATASET_OPTIONS = {
@@ -647,6 +651,16 @@ def create_control_app(
             )
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+        except CompatibleSearchCapacityError as exc:
+            # Capacity exhaustion is temporary service unavailability, not an MLflow deadline.
+            raise HTTPException(
+                503,
+                {
+                    "error": "MLflow compatible-run search capacity exhausted",
+                    "capacity": exc.capacity,
+                    "occupancy": exc.occupancy,
+                },
+            ) from exc
         except TimeoutError as exc:
             raise HTTPException(504, "MLflow compatible-run search timed out") from exc
         return {"runs": [asdict(run) for run in runs]}
