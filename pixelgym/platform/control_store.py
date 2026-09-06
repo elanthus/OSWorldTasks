@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import sqlite3
 import threading
 from collections.abc import Callable, Iterator
@@ -79,6 +80,7 @@ class _DeploymentSchema:
 
 
 DEFAULT_BUSY_TIMEOUT_MS = 5_000
+SQLITE_BUSY_TIMEOUT_ENV = "PIXELGYM_SQLITE_BUSY_TIMEOUT_MS"
 _CONTENTION_MESSAGE = "control database is temporarily busy; retry the request"
 
 
@@ -91,10 +93,25 @@ def _is_memory_database(target: str) -> bool:
 
 def _is_lock_contention(exc: sqlite3.OperationalError) -> bool:
     error_code = getattr(exc, "sqlite_errorcode", None)
-    if isinstance(error_code, int):
-        return error_code & 0xFF in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
-    message = str(exc).lower()
-    return "database is locked" in message or "database table is locked" in message
+    return isinstance(error_code, int) and error_code & 0xFF == sqlite3.SQLITE_BUSY
+
+
+def configured_busy_timeout_ms() -> int:
+    """Read and validate the process-wide SQLite contention wait bound."""
+    raw_value = os.environ.get(SQLITE_BUSY_TIMEOUT_ENV)
+    if raw_value is None:
+        return DEFAULT_BUSY_TIMEOUT_MS
+    try:
+        value = int(raw_value)
+    except ValueError:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        ) from None
+    if value <= 0:
+        raise ValueError(
+            f"{SQLITE_BUSY_TIMEOUT_ENV} must be a positive integer number of milliseconds"
+        )
+    return value
 
 
 def _raise_mapped_contention(exc: sqlite3.OperationalError) -> NoReturn:

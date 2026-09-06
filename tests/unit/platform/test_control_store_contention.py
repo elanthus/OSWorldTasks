@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import multiprocessing
 import queue
+import sys
 import time
 from multiprocessing.synchronize import Barrier, Event
 from pathlib import Path
@@ -154,17 +155,34 @@ def _transient_waiter(
 
 def _finish_processes(processes: list[multiprocessing.Process]) -> None:
     deadline = time.monotonic() + _JOIN_TIMEOUT_SECONDS
+    terminated: list[str] = []
+    killed: list[str] = []
     try:
         for process in processes:
             process.join(timeout=max(0.0, deadline - time.monotonic()))
     finally:
         for process in processes:
             if process.is_alive():
+                terminated.append(process.name)
                 process.terminate()
         for process in processes:
             process.join(timeout=1.0)
-    assert all(not process.is_alive() for process in processes)
-    assert [process.exitcode for process in processes] == [0] * len(processes)
+        for process in processes:
+            if process.is_alive():
+                killed.append(process.name)
+                process.kill()
+        for process in processes:
+            process.join(timeout=1.0)
+    if sys.exception() is not None:
+        return
+    exit_codes = [process.exitcode for process in processes]
+    cleanup_detail = (
+        f"termination needed={bool(terminated)}; terminated={terminated}; killed={killed}"
+    )
+    assert all(not process.is_alive() for process in processes), cleanup_detail
+    assert exit_codes == [0] * len(processes), (
+        f"unexpected child exit codes {exit_codes}; {cleanup_detail}"
+    )
 
 
 def _prepare_approved_candidate(database: Path) -> str:

@@ -107,6 +107,8 @@ enforcement, and a bounded busy timeout (5 seconds by default, configurable with
 `PIXELGYM_SQLITE_BUSY_TIMEOUT_MS`). Pure `:memory:` and URI memory databases use SQLite's `memory`
 journal instead of inapplicable WAL, while retaining the same synchronization, foreign-key, and
 busy-timeout settings. Exhausted lock waits return a retryable, redacted service error.
+With `synchronous=NORMAL` under WAL, an OS crash or power loss can lose a committed control-ledger
+transaction (never corrupt it), so post-commit mirroring to MLflow may run ahead of the ledger.
 
 The Metaflow suite also sends `SIGKILL` to the entire local flow process group after durable
 evidence persistence and resumes the recorded origin run. It proves no duplicate fixture-provider

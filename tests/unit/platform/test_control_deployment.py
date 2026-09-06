@@ -74,6 +74,16 @@ def test_memory_and_file_uri_connections_use_documented_journal_modes(
         reviewer_identity="local-reviewer",
         busy_timeout_ms=151,
     )
+    named_shared_memory = ControlStore(
+        f"{(tmp_path / 'named-shared-memory').as_uri()}?mode=memory&cache=shared",
+        reviewer_identity="local-reviewer",
+        busy_timeout_ms=153,
+    )
+    anonymous_shared_memory = ControlStore(
+        "file::memory:?cache=shared",
+        reviewer_identity="local-reviewer",
+        busy_timeout_ms=155,
+    )
 
     assert memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
     assert memory.connection.execute("PRAGMA synchronous").fetchone()[0] == 1
@@ -83,6 +93,41 @@ def test_memory_and_file_uri_connections_use_documented_journal_modes(
     assert file_uri.connection.execute("PRAGMA synchronous").fetchone()[0] == 1
     assert file_uri.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 151
     assert file_uri.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    assert named_shared_memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
+    assert named_shared_memory.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 153
+    assert anonymous_shared_memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
+    assert anonymous_shared_memory.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 155
+
+
+@pytest.mark.parametrize("value", ["not-an-integer", "0", "-1"])
+def test_configured_busy_timeout_rejects_invalid_environment_value(
+    monkeypatch: pytest.MonkeyPatch,
+    value: str,
+) -> None:
+    monkeypatch.setenv("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", value)
+
+    with pytest.raises(ValueError, match="PIXELGYM_SQLITE_BUSY_TIMEOUT_MS"):
+        control_store.configured_busy_timeout_ms()
+
+
+def test_configured_busy_timeout_uses_default_or_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", raising=False)
+    assert control_store.configured_busy_timeout_ms() == 5_000
+
+    monkeypatch.setenv("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", "237")
+    assert control_store.configured_busy_timeout_ms() == 237
+
+
+def test_sqlite_locked_operational_error_is_not_mapped_to_contention() -> None:
+    error = sqlite3.OperationalError("database table is locked")
+    error.sqlite_errorcode = sqlite3.SQLITE_LOCKED
+
+    with pytest.raises(sqlite3.OperationalError) as caught:
+        control_store._raise_mapped_contention(error)
+
+    assert caught.value is error
 
 
 def test_require_migrated_rejects_missing_active_pointer_singleton(tmp_path: Path) -> None:

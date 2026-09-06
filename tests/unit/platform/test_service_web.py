@@ -8,8 +8,8 @@ import io
 import json
 import logging
 import re
-import sqlite3
 import secrets
+import sqlite3
 import stat
 import sys
 import threading

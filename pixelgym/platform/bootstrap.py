@@ -18,9 +18,9 @@ from fastapi import FastAPI
 
 from pixelgym.platform.contracts import PolicyManifest
 from pixelgym.platform.control_store import (
-    DEFAULT_BUSY_TIMEOUT_MS,
     ControlStore,
     DeploymentRecord,
+    configured_busy_timeout_ms,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import CandidateServiceSmoke, FrozenSmokeFixture
@@ -144,9 +144,7 @@ def _build_control(repository_root: Path) -> ControlStore:
     control = ControlStore(
         database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-        busy_timeout_ms=int(
-            os.environ.get("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", DEFAULT_BUSY_TIMEOUT_MS)
-        ),
+        busy_timeout_ms=configured_busy_timeout_ms(),
     )
     control.require_migrated()
     return control

@@ -6,7 +6,7 @@ import argparse
 import os
 from pathlib import Path
 
-from pixelgym.platform.control_store import DEFAULT_BUSY_TIMEOUT_MS, ControlStore
+from pixelgym.platform.control_store import ControlStore, configured_busy_timeout_ms
 
 
 def main() -> None:
@@ -18,9 +18,7 @@ def main() -> None:
     store = ControlStore(
         args.database,
         reviewer_identity=os.environ.get("PIXELGYM_REVIEWER_ID", "local-reviewer"),
-        busy_timeout_ms=int(
-            os.environ.get("PIXELGYM_SQLITE_BUSY_TIMEOUT_MS", DEFAULT_BUSY_TIMEOUT_MS)
-        ),
+        busy_timeout_ms=configured_busy_timeout_ms(),
     )
     store.migrate()
     print(f"control migration complete: {args.database}")
