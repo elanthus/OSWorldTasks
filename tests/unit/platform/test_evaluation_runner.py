@@ -195,9 +195,23 @@ def test_resume_reuses_verified_raw_responses_without_duplicate_calls(
 
 
 class _OperationRecordingLocalStore(LocalImmutableStore):
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         super().__init__(root)
         self.operations: list[str] = []
+        self.payload_reads: list[Path] = []
+        objects_root = (root / "objects").resolve()
+        original_read_bytes = Path.read_bytes
+
+        def record_read_bytes(path: Path) -> bytes:
+            try:
+                path.resolve().relative_to(objects_root)
+            except ValueError:
+                pass
+            else:
+                self.payload_reads.append(path)
+            return original_read_bytes(path)
+
+        monkeypatch.setattr(Path, "read_bytes", record_read_bytes)
 
     def get_reference(self, logical_key: str) -> ArtifactRef | None:
         self.operations.append("get_reference")
@@ -209,12 +223,16 @@ class _OperationRecordingLocalStore(LocalImmutableStore):
 
 
 def test_resume_probes_cached_envelopes_without_payload_gets(
-    repository_root: Path, tmp_path: Path, gate_policy, policy_factory
+    repository_root: Path,
+    tmp_path: Path,
+    gate_policy,
+    policy_factory,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     provider = ScriptedReplayProvider(
         repository_root / "artifacts/grounding-predictions.jsonl", variant="revised"
     )
-    store = _OperationRecordingLocalStore(tmp_path / "immutable")
+    store = _OperationRecordingLocalStore(tmp_path / "immutable", monkeypatch)
     runner = _runner(
         repository_root=repository_root,
         tmp_path=tmp_path,
@@ -230,17 +248,29 @@ def test_resume_probes_cached_envelopes_without_payload_gets(
     assert len(provider.call_ids) == 3
 
     store.operations.clear()
+    store.payload_reads.clear()
     runner.evaluate_shard(cached_shard, max_calls=100)
+    assert "get_verified" not in store.operations
+    assert not store.payload_reads
     assert store.operations == ["get_reference"] * 3
     assert len(provider.call_ids) == 3
 
     operations_before_first_uncached_call: list[str] = []
-    runner.provider_response_hook = lambda _: operations_before_first_uncached_call.extend(
-        store.operations
-    )
+    payload_reads_before_first_uncached_call: list[Path] = []
+
+    def record_operations_before_uncached_call(_: str) -> None:
+        operations_before_first_uncached_call.extend(store.operations)
+        payload_reads_before_first_uncached_call.extend(store.payload_reads)
+
+    runner.provider_response_hook = record_operations_before_uncached_call
     store.operations.clear()
+    store.payload_reads.clear()
     runner.evaluate_shard(first_four, max_calls=100)
 
+    assert "get_verified" not in operations_before_first_uncached_call
+    assert not payload_reads_before_first_uncached_call
+    # With provider_concurrency == 1, the first uncached example follows three cached probes.
+    assert runner.provider_concurrency == 1
     assert operations_before_first_uncached_call == ["get_reference"] * 4
     assert len(provider.call_ids) == 4
 

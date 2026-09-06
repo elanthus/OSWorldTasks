@@ -123,7 +123,11 @@ class LocalImmutableStore:
             media_type=media_type,
             retention_status="application-put-once; no storage-enforced WORM retention",
         )
-        existing = self.get_reference(logical_key)
+        try:
+            existing = self.get_reference(logical_key)
+        except ImmutableStoreError:
+            # Inspect partial state under the lock so an identical put can repair it.
+            existing = None
         if existing is not None:
             if existing != reference:
                 raise ImmutableStoreError("refusing conflicting bytes at immutable key")
@@ -143,7 +147,6 @@ class LocalImmutableStore:
                 existing = self._get_reference_unlocked(logical_key)
                 if existing != reference:
                     raise ImmutableStoreError("refusing conflicting bytes at immutable key")
-                reference = existing
             else:
                 if data_exists and data_path.read_bytes() != data:
                     raise ImmutableStoreError("refusing conflicting bytes at immutable key")
