@@ -46,6 +46,7 @@ GUEST_ROOT = Path("/tmp/pixelgym-vendor-form")
 GUEST_BUNDLE = Path("/tmp/pixelgym-vendor-form.zip")
 GUEST_SERVER_LOG = Path("/tmp/pixelgym-vendor-form-server.log")
 GUEST_CHROME_LOG = Path("/tmp/pixelgym-vendor-form-chrome.log")
+_PAGE_READY_ERROR_MARKER = "body[data-pixelgym-ready-error]"
 
 _APP_DIR = Path(__file__).parent / "app"
 _BUNDLE_FILES = (
@@ -344,33 +345,49 @@ class _VendorFormTaskSupport:
                 ),
             ]
         )
-        page_ready_name = "pixelgym-vendor-form-page-ready.txt"
+        # The service being healthy does not mean Chromium has fetched and rendered
+        # the task. Require two consecutive acknowledgements of the sentinel POST so
+        # the browser can consume its response and present the completed paint before
+        # DesktopEnv is allowed to return an observation.
+        page_ready_name = "pixelgym-vendor-form-page-ready.json"
         page_ready_path = Path(setup_controller.cache_dir) / page_ready_name
         page_ready_path.unlink(missing_ok=True)
+        page_ready_error_name = "pixelgym-vendor-form-page-ready-error.txt"
+        page_ready_error_path = Path(setup_controller.cache_dir) / page_ready_error_name
+        page_ready_error_path.unlink(missing_ok=True)
         page_ready_script = (
             "import json,time,urllib.request\n"
-            "last = None\n"
+            "last_error = None\n"
+            "ready_streak = 0\n"
             "for attempt in range(240):\n"
             " try:\n"
             f"  value=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=1))\n"
             "  if value == {'ready': True}:\n"
-            "   print('PAGE_READY')\n"
-            "   break\n"
+            "   ready_streak += 1\n"
+            "   if ready_streak == 2:\n"
+            "    print(json.dumps(value,sort_keys=True,separators=(',',':')))\n"
+            "    break\n"
+            "  else:\n"
+            "   ready_streak = 0\n"
+            "   last_error = 'page-ready response: ' + repr(value)\n"
             " except Exception as exc:\n"
-            "  last = repr(exc)\n"
-            " if attempt == 239: raise RuntimeError(last or 'page did not report ready')\n"
+            "  ready_streak = 0\n"
+            "  last_error = repr(exc)\n"
+            " if attempt == 239: raise RuntimeError(last_error or 'page did not report ready')\n"
             " time.sleep(0.25)\n"
         )
         setup_controller.execute(
             ["python3", "-c", page_ready_script],
             stdout=page_ready_name,
+            stderr=page_ready_error_name,
             quiet=True,
             timeout=75,
         )
-        if (
-            not page_ready_path.is_file()
-            or page_ready_path.read_text(encoding="utf-8").strip() != "PAGE_READY"
-        ):
+        try:
+            page_ready = json.loads(page_ready_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            page_ready = None
+        if page_ready != {"ready": True}:
             diagnostic_name = "pixelgym-vendor-form-chrome-diagnostic.txt"
             diagnostic_path = Path(setup_controller.cache_dir) / diagnostic_name
             diagnostic_path.unlink(missing_ok=True)
@@ -393,8 +410,15 @@ class _VendorFormTaskSupport:
                 if diagnostic_path.is_file()
                 else "missing"
             )
+            page_ready_error = (
+                page_ready_error_path.read_text(encoding="utf-8").strip()
+                if page_ready_error_path.is_file()
+                else "missing"
+            )
             raise OSWorldTaskError(
                 "managed Chromium task page did not report render completion; "
+                f"page_ready_error_marker={_PAGE_READY_ERROR_MARKER!r}; "
+                f"probe_error={page_ready_error[-2000:]!r}; "
                 f"guest_diagnostic={diagnostic[-6000:]!r}"
             )
         setup_controller.execute(
@@ -450,7 +474,7 @@ class _VendorFormTaskSupport:
 
         script = (
             "python3 - <<'PY'\n"
-            "import json,os,re,subprocess\n"
+            "import json,os,re,subprocess,urllib.request\n"
             "env=os.environ.copy(); env['DISPLAY']=':0'\n"
             "def run(argv):\n"
             " result=subprocess.run(argv,env=env,capture_output=True,text=True,timeout=5)\n"
@@ -468,8 +492,10 @@ class _VendorFormTaskSupport:
             "'x':int(parts[2]),'y':int(parts[3]),'width':int(parts[4]),"
             "'height':int(parts[5]),'class':parts[6],'title':parts[7]})\n"
             "properties=run(['xprop','-id',active_id,'_NET_WM_STATE','WM_CLASS','_NET_WM_NAME'])\n"
+            f"page_ready=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=5))\n"
             "print(json.dumps({'active_window_id':active_id,'windows':windows,"
-            "'active_window_properties':properties},sort_keys=True))\n"
+            "'active_window_properties':properties,'task_app_page_ready':page_ready},"
+            "sort_keys=True))\n"
             "PY\n"
         )
         result = env.controller.run_bash_script(script, timeout=15)

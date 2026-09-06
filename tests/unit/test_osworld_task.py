@@ -172,11 +172,18 @@ def test_privileged_state_identity_mismatch_is_rejected(monkeypatch, tmp_path):
 
 
 class _SetupController:
-    def __init__(self, cache_dir: Path, reset_identity: dict):
+    def __init__(
+        self,
+        cache_dir: Path,
+        reset_identity: dict,
+        *,
+        page_ready: dict | None = None,
+    ):
         self.cache_dir = str(cache_dir)
         self.screen_width = 1920
         self.screen_height = 1080
         self.reset_identity = reset_identity
+        self.page_ready = {"ready": True} if page_ready is None else page_ready
         self.downloads = []
         self.commands = []
         self.launches = []
@@ -189,7 +196,7 @@ class _SetupController:
         self.commands.append((command, kwargs))
         if stdout:
             value = (
-                "PAGE_READY\n"
+                json.dumps(self.page_ready)
                 if "page-ready" in stdout
                 else "DISPLAY_SIZE_READY\n"
                 if "display-size" in stdout
@@ -245,7 +252,66 @@ def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch
     assert any("[g]uest_server.py" in str(command) for command, _kwargs in controller.commands)
     assert any("[g]oogle-chrome" in str(command) for command, _kwargs in controller.commands)
     assert any("xrandr" in str(command) for command, _kwargs in controller.commands)
+    page_ready_commands = [
+        (command, kwargs)
+        for command, kwargs in controller.commands
+        if "api/page-ready" in str(command)
+    ]
+    assert len(page_ready_commands) == 1
+    assert "ready_streak == 2" in page_ready_commands[0][0][2]
+    assert page_ready_commands[0][1]["stderr"] == (
+        "pixelgym-vendor-form-page-ready-error.txt"
+    )
     assert all("DONE" not in str(command) for command, _kwargs in controller.commands)
+
+
+def test_custom_task_setup_rejects_page_ready_failure(monkeypatch, tmp_path):
+    _install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    controller = _SetupController(
+        tmp_path,
+        {
+            "task_id": record["task_id"],
+            "seed": record["seed"],
+            "requires_reload": True,
+        },
+        page_ready={"ready": False},
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"page_ready_error_marker='body\[data-pixelgym-ready-error\]'",
+    ):
+        task.setup(controller)
+
+    assert controller.launches[1][0:2] == ["bash", "-lc"]
+    assert any("api/page-ready" in str(command) for command, _kwargs in controller.commands)
+
+
+def test_browser_window_state_reads_page_ready_from_guest(monkeypatch, tmp_path):
+    _install_fake_osworld(monkeypatch)
+    task, _record = create_osworld_task(7, cache_dir=tmp_path)
+    expected = {
+        "active_window_id": "0x10",
+        "windows": [],
+        "active_window_properties": "_NET_WM_STATE_FULLSCREEN",
+        "task_app_page_ready": {"ready": True},
+    }
+
+    class Controller:
+        script = ""
+
+        def run_bash_script(self, script, timeout):
+            self.script = script
+            assert timeout == 15
+            return {"returncode": 0, "output": json.dumps(expected)}
+
+    controller = Controller()
+    result = task.read_browser_window_state(types.SimpleNamespace(controller=controller))
+
+    assert result == expected
+    assert "urllib.request.urlopen" in controller.script
+    assert "http://127.0.0.1:3000/api/page-ready" in controller.script
 
 
 def test_guest_launch_contains_each_canonical_renderer_flag_once(monkeypatch, tmp_path):

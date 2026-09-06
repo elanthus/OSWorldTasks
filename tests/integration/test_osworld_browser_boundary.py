@@ -54,4 +54,5 @@ def test_guest_app_mode_hides_navigation_surface_and_fills_1024x768(tmp_path: Pa
     assert guest_browser_boundary_evidence_passed(evidence) is True
     assert guest_browser_boundary_source_hashes_match(evidence, repository_root) is True
     assert evidence["navigation_surface"]["observation_shape"] == [768, 1024, 3]
+    assert evidence["task_app_page_ready"] == {"ready": True}
     assert evidence["browser_launch"]["presentation_mode"] == "app"

@@ -31,7 +31,7 @@ from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 BROWSER_BOUNDARY_SCHEMA_VERSION = "pixelgym-browser-boundary-v2"
 BROWSER_BOUNDARY_VALIDATOR = "vendor-form-browser-boundary"
-GUEST_BROWSER_BOUNDARY_SCHEMA_VERSION = "pixelgym-guest-browser-boundary-v1"
+GUEST_BROWSER_BOUNDARY_SCHEMA_VERSION = "pixelgym-guest-browser-boundary-v2"
 GUEST_BROWSER_BOUNDARY_VALIDATOR = "vendor-form-guest-navigation-boundary"
 
 SOURCE_PATHS = (
@@ -85,6 +85,7 @@ _GUEST_REQUIRED_CHECKS = {
     "active_window_fills_observation",
     "active_window_uses_protected_presentation",
     "observation_shape_exact",
+    "task_app_reported_ready",
     "task_app_reaches_top_edge",
     "renderer_contract_matches_guest_launch",
     "provider_closed",
@@ -389,9 +390,16 @@ def validate_guest_browser_boundary(
     check_values: dict[str, bool] = {}
     try:
         screenshot, info = env.reset(seed=seed)
+        window_state = backend.read_browser_window_state()
+        task_app_page_ready = window_state.pop("task_app_page_ready", None)
+        check_values["task_app_reported_ready"] = task_app_page_ready == {"ready": True}
+        if check_values["task_app_reported_ready"]:
+            # Capture a newly stabilized frame after the guest confirms the page
+            # sentinel, rather than retaining a frame that may predate its paint.
+            screenshot = backend.screenshot()
         screenshot_path.parent.mkdir(parents=True, exist_ok=True)
         Image.fromarray(screenshot).save(screenshot_path)
-        navigation = inspect_navigation_surface(backend.read_browser_window_state(), screenshot)
+        navigation = inspect_navigation_surface(window_state, screenshot)
         metadata = backend.integration_metadata()
         launch = metadata.get("browser_launch")
         check_values.update(cast(dict[str, bool], navigation.pop("checks")))
@@ -408,6 +416,7 @@ def validate_guest_browser_boundary(
         evidence.update(
             {
                 "task_id": info["task_id"],
+                "task_app_page_ready": task_app_page_ready,
                 "screenshot_path": screenshot_path.as_posix(),
                 "browser_launch": launch,
                 "backend_metadata": metadata,

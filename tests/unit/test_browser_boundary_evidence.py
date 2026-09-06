@@ -106,6 +106,7 @@ def _guest_evidence(repository_root: Path) -> dict:
         "observation_shape_exact",
         "provider_closed",
         "renderer_contract_matches_guest_launch",
+        "task_app_reported_ready",
         "task_app_reaches_top_edge",
     )
     checks = [{"name": name, "passed": True} for name in check_names]
@@ -246,11 +247,29 @@ def test_guest_navigation_evidence_requires_every_named_check(tmp_path: Path) ->
 
     evidence["checks"][0]["passed"] = False
     evidence["summary"] = {
-        "check_count": 8,
-        "passed_count": 7,
+        "check_count": 9,
+        "passed_count": 8,
         "failed_count": 1,
         "passed": False,
     }
+    assert guest_browser_boundary_evidence_passed(evidence) is False
+
+
+@pytest.mark.parametrize("mutation", ["missing", "false"])
+def test_guest_navigation_evidence_requires_page_ready_check(
+    tmp_path: Path, mutation: str
+) -> None:
+    for relative in GUEST_SOURCE_PATHS:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(relative, encoding="utf-8")
+    evidence = _guest_evidence(tmp_path)
+    check = next(row for row in evidence["checks"] if row["name"] == "task_app_reported_ready")
+    if mutation == "missing":
+        evidence["checks"].remove(check)
+    else:
+        check["passed"] = False
+
     assert guest_browser_boundary_evidence_passed(evidence) is False
 
 
