@@ -10,15 +10,17 @@ from typing import Any
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from pixelgym.backends.base import Frame
+from pixelgym.backends.base import (
+    EnvironmentResumeRecord,
+    Frame,
+    content_digest,
+    sha256_bytes,
+)
 from pixelgym.grounding.v5.contracts import (
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
-    EnvironmentResumeRecord,
     StageKind,
     V5Task,
-    content_digest,
-    sha256_bytes,
 )
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.serialization import canonical_json_bytes
