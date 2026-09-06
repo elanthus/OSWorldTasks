@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import math
 from dataclasses import dataclass
 from enum import StrEnum
@@ -11,7 +10,12 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from pixelgym.actions import KEY_ALLOWLIST_VERSION
+from pixelgym.backends import base as _backend_base
 from pixelgym.serialization import canonical_json_bytes
+
+EnvironmentResumeRecord = _backend_base.EnvironmentResumeRecord
+content_digest = _backend_base.content_digest
+sha256_bytes = _backend_base.sha256_bytes
 
 PROTOCOL_VERSION = "pixelgym-agent-v5"
 GENERATOR_VERSION = "pixelgym-agent-v5-generator-v1"
@@ -51,14 +55,6 @@ class StageKind(StrEnum):
     TEXT = "text"
     REVIEW = "review"
     COMMIT = "commit"
-
-
-def sha256_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def content_digest(value: Any) -> str:
-    return "sha256:" + sha256_bytes(canonical_json_bytes(value))
 
 
 def sandbox_endpoint_allowlist_digest(endpoint: str, *, policy_version: str) -> str:
@@ -422,28 +418,6 @@ class AttemptIdentity:
     @property
     def key(self) -> str:
         return f"{self.trial_id}/step-{self.step_index:04d}/attempt-{self.attempt_index:02d}"
-
-
-@dataclass(frozen=True)
-class EnvironmentResumeRecord:
-    task_id: str
-    backend_identity: str
-    step_count: int
-    screenshot_digest: str
-    application_state_digest: str
-    mechanism: Literal["checkpoint_restore", "live_reconnect"]
-    checkpoint_digest: str
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "task_id": self.task_id,
-            "backend_identity": self.backend_identity,
-            "step_count": self.step_count,
-            "screenshot_digest": self.screenshot_digest,
-            "application_state_digest": self.application_state_digest,
-            "mechanism": self.mechanism,
-            "checkpoint_digest": self.checkpoint_digest,
-        }
 
 
 @dataclass(frozen=True)

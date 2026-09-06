@@ -10,7 +10,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from pixelgym.platform.contracts import (
     ArtifactRef,
@@ -34,6 +34,47 @@ class ConflictError(RuntimeError):
 
 class AuthorizationError(PermissionError):
     pass
+
+
+RESERVED_ACTOR_NAMES = frozenset({"system", "synthetic-demo", "local-reviewer"})
+ACTOR_VERIFICATION_SOURCE_KEY = "actor_verification_source"
+
+
+class VerifiedPrincipal(str):
+    """Reviewer principal accepted by the request authentication boundary."""
+
+    def __new__(cls, value: str) -> Self:
+        if not value:
+            raise ValueError("verified principal is required")
+        if value in RESERVED_ACTOR_NAMES:
+            raise ValueError("reserved actor name cannot be a verified principal")
+        return super().__new__(cls, value)
+
+    @property
+    def verification_source(self) -> str:
+        return "proxy_header"
+
+
+class SyntheticDemoPrincipal(str):
+    """Fixed reviewer identity for an attested loopback-only demo deployment."""
+
+    def __new__(cls) -> Self:
+        return super().__new__(cls, "synthetic-demo")
+
+    @property
+    def verification_source(self) -> str:
+        return "synthetic_demo"
+
+
+class _InternalActor(str):
+    """Unforgeable-by-input marker for host-initiated control-plane work."""
+
+    @property
+    def verification_source(self) -> str:
+        return "internal_system"
+
+
+SYSTEM_ACTOR = _InternalActor("system")
 
 
 class TransitionError(RuntimeError):
@@ -324,11 +365,11 @@ class ControlStore:
         self,
         database: Path | str,
         *,
-        reviewer_identity: str,
+        reviewer_identity: str | None = None,
         now: Callable[[], str] | None = None,
     ) -> None:
-        if not reviewer_identity:
-            raise ValueError("reviewer identity is required")
+        if reviewer_identity == "":
+            raise ValueError("reviewer identity cannot be empty")
         self.reviewer_identity = reviewer_identity
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
@@ -503,28 +544,34 @@ class ControlStore:
         subject_id: str,
         details: dict[str, Any],
     ) -> None:
+        actor_name = str(actor)
+        verification_source = getattr(actor, "verification_source", "legacy_unverified")
+        attributed_details = {
+            **details,
+            ACTOR_VERIFICATION_SOURCE_KEY: verification_source,
+        }
         sequence = int(
             connection.execute("SELECT COALESCE(MAX(rowid), 0) + 1 FROM audit_events").fetchone()[0]
         )
         material = {
             "event_type": event_type,
-            "actor": actor,
+            "actor": actor_name,
             "subject_id": subject_id,
-            "details": details,
+            "details": attributed_details,
             "created_at_utc": self._now(),
             "sequence": sequence,
         }
         event_id = "audit-" + sha256_bytes(canonical_json_bytes(material))[:24]
-        details_json = canonical_json_bytes(details).decode()
+        details_json = canonical_json_bytes(attributed_details).decode()
         self.schemas.validate(
             "audit_event",
             {
                 "event_id": event_id,
                 "event_type": event_type,
-                "actor": actor,
+                "actor": actor_name,
                 "subject_id": subject_id,
                 "details_json": details_json,
-                "details": details,
+                "details": attributed_details,
                 "created_at_utc": material["created_at_utc"],
             },
         )
@@ -533,14 +580,28 @@ class ControlStore:
             (
                 event_id,
                 event_type,
-                actor,
+                actor_name,
                 subject_id,
                 details_json,
                 material["created_at_utc"],
             ),
         )
 
-    def submit(self, request: dict[str, Any]) -> str:
+    def _require_reviewer_actor(self, actor: str) -> None:
+        if isinstance(actor, (VerifiedPrincipal, SyntheticDemoPrincipal)):
+            return
+        if self.reviewer_identity is not None and actor == self.reviewer_identity:
+            return
+        raise AuthorizationError("reviewer actor was not verified")
+
+    def submit(
+        self,
+        request: dict[str, Any],
+        *,
+        actor: str | _InternalActor = SYSTEM_ACTOR,
+    ) -> str:
+        if not isinstance(actor, _InternalActor):
+            self._require_reviewer_actor(actor)
         encoded = canonical_json_bytes(request)
         digest = sha256_bytes(encoded)
         submission_id = "submission-" + digest[:24]
@@ -552,12 +613,19 @@ class ControlStore:
             if existing:
                 if existing["request_json"].encode() != encoded:
                     raise ConflictError("submission hash collision")
+                self._audit(
+                    connection,
+                    "submission.resubmitted",
+                    actor,
+                    str(existing["submission_id"]),
+                    request,
+                )
                 return str(existing["submission_id"])
             connection.execute(
                 "INSERT INTO submissions VALUES (?, ?, ?, 'Submitted', NULL, NULL, ?)",
                 (submission_id, digest, encoded.decode(), self._now()),
             )
-            self._audit(connection, "submission.created", "system", submission_id, request)
+            self._audit(connection, "submission.created", actor, submission_id, request)
         return submission_id
 
     def get_submission(self, submission_id: str) -> dict[str, Any]:
@@ -570,8 +638,7 @@ class ControlStore:
             return {**dict(row), "request": json.loads(row["request_json"])}
 
     def cancel_submission(self, submission_id: str, *, actor: str, reason: str) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may cancel")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("cancellation reason is required")
         with self.transaction() as connection:
@@ -614,7 +681,7 @@ class ControlStore:
             self._audit(
                 connection,
                 event_type,
-                "system",
+                SYSTEM_ACTOR,
                 subject_id,
                 {"operation": operation, "error": error, "resolved": resolved},
             )
@@ -744,7 +811,7 @@ class ControlStore:
                 self._audit(
                     connection,
                     "candidate.gates_evaluated",
-                    "system",
+                    SYSTEM_ACTOR,
                     candidate_id,
                     {"state": state.value, "gate_report_sha256": report_sha},
                 )
@@ -793,15 +860,37 @@ class ControlStore:
                 raise KeyError(candidate_id)
             return self._candidate_record(row)
 
-    def list_candidates(self) -> list[CandidateRecord]:
+    def list_candidates(
+        self, *, limit: int | None = None, offset: int = 0
+    ) -> list[CandidateRecord]:
+        if limit is not None and limit <= 0:
+            raise ValueError("candidate limit must be positive")
+        if offset < 0:
+            raise ValueError("candidate offset must be non-negative")
+        query = "SELECT * FROM candidates ORDER BY rowid DESC"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            ids = [
-                row[0]
-                for row in self.connection.execute(
-                    "SELECT candidate_id FROM candidates ORDER BY rowid DESC"
-                )
-            ]
-            return [self.get_candidate(candidate_id) for candidate_id in ids]
+            rows = list(self.connection.execute(query, parameters))
+        # Policy manifests are validated lazily for every returned row. Keeping
+        # validation outside the connection lock prevents schema work from
+        # blocking writers while still detecting out-of-band row corruption.
+        return [self._candidate_record(row) for row in rows]
+
+    def list_candidate_providers(self) -> list[str]:
+        with self._lock:
+            rows = self.connection.execute(
+                """SELECT DISTINCT json_extract(policy_json, '$.provider') AS provider
+                FROM candidates
+                WHERE json_type(policy_json, '$.provider') = 'text'
+                ORDER BY provider"""
+            ).fetchall()
+        return [row["provider"] for row in rows]
 
     def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
         try:
@@ -871,8 +960,7 @@ class ControlStore:
         reason: str,
         gate_report_sha256: str,
     ) -> dict[str, Any]:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may approve")
+        self._require_reviewer_actor(actor)
         if not reason.strip():
             raise ValueError("approval reason is required")
         with self.transaction() as connection:
@@ -1033,8 +1121,7 @@ class ControlStore:
         expected_deployment_id: str | None,
         expected_generation: int,
     ) -> DeploymentRecord:
-        if actor != self.reviewer_identity:
-            raise AuthorizationError("only the configured reviewer may deploy or rollback")
+        self._require_reviewer_actor(actor)
         if action not in {"deploy", "rollback"}:
             raise ValueError("unknown deployment action")
         if not reason.strip():
@@ -1133,12 +1220,31 @@ class ControlStore:
             row = self._previous_target_row(self.connection, current)
             return DeploymentRecord(**dict(row))
 
-    def audit_events(self) -> list[dict[str, Any]]:
+    def audit_events(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        newest_first: bool = False,
+    ) -> list[dict[str, Any]]:
+        if limit is not None and limit <= 0:
+            raise ValueError("audit event limit must be positive")
+        if offset < 0:
+            raise ValueError("audit event offset must be non-negative")
+        direction = "DESC" if newest_first else "ASC"
+        query = f"SELECT * FROM audit_events ORDER BY rowid {direction}"
+        parameters: tuple[int, ...] = ()
+        if limit is not None:
+            query += " LIMIT ? OFFSET ?"
+            parameters = (limit, offset)
+        elif offset:
+            query += " LIMIT -1 OFFSET ?"
+            parameters = (offset,)
         with self._lock:
-            return [
-                {**dict(row), "details": json.loads(row["details_json"])}
-                for row in self.connection.execute("SELECT * FROM audit_events ORDER BY rowid")
-            ]
+            rows = list(self.connection.execute(query, parameters))
+        return [
+            {**dict(row), "details": json.loads(row["details_json"])} for row in rows
+        ]
 
     def approval_events(self) -> list[dict[str, Any]]:
         with self._lock:

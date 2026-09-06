@@ -5,12 +5,15 @@ import base64
 import dataclasses
 import importlib
 import io
+import json
 import logging
 import re
 import secrets
+import stat
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from http.cookies import SimpleCookie
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -22,11 +25,22 @@ from PIL import Image
 from starlette.requests import Request
 
 from pixelgym.platform.contracts import ArtifactRef
-from pixelgym.platform.control_store import ControlStore, TransitionError
+from pixelgym.platform.control_store import (
+    ACTOR_VERIFICATION_SOURCE_KEY,
+    ControlStore,
+    SyntheticDemoPrincipal,
+    TransitionError,
+    VerifiedPrincipal,
+)
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStoreError, LocalImmutableStore
-from pixelgym.platform.mlflow_tracking import TrackingRunView
+from pixelgym.platform.mlflow_tracking import (
+    COMPATIBLE_SEARCH_CAPACITY,
+    CompatibleSearchCapacityError,
+    TrackingRunView,
+)
 from pixelgym.platform.operational_log import (
     OPERATIONAL_RECORD_SCHEMA_VERSION,
     ImmutableOperationalLog,
@@ -48,7 +62,9 @@ from pixelgym.platform.service import (
 )
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 from pixelgym.platform.web import create_control_app
+from pixelgym.platform.web.app import DEPLOYMENT_AUDIT_WINDOW, RUNS_PAGE_SIZE
 from scripts.capture_platform_api import _safe_body
+from scripts.export_platform_evidence import export_evidence
 
 
 def _image(width: int = 100, height: int = 80, image_format: str = "PNG") -> bytes:
@@ -1144,7 +1160,7 @@ def test_cancel_waiting_for_process_lock_does_not_block_serving(tmp_path: Path) 
         ),
     )
 
-    with TestClient(app) as client:
+    with TestClient(app, client=("127.0.0.1", 50000)) as client:
         token = _csrf(client.get(f"/submissions/{submission_id}").text)
         cancellation_form = {"csrf_token": token, "reason": "stop concurrent fixture"}
 
@@ -1187,6 +1203,7 @@ def test_cancel_waiting_for_process_lock_does_not_block_serving(tmp_path: Path) 
     assert len(cancellation_events) == 1
     assert cancellation_events[0]["subject_id"] == submission_id
     assert cancellation_events[0]["details"] == {
+        ACTOR_VERIFICATION_SOURCE_KEY: "synthetic_demo",
         "previous_status": "Submitted",
         "reason": "stop concurrent fixture",
     }
@@ -1211,7 +1228,7 @@ def test_serving_bootstrap_disables_s3_retries_only_for_bounded_audit_writes(
     assert captured["retry_max_attempts"] == 1
 
 
-def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
+def _configure_bootstrap_environment(tmp_path: Path, repository_root: Path, monkeypatch):
     from pixelgym.platform import bootstrap
 
     database = tmp_path / "state/control.db"
@@ -1222,7 +1239,216 @@ def _assembled_platform_app(tmp_path: Path, repository_root: Path, monkeypatch):
     monkeypatch.setenv("PIXELGYM_CONTROL_DB", str(database))
     monkeypatch.setenv("PIXELGYM_IMMUTABLE_ROOT", str(tmp_path / "immutable"))
     monkeypatch.setenv("PIXELGYM_CSRF_SECRET", "test-secret-at-least-sixteen")
-    return bootstrap.create_app(), control
+    return bootstrap, control
+
+
+def _assembled_platform_app(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    *,
+    bind_address: str = "127.0.0.1",
+    session_cookie_secure: bool | None = None,
+):
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
+    if not bootstrap.resolve_deployment_exposure(bind_address).treated_as_loopback:
+        monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
+    return (
+        bootstrap.create_app(
+            bind_address=bind_address,
+            session_cookie_secure=session_cookie_secure,
+        ),
+        control,
+    )
+
+
+@pytest.mark.parametrize(
+    ("bind_address", "override", "expected_secure"),
+    [
+        pytest.param("127.0.0.1", None, False, id="ipv4-loopback-default"),
+        pytest.param("127.42.0.9", None, False, id="ipv4-loopback-range-default"),
+        pytest.param("::1", None, False, id="ipv6-loopback-default"),
+        pytest.param("[::1]", None, False, id="bracketed-ipv6-loopback-default"),
+        pytest.param(
+            "::ffff:127.0.0.1", None, False, id="ipv4-mapped-ipv6-loopback-default"
+        ),
+        pytest.param("localhost", None, False, id="localhost-default"),
+        pytest.param("0.0.0.0", None, True, id="non-loopback-default"),
+        pytest.param("127.0.0.1", True, True, id="explicit-secure-override"),
+        pytest.param("0.0.0.0", False, False, id="explicit-insecure-override"),
+    ],
+)
+def test_bootstrap_configures_session_cookie_from_bind_address_and_override(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    bind_address: str,
+    override: bool | None,
+    expected_secure: bool,
+) -> None:
+    app, _ = _assembled_platform_app(
+        tmp_path,
+        repository_root,
+        monkeypatch,
+        bind_address=bind_address,
+        session_cookie_secure=override,
+    )
+
+    response = TestClient(app).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+    session = cookie["pixelgym_session"]
+
+    assert bool(session["secure"]) is expected_secure
+    assert bool(session["httponly"])
+    assert session["samesite"] == "strict"
+
+
+def test_bootstrap_uses_environment_bind_address_for_session_cookie(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert bool(cookie["pixelgym_session"]["secure"])
+
+
+def test_bootstrap_environment_can_disable_secure_session_cookie(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "false")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
+
+    response = TestClient(bootstrap.create_app(bind_address="0.0.0.0")).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert not cookie["pixelgym_session"]["secure"]
+
+
+def test_bootstrap_rejects_invalid_environment_session_cookie_secure(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_SESSION_COOKIE_SECURE"):
+        bootstrap.create_app()
+
+
+def test_explicit_cookie_secure_argument_wins_over_environment(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "false")
+
+    response = TestClient(bootstrap.create_app(session_cookie_secure=True)).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert cookie["pixelgym_session"]["secure"]
+
+
+def test_cookie_secure_environment_is_validated_when_explicit_argument_wins(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_SESSION_COOKIE_SECURE"):
+        bootstrap.create_app(session_cookie_secure=True)
+
+
+def test_loopback_only_attestation_disables_secure_cookie_for_non_loopback_bind(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "TrUe")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert not cookie["pixelgym_session"]["secure"]
+
+
+def test_cookie_secure_environment_wins_over_loopback_only_attestation(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setenv("PIXELGYM_SESSION_COOKIE_SECURE", "true")
+
+    response = TestClient(bootstrap.create_app()).get("/")
+    cookie = SimpleCookie()
+    cookie.load(response.headers["set-cookie"])
+
+    assert cookie["pixelgym_session"]["secure"]
+
+
+def test_bootstrap_rejects_invalid_loopback_only_attestation(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "maybe")
+
+    with pytest.raises(ValueError, match="PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT"):
+        bootstrap.create_app()
+
+
+def test_loopback_only_attestation_logs_one_startup_warning(
+    tmp_path: Path, repository_root: Path, monkeypatch, caplog
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+
+    with caplog.at_level(logging.WARNING, logger=bootstrap.__name__):
+        bootstrap.create_app()
+
+    records = [
+        record
+        for record in caplog.records
+        if record.name == bootstrap.__name__
+        and "host-loopback-only port publishing" in record.getMessage()
+    ]
+    assert len(records) == 1
+    assert "unverifiable by the application" in records[0].getMessage()
+
+
+def test_bootstrap_rejects_forwarded_header_trust_configuration(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, _ = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
+    monkeypatch.setenv("FORWARDED_ALLOW_IPS", "127.0.0.1")
+
+    with pytest.raises(ValueError, match="resolves client addresses from the connection"):
+        bootstrap.create_app()
+
+
+def test_platform_entrypoint_uses_bootstrap_bind_address_without_proxy_headers(
+    repository_root: Path,
+) -> None:
+    entrypoint_path = repository_root / "deploy/platform-entrypoint.sh"
+    entrypoint = entrypoint_path.read_text()
+    dockerfile = (repository_root / "deploy/Dockerfile.platform").read_text()
+
+    assert entrypoint_path.stat().st_mode & stat.S_IXUSR
+    assert '--host "$PIXELGYM_BIND_ADDRESS"' in entrypoint
+    assert "--no-proxy-headers" in entrypoint
+    assert "PIXELGYM_BIND_ADDRESS:-127.0.0.1" in entrypoint
+    assert 'CMD ["/usr/local/bin/platform-entrypoint.sh"]' in dockerfile
 
 
 def _approved_candidate(control: ControlStore, policy, summary, report):
@@ -1249,7 +1475,7 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     candidate = _approved_candidate(control, policy, summary, report)
 
     deployed = app.state.deployment_coordinator.deploy(
-        candidate.candidate_id, actor="local-reviewer", reason="first deploy"
+        candidate.candidate_id, actor=SyntheticDemoPrincipal(), reason="first deploy"
     )
 
     runtime = app.state.policy_runtime.loaded
@@ -1272,10 +1498,12 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
         control, rollback_policy, rollback_summary, rollback_report
     )
     second = app.state.deployment_coordinator.deploy(
-        rollback_candidate.candidate_id, actor="local-reviewer", reason="second deploy"
+        rollback_candidate.candidate_id,
+        actor=SyntheticDemoPrincipal(),
+        reason="second deploy",
     )
     restored = app.state.deployment_coordinator.rollback(
-        actor="local-reviewer", reason="deterministic rollback"
+        actor=SyntheticDemoPrincipal(), reason="deterministic rollback"
     )
     runtime = app.state.policy_runtime.loaded
     assert runtime is not None
@@ -1288,7 +1516,7 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
     assert "Rollback to previous approved version" not in deployment_page.text
     with pytest.raises(TransitionError, match="no eligible known-good"):
         app.state.deployment_coordinator.rollback(
-            actor="local-reviewer", reason="repeat deterministic rollback"
+            actor=SyntheticDemoPrincipal(), reason="repeat deterministic rollback"
         )
 
 
@@ -1300,7 +1528,7 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     policy, summary, report = passing_evidence
     first = _approved_candidate(control, policy, summary, report)
     active = app.state.deployment_coordinator.deploy(
-        first.candidate_id, actor="local-reviewer", reason="first deploy"
+        first.candidate_id, actor=SyntheticDemoPrincipal(), reason="first deploy"
     )
     # Rebuild a valid, distinct policy instead of mutating identity fields.
     from pixelgym.platform.policy import build_policy_manifest, prompt_template
@@ -1345,7 +1573,9 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
 
     with pytest.raises((DeploymentSmokeError, TransitionError)):
         app.state.deployment_coordinator.deploy(
-            second.candidate_id, actor="local-reviewer", reason="must not activate"
+            second.candidate_id,
+            actor=SyntheticDemoPrincipal(),
+            reason="must not activate",
         )
 
     assert control.active()[0] == active
@@ -1357,6 +1587,53 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
 
 def _csrf(text: str) -> str:
     return re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', text).group(1)
+
+
+@pytest.mark.parametrize(
+    "untrusted_cookie",
+    [
+        pytest.param("client-chosen-session", id="unsigned"),
+        pytest.param("A" * 32 + "." + "0" * 64, id="bad-signature"),
+    ],
+)
+def test_untrusted_session_cookie_is_replaced_and_new_csrf_token_validates(
+    tmp_path: Path, untrusted_cookie: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    client.cookies.set("pixelgym_session", untrusted_cookie)
+
+    page = client.get("/")
+    token = _csrf(page.text)
+    cookie = SimpleCookie()
+    cookie.load(page.headers["set-cookie"])
+    issued_session = cookie["pixelgym_session"].value
+
+    assert issued_session != untrusted_cookie
+    assert re.fullmatch(r"[A-Za-z0-9_-]{32}\.[0-9a-f]{64}", issued_session)
+    assert client.post(
+        "/api/candidates/missing/approve",
+        json={"reason": "exercise CSRF validation"},
+        headers={"X-CSRF-Token": token},
+    ).status_code == 404
+
+
+def test_server_issued_session_cookie_is_retained_and_csrf_token_validates(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+
+    first_page = client.get("/")
+    second_page = client.get("/")
+
+    assert "set-cookie" in first_page.headers
+    assert "set-cookie" not in second_page.headers
+    assert client.post(
+        "/api/candidates/missing/approve",
+        json={"reason": "exercise CSRF validation"},
+        headers={"X-CSRF-Token": _csrf(second_page.text)},
+    ).status_code == 404
 
 
 MUTATING_ROUTES = (
@@ -1390,6 +1667,7 @@ class MutationProbe:
     def __init__(self) -> None:
         self.calls = {route: 0 for route in MUTATING_ROUTES}
         self.provider_calls = 0
+        self.actors: list[str] = []
 
     def submit(self, _submission_id: str, _payload: dict[str, str]) -> None:
         self.calls["submit_experiment"] += 1
@@ -1403,9 +1681,11 @@ class MutationProbe:
 
     def deploy(self, *_args, **_kwargs) -> None:
         self.calls["deploy_form"] += 1
+        self.actors.append(_kwargs["actor"])
 
     def rollback(self, *_args, **_kwargs) -> None:
         self.calls["rollback_form"] += 1
+        self.actors.append(_kwargs["actor"])
 
 
 def _control_state(control: ControlStore, probe: MutationProbe) -> dict[str, object]:
@@ -1431,6 +1711,7 @@ def _control_state(control: ControlStore, probe: MutationProbe) -> dict[str, obj
         "audit": audit,
         "route_calls": dict(probe.calls),
         "provider_calls": probe.provider_calls,
+        "probe_actors": tuple(probe.actors),
     }
 
 
@@ -1438,6 +1719,8 @@ def _mutating_route_context(
     tmp_path: Path,
     passing_evidence,
     route: str,
+    *,
+    verified_proxy: bool = False,
 ) -> tuple[ControlStore, MutationProbe, TestClient, str, dict[str, str], bool]:
     policy, summary, report = passing_evidence
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
@@ -1496,15 +1779,19 @@ def _mutating_route_context(
             "expected_generation": "2",
         }
 
-    client = TestClient(
-        create_control_app(
+    app = create_control_app(
             control,
             coordinator=probe,
             csrf_secret=secrets.token_urlsafe(32),
+            loopback_deployment=not verified_proxy,
+            trusted_proxy_addresses=("10.10.0.0/24",) if verified_proxy else (),
             submit_callback=probe.submit,
             cancel_callback=probe.cancel,
             tracking=probe,
         )
+    client = TestClient(
+        app,
+        client=("10.10.0.5", 50000) if verified_proxy else ("127.0.0.1", 50000),
     )
     return control, probe, client, path, fields, is_api
 
@@ -1516,17 +1803,558 @@ def _post_mutating_route(
     *,
     is_api: bool,
     token: str | None,
+    principal: str | None = None,
 ):
+    principal_headers = {} if principal is None else {"X-Forwarded-User": principal}
     if is_api:
         header_token: str | bytes | None = token
         if token is not None and not token.isascii():
             header_token = token.encode("latin-1")
-        headers = {} if header_token is None else {"X-CSRF-Token": header_token}
+        headers = dict(principal_headers)
+        if header_token is not None:
+            headers["X-CSRF-Token"] = header_token
         return client.post(path, json=fields, headers=headers, follow_redirects=False)
     data = dict(fields)
     if token is not None:
         data["csrf_token"] = token
-    return client.post(path, data=data, follow_redirects=False)
+    return client.post(path, data=data, headers=principal_headers, follow_redirects=False)
+
+
+def _submission_fields() -> dict[str, str]:
+    return {
+        "dataset": "day3-frozen-v1",
+        "prompt_version": "2",
+        "model": "day3-replay-revised-v2",
+        "condition": "raw",
+        "maximum_calls": "100",
+        "price_catalog": "pixelgym-demo-prices-v1",
+    }
+
+
+def _proxy_client(control: ControlStore, *, client_address: str = "10.10.0.5") -> TestClient:
+    return TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            loopback_deployment=False,
+            trusted_proxy_addresses=("10.10.0.0/24",),
+        ),
+        client=(client_address, 50000),
+    )
+
+
+def test_allowlisted_proxy_header_attributes_submission_to_verified_principal(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=headers).text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    created = [event for event in control.audit_events() if event["event_type"] == "submission.created"]
+    assert len(created) == 1
+    assert created[0]["actor"] == "reviewer.alice"
+    assert created[0]["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "proxy_header"
+
+
+def test_attested_loopback_deployment_attributes_bridge_peer_to_synthetic_demo(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setattr(bootstrap, "_run_flow", lambda *_args, **_kwargs: None)
+    client = TestClient(bootstrap.create_app(), client=("172.18.0.4", 50000))
+    page = client.get("/")
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": _csrf(page.text)},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert "Reviewer: synthetic-demo (synthetic demo)" in page.text
+    event = control.audit_events()[-1]
+    assert event["actor"] == "synthetic-demo"
+    assert event["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "synthetic_demo"
+
+
+def test_attested_loopback_deployment_prefers_trusted_proxy_principal(
+    tmp_path: Path, repository_root: Path, monkeypatch
+) -> None:
+    bootstrap, control = _configure_bootstrap_environment(
+        tmp_path, repository_root, monkeypatch
+    )
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
+    monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "172.18.0.0/16")
+    monkeypatch.setattr(bootstrap, "_run_flow", lambda *_args, **_kwargs: None)
+    client = TestClient(bootstrap.create_app(), client=("172.18.0.4", 50000))
+    headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=headers).text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    event = control.audit_events()[-1]
+    assert event["actor"] == "reviewer.alice"
+    assert event["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "proxy_header"
+
+
+@pytest.mark.parametrize("route", MUTATING_ROUTES)
+def test_every_mutating_route_uses_the_request_principal(
+    tmp_path: Path, passing_evidence, route: str
+) -> None:
+    route_root = tmp_path / route
+    route_root.mkdir()
+    control, probe, client, path, fields, is_api = _mutating_route_context(
+        route_root,
+        passing_evidence,
+        route,
+        verified_proxy=True,
+    )
+    principal = f"reviewer.{route}"
+    token = _csrf(client.get("/", headers={"X-Forwarded-User": principal}).text)
+
+    response = _post_mutating_route(
+        client,
+        path,
+        fields,
+        is_api=is_api,
+        token=token,
+        principal=principal,
+    )
+
+    assert response.status_code == (200 if is_api else 303)
+    if route in {"deploy_form", "rollback_form"}:
+        assert probe.actors == [principal]
+    else:
+        assert control.audit_events()[-1]["actor"] == principal
+
+
+def test_untrusted_proxy_header_is_rejected_before_nonloopback_mutation(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control, client_address="198.51.100.9")
+    token = _csrf(client.get("/").text)
+    before = control.audit_events()
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers={"X-Forwarded-User": "spoofed-reviewer"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "verified reviewer principal is required"}
+    assert control.audit_events() == before
+    assert control.list_submissions() == []
+
+
+def test_forwarded_for_does_not_change_peer_used_for_principal_trust(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control, client_address="198.51.100.9")
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers={
+            "X-Forwarded-For": "10.10.0.5",
+            "X-Forwarded-User": "reviewer.alice",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+@pytest.mark.parametrize(
+    ("client_address", "allowlist"),
+    (
+        ("10.10.0.5", "10.10.0.0/24"),
+        ("127.0.0.1", "127.0.0.1/32"),
+    ),
+)
+def test_duplicate_principal_headers_from_trusted_peer_are_rejected(
+    tmp_path: Path, client_address: str, allowlist: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            loopback_deployment=client_address.startswith("127."),
+            trusted_proxy_addresses=(allowlist,),
+        ),
+        client=(client_address, 50000),
+    )
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=[
+            ("X-Forwarded-User", "reviewer.alice"),
+            ("X-Forwarded-User", "reviewer.bob"),
+        ],
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+@pytest.mark.parametrize("reserved_principal", ("system", "synthetic-demo", "local-reviewer"))
+def test_reserved_actor_names_are_rejected_as_proxy_principals(
+    tmp_path: Path, reserved_principal: str
+) -> None:
+    with pytest.raises(ValueError, match="reserved actor name"):
+        VerifiedPrincipal(reserved_principal)
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    token = _csrf(client.get("/").text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers={"X-Forwarded-User": reserved_principal},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+def test_ipv4_mapped_proxy_peer_matches_ipv4_allowlist(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control, client_address="::ffff:10.10.0.5")
+    headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=headers).text)
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert control.audit_events()[-1]["actor"] == "reviewer.alice"
+
+
+@pytest.mark.parametrize("default_route", ("0.0.0.0/0", "::/0"))
+def test_default_route_is_rejected_from_trusted_proxy_allowlist(
+    tmp_path: Path, default_route: str
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+
+    with pytest.raises(ValueError, match="default route"):
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            trusted_proxy_addresses=(default_route,),
+        )
+
+
+@pytest.mark.parametrize("principal", (None, "reviewer alice", "-reviewer"))
+def test_trusted_proxy_missing_or_invalid_principal_is_rejected_before_mutation(
+    tmp_path: Path, principal: str | None
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    token = _csrf(client.get("/").text)
+    headers = {} if principal is None else {"X-Forwarded-User": principal}
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=headers,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    assert control.audit_events() == []
+    assert control.list_submissions() == []
+
+
+def test_actor_named_form_and_json_fields_cannot_override_request_principal(
+    tmp_path: Path, passing_evidence
+) -> None:
+    (tmp_path / "form").mkdir()
+    control, probe, form_client, form_path, form_fields, _ = _mutating_route_context(
+        tmp_path / "form", passing_evidence, "submit_experiment"
+    )
+    token = _csrf(form_client.get("/").text)
+    before = _control_state(control, probe)
+
+    form_response = form_client.post(
+        form_path,
+        data={**form_fields, "csrf_token": token, "actor": "spoofed-reviewer"},
+        follow_redirects=False,
+    )
+
+    assert form_response.status_code == 422
+    assert _control_state(control, probe) == before
+
+    (tmp_path / "api").mkdir()
+    api_control, api_probe, api_client, api_path, api_fields, _ = _mutating_route_context(
+        tmp_path / "api", passing_evidence, "approve_api"
+    )
+    api_token = _csrf(api_client.get("/").text)
+    api_before = _control_state(api_control, api_probe)
+    api_response = api_client.post(
+        api_path,
+        json={**api_fields, "actor": "spoofed-reviewer"},
+        headers={"X-CSRF-Token": api_token},
+        follow_redirects=False,
+    )
+
+    assert api_response.status_code == 422
+    assert _control_state(api_control, api_probe) == api_before
+
+
+def test_loopback_without_header_renders_and_audits_synthetic_demo_identity(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
+        client=("127.0.0.1", 50000),
+    )
+    page = client.get("/")
+
+    response = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": _csrf(page.text)},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert "Reviewer: synthetic-demo (synthetic demo)" in page.text
+    assert control.audit_events()[-1]["actor"] == "synthetic-demo"
+
+
+def test_two_verified_principals_produce_distinct_attributed_events(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    alice_headers = {"X-Forwarded-User": "reviewer.alice"}
+    token = _csrf(client.get("/", headers=alice_headers).text)
+    submitted = client.post(
+        "/experiments",
+        data={**_submission_fields(), "csrf_token": token},
+        headers=alice_headers,
+        follow_redirects=False,
+    )
+    submission_path = submitted.headers["location"]
+    bob_headers = {"X-Forwarded-User": "reviewer.bob"}
+    cancel_token = _csrf(client.get(submission_path, headers=bob_headers).text)
+
+    cancelled = client.post(
+        f"{submission_path}/cancel",
+        data={"csrf_token": cancel_token, "reason": "reviewer handoff"},
+        headers=bob_headers,
+        follow_redirects=False,
+    )
+
+    assert cancelled.status_code == 303
+    reviewer_events = [
+        event for event in control.audit_events() if event["actor"].startswith("reviewer.")
+    ]
+    assert [(event["event_type"], event["actor"]) for event in reviewer_events] == [
+        ("submission.created", "reviewer.alice"),
+        ("submission.cancelled", "reviewer.bob"),
+    ]
+
+
+def test_identical_submission_by_second_principal_records_resubmission(tmp_path: Path) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+
+    for reviewer in ("reviewer.alice", "reviewer.bob"):
+        headers = {"X-Forwarded-User": reviewer}
+        token = _csrf(client.get("/", headers=headers).text)
+        response = client.post(
+            "/experiments",
+            data={**_submission_fields(), "csrf_token": token},
+            headers=headers,
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+
+    assert len(control.list_submissions()) == 1
+    events = control.audit_events()
+    assert [(event["event_type"], event["actor"]) for event in events] == [
+        ("submission.created", "reviewer.alice"),
+        ("submission.resubmitted", "reviewer.bob"),
+    ]
+
+
+def test_two_principals_are_distinctly_attributed_across_approve_and_deploy(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+    )
+
+    class LedgerCoordinator:
+        def deploy(self, candidate_id: str, **kwargs):
+            return control.activate(candidate_id, action="deploy", **kwargs)
+
+    client = TestClient(
+        create_control_app(
+            control,
+            coordinator=LedgerCoordinator(),
+            csrf_secret="test-secret-at-least-sixteen",
+            loopback_deployment=False,
+            trusted_proxy_addresses=("10.10.0.0/24",),
+        ),
+        client=("10.10.0.5", 50000),
+    )
+    alice_headers = {"X-Forwarded-User": "reviewer.alice"}
+    approval_page = client.get(
+        f"/candidates/{candidate.candidate_id}", headers=alice_headers
+    )
+    approved = client.post(
+        f"/candidates/{candidate.candidate_id}/approve",
+        data={"csrf_token": _csrf(approval_page.text), "reason": "alice reviewed evidence"},
+        headers=alice_headers,
+        follow_redirects=False,
+    )
+    bob_headers = {"X-Forwarded-User": "reviewer.bob"}
+    deployment_page = client.get(
+        f"/candidates/{candidate.candidate_id}", headers=bob_headers
+    )
+    deployed = client.post(
+        f"/candidates/{candidate.candidate_id}/deploy",
+        data={
+            "csrf_token": _csrf(deployment_page.text),
+            "reason": "bob activates approved policy",
+            "expected_deployment_id": "",
+            "expected_generation": "0",
+        },
+        headers=bob_headers,
+        follow_redirects=False,
+    )
+
+    assert approved.status_code == deployed.status_code == 303
+    assert control.approval_events()[0]["actor"] == "reviewer.alice"
+    assert control.deployment_history()[0]["actor"] == "reviewer.bob"
+    privileged_events = [
+        event
+        for event in control.audit_events()
+        if event["event_type"] in {"candidate.approved", "deployment.deploy"}
+    ]
+    assert [(event["event_type"], event["actor"]) for event in privileged_events] == [
+        ("candidate.approved", "reviewer.alice"),
+        ("deployment.deploy", "reviewer.bob"),
+    ]
+    assert {
+        event["details"][ACTOR_VERIFICATION_SOURCE_KEY] for event in privileged_events
+    } == {"proxy_header"}
+
+
+def test_principal_middleware_does_not_log_or_audit_unrelated_header_values(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    client = _proxy_client(control)
+    headers = {
+        "X-Forwarded-User": "reviewer.alice",
+        "X-Unrelated-Context": "private-context-value",
+    }
+    token = _csrf(client.get("/", headers=headers).text)
+    with caplog.at_level(logging.INFO):
+        response = client.post(
+            "/experiments",
+            data={**_submission_fields(), "csrf_token": token},
+            headers=headers,
+            follow_redirects=False,
+        )
+
+    encoded_audit = json.dumps(control.audit_events(), sort_keys=True)
+    assert response.status_code == 303
+    assert "reviewer.alice" in encoded_audit
+    assert "private-context-value" not in encoded_audit
+    assert "private-context-value" not in caplog.text
+
+
+def test_nonloopback_bootstrap_without_proxy_allowlist_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pixelgym.platform import bootstrap
+
+    monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
+    monkeypatch.delenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", raising=False)
+    monkeypatch.delenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", raising=False)
+
+    with pytest.raises(RuntimeError, match="non-loopback.*TRUSTED_PROXY"):
+        bootstrap.create_app()
+
+
+def test_prechange_local_reviewer_audit_row_remains_readable_and_legacy_labeled(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db")
+    control.migrate()
+    with control.transaction() as connection:
+        connection.execute(
+            "INSERT INTO audit_events VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                "audit-prechange",
+                "candidate.approved",
+                "local-reviewer",
+                "candidate-legacy",
+                '{"reason":"pre-change fixture"}',
+                "2026-09-01T00:00:00+00:00",
+            ),
+        )
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
+        client=("127.0.0.1", 50000),
+    )
+
+    response = client.get("/deployment/audit")
+
+    assert response.status_code == 200
+    assert "local-reviewer (legacy/unverified)" in response.text
+    assert control.audit_events()[0]["actor"] == "local-reviewer"
 
 
 @pytest.mark.parametrize(
@@ -1715,7 +2543,8 @@ def test_web_submission_is_allowlisted_idempotent_and_synthetic_labeled(tmp_path
             cancel_callback=lambda submission: (
                 cancellation_states.append(control.get_submission(submission)["status"]) or True
             ),
-        )
+        ),
+        client=("127.0.0.1", 50000),
     )
     page = client.get("/")
     token = _csrf(page.text)
@@ -1776,7 +2605,8 @@ def test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure(
             control,
             csrf_secret="test-secret-at-least-sixteen",
             tracking=Mirror(),
-        )
+        ),
+        client=("127.0.0.1", 50000),
     )
     page = client.get(f"/candidates/{candidate.candidate_id}")
     response = client.post(
@@ -1793,7 +2623,10 @@ def test_approval_mirrors_mlflow_tags_and_records_reconciliation_on_failure(
 def test_empty_form_body_and_unknown_candidates_are_client_errors(tmp_path: Path) -> None:
     control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     control.migrate()
-    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
+        client=("127.0.0.1", 50000),
+    )
 
     empty = client.post(
         "/experiments",
@@ -1863,7 +2696,10 @@ def test_failed_candidate_has_visible_reasons_and_no_approval_control(
     candidate = control.register_candidate(
         source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
     )
-    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
+        client=("127.0.0.1", 50000),
+    )
     page = client.get(f"/candidates/{candidate.candidate_id}")
     assert "Approval unavailable" in page.text
     assert "below the minimum" in page.text
@@ -1895,7 +2731,8 @@ def test_missing_immutable_package_renders_as_blocked_deployment(
             control,
             coordinator=MissingPackageCoordinator(),
             csrf_secret="test-secret-at-least-sixteen",
-        )
+        ),
+        client=("127.0.0.1", 50000),
     )
     detail = client.get(f"/candidates/{candidate.candidate_id}")
     response = client.post(
@@ -2137,6 +2974,156 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert detail.text.index('name="csrf-token"') < detail.text.index("</head>")
 
 
+def _register_bulk_candidates(
+    control: ControlStore,
+    passing_evidence,
+    *,
+    oldest_provider: str | None = None,
+) -> None:
+    policy, _summary, report = passing_evidence
+    for index in range(1_000):
+        run_id = f"bulk-run-{index:04d}"
+        unsigned = dataclasses.replace(
+            policy,
+            model=f"bulk-model-{index:04d}",
+            provider=oldest_provider if oldest_provider and index < 10 else policy.provider,
+            policy_id="",
+        )
+        candidate_policy = dataclasses.replace(
+            unsigned,
+            policy_id="sha256:"
+            + sha256_bytes(canonical_json_bytes(unsigned.identity_dict())),
+        )
+        candidate_report = dataclasses.replace(
+            report,
+            run_id=run_id,
+            policy_id=candidate_policy.policy_id,
+        )
+        control.register_candidate(
+            source_run_id=run_id,
+            policy=candidate_policy,
+            gate_report=candidate_report,
+            artifacts=[],
+        )
+
+
+def test_runs_filter_before_pagination_finds_oldest_provider_candidates(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs?provider=bulk-provider-x")
+
+    assert response.status_code == 200
+    assert response.text.count('<tr><td><a href="/candidates/') == 10
+    assert 'href="/runs?provider=bulk-provider-x&amp;page=2"' not in response.text
+
+
+def test_runs_provider_options_include_providers_outside_first_page(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(
+        control,
+        passing_evidence,
+        oldest_provider="bulk-provider-x",
+    )
+
+    response = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    ).get("/runs")
+
+    assert response.status_code == 200
+    provider_select = re.search(
+        r'<select name="provider">(?P<options>.*?)</select>', response.text
+    )
+    assert provider_select is not None
+    assert 'value="bulk-provider-x"' in provider_select.group("options")
+    table_body = response.text.split("<tbody>", 1)[1].split("</tbody>", 1)[0]
+    assert "bulk-provider-x" not in table_body
+
+
+def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    _register_bulk_candidates(control, passing_evidence)
+
+    statements: list[str] = []
+    control.connection.set_trace_callback(statements.append)
+    try:
+        response = TestClient(
+            create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+        ).get("/runs")
+    finally:
+        control.connection.set_trace_callback(None)
+
+    selects = [
+        statement
+        for statement in statements
+        if statement.lstrip().upper().startswith("SELECT")
+    ]
+    candidate_selects = [
+        statement for statement in selects if "FROM candidates" in statement
+    ]
+    assert response.status_code == 200
+    assert len(selects) == 3
+    assert len(candidate_selects) == 2
+    assert response.text.count('<tr><td><a href="/candidates/') == RUNS_PAGE_SIZE
+    assert 'href="/runs?page=2"' in response.text
+
+
+def test_deployment_window_links_to_history_and_export_retains_every_audit_event(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    event_count = DEPLOYMENT_AUDIT_WINDOW + 5
+    for index in range(event_count):
+        with control.transaction() as connection:
+            control._audit(
+                connection,
+                "test.event",
+                "system",
+                f"audit-subject-{index:02d}",
+                {"index": index},
+            )
+
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
+    )
+    deployment = client.get("/deployment")
+    history = client.get("/deployment/audit")
+    export_path = tmp_path / "export"
+    export_evidence(control, export_path)
+    exported = [
+        json.loads(line)
+        for line in (export_path / "demo-audit-events.jsonl").read_text().splitlines()
+    ]
+
+    assert deployment.status_code == history.status_code == 200
+    assert deployment.text.count("<li><span>") == DEPLOYMENT_AUDIT_WINDOW
+    assert f">audit-subject-{event_count - 1:02d}</p>" in deployment.text
+    assert ">audit-subject-00</p>" not in deployment.text
+    assert 'href="/deployment/audit"' in deployment.text
+    assert "View full audit history" in deployment.text
+    assert ">audit-subject-00</p>" in history.text
+    assert len(exported) == event_count
+    assert {event["subject_id"] for event in exported} == {
+        f"audit-subject-{index:02d}" for index in range(event_count)
+    }
+
+
 def test_runs_filter_prompt_model_status_date_and_gate_result(
     tmp_path: Path, passing_evidence
 ) -> None:
@@ -2245,6 +3232,45 @@ def test_compatible_run_api_rejects_unsafe_filters_and_maps_timeout(tmp_path: Pa
     assert tracking.calls == 0
     assert client.get("/api/tracking/runs/compatible", params=base).status_code == 504
     assert tracking.calls == 1
+
+
+def test_compatible_run_api_maps_capacity_exhaustion_to_documented_503(
+    tmp_path: Path,
+) -> None:
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+
+    class SaturatedTracking:
+        def search_compatible_runs(self, **_filters):
+            raise CompatibleSearchCapacityError(
+                capacity=COMPATIBLE_SEARCH_CAPACITY,
+                occupancy=COMPATIBLE_SEARCH_CAPACITY,
+            )
+
+    client = TestClient(
+        create_control_app(
+            control,
+            csrf_secret="test-secret-at-least-sixteen",
+            tracking=SaturatedTracking(),
+        )
+    )
+    response = client.get(
+        "/api/tracking/runs/compatible",
+        params={
+            "dataset_fingerprint": "sha256:" + "a" * 64,
+            "scorer_version": "scorer-v1",
+            "target_semantics": "target-v1",
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": {
+            "error": "MLflow compatible-run search capacity exhausted",
+            "capacity": COMPATIBLE_SEARCH_CAPACITY,
+            "occupancy": COMPATIBLE_SEARCH_CAPACITY,
+        }
+    }
 
 
 def test_runs_render_safe_source_provenance_diagnostic(

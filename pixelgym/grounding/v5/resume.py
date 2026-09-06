@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Protocol, runtime_checkable
 
-from pixelgym.grounding.v5.contracts import EnvironmentResumeRecord
+from pixelgym.backends.base import EnvironmentResumeRecord
 
 
 @runtime_checkable

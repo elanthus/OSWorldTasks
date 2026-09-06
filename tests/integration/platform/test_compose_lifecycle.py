@@ -172,6 +172,19 @@ def _control_count(stack, table: str) -> int:
     return int(completed.stdout.strip())
 
 
+def _reviewer_audit_attribution(stack) -> list[list[str]]:
+    completed = stack.compose(
+        "exec",
+        "-T",
+        "platform",
+        "python",
+        "-c",
+        "import json,sqlite3; c=sqlite3.connect('/state/control.db'); print(json.dumps([[r[0],json.loads(r[1]).get('actor_verification_source')] for r in c.execute(\"SELECT actor,details_json FROM audit_events WHERE event_type IN ('candidate.approved','deployment.deploy','deployment.rollback','submission.cancelled','submission.created','submission.resubmitted') ORDER BY rowid\")]))",
+        timeout=30,
+    )
+    return json.loads(completed.stdout)
+
+
 def _candidate_evidence(stack, candidate_id: str) -> tuple[PolicyManifest, list[ArtifactRef]]:
     completed = stack.compose(
         "exec", "-T", "platform", "python", "-c",
@@ -286,6 +299,12 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 page, stack, "day3-replay-revised-rollback-seed-v1", "Eligible"
             )
             seed_policy = _approve_and_deploy(page, stack, seed_id, "rollback seed")
+            page.goto(f"{stack.platform_url}/deployment")
+            playwright_api.expect(page.get_by_text("Reviewer: synthetic-demo", exact=False)).to_be_visible()
+            assert _reviewer_audit_attribution(stack)[-2:] == [
+                ["synthetic-demo", "synthetic_demo"],
+                ["synthetic-demo", "synthetic_demo"],
+            ]
 
             _submit(
                 page,

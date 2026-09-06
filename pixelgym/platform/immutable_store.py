@@ -23,6 +23,8 @@ class ImmutableStoreError(RuntimeError):
 
 class ImmutableStore(Protocol):
     def put_once(self, logical_key: str, data: bytes, *, media_type: str) -> ArtifactRef: ...
+
+    # Reference lookups inspect metadata only. Call get_verified when bytes are consumed.
     def get_reference(self, logical_key: str) -> ArtifactRef | None: ...
     def get_verified(self, reference: ArtifactRef) -> bytes: ...
 
@@ -121,6 +123,17 @@ class LocalImmutableStore:
             media_type=media_type,
             retention_status="application-put-once; no storage-enforced WORM retention",
         )
+        try:
+            existing = self.get_reference(logical_key)
+        except ImmutableStoreError:
+            # Inspect partial state under the lock so an identical put can repair it.
+            existing = None
+        if existing is not None:
+            if existing != reference:
+                raise ImmutableStoreError("refusing conflicting bytes at immutable key")
+            self.get_verified(existing)
+            return existing
+
         with self._filesystem_lock():
             data_path.parent.mkdir(parents=True, exist_ok=True)
             metadata_path.parent.mkdir(parents=True, exist_ok=True)
@@ -130,15 +143,19 @@ class LocalImmutableStore:
                 raise ImmutableStoreError("immutable object data path is not a file")
             if metadata_exists and not metadata_path.is_file():
                 raise ImmutableStoreError("immutable object metadata path is not a file")
-            if data_exists and data_path.read_bytes() != data:
-                raise ImmutableStoreError("refusing conflicting bytes at immutable key")
-            if metadata_exists:
-                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-                if metadata != reference.to_dict():
-                    raise ImmutableStoreError("refusing conflicting bytes at immutable key")
             if data_exists and metadata_exists:
-                self._get_verified_unlocked(reference)
-                return reference
+                existing = self._get_reference_unlocked(logical_key)
+                if existing != reference:
+                    raise ImmutableStoreError("refusing conflicting bytes at immutable key")
+            else:
+                if data_exists and data_path.read_bytes() != data:
+                    raise ImmutableStoreError("refusing conflicting bytes at immutable key")
+                if metadata_exists:
+                    metadata_reference = self._load_reference_unlocked(
+                        logical_key, metadata_path
+                    )
+                    if metadata_reference != reference:
+                        raise ImmutableStoreError("refusing conflicting bytes at immutable key")
 
             temporary_data: Path | None = None
             temporary_meta: Path | None = None
@@ -181,15 +198,30 @@ class LocalImmutableStore:
 
     def get_reference(self, logical_key: str) -> ArtifactRef | None:
         with self._filesystem_lock():
-            data_path, metadata_path = self._paths(logical_key)
-            if not data_path.exists() and not metadata_path.exists():
-                return None
-            if not data_path.is_file() or not metadata_path.is_file():
-                raise ImmutableStoreError("immutable object is incomplete")
+            return self._get_reference_unlocked(logical_key)
+
+    def _get_reference_unlocked(self, logical_key: str) -> ArtifactRef | None:
+        data_path, metadata_path = self._paths(logical_key)
+        if not metadata_path.exists():
+            return None
+        if not metadata_path.is_file():
+            raise ImmutableStoreError("immutable object metadata path is not a file")
+        if not data_path.is_file():
+            raise ImmutableStoreError("immutable object is incomplete")
+        return self._load_reference_unlocked(logical_key, metadata_path)
+
+    @staticmethod
+    def _load_reference_unlocked(logical_key: str, metadata_path: Path) -> ArtifactRef:
+        try:
             value = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if not isinstance(value, dict):
+                raise TypeError("metadata root is not an object")
             reference = ArtifactRef(**value)
-            self._get_verified_unlocked(reference)
-            return reference
+        except (OSError, TypeError, ValueError) as exc:
+            raise ImmutableStoreError("immutable object metadata is malformed") from exc
+        if reference.logical_key != logical_key:
+            raise ImmutableStoreError("immutable object metadata key does not match lookup key")
+        return reference
 
 
 class S3ImmutableStore:
@@ -248,7 +280,14 @@ class S3ImmutableStore:
         if not isinstance(metadata_value, Mapping):
             raise ImmutableStoreError("S3 immutable metadata is not a mapping")
         metadata = metadata_value
-        digest = str(metadata.get("sha256", ""))
+        digest_value = metadata.get("sha256")
+        media_type_value = metadata.get("media-type")
+        if not isinstance(digest_value, str) or not isinstance(media_type_value, str):
+            raise ImmutableStoreError("S3 immutable metadata is missing identity fields")
+        digest = digest_value
+        content_type = head.get("ContentType")
+        if content_type is not None and content_type != media_type_value:
+            raise ImmutableStoreError("S3 immutable media type metadata does not match HEAD")
         version_id = str(head.get("VersionId") or metadata.get("version-id") or "null")
         if self.object_lock:
             mode = str(head.get("ObjectLockMode") or "").upper()
@@ -262,15 +301,18 @@ class S3ImmutableStore:
         size_value = head.get("ContentLength", -1)
         if not isinstance(size_value, int) or isinstance(size_value, bool):
             raise ImmutableStoreError("S3 immutable object size is not an integer")
-        return ArtifactRef(
-            logical_key=logical_key,
-            uri=f"s3://{self.bucket}/{self._key(logical_key)}",
-            version_id=version_id,
-            sha256=digest,
-            size=size_value,
-            media_type=str(head.get("ContentType") or metadata.get("media-type") or ""),
-            retention_status=retention,
-        )
+        try:
+            return ArtifactRef(
+                logical_key=logical_key,
+                uri=f"s3://{self.bucket}/{self._key(logical_key)}",
+                version_id=version_id,
+                sha256=digest,
+                size=size_value,
+                media_type=media_type_value,
+                retention_status=retention,
+            )
+        except ValueError as exc:
+            raise ImmutableStoreError("S3 immutable metadata is malformed") from exc
 
     def get_reference(self, logical_key: str) -> ArtifactRef | None:
         try:
@@ -282,7 +324,6 @@ class S3ImmutableStore:
                 return None
             raise ImmutableStoreError("S3 immutable metadata lookup failed") from exc
         reference = self._from_head(logical_key, cast(dict[str, object], head))
-        self.get_verified(reference)
         return reference
 
     def put_once(self, logical_key: str, data: bytes, *, media_type: str) -> ArtifactRef:
@@ -292,6 +333,7 @@ class S3ImmutableStore:
         if existing is not None:
             if existing.sha256 != digest or existing.size != len(data) or existing.media_type != media_type:
                 raise ImmutableStoreError("refusing conflicting bytes at immutable S3 key")
+            self.get_verified(existing)
             return existing
         arguments: dict[str, object] = {
             "Bucket": self.bucket,
@@ -319,6 +361,7 @@ class S3ImmutableStore:
                 and existing.size == len(data)
                 and existing.media_type == media_type
             ):
+                self.get_verified(existing)
                 return existing
             raise ImmutableStoreError("immutable S3 put failed") from exc
         head_arguments = {"Bucket": self.bucket, "Key": self._key(logical_key)}
