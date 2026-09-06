@@ -4,11 +4,16 @@ Uses FastAPI's in-process TestClient — no sockets, no network, no wall clock.
 """
 
 import dataclasses
+import re
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
+from pixelgym.tasks.vendor_form import ui
 from pixelgym.tasks.vendor_form.app.server import VendorFormState, create_app
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _client() -> TestClient:
@@ -20,6 +25,31 @@ def _submit_payload(task: dict, **overrides) -> dict:
     payload = {**task["fields"], "task_id": task["task_id"]}
     payload.update(overrides)
     return payload
+
+
+def test_incomplete_submission_message_matches_browser_app_literal():
+    app_source = (
+        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
+    ).read_text()
+    uncommented_source = re.sub(r"/\*.*?\*/", "", app_source, flags=re.DOTALL)
+    matches = list(
+        re.finditer(
+            r'^\s*(?:var|let|const)\s+INCOMPLETE_SUBMISSION_MESSAGE\s*=\s*'
+            r'(?P<quote>["\'])(?P<message>[^\r\n]*?)(?P=quote);\s*$',
+            uncommented_source,
+            re.MULTILINE,
+        )
+    )
+
+    assert len(matches) == 1, (
+        "app.js must define exactly one live literal INCOMPLETE_SUBMISSION_MESSAGE; "
+        f"found {len(matches)} definitions"
+    )
+    javascript_message = matches[0].group("message")
+    assert javascript_message == ui.INCOMPLETE_SUBMISSION_MESSAGE, (
+        f"app.js INCOMPLETE_SUBMISSION_MESSAGE={javascript_message!r} does not match "
+        f"ui.INCOMPLETE_SUBMISSION_MESSAGE={ui.INCOMPLETE_SUBMISSION_MESSAGE!r}"
+    )
 
 
 def test_reset_is_idempotent_for_same_seed():
