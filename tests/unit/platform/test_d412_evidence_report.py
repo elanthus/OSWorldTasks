@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.generate_d412_evidence_report as d412_report
 from scripts.generate_d412_evidence_report import (
     CHECKLIST,
     DOCUMENTATION_PATHS,
@@ -19,6 +20,7 @@ from scripts.generate_d412_evidence_report import (
 REVISION = "f92e307af7a3830347d50ca63f6a7d481489935c"
 LIVE_DOCUMENTATION_REGRESSION_REVISION = "672a6556716e4779a7c494637d839d18bcdc9453"
 KNOWN_LIMITATIONS_PATH = "artifacts/platform/known-limitations.md"
+# See artifacts/platform/d4.12/f92e307af7a3830347d50ca63f6a7d481489935c/EVIDENCE-NOTE.md.
 LEGACY_MANIFEST_KNOWN_LIMITATIONS = {
     "path": KNOWN_LIMITATIONS_PATH,
     "sha256": "1698fa65daf5e462486ab1467bb4ade2cbfe8600b66e7af78717dd39a074aa51",
@@ -28,6 +30,24 @@ D412_ROOT = Path(__file__).parents[3] / "artifacts/platform/d4.12"
 COMMITTED_REVISIONS = tuple(
     path.name for path in sorted(D412_ROOT.iterdir()) if path.is_dir()
 )
+MISSING_COMMITTED_REVISIONS = tuple(
+    revision
+    for revision in COMMITTED_REVISIONS
+    if subprocess.run(
+        ["git", "cat-file", "-e", f"{revision}^{{commit}}"],
+        cwd=D412_ROOT.parents[2],
+        capture_output=True,
+        check=False,
+    ).returncode
+    != 0
+)
+if MISSING_COMMITTED_REVISIONS:
+    pytest.skip(
+        "committed D4.12 revisions are unavailable in this shallow clone: "
+        f"{', '.join(MISSING_COMMITTED_REVISIONS)}; run `git fetch --unshallow` "
+        "locally or configure `fetch-depth: 0` in CI",
+        allow_module_level=True,
+    )
 
 
 def _isolated_evidence(
@@ -36,21 +56,26 @@ def _isolated_evidence(
     isolated_root = tmp_path / "repository"
     source_evidence = repository_root / "artifacts/platform/d4.12" / revision
     evidence_dir = isolated_root / "artifacts/platform/d4.12" / revision
-    shutil.copytree(source_evidence, evidence_dir)
+    shutil.copytree(
+        source_evidence,
+        evidence_dir,
+        # This post-gate annotation is not part of the historical evidence snapshot.
+        ignore=shutil.ignore_patterns("EVIDENCE-NOTE.md"),
+    )
     for relative in SUPPORTING_PATHS:
-        if relative in DOCUMENTATION_PATHS:
-            continue
         destination = isolated_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(_git_file_bytes(repository_root, revision, relative))
     screenshot_manifest = json.loads(
-        (repository_root / "artifacts/platform/screenshots/manifest.json").read_text()
+        (isolated_root / "artifacts/platform/screenshots/manifest.json").read_text()
     )
     for item in screenshot_manifest["screenshots"]:
         relative = Path("artifacts/platform/screenshots") / item["path"]
         destination = isolated_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(repository_root / relative, destination)
+        destination.write_bytes(
+            _git_file_bytes(repository_root, revision, relative.as_posix())
+        )
     (isolated_root / ".git").symlink_to(
         repository_root / ".git", target_is_directory=(repository_root / ".git").is_dir()
     )
@@ -111,11 +136,7 @@ def test_generated_artifact_digests_verify_independently(
         assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
     for entry in manifest["supporting_artifacts"]:
-        data = (
-            _git_file_bytes(isolated_root, REVISION, entry["path"])
-            if entry["path"] in DOCUMENTATION_PATHS
-            else (isolated_root / entry["path"]).read_bytes()
-        )
+        data = _git_file_bytes(isolated_root, REVISION, entry["path"])
         assert len(data) == entry["size"]
         assert hashlib.sha256(data).hexdigest() == entry["sha256"]
 
@@ -183,18 +204,27 @@ def test_generator_reproduces_committed_manifest(
     ] * 2
     for entry in _artifact_entries(committed, KNOWN_LIMITATIONS_PATH):
         entry.update(recorded_entry)
-    assert generated == committed
+    generated_bytes = (json.dumps(generated, indent=2, sort_keys=True) + "\n").encode()
+    committed_bytes = (json.dumps(committed, indent=2, sort_keys=True) + "\n").encode()
+    assert generated_bytes == committed_bytes
 
 
-def test_generator_reproduces_manifest_with_modified_live_documentation(
-    repository_root: Path, tmp_path: Path
+@pytest.mark.parametrize(
+    "relative",
+    (
+        "deploy/README.md",
+        "artifacts/platform/architecture.md",
+        "artifacts/platform/known-limitations.md",
+    ),
+)
+def test_generator_reproduces_manifest_with_modified_live_supporting_artifact(
+    repository_root: Path, tmp_path: Path, relative: str
 ) -> None:
     revision = LIVE_DOCUMENTATION_REGRESSION_REVISION
     isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path, revision)
-    deployment_readme = isolated_root / "deploy/README.md"
-    assert not deployment_readme.exists()
-    deployment_readme.parent.mkdir(parents=True)
-    deployment_readme.write_text("Later documentation change.\n")
+    supporting_path = isolated_root / relative
+    assert supporting_path.exists()
+    supporting_path.write_text("Later supporting-artifact change.\n")
 
     generate(isolated_root, evidence_dir)
 
@@ -254,6 +284,29 @@ def test_git_file_read_rejects_missing_revision_and_path(repository_root: Path) 
         _git_file_bytes(repository_root, "0" * 40, "deploy/README.md")
     with pytest.raises(ValueError, match="path is not present"):
         _git_file_bytes(repository_root, head, "deploy/missing-documentation.md")
+    with pytest.raises(ValueError, match="path is not a blob"):
+        _git_file_bytes(repository_root, head, "deploy")
+
+
+def test_generator_checks_recorded_revision_once(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    revision_checks: list[str] = []
+    original_run = d412_report.subprocess.run
+
+    def counting_run(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        if args[:3] == ["git", "cat-file", "-e"]:
+            revision_checks.append(args[3])
+        return original_run(args, **kwargs)
+
+    monkeypatch.setattr(d412_report.subprocess, "run", counting_run)
+
+    generate(isolated_root, evidence_dir)
+
+    assert revision_checks == [f"{REVISION}^{{commit}}"]
 
 
 def test_generator_rejects_dirty_frozen_worktree(repository_root: Path, tmp_path: Path) -> None:
@@ -292,24 +345,56 @@ def test_generator_rejects_tampered_resume_ledger(repository_root: Path, tmp_pat
 
 
 def test_generator_rejects_policy_mapped_to_multiple_candidates(
-    repository_root: Path, tmp_path: Path
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
-    lineage_path = isolated_root / "artifacts/platform/demo-mlflow-lineage.jsonl"
-    rows = [json.loads(line) for line in lineage_path.read_text().splitlines()]
+    lineage_path = "artifacts/platform/demo-mlflow-lineage.jsonl"
+    rows = [
+        json.loads(line)
+        for line in _git_file_bytes(repository_root, REVISION, lineage_path)
+        .decode()
+        .splitlines()
+    ]
     rows[1]["policy_id"] = rows[0]["policy_id"]
-    lineage_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
+    tampered_lineage = "".join(
+        json.dumps(row, sort_keys=True) + "\n" for row in rows
+    ).encode()
+    original_git_file_bytes = d412_report._git_file_bytes
+
+    def git_file_bytes_with_conflicting_lineage(
+        root: Path,
+        revision: str,
+        relative: str,
+        *,
+        revision_validated: bool = False,
+    ) -> bytes:
+        if relative == lineage_path:
+            return tampered_lineage
+        return original_git_file_bytes(
+            root,
+            revision,
+            relative,
+            revision_validated=revision_validated,
+        )
+
+    monkeypatch.setattr(
+        d412_report, "_git_file_bytes", git_file_bytes_with_conflicting_lineage
+    )
 
     with pytest.raises(ValueError, match="multiple candidates"):
         generate(isolated_root, evidence_dir)
 
 
-def test_generator_rejects_host_identity_in_supporting_artifact(
+def test_generator_rejects_host_identity_in_evidence_artifact(
     repository_root: Path, tmp_path: Path
 ) -> None:
     isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
-    limitations = isolated_root / "artifacts/platform/known-limitations.md"
-    limitations.write_text(limitations.read_text() + "\n/home/example-user/private.txt\n")
+    command_path = evidence_dir / "commands/02-python-version.json"
+    command = json.loads(command_path.read_text())
+    command["operator_path"] = "/home/example-user/private.txt"
+    command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
 
     with pytest.raises(ValueError, match="redaction scan found prohibited data"):
         generate(isolated_root, evidence_dir)
