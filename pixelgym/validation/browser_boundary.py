@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import signal
+import time
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
@@ -18,6 +20,7 @@ from pixelgym.evaluator import evaluate
 from pixelgym.grounding.schema import CSS_HEIGHT, CSS_WIDTH, DEVICE_SCALE_FACTOR
 from pixelgym.task_spec import Submission, TaskSpec
 from pixelgym.tasks.vendor_form.browser_contract import (
+    GUEST_VENDOR_FORM_URL,
     READY_SELECTOR,
     ChromiumLaunchPath,
     build_chromium_argv,
@@ -44,9 +47,13 @@ SOURCE_PATHS = (
 
 GUEST_SOURCE_PATHS = (
     "pixelgym/validation/browser_boundary.py",
+    "pixelgym/tasks/vendor_form/app/static/app.js",
+    "pixelgym/tasks/vendor_form/app/static/index.html",
+    "pixelgym/tasks/vendor_form/app/static/style.css",
     "pixelgym/tasks/vendor_form/browser_contract.py",
     "pixelgym/tasks/vendor_form/osworld_task.py",
     "pixelgym/backends/osworld.py",
+    "pixelgym/grounding/schema.py",
 )
 
 _EMPTY_VALUES = {
@@ -395,7 +402,7 @@ def validate_guest_browser_boundary(
         effective_argv = launch.get("effective_argv") if isinstance(launch, dict) else None
         check_values["active_window_uses_protected_presentation"] = (
             isinstance(effective_argv, list)
-            and "--app=http://127.0.0.1:3000/" in effective_argv
+            and f"--app={GUEST_VENDOR_FORM_URL}" in effective_argv
             and navigation.get("active_window_fullscreen") is True
         )
         evidence.update(
@@ -574,9 +581,12 @@ def _guest_cli(argv: list[str] | None = None) -> int:
     def stop_loss(_signum: int, _frame: object) -> None:
         raise TimeoutError(f"guest browser probe exceeded {args.stop_loss_seconds} seconds")
 
-    previous_handler = signal.signal(signal.SIGALRM, stop_loss)
-    signal.alarm(args.stop_loss_seconds)
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_alarm_seconds = signal.alarm(0)
+    alarm_started_at = time.monotonic()
     try:
+        signal.signal(signal.SIGALRM, stop_loss)
+        signal.alarm(args.stop_loss_seconds)
         evidence = validate_guest_browser_boundary(
             Path(__file__).resolve().parents[2],
             guest_image_path=args.guest_image,
@@ -586,6 +596,9 @@ def _guest_cli(argv: list[str] | None = None) -> int:
     finally:
         signal.alarm(0)
         signal.signal(signal.SIGALRM, previous_handler)
+        if previous_alarm_seconds > 0:
+            elapsed_seconds = math.ceil(time.monotonic() - alarm_started_at)
+            signal.alarm(max(1, previous_alarm_seconds - elapsed_seconds))
     local_evidence = json.loads(args.local_evidence.read_text(encoding="utf-8"))
     if not isinstance(local_evidence, dict):
         raise TypeError("local browser-boundary evidence must be a JSON object")

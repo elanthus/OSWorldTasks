@@ -24,9 +24,11 @@ from pixelgym.validation.browser_boundary import (
     browser_boundary_evidence_passed,
     browser_boundary_source_hashes_match,
     guest_browser_boundary_evidence_passed,
+    guest_browser_boundary_source_hashes_match,
     inspect_navigation_surface,
     source_hashes,
 )
+from scripts import validate_vendor_form_browser_boundary
 
 _CHECK_NAMES = (
     "submit_response_ok",
@@ -252,6 +254,30 @@ def test_guest_navigation_evidence_requires_every_named_check(tmp_path: Path) ->
     assert guest_browser_boundary_evidence_passed(evidence) is False
 
 
+def test_guest_source_hashes_cover_rendered_static_assets_and_viewport_schema(
+    tmp_path: Path,
+) -> None:
+    expected_render_sources = {
+        "pixelgym/tasks/vendor_form/app/static/app.js",
+        "pixelgym/tasks/vendor_form/app/static/index.html",
+        "pixelgym/tasks/vendor_form/app/static/style.css",
+        "pixelgym/grounding/schema.py",
+    }
+    assert expected_render_sources <= set(GUEST_SOURCE_PATHS)
+    for relative in GUEST_SOURCE_PATHS:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(relative, encoding="utf-8")
+    evidence = _guest_evidence(tmp_path)
+
+    (tmp_path / "pixelgym/tasks/vendor_form/app/static/style.css").write_text(
+        "changed", encoding="utf-8"
+    )
+
+    assert guest_browser_boundary_evidence_passed(evidence) is True
+    assert guest_browser_boundary_source_hashes_match(evidence, tmp_path) is False
+
+
 def test_guest_cli_fails_closed_for_stale_guest_source_hashes(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -281,6 +307,59 @@ def test_guest_cli_fails_closed_for_stale_guest_source_hashes(
     )
 
     assert exit_status == 1
+
+
+def test_guest_cli_restores_pending_alarm(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repository_root = Path(__file__).resolve().parents[2]
+    local_path = tmp_path / "local.json"
+    local_path.write_text(json.dumps(_evidence(repository_root)), encoding="utf-8")
+    guest_evidence = _guest_evidence(repository_root)
+    alarm_calls: list[int] = []
+    monotonic_values = iter((100.0, 102.2))
+
+    monkeypatch.setattr(
+        browser_boundary_module,
+        "validate_guest_browser_boundary",
+        lambda *_args, **_kwargs: guest_evidence,
+    )
+    monkeypatch.setattr(browser_boundary_module.signal, "getsignal", lambda _signal: "handler")
+    monkeypatch.setattr(browser_boundary_module.signal, "signal", lambda *_args: None)
+
+    def alarm(seconds: int) -> int:
+        alarm_calls.append(seconds)
+        return 30 if len(alarm_calls) == 1 else 0
+
+    monkeypatch.setattr(browser_boundary_module.signal, "alarm", alarm)
+    monkeypatch.setattr(
+        browser_boundary_module.time, "monotonic", lambda: next(monotonic_values)
+    )
+
+    exit_status = browser_boundary_module._guest_cli(
+        [
+            "--local-evidence",
+            str(local_path),
+            "--output",
+            str(tmp_path / "combined.json"),
+            "--screenshot",
+            str(tmp_path / "guest.png"),
+            "--guest-image",
+            str(tmp_path / "guest.qcow2"),
+            "--stop-loss-seconds",
+            "10",
+        ]
+    )
+
+    assert exit_status == 0
+    assert alarm_calls == [0, 10, 0, 27]
+
+
+def test_local_browser_boundary_script_requires_explicit_output() -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        validate_vendor_form_browser_boundary.main([])
+
+    assert exc_info.value.code == 2
 
 
 def test_playwright_and_guest_evidence_report_same_renderer_identity(tmp_path: Path) -> None:

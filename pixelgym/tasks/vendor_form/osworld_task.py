@@ -258,6 +258,8 @@ class _VendorFormTaskSupport:
 
         # This setup path satisfies the reload contract because it always starts
         # from a freshly wiped Chrome profile and loads the task page anew below.
+        # The profile lives in /dev/shm to avoid persistent guest-disk browser state;
+        # --disable-dev-shm-usage separately redirects renderer shared-memory files.
 
         desktop_ready_name = "pixelgym-vendor-form-desktop-ready.txt"
         desktop_ready_path = Path(setup_controller.cache_dir) / desktop_ready_name

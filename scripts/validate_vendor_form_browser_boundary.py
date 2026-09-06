@@ -9,12 +9,10 @@ from pathlib import Path
 
 from pixelgym.validation.browser_boundary import validate_browser_boundary
 
-DEFAULT_OUTPUT = Path("artifacts/day-2/raw/browser-boundary.json")
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=7)
     args = parser.parse_args(argv)
     repository_root = Path(__file__).resolve().parents[1]

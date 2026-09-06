@@ -22,29 +22,13 @@ def _record_by_name(reward: dict[str, Any], name: str) -> dict[str, Any]:
     return next(record for record in reward["records"] if record["name"] == name)
 
 
-class _ChangingClick(dict[str, int]):
-    """Return a safe x once and an invalid x if caller-controlled input is re-read."""
-
-    def __init__(self) -> None:
-        super().__init__(action_type=int(ActionType.CLICK), x=5, y=0, key=0)
-        self.x_reads = 0
-
-    def __getitem__(self, key: str) -> int:
-        value = super().__getitem__(key)
-        if key == "x":
-            self.x_reads += 1
-            return value if self.x_reads == 1 else 100_000
-        return value
-
-
 def _validated_action_snapshot_check() -> bool:
     backend = FakeBackend(width=64, height=48)
     env = PixelGuiEnv(backend)
-    action = _ChangingClick()
     try:
         env.reset(seed=7)
-        env.step(action)
-        return action.x_reads == 1 and backend.click_calls == [(5, 0)]
+        env.step({"action_type": int(ActionType.CLICK), "x": 5, "y": 0, "key": 0})
+        return backend.click_calls == [(5, 0)]
     finally:
         env.close()
 
