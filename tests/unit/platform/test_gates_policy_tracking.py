@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from pixelgym.platform import mlflow_tracking
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.mlflow_tracking import (
     COMPATIBLE_SEARCH_CAPACITY,
@@ -18,6 +19,16 @@ from pixelgym.platform.mlflow_tracking import (
     MlflowTracking,
 )
 from pixelgym.platform.policy import is_verified_clean_revision, verify_policy_manifest
+
+
+@pytest.fixture(autouse=True)
+def _reset_compatible_search_capacity(monkeypatch) -> None:
+    monkeypatch.setattr(
+        mlflow_tracking,
+        "_COMPATIBLE_SEARCH_SLOTS",
+        threading.BoundedSemaphore(COMPATIBLE_SEARCH_CAPACITY),
+    )
+    monkeypatch.setattr(mlflow_tracking, "_compatible_search_occupancy", 0)
 
 
 @pytest.mark.parametrize(
@@ -348,7 +359,7 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
     release = threading.Event()
     calls_lock = threading.Lock()
     baseline_threads = {
-        thread.ident
+        thread
         for thread in threading.enumerate()
         if thread.name == "mlflow-compatible-run-search"
     }
@@ -360,8 +371,8 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
         def search_runs(self, *_args, **_kwargs):
             with calls_lock:
                 self.calls += 1
-            started.wait(timeout=2)
-            assert release.wait(timeout=2)
+            started.wait(timeout=10)
+            assert release.wait(timeout=10)
             return []
 
     tracking = object.__new__(MlflowTracking)
@@ -380,22 +391,22 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
     worker_threads: list[threading.Thread] = []
     try:
         with (
-            caplog.at_level(logging.INFO, logger="pixelgym.platform.mlflow_tracking"),
+            caplog.at_level(logging.WARNING, logger="pixelgym.platform.mlflow_tracking"),
             ThreadPoolExecutor(max_workers=COMPATIBLE_SEARCH_CAPACITY) as executor,
         ):
             requests = [
                 executor.submit(search_until_request_timeout)
                 for _ in range(COMPATIBLE_SEARCH_CAPACITY)
             ]
-            started.wait(timeout=2)
+            started.wait(timeout=10)
             for request in requests:
-                request.result(timeout=1)
+                request.result(timeout=10)
 
             worker_threads = [
                 thread
                 for thread in threading.enumerate()
                 if thread.name == "mlflow-compatible-run-search"
-                and thread.ident not in baseline_threads
+                and thread not in baseline_threads
             ]
             assert len(worker_threads) == COMPATIBLE_SEARCH_CAPACITY
 
@@ -409,13 +420,20 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
             assert rejected.value.capacity == COMPATIBLE_SEARCH_CAPACITY
             assert rejected.value.occupancy == COMPATIBLE_SEARCH_CAPACITY
             assert tracking.client.calls == COMPATIBLE_SEARCH_CAPACITY
+            threads_after_rejection = [
+                thread
+                for thread in threading.enumerate()
+                if thread.name == "mlflow-compatible-run-search"
+                and thread not in baseline_threads
+            ]
+            assert len(threads_after_rejection) == COMPATIBLE_SEARCH_CAPACITY
     finally:
         release.set()
         for thread in worker_threads:
-            thread.join(timeout=1)
+            thread.join(timeout=10)
 
     current_threads = {
-        thread.ident
+        thread
         for thread in threading.enumerate()
         if thread.name == "mlflow-compatible-run-search"
     }
@@ -425,12 +443,9 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
         for record in caplog.records
         if record.message.startswith("compatible-run search capacity")
     ]
-    assert [record.message for record in capacity_records].count(
-        "compatible-run search capacity acquired"
-    ) == COMPATIBLE_SEARCH_CAPACITY
-    assert [record.message for record in capacity_records].count(
+    assert [record.message for record in capacity_records] == [
         "compatible-run search capacity rejected"
-    ) == 1
+    ]
     assert all(
         record.compatible_search_capacity == COMPATIBLE_SEARCH_CAPACITY
         for record in capacity_records

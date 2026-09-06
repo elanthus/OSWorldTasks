@@ -798,10 +798,10 @@ def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
     """Return promptly while capping MLflow calls that outlive their request."""
     global _compatible_search_occupancy
 
-    acquired = _COMPATIBLE_SEARCH_SLOTS.acquire(
-        timeout=COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS
-    )
     with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
+        acquired = _COMPATIBLE_SEARCH_SLOTS.acquire(
+            timeout=COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS
+        )
         if acquired:
             _compatible_search_occupancy += 1
         occupancy = _compatible_search_occupancy
@@ -817,26 +817,31 @@ def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
             capacity=COMPATIBLE_SEARCH_CAPACITY,
             occupancy=occupancy,
         )
-    _LOGGER.info(
-        "compatible-run search capacity acquired",
-        extra={
-            "compatible_search_capacity": COMPATIBLE_SEARCH_CAPACITY,
-            "compatible_search_occupancy": occupancy,
-        },
-    )
     result: queue.Queue[tuple[bool, Any]] = queue.Queue(maxsize=1)
+    release_lock = threading.Lock()
+    released = False
+    start_failed = threading.Event()
+
+    def release_capacity() -> None:
+        global _compatible_search_occupancy
+        nonlocal released
+
+        with release_lock:
+            if released:
+                return
+            released = True
+            _COMPATIBLE_SEARCH_SLOTS.release()
+            with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
+                _compatible_search_occupancy -= 1
 
     def invoke() -> None:
-        global _compatible_search_occupancy
-
         try:
             result.put((True, call()))
         except Exception as exc:  # noqa: BLE001 - preserve the adapter's original exception.
             result.put((False, exc))
         finally:
-            with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
-                _compatible_search_occupancy -= 1
-            _COMPATIBLE_SEARCH_SLOTS.release()
+            if not start_failed.is_set():
+                release_capacity()
 
     worker = threading.Thread(
         target=invoke,
@@ -846,9 +851,8 @@ def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
     try:
         worker.start()
     except BaseException:
-        with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
-            _compatible_search_occupancy -= 1
-        _COMPATIBLE_SEARCH_SLOTS.release()
+        start_failed.set()
+        release_capacity()
         raise
     try:
         succeeded, value = result.get(timeout=timeout_seconds)
