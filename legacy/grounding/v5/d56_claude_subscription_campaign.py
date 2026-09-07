@@ -67,6 +67,34 @@ SMOKE_ACTION_LIMIT = 1
 AGGREGATE_SMOKE_PROCESS_CAP = 3
 
 
+def legacy_runner_result_projection(
+    episode_results: list[dict[str, Any]],
+    *,
+    attempted_episodes: int,
+    assigned_policy_task_pairs: int,
+) -> dict[str, Any]:
+    """Expose the frozen runner's result aggregation for migration parity tests."""
+
+    classifications = Counter(result["classification"] for result in episode_results)
+    denominators = summarize_outcome_denominators(
+        episode_results,
+        attempted_episodes=attempted_episodes,
+    )
+    denominators["policy_violation"] = classifications["policy_violation"]
+    return {
+        "attempted_policy_task_pairs": len(episode_results),
+        "successful_policy_task_pairs": sum(
+            bool(result["success"]) for result in episode_results
+        ),
+        "completed_all_assigned_pairs": (
+            len(episode_results) == assigned_policy_task_pairs
+        ),
+        "outcome_denominators": denominators,
+        "classifications": dict(sorted(classifications.items())),
+        "episode_results": episode_results,
+    }
+
+
 def _load_json_object(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -570,7 +598,6 @@ def _execute(
     finally:
         if transport is not None:
             transport.close()
-        classifications = Counter(result["classification"] for result in episode_results)
         attempt_integrity = attempt_journal.integrity_report()
         invocation_integrity = invocation_journal.integrity_report()
         call_counts = attempt_journal.call_counts()
@@ -579,6 +606,11 @@ def _execute(
         subprocesses_closed = transport is None or transport.subprocesses_closed
         attempt_journal.close()
         invocation_journal.close()
+        result_projection = legacy_runner_result_projection(
+            episode_results,
+            attempted_episodes=attempted_episodes,
+            assigned_policy_task_pairs=(1 if smoke else EXPECTED_TASK_COUNT),
+        )
         summary = {
             "schema_version": (
                 SMOKE_RESULT_SCHEMA_VERSION if smoke else FULL_RESULT_SCHEMA_VERSION
@@ -596,18 +628,16 @@ def _execute(
                 subprocesses_closed=subprocesses_closed,
             ),
             "assigned_policy_task_pairs": 1 if smoke else EXPECTED_TASK_COUNT,
-            "attempted_policy_task_pairs": len(episode_results),
-            "successful_policy_task_pairs": sum(
-                bool(result["success"]) for result in episode_results
-            ),
-            "completed_all_assigned_pairs": len(episode_results)
-            == (1 if smoke else EXPECTED_TASK_COUNT),
-            "outcome_denominators": summarize_outcome_denominators(
-                episode_results,
-                attempted_episodes=attempted_episodes,
-            ),
-            "classifications": dict(sorted(classifications.items())),
-            "episode_results": episode_results,
+            **{
+                key: value
+                for key, value in result_projection.items()
+                if key != "outcome_denominators"
+            },
+            "outcome_denominators": {
+                key: value
+                for key, value in result_projection["outcome_denominators"].items()
+                if key != "policy_violation"
+            },
         }
         if smoke:
             summary["task_id"] = plan["task"]["task_id"]

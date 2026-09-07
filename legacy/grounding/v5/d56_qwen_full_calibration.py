@@ -38,12 +38,40 @@ from pixelgym.grounding.v5.panel_policy import (
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.planning import call_cap_plan, load_partition_manifests
-from pixelgym.grounding.v5.runner import V5Runner
+from pixelgym.grounding.v5.runner import V5Runner, summarize_outcome_denominators
 
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-plan-v2"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-qwen-full-calibration-result-v2"
 
 ENDPOINT_METADATA_OBSERVED_AT_UTC = "2026-08-28T13:34:08Z"
+
+
+def legacy_runner_result_projection(
+    episode_results: list[dict[str, Any]],
+    *,
+    attempted_episodes: int,
+    assigned_policy_task_pairs: int,
+) -> dict[str, Any]:
+    """Expose the frozen runner's result aggregation for migration parity tests."""
+
+    classifications = Counter(result["classification"] for result in episode_results)
+    denominators = summarize_outcome_denominators(
+        episode_results,
+        attempted_episodes=attempted_episodes,
+    )
+    denominators["policy_violation"] = classifications["policy_violation"]
+    return {
+        "attempted_policy_task_pairs": len(episode_results),
+        "successful_policy_task_pairs": sum(
+            bool(result["success"]) for result in episode_results
+        ),
+        "completed_all_assigned_pairs": (
+            len(episode_results) == assigned_policy_task_pairs
+        ),
+        "outcome_denominators": denominators,
+        "classifications": dict(sorted(classifications.items())),
+        "episode_results": episode_results,
+    }
 
 
 def _load_json_object(path: Path) -> dict[str, Any]:
@@ -294,7 +322,6 @@ def execute_calibration(
         execution_error = {"type": type(exc).__name__}
         raise
     finally:
-        classifications = Counter(result["classification"] for result in episode_results)
         transport_records = [] if transport is None else list(transport.records)
         integrity = journal.integrity_report()
         call_counts = journal.call_counts()
@@ -303,6 +330,11 @@ def execute_calibration(
         prior_campaign_spend = plan["caps"]["prior_campaign_spend"]
         campaign_spend = combine_spend_disclosures(
             (prior_campaign_spend, phase_spend)
+        )
+        result_projection = legacy_runner_result_projection(
+            episode_results,
+            attempted_episodes=len(episode_results),
+            assigned_policy_task_pairs=EXPECTED_TASK_COUNT,
         )
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
@@ -331,11 +363,17 @@ def execute_calibration(
             ),
             "maximum_run_spend_usd": str(maximum_spend_usd),
             "assigned_policy_task_pairs": EXPECTED_TASK_COUNT,
-            "attempted_policy_task_pairs": len(episode_results),
-            "successful_policy_task_pairs": sum(result["success"] for result in episode_results),
-            "completed_all_assigned_pairs": len(episode_results) == EXPECTED_TASK_COUNT,
-            "classifications": dict(sorted(classifications.items())),
-            "episode_results": episode_results,
+            "attempted_policy_task_pairs": result_projection[
+                "attempted_policy_task_pairs"
+            ],
+            "successful_policy_task_pairs": result_projection[
+                "successful_policy_task_pairs"
+            ],
+            "completed_all_assigned_pairs": result_projection[
+                "completed_all_assigned_pairs"
+            ],
+            "classifications": result_projection["classifications"],
+            "episode_results": result_projection["episode_results"],
             "execution_error": execution_error,
             "transport_records": transport_records,
             "successful_smoke_evidence": plan["successful_smoke_evidence"],

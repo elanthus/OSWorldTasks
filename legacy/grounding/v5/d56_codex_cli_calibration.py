@@ -6,6 +6,7 @@ import hashlib
 import json
 import sqlite3
 import subprocess
+from collections import Counter
 from collections.abc import Callable, Mapping
 from decimal import Decimal
 from pathlib import Path
@@ -68,6 +69,34 @@ PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 MAXIMUM_REMAINING_INCREMENTAL_EXPOSURE_USD = Decimal("5.221835282")
 SMOKE_SEED = 5002
 SMOKE_ACTION_LIMIT = 1
+
+
+def legacy_runner_result_projection(
+    episode_results: list[dict[str, Any]],
+    *,
+    attempted_episodes: int,
+    assigned_policy_task_pairs: int,
+) -> dict[str, Any]:
+    """Expose the frozen runner's result aggregation for migration parity tests."""
+
+    classifications = Counter(result["classification"] for result in episode_results)
+    denominators = summarize_outcome_denominators(
+        episode_results,
+        attempted_episodes=attempted_episodes,
+    )
+    denominators["policy_violation"] = classifications["policy_violation"]
+    return {
+        "attempted_policy_task_pairs": len(episode_results),
+        "successful_policy_task_pairs": sum(
+            bool(result["success"]) for result in episode_results
+        ),
+        "completed_all_assigned_pairs": (
+            len(episode_results) == assigned_policy_task_pairs
+        ),
+        "outcome_denominators": denominators,
+        "classifications": dict(sorted(classifications.items())),
+        "episode_results": episode_results,
+    }
 
 PREDECESSOR_PLAN_CONTENT_SHA256 = (
     "sha256:fc1f41d00df8c847d55765ea6af6b4c688463a893281f995f3eee3b770c43f7c"
@@ -1287,6 +1316,11 @@ def execute_smoke(
         usage_telemetry_status = (
             str(transport_records[-1].get("usage_telemetry_status")) if transport_records else None
         )
+        result_projection = legacy_runner_result_projection(
+            [] if result_record is None else [result_record],
+            attempted_episodes=attempted_episodes,
+            assigned_policy_task_pairs=1,
+        )
         summary = {
             "schema_version": SMOKE_RESULT_SCHEMA_VERSION,
             "purpose": plan["purpose"],
@@ -1318,10 +1352,11 @@ def execute_smoke(
             "cost_accounting_method": "luna_chatgpt_subscription_experiment_charge_zero_v1",
             "task_id": plan["task"]["task_id"],
             "episode_result": result_record,
-            "outcome_denominators": summarize_outcome_denominators(
-                [] if result_record is None else [result_record],
-                attempted_episodes=attempted_episodes,
-            ),
+            "outcome_denominators": {
+                key: value
+                for key, value in result_projection["outcome_denominators"].items()
+                if key != "policy_violation"
+            },
             "execution_error": execution_error,
             "policy_violation": policy_violation,
             "transport_records": transport_records,
