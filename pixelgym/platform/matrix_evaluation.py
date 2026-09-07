@@ -41,7 +41,11 @@ def canonical_seed_policy_plan(value: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(dataset_fingerprint, str):
         raise TypeError("seed-policy plan dataset fingerprint must be a string")
     digest = dataset_fingerprint.removeprefix("sha256:")
-    if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+    if (
+        not dataset_fingerprint.startswith("sha256:")
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
         raise ValueError("seed-policy plan requires a dataset fingerprint")
     policies_value = value.get("policies")
     assignments_value = value.get("assignments")
@@ -117,7 +121,8 @@ def load_seed_policy_plan(path: Path, *, repository_root: Path) -> dict[str, Any
     if plan["dataset_fingerprint"] != actual_fingerprint:
         raise ValueError("seed-policy plan dataset fingerprint differs from the frozen dataset")
     available_seeds = {
-        row["task_seed"] for row in load_jsonl(repository_root / "artifacts/grounding-dataset.jsonl")
+        row["task_seed"]
+        for row in load_jsonl(repository_root / "artifacts/grounding-dataset.jsonl")
     }
     requested_seeds = {item["seed"] for item in plan["assignments"]}
     if not requested_seeds <= available_seeds:
@@ -157,9 +162,10 @@ def canonical_seed_policy_aggregate(
         if identifier not in expected:
             raise ValueError("joined branches contain an unknown assignment")
         assignment = expected[identifier]
-        if content.get("seed") != assignment["seed"] or content.get("policy_id") != assignment[
-            "policy_id"
-        ]:
+        if (
+            content.get("seed") != assignment["seed"]
+            or content.get("policy_id") != assignment["policy_id"]
+        ):
             raise ValueError("branch result identity differs from its plan assignment")
         required_fields = {
             "assignment_id",

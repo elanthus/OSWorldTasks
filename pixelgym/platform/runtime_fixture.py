@@ -12,6 +12,7 @@ import json
 import os
 import sqlite3
 import time
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -80,7 +81,9 @@ class LedgeredScriptedReplayProvider:
                 if row.get("condition") == "raw"
             }
         else:
-            raise ValueError("scripted variant must be baseline, revised, invalid, or request_failure")
+            raise ValueError(
+                "scripted variant must be baseline, revised, invalid, or request_failure"
+            )
         self.variant = variant
         self.ledger_path = ledger_path
         self.concurrency_barrier = concurrency_barrier
@@ -92,7 +95,7 @@ class LedgeredScriptedReplayProvider:
         )
         try:
             fcntl.flock(descriptor, fcntl.LOCK_EX)
-            with self._connect() as connection:
+            with closing(self._connect()) as connection:
                 connection.executescript(_SCHEMA)
         finally:
             fcntl.flock(descriptor, fcntl.LOCK_UN)
@@ -107,9 +110,14 @@ class LedgeredScriptedReplayProvider:
     def _wait_for_concurrency_barrier(self) -> None:
         if self.concurrency_barrier == 1:
             return
-        deadline = time.monotonic() + 10
+        timeout_seconds = float(
+            os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS", "10")
+        )
+        if timeout_seconds <= 0:
+            raise ValueError("provider concurrency barrier timeout must be positive")
+        deadline = time.monotonic() + timeout_seconds
         while time.monotonic() < deadline:
-            with self._connect() as connection:
+            with closing(self._connect()) as connection:
                 row = connection.execute(
                     "SELECT max_active, barrier_reached FROM counters WHERE singleton = 1"
                 ).fetchone()
@@ -135,9 +143,7 @@ class LedgeredScriptedReplayProvider:
     ) -> PlatformProviderResponse:
         del image_path, prompt, schema
         if condition != self.condition or example_id not in self.responses:
-            response = PlatformProviderResponse(
-                None, self.latency_ms, {}, 0.0, "fixture missing"
-            )
+            response = PlatformProviderResponse(None, self.latency_ms, {}, 0.0, "fixture missing")
         elif self.variant == "request_failure":
             response = PlatformProviderResponse(
                 None, None, None, None, "deterministic scripted request failure"
@@ -224,7 +230,10 @@ def provider_ledger_snapshot(path: Path) -> dict[str, int]:
             "SELECT COUNT(*), COUNT(DISTINCT request_id), COALESCE(SUM(cache_hit), 0) FROM attempts"
         ).fetchone()
         active, max_active, billable_calls, _ = connection.execute(
-            "SELECT active, max_active, billable_calls, barrier_reached FROM counters WHERE singleton = 1"
+            """
+            SELECT active, max_active, billable_calls, barrier_reached
+            FROM counters WHERE singleton = 1
+            """
         ).fetchone()
     return {
         "attempts": int(attempts),

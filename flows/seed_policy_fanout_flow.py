@@ -26,8 +26,10 @@ from pixelgym.platform.matrix_evaluation import (
     example_ids_for_seed,
     load_seed_policy_plan,
     seed_policy_plan_digest,
+    summarize_parallel_timing,
 )
 from pixelgym.platform.schema_validation import load_gate_policy, load_price_catalog
+from pixelgym.platform.source_provenance import generate_source_provenance
 
 _TEST_HOOKS_ENV = "PIXELGYM_ENABLE_TEST_HOOKS"
 _MODEL_BEHAVIOR = {
@@ -145,6 +147,7 @@ class SeedPolicyFanoutFlow(FlowSpec):
         if self.worker_cap != 4:
             raise ValueError("the local evidence flow requires the owner-approved worker cap of 4")
         self.flow_started_at_utc = _now()
+        self.runtime_source_provenance = generate_source_provenance(_root()).to_dict()
         self.plan = load_seed_policy_plan(Path(self.plan_file), repository_root=_root())
         self.plan_digest = seed_policy_plan_digest(self.plan)
         self.dataset_fingerprint = self.plan["dataset_fingerprint"]
@@ -195,7 +198,9 @@ class SeedPolicyFanoutFlow(FlowSpec):
         ]
         invalid_count = sum(row["parse_status"] == "invalid" for row in records)
         failure_count = sum(row["parse_status"] == "request_failure" for row in records)
-        outcome = "request_failure" if failure_count else "invalid" if invalid_count else "completed"
+        outcome = (
+            "request_failure" if failure_count else "invalid" if invalid_count else "completed"
+        )
         ended_at = _now()
         self.branch_result = {
             "content": {
@@ -214,7 +219,10 @@ class SeedPolicyFanoutFlow(FlowSpec):
                 "attempt": int(getattr(current, "retry_count", 0)),
                 "ended_at_utc": ended_at,
                 "queue_duration_ms": round(
-                    (datetime.fromisoformat(started_at) - datetime.fromisoformat(self.fanout_dispatched_at_utc)).total_seconds()
+                    (
+                        datetime.fromisoformat(started_at)
+                        - datetime.fromisoformat(self.fanout_dispatched_at_utc)
+                    ).total_seconds()
                     * 1000,
                     3,
                 ),
@@ -243,11 +251,11 @@ class SeedPolicyFanoutFlow(FlowSpec):
             "plan",
             "plan_digest",
             "price_catalog_version",
+            "runtime_source_provenance",
         ):
             setattr(self, name, getattr(source, name))
         results = [branch.branch_result for branch in inputs]
         aggregate_bytes = canonical_seed_policy_aggregate(self.plan, results)
-        join_ended = _now()
         policy_revisions = sorted({item["code_revision"] for item in self.plan["policies"]})
         if len(policy_revisions) != 1:
             raise ValueError("all policies in one matrix plan must share one exact revision")
@@ -276,7 +284,21 @@ class SeedPolicyFanoutFlow(FlowSpec):
             if getattr(current, "origin_run_id", None)
             else []
         )
-        evidence = {
+        join_ended = _now()
+        timing_summary = summarize_parallel_timing(
+            {
+                "branches": branch_timings,
+                "flow_started_at_utc": self.flow_started_at_utc,
+                "flow_ended_at_utc": join_ended,
+                "join_started_at_utc": join_started,
+                "join_ended_at_utc": join_ended,
+                "plan_digest": self.plan_digest,
+            }
+        )
+        observed_parallelism = timing_summary["maximum_observed_parallel_branches"]
+        if observed_parallelism > self.worker_cap:
+            raise ValueError("observed branch parallelism exceeds the configured worker cap")
+        self.evidence = {
             "schema_version": "pixelgym-seed-policy-runtime-evidence-v1",
             "plan_digest": self.plan_digest,
             "aggregate_sha256": "sha256:" + sha256_bytes(aggregate_bytes),
@@ -291,22 +313,25 @@ class SeedPolicyFanoutFlow(FlowSpec):
             "runtime_context": {
                 "cpu_count": os.cpu_count(),
                 "metaflow_version": metaflow.__version__,
+                "maximum_observed_parallel_branches": observed_parallelism,
                 "platform": platform.platform(),
                 "policy_revisions": policy_revisions,
                 "python_version": platform.python_version(),
-                "revision": policy_revisions[0],
+                "revision": self.runtime_source_provenance["revision"],
+                "source_provenance": self.runtime_source_provenance,
                 "worker_cap": self.worker_cap,
             },
         }
-        output = Path(self.output_file)
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_bytes(canonical_json_bytes(evidence) + b"\n")
-        self.evidence = evidence
+
         self.next(self.end)
 
     @step
     def end(self) -> None:
-        pass
+        output = Path(self.output_file)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(canonical_json_bytes(self.evidence) + b"\n")
+        self.evidence["flow_ended_at_utc"] = _now()
+        output.write_bytes(canonical_json_bytes(self.evidence) + b"\n")
 
 
 if __name__ == "__main__":

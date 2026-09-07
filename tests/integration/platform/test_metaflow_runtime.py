@@ -653,6 +653,7 @@ def test_seed_policy_fanout_resume_preserves_exactly_once_assignments_and_provid
             "PIXELGYM_IMMUTABLE_ROOT": str(tmp_path / "immutable"),
             "PIXELGYM_REPOSITORY_ROOT": str(repository_root),
             "PIXELGYM_TEST_CONCURRENCY_BARRIER": "4",
+            "PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS": "30",
             "PIXELGYM_TEST_FAIL_ONCE": "matrix_branch_persisted",
             "PIXELGYM_TEST_PROVIDER_LEDGER": str(tmp_path / "provider.db"),
             "PIXELGYM_TEST_STATE_ROOT": str(tmp_path / "events"),
@@ -720,6 +721,12 @@ def test_seed_policy_fanout_resume_preserves_exactly_once_assignments_and_provid
     assert evidence["plan_digest"] == seed_policy_plan_digest(plan)
     assert evidence["resume_events"][0]["event"] == "metaflow_resume"
     assert evidence["retry_events"] == []
+    runtime_context = evidence["runtime_context"]
+    assert runtime_context["worker_cap"] == 4
+    assert runtime_context["maximum_observed_parallel_branches"] == 4
+    assert runtime_context["maximum_observed_parallel_branches"] <= runtime_context["worker_cap"]
+    assert runtime_context["revision"] == runtime_context["source_provenance"]["revision"]
+    assert runtime_context["policy_revisions"] == ["a" * 40]
 
     expected_calls = sum(item["expected_count"] for item in results)
     assert expected_calls == 40
