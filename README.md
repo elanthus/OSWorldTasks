@@ -139,14 +139,14 @@ network model/provider calls. After the
 [default development setup](#quick-reproduction-without-osworld), run from the repository root:
 
 ```bash
-python3.12 scripts/platform_compose.py up --build --wait
+.venv/bin/python scripts/platform_compose.py up --build --wait
 ```
 
 Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
 stack while retaining its local evidence with:
 
 ```bash
-python3.12 scripts/platform_compose.py down
+.venv/bin/python scripts/platform_compose.py down
 ```
 
 Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
@@ -340,8 +340,9 @@ known limitation, with the underlying evidence retained
   The immutable historical evidence also retains its earlier live-clock differences
   ([current comparison](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
 - The historical 1920×1080 OSWorld run established semantic task-state determinism and measured
-  unmasked perceptual visual stability (minimum SSIM 0.999863), not bitwise visual determinism. The
-  2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; its
+  155 differing pixels with a maximum per-channel delta of 222 before its unmasked perceptual
+  visual-stability result (minimum SSIM 0.999863); it did not establish bitwise visual determinism.
+  The 2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; its
   D2.11 human re-grade remains pending.
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - OSWorld is an optional dependency that downloads a 14.2 GB compressed guest artifact and requires

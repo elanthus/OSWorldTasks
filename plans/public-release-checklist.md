@@ -31,9 +31,13 @@ output directly.
   JSON. Every local README target must exist and be tracked; external links are inventoried but are
   not fetched by this offline check.
 - [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode redaction` and inspect every
-  category, including acknowledged synthetic test vectors and structured model outputs.
+  category, including acknowledged synthetic test vectors and structured model outputs. This mode
+  intentionally includes non-ignored, untracked working-tree files.
+- [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode history` and inspect every
+  fingerprinted finding from blobs reachable through all Git refs. Do not paste matched values into
+  an issue, pull request, or release record.
 - [ ] Compare a fresh full inventory from
-  `.venv/bin/python scripts/inventory_public_release.py --mode inventory` with
+  `.venv/bin/python scripts/inventory_public_release.py --mode inventory --tracked-only` with
   `artifacts/public-release-inventory.json`. Investigate any difference before release.
 - [ ] Confirm no ignored/private evidence, restricted attempt journal, gated OSWorld task asset,
   raw private provider payload, operator path, personal e-mail address, credential, or token is
@@ -50,6 +54,9 @@ output directly.
   infer it from automated status.
 - [ ] Review the stored D4.12 raw evidence. Record any human milestone verdict separately; this
   release checklist does not declare one.
+- [ ] Decide how to handle the fingerprinted absolute operator paths retained in historical blobs:
+  accept their publication, authorize a separately reviewed history rewrite, or keep the repository
+  private. Do not change visibility while this decision is unresolved.
 - [ ] Change the GitHub repository visibility from private to public.
 - [ ] From a logged-out browser, verify the README, local artifact links, license files, and release
   media are accessible in the public repository.
