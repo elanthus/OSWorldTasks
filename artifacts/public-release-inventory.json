@@ -387,7 +387,8 @@
           {
             "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 13,
@@ -544,7 +545,8 @@
           {
             "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 13,
@@ -565,7 +567,8 @@
           {
             "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 5,
@@ -1787,7 +1790,8 @@
           {
             "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_placeholder",
             "line": 13,
@@ -1919,7 +1923,8 @@
           {
             "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_placeholder",
             "line": 13,
@@ -1929,7 +1934,8 @@
           {
             "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_placeholder",
             "line": 5,
@@ -2948,8 +2954,8 @@
     "external_link_count": 2,
     "failure_count": 0,
     "failures": [],
-    "link_count": 62,
-    "local_link_count": 60,
+    "link_count": 63,
+    "local_link_count": 61,
     "passed": true
   },
   "redaction_and_asset_inventory": {
@@ -3447,10 +3453,10 @@
         "review_required_count": 0
       }
     },
-    "files_scanned": 2680,
+    "files_scanned": 2681,
     "passed": true,
     "review_required_count": 0,
-    "text_files_scanned": 882
+    "text_files_scanned": 883
   },
   "schema_version": "pixelgym-public-release-inventory-v2",
   "scope": {

@@ -18,8 +18,8 @@ output directly.
 - [ ] Inspect the README animation and other media for credentials, private UI, and identifying
   information before approving them for a public repository.
 - [ ] Confirm the frozen v1 target/screen aliasing, moving model alias, synthetic platform metrics,
-  optional OSWorld requirements, D2.11 re-grade, D4.12 verdict, and incomplete V5 work remain
-  disclosed.
+  optional OSWorld requirements, the 2026-09-07 D2.11 re-grade record, D4.12 verdict, and
+  incomplete V5 work remain disclosed.
 - [ ] Approve the README wording as a public claim. Merging the documentation PR records this
   wording approval; an automated check cannot supply it.
 
@@ -52,8 +52,9 @@ output directly.
 - [ ] Run `.venv/bin/ruff check .` and retain its raw exit status and output.
 - [ ] Run `.venv/bin/mypy pixelgym` and retain its raw exit status and output.
 - [ ] Run `.venv/bin/pytest -q -n auto tests/unit` and retain its raw counts and runtime.
-- [ ] Review the pending D2.11 re-grade evidence. Record any new human verdict separately; do not
-  infer it from automated status.
+- [ ] Confirm the 2026-09-07 D2.11 re-grade record
+  (`artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json`, verdict `PASS`) matches the
+  owner's declaration; it was recorded from the owner's statement, not inferred from automated status.
 - [ ] Review the stored D4.12 raw evidence. Record any human milestone verdict separately; this
   release checklist does not declare one.
 - [ ] Confirm the 2026-09-07 owner decision to accept the Git history without rewriting the seven
