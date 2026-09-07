@@ -521,16 +521,6 @@
             "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
           },
           {
-            "blob_oid": "a2e14d980e7a3974e4f6a28b3bbb05d6248a19d3",
-            "boundary_commits": [
-              "1cdf3722774197f4ce611ed4340d8ddd359200e0"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 78,
-            "path": "tests/unit/test_public_release_inventory.py",
-            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
-          },
-          {
             "blob_oid": "47aab7f789e38a28594d1428218ce4001fb03f86",
             "boundary_commits": [
               "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
@@ -539,6 +529,17 @@
             "line": 209,
             "path": "tests/unit/test_vendor_form_app.py",
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
+          },
+          {
+            "blob_oid": "a2e14d980e7a3974e4f6a28b3bbb05d6248a19d3",
+            "boundary_commits": [
+              "1cdf3722774197f4ce611ed4340d8ddd359200e0",
+              "cc48540f212934a2b0f40eaf49f35bfa2260b5cf"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 78,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
           },
           {
             "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
@@ -553,7 +554,8 @@
           {
             "blob_oid": "8667c665b897ccd7b5b9c4a2da135c70f61d6d83",
             "boundary_commits": [
-              "1cdf3722774197f4ce611ed4340d8ddd359200e0"
+              "1cdf3722774197f4ce611ed4340d8ddd359200e0",
+              "cc48540f212934a2b0f40eaf49f35bfa2260b5cf"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 78,
