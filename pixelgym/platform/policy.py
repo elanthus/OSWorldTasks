@@ -145,10 +145,11 @@ def verify_renderer_binding(manifest: PolicyManifest) -> None:
 
     This is stricter than ``verify_policy_manifest``: a policy built before renderer
     identity existed can still verify its own (unchanged) digest, but it cannot pass
-    this check, so it cannot be newly activated. Called at deploy, rollback, and
-    serving-startup restore -- never at read time -- so pre-renderer evidence stays
-    readable while traffic can only move to a package whose renderer is bound and
-    matches the code actually running the request.
+    this check, so it cannot be newly activated. Called at candidate registration,
+    deploy, rollback, and serving-startup restore -- never at read time -- so
+    pre-renderer evidence stays readable while a candidate can only reach Eligible,
+    Approved, or active-traffic state on a package whose renderer is bound and matches
+    the code actually running the request.
     """
     if manifest.renderer_version is None or manifest.renderer_sha256 is None or manifest.prompt_template_text is None:
         raise ValueError("policy manifest is missing packaged renderer identity")
