@@ -736,6 +736,9 @@ def create_control_app(
         after_prompt, after_legacy = _packaged_prompt_text(after)
 
         def _label(item: Any, is_legacy: bool) -> str:
+            # is_legacy mirrors _packaged_prompt_text's own (text, is_legacy) return:
+            # tag the diff column so a reader can tell a packaged side from a
+            # re-rendered one without re-deriving it from the candidate.
             tag = " (legacy · re-rendered, no packaged prompt artifact)" if is_legacy else " (packaged)"
             return _escape(f"{item.candidate_id} · v{item.policy.prompt_version}{tag}")
 

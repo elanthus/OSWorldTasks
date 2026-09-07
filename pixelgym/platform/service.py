@@ -490,7 +490,13 @@ def create_serving_app(
             raise HTTPException(503, "no approved policy is loaded")
         loaded = runtime.loaded
         _set_identity(loaded)
-        rendered_prompt = render_prompt(loaded.manifest, target=target, width=width, height=height)
+        try:
+            rendered_prompt = render_prompt(loaded.manifest, target=target, width=width, height=height)
+        except ValueError as exc:
+            # Deploy/rollback/restore already verify renderer binding before traffic can
+            # reach an active deployment; this is defense-in-depth, not the expected path.
+            _set_terminal_status("renderer_binding_invalid")
+            raise HTTPException(500, "active policy package failed to render a request prompt") from exc
         borrower = object()
         provider_admitted = False
         if provider_queue_timeout_seconds == 0:
