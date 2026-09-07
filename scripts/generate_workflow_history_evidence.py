@@ -291,7 +291,8 @@ def generate(
             "schema_version": "pixelgym-agent-workflow-history-v1",
             "generated_at": datetime.now(UTC).isoformat(),
             "repository": repository,
-            "end_ref_resolved": end_ref,
+            "end_ref": end_ref,
+            "end_ref_resolved_sha": end_sha,
             "source_queries": {
                 "git": " ".join(git_command),
                 "github": " ".join(pr_command),

@@ -2,8 +2,9 @@
   "commits": {
     "reachable_inclusive_count": 377
   },
-  "end_ref_resolved": "origin/main",
-  "generated_at": "2026-09-07T00:32:08.935657+00:00",
+  "end_ref": "01572d5e59a2c9e786547e95c8810677a9d8e841",
+  "end_ref_resolved_sha": "01572d5e59a2c9e786547e95c8810677a9d8e841",
+  "generated_at": "2026-09-07T00:53:08.727564+00:00",
   "pull_requests": {
     "agent_assistant_prefix_counts": {
       "agent": 52,

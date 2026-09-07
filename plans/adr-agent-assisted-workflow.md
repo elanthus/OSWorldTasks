@@ -65,8 +65,11 @@ review:
 | Browser evidence and the OSWorld guest used different renderer arguments. | [Issue #101](https://github.com/elanthus/OSWorldTasks/issues/101) | [PR #156](https://github.com/elanthus/OSWorldTasks/pull/156) |
 | In-flight panel requests had no retained worst-case spend hold. | [Issue #103](https://github.com/elanthus/OSWorldTasks/issues/103) | [PR #130](https://github.com/elanthus/OSWorldTasks/pull/130) |
 | Cross-phase summaries omitted unknown spend reservations and mixed enforcement conventions. | [Issue #104](https://github.com/elanthus/OSWorldTasks/issues/104) | [PR #133](https://github.com/elanthus/OSWorldTasks/pull/133) |
-| A guest frame was captured before page initialization even though every navigation check passed. | [Issue #95](https://github.com/elanthus/OSWorldTasks/issues/95) and [issue #101](https://github.com/elanthus/OSWorldTasks/issues/101) | The late [PR #156 review finding](https://github.com/elanthus/OSWorldTasks/pull/156#issuecomment-5558082637) and [round follow-up](https://github.com/elanthus/OSWorldTasks/pull/156#issuecomment-5558229333) record the fix and corrected interpretation. |
-| CLI-fault handling erased independently detected policy violations. | [Issue #100](https://github.com/elanthus/OSWorldTasks/issues/100) | The independent [PR #155 finding](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557419773) and [fix record](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557506551) preserve the distinction. |
+| A guest frame was captured before page initialization even though every navigation check passed. | The late [PR #156 review finding](https://github.com/elanthus/OSWorldTasks/pull/156#issuecomment-5558082637) and [round follow-up](https://github.com/elanthus/OSWorldTasks/pull/156#issuecomment-5558229333) record the defect and corrected interpretation. | [PR #156](https://github.com/elanthus/OSWorldTasks/pull/156) (found and fixed in flight) |
+| CLI-fault handling erased independently detected policy violations. | The independent [PR #155 finding](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557419773) and [fix record](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557506551) preserve the distinction. | [PR #155](https://github.com/elanthus/OSWorldTasks/pull/155) (found and fixed in flight) |
+
+The final two defects were found and fixed inside their in-flight pull requests rather than filed
+as separate backlog issues.
 
 The open diagnostic-leak item is deliberately not paired with an invented fixing PR. It is a
 known workflow gap at the recorded revision and prevents this ADR from implying that the backlog
@@ -83,7 +86,8 @@ but cannot convert automated output into scientific, security, spending, or publ
    of the fast path as required by [`AGENTS.md`](../AGENTS.md#5-working-agreements).
 2. Open pull requests review-ready by default. Drafts are reserved for a known blocker or an owner
    question. The Claude workflow listens for `opened` and `ready_for_review`, explicitly excludes
-   drafts, runs read-only, and is informational because its step uses `continue-on-error`:
+   drafts, runs read-only on the repository, and is informational because its step uses
+   `continue-on-error`:
    [review workflow](../.github/workflows/claude-code-review.yml). The history evidence reports all
    94 in-window PRs as non-draft at query time, but also states why that snapshot cannot prove how
    each PR was originally opened.
@@ -113,7 +117,7 @@ but cannot convert automated output into scientific, security, spending, or publ
 | Layer | May do | Must not imply |
 |---|---|---|
 | Agent-written change | Implement the scoped issue, add failure-mode tests, generate a new versioned artifact, and prepare a review-ready PR under the [working agreements](../AGENTS.md#5-working-agreements). | That authored code is correct because an agent produced it, or that a broader scope change is authorized. |
-| Automated review | Inspect a PR and report actionable findings. The configured Claude reviewer is read-only and non-blocking: [workflow](../.github/workflows/claude-code-review.yml). | That no comment means no defect. The workflow explicitly tolerates reviewer failure, and CodeRabbit can be rate-limited, as its [PR #129 record](https://github.com/elanthus/OSWorldTasks/pull/129#issuecomment-5532055304) shows. |
+| Automated review | Inspect a PR and report actionable findings. The configured Claude reviewer is read-only on the repository and non-blocking: [workflow](../.github/workflows/claude-code-review.yml). | That no comment means no defect. The workflow explicitly tolerates reviewer failure, and CodeRabbit can be rate-limited, as its [PR #129 record](https://github.com/elanthus/OSWorldTasks/pull/129#issuecomment-5532055304) shows. |
 | Deterministic checks | Enforce formatting/static rules and exercise the offline fast suite through [CI](../.github/workflows/ci.yml) and [preflight](../.agentic-preflight.toml). | Scientific validity, security completeness, visual correctness outside the exercised conditions, or a milestone verdict. |
 | Owner gate | Decide scope changes, sprint gates, provider/cloud spend, paid model calls, and public claims as listed in [`AGENTS.md`](../AGENTS.md#4-human-gates--stop-and-ask). | Delegation by silence. Agents report raw results and stop at these boundaries. |
 
@@ -146,9 +150,11 @@ passed every existing navigation check, and the CSRF Unicode case was absent unt
 ### Treat automated review as the approval gate
 
 Named reviewers found real defects, but they also returned clean reviews for changes later covered
-by the escaped-defect backlog. The Claude job is deliberately non-blocking and warns when it does
-not complete: [review workflow](../.github/workflows/claude-code-review.yml). Automated review is a
-source of falsifiable findings, not a security or scientific sign-off.
+by the escaped-defect backlog: `claude[bot]` reported no high-confidence issues on the rollback
+rewrite in [PR #22](https://github.com/elanthus/OSWorldTasks/pull/22#issuecomment-5301594146),
+which was later covered by issue #99. The Claude job is deliberately non-blocking and warns when
+it does not complete: [review workflow](../.github/workflows/claude-code-review.yml). Automated
+review is a source of falsifiable findings, not a security or scientific sign-off.
 
 ### Reserve all implementation and review for humans
 
