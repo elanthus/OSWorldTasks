@@ -651,8 +651,76 @@ def test_seed_policy_aggregate_rejects_duplicate_assignment_even_with_failure_ou
     result = {
         "content": {
             **item,
-            "records": [{"example_id": "example-3", "parse_status": "request_failure"}],
+            "correct_count": 0,
+            "expected_count": 1,
+            "invalid_count": 0,
+            "outcome": "request_failure",
+            "records": [
+                {
+                    "correct": False,
+                    "example_id": "example-3",
+                    "parse_status": "request_failure",
+                }
+            ],
+            "request_failure_count": 1,
         }
     }
     with pytest.raises(ValueError, match="duplicate assignment"):
         canonical_seed_policy_aggregate(plan, [result, result])
+
+
+def test_seed_policy_aggregate_rejects_summary_that_contradicts_retained_records() -> None:
+    dataset_fingerprint = "sha256:" + "d" * 64
+    provenance = SourceProvenance(
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        "a" * 40,
+        "b" * 64,
+        "clean",
+        "git-build-inputs-v1",
+    )
+    policy = build_policy_manifest(
+        provider="scripted-demo",
+        model="day3-replay-invalid-v1",
+        prompt_name=PROMPT_NAME,
+        prompt_version=2,
+        prompt=prompt_template(2),
+        condition="raw",
+        parameters={"deterministic": True},
+        parser_version="pixelgym-grounding-parser-v1",
+        scorer_version="pixelgym-point-inside-half-open-box-v1",
+        overlay_version="none-raw-coordinate-policy",
+        target_semantics="requested-control-center-point-v1",
+        source_provenance=provenance,
+        dependency_lock_sha256="c" * 64,
+    )
+    item = {
+        "assignment_id": assignment_id(
+            dataset_fingerprint=dataset_fingerprint, seed=4, policy_id=policy.policy_id
+        ),
+        "seed": 4,
+        "policy_id": policy.policy_id,
+    }
+    plan = canonical_seed_policy_plan(
+        {
+            "schema_version": PLAN_SCHEMA_VERSION,
+            "dataset_fingerprint": dataset_fingerprint,
+            "policies": [asdict(policy)],
+            "assignments": [item],
+        }
+    )
+    contradictory = {
+        "content": {
+            **item,
+            "correct_count": 1,
+            "expected_count": 1,
+            "invalid_count": 0,
+            "outcome": "completed",
+            "records": [
+                {"correct": False, "example_id": "example-4", "parse_status": "invalid"}
+            ],
+            "request_failure_count": 0,
+        }
+    }
+
+    with pytest.raises(ValueError, match="summary differs"):
+        canonical_seed_policy_aggregate(plan, [contradictory])

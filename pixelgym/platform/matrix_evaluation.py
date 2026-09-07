@@ -161,12 +161,46 @@ def canonical_seed_policy_aggregate(
             "policy_id"
         ]:
             raise ValueError("branch result identity differs from its plan assignment")
+        required_fields = {
+            "assignment_id",
+            "correct_count",
+            "expected_count",
+            "invalid_count",
+            "outcome",
+            "policy_id",
+            "records",
+            "request_failure_count",
+            "seed",
+        }
+        if set(content) != required_fields:
+            raise ValueError("branch result has unknown or missing canonical fields")
         records = content.get("records")
         if not isinstance(records, list) or not records:
             raise ValueError("branch result must retain all assignment records")
         example_ids = [record.get("example_id") for record in records]
         if example_ids != sorted(set(example_ids)):
             raise ValueError("branch records must be canonical and unique")
+        if content["expected_count"] != len(records):
+            raise ValueError("branch expected count differs from retained records")
+        invalid_count = sum(record.get("parse_status") == "invalid" for record in records)
+        request_failure_count = sum(
+            record.get("parse_status") == "request_failure" for record in records
+        )
+        correct_count = sum(record.get("correct") is True for record in records)
+        outcome = (
+            "request_failure"
+            if request_failure_count
+            else "invalid"
+            if invalid_count
+            else "completed"
+        )
+        if (
+            content["invalid_count"] != invalid_count
+            or content["request_failure_count"] != request_failure_count
+            or content["correct_count"] != correct_count
+            or content["outcome"] != outcome
+        ):
+            raise ValueError("branch summary differs from retained record outcomes")
         actual[identifier] = content
     if set(actual) != set(expected):
         raise ValueError("joined branches do not contain every assignment exactly once")
