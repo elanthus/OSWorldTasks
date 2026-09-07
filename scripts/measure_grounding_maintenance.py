@@ -141,7 +141,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         "measurement_rules": {
             "grounding_production_physical_loc": (
                 "Physical lines in .py/.json/.js/.css/.html files under pixelgym/grounding; "
-                "tests and legacy/ are outside that tree."
+                "tests and any historical legacy/ tree (at a queried before/after "
+                "revision) are outside that tree."
             ),
             "top_level_python_script_count": "Tracked .py files directly under scripts/.",
             "package_contents": "File names read from wheels built offline with pip --no-build-isolation.",

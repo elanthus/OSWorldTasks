@@ -285,6 +285,40 @@ def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_p
     assert journal.integrity_report()["event_count"] > 0
 
 
+def test_v5_runner_reports_step_limit_truncation_from_the_environments_own_signal(
+    tmp_path: Path,
+) -> None:
+    """A full-length pilot that never succeeds truncates via the env's own flag.
+
+    This differs from `pilot_action_limit` (an `action_limit` narrower than
+    `task.max_episode_steps`, decided after the action loop exhausts without the
+    environment ever truncating): here `action_limit` is left at its default
+    (`task.max_episode_steps`), so the environment's own `truncated=True` on the
+    final step is what ends the episode, inside the action loop rather than after
+    it (issue #170, coverage-gate follow-up).
+    """
+
+    seed = 5000
+    task = generate_task(seed)
+    journal = V5AttemptJournal(tmp_path / "journal.sqlite")
+    transport = ScriptedTransport()
+    never_succeeds = ScriptedStatefulPolicy(
+        tuple({"action_type": 0, "x": 0, "y": 0, "key": 0} for _ in range(task.max_episode_steps))
+    )
+    result = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=transport,
+        policy=never_succeeds,
+        approved_caps=episode_caps(seed),
+    ).run(trial_id="trial-step-limit-truncation", task=task)
+
+    assert not result.success
+    assert result.classification == "step_limit_truncation"
+    assert result.environment_actions == task.max_episode_steps
+    assert len(transport.model_requests) == task.max_episode_steps
+
+
 def test_policy_visible_result_has_one_strict_authorized_schema() -> None:
     value = PolicyVisibleResult(
         screenshot_digest="sha256:" + "a" * 64,

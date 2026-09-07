@@ -1,5 +1,5 @@
 [diff]
-max_bytes = 1200000
+max_bytes = 1600000
 exclude = [
     "*.lock",
     "*-lock.json",

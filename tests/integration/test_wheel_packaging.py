@@ -157,7 +157,6 @@ def test_retired_grounding_sources_are_excluded_from_the_wheel(
         "v5/d56_claude_subscription_campaign.py",
     )
     assert not [name for name in retired if (grounding / name).exists()]
-    assert not (installed_wheel_site_dir / "legacy").exists()
 
 
 def test_manifest_runner_schema_is_packaged_in_the_wheel(installed_wheel_site_dir):

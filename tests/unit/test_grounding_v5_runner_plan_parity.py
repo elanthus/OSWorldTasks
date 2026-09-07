@@ -1,4 +1,13 @@
-"""Frozen pre-refactor parity projections for representative D5.6 plans."""
+"""Frozen pre-refactor parity projections for representative D5.6 plans.
+
+The `episode_results`/`classifications`/`outcome_denominators` values embedded in
+`tests/unit/fixtures/grounding_v5_runner_plan_parity.json` were originally cross-checked
+against `legacy.grounding.v5.d56_claude_subscription_campaign`,
+`d56_codex_cli_calibration`, and `d56_qwen_full_calibration`'s
+`legacy_runner_result_projection` functions; that recomputation is dropped here (issue
+#170) since the fixture already stores their output. See the fixture's `_provenance`
+field for the command and revision that verified the values before they were frozen.
+"""
 
 from __future__ import annotations
 
@@ -9,11 +18,6 @@ from typing import Any
 
 import pytest
 
-from legacy.grounding.v5 import (
-    d56_claude_subscription_campaign,
-    d56_codex_cli_calibration,
-    d56_qwen_full_calibration,
-)
 from pixelgym.grounding.v5.calibration_runner import SpendSnapshot, run_calibration_plan
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
@@ -100,16 +104,10 @@ class DeterministicParityAdapter:
         return {"provider_adapter_closed": self.closed}
 
 
-LEGACY_RESULT_PROJECTIONS = {
-    "claude_subscription": (
-        d56_claude_subscription_campaign.legacy_runner_result_projection
-    ),
-    "codex_cli": d56_codex_cli_calibration.legacy_runner_result_projection,
-    "openrouter_http": d56_qwen_full_calibration.legacy_runner_result_projection,
-}
+PANELS = ("claude_subscription", "codex_cli", "openrouter_http")
 
 
-@pytest.mark.parametrize("panel", sorted(LEGACY_RESULT_PROJECTIONS))
+@pytest.mark.parametrize("panel", PANELS)
 def test_manifest_runner_matches_legacy_result_aggregation(
     tmp_path: Path, panel: str
 ) -> None:
@@ -119,15 +117,6 @@ def test_manifest_runner_matches_legacy_result_aggregation(
     root.mkdir()
     plan = _runner_plan(root, fixture, execution)
     adapter = DeterministicParityAdapter(execution["episode_results"])
-
-    legacy = LEGACY_RESULT_PROJECTIONS[panel](
-        execution["episode_results"],
-        attempted_episodes=len(execution["episode_results"]),
-        assigned_policy_task_pairs=len(fixture["task_assignment"]),
-    )
-    assert legacy["episode_results"] == execution["episode_results"]
-    assert legacy["classifications"] == execution["classifications"]
-    assert legacy["outcome_denominators"] == execution["outcome_denominators"]
 
     summary = run_calibration_plan(
         root,

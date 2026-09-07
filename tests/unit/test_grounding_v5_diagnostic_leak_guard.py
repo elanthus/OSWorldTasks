@@ -7,9 +7,10 @@ the diagnostic into its own `privileged_dispatch_diagnostic` event.
 `pixelgym/grounding/v5/diagnostics.py` now owns the one sanctioned path for
 reading it back (with a legacy fallback for evidence sealed before the split);
 no other module under `pixelgym/` or `scripts/` may read `"diagnostic"` out of a
-`dispatch_committed` payload. `legacy/grounding/**` still has seven such reads
-(tracked for deletion under issue #170) and is intentionally excluded from this
-scan.
+`dispatch_committed` payload. `legacy/grounding/**` had seven such reads; that
+tree was deleted under issue #170 (reproducible at git tag
+`legacy-grounding-final`), so this scan's `pixelgym/`+`scripts/` scope no
+longer has anything excluded.
 """
 
 from __future__ import annotations
