@@ -103,6 +103,7 @@ class OperationalRecord:
     http_status: int
     latency_ms: float
     provider_metadata: ProviderMetadata | None
+    provider_output_bytes: int | None = None
 
     def __post_init__(self) -> None:
         if self.schema_version != OPERATIONAL_RECORD_SCHEMA_VERSION:
@@ -123,6 +124,12 @@ class OperationalRecord:
             self.provider_metadata, ProviderMetadata
         ):
             raise TypeError("provider metadata must be normalized before record construction")
+        if self.provider_output_bytes is not None and (
+            isinstance(self.provider_output_bytes, bool)
+            or not isinstance(self.provider_output_bytes, int)
+            or self.provider_output_bytes < 0
+        ):
+            raise ValueError("provider output byte count must be a nonnegative integer")
 
     @property
     def provider_latency_ms(self) -> float | None:
@@ -141,6 +148,8 @@ class OperationalRecord:
         if not isinstance(value, dict):
             raise TypeError("operational record must be a JSON object")
         payload = dict(value)
+        # ``provider_output_bytes`` is optional: v1 records written before this field existed omit
+        # it entirely, and the dataclass default (None) below covers that case without a schema bump.
         try:
             provider_request_id = payload.pop("provider_request_id")
         except KeyError as exc:
@@ -172,6 +181,7 @@ class OperationalRecord:
             "latency_ms": self.latency_ms,
             "provider_latency_ms": self.provider_latency_ms,
             "provider_request_id": self.provider_request_id,
+            "provider_output_bytes": self.provider_output_bytes,
             "usage": dict(self.usage) if self.usage is not None else None,
         }
 

@@ -187,14 +187,49 @@ python3.12 -m pytest tests/unit/platform/test_dependency_lock.py -q
 This does not change the documented developer setup: `python3.12 -m venv .venv && pip install -e
 ".[dev]"` remains the sole setup step for the fast suite and lint.
 
+## Serving request and provider bounds
+
+`POST /api/v1/ground` applies fixed request bounds before provider execution: the request body is
+limited to 7,006,892 bytes, `image_base64` to 6,990,508 characters, the decoded screenshot to 5
+MiB, and each screenshot dimension to 4,096 pixels. PNG and JPEG are the only accepted media
+types. Equality with each limit is accepted; a value above it is rejected.
+
+Provider execution has four deployment settings. Invalid, non-finite, or non-positive settings
+stop application construction (the queue wait alone may be zero):
+
+- `PIXELGYM_PROVIDER_TIMEOUT_SECONDS` defaults to `30.0`. The service returns `504`, records
+  `provider_timeout_enforced`, and does not retry or fall back when the call exceeds this
+  duration. Because the provider contract is synchronous, a timed-out call is abandoned, never
+  cancelled; it retains its concurrency slot until the underlying call finishes, and the worker
+  thread pool is shut down (without waiting for abandoned calls) when the application stops.
+- `PIXELGYM_PROVIDER_CONCURRENCY` defaults to `4`. This provider-call bulkhead is independent of
+  the immutable-audit I/O limiter.
+- `PIXELGYM_PROVIDER_QUEUE_TIMEOUT_SECONDS` defaults to `0.25`. A request that cannot enter the
+  provider bulkhead within this bounded wait returns `503` and records
+  `provider_concurrency_saturated`; the provider is not invoked for that request.
+- `PIXELGYM_MAX_PROVIDER_OUTPUT_BYTES` defaults to `65536`. The limit is measured on the raw
+  response's UTF-8 bytes before metadata normalization or prediction parsing. Equality is accepted;
+  an over-limit response returns `502`, records `provider_output_too_large` plus the observed byte
+  count, and is never partially parsed.
+
+The service-enforced timeout above (`provider_timeout_enforced`) stays distinct from a
+provider-reported timeout: a provider that raises its own timeout failure records
+`provider_timeout` instead, so the operational record always shows which side gave up. Other
+provider-reported failures remain distinct too, as `429` `provider_rate_limit` and `502`
+`provider_<code>`. Attributable errors, including validation (`422`), saturation (`503`), timeout
+(`504`), and oversized output (`502`), include API, policy, deployment, and exact-policy identity
+in the structured `identity` object and the corresponding `X-PixelGym-*` response headers. Errors
+before a policy can be resolved do not claim an identity.
+
 ## Serving operational records
 
 Every `/api/v1/ground` request creates one immutable, independently retrievable JSON record under
 `serving-operational-records/`. It records the server-generated request ID, UTC receipt time,
 policy/deployment/exact-policy identity when one was loaded, terminal status, HTTP status,
-end-to-end latency, provider request ID and latency, and normalized provider usage. A missing
-usage value is recorded as `null`; an empty usage map remains `{}`. The response includes the same
-server-generated ID in `X-PixelGym-Request-ID`.
+end-to-end latency, provider request ID and latency, raw provider-output byte count when one was
+returned, and normalized provider usage. A missing usage value is recorded as `null`; an empty
+usage map remains `{}`. The response includes the same server-generated ID in
+`X-PixelGym-Request-ID`.
 
 Operational records intentionally exclude prompts, targets, screenshots, request bodies, raw
 provider responses, expected answers, credentials, and provider error details. The service rejects

@@ -28,7 +28,15 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.operational_log import ImmutableOperationalLog
-from pixelgym.platform.service import LoadedPolicy, PolicyRuntime, create_serving_app
+from pixelgym.platform.service import (
+    DEFAULT_MAX_PROVIDER_OUTPUT_BYTES,
+    DEFAULT_PROVIDER_CONCURRENCY,
+    DEFAULT_PROVIDER_QUEUE_TIMEOUT_SECONDS,
+    DEFAULT_PROVIDER_TIMEOUT_SECONDS,
+    LoadedPolicy,
+    PolicyRuntime,
+    create_serving_app,
+)
 from pixelgym.platform.web import create_control_app
 from pixelgym.serialization import load_jsonl
 
@@ -372,7 +380,35 @@ def create_app(
         mlflow_base_url=os.environ.get("PIXELGYM_MLFLOW_PUBLIC_URL", "http://localhost:5000"),
     )
     app.mount(
-        "/", create_serving_app(runtime, operational_log=ImmutableOperationalLog(immutable_store))
+        "/",
+        create_serving_app(
+            runtime,
+            operational_log=ImmutableOperationalLog(immutable_store),
+            provider_timeout_seconds=float(
+                os.environ.get(
+                    "PIXELGYM_PROVIDER_TIMEOUT_SECONDS",
+                    str(DEFAULT_PROVIDER_TIMEOUT_SECONDS),
+                )
+            ),
+            provider_concurrency=int(
+                os.environ.get(
+                    "PIXELGYM_PROVIDER_CONCURRENCY",
+                    str(DEFAULT_PROVIDER_CONCURRENCY),
+                )
+            ),
+            provider_queue_timeout_seconds=float(
+                os.environ.get(
+                    "PIXELGYM_PROVIDER_QUEUE_TIMEOUT_SECONDS",
+                    str(DEFAULT_PROVIDER_QUEUE_TIMEOUT_SECONDS),
+                )
+            ),
+            max_provider_output_bytes=int(
+                os.environ.get(
+                    "PIXELGYM_MAX_PROVIDER_OUTPUT_BYTES",
+                    str(DEFAULT_MAX_PROVIDER_OUTPUT_BYTES),
+                )
+            ),
+        ),
     )
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime

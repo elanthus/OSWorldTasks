@@ -7,20 +7,28 @@ import base64
 import binascii
 import io
 import logging
+import math
 import time
 import traceback
 import uuid
-from collections.abc import Awaitable, Callable
-from contextvars import ContextVar
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import asynccontextmanager
+from contextvars import ContextVar, copy_context
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import partial
 from typing import Any, Protocol
 
 import anyio
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.utils import is_body_allowed_for_status_code
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from pixelgym.grounding.evaluation import parse_prediction
@@ -41,6 +49,10 @@ MAX_ENCODED_IMAGE_CHARS = 4 * ((MAX_IMAGE_BYTES + 2) // 3)
 # Allow bounded JSON syntax and the other model fields without making the image allowance fuzzy.
 MAX_REQUEST_BODY_BYTES = MAX_ENCODED_IMAGE_CHARS + 16 * 1024
 MAX_DIMENSION = 4096
+DEFAULT_PROVIDER_TIMEOUT_SECONDS = 30.0
+DEFAULT_PROVIDER_CONCURRENCY = 4
+DEFAULT_PROVIDER_QUEUE_TIMEOUT_SECONDS = 0.25
+DEFAULT_MAX_PROVIDER_OUTPUT_BYTES = 64 * 1024
 ALLOWED_MEDIA_TYPES = {"image/png", "image/jpeg"}
 
 
@@ -111,6 +123,7 @@ class _OperationalContext:
     exact_policy_version: str | None = None
     terminal_status: str | None = None
     provider_metadata: ProviderMetadata | None = None
+    provider_output_bytes: int | None = None
 
 
 _operational_context: ContextVar[_OperationalContext | None] = ContextVar(
@@ -171,9 +184,7 @@ class _RequestBodyLimitMiddleware:
 
     @staticmethod
     async def _reject(scope: Scope, receive: Receive, send: Send) -> None:
-        response = JSONResponse(
-            status_code=413, content={"detail": "request body exceeds the byte limit"}
-        )
+        response = _error_response(413, "request body exceeds the byte limit")
         await response(scope, receive, send)
 
 
@@ -189,6 +200,61 @@ def _set_terminal_status(status: str) -> None:
     context = _operational_context.get()
     if context is not None:
         context.terminal_status = status
+
+
+def _identity(context: _OperationalContext | None = None) -> dict[str, str] | None:
+    if context is None:
+        context = _operational_context.get()
+    if (
+        context is None
+        or context.policy_id is None
+        or context.deployment_id is None
+        or context.exact_policy_version is None
+    ):
+        return None
+    return {
+        "api_version": API_SCHEMA_VERSION,
+        "policy_id": context.policy_id,
+        "deployment_id": context.deployment_id,
+        "exact_policy_version": context.exact_policy_version,
+    }
+
+
+def _attach_identity_headers(response: Response, context: _OperationalContext) -> None:
+    identity = _identity(context)
+    if identity is None:
+        return
+    response.headers["X-PixelGym-API-Version"] = identity["api_version"]
+    response.headers["X-PixelGym-Policy-ID"] = identity["policy_id"]
+    response.headers["X-PixelGym-Deployment-ID"] = identity["deployment_id"]
+    response.headers["X-PixelGym-Exact-Policy-Version"] = identity[
+        "exact_policy_version"
+    ]
+
+
+def _error_response(
+    status_code: int,
+    detail: object,
+    *,
+    headers: Mapping[str, str] | None = None,
+) -> Response:
+    response_headers = dict(headers) if headers is not None else None
+    if not is_body_allowed_for_status_code(status_code):
+        return Response(status_code=status_code, headers=response_headers)
+    content: dict[str, object] = {"detail": detail}
+    identity = _identity()
+    if identity is not None:
+        content["identity"] = identity
+    return JSONResponse(
+        status_code=status_code, content=jsonable_encoder(content), headers=response_headers
+    )
+
+
+def _release_provider_capacity(
+    limiter: anyio.CapacityLimiter,
+    borrower: object,
+) -> None:
+    limiter.release_on_behalf_of(borrower)
 
 
 def _decode_and_validate(request: GroundRequest) -> tuple[bytes, int, int]:
@@ -220,18 +286,71 @@ def create_serving_app(
     *,
     operational_log: OperationalLog,
     operational_audit_concurrency: int = 4,
+    provider_timeout_seconds: float = DEFAULT_PROVIDER_TIMEOUT_SECONDS,
+    provider_concurrency: int = DEFAULT_PROVIDER_CONCURRENCY,
+    provider_queue_timeout_seconds: float = DEFAULT_PROVIDER_QUEUE_TIMEOUT_SECONDS,
+    max_provider_output_bytes: int = DEFAULT_MAX_PROVIDER_OUTPUT_BYTES,
 ) -> FastAPI:
     if operational_audit_concurrency <= 0:
         raise ValueError("operational audit concurrency must be positive")
-    app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None)
-    app.state.operational_log = operational_log
-    # Install this before the audit middleware below so the audit wrapper remains outermost and
-    # records body-limit rejections without allowing request parsing to occur first.
-    app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
+    if not math.isfinite(provider_timeout_seconds) or provider_timeout_seconds <= 0:
+        raise ValueError("provider timeout must be finite and positive")
+    if provider_concurrency <= 0:
+        raise ValueError("provider concurrency must be positive")
+    if (
+        not math.isfinite(provider_queue_timeout_seconds)
+        or provider_queue_timeout_seconds < 0
+    ):
+        raise ValueError("provider queue timeout must be finite and nonnegative")
+    if max_provider_output_bytes <= 0:
+        raise ValueError("maximum provider output bytes must be positive")
     # Audit I/O may wait for its configured storage deadline, but it must not occupy Starlette's
     # shared worker capacity while it does. Waiting here preserves the rule that no response is
     # released before its immutable evidence is verified.
     audit_limiter = anyio.CapacityLimiter(operational_audit_concurrency)
+    # Provider admission and execution are deliberately separate from audit I/O. A dedicated
+    # executor prevents unrelated Starlette worker traffic from consuming provider capacity.
+    provider_limiter = anyio.CapacityLimiter(provider_concurrency)
+    provider_executor = ThreadPoolExecutor(
+        max_workers=provider_concurrency,
+        thread_name_prefix="pixelgym-provider",
+    )
+
+    @asynccontextmanager
+    async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            # Abandoned/timed-out calls are never cancelled (see the timeout handling below), so
+            # this releases the pool without waiting for them and without a hidden retry.
+            provider_executor.shutdown(wait=False, cancel_futures=True)
+
+    app = FastAPI(
+        title="PixelGym Grounding API", docs_url=None, redoc_url=None, lifespan=_lifespan
+    )
+    app.state.operational_log = operational_log
+    app.state.provider_executor = provider_executor
+    # Install this before the audit middleware below so the audit wrapper remains outermost and
+    # records body-limit rejections without allowing request parsing to occur first.
+    app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(
+        request: Request, exc: StarletteHTTPException
+    ) -> Response:
+        del request
+        return _error_response(exc.status_code, exc.detail, headers=exc.headers)
+
+    @app.exception_handler(RequestValidationError)
+    async def request_validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> Response:
+        del request
+        safe_errors = [
+            {key: error[key] for key in ("type", "loc", "msg") if key in error}
+            for error in exc.errors()
+        ]
+        return _error_response(422, safe_errors)
 
     @app.middleware("http")
     async def record_ground_operation(
@@ -272,7 +391,7 @@ def create_serving_app(
                 locations,
             )
             _set_terminal_status("internal_error")
-            response = JSONResponse(status_code=500, content={"detail": "internal server error"})
+            response = _error_response(500, "internal server error")
         finally:
             latency_ms = (time.perf_counter() - started) * 1000
             http_status = response.status_code if response is not None else 499
@@ -290,6 +409,7 @@ def create_serving_app(
                 http_status=http_status,
                 latency_ms=latency_ms,
                 provider_metadata=context.provider_metadata,
+                provider_output_bytes=context.provider_output_bytes,
             )
             try:
                 # Immutable logging deliberately performs two store operations (put-once, then
@@ -310,9 +430,7 @@ def create_serving_app(
                 # During cancellation there is no response to replace; preserving the original
                 # cancellation is more truthful than turning a disconnected request into a 503.
                 if response is not None:
-                    response = JSONResponse(
-                        status_code=503, content={"detail": "serving audit storage is unavailable"}
-                    )
+                    response = _error_response(503, "serving audit storage is unavailable")
             finally:
                 _operational_context.reset(token)
         # ``call_next`` is required to return a response, and cancellations re-raise above.
@@ -320,6 +438,7 @@ def create_serving_app(
         # correctness boundary in the serving path.
         if response is None:
             raise RuntimeError("serving handler returned no response")
+        _attach_identity_headers(response, context)
         response.headers["X-PixelGym-Request-ID"] = context.request_id
         return response
 
@@ -350,8 +469,10 @@ def create_serving_app(
         }
 
     @app.post("/api/v1/ground", response_model=GroundResponse)
-    def ground(request: GroundRequest, response: Response) -> GroundResponse:
-        image, width, height = _decode_and_validate(request)
+    async def ground(request: GroundRequest, response: Response) -> GroundResponse:
+        # Base64 decoding and Image.verify() are CPU-bound; keep them off the shared event loop
+        # so a large screenshot cannot stall /health/live or other requests behind it.
+        image, width, height = await anyio.to_thread.run_sync(_decode_and_validate, request)
         target = request.target.strip()
         if not target:
             raise HTTPException(422, "target must contain non-whitespace text")
@@ -360,17 +481,72 @@ def create_serving_app(
             raise HTTPException(503, "no approved policy is loaded")
         loaded = runtime.loaded
         _set_identity(loaded)
+        borrower = object()
+        provider_admitted = False
+        if provider_queue_timeout_seconds == 0:
+            try:
+                provider_limiter.acquire_on_behalf_of_nowait(borrower)
+                provider_admitted = True
+            except anyio.WouldBlock:
+                provider_admitted = False
+        else:
+            with anyio.move_on_after(provider_queue_timeout_seconds):
+                await provider_limiter.acquire_on_behalf_of(borrower)
+                provider_admitted = True
+        if not provider_admitted:
+            _set_terminal_status("provider_concurrency_saturated")
+            raise HTTPException(503, "provider concurrency limit is saturated")
+
+        loop = asyncio.get_running_loop()
+        provider_call = partial(
+            loaded.provider.ground,
+            image_bytes=image,
+            media_type=request.media_type,
+            target=target,
+            policy=loaded.manifest,
+        )
+
+        def _on_provider_future_done(_: Future[Any]) -> None:
+            try:
+                loop.call_soon_threadsafe(
+                    _release_provider_capacity, provider_limiter, borrower
+                )
+            except RuntimeError:
+                # The event loop already closed (interpreter/app shutdown); the executor is
+                # being torn down too, so the limiter borrower is abandoned along with it.
+                pass
+
         try:
-            raw, provider_request_id, provider_latency_ms, usage = loaded.provider.ground(
-                image_bytes=image,
-                media_type=request.media_type,
-                target=target,
-                policy=loaded.manifest,
-            )
+            # Run inside a copy of the caller's context so request-scoped ContextVars reach the
+            # provider thread, matching the audit path's propagation via anyio.to_thread.run_sync.
+            provider_future: Future[
+                tuple[str | None, str, float | None, dict[str, Any] | None]
+            ] = provider_executor.submit(copy_context().run, provider_call)
+        except BaseException:
+            provider_limiter.release_on_behalf_of(borrower)
+            raise
+        provider_future.add_done_callback(_on_provider_future_done)
+        try:
+            with anyio.move_on_after(provider_timeout_seconds) as timeout_scope:
+                raw, provider_request_id, provider_latency_ms, usage = await asyncio.shield(
+                    asyncio.wrap_future(provider_future)
+                )
         except ProviderFailure as exc:
             _set_terminal_status(f"provider_{exc.code}")
             status = 504 if exc.code == "timeout" else 429 if exc.code == "rate_limit" else 502
             raise HTTPException(status, f"provider request failed: {exc.code}") from exc
+        if timeout_scope.cancel_called:
+            # The service's own deadline fired; the call is abandoned, never cancelled or
+            # retried, and stays distinct from a provider-reported ``ProviderFailure(timeout)``.
+            _set_terminal_status("provider_timeout_enforced")
+            raise HTTPException(504, "provider request timed out")
+        output_bytes = len(raw.encode("utf-8")) if raw is not None else None
+        context = _operational_context.get()
+        if context is not None:
+            context.provider_output_bytes = output_bytes
+        if output_bytes is not None and output_bytes > max_provider_output_bytes:
+            _set_terminal_status("provider_output_too_large")
+            raise HTTPException(502, "provider output exceeds the byte limit")
         try:
             provider_metadata = normalize_provider_metadata(
                 provider_request_id, provider_latency_ms, usage
@@ -378,7 +554,6 @@ def create_serving_app(
         except ValueError as exc:
             _set_terminal_status("provider_metadata_invalid")
             raise HTTPException(502, "provider returned malformed operational metadata") from exc
-        context = _operational_context.get()
         if context is not None:
             context.provider_metadata = provider_metadata
         if runtime.loaded is not loaded:
@@ -389,6 +564,7 @@ def create_serving_app(
         response.headers["X-PixelGym-API-Version"] = API_SCHEMA_VERSION
         response.headers["X-PixelGym-Policy-ID"] = loaded.manifest.policy_id
         response.headers["X-PixelGym-Deployment-ID"] = loaded.deployment_id
+        response.headers["X-PixelGym-Exact-Policy-Version"] = loaded.exact_policy_version
         return GroundResponse(
             schema_version=API_SCHEMA_VERSION,
             prediction=parsed.parsed_prediction,

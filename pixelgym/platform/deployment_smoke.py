@@ -79,53 +79,60 @@ class CandidateServiceSmoke:
             exact_policy_version=candidate.candidate_id,
             provider=self.provider,
         )
-        # This runtime and app are deliberately separate from the traffic-serving runtime.
+        # This runtime and app are deliberately separate from the traffic-serving runtime. The
+        # candidate app owns its own provider executor; entering the client as a context manager
+        # runs the ASGI lifespan so that executor is shut down before this call returns instead of
+        # leaking a thread pool for every candidate smoked by the long-lived control process.
         candidate_runtime = PolicyRuntime(loaded)
-        client = TestClient(create_serving_app(candidate_runtime, operational_log=MemoryOperationalLog()))
-        ready = client.get("/health/ready")
-        if ready.status_code != 200 or ready.json() != {
-            "status": "ready", "policy_id": candidate.policy.policy_id
-        }:
-            raise DeploymentSmokeError("candidate readiness check failed")
-        policy = client.get("/api/v1/policy")
-        if policy.status_code != 200 or policy.json() != {
-            "schema_version": "pixelgym-grounding-api-v1",
-            "policy_id": candidate.policy.policy_id,
-            "deployment_id": loaded.deployment_id,
-            "exact_policy_version": candidate.candidate_id,
-            "provider": candidate.policy.provider,
-            "model": candidate.policy.model,
-            "prompt_version": candidate.policy.prompt_version,
-        }:
-            raise DeploymentSmokeError("candidate policy identity check failed")
-        response = client.post(
-            "/api/v1/ground",
-            json={
-                "image_base64": base64.b64encode(self.fixture.image_bytes).decode("ascii"),
-                "media_type": "image/png",
-                "target": self.fixture.target,
-            },
-        )
-        try:
-            body: dict[str, Any] = response.json()
-        except ValueError as exc:
-            raise DeploymentSmokeError("candidate smoke response was not JSON") from exc
-        expected_keys = {
-            "schema_version", "prediction", "parse_status", "parse_error", "policy_id",
-            "deployment_id", "exact_policy_version", "provider_request_id",
-        }
-        if response.status_code != 200 or set(body) != expected_keys:
-            raise DeploymentSmokeError("candidate smoke response contract failed")
-        if (
-            body["prediction"] != expected
-            or body["parse_status"] != "parsed"
-            or body["parse_error"] is not None
-            or body["policy_id"] != candidate.policy.policy_id
-            or body["deployment_id"] != loaded.deployment_id
-            or body["exact_policy_version"] != candidate.candidate_id
-            or not body["provider_request_id"].startswith("sha256:")
-            or response.headers.get("X-PixelGym-Policy-ID") != candidate.policy.policy_id
-            or response.headers.get("X-PixelGym-Deployment-ID") != loaded.deployment_id
-        ):
-            raise DeploymentSmokeError("candidate deterministic smoke result or identity check failed")
+        with TestClient(
+            create_serving_app(candidate_runtime, operational_log=MemoryOperationalLog())
+        ) as client:
+            ready = client.get("/health/ready")
+            if ready.status_code != 200 or ready.json() != {
+                "status": "ready", "policy_id": candidate.policy.policy_id
+            }:
+                raise DeploymentSmokeError("candidate readiness check failed")
+            policy = client.get("/api/v1/policy")
+            if policy.status_code != 200 or policy.json() != {
+                "schema_version": "pixelgym-grounding-api-v1",
+                "policy_id": candidate.policy.policy_id,
+                "deployment_id": loaded.deployment_id,
+                "exact_policy_version": candidate.candidate_id,
+                "provider": candidate.policy.provider,
+                "model": candidate.policy.model,
+                "prompt_version": candidate.policy.prompt_version,
+            }:
+                raise DeploymentSmokeError("candidate policy identity check failed")
+            response = client.post(
+                "/api/v1/ground",
+                json={
+                    "image_base64": base64.b64encode(self.fixture.image_bytes).decode("ascii"),
+                    "media_type": "image/png",
+                    "target": self.fixture.target,
+                },
+            )
+            try:
+                body: dict[str, Any] = response.json()
+            except ValueError as exc:
+                raise DeploymentSmokeError("candidate smoke response was not JSON") from exc
+            expected_keys = {
+                "schema_version", "prediction", "parse_status", "parse_error", "policy_id",
+                "deployment_id", "exact_policy_version", "provider_request_id",
+            }
+            if response.status_code != 200 or set(body) != expected_keys:
+                raise DeploymentSmokeError("candidate smoke response contract failed")
+            if (
+                body["prediction"] != expected
+                or body["parse_status"] != "parsed"
+                or body["parse_error"] is not None
+                or body["policy_id"] != candidate.policy.policy_id
+                or body["deployment_id"] != loaded.deployment_id
+                or body["exact_policy_version"] != candidate.candidate_id
+                or not body["provider_request_id"].startswith("sha256:")
+                or response.headers.get("X-PixelGym-Policy-ID") != candidate.policy.policy_id
+                or response.headers.get("X-PixelGym-Deployment-ID") != loaded.deployment_id
+            ):
+                raise DeploymentSmokeError(
+                    "candidate deterministic smoke result or identity check failed"
+                )
         return loaded
