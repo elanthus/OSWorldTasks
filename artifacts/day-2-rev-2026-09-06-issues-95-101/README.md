@@ -2,8 +2,9 @@
 
 This is a new evidence revision against the current source after merging `origin/main`. It does not
 rewrite `artifacts/day-2/` or the exhausted 2026-09-04 revision. The automated report's status is
-not a D2.11 human verdict; `validation-report.json` retains `human_gate: null`, and the repository
-owner re-grades D2.11 from these raw artifacts.
+not a D2.11 human verdict. The repository owner re-graded D2.11 from these raw artifacts on
+2026-09-07 and declared `PASS`; the record is `raw/human-gate.json` and is embedded in
+`validation-report.json` as `human_gate` by the `assemble` step.
 
 The local Docker run used the pinned OSWorld-V2 guest artifact, no cloud provider, and no paid model
 calls. The seven serialized real-guest commands, including one failed combined-evidence attempt,

@@ -8395,8 +8395,18 @@
     }
   },
   "gate_disclaimer": "Automated validation status is not the D2.11 human acceptance verdict.",
-  "generated_at": "2026-09-06T08:54:40.644773+00:00",
-  "human_gate": null,
+  "generated_at": "2026-09-07T06:12:57.473613+00:00",
+  "human_gate": {
+    "declaration": "D2.11 re-graded PASS against evidence revision artifacts/day-2-rev-2026-09-06-issues-95-101 (issues #95 and #101).",
+    "declared_at": "2026-09-07T06:12:43Z",
+    "declared_by": "project owner",
+    "evidence_revision": "artifacts/day-2-rev-2026-09-06-issues-95-101",
+    "gate": "D2.11",
+    "historical_record": "artifacts/day-2/raw/human-gate.json",
+    "schema_version": 1,
+    "supersedes": null,
+    "verdict": "PASS"
+  },
   "reproduction_commands": [
     "python scripts/prepare_osworld_docker.py",
     "python scripts/validate_vendor_form_browser_boundary.py",
