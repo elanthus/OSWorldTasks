@@ -228,6 +228,9 @@ declared `must_not_commit` in the
 and the [integrity audit](artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json)
 discloses that their file hashes and row-level contents are unavailable from a public clone.
 
+The superseded v3/v4 calibration apps and v5 D5.6 experiment drivers that produced this evidence
+were removed from the tree; the code remains reproducible at git tag `legacy-grounding-final`.
+
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
