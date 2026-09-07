@@ -312,6 +312,14 @@ def test_policy_visible_result_has_one_strict_authorized_schema() -> None:
             truncated=False,
             step_index=0,
         )
+    with pytest.raises(TypeError, match="screenshot digest"):
+        PolicyVisibleResult(
+            screenshot_digest=7,  # type: ignore[arg-type]
+            reward=0.0,
+            terminated=False,
+            truncated=False,
+            step_index=0,
+        )
     with pytest.raises(TypeError, match="episode flags"):
         PolicyVisibleResult(
             screenshot_digest=value.screenshot_digest,
@@ -400,6 +408,9 @@ def test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook(
     )
     assert diagnostic_event.payload["policy_visible_result_digest"] == (
         dispatch.payload["commit_result_digest"]
+    )
+    assert diagnostic_event.payload["diagnostic_digest"] == (
+        dispatch.payload["privileged_diagnostic_digest"]
     )
 
 
@@ -1748,9 +1759,16 @@ def test_resume_validates_split_host_diagnostic_without_replaying_policy_hook(
     assert recovered["state"] == expected_state
     assert recovery_policy.received == []
     diagnostic_key = committed.payload["privileged_diagnostic_event_key"]
+    diagnostic_event = journal.event(diagnostic_key)
+    assert diagnostic_event is not None
+    tampered_payload = deepcopy(diagnostic_event.payload)
+    tampered_payload["diagnostic"]["event"] = "tampered-host-diagnostic"
     journal.close()
     connection = sqlite3.connect(journal_path)
-    connection.execute("DELETE FROM events WHERE event_key = ?", (diagnostic_key,))
+    connection.execute(
+        "UPDATE events SET payload = ? WHERE event_key = ?",
+        (canonical_json_bytes(tampered_payload), diagnostic_key),
+    )
     connection.commit()
     connection.close()
     tampered = V5AttemptJournal(journal_path)

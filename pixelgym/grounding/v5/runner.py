@@ -47,6 +47,8 @@ class PolicyVisibleResult:
     step_index: int
 
     def __post_init__(self) -> None:
+        if type(self.screenshot_digest) is not str:
+            raise TypeError("policy-visible screenshot digest must be a string")
         prefix = "sha256:"
         hexadecimal = self.screenshot_digest.removeprefix(prefix)
         if (
@@ -943,6 +945,8 @@ class V5Runner:
         )
         visible_result_record = visible_result.to_dict()
         result_digest = content_digest(visible_result_record)
+        privileged_diagnostic = backend.read_privileged_diagnostic()
+        privileged_diagnostic_digest = content_digest(privileged_diagnostic)
         diagnostic_event_key = (
             f"{trial_id}/step-{step_index:04d}/privileged_dispatch_diagnostic"
         )
@@ -952,7 +956,8 @@ class V5Runner:
             trial_id=trial_id,
             step_index=step_index,
             payload={
-                "diagnostic": backend.read_privileged_diagnostic(),
+                "diagnostic": privileged_diagnostic,
+                "diagnostic_digest": privileged_diagnostic_digest,
                 "policy_visible_result_digest": result_digest,
             },
         )
@@ -977,6 +982,7 @@ class V5Runner:
                 "backend_acceptance": "accepted_once",
                 "commit_result_digest": result_digest,
                 "privileged_diagnostic_event_key": diagnostic_event_key,
+                "privileged_diagnostic_digest": privileged_diagnostic_digest,
                 "post_dispatch_checkpoint_digest": next_checkpoint_digest,
                 "environment_checkpoint_digest": environment_checkpoint_digest,
                 "environment_resume_digest": post_dispatch_resume_digest,
@@ -1744,6 +1750,11 @@ class V5Runner:
             return
         if type(diagnostic_event_key) is not str:
             raise RuntimeError("privileged diagnostic event key is invalid")
+        privileged_diagnostic_digest = event.payload.get(
+            "privileged_diagnostic_digest"
+        )
+        if type(privileged_diagnostic_digest) is not str:
+            raise RuntimeError("privileged diagnostic digest is invalid")
         if content_digest(visible_result.to_dict()) != event.payload["commit_result_digest"]:
             raise RuntimeError("policy-visible committed result digest mismatch")
         diagnostic_event = self.journal.event(diagnostic_event_key)
@@ -1753,8 +1764,16 @@ class V5Runner:
             or diagnostic_event.trial_id != event.trial_id
             or diagnostic_event.step_index != event.step_index
             or set(diagnostic_event.payload)
-            != {"diagnostic", "policy_visible_result_digest"}
+            != {
+                "diagnostic",
+                "diagnostic_digest",
+                "policy_visible_result_digest",
+            }
             or not isinstance(diagnostic_event.payload["diagnostic"], Mapping)
+            or content_digest(dict(diagnostic_event.payload["diagnostic"]))
+            != privileged_diagnostic_digest
+            or diagnostic_event.payload["diagnostic_digest"]
+            != privileged_diagnostic_digest
             or diagnostic_event.payload["policy_visible_result_digest"]
             != event.payload["commit_result_digest"]
         ):
