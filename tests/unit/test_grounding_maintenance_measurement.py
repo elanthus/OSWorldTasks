@@ -22,4 +22,4 @@ def test_grounding_maintenance_measurement_is_pinned_and_self_describing() -> No
     assert value["after"]["top_level_python_script_count"] == 43
     assert value["after"]["experiment_specific_maintenance_surface_count"] == 0
     assert not any(name.startswith("legacy/") for name in value["after"]["grounding_wheel_files"])
-    assert "/Users/" not in value["reproduction_command"]
+    assert str(ROOT) not in value["reproduction_command"]
