@@ -313,12 +313,8 @@ def test_policy_visible_result_has_one_strict_authorized_schema() -> None:
             step_index=0,
         )
     with pytest.raises(TypeError, match="screenshot digest"):
-        PolicyVisibleResult(
-            screenshot_digest=7,  # type: ignore[arg-type]
-            reward=0.0,
-            terminated=False,
-            truncated=False,
-            step_index=0,
+        PolicyVisibleResult.from_dict(
+            {**value.to_dict(), "screenshot_digest": 7}
         )
     with pytest.raises(TypeError, match="episode flags"):
         PolicyVisibleResult(
