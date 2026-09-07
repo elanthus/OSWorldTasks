@@ -21,6 +21,8 @@ from pixelgym.platform.fingerprints import (
 
 Manifest = dict[str, Any]
 
+_EXAMPLE_COUNT = 2
+
 
 @dataclass(frozen=True)
 class _Snapshot:
@@ -29,6 +31,7 @@ class _Snapshot:
     overlays_path: Path
     raw_image_path: Path
     marked_image_path: Path
+    primary_example_id: str
 
     def build(self) -> tuple[Manifest, str]:
         return build_dataset_manifest(
@@ -46,44 +49,74 @@ def _write_jsonl(path: Path, rows: list[Manifest]) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows))
 
 
-def _one_example_snapshot(
+def _find_by_example_id(rows: list[Manifest], example_id: str) -> Manifest:
+    for row in rows:
+        if row["example_id"] == example_id:
+            return row
+    raise AssertionError(f"no record for example_id {example_id!r}")
+
+
+def _dataset_snapshot(
     repository_root: Path,
     root: Path,
     *,
+    example_count: int = _EXAMPLE_COUNT,
     creation_order: tuple[str, ...] = ("raw", "marked", "dataset", "overlays"),
 ) -> _Snapshot:
-    example = _read_jsonl(repository_root / "artifacts/grounding-dataset.jsonl")[0]
-    overlay = _read_jsonl(repository_root / "artifacts/grounding-overlays.jsonl")[0]
-    raw_source = repository_root / example["image_path"]
-    marked_source = repository_root / overlay["marked_image_path"]
+    source_examples = _read_jsonl(repository_root / "artifacts/grounding-dataset.jsonl")
+    overlay_by_id = {
+        row["example_id"]: row
+        for row in _read_jsonl(repository_root / "artifacts/grounding-overlays.jsonl")
+    }
+    examples = [copy.deepcopy(row) for row in source_examples[:example_count]]
+    overlays = [copy.deepcopy(overlay_by_id[row["example_id"]]) for row in examples]
 
     root.mkdir()
-    raw_path = root / "images/raw/example.png"
-    marked_path = root / "images/marked/example.png"
     dataset_path = root / "dataset.jsonl"
     overlays_path = root / "overlays.jsonl"
-    example["image_path"] = str(raw_path.relative_to(root))
-    overlay["raw_image_path"] = str(raw_path.relative_to(root))
-    overlay["marked_image_path"] = str(marked_path.relative_to(root))
+
+    raw_sources: list[Path] = []
+    marked_sources: list[Path] = []
+    raw_targets: list[Path] = []
+    marked_targets: list[Path] = []
+    for index, (example, overlay) in enumerate(zip(examples, overlays, strict=True)):
+        raw_sources.append(repository_root / example["image_path"])
+        marked_sources.append(repository_root / overlay["marked_image_path"])
+        raw_path = root / f"images/raw/example-{index}.png"
+        marked_path = root / f"images/marked/example-{index}.png"
+        example["image_path"] = str(raw_path.relative_to(root))
+        overlay["raw_image_path"] = str(raw_path.relative_to(root))
+        overlay["marked_image_path"] = str(marked_path.relative_to(root))
+        raw_targets.append(raw_path)
+        marked_targets.append(marked_path)
 
     def write_raw() -> None:
-        raw_path.parent.mkdir(parents=True, exist_ok=True)
-        raw_path.write_bytes(raw_source.read_bytes())
+        for raw_path, raw_source in zip(raw_targets, raw_sources, strict=True):
+            raw_path.parent.mkdir(parents=True, exist_ok=True)
+            raw_path.write_bytes(raw_source.read_bytes())
 
     def write_marked() -> None:
-        marked_path.parent.mkdir(parents=True, exist_ok=True)
-        marked_path.write_bytes(marked_source.read_bytes())
+        for marked_path, marked_source in zip(marked_targets, marked_sources, strict=True):
+            marked_path.parent.mkdir(parents=True, exist_ok=True)
+            marked_path.write_bytes(marked_source.read_bytes())
 
     writers: dict[str, Callable[[], None]] = {
         "raw": write_raw,
         "marked": write_marked,
-        "dataset": lambda: _write_jsonl(dataset_path, [example]),
-        "overlays": lambda: _write_jsonl(overlays_path, [overlay]),
+        "dataset": lambda: _write_jsonl(dataset_path, examples),
+        "overlays": lambda: _write_jsonl(overlays_path, overlays),
     }
     assert set(creation_order) == set(writers)
     for name in creation_order:
         writers[name]()
-    return _Snapshot(root, dataset_path, overlays_path, raw_path, marked_path)
+    return _Snapshot(
+        root,
+        dataset_path,
+        overlays_path,
+        raw_targets[0],
+        marked_targets[0],
+        examples[0]["example_id"],
+    )
 
 
 def _manifest_fingerprint(manifest: Manifest) -> str:
@@ -93,7 +126,9 @@ def _manifest_fingerprint(manifest: Manifest) -> str:
 def _mutate_record(snapshot: _Snapshot, manifest: Manifest) -> Manifest:
     del manifest
     examples = _read_jsonl(snapshot.dataset_path)
-    examples[0]["screen_state"] = "text_field_focused"
+    record = _find_by_example_id(examples, snapshot.primary_example_id)
+    assert record["screen_state"] == "initial"
+    record["screen_state"] = "validation_error"
     _write_jsonl(snapshot.dataset_path, examples)
     return snapshot.build()[0]
 
@@ -104,8 +139,8 @@ def _mutate_raw_image(snapshot: _Snapshot, manifest: Manifest) -> Manifest:
     digest = sha256_file(snapshot.raw_image_path)
     examples = _read_jsonl(snapshot.dataset_path)
     overlays = _read_jsonl(snapshot.overlays_path)
-    examples[0]["image_sha256"] = digest
-    overlays[0]["raw_image_sha256"] = digest
+    _find_by_example_id(examples, snapshot.primary_example_id)["image_sha256"] = digest
+    _find_by_example_id(overlays, snapshot.primary_example_id)["raw_image_sha256"] = digest
     _write_jsonl(snapshot.dataset_path, examples)
     _write_jsonl(snapshot.overlays_path, overlays)
     return snapshot.build()[0]
@@ -115,7 +150,9 @@ def _mutate_marked_image(snapshot: _Snapshot, manifest: Manifest) -> Manifest:
     del manifest
     _mutate_png(snapshot.marked_image_path)
     overlays = _read_jsonl(snapshot.overlays_path)
-    overlays[0]["marked_image_sha256"] = sha256_file(snapshot.marked_image_path)
+    _find_by_example_id(overlays, snapshot.primary_example_id)["marked_image_sha256"] = (
+        sha256_file(snapshot.marked_image_path)
+    )
     _write_jsonl(snapshot.overlays_path, overlays)
     return snapshot.build()[0]
 
@@ -131,7 +168,8 @@ def _mutate_png(path: Path) -> None:
 def _mutate_overlay_marks(snapshot: _Snapshot, manifest: Manifest) -> Manifest:
     del manifest
     overlays = _read_jsonl(snapshot.overlays_path)
-    overlays[0]["marks"][0]["visible_label"] += " updated"
+    overlay = _find_by_example_id(overlays, snapshot.primary_example_id)
+    overlay["marks"][0]["visible_label"] += " updated"
     _write_jsonl(snapshot.overlays_path, overlays)
     return snapshot.build()[0]
 
@@ -205,8 +243,12 @@ def test_identity_mutation_changes_authoritative_fingerprint(
     repository_root: Path,
     tmp_path: Path,
 ) -> None:
-    snapshot = _one_example_snapshot(repository_root, tmp_path / name)
+    snapshot = _dataset_snapshot(repository_root, tmp_path / name)
     manifest, fingerprint = snapshot.build()
+
+    # Anchor the test-local fingerprint reimplementation against the manifest's own
+    # (unmutated) fingerprint before trusting it to judge the mutated manifest below.
+    assert _manifest_fingerprint(manifest) == fingerprint
 
     mutated_manifest = mutate(snapshot, manifest)
 
@@ -246,9 +288,13 @@ def test_manifest_tamper_is_rejected_under_original_fingerprint(
     repository_root: Path,
     tmp_path: Path,
 ) -> None:
-    snapshot = _one_example_snapshot(repository_root, tmp_path / name)
+    snapshot = _dataset_snapshot(repository_root, tmp_path / name)
     manifest, fingerprint = snapshot.build()
     tampered_manifest = tamper(snapshot, manifest)
+
+    # appended/removed-record tampers must still leave at least one surviving,
+    # untouched entry behind so the test proves tamper detection, not emptiness.
+    assert len(tampered_manifest["examples"]) >= 1
 
     with pytest.raises(ValueError, match="dataset manifest fingerprint mismatch"):
         verify_dataset_manifest(
@@ -267,18 +313,25 @@ def test_file_creation_order_and_modification_times_do_not_affect_identity(
     repository_root: Path,
     tmp_path: Path,
 ) -> None:
-    first = _one_example_snapshot(
+    first = _dataset_snapshot(
         repository_root,
         tmp_path / "first",
         creation_order=("raw", "marked", "dataset", "overlays"),
     )
-    second = _one_example_snapshot(
+    second = _dataset_snapshot(
         repository_root,
         tmp_path / "second",
         creation_order=("overlays", "dataset", "marked", "raw"),
     )
-    _set_tree_mtime(first.root, 1_600_000_000_000_000_000)
-    _set_tree_mtime(second.root, 1_700_000_000_000_000_000)
+    first_timestamp_ns = 1_600_000_000_000_000_000
+    second_timestamp_ns = 1_700_000_000_000_000_000
+    _set_tree_mtime(first.root, first_timestamp_ns)
+    _set_tree_mtime(second.root, second_timestamp_ns)
+
+    # Prove os.utime actually took effect rather than silently no-oping.
+    assert first.dataset_path.stat().st_mtime_ns == first_timestamp_ns
+    assert second.dataset_path.stat().st_mtime_ns == second_timestamp_ns
+    assert first.dataset_path.stat().st_mtime_ns != second.dataset_path.stat().st_mtime_ns
 
     assert first.build()[1] == second.build()[1]
 
@@ -288,16 +341,24 @@ def test_directory_listing_order_does_not_affect_identity(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    snapshot = _one_example_snapshot(repository_root, tmp_path / "snapshot")
+    snapshot = _dataset_snapshot(repository_root, tmp_path / "snapshot")
     expected = snapshot.build()[1]
     original_listdir = os.listdir
     original_iterdir = Path.iterdir
+    calls = {"listdir": 0, "iterdir": 0}
 
-    monkeypatch.setattr(os, "listdir", lambda path: list(reversed(original_listdir(path))))
-    monkeypatch.setattr(
-        Path,
-        "iterdir",
-        lambda path: iter(reversed(list(original_iterdir(path)))),
-    )
+    def reversed_listdir(path: str = ".") -> list[str]:
+        calls["listdir"] += 1
+        return list(reversed(original_listdir(path)))
+
+    def reversed_iterdir(path: Path) -> Any:
+        calls["iterdir"] += 1
+        return iter(reversed(list(original_iterdir(path))))
+
+    monkeypatch.setattr(os, "listdir", reversed_listdir)
+    monkeypatch.setattr(Path, "iterdir", reversed_iterdir)
 
     assert snapshot.build()[1] == expected
+    # If a future implementation starts enumerating directories to build identity,
+    # these reversed patches would flip the fingerprint and this assertion would catch it.
+    assert calls == {"listdir": 0, "iterdir": 0}, "identity never consults directory enumeration"
