@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-import inspect
 import re
 from dataclasses import replace
 from typing import Any
 
-from pixelgym.grounding.evaluation import COMMON_PROMPT_TEMPLATE, RAW_PROMPT_SUFFIX
+from pixelgym.grounding.evaluation import (
+    COMMON_PROMPT_TEMPLATE,
+    MARKS_PROMPT_SUFFIX_V1,
+    RAW_PROMPT_SUFFIX,
+)
 from pixelgym.platform.contracts import PolicyManifest
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.source_provenance import SourceProvenance
@@ -18,10 +21,11 @@ from pixelgym.platform.source_provenance import SourceProvenance
 POLICY_SCHEMA_VERSION = "pixelgym-grounding-policy-v2"
 LEGACY_POLICY_SCHEMA_VERSION = "pixelgym-grounding-policy-v1"
 PROMPT_NAME = "pixelgym-grounding"
-# Full, self-sufficient request templates -- base text plus any version-specific
-# addendum -- with {target}/{screen_width}/{screen_height} placeholders. Each one is
-# packaged verbatim as a candidate's prompt_template_text (see build_policy_manifest),
-# so prompt_sha256 digests exactly what render_prompt sends, not a fragment of it.
+# Full, self-sufficient raw-condition request templates -- base text plus any
+# version-specific addendum -- with {target}/{screen_width}/{screen_height}
+# placeholders. Each one is packaged verbatim as a candidate's prompt_template_text
+# (see build_policy_manifest), so prompt_sha256 digests exactly what render_prompt
+# sends, not a fragment of it.
 PROMPT_TEMPLATES = {
     1: COMMON_PROMPT_TEMPLATE + RAW_PROMPT_SUFFIX,
     2: (
@@ -31,14 +35,32 @@ PROMPT_TEMPLATES = {
         "label. Target: {target}. Return only integer screenshot-pixel coordinates as JSON."
     ),
 }
-# Identifies the renderer code that turns a packaged prompt_template_text plus a
-# request's target/width/height into the exact bytes a provider sees (render_prompt,
-# below). The template text itself is a manifest field already covered by
-# prompt_sha256; this covers only the substitution code, so adding a new
-# PROMPT_TEMPLATES entry for a future prompt_version cannot change this digest.
-RENDERER_VERSION = "pixelgym-platform-renderer-v1"
+# The marks-condition counterpart of PROMPT_TEMPLATES, composed from the same pinned
+# grounding constants prompt_for uses for its marks output, so a marks-condition
+# package renders byte-identically to pixelgym.grounding.evaluation.prompt_for.
+MARKS_PROMPT_TEMPLATES = {
+    1: COMMON_PROMPT_TEMPLATE + MARKS_PROMPT_SUFFIX_V1,
+}
+# Identifies the renderer's substitution behavior: which template table a manifest's
+# condition selects, and how a request's target/width/height are substituted into the
+# packaged prompt_template_text (render_prompt, below). This is a hand-maintained
+# specification, not a source-code hash -- inspect.getsource would fold in docstring
+# wording, comment reflow, and line-ending differences that never change what a
+# provider actually receives. Bump RENDERER_VERSION deliberately whenever this spec
+# changes what render_prompt or verify_renderer_binding actually does.
+RENDERER_VERSION = "pixelgym-platform-renderer-v2"
+_RENDERER_SPEC = (
+    "render_prompt(manifest, target, width, height) returns "
+    "manifest.prompt_template_text.format(target=target, screen_width=width, "
+    "screen_height=height); no other code path determines served request bytes. "
+    "verify_renderer_binding requires prompt_template_text to equal "
+    "PROMPT_TEMPLATES[prompt_version] when condition == 'raw', or "
+    "MARKS_PROMPT_TEMPLATES[prompt_version] when condition == 'marks'."
+)
 
 _GIT_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+
+_renderer_config_sha256_cache: str | None = None
 
 
 def prompt_template(version: int) -> str:
@@ -48,36 +70,45 @@ def prompt_template(version: int) -> str:
         raise ValueError(f"unknown prompt version {version}") from exc
 
 
+def _known_prompt_template(condition: str, prompt_version: int) -> str | None:
+    if condition == "raw":
+        return PROMPT_TEMPLATES.get(prompt_version)
+    if condition == "marks":
+        return MARKS_PROMPT_TEMPLATES.get(prompt_version)
+    return None
+
+
 def render_prompt(manifest: PolicyManifest, *, target: str, width: int, height: int) -> str:
     """Render the exact request text a provider sees, entirely from the packaged renderer.
 
     Substitutes target/width/height into the candidate's own packaged
     ``prompt_template_text`` -- the frozen bytes recorded in the policy package -- with
     no dependency on whatever prompt-composition code is currently running. Evaluation
-    and serving both call this, so they invoke the identical renderer/parser contract.
+    and serving both call this, so they invoke the identical renderer/parser contract,
+    for either a raw-coordinate or a marks-condition policy.
     """
     if manifest.renderer_version is None or manifest.prompt_template_text is None:
         raise ValueError("policy manifest does not carry packaged renderer identity")
-    if manifest.condition != "raw":
-        raise ValueError("the packaged renderer supports raw-coordinate policies only")
-    return manifest.prompt_template_text.format(target=target, screen_width=width, screen_height=height)
+    try:
+        return manifest.prompt_template_text.format(
+            target=target, screen_width=width, screen_height=height
+        )
+    except (KeyError, IndexError) as exc:
+        raise ValueError(
+            f"packaged prompt template does not format with the expected keys: {exc}"
+        ) from exc
 
 
 def renderer_config() -> dict[str, Any]:
     """Return the declarative configuration that identifies the renderer implementation."""
-    return {
-        "renderer_version": RENDERER_VERSION,
-        "composition": (
-            "render_prompt(manifest, target, width, height) == "
-            "manifest.prompt_template_text.format(target=target, screen_width=width, "
-            "screen_height=height); no other code path determines served request bytes"
-        ),
-        "render_prompt_source": inspect.getsource(render_prompt),
-    }
+    return {"renderer_version": RENDERER_VERSION, "renderer_spec": _RENDERER_SPEC}
 
 
 def renderer_config_sha256() -> str:
-    return sha256_bytes(canonical_json_bytes(renderer_config()))
+    global _renderer_config_sha256_cache
+    if _renderer_config_sha256_cache is None:
+        _renderer_config_sha256_cache = sha256_bytes(canonical_json_bytes(renderer_config()))
+    return _renderer_config_sha256_cache
 
 
 def is_verified_clean_revision(value: str) -> bool:
@@ -106,6 +137,12 @@ def build_policy_manifest(
         raise ValueError("condition must be raw or marks")
     if prompt_version <= 0:
         raise ValueError("prompt_version must be positive")
+    try:
+        prompt.format(target="pixelgym-render-validation", screen_width=1, screen_height=1)
+    except (KeyError, IndexError) as exc:
+        raise ValueError(
+            f"packaged prompt template does not format with the expected keys: {exc}"
+        ) from exc
     manifest = PolicyManifest(
         schema_version=POLICY_SCHEMA_VERSION,
         provider=provider,
@@ -159,8 +196,10 @@ def verify_renderer_binding(manifest: PolicyManifest) -> None:
         raise ValueError("renderer implementation digest mismatch")
     if manifest.prompt_sha256 != sha256_bytes(manifest.prompt_template_text.encode("utf-8")):
         raise ValueError("packaged prompt digest does not match the packaged prompt bytes")
-    if manifest.prompt_template_text != PROMPT_TEMPLATES.get(manifest.prompt_version):
+    if manifest.prompt_template_text != _known_prompt_template(
+        manifest.condition, manifest.prompt_version
+    ):
         raise ValueError(
             "packaged prompt template does not match the known template for "
-            f"prompt_version {manifest.prompt_version}"
+            f"condition {manifest.condition!r} prompt_version {manifest.prompt_version}"
         )

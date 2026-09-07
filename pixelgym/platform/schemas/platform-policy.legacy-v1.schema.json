@@ -20,9 +20,9 @@
     "target_semantics": {"type": "string", "minLength": 1},
     "code_revision": {"type": "string", "pattern": "^([0-9a-f]{40}|.+-dirty)$"},
     "dependency_lock_sha256": {"$ref": "#/$defs/digest"},
-    "renderer_version": {"type": ["string", "null"]},
-    "renderer_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]},
-    "prompt_template_text": {"type": ["string", "null"]},
+    "renderer_version": {"const": null},
+    "renderer_sha256": {"const": null},
+    "prompt_template_text": {"const": null},
     "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   },
   "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}

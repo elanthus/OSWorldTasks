@@ -60,7 +60,7 @@ def validate_evaluation_versions(
 
 
 # Frozen module-level so the platform renderer identity (pixelgym.platform.policy) can
-# hash exactly the text every raw-coordinate request is built from.
+# hash exactly the text every raw- and marks-condition request is built from.
 COMMON_PROMPT_TEMPLATE = (
     "Locate the requested control in the attached screenshot. "
     "Target: {target}. "
@@ -69,6 +69,18 @@ COMMON_PROMPT_TEMPLATE = (
 )
 RAW_PROMPT_SUFFIX = (
     "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
+    "The origin is the upper-left. Do not explain your answer and do not use tools."
+)
+MARKS_PROMPT_SUFFIX_V1 = (
+    "Every candidate control is outlined and has a visible numbered badge. "
+    "Return only a JSON object with the integer mark_id of the requested control. "
+    "Do not explain your answer and do not use tools."
+)
+MARKS_PROMPT_SUFFIX_V2 = (
+    "Every candidate control is outlined and has a visible numbered badge to help "
+    "you locate controls. "
+    "Return only a JSON object with integer x and y screenshot-pixel coordinates "
+    "of the requested control. "
     "The origin is the upper-left. Do not explain your answer and do not use tools."
 )
 
@@ -87,18 +99,8 @@ def prompt_for(
         return common + RAW_PROMPT_SUFFIX
     if condition == "marks":
         if prompt_version == PROMPT_VERSION:
-            return common + (
-                "Every candidate control is outlined and has a visible numbered badge. "
-                "Return only a JSON object with the integer mark_id of the requested control. "
-                "Do not explain your answer and do not use tools."
-            )
-        return common + (
-            "Every candidate control is outlined and has a visible numbered badge to help "
-            "you locate controls. "
-            "Return only a JSON object with integer x and y screenshot-pixel coordinates "
-            "of the requested control. "
-            "The origin is the upper-left. Do not explain your answer and do not use tools."
-        )
+            return common + MARKS_PROMPT_SUFFIX_V1
+        return common + MARKS_PROMPT_SUFFIX_V2
     raise ValueError(f"unknown condition {condition!r}")
 
 
