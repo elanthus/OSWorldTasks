@@ -14,7 +14,7 @@ from pixelgym.platform.control_store import (
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import Tracking, TrackingMirrorError
-from pixelgym.platform.policy import verify_policy_manifest
+from pixelgym.platform.policy import verify_policy_manifest, verify_renderer_binding
 
 
 class DeploymentCoordinator[PreparedCandidate]:
@@ -96,6 +96,11 @@ class DeploymentCoordinator[PreparedCandidate]:
     def _verify_candidate(self, candidate_id: str) -> PreparedCandidate | bool:
         candidate, _approval = self.control.verify_candidate_approval(candidate_id)
         verify_policy_manifest(candidate.policy)
+        # Blocks activation -- deploy, rollback, and the serving-startup restore below --
+        # for any candidate whose packaged renderer is missing, unsupported, or does not
+        # match the renderer code actually running. Older evidence lacking renderer
+        # identity stays readable elsewhere; it simply cannot reach traffic again.
+        verify_renderer_binding(candidate.policy)
         report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report))
         if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.get("overall_passed"):
             raise TransitionError("approved gate report is corrupt or failed")

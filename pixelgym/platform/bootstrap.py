@@ -120,19 +120,29 @@ class DemoReplayServingProvider:
         }
 
     def ground(
-        self, *, image_bytes: bytes, media_type: str, target: str, policy: PolicyManifest
+        self,
+        *,
+        image_bytes: bytes,
+        media_type: str,
+        target: str,
+        policy: PolicyManifest,
+        prompt: str,
     ) -> tuple[str | None, str, float | None, dict[str, Any] | None]:
         del media_type
         image_sha256 = hashlib.sha256(image_bytes).hexdigest()
         example_id = self.examples.get((image_sha256, target))
         responses = self.baseline if policy.prompt_version == 1 else self.revised
         raw = responses.get(example_id) if example_id else None
+        # The scripted fixture does not call a real provider, but binds the exact
+        # rendered request text into its request identity so replayed evidence still
+        # attributes to the renderer that produced it.
         request_id = "sha256:" + sha256_bytes(
             canonical_json_bytes(
                 {
                     "image_sha256": image_sha256,
                     "target": target,
                     "policy_id": policy.policy_id,
+                    "prompt_sha256": sha256_bytes(prompt.encode("utf-8")),
                 }
             )
         )

@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import dataclasses
+import json
 import logging
 import math
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from pixelgym.platform import mlflow_tracking
+from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.mlflow_tracking import (
     COMPATIBLE_SEARCH_CAPACITY,
@@ -18,7 +21,13 @@ from pixelgym.platform.mlflow_tracking import (
     InMemoryTracking,
     MlflowTracking,
 )
-from pixelgym.platform.policy import is_verified_clean_revision, verify_policy_manifest
+from pixelgym.platform.policy import (
+    RENDERER_VERSION,
+    is_verified_clean_revision,
+    renderer_config_sha256,
+    verify_policy_manifest,
+    verify_renderer_binding,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -102,6 +111,121 @@ def test_any_policy_component_changes_policy_id(policy_factory) -> None:
     verify_policy_manifest(base)
     with pytest.raises(ValueError, match="digest"):
         verify_policy_manifest(dataclasses.replace(base, model="tampered"))
+
+
+def _identity_digest(manifest) -> str:
+    return sha256_bytes(canonical_json_bytes(manifest.identity_dict()))
+
+
+def _prompt_text_and_digest_mutation(base):
+    text = "a completely different packaged prompt template"
+    return dataclasses.replace(
+        base, prompt_template_text=text, prompt_sha256=sha256_bytes(text.encode("utf-8"))
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "mutate"),
+    [
+        ("schema_version", lambda base: dataclasses.replace(base, schema_version="other-schema-version")),
+        ("provider", lambda base: dataclasses.replace(base, provider="other-provider")),
+        ("model", lambda base: dataclasses.replace(base, model="other-model")),
+        ("model_alias_disclosure", lambda base: dataclasses.replace(base, model_alias_disclosure="alias")),
+        ("prompt_name", lambda base: dataclasses.replace(base, prompt_name="other-prompt-name")),
+        ("prompt_version", lambda base: dataclasses.replace(base, prompt_version=base.prompt_version + 1)),
+        ("condition", lambda base: dataclasses.replace(base, condition="marks")),
+        ("parameters", lambda base: dataclasses.replace(base, parameters={**base.parameters, "extra": True})),
+        ("parser_version", lambda base: dataclasses.replace(base, parser_version="other-parser-version")),
+        ("scorer_version", lambda base: dataclasses.replace(base, scorer_version="other-scorer-version")),
+        ("overlay_version", lambda base: dataclasses.replace(base, overlay_version="other-overlay-version")),
+        ("target_semantics", lambda base: dataclasses.replace(base, target_semantics="other-target-semantics")),
+        ("code_revision", lambda base: dataclasses.replace(base, code_revision="b" * 40)),
+        ("code_state", lambda base: dataclasses.replace(base, code_state="dirty")),
+        ("source_tree_sha256", lambda base: dataclasses.replace(base, source_tree_sha256="c" * 64)),
+        ("source_provenance_verified", lambda base: dataclasses.replace(base, source_provenance_verified=False)),
+        ("dependency_lock_sha256", lambda base: dataclasses.replace(base, dependency_lock_sha256="d" * 64)),
+        (
+            "source_provenance_failure_reason",
+            lambda base: dataclasses.replace(base, source_provenance_failure_reason="test-failure-reason"),
+        ),
+        ("renderer_version", lambda base: dataclasses.replace(base, renderer_version="other-renderer-version")),
+        ("renderer_sha256", lambda base: dataclasses.replace(base, renderer_sha256="e" * 64)),
+        ("prompt_template_text", _prompt_text_and_digest_mutation),
+    ],
+)
+def test_every_identity_component_mutation_changes_policy_id(policy_factory, field, mutate) -> None:
+    """Table-driven mutation matrix: every field in identity_dict() must be identity-bound.
+
+    Mutating exactly one component -- including the renderer version, renderer digest,
+    and the packaged prompt bytes -- must change the recomputed digest that becomes
+    policy_id. A field silently excluded from identity_dict() would let a candidate that
+    differs in that field alone masquerade as byte-identical to another.
+    """
+    base = policy_factory()
+    mutated = mutate(base)
+    assert _identity_digest(mutated) != _identity_digest(base), field
+
+
+def test_policy_package_build_is_byte_identical_across_two_builds(policy_factory) -> None:
+    first = policy_factory()
+    second = policy_factory()
+    assert first.policy_id == second.policy_id
+    assert canonical_json_bytes(first.to_dict()) == canonical_json_bytes(second.to_dict())
+
+
+def test_renderer_config_digest_matches_the_committed_schema_constant(repository_root: Path) -> None:
+    """Guard against schema/code drift: the schema's hardcoded renderer_sha256 const must
+    track whatever the running renderer code actually computes, or registration would
+    either wrongly accept a stale renderer or wrongly reject the current one."""
+    schema = json.loads((repository_root / "config/platform-policy.schema.json").read_text())
+    v2_branch = next(
+        clause["then"]
+        for clause in schema["allOf"]
+        if clause.get("if", {}).get("properties", {}).get("schema_version", {}).get("const")
+        == "pixelgym-grounding-policy-v2"
+    )
+    assert v2_branch["properties"]["renderer_version"]["const"] == RENDERER_VERSION
+    assert v2_branch["properties"]["renderer_sha256"]["const"] == renderer_config_sha256()
+
+
+def test_verify_renderer_binding_fails_closed_on_missing_mismatched_or_corrupt_renderer(
+    policy_factory,
+) -> None:
+    base = policy_factory()
+    verify_renderer_binding(base)
+
+    legacy = dataclasses.replace(
+        base, renderer_version=None, renderer_sha256=None, prompt_template_text=None
+    )
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        verify_renderer_binding(legacy)
+
+    with pytest.raises(ValueError, match="unsupported renderer version"):
+        verify_renderer_binding(dataclasses.replace(base, renderer_version="some-other-renderer-v1"))
+
+    with pytest.raises(ValueError, match="renderer implementation digest mismatch"):
+        verify_renderer_binding(dataclasses.replace(base, renderer_sha256="0" * 64))
+
+    # Simulate a stored row where prompt_sha256 and prompt_template_text were corrupted
+    # independently, bypassing PolicyManifest.__post_init__'s own consistency check.
+    corrupt_digest = dataclasses.replace(base)
+    object.__setattr__(corrupt_digest, "prompt_sha256", "1" * 64)
+    with pytest.raises(ValueError, match="packaged prompt digest does not match"):
+        verify_renderer_binding(corrupt_digest)
+
+
+def test_policy_manifest_rejects_partial_renderer_identity_at_construction(policy_factory) -> None:
+    base = policy_factory()
+    with pytest.raises(ValueError, match="all present or all absent"):
+        dataclasses.replace(base, renderer_version=None)
+    with pytest.raises(ValueError, match="all present or all absent"):
+        dataclasses.replace(base, prompt_template_text=None)
+
+
+def test_policy_manifest_rejects_prompt_digest_bytes_mismatch_at_construction(policy_factory) -> None:
+    base = policy_factory()
+    with pytest.raises(ValueError, match="packaged prompt digest does not match"):
+        dataclasses.replace(base, prompt_template_text="a different prompt template")
 
 
 @pytest.mark.parametrize(

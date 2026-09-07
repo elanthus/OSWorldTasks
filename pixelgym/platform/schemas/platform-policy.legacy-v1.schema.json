@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "dependency_lock_sha256", "policy_id"],
   "properties": {
-    "schema_version": {"const": "pixelgym-grounding-policy-v1"},
+    "schema_version": {"enum": ["pixelgym-grounding-policy-v1", "pixelgym-grounding-policy-v2"]},
     "provider": {"type": "string", "minLength": 1},
     "model": {"type": "string", "minLength": 1},
     "model_alias_disclosure": {"type": ["string", "null"]},
@@ -20,6 +20,9 @@
     "target_semantics": {"type": "string", "minLength": 1},
     "code_revision": {"type": "string", "pattern": "^([0-9a-f]{40}|.+-dirty)$"},
     "dependency_lock_sha256": {"$ref": "#/$defs/digest"},
+    "renderer_version": {"type": ["string", "null"]},
+    "renderer_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]},
+    "prompt_template_text": {"type": ["string", "null"]},
     "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   },
   "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}

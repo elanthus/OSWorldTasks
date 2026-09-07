@@ -51,7 +51,11 @@ from pixelgym.platform.operational_log import (
     OperationalRecord,
     normalize_provider_metadata,
 )
-from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.policy import (
+    LEGACY_POLICY_SCHEMA_VERSION,
+    build_policy_manifest,
+    prompt_template,
+)
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
     DEFAULT_MAX_PROVIDER_OUTPUT_BYTES,
@@ -3232,7 +3236,51 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
         f"/compare/prompt-diff?candidate={first.candidate_id}&candidate={second.candidate_id}"
     )
     assert diff.status_code == 200
-    assert "no separate immutable prompt-diff artifact was recorded" in diff.text
+    assert "read directly from each candidate's immutable policy package" in diff.text
+    assert "(packaged)" in diff.text
+    assert "no packaged prompt artifact" not in diff.text
+
+
+def test_prompt_diff_labels_a_pre_renderer_candidate_as_legacy(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """A candidate packaged before renderer identity existed carries no immutable prompt
+    artifact; the diff must re-render its side from local templates and say so, while a
+    packaged candidate's side is read straight from its own manifest."""
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    packaged = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    legacy_policy = dataclasses.replace(
+        policy,
+        schema_version=LEGACY_POLICY_SCHEMA_VERSION,
+        renderer_version=None,
+        renderer_sha256=None,
+        prompt_template_text=None,
+        policy_id="",
+    )
+    legacy_policy = dataclasses.replace(
+        legacy_policy,
+        policy_id="sha256:" + sha256_bytes(canonical_json_bytes(legacy_policy.identity_dict())),
+    )
+    legacy = control.register_candidate(
+        source_run_id="run-legacy",
+        policy=legacy_policy,
+        gate_report=dataclasses.replace(report, policy_id=legacy_policy.policy_id, run_id="run-legacy"),
+        artifacts=[],
+    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+
+    diff = client.get(
+        f"/compare/prompt-diff?candidate={packaged.candidate_id}&candidate={legacy.candidate_id}"
+    )
+
+    assert diff.status_code == 200
+    assert "predates renderer identity and carries no packaged prompt artifact" in diff.text
+    assert "(packaged)" in diff.text
+    assert "(legacy · re-rendered, no packaged prompt artifact)" in diff.text
 
 
 def test_compare_blocks_promotion_for_different_primary_metrics(

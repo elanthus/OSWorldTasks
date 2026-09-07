@@ -40,6 +40,7 @@ from pixelgym.platform.operational_log import (
     ProviderMetadata,
     normalize_provider_metadata,
 )
+from pixelgym.platform.policy import render_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +71,15 @@ class ServingProvider(Protocol):
         media_type: str,
         target: str,
         policy: PolicyManifest,
+        prompt: str,
     ) -> tuple[str | None, str, float | None, dict[str, Any] | None]:
-        """Return raw final text, request ID, latency, and usage without hidden retry."""
+        """Return raw final text, request ID, latency, and usage without hidden retry.
+
+        ``prompt`` is the exact request text rendered from the candidate's own packaged
+        renderer (see pixelgym.platform.policy.render_prompt) -- the same renderer
+        evaluation uses to build its request material, so serving and evaluation invoke
+        one narrow rendering implementation rather than parallel behavior.
+        """
 
 
 @dataclass(frozen=True)
@@ -481,6 +489,7 @@ def create_serving_app(
             raise HTTPException(503, "no approved policy is loaded")
         loaded = runtime.loaded
         _set_identity(loaded)
+        rendered_prompt = render_prompt(loaded.manifest, target=target, width=width, height=height)
         borrower = object()
         provider_admitted = False
         if provider_queue_timeout_seconds == 0:
@@ -504,6 +513,7 @@ def create_serving_app(
             media_type=request.media_type,
             target=target,
             policy=loaded.manifest,
+            prompt=rendered_prompt,
         )
 
         def _on_provider_future_done(_: Future[Any]) -> None:

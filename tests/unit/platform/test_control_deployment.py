@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -25,7 +26,11 @@ from pixelgym.platform.immutable_store import (
     LocalImmutableStore,
 )
 from pixelgym.platform.mlflow_tracking import TrackingMirrorError
-from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.policy import (
+    LEGACY_POLICY_SCHEMA_VERSION,
+    build_policy_manifest,
+    prompt_template,
+)
 from pixelgym.platform.schema_validation import ContractValidationError
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
@@ -1615,3 +1620,151 @@ def test_reads_wait_for_the_shared_connection_lock(tmp_path: Path) -> None:
             assert started.wait(timeout=1)
             assert not future.done()
         assert future.result(timeout=1)[0]["submission_id"].startswith("submission-")
+
+
+def _renderer_less(policy):
+    """Build a schema-valid, registerable policy that carries no renderer identity.
+
+    Mirrors what a policy built before renderer identity existed looks like: labelled
+    with the legacy schema_version so the (unchanged) v1/v2 policy_package schema does
+    not require renderer fields for it.
+    """
+    stripped = dataclasses.replace(
+        policy,
+        schema_version=LEGACY_POLICY_SCHEMA_VERSION,
+        renderer_version=None,
+        renderer_sha256=None,
+        prompt_template_text=None,
+        policy_id="",
+    )
+    policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(stripped.identity_dict()))
+    return dataclasses.replace(stripped, policy_id=policy_id)
+
+
+def test_registration_accepts_a_legacy_labelled_policy_missing_renderer_identity(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """Documents the known registration-time gap: a policy explicitly labelled with the
+    legacy schema_version is still registerable without renderer identity, because
+    registration validates only the shared policy_package schema and identity digest.
+    Activation closes this gap (see the deploy/restore tests below), so no traffic can
+    ever reach a renderer-less policy even though it can reach Eligible/Approved state.
+    """
+    policy, summary, report = passing_evidence
+    stripped = _renderer_less(policy)
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=stripped,
+        gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
+        artifacts=[],
+    )
+    assert candidate.policy.renderer_version is None
+    assert candidate.state.value == "Eligible"
+
+
+def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
+    tmp_path: Path, passing_evidence
+) -> None:
+    policy, summary, report = passing_evidence
+    stripped = _renderer_less(policy)
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=stripped,
+        gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
+        artifacts=[],
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
+    smoke_called = False
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+
+    assert not smoke_called
+    assert control.active() == (None, 0)
+
+
+def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    tampered = dataclasses.replace(candidate.policy, renderer_sha256="0" * 64)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_json = ? WHERE candidate_id = ?",
+        (canonical_json_bytes(tampered.to_dict()).decode(), candidate.candidate_id),
+    )
+    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
+
+    with pytest.raises(ContractValidationError, match="policy_package"):
+        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+
+    assert control.active() == (None, 0)
+
+
+def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_smoke(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+
+    stripped = _renderer_less(candidate.policy)
+    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            stripped.policy_id,
+            canonical_json_bytes(stripped.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (stripped.policy_id, report_digest, candidate.candidate_id),
+    )
+    artifact_called = False
+    smoke_called = False
+
+    def verify_artifact(_reference):
+        nonlocal artifact_called
+        artifact_called = True
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    monkeypatch.setattr(store, "get_verified", verify_artifact)
+    restoring = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        restoring.restore_active()
+    assert not artifact_called
+    assert not smoke_called
