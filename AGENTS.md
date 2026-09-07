@@ -49,13 +49,13 @@ tests/{unit,integration}/
 artifacts/            # validation, grounding, and platform evidence
 deploy/               # local Compose stack and platform runtime images
 scripts/
-legacy/grounding/       # historical validators/apps; frozen v5 runbooks remain under artifacts/
 ```
 
-The moved v5 calibration wrapper referenced by
-`artifacts/grounding-v5-d56-calibration-approval.md` and
-`artifacts/grounding-v5-d56-calibration-runbook.md` now runs as
-`python -m legacy.grounding.scripts.run_grounding_v5_d56_calibration`.
+The superseded v3/v4 calibration apps and v5 D5.6 experiment drivers formerly under
+`legacy/grounding/` were removed from the tree (issue #170); the frozen evidence they
+produced is verified by git-revision provenance sidecars and by fixtures under
+`tests/unit/fixtures/`, and the code itself remains reproducible at git tag
+`legacy-grounding-final` (`git worktree add <path> legacy-grounding-final`).
 
 Python 3.12. Narrow dependencies: Gymnasium, NumPy, Pillow, FastAPI, Uvicorn, pytest, plus only the formatting/type-checking tools actually wired up. **OSWorld is an optional extra** — the fast unit path must install and run without it.
 

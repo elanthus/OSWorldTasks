@@ -228,6 +228,9 @@ declared `must_not_commit` in the
 and the [integrity audit](artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json)
 discloses that their file hashes and row-level contents are unavailable from a public clone.
 
+The superseded v3/v4 calibration apps and v5 D5.6 experiment drivers that produced this evidence
+were removed from the tree; the code remains reproducible at git tag `legacy-grounding-final`.
+
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
@@ -252,7 +255,7 @@ strict static type check of the complete `pixelgym` package.
 
 Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
 The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
-`pixelgym` package (`legacy/`, `flows/`, and `scripts/` are outside the installable package and out
+`pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
 of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
 hard to cover); optional OSWorld, browser, grounding, and platform modules remain included, along
 with the project's 12 pre-existing `# pragma: no cover` lines. CI publishes the terminal report in

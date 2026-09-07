@@ -85,7 +85,7 @@ markers = [
 # and platform paths. Keeping difficult modules in scope prevents the fast-suite
 # baseline from being inflated by exclusions. `source = ["pixelgym"]` matches
 # the packaging scope in [tool.setuptools.packages.find] and the mypy scope in
-# [tool.mypy] `files`: `legacy/`, `flows/`, and `scripts/` are not part of the
+# [tool.mypy] `files`: `flows/` and `scripts/` are not part of the
 # installable package and are out of scope for the same reason they are out of
 # scope for those tools, not because they are hard to cover. The 12 pre-existing
 # `# pragma: no cover` lines inside pixelgym (optional-import fallbacks and
