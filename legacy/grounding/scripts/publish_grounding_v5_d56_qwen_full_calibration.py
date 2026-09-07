@@ -24,12 +24,12 @@ from pixelgym.grounding.v5.contracts import REDACTION_POLICY_VERSION, content_di
 from pixelgym.grounding.v5.evidence import validate_credential_free
 
 try:
-    from scripts.audit_grounding_v5_d56_gemini_full_calibration import (
+    from legacy.grounding.scripts.audit_grounding_v5_d56_gemini_full_calibration import (
         IntegrityAuditError,
         _audit_journal,
         _file_record,
     )
-except ModuleNotFoundError:  # Direct script execution puts scripts/ on sys.path.
+except ModuleNotFoundError:  # Direct execution puts this legacy script directory on sys.path.
     from audit_grounding_v5_d56_gemini_full_calibration import (  # type: ignore[no-redef]
         IntegrityAuditError,
         _audit_journal,

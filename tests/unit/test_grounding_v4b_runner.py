@@ -2,8 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.run_grounding_v4b_pilot import provider_for_name
-
+from legacy.grounding.scripts.run_grounding_v4b_pilot import provider_for_name
 from pixelgym.grounding.providers import ClaudeCodeCLIProvider, CodexCLIProvider, MockProvider
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]

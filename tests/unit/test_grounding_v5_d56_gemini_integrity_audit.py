@@ -4,11 +4,11 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from scripts.audit_grounding_v5_d56_gemini_full_calibration import (
+
+from legacy.grounding.scripts.audit_grounding_v5_d56_gemini_full_calibration import (
     IntegrityAuditError,
     _audit_journal,
 )
-
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, content_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.serialization import canonical_json_bytes
