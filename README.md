@@ -246,8 +246,21 @@ python3.12 -m venv .venv
 The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
 run independent tests in parallel. Serial execution remains supported but is not the under-one-minute
 timing target. The editable install is sufficient for the fast suite, lint, and strict static type
-check of the complete `pixelgym` package. Re-capturing the
-frozen browser dataset additionally requires Playwright's Chromium binary, installed once with:
+check of the complete `pixelgym` package.
+
+Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
+The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
+`pixelgym` package; optional OSWorld, browser, grounding, and platform modules remain included. CI
+publishes the terminal report in the job summary and uploads `coverage.xml` as the
+`fast-suite-coverage` artifact. Run the identical coverage gate locally with:
+
+```bash
+.venv/bin/pytest -q -n 4 --dist worksteal --hypothesis-profile=ci \
+  --cov=pixelgym --cov-report=term-missing --cov-report=xml tests/unit
+```
+
+Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
+installed once with:
 
 ```bash
 .venv/bin/python -m playwright install chromium
