@@ -952,3 +952,138 @@ def test_duplicate_idempotency_key_never_replays_process(tmp_path: Path) -> None
     finally:
         transport.close()
         invocation_journal.close()
+
+
+# ── Coverage recovery after issue #170 (round 2) ──
+#
+# The deleted `test_grounding_v5_d56_codex_subscription_campaign.py` and
+# `test_grounding_v5_d56_codex_cli_calibration.py` exercised `probe_codex_runtime()`,
+# `CodexCliInvocationJournal.integrity_report()`, and the lifecycle's own pre-send
+# process-start-failure path only indirectly, through the legacy campaign driver.
+# These restore that coverage directly against the shipped module.
+
+
+def test_probe_codex_runtime_reads_local_cli_metadata_without_a_model_request() -> None:
+    config = policy.DEFAULT_CODEX_POLICY
+    required_flags = (
+        "--model",
+        "--config",
+        "--disable",
+        "--strict-config",
+        "--image",
+        "--sandbox",
+        "--cd",
+        "--ephemeral",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--output-schema",
+        "--json",
+        "--skip-git-repo-check",
+    )
+    exec_help = " ".join(required_flags)
+    feature_inventory = " ".join(policy._DISABLED_FEATURES)
+    preflight_command = policy._configuration_preflight_command(config)
+    bundled_catalog = json.dumps(
+        {
+            "models": [
+                {
+                    "slug": config.model,
+                    "comp_hash": config.model_catalog_comp_hash,
+                    "supported_reasoning_levels": [
+                        {"effort": "low"},
+                        {"effort": "medium"},
+                    ],
+                    "input_modalities": ["text", "image"],
+                    "context_window": config.model_context_window_tokens,
+                }
+            ]
+        }
+    )
+    outputs = {
+        ("codex", "--version"): (policy.CODEX_CLI_VERSION, ""),
+        ("codex", "login", "status"): ("Logged in using ChatGPT\n", ""),
+        ("codex", "exec", "--help"): (exec_help, ""),
+        ("codex", "features", "list"): (feature_inventory, ""),
+        preflight_command: ("[]", ""),
+        ("codex", "debug", "models", "--bundled"): (bundled_catalog, ""),
+    }
+
+    class Completed:
+        def __init__(self, stdout: str, stderr: str) -> None:
+            self.stdout = stdout
+            self.stderr = stderr
+
+    def run(command: Any) -> Completed:
+        stdout, stderr = outputs[tuple(command)]
+        return Completed(stdout, stderr)
+
+    identity = policy.probe_codex_runtime(config, run=run)
+
+    assert identity.cli_version == policy.CODEX_CLI_VERSION
+    assert identity.authentication_mode == policy.AUTH_MODE
+    assert identity.model == config.model
+    assert identity.model_catalog_comp_hash == config.model_catalog_comp_hash
+    assert identity.context_window_tokens == config.model_context_window_tokens
+    assert config.model_reasoning_effort in identity.supported_reasoning_efforts
+    assert identity.configuration_preflight_validated is True
+
+
+def test_codex_process_start_failure_is_pre_send_and_costs_zero(tmp_path: Path) -> None:
+    invocation_journal = policy.CodexCliInvocationJournal(tmp_path / "start-failure.sqlite")
+    process_starts = 0
+
+    def fail_to_start(_command: list[str], **_kwargs: Any) -> Any:
+        nonlocal process_starts
+        process_starts += 1
+        raise OSError("synthetic process start failure")
+
+    transport = policy.CodexCliTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=fail_to_start,
+    )
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:codex-start-failure",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert process_starts == 1
+        assert outcome.status == "pre_send_failure"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.PROCESS_START
+        assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
+        assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+        assert transport.records[-1]["type"] == "OSError"
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_codex_invocation_journal_integrity_report_summarizes_every_record(
+    tmp_path: Path,
+) -> None:
+    process = FakeProcess(cli_stream())
+    transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
+    try:
+        transport.send(
+            request(),
+            idempotency_key="sha256:codex-integrity-report",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+    finally:
+        transport.close()
+
+    report = invocation_journal.integrity_report()
+    assert report["schema_version"] == policy.INVOCATION_JOURNAL_SCHEMA_VERSION
+    assert report["invocation_count"] == 1
+    (record,) = report["records"]
+    assert record["idempotency_key_digest"] == policy.content_digest(
+        "sha256:codex-integrity-report"
+    )
+    assert record["status"] == "response"
+    assert record["raw_stdout_sha256"].startswith("sha256:")
+    assert record["credential_redacted"] is False
+    invocation_journal.close()

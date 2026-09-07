@@ -33,6 +33,7 @@ from pixelgym.grounding.v5.contracts import (
     CostKnowledge,
     ModelAttemptConsumption,
 )
+from pixelgym.grounding.v5.runner import PolicyVisibleResult
 
 RESOLVED_MODEL = "claude-sonnet-5-20260801"
 
@@ -775,3 +776,107 @@ def test_cleanup_does_not_claim_a_stubborn_process_was_closed(tmp_path: Path) ->
         transport.close()
         invocation_journal.close()
     assert transport.subprocesses_closed is False
+
+
+# ── Coverage recovery after issue #170 (round 2) ──
+#
+# The tests above exercise `ClaudeCodeTransport`/`ClaudeInvocationJournal` and only
+# ever call `ClaudeCodePolicy.parse()` inside `pytest.raises` blocks (failure paths).
+# The deleted legacy campaign's `execute_smoke()` also drove a full successful round
+# trip — `parse()` returning a candidate, plus every no-op `Policy` protocol hook the
+# runner calls around it, and `ClaudeInvocationJournal.integrity_report()` — with no
+# replacement. These restore that coverage directly.
+
+
+def test_claude_policy_hooks_are_pure_pass_throughs_between_attempts() -> None:
+    claude_policy = policy.ClaudeCodePolicy()
+    state = claude_policy.reset("Complete the visible task.")
+
+    assert claude_policy.reduce_state(state, b'{"ignored": true}') == state
+    assert claude_policy.failure_state(state, "some_failure_code") == state
+    assert claude_policy.retryable_response_code(b'{"ignored": true}') is None
+    assert claude_policy.post_parse_state(state, {"action_type": 0, "x": 0, "y": 0, "key": 0}) == (
+        state
+    )
+    result = PolicyVisibleResult(
+        screenshot_digest="sha256:" + "a" * 64,
+        reward=0.0,
+        terminated=False,
+        truncated=False,
+        step_index=0,
+    )
+    assert (
+        claude_policy.post_dispatch_state(state, {"action_type": 0, "x": 0, "y": 0, "key": 0}, result)
+        == state
+    )
+    assert claude_policy.close() is None
+
+
+def test_claude_policy_parse_accepts_one_successful_response_and_returns_the_action(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "successful-parse.sqlite")
+    action = {"action_type": 1, "x": 200, "y": 150, "key": 3}
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(action),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-successful-parse",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        candidate = claude_policy.parse(policy.canonical_json_bytes(outcome.response), b"{}")
+        assert candidate == action
+        assert all(type(value) is int for value in candidate.values())
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_invocation_journal_integrity_report_summarizes_every_record(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "integrity-report.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        transport.send(
+            request,
+            idempotency_key="sha256:claude-integrity-report",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+    finally:
+        transport.close()
+
+    report = invocation_journal.integrity_report()
+    assert report["schema_version"] == policy.INVOCATION_JOURNAL_SCHEMA_VERSION
+    assert report["invocation_count"] == 1
+    (record,) = report["records"]
+    assert record["idempotency_key_digest"] == policy.content_digest(
+        "sha256:claude-integrity-report"
+    )
+    assert record["status"] == "response"
+    assert record["raw_stdout_sha256"].startswith("sha256:")
+    assert record["raw_stdout_original_sha256"] == record["raw_stdout_sha256"]
+    assert record["credential_redacted"] is False
+    invocation_journal.close()
