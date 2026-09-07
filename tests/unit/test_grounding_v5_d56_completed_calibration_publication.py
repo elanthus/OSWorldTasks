@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.publish_grounding_v5_d56_completed_calibrations as publication
 from scripts.publish_grounding_v5_d56_completed_calibrations import (
     AUDIT_PATH,
     DERIVATIVE_PATH,
@@ -52,6 +53,16 @@ def test_publication_is_reproducible_without_provider_calls() -> None:
         "milestone_gate_verdict": "not_evaluated_human_owned",
         "published_run_ids": ["gemini-v3b", "qwen-v3"],
     }
+
+
+def test_inventory_falls_back_to_head_in_detached_ci(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        publication,
+        "_git_ref_exists",
+        lambda repository_root, ref: ref == "HEAD",
+    )
+
+    assert publication._inventory_ref(ROOT) == "HEAD"
 
 
 def test_completed_table_preserves_all_terminal_classifications_and_spend() -> None:

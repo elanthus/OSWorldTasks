@@ -166,10 +166,36 @@ def _git(repository_root: Path, *args: str) -> str:
     return result.stdout
 
 
-def inventory_main(repository_root: Path) -> tuple[str, ...]:
-    """Inventory every committed D5.6 directory named as a full-calibration run."""
+def _git_ref_exists(repository_root: Path, ref: str) -> bool:
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
+        cwd=repository_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
-    paths = _git(repository_root, "ls-tree", "-r", "--name-only", "main", "--", "artifacts")
+
+def _inventory_ref(repository_root: Path) -> str:
+    for ref in ("main", "refs/remotes/origin/main", "HEAD"):
+        if _git_ref_exists(repository_root, ref):
+            return ref
+    raise PublicationError("no Git tree is available for the full-calibration inventory")
+
+
+def inventory_main(repository_root: Path) -> tuple[str, ...]:
+    """Inventory main, with HEAD fallback for a detached full-history CI checkout."""
+
+    paths = _git(
+        repository_root,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        _inventory_ref(repository_root),
+        "--",
+        "artifacts",
+    )
     summaries = tuple(
         sorted(
             line
