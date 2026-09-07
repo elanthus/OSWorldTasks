@@ -54,6 +54,7 @@ _RAW_PAYLOAD_KEYS = {
 _CLASSIFICATION_KEYS = {
     "infrastructure_failure",
     "invalid_output",
+    "unknown_outcome_infrastructure_failure",
     "policy_violation",
     "request_failure",
     "step_limit_truncation",
@@ -112,6 +113,7 @@ RUN_SPECS = (
 )
 EXPECTED_MAIN_SUMMARIES = tuple(sorted(spec.summary_path.as_posix() for spec in RUN_SPECS))
 EXPECTED_PUBLISHED_RUNS = ("gemini-v3b", "qwen-v3")
+PUBLICATION_PROVIDER_CALL_LOG: tuple[str, ...] = ()
 
 
 def _require(condition: bool, message: str) -> None:
@@ -128,6 +130,14 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _file_digest(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _bytes_digest(value: bytes) -> str:
+    return "sha256:" + hashlib.sha256(value).hexdigest()
+
+
+def _publication_provider_calls_made() -> int:
+    return len(PUBLICATION_PROVIDER_CALL_LOG)
 
 
 def _json_keys(value: Any) -> set[str]:
@@ -178,7 +188,7 @@ def _git_ref_exists(repository_root: Path, ref: str) -> bool:
 
 
 def _inventory_ref(repository_root: Path) -> str:
-    for ref in ("main", "refs/remotes/origin/main", "HEAD"):
+    for ref in ("refs/remotes/origin/main", "main", "HEAD"):
         if _git_ref_exists(repository_root, ref):
             return ref
     raise PublicationError("no Git tree is available for the full-calibration inventory")
@@ -206,8 +216,8 @@ def inventory_main(repository_root: Path) -> tuple[str, ...]:
         )
     )
     _require(
-        summaries == EXPECTED_MAIN_SUMMARIES,
-        "main full-calibration inventory differs from the reviewed run set",
+        set(EXPECTED_MAIN_SUMMARIES) <= set(summaries),
+        "reviewed full-calibration summaries are absent from the main inventory",
     )
     return summaries
 
@@ -217,7 +227,7 @@ def _source_commit_date(repository_root: Path, path: Path) -> str:
         repository_root,
         "log",
         "--diff-filter=A",
-        "--format=%cI",
+        "--format=%aI",
         "--",
         path.as_posix(),
     )
@@ -269,11 +279,66 @@ def _classification_counts(summary: dict[str, Any]) -> dict[str, int]:
         "attempted": len(summary["episode_results"]),
         "invalid_output": observed.get("invalid_output", 0),
         "request_failure": observed.get("request_failure", 0),
-        "infrastructure_failure": observed.get("infrastructure_failure", 0),
+        "infrastructure_failure": (
+            observed.get("infrastructure_failure", 0)
+            + observed.get("unknown_outcome_infrastructure_failure", 0)
+        ),
         "policy_violation": observed.get("policy_violation", 0),
         "truncation": observed.get("step_limit_truncation", 0),
         "success": observed.get("success_termination", 0),
     }
+
+
+def _inference_parameter(manifest: dict[str, Any], name: str) -> str | None:
+    matches = [str(value) for key, value in manifest["inference_parameters"] if key == name]
+    _require(len(matches) <= 1, f"duplicate inference parameter: {name}")
+    return matches[0] if matches else None
+
+
+def _taxonomy_record(
+    plan: dict[str, Any], summary: dict[str, Any], counts: dict[str, int]
+) -> tuple[dict[str, Any], bool]:
+    manifest = plan["policy"]["policy_manifest"]
+    provider_alias = str(manifest["provider"])
+    provider_name = str(plan["policy"]["provider"]["name"])
+    provider_endpoint = str(manifest["sandbox"]["provider_endpoint"])
+    episode_cli_fault_rows = sum("cli_fault" in row for row in summary["episode_results"])
+    transport_cli_fault_rows = sum("cli_fault" in row for row in summary["transport_records"])
+    http_openrouter_transport = (
+        provider_alias.startswith("openrouter/")
+        and provider_name == "openrouter"
+        and provider_endpoint.startswith("https://openrouter.ai")
+    )
+    verified = (
+        http_openrouter_transport
+        and episode_cli_fault_rows == 0
+        and transport_cli_fault_rows == 0
+    )
+    return (
+        {
+            "stored_taxonomy_preserved": True,
+            "legacy_cli_process_failures_recorded_as_invalid_output": (
+                0 if verified else None
+            ),
+            "bound": (
+                "zero invalid_output rows can be former-taxonomy CLI process failures"
+                if verified
+                else "not established"
+            ),
+            "inputs": {
+                "manifest_provider_alias": provider_alias,
+                "provider_name": provider_name,
+                "provider_endpoint": provider_endpoint,
+                "http_openrouter_transport": http_openrouter_transport,
+                "episode_rows_checked": len(summary["episode_results"]),
+                "episode_rows_with_cli_fault_key": episode_cli_fault_rows,
+                "transport_rows_checked": len(summary["transport_records"]),
+                "transport_rows_with_cli_fault_key": transport_cli_fault_rows,
+                "invalid_output_rows": counts["invalid_output"],
+            },
+        },
+        verified,
+    )
 
 
 def _errata_records(errata: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -427,6 +492,7 @@ def audit_run(
         )
 
     spend, spend_ok = _spend_record(repository_root, spec, plan, summary, errata)
+    taxonomy, taxonomy_ok = _taxonomy_record(plan, summary, counts)
     summary_classifications = {
         str(key): int(value) for key, value in summary["classifications"].items()
     }
@@ -449,9 +515,9 @@ def audit_run(
             assigned == int(summary["assigned_policy_task_pairs"]) == len(task_order) == 50
         ),
         "attempted_rows_reconcile": attempted == int(summary["attempted_policy_task_pairs"]),
+        "classification_keys_recognized": allowed_classifications,
         "classification_counts_reconcile": (
-            allowed_classifications
-            and summary_classifications == dict(sorted(classifications.items()))
+            summary_classifications == dict(sorted(classifications.items()))
             and sum(counts[key] for key in counts if key != "attempted") == attempted
         ),
         "success_count_reconciles": (
@@ -469,20 +535,11 @@ def audit_run(
             not _is_tracked(repository_root, spec.journal_path)
             and _is_ignored(repository_root, spec.journal_path)
         ),
+        "legacy_cli_taxonomy_bound_verified": taxonomy_ok,
         "completed_assigned_denominator": (
             attempted == assigned and summary["completed_all_assigned_pairs"] is True
         ),
-        "publication_relation_verified": (
-            False
-            if spec.run_id == "gemini-v3"
-            else (
-                _validate_old_relation(repository_root, spec)
-                if spec.run_id == "qwen-v2"
-                else True
-            )
-        ),
     }
-    source_checks_passed = all(checks.values())
     return {
         "run_id": spec.run_id,
         "plan_path": spec.plan_path.as_posix(),
@@ -491,16 +548,25 @@ def audit_run(
         "provider_alias": manifest["provider"],
         "model_alias": manifest["model"],
         "source_commit_date": _source_commit_date(repository_root, spec.summary_path),
+        "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
         "run_execution_date": None,
         "run_execution_date_disclosure": "not recorded in committed plan or summary",
         "endpoint_record_observed_at_utc": endpoint_record["observed_at_utc"],
         "versions": {
+            "policy_manifest_digest": plan["policy"]["policy_manifest_digest"],
+            "code_revision": manifest["code_revision"],
+            "runtime_digest": manifest["sandbox"]["runtime_digest"],
             "system_prompt_digest": manifest["system_prompt_digest"],
             "memory_policy_version": manifest["memory_policy_version"],
             "parser_version": manifest["parser_version"],
             "response_schema_version": manifest["response_schema_version"],
             "coordinate_adapter": manifest["coordinate_adapter"],
             "transport_retry_rule": manifest["transport_retry_rule"],
+            "temperature": _inference_parameter(manifest, "temperature"),
+            "response_validation": plan["policy"].get("response_validation"),
+            "calibration_partition_manifest_digest": plan["calibration_partition"][
+                "manifest_digest"
+            ],
         },
         "assigned_tasks": assigned,
         "classification_counts": counts,
@@ -519,14 +585,22 @@ def audit_run(
                 or "approved_legacy_stop"
             ),
         },
-        "fault_taxonomy": {
-            "stored_taxonomy_preserved": True,
-            "legacy_cli_process_failures_recorded_as_invalid_output": 0,
-            "basis": "provider alias and stored transport are HTTP/OpenRouter, not a CLI transport",
-            "bound": "none of this run's invalid_output rows can be a CLI process failure",
+        "predecessor_disclosures": {
+            "policy_predecessor": summary.get("predecessor_relation"),
+            "frozen_infrastructure_predecessor": summary.get(
+                "frozen_qwen_429_predecessor"
+            ),
         },
+        "fault_taxonomy": taxonomy,
+        "errata_corrections": [
+            {
+                "id": str(correction["id"]),
+                "corrected_interpretation": str(correction["correct_interpretation"]),
+            }
+            for correction in errata["corrections"]
+        ],
         "checks": checks,
-        "source_checks_passed": source_checks_passed,
+        "source_checks_passed": False,
         "publication_relation": None,
         "published": False,
     }
@@ -594,6 +668,7 @@ def _published_row(audit: dict[str, Any]) -> dict[str, Any]:
             "provider_alias",
             "model_alias",
             "source_commit_date",
+            "source_commit_date_disclosure",
             "run_execution_date",
             "run_execution_date_disclosure",
             "endpoint_record_observed_at_utc",
@@ -603,6 +678,7 @@ def _published_row(audit: dict[str, Any]) -> dict[str, Any]:
             "spend",
             "stop_conditions",
             "fault_taxonomy",
+            "predecessor_disclosures",
             "plan_path",
             "summary_path",
         )
@@ -632,7 +708,7 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
     derivative = {
         "schema_version": DERIVATIVE_SCHEMA_VERSION,
         "purpose": "publish completed D5.6 calibration runs from retained committed evidence",
-        "provider_calls_made": 0,
+        "provider_calls_made": _publication_provider_calls_made(),
         "status": {
             "benchmark_score": False,
             "milestone_gate_verdict": "not_evaluated_human_owned",
@@ -640,10 +716,11 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "date_provenance": {
             "run_execution_dates": "not recorded in committed plans or summaries",
-            "source_commit_dates": "derived from immutable git history",
+            "source_commit_dates": "author dates derived from immutable committed history; not execution timestamps",
             "endpoint_record_dates": "copied from each approved plan",
         },
         "runs": [_published_row(row) for row in publishable],
+        "errata_corrections": run_audits[0]["errata_corrections"],
         "unpublished_retained_runs": excluded,
         "redaction": {
             "policy_version": REDACTION_POLICY_VERSION,
@@ -665,6 +742,9 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
             "Gemini v3b reserves USD 1.990656000 for 20 outcomes whose charges are unknown.",
             "Qwen v3 completed 50 assignments with zero exact-success terminations.",
             "The two completed slots use different model/provider routes and are descriptive, not a controlled model comparison.",
+            "The completed slots bind the same calibration-partition manifest, prompt, memory, parser, response-schema, coordinate-adapter, and retry-policy versions.",
+            "Their policy-manifest digests, code revisions, and runtime digests differ.",
+            "Qwen v3 records temperature 0 while Gemini v3b records no temperature; Gemini v3b records strict upstream json_schema response validation while Qwen v3 has no response_validation block.",
             "Execution dates and restricted-journal file hashes were not retained in committed evidence.",
             "The historical classification labels are preserved without reinterpretation.",
         ],
@@ -716,16 +796,33 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         versions = run["versions"]
         spend = run["spend"]
         stop = run["stop_conditions"]
+        temperature = (
+            "not recorded"
+            if versions["temperature"] is None
+            else str(versions["temperature"])
+        )
+        response_validation = (
+            "not recorded"
+            if versions["response_validation"] is None
+            else json.dumps(
+                versions["response_validation"],
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
         lines.extend(
             [
                 f"### `{run['slot']}`",
                 "",
                 f"- Provider/model alias: `{run['provider_alias']}` / `{run['model_alias']}`",
                 f"- Execution date: {run['run_execution_date_disclosure']}",
-                f"- Endpoint record observed: `{run['endpoint_record_observed_at_utc']}`; source evidence committed: `{run['source_commit_date']}`",
+                f"- Endpoint record observed: `{run['endpoint_record_observed_at_utc']}`; source evidence author date: `{run['source_commit_date']}` ({run['source_commit_date_disclosure']})",
+                f"- Policy manifest / code revision / runtime: `{versions['policy_manifest_digest']}` / `{versions['code_revision']}` / `{versions['runtime_digest']}`",
+                f"- Calibration-partition manifest: `{versions['calibration_partition_manifest_digest']}`",
                 f"- Prompt digest: `{versions['system_prompt_digest']}`",
                 f"- Memory/parser/response policy: `{versions['memory_policy_version']}` / `{versions['parser_version']}` / `{versions['response_schema_version']}`",
                 f"- Coordinate/retry policy: `{versions['coordinate_adapter']}` / `{versions['transport_retry_rule']}`",
+                f"- Temperature: `{temperature}`; response validation: `{response_validation}`",
                 f"- Known run spend: `${spend['known_run_spend_usd']}`; unknown-charge reservation: `${spend['unknown_charge_reservation_usd']}` across {spend['unknown_charge_outcomes']} outcomes; budget-accounted run spend: `${spend['budget_accounted_run_spend_usd']}`",
                 f"- Observed stop: `{stop['observed_stop']}`; stop guard tripped: `{stop['tripped']}`; trip reason: `{stop['trip_reason']}`",
                 f"- Approved hard stops: {', '.join(f'`{item}`' for item in stop['approved'])}",
@@ -755,10 +852,37 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             "",
             (
                 "PR #155 changed classification of CLI process failures. These four retained runs "
-                "used HTTP/OpenRouter transports, not CLI transports, so the number of "
-                "`invalid_output` rows that can be former-taxonomy CLI process failures is zero "
-                "for every run. Stored labels were not rewritten or reinterpreted."
+                "used HTTP/OpenRouter transports and no episode or transport row carries a "
+                "`cli_fault` key. The derived upper bound on `invalid_output` rows that can be "
+                "former-taxonomy CLI process failures is therefore zero for every run. Stored "
+                "labels were not rewritten or reinterpreted."
             ),
+            "",
+            "## Predecessor disclosures",
+            "",
+        ]
+    )
+    for run in derivative["runs"]:
+        predecessors = run["predecessor_disclosures"]
+        policy_predecessor = predecessors["policy_predecessor"]
+        frozen_predecessor = predecessors["frozen_infrastructure_predecessor"]
+        if policy_predecessor is None:
+            lines.append(f"- `{run['run_id']}` policy predecessor: none recorded")
+        else:
+            lines.append(
+                f"- `{run['run_id']}` policy predecessor: distinct successor bound to frozen plan `{policy_predecessor['frozen_plan_sha256']}` and summary `{policy_predecessor['frozen_summary_sha256']}`; stored rule: {policy_predecessor['rule']}"
+            )
+        if frozen_predecessor is None:
+            lines.append(
+                f"- `{run['run_id']}` frozen infrastructure predecessor: none recorded"
+            )
+        else:
+            terminal = frozen_predecessor["terminal"]
+            lines.append(
+                f"- `{run['run_id']}` frozen infrastructure predecessor: {frozen_predecessor['attempted_policy_task_pairs']} attempted pair ended as `{terminal['classification']}` after HTTP {terminal['http_status']} with request outcome `{terminal['request_outcome']}`; predecessor summary `{frozen_predecessor['summary_sha256']}`"
+            )
+    lines.extend(
+        [
             "",
             "## Evidence and redaction",
             "",
@@ -769,6 +893,17 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             "- [Publication relation](grounding-v5-d56-completed-calibrations-publication-relation.json)",
             "- [Evidence errata](grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json)",
             "- [V5 protocol](../plans/grounding-v5-agent-benchmark.md)",
+            "",
+            "Errata corrections applied to interpretation (source evidence remains unchanged):",
+            "",
+        ]
+    )
+    lines.extend(
+        f"- `{correction['id']}`: {correction['corrected_interpretation']}"
+        for correction in derivative["errata_corrections"]
+    )
+    lines.extend(
+        [
             "",
             derivative["redaction"]["public_verification_limit"],
             "",
@@ -783,13 +918,8 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     return "\n".join(lines)
 
 
-def build_relation(
-    repository_root: Path,
-    run_audits: list[dict[str, Any]],
-    *,
-    derivative: dict[str, Any],
-    derivative_sha256: str,
-    report_sha256: str,
+def build_relation_sources(
+    repository_root: Path, run_audits: list[dict[str, Any]]
 ) -> dict[str, Any]:
     by_id = {row["run_id"]: row for row in run_audits}
     sources = []
@@ -824,7 +954,7 @@ def build_relation(
                 "public_verification_limit": "file hash and size are not recorded in committed v3 evidence",
             }
         )
-    relation = {
+    relation_sources = {
         "schema_version": RELATION_SCHEMA_VERSION,
         "redaction_policy_version": REDACTION_POLICY_VERSION,
         "authoritative": {
@@ -832,6 +962,21 @@ def build_relation(
             "errata_path": ERRATA_PATH.as_posix(),
             "errata_file_sha256": _file_digest(repository_root / ERRATA_PATH),
         },
+        "excluded_authoritative_artifacts": exclusions,
+    }
+    validate_credential_free(relation_sources)
+    return relation_sources
+
+
+def build_relation(
+    relation_sources: dict[str, Any],
+    *,
+    derivative: dict[str, Any],
+    derivative_sha256: str,
+    report_sha256: str,
+) -> dict[str, Any]:
+    relation = {
+        **relation_sources,
         "publishable": {
             "derivative_path": DERIVATIVE_PATH.as_posix(),
             "derivative_content_sha256": content_digest(derivative),
@@ -839,13 +984,17 @@ def build_relation(
             "report_path": REPORT_PATH.as_posix(),
             "report_file_sha256": report_sha256,
         },
-        "excluded_authoritative_artifacts": exclusions,
     }
     validate_credential_free(relation)
     return relation
 
 
-def validate_relation(repository_root: Path, relation: dict[str, Any]) -> bool:
+def validate_relation_sources(
+    repository_root: Path,
+    relation: dict[str, Any],
+    *,
+    spec: RunSpec | None = None,
+) -> bool:
     if relation.get("schema_version") != RELATION_SCHEMA_VERSION:
         return False
     if relation.get("redaction_policy_version") != REDACTION_POLICY_VERSION:
@@ -854,11 +1003,10 @@ def validate_relation(repository_root: Path, relation: dict[str, Any]) -> bool:
         "errata_file_sha256"
     ):
         return False
-    if [row["run_id"] for row in relation["authoritative"]["runs"]] != list(
-        EXPECTED_PUBLISHED_RUNS
-    ):
+    sources = relation["authoritative"]["runs"]
+    if [row["run_id"] for row in sources] != list(EXPECTED_PUBLISHED_RUNS):
         return False
-    for source in relation["authoritative"]["runs"]:
+    for source in sources:
         plan_path = repository_root / source["plan_path"]
         summary_path = repository_root / source["summary_path"]
         summary = _load_json(summary_path)
@@ -873,15 +1021,8 @@ def validate_relation(repository_root: Path, relation: dict[str, Any]) -> bool:
             != source["journal_event_chain_sha256"]
         ):
             return False
-    for key in ("derivative", "report"):
-        path = repository_root / relation["publishable"][f"{key}_path"]
-        if _file_digest(path) != relation["publishable"][f"{key}_file_sha256"]:
-            return False
-    derivative = _load_json(repository_root / relation["publishable"]["derivative_path"])
-    if content_digest(derivative) != relation["publishable"]["derivative_content_sha256"]:
-        return False
     validate_credential_free(relation)
-    return all(
+    exclusions_ok = all(
         row["git_status"] == "must_not_commit"
         and row["sha256"] is None
         and row["size_bytes"] is None
@@ -889,6 +1030,48 @@ def validate_relation(repository_root: Path, relation: dict[str, Any]) -> bool:
         and _is_ignored(repository_root, Path(row["path"]))
         for row in relation["excluded_authoritative_artifacts"]
     )
+    if not exclusions_ok:
+        return False
+    if spec is None:
+        return True
+    return any(
+        source["plan_path"] == spec.plan_path.as_posix()
+        and source["summary_path"] == spec.summary_path.as_posix()
+        for source in sources
+    )
+
+
+def _published_bytes(
+    repository_root: Path,
+    path: Path,
+    in_memory: dict[Path, bytes] | None,
+) -> bytes:
+    if in_memory is not None and path in in_memory:
+        return in_memory[path]
+    return (repository_root / path).read_bytes()
+
+
+def validate_relation(
+    repository_root: Path,
+    relation: dict[str, Any],
+    *,
+    in_memory: dict[Path, bytes] | None = None,
+) -> bool:
+    if not validate_relation_sources(repository_root, relation):
+        return False
+    for key in ("derivative", "report"):
+        path = Path(relation["publishable"][f"{key}_path"])
+        if _bytes_digest(_published_bytes(repository_root, path, in_memory)) != relation[
+            "publishable"
+        ][f"{key}_file_sha256"]:
+            return False
+    derivative_path = Path(relation["publishable"]["derivative_path"])
+    derivative = json.loads(
+        _published_bytes(repository_root, derivative_path, in_memory).decode("utf-8")
+    )
+    return content_digest(derivative) == relation["publishable"][
+        "derivative_content_sha256"
+    ]
 
 
 def _attach_relation_checks(
@@ -896,47 +1079,56 @@ def _attach_relation_checks(
     run_audits: list[dict[str, Any]],
     relation: dict[str, Any],
 ) -> None:
-    new_relation_ok = validate_relation(repository_root, relation)
     for row, spec in zip(run_audits, RUN_SPECS, strict=True):
-        if spec.run_id == "qwen-v2":
-            relation_ok = _validate_old_relation(repository_root, spec)
-            relation_path = spec.relation_path
-        elif spec.run_id == "gemini-v3":
+        if spec.relation_path is None:
             relation_ok = False
-            relation_path = None
+        elif spec.relation_path == RELATION_PATH:
+            relation_ok = validate_relation_sources(
+                repository_root, relation, spec=spec
+            )
         else:
-            relation_ok = new_relation_ok
-            relation_path = RELATION_PATH
+            relation_ok = _validate_old_relation(repository_root, spec)
         row["checks"]["publication_relation_verified"] = relation_ok
         row["publication_relation"] = {
-            "path": None if relation_path is None else relation_path.as_posix(),
+            "path": (
+                None if spec.relation_path is None else spec.relation_path.as_posix()
+            ),
             "verified": relation_ok,
         }
-        row["published"] = all(row["checks"].values())
+        row["source_checks_passed"] = all(row["checks"].values())
+        row["published"] = row["source_checks_passed"]
 
 
 def build_audit(
     repository_root: Path,
     run_audits: list[dict[str, Any]],
-    relation: dict[str, Any],
+    *,
+    artifact_digests: dict[Path, str],
 ) -> dict[str, Any]:
-    _attach_relation_checks(repository_root, run_audits, relation)
     published = [row["run_id"] for row in run_audits if row["published"]]
     _require(tuple(published) == EXPECTED_PUBLISHED_RUNS, "final publication checks changed run set")
+    checks_failed_for_published_runs = sum(
+        not passed
+        for row in run_audits
+        if row["run_id"] in published
+        for passed in row["checks"].values()
+    )
+    inventory_ref = _inventory_ref(repository_root)
     return {
         "schema_version": AUDIT_SCHEMA_VERSION,
-        "provider_calls_made": 0,
-        "main_inventory_command": "git ls-tree -r --name-only main -- artifacts",
+        "provider_calls_made": _publication_provider_calls_made(),
+        "main_inventory_command": f"git ls-tree -r --name-only {inventory_ref} -- artifacts",
+        "main_inventory_ref": inventory_ref,
         "main_full_calibration_summaries": list(inventory_main(repository_root)),
         "runs": run_audits,
         "publication": {
             "published_run_ids": published,
-            "checks_failed_for_published_runs": 0,
+            "checks_failed_for_published_runs": checks_failed_for_published_runs,
             "milestone_gate_verdict": "not_evaluated_human_owned",
         },
-        "relation_file_sha256": _file_digest(repository_root / RELATION_PATH),
-        "derivative_file_sha256": _file_digest(repository_root / DERIVATIVE_PATH),
-        "report_file_sha256": _file_digest(repository_root / REPORT_PATH),
+        "relation_file_sha256": artifact_digests[RELATION_PATH],
+        "derivative_file_sha256": artifact_digests[DERIVATIVE_PATH],
+        "report_file_sha256": artifact_digests[REPORT_PATH],
     }
 
 
@@ -947,10 +1139,56 @@ def _write_new(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _source_audits(repository_root: Path) -> list[dict[str, Any]]:
+def _source_audits(
+    repository_root: Path, *, relation: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     errata = _load_json(repository_root / ERRATA_PATH)
     _require(errata["provider_calls_made"] == 0, "errata unexpectedly records provider calls")
-    return [audit_run(repository_root, spec, errata=errata) for spec in RUN_SPECS]
+    run_audits = [audit_run(repository_root, spec, errata=errata) for spec in RUN_SPECS]
+    relation_sources = relation or build_relation_sources(repository_root, run_audits)
+    _attach_relation_checks(repository_root, run_audits, relation_sources)
+    return run_audits
+
+
+def _build_outputs(
+    repository_root: Path, *, relation: dict[str, Any] | None = None
+) -> tuple[dict[Path, bytes], list[dict[str, Any]]]:
+    run_audits = _source_audits(repository_root, relation=relation)
+    relation_sources = build_relation_sources(repository_root, run_audits)
+    _require(
+        validate_relation_sources(repository_root, relation_sources),
+        "publication relation sources did not validate before derivative generation",
+    )
+    derivative = build_derivative(run_audits)
+    derivative_bytes = (json.dumps(derivative, indent=2, sort_keys=True) + "\n").encode()
+    report_bytes = render_report(
+        derivative, derivative_sha256=_bytes_digest(derivative_bytes)
+    ).encode()
+    relation = build_relation(
+        relation_sources,
+        derivative=derivative,
+        derivative_sha256=_bytes_digest(derivative_bytes),
+        report_sha256=_bytes_digest(report_bytes),
+    )
+    relation_bytes = (json.dumps(relation, indent=2, sort_keys=True) + "\n").encode()
+    publishable = {
+        DERIVATIVE_PATH: derivative_bytes,
+        REPORT_PATH: report_bytes,
+        RELATION_PATH: relation_bytes,
+    }
+    _require(
+        validate_relation(repository_root, relation, in_memory=publishable),
+        "completed publication relation did not validate in memory",
+    )
+    artifact_digests = {path: _bytes_digest(value) for path, value in publishable.items()}
+    audit = build_audit(
+        repository_root, run_audits, artifact_digests=artifact_digests
+    )
+    validate_credential_free(audit)
+    publishable[AUDIT_PATH] = (
+        json.dumps(audit, indent=2, sort_keys=True) + "\n"
+    ).encode()
+    return publishable, run_audits
 
 
 def publish(repository_root: Path) -> dict[str, Any]:
@@ -958,62 +1196,30 @@ def publish(repository_root: Path) -> dict[str, Any]:
     for relative in outputs:
         if (repository_root / relative).exists():
             raise FileExistsError(f"refusing to replace publication artifact: {relative}")
-    run_audits = _source_audits(repository_root)
-    derivative = build_derivative(run_audits)
-    derivative_path = repository_root / DERIVATIVE_PATH
-    _write_new(derivative_path, json.dumps(derivative, indent=2, sort_keys=True) + "\n")
-    derivative_sha256 = _file_digest(derivative_path)
-    report_path = repository_root / REPORT_PATH
-    _write_new(
-        report_path,
-        render_report(derivative, derivative_sha256=derivative_sha256),
-    )
-    relation = build_relation(
-        repository_root,
-        run_audits,
-        derivative=derivative,
-        derivative_sha256=derivative_sha256,
-        report_sha256=_file_digest(report_path),
-    )
-    relation_path = repository_root / RELATION_PATH
-    _write_new(relation_path, json.dumps(relation, indent=2, sort_keys=True) + "\n")
-    audit = build_audit(repository_root, run_audits, relation)
-    audit_path = repository_root / AUDIT_PATH
-    _write_new(audit_path, json.dumps(audit, indent=2, sort_keys=True) + "\n")
+    publishable, run_audits = _build_outputs(repository_root)
+    for relative in outputs:
+        _write_new(repository_root / relative, publishable[relative].decode("utf-8"))
     return {
-        "provider_calls_made": 0,
-        "published_run_ids": list(EXPECTED_PUBLISHED_RUNS),
+        "provider_calls_made": _publication_provider_calls_made(),
+        "published_run_ids": [row["run_id"] for row in run_audits if row["published"]],
         "artifacts": {
-            relative.name: _file_digest(repository_root / relative) for relative in outputs
+            relative.name: _bytes_digest(publishable[relative]) for relative in outputs
         },
     }
 
 
 def verify(repository_root: Path) -> dict[str, Any]:
-    derivative = _load_json(repository_root / DERIVATIVE_PATH)
-    relation = _load_json(repository_root / RELATION_PATH)
-    audit = _load_json(repository_root / AUDIT_PATH)
-    run_audits = _source_audits(repository_root)
-    expected_derivative = build_derivative(run_audits)
-    _require(derivative == expected_derivative, "published derivative is not reproducible")
-    expected_report = render_report(
-        derivative,
-        derivative_sha256=_file_digest(repository_root / DERIVATIVE_PATH),
+    actual = {
+        path: (repository_root / path).read_bytes()
+        for path in (DERIVATIVE_PATH, REPORT_PATH, RELATION_PATH, AUDIT_PATH)
+    }
+    retained_relation = json.loads(actual[RELATION_PATH])
+    expected, _ = _build_outputs(
+        repository_root, relation=retained_relation
     )
-    _require(
-        (repository_root / REPORT_PATH).read_text(encoding="utf-8") == expected_report,
-        "published report is not reproducible",
-    )
-    expected_relation = build_relation(
-        repository_root,
-        run_audits,
-        derivative=derivative,
-        derivative_sha256=_file_digest(repository_root / DERIVATIVE_PATH),
-        report_sha256=_file_digest(repository_root / REPORT_PATH),
-    )
-    _require(relation == expected_relation, "publication relation is not reproducible")
-    expected_audit = build_audit(repository_root, run_audits, relation)
-    _require(audit == expected_audit, "integrity audit is not reproducible")
+    reproducibility = {path: actual[path] == expected[path] for path in actual}
+    _require(all(reproducibility.values()), "published artifacts are not reproducible")
+    expected_audit = json.loads(expected[AUDIT_PATH])
     verification_rows = []
     for row in expected_audit["runs"]:
         plan_path = repository_root / Path(row["plan_path"])
@@ -1042,8 +1248,12 @@ def verify(repository_root: Path) -> dict[str, Any]:
                         "endpoint_record_observed_at_utc"
                     ],
                     "source_commit_date": row["source_commit_date"],
+                    "source_commit_date_disclosure": row[
+                        "source_commit_date_disclosure"
+                    ],
                 },
                 "versions": row["versions"],
+                "predecessor_disclosures": row["predecessor_disclosures"],
                 "spend": row["spend"],
                 "stop_conditions": row["stop_conditions"],
                 "fault_taxonomy": row["fault_taxonomy"],
@@ -1053,11 +1263,11 @@ def verify(repository_root: Path) -> dict[str, Any]:
             }
         )
     return {
-        "provider_calls_made": 0,
+        "provider_calls_made": _publication_provider_calls_made(),
         "main_full_calibration_summaries": list(inventory_main(repository_root)),
         "runs": verification_rows,
         "publication": expected_audit["publication"],
-        "artifacts_reproducible": True,
+        "artifacts_reproducible": all(reproducibility.values()),
     }
 
 
@@ -1077,6 +1287,7 @@ def render_verification(result: dict[str, Any]) -> str:
         versions = row["versions"]
         stop = row["stop_conditions"]
         taxonomy = row["fault_taxonomy"]
+        predecessors = row["predecessor_disclosures"]
         relation = row["publication_relation"]
         lines.extend(
             [
@@ -1106,14 +1317,21 @@ def render_verification(result: dict[str, Any]) -> str:
                     f"DATES {row['run_id']} execution={dates['run_execution_date']} "
                     f"execution_disclosure={json.dumps(dates['run_execution_date_disclosure'])} "
                     f"endpoint_observed={dates['endpoint_record_observed_at_utc']} "
-                    f"source_commit={dates['source_commit_date']}"
+                    f"source_commit={dates['source_commit_date']} "
+                    f"source_commit_disclosure={json.dumps(dates['source_commit_date_disclosure'])}"
                 ),
                 (
-                    f"VERSIONS {row['run_id']} prompt={versions['system_prompt_digest']} "
+                    f"VERSIONS {row['run_id']} manifest={versions['policy_manifest_digest']} "
+                    f"code={versions['code_revision']} runtime={versions['runtime_digest']} "
+                    f"partition={versions['calibration_partition_manifest_digest']} "
+                    f"prompt={versions['system_prompt_digest']} "
                     f"memory={versions['memory_policy_version']} parser={versions['parser_version']} "
                     f"response={versions['response_schema_version']} "
                     f"coordinate={versions['coordinate_adapter']} "
-                    f"retry={versions['transport_retry_rule']}"
+                    f"retry={versions['transport_retry_rule']} "
+                    f"temperature={json.dumps(versions['temperature'])} "
+                    "response_validation="
+                    f"{json.dumps(versions['response_validation'], sort_keys=True, separators=(',', ':'))}"
                 ),
                 (
                     f"STOP {row['run_id']} observed={stop['observed_stop']} "
@@ -1124,7 +1342,14 @@ def render_verification(result: dict[str, Any]) -> str:
                     f"TAXONOMY {row['run_id']} preserved={taxonomy['stored_taxonomy_preserved']} "
                     "legacy_cli_process_failures_recorded_as_invalid_output="
                     f"{taxonomy['legacy_cli_process_failures_recorded_as_invalid_output']} "
-                    f"bound={json.dumps(taxonomy['bound'])}"
+                    f"bound={json.dumps(taxonomy['bound'])} "
+                    f"inputs={json.dumps(taxonomy['inputs'], sort_keys=True, separators=(',', ':'))}"
+                ),
+                (
+                    f"PREDECESSORS {row['run_id']} "
+                    f"policy={json.dumps(predecessors['policy_predecessor'], sort_keys=True, separators=(',', ':'))} "
+                    "frozen_infrastructure="
+                    f"{json.dumps(predecessors['frozen_infrastructure_predecessor'], sort_keys=True, separators=(',', ':'))}"
                 ),
                 (
                     f"RELATION {row['run_id']} path={relation['path']} "

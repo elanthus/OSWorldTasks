@@ -1,12 +1,13 @@
 {
-  "derivative_file_sha256": "sha256:ca8d76d84b9ef92da64a6f2877354e0fd6cc85ffe30537b009d2159fe653d666",
+  "derivative_file_sha256": "sha256:17e599ce1d701073e057a67f79f57371cb93c83217c321f33ac1218b8197b901",
   "main_full_calibration_summaries": [
     "artifacts/grounding-v5-d56-gemini-v3-full-calibration-run/summary.json",
     "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/summary.json",
     "artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json",
     "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/summary.json"
   ],
-  "main_inventory_command": "git ls-tree -r --name-only main -- artifacts",
+  "main_inventory_command": "git ls-tree -r --name-only refs/remotes/origin/main -- artifacts",
+  "main_inventory_ref": "refs/remotes/origin/main",
   "provider_calls_made": 0,
   "publication": {
     "checks_failed_for_published_runs": 0,
@@ -16,8 +17,8 @@
       "qwen-v3"
     ]
   },
-  "relation_file_sha256": "sha256:c2fcccec68559b30f5cc07aa33fd000e23c002e044e8d35de6785bfd1c2f7194",
-  "report_file_sha256": "sha256:0f5c82de0e04f05e7bd80609eff02612e6b2e0093a7f09bdabc5125d166a4d0e",
+  "relation_file_sha256": "sha256:63bf3147a4d37579a3fed64fd7ee9c0f081e3a9f4440df2dac34f67137e53d1b",
+  "report_file_sha256": "sha256:20fb65d2cf50402012d53e5fae396be1d2131d5fa292c04ed6f91495b067e31a",
   "runs": [
     {
       "assigned_tasks": 50,
@@ -25,7 +26,9 @@
         "assigned_denominator_matches": true,
         "attempted_rows_reconcile": true,
         "classification_counts_reconcile": true,
+        "classification_keys_recognized": true,
         "completed_assigned_denominator": false,
+        "legacy_cli_taxonomy_bound_verified": true,
         "plan_digest_matches_summary": true,
         "present_in_main_inventory": true,
         "provider_request_counts_reconcile": true,
@@ -47,14 +50,72 @@
         "truncation": 12
       },
       "endpoint_record_observed_at_utc": "2026-08-28T13:34:08Z",
+      "errata_corrections": [
+        {
+          "corrected_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+          "id": "per-run-ledger-wording"
+        },
+        {
+          "corrected_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+          "id": "gemini-policy-generation-label"
+        }
+      ],
       "fault_taxonomy": {
-        "basis": "provider alias and stored transport are HTTP/OpenRouter, not a CLI transport",
-        "bound": "none of this run's invalid_output rows can be a CLI process failure",
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 13,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 1,
+          "manifest_provider_alias": "openrouter/alibaba",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 350,
+          "transport_rows_with_cli_fault_key": 0
+        },
         "legacy_cli_process_failures_recorded_as_invalid_output": 0,
         "stored_taxonomy_preserved": true
       },
       "model_alias": "qwen/qwen3-vl-8b-instruct",
       "plan_path": "artifacts/grounding-v5-d56-qwen-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": {
+          "actual_aggregate_spend_usd": "2.040917557",
+          "approved_plan_sha256": "sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9",
+          "attempted_policy_task_pairs": 1,
+          "attempted_slots": [
+            "B-qwen-stateful"
+          ],
+          "code_revision": "e25bfbe384a583ef853682481f56d08659cfe40f",
+          "journal_integrity": {
+            "event_chain_digest": "sha256:fe80c9c9d81756515716e1fbe42135302df730646b6027c0d4597a47892efbab",
+            "event_count": 171,
+            "object_count": 163,
+            "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+          },
+          "journal_path": "artifacts/grounding-v5-d56-bcd-calibration-run/attempts.sqlite",
+          "journal_sha256": "sha256:78dbb0e3d819c06604c3b664120df35448f6642ac13b3c367ef0bb9f7f8ef7fe",
+          "remaining_aggregate_spend_usd": "7.959082443",
+          "summary_path": "artifacts/grounding-v5-d56-bcd-calibration-run/summary.json",
+          "summary_sha256": "sha256:630f765bc44ce7cb85c91e0ae3b906fcedf4e1374556d6074d84cc2e95b447f4",
+          "terminal": {
+            "attempt_index": 0,
+            "classification": "unknown_outcome_infrastructure_failure",
+            "failure_code": "provider_request_unknown",
+            "http_status": 429,
+            "provider_error_code": 429,
+            "request_outcome": "unknown",
+            "retry_eligible": false,
+            "step_index": 24,
+            "trial_id": "d56-bcd-B-qwen-stateful-00-v5-bfe5707f6b44202a0e7f493e"
+          },
+          "unattempted_successor_slots": [
+            "C-llama-stateful",
+            "D-qwen-stateless"
+          ]
+        },
+        "policy_predecessor": null
+      },
       "provider_alias": "openrouter/alibaba",
       "publication_relation": {
         "path": "artifacts/grounding-v5-d56-qwen-full-calibration-publication-relation.json",
@@ -67,6 +128,7 @@
       "slot": "B-qwen-stateful-v2",
       "source_checks_passed": false,
       "source_commit_date": "2026-09-01T20:30:28-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
       "spend": {
         "budget_accounted_aggregate_spend_usd": "4.778164718",
         "budget_accounted_run_spend_usd": "0.125865961",
@@ -89,11 +151,17 @@
       },
       "summary_path": "artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json",
       "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "0e74a791559b5e6636c12e2fa4fd480ab3a8c8fd",
         "coordinate_adapter": "normalized-1000x1000",
         "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
         "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:2bef12f4cbf6228fafb35bcc7e51b084112650c4fd9abbc609b604d7e1e33180",
         "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": null,
+        "runtime_digest": "sha256:6cee42093bed1deb49bda5a23135c5c59335c977b1d203954b10eb020b6fa12b",
         "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": "0",
         "transport_retry_rule": "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
       }
     },
@@ -103,7 +171,9 @@
         "assigned_denominator_matches": true,
         "attempted_rows_reconcile": true,
         "classification_counts_reconcile": true,
+        "classification_keys_recognized": true,
         "completed_assigned_denominator": false,
+        "legacy_cli_taxonomy_bound_verified": true,
         "plan_digest_matches_summary": true,
         "present_in_main_inventory": true,
         "provider_request_counts_reconcile": true,
@@ -125,14 +195,42 @@
         "truncation": 1
       },
       "endpoint_record_observed_at_utc": "2026-08-28T00:32:11Z",
+      "errata_corrections": [
+        {
+          "corrected_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+          "id": "per-run-ledger-wording"
+        },
+        {
+          "corrected_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+          "id": "gemini-policy-generation-label"
+        }
+      ],
       "fault_taxonomy": {
-        "basis": "provider alias and stored transport are HTTP/OpenRouter, not a CLI transport",
-        "bound": "none of this run's invalid_output rows can be a CLI process failure",
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 5,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 1,
+          "manifest_provider_alias": "openrouter/google-vertex/global",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 131,
+          "transport_rows_with_cli_fault_key": 0
+        },
         "legacy_cli_process_failures_recorded_as_invalid_output": 0,
         "stored_taxonomy_preserved": true
       },
       "model_alias": "google/gemini-3.7-flash",
       "plan_path": "artifacts/grounding-v5-d56-gemini-v3-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": null,
+        "policy_predecessor": {
+          "frozen_plan_sha256": "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6",
+          "frozen_summary_sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+          "rule": "this v2 policy is a distinct successor run; do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment"
+        }
+      },
       "provider_alias": "openrouter/google-vertex/global",
       "publication_relation": {
         "path": null,
@@ -145,6 +243,7 @@
       "slot": "A-gemini-stateful-v3",
       "source_checks_passed": false,
       "source_commit_date": "2026-09-02T22:49:08-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
       "spend": {
         "budget_accounted_run_spend_usd": "0.492964500",
         "known_run_spend_usd": "0.492964500",
@@ -170,11 +269,22 @@
       },
       "summary_path": "artifacts/grounding-v5-d56-gemini-v3-full-calibration-run/summary.json",
       "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "0ed7ec2c84f510c7ea814024a0785436c808d9ed",
         "coordinate_adapter": "normalized-1000x1000",
         "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
         "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:ea5cde4005bba98ab853823588ab05c9803b04ce52eba825fa5e9be16abbc146",
         "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": {
+          "invalid_or_unparseable_output_rule": "retain_fail_the_assignment_and_continue_without_retry",
+          "local_exact_action_parser": true,
+          "upstream_json_schema_strict": true,
+          "upstream_response_format": "json_schema"
+        },
+        "runtime_digest": "sha256:38f7d6cb71a3595678ff3e08f6b438078f5922fd0bdd2c8f5011d3feeeffb2b2",
         "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": null,
         "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
       }
     },
@@ -184,7 +294,9 @@
         "assigned_denominator_matches": true,
         "attempted_rows_reconcile": true,
         "classification_counts_reconcile": true,
+        "classification_keys_recognized": true,
         "completed_assigned_denominator": true,
+        "legacy_cli_taxonomy_bound_verified": true,
         "plan_digest_matches_summary": true,
         "present_in_main_inventory": true,
         "provider_request_counts_reconcile": true,
@@ -206,14 +318,42 @@
         "truncation": 13
       },
       "endpoint_record_observed_at_utc": "2026-08-28T00:32:11Z",
+      "errata_corrections": [
+        {
+          "corrected_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+          "id": "per-run-ledger-wording"
+        },
+        {
+          "corrected_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+          "id": "gemini-policy-generation-label"
+        }
+      ],
       "fault_taxonomy": {
-        "basis": "provider alias and stored transport are HTTP/OpenRouter, not a CLI transport",
-        "bound": "none of this run's invalid_output rows can be a CLI process failure",
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 50,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 1,
+          "manifest_provider_alias": "openrouter/google-vertex/global",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 1333,
+          "transport_rows_with_cli_fault_key": 0
+        },
         "legacy_cli_process_failures_recorded_as_invalid_output": 0,
         "stored_taxonomy_preserved": true
       },
       "model_alias": "google/gemini-3.7-flash",
       "plan_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": null,
+        "policy_predecessor": {
+          "frozen_plan_sha256": "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6",
+          "frozen_summary_sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+          "rule": "this v2 policy is a distinct successor run; do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment"
+        }
+      },
       "provider_alias": "openrouter/google-vertex/global",
       "publication_relation": {
         "path": "artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json",
@@ -226,6 +366,7 @@
       "slot": "A-gemini-stateful-v3",
       "source_checks_passed": true,
       "source_commit_date": "2026-09-02T22:49:08-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
       "spend": {
         "budget_accounted_run_spend_usd": "6.901905750",
         "known_run_spend_usd": "4.911249750",
@@ -251,11 +392,22 @@
       },
       "summary_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/summary.json",
       "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "d534091983db650c0b7c5bd9fe0db0cf32bbc729",
         "coordinate_adapter": "normalized-1000x1000",
         "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
         "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:90bb53a933a13b8bf91631a6590694ef032e8567bf37cd3e349c5c7c54c97f15",
         "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": {
+          "invalid_or_unparseable_output_rule": "retain_fail_the_assignment_and_continue_without_retry",
+          "local_exact_action_parser": true,
+          "upstream_json_schema_strict": true,
+          "upstream_response_format": "json_schema"
+        },
+        "runtime_digest": "sha256:075818c0943959b0be4aa5782d5672c74a7089823a15335e1e87b941889e5cb5",
         "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": null,
         "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
       }
     },
@@ -265,7 +417,9 @@
         "assigned_denominator_matches": true,
         "attempted_rows_reconcile": true,
         "classification_counts_reconcile": true,
+        "classification_keys_recognized": true,
         "completed_assigned_denominator": true,
+        "legacy_cli_taxonomy_bound_verified": true,
         "plan_digest_matches_summary": true,
         "present_in_main_inventory": true,
         "provider_request_counts_reconcile": true,
@@ -287,14 +441,72 @@
         "truncation": 47
       },
       "endpoint_record_observed_at_utc": "2026-08-28T13:34:08Z",
+      "errata_corrections": [
+        {
+          "corrected_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+          "id": "per-run-ledger-wording"
+        },
+        {
+          "corrected_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+          "id": "gemini-policy-generation-label"
+        }
+      ],
       "fault_taxonomy": {
-        "basis": "provider alias and stored transport are HTTP/OpenRouter, not a CLI transport",
-        "bound": "none of this run's invalid_output rows can be a CLI process failure",
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 50,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 3,
+          "manifest_provider_alias": "openrouter/alibaba",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 1376,
+          "transport_rows_with_cli_fault_key": 0
+        },
         "legacy_cli_process_failures_recorded_as_invalid_output": 0,
         "stored_taxonomy_preserved": true
       },
       "model_alias": "qwen/qwen3-vl-8b-instruct",
       "plan_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": {
+          "actual_aggregate_spend_usd": "2.040917557",
+          "approved_plan_sha256": "sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9",
+          "attempted_policy_task_pairs": 1,
+          "attempted_slots": [
+            "B-qwen-stateful"
+          ],
+          "code_revision": "e25bfbe384a583ef853682481f56d08659cfe40f",
+          "journal_integrity": {
+            "event_chain_digest": "sha256:fe80c9c9d81756515716e1fbe42135302df730646b6027c0d4597a47892efbab",
+            "event_count": 171,
+            "object_count": 163,
+            "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+          },
+          "journal_path": "artifacts/grounding-v5-d56-bcd-calibration-run/attempts.sqlite",
+          "journal_sha256": "sha256:78dbb0e3d819c06604c3b664120df35448f6642ac13b3c367ef0bb9f7f8ef7fe",
+          "remaining_aggregate_spend_usd": "7.959082443",
+          "summary_path": "artifacts/grounding-v5-d56-bcd-calibration-run/summary.json",
+          "summary_sha256": "sha256:630f765bc44ce7cb85c91e0ae3b906fcedf4e1374556d6074d84cc2e95b447f4",
+          "terminal": {
+            "attempt_index": 0,
+            "classification": "unknown_outcome_infrastructure_failure",
+            "failure_code": "provider_request_unknown",
+            "http_status": 429,
+            "provider_error_code": 429,
+            "request_outcome": "unknown",
+            "retry_eligible": false,
+            "step_index": 24,
+            "trial_id": "d56-bcd-B-qwen-stateful-00-v5-bfe5707f6b44202a0e7f493e"
+          },
+          "unattempted_successor_slots": [
+            "C-llama-stateful",
+            "D-qwen-stateless"
+          ]
+        },
+        "policy_predecessor": null
+      },
       "provider_alias": "openrouter/alibaba",
       "publication_relation": {
         "path": "artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json",
@@ -307,6 +519,7 @@
       "slot": "B-qwen-stateful-v3",
       "source_checks_passed": true,
       "source_commit_date": "2026-09-02T22:49:08-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
       "spend": {
         "budget_accounted_run_spend_usd": "0.498141709",
         "known_run_spend_usd": "0.498141709",
@@ -332,11 +545,17 @@
       },
       "summary_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/summary.json",
       "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "0ed7ec2c84f510c7ea814024a0785436c808d9ed",
         "coordinate_adapter": "normalized-1000x1000",
         "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
         "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:151a04d1e2a54c121bbf5d86db42713d4632d65019836edd4b75122c9922d535",
         "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": null,
+        "runtime_digest": "sha256:38f7d6cb71a3595678ff3e08f6b438078f5922fd0bdd2c8f5011d3feeeffb2b2",
         "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": "0",
         "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
       }
     }

@@ -100,16 +100,24 @@ classification remain separate:
 
 These are descriptive calibration results, not confirmatory results or controlled model
 comparisons. Both runs reached their assigned denominator without tripping a hard-stop guard.
-Their common prompt, memory, parser, response-schema, coordinate-adapter, retry-policy versions;
-approved stop conditions; spend reconciliation; and evidence bindings are recorded in the
+Both runs bind the same prompt, memory, parser, response-schema, coordinate-adapter, retry-policy,
+and calibration-partition manifest (`sha256:41034ec1…`). Their approved stop conditions, spend
+reconciliation, and evidence bindings are recorded in the
 [generated report](artifacts/grounding-v5-d56-completed-calibrations-report.md) and
 [response-content-free derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json).
+They are not controlled comparisons: policy-manifest digests, code revisions, and runtime digests
+differ; Qwen v3 records temperature 0 while Gemini v3b records no temperature; and Gemini v3b
+records strict upstream `json_schema` response validation while Qwen v3 has no
+`response_validation` block.
 The approved endpoint records were observed on 2026-08-28 and the retained evidence was committed
-on 2026-09-02; the run execution dates were not recorded in the committed plans or summaries.
+with author dates on 2026-09-02 (committed-history dates, not execution timestamps); the run
+execution dates were not recorded in the committed plans or summaries.
 
-Two other retained runs were verified but not promoted into this completed table. Gemini v3 stopped
-after 5 of 50 assignments when its run ledger blocked. The older `B-qwen-stateful-v2` run stopped
-after 13 of 50 assignments at the first invalid output, as its approved plan required; its historical
+Two other retained runs were inventoried and audited but not promoted into this completed table.
+Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked and failed
+`completed_assigned_denominator` and `publication_relation_verified`. The older
+`B-qwen-stateful-v2` run stopped after 13 of 50 assignments at the first invalid output, as its
+approved plan required, and failed `completed_assigned_denominator`; its historical
 [partial report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) remains available.
 
 The earlier `A-gemini-stateful-v2` calibration remains **withdrawn**. Its evidence and reports were
@@ -118,9 +126,12 @@ operator paths whose removal would invalidate their recorded SHA-256 values. It 
 included in the published result. The producer-side path defect is fixed in
 `pixelgym/grounding/v5/evidence.py`.
 
-PR #155 changed the taxonomy for CLI process failures, but all four retained runs inventoried here
-used HTTP/OpenRouter transports, not CLI transports. Therefore zero stored `invalid_output` rows are
-bounded as former-taxonomy CLI process failures; historical labels are not rewritten. Restricted
+PR #155 changed the taxonomy for CLI process failures. All four retained runs used HTTP/OpenRouter
+transports, and no episode or transport row carries a `cli_fault` key, so the number of
+`invalid_output` rows that could be former-taxonomy CLI process failures is bounded at zero;
+historical labels are not rewritten. Qwen v3's separate frozen predecessor records one attempted
+pair terminated by an HTTP 429 `unknown_outcome_infrastructure_failure`; that predecessor is not
+part of Qwen v3's 50-assignment row, whose infrastructure-failure count remains zero. Restricted
 attempt journals still hold raw provider responses, screenshots, and private checkpoints. They are
 declared `must_not_commit` in the
 [publication relation](artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json),

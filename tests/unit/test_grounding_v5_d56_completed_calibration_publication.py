@@ -16,12 +16,19 @@ from scripts.publish_grounding_v5_d56_completed_calibrations import (
     REPORT_PATH,
     RUN_SPECS,
     PublicationError,
+    _attach_relation_checks,
+    _classification_counts,
     _file_digest,
     _load_json,
     _redaction_is_safe,
     _source_audits,
     _spend_record,
+    _taxonomy_record,
+    audit_run,
     build_derivative,
+    build_relation_sources,
+    inventory_main,
+    publish,
     render_report,
     validate_relation,
     verify,
@@ -65,6 +72,27 @@ def test_inventory_falls_back_to_head_in_detached_ci(monkeypatch: pytest.MonkeyP
     assert publication._inventory_ref(ROOT) == "HEAD"
 
 
+def test_inventory_prefers_origin_main_and_allows_future_runs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(publication, "_git_ref_exists", lambda repository_root, ref: True)
+    assert publication._inventory_ref(ROOT) == "refs/remotes/origin/main"
+
+    future_summary = (
+        "artifacts/grounding-v5-d56-future-full-calibration-run/summary.json"
+    )
+    monkeypatch.setattr(
+        publication,
+        "_git",
+        lambda repository_root, *args: "\n".join(
+            (*EXPECTED_MAIN_SUMMARIES, future_summary)
+        ),
+    )
+    inventory = inventory_main(ROOT)
+    assert set(EXPECTED_MAIN_SUMMARIES) <= set(inventory)
+    assert future_summary in inventory
+
+
 def test_completed_table_preserves_all_terminal_classifications_and_spend() -> None:
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
     by_run = {row["run_id"]: row for row in derivative["runs"]}
@@ -103,6 +131,26 @@ def test_completed_table_preserves_all_terminal_classifications_and_spend() -> N
     )
 
 
+def test_policy_versions_publish_shared_partition_and_comparability_limits() -> None:
+    derivative = _load_json(ROOT / DERIVATIVE_PATH)
+    by_run = {row["run_id"]: row for row in derivative["runs"]}
+    gemini = by_run["gemini-v3b"]["versions"]
+    qwen = by_run["qwen-v3"]["versions"]
+
+    assert gemini["calibration_partition_manifest_digest"] == qwen[
+        "calibration_partition_manifest_digest"
+    ]
+    assert gemini["policy_manifest_digest"] != qwen["policy_manifest_digest"]
+    assert gemini["code_revision"] != qwen["code_revision"]
+    assert gemini["runtime_digest"] != qwen["runtime_digest"]
+    assert gemini["temperature"] is None
+    assert qwen["temperature"] == "0"
+    assert gemini["response_validation"]["upstream_response_format"] == "json_schema"
+    assert qwen["response_validation"] is None
+    assert any("policy-manifest digests" in item for item in derivative["limitations"])
+    assert any("temperature 0" in item for item in derivative["limitations"])
+
+
 def test_incomplete_runs_are_excluded_with_failed_checks_disclosed() -> None:
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
     excluded = {row["run_id"]: row for row in derivative["unpublished_retained_runs"]}
@@ -126,6 +174,42 @@ def test_a_failed_completed_run_cannot_enter_the_derivative() -> None:
         build_derivative(audits)
 
 
+def test_relation_check_is_derived_from_the_relation_source() -> None:
+    audits = _source_audits(ROOT)
+    relation = build_relation_sources(ROOT, audits)
+    relation["authoritative"]["runs"][0]["summary_file_sha256"] = "sha256:bad"
+
+    _attach_relation_checks(ROOT, audits, relation)
+
+    gemini = next(row for row in audits if row["run_id"] == "gemini-v3b")
+    assert gemini["checks"]["publication_relation_verified"] is False
+    with pytest.raises(PublicationError, match="publication set"):
+        build_derivative(audits)
+
+
+def test_publish_builds_every_output_before_writing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    writes: list[Path] = []
+    monkeypatch.setattr(publication, "DERIVATIVE_PATH", Path("derivative.json"))
+    monkeypatch.setattr(publication, "REPORT_PATH", Path("report.md"))
+    monkeypatch.setattr(publication, "RELATION_PATH", Path("relation.json"))
+    monkeypatch.setattr(publication, "AUDIT_PATH", Path("audit.json"))
+    monkeypatch.setattr(
+        publication,
+        "_build_outputs",
+        lambda repository_root: (_ for _ in ()).throw(PublicationError("audit failed")),
+    )
+    monkeypatch.setattr(
+        publication, "_write_new", lambda path, text: writes.append(path)
+    )
+
+    with pytest.raises(PublicationError, match="audit failed"):
+        publish(tmp_path)
+
+    assert writes == []
+
+
 def test_unknown_reservation_mismatch_is_detected() -> None:
     spec = next(spec for spec in RUN_SPECS if spec.run_id == "gemini-v3b")
     plan = _load_json(ROOT / spec.plan_path)
@@ -136,6 +220,91 @@ def test_unknown_reservation_mismatch_is_detected() -> None:
     _, reconciles = _spend_record(ROOT, spec, plan, summary, errata)
 
     assert reconciles is False
+
+
+def test_fault_taxonomy_bound_is_derived_from_transport_and_rows() -> None:
+    spec = next(spec for spec in RUN_SPECS if spec.run_id == "gemini-v3b")
+    plan = _load_json(ROOT / spec.plan_path)
+    summary = _load_json(ROOT / spec.summary_path)
+    counts = _classification_counts(summary)
+
+    record, verified = _taxonomy_record(plan, summary, counts)
+
+    assert verified is True
+    assert record["legacy_cli_process_failures_recorded_as_invalid_output"] == 0
+    assert record["inputs"] == {
+        "episode_rows_checked": 50,
+        "episode_rows_with_cli_fault_key": 0,
+        "http_openrouter_transport": True,
+        "invalid_output_rows": 1,
+        "manifest_provider_alias": "openrouter/google-vertex/global",
+        "provider_endpoint": "https://openrouter.ai",
+        "provider_name": "openrouter",
+        "transport_rows_checked": len(summary["transport_records"]),
+        "transport_rows_with_cli_fault_key": 0,
+    }
+
+    changed = copy.deepcopy(summary)
+    changed["episode_results"][0]["cli_fault"] = True
+    changed_record, changed_verified = _taxonomy_record(plan, changed, counts)
+    assert changed_verified is False
+    assert changed_record["legacy_cli_process_failures_recorded_as_invalid_output"] is None
+
+
+def test_unexpected_classification_is_a_named_failed_check(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    spec = next(spec for spec in RUN_SPECS if spec.run_id == "gemini-v3b")
+    original_load = publication._load_json
+    changed = copy.deepcopy(original_load(ROOT / spec.summary_path))
+    prior = changed["episode_results"][0]["classification"]
+    changed["episode_results"][0]["classification"] = "unexpected_terminal"
+    changed["classifications"][prior] -= 1
+    changed["classifications"]["unexpected_terminal"] = 1
+
+    def load_with_unknown(path: Path) -> dict[str, object]:
+        if path == ROOT / spec.summary_path:
+            return changed
+        return original_load(path)
+
+    monkeypatch.setattr(publication, "_load_json", load_with_unknown)
+    row = audit_run(ROOT, spec, errata=original_load(ROOT / ERRATA_PATH))
+
+    assert row["checks"]["classification_keys_recognized"] is False
+
+
+def test_unknown_outcome_classification_populates_infrastructure_count() -> None:
+    summary = {
+        "episode_results": [
+            {"classification": "unknown_outcome_infrastructure_failure"}
+        ]
+    }
+
+    assert _classification_counts(summary) == {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0,
+    }
+
+
+def test_predecessor_disclosures_are_carried_without_changing_current_counts() -> None:
+    derivative = _load_json(ROOT / DERIVATIVE_PATH)
+    by_run = {row["run_id"]: row for row in derivative["runs"]}
+
+    assert by_run["gemini-v3b"]["predecessor_disclosures"]["policy_predecessor"]
+    qwen_predecessor = by_run["qwen-v3"]["predecessor_disclosures"][
+        "frozen_infrastructure_predecessor"
+    ]
+    assert qwen_predecessor["attempted_policy_task_pairs"] == 1
+    assert qwen_predecessor["terminal"]["http_status"] == 429
+    assert qwen_predecessor["terminal"]["classification"] == (
+        "unknown_outcome_infrastructure_failure"
+    )
+    assert by_run["qwen-v3"]["classification_counts"]["infrastructure_failure"] == 0
 
 
 def test_relation_binds_sources_and_excludes_both_restricted_journals() -> None:
@@ -179,6 +348,8 @@ def test_outputs_are_redacted_and_report_is_derivative_only() -> None:
     assert calibration_table.count("| `B-qwen-stateful-v3` |") == 1
     assert "35 (70.0%)" in rendered
     assert "0 (0.0%)" in rendered
+    assert "`per-run-ledger-wording`: Each listed plan used an independent ledger" in rendered
+    assert "`gemini-policy-generation-label`: Both plans and their summaries" in rendered
     forbidden = {
         "checkpoint",
         "content",
@@ -210,8 +381,21 @@ def test_readme_numbers_trace_to_generated_derivative() -> None:
         "## Architecture", 1
     )[0]
 
-    assert "35 (70.0%) | 1 | 1 | 0 | 0 | 13 | $1.990656000 (20 outcomes)" in section
-    assert "0 (0.0%) | 3 | 0 | 0 | 0 | 47 | $0.000000000 (0 outcomes)" in section
+    derivative = _load_json(ROOT / DERIVATIVE_PATH)
+    for run in derivative["runs"]:
+        counts = run["classification_counts"]
+        spend = run["spend"]
+        percentage = 100 * counts["success"] / counts["attempted"]
+        expected = (
+            f"| `{run['slot']}` | `{run['provider_alias']}` / `{run['model_alias']}` | "
+            f"{run['assigned_tasks']} | {counts['attempted']} | "
+            f"{counts['success']} ({percentage:.1f}%) | {counts['invalid_output']} | "
+            f"{counts['request_failure']} | {counts['infrastructure_failure']} | "
+            f"{counts['policy_violation']} | {counts['truncation']} | "
+            f"${spend['unknown_charge_reservation_usd']} "
+            f"({spend['unknown_charge_outcomes']} outcomes) |"
+        )
+        assert expected in section
     assert "no v5 result is a benchmark score or a\nmilestone-gate verdict" in section
     assert "`A-gemini-stateful-v2` calibration remains **withdrawn**" in section
     assert DERIVATIVE_PATH.as_posix() in section
