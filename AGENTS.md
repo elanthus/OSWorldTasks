@@ -22,6 +22,7 @@ Source of truth for scope and sequencing:
 - [plans/sprint-2-osworld-integration-and-validation.md](plans/sprint-2-osworld-integration-and-validation.md) — OSWorld adapter, custom task, validation suite, reward-hacking audit
 - [plans/sprint-3-grounding-and-portfolio.md](plans/sprint-3-grounding-and-portfolio.md) — grounding dataset, set-of-marks experiment, analysis, portfolio package
 - [plans/grounding-evaluation-platform.md](plans/grounding-evaluation-platform.md) — local-first evaluation, governance, serving, and rollback platform milestone
+- [plans/million-episode-grounding-evaluation.md](plans/million-episode-grounding-evaluation.md) — evidence-backed seed-policy scale design note
 
 If this file and a sprint plan disagree, the sprint plan wins for task detail; this file wins for process and invariants.
 
