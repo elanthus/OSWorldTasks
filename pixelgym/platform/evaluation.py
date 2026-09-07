@@ -15,7 +15,6 @@ from typing import Any, Protocol, cast
 from pixelgym.grounding.evaluation import (
     Condition,
     parse_prediction,
-    prompt_for,
     schema_for,
     score_point,
 )
@@ -34,7 +33,7 @@ from pixelgym.platform.fingerprints import (
 from pixelgym.platform.gates import evaluate_gates
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.mlflow_tracking import DatasetInputContract, Tracking
-from pixelgym.platform.policy import PROMPT_TEMPLATES, prompt_template
+from pixelgym.platform.policy import PROMPT_TEMPLATES, render_prompt
 from pixelgym.platform.schema_validation import PlatformSchemas
 from pixelgym.serialization import load_jsonl
 
@@ -313,11 +312,12 @@ class EvaluationRunner:
         self, example: dict[str, Any], overlay: dict[str, Any]
     ) -> tuple[str, str, str, dict[str, Any], Path]:
         condition = cast(Condition, self.policy.condition)
-        prompt = prompt_for(example, condition)
-        if self.policy.prompt_version > 1:
-            prompt += " " + prompt_template(self.policy.prompt_version).replace(
-                "{{target}}", example["target"]
-            )
+        prompt = render_prompt(
+            self.policy,
+            target=example["target"],
+            width=example["screen_width"],
+            height=example["screen_height"],
+        )
         schema = schema_for(condition)
         image_relative = (
             example["image_path"] if condition == "raw" else overlay["marked_image_path"]

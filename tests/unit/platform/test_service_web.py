@@ -51,7 +51,12 @@ from pixelgym.platform.operational_log import (
     OperationalRecord,
     normalize_provider_metadata,
 )
-from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.policy import (
+    LEGACY_POLICY_SCHEMA_VERSION,
+    build_policy_manifest,
+    prompt_template,
+    render_prompt,
+)
 from pixelgym.platform.service import (
     API_SCHEMA_VERSION,
     DEFAULT_MAX_PROVIDER_OUTPUT_BYTES,
@@ -92,9 +97,11 @@ class ServingFake:
         self.latency_ms = latency_ms
         self.usage = usage
         self.calls = 0
+        self.last_request: dict | None = None
 
     def ground(self, **request):
         self.calls += 1
+        self.last_request = request
         if self.failure:
             raise ProviderFailure(self.failure, "private provider detail")
         return self.raw, self.provider_request_id, self.latency_ms, self.usage
@@ -151,6 +158,46 @@ def test_serving_contract_and_identity_headers(policy_factory) -> None:
     assert response.headers["x-pixelgym-deployment-id"] == "deployment-1"
     assert response.headers["x-pixelgym-exact-policy-version"] == "candidate-1"
     assert provider.calls == 1
+
+
+def test_serving_forwards_the_packaged_rendered_prompt_to_the_provider(policy_factory) -> None:
+    """Deleting the render_prompt call in service.py's ground handler must fail this
+    test: every ServingFake here accepts a bare **request, so nothing else in the suite
+    asserts what prompt text actually reaches the provider."""
+    provider = ServingFake()
+    policy = policy_factory(version=2)
+    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy, provider))))
+
+    response = client.post(
+        "/api/v1/ground",
+        json={
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "Click the Company name field",
+        },
+    )
+
+    assert response.status_code == 200
+    expected_prompt = render_prompt(
+        policy, target="Click the Company name field", width=100, height=80
+    )
+    assert provider.last_request is not None
+    assert provider.last_request["prompt"] == expected_prompt
+    assert policy.prompt_template_text is not None
+    # Proves the packaged v2 addendum, not a generic/default template, drove the request.
+    assert "editable control named by the target" in provider.last_request["prompt"]
+    # Pins the exact bytes sent, not only that render_prompt's own output was forwarded --
+    # a bug in render_prompt itself would still satisfy the equality check above.
+    assert provider.last_request["prompt"] == (
+        "Locate the requested control in the attached screenshot. "
+        "Target: Click the Company name field. "
+        "The screenshot is 100 pixels wide and 80 pixels high. "
+        "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
+        "The origin is the upper-left. Do not explain your answer and do not use tools. "
+        "Locate the editable control named by the target, not a matching summary label. "
+        "Target: Click the Company name field. "
+        "Return only integer screenshot-pixel coordinates as JSON."
+    )
 
 
 def test_operational_record_is_redacted_immutable_and_identifies_served_policy(
@@ -1848,9 +1895,25 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
         )
 
 
-@pytest.mark.parametrize("failure", ["provider", "invalid-output", "identity"])
+@pytest.mark.parametrize(
+    ("failure", "expected_exception"),
+    [
+        ("provider", DeploymentSmokeError),
+        ("invalid-output", DeploymentSmokeError),
+        # A tampered prompt_version is rejected by verify_renderer_binding before the
+        # candidate ever reaches load_and_smoke, so this is a ValueError, not a
+        # DeploymentSmokeError -- a bare pytest.raises((...)) tuple would hide a
+        # regression that let this candidate reach smoke at all.
+        ("identity", ValueError),
+    ],
+)
 def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime(
-    tmp_path: Path, repository_root: Path, monkeypatch, passing_evidence, failure: str
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    passing_evidence,
+    failure: str,
+    expected_exception: type[Exception],
 ) -> None:
     app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
     policy, summary, report = passing_evidence
@@ -1861,18 +1924,13 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     # Rebuild a valid, distinct policy instead of mutating identity fields.
     from pixelgym.platform.policy import build_policy_manifest, prompt_template
 
-    prompt_version = 3 if failure == "identity" else policy.prompt_version
-    prompt = (
-        "identity-mismatch fixture"
-        if failure == "identity"
-        else prompt_template(prompt_version) + " second"
-    )
+    prompt_version = policy.prompt_version
     second_policy = build_policy_manifest(
         provider=policy.provider,
         model=policy.model + "-second",
         prompt_name=policy.prompt_name,
         prompt_version=prompt_version,
-        prompt=prompt,
+        prompt=prompt_template(prompt_version),
         condition=policy.condition,
         parameters=policy.parameters,
         parser_version=policy.parser_version,
@@ -1898,8 +1956,38 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
         smoke.provider = ServingFake(failure="timeout")
     elif failure == "invalid-output":
         smoke.provider = ServingFake("not-json")
+    elif failure == "identity":
+        # register_candidate now rejects an unsupported prompt_version outright (its
+        # packaged text can never equal the known template for that version), so
+        # corrupt an already-approved row the way an out-of-band DB edit could, the
+        # same tamper-after-approve pattern used for the renderer-digest-mismatch
+        # case, to reach deploy-time rejection instead of registration-time rejection.
+        tampered = dataclasses.replace(second_policy, prompt_version=3, policy_id="")
+        tampered = dataclasses.replace(
+            tampered,
+            policy_id="sha256:" + sha256_bytes(canonical_json_bytes(tampered.identity_dict())),
+        )
+        tampered_report = {**second.gate_report, "policy_id": tampered.policy_id}
+        report_bytes = canonical_json_bytes(tampered_report)
+        report_digest = sha256_bytes(report_bytes)
+        control.connection.execute("DROP TRIGGER approvals_no_update")
+        control.connection.execute("DROP TRIGGER approvals_no_delete")
+        control.connection.execute(
+            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+            (
+                tampered.policy_id,
+                canonical_json_bytes(tampered.to_dict()).decode(),
+                report_bytes.decode(),
+                report_digest,
+                second.candidate_id,
+            ),
+        )
+        control.connection.execute(
+            "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+            (tampered.policy_id, report_digest, second.candidate_id),
+        )
 
-    with pytest.raises((DeploymentSmokeError, TransitionError)):
+    with pytest.raises(expected_exception):
         app.state.deployment_coordinator.deploy(
             second.candidate_id,
             actor=SyntheticDemoPrincipal(),
@@ -3232,7 +3320,72 @@ def test_compare_always_displays_accuracy_cost_latency_and_compatibility(
         f"/compare/prompt-diff?candidate={first.candidate_id}&candidate={second.candidate_id}"
     )
     assert diff.status_code == 200
-    assert "no separate immutable prompt-diff artifact was recorded" in diff.text
+    assert "read directly from each candidate's immutable policy package" in diff.text
+    assert "(packaged)" in diff.text
+    assert "no packaged prompt artifact" not in diff.text
+
+
+def test_prompt_diff_labels_a_pre_renderer_candidate_as_legacy(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """A candidate packaged before renderer identity existed carries no immutable prompt
+    artifact; the diff must re-render its side from local templates and say so, while a
+    packaged candidate's side is read straight from its own manifest."""
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    packaged = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    legacy_policy = dataclasses.replace(
+        policy,
+        schema_version=LEGACY_POLICY_SCHEMA_VERSION,
+        renderer_version=None,
+        renderer_sha256=None,
+        prompt_template_text=None,
+        policy_id="",
+    )
+    legacy_policy = dataclasses.replace(
+        legacy_policy,
+        policy_id="sha256:" + sha256_bytes(canonical_json_bytes(legacy_policy.identity_dict())),
+    )
+    legacy_report = dataclasses.replace(
+        report, policy_id=legacy_policy.policy_id, run_id="run-legacy"
+    )
+    # register_candidate now rejects a renderer-less policy outright (it is a genuinely
+    # legacy row, standing in for evidence stored before renderer identity existed, not
+    # something registerable today), so insert it directly the way register_candidate
+    # itself would have, bypassing only its renderer check.
+    legacy_report_bytes = canonical_json_bytes(legacy_report.to_dict())
+    legacy_candidate_id = "candidate-" + legacy_policy.policy_id.removeprefix("sha256:")[:24]
+    with control.transaction() as connection:
+        connection.execute(
+            "INSERT INTO candidates(candidate_id, source_run_id, policy_id, policy_json, "
+            "gate_report_json, gate_report_sha256, artifacts_json, summary_json, state) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                legacy_candidate_id,
+                "run-legacy",
+                legacy_policy.policy_id,
+                canonical_json_bytes(legacy_policy.to_dict()).decode(),
+                legacy_report_bytes.decode(),
+                sha256_bytes(legacy_report_bytes),
+                canonical_json_bytes([]).decode(),
+                canonical_json_bytes({}).decode(),
+                "Eligible",
+            ),
+        )
+    legacy = control.get_candidate(legacy_candidate_id)
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+
+    diff = client.get(
+        f"/compare/prompt-diff?candidate={packaged.candidate_id}&candidate={legacy.candidate_id}"
+    )
+
+    assert diff.status_code == 200
+    assert "predates renderer identity and carries no packaged prompt artifact" in diff.text
+    assert "(packaged)" in diff.text
+    assert "(legacy · re-rendered, no packaged prompt artifact)" in diff.text
 
 
 def test_compare_blocks_promotion_for_different_primary_metrics(

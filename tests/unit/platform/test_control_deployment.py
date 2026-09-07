@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -25,7 +26,11 @@ from pixelgym.platform.immutable_store import (
     LocalImmutableStore,
 )
 from pixelgym.platform.mlflow_tracking import TrackingMirrorError
-from pixelgym.platform.policy import build_policy_manifest, prompt_template
+from pixelgym.platform.policy import (
+    LEGACY_POLICY_SCHEMA_VERSION,
+    build_policy_manifest,
+    prompt_template,
+)
 from pixelgym.platform.schema_validation import ContractValidationError
 from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
@@ -681,12 +686,19 @@ def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_sm
     DeploymentCoordinator(
         control=control, store=store, load_and_smoke=lambda policy: True
     ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
-    legacy_policy = candidate.policy.to_dict()
+    # A genuinely legacy-shaped fixture: schema_version pinned to v1 (matching the
+    # legacy schema's own const) with no renderer keys, not merely a v2-labelled
+    # document missing provenance -- that shape now fails schema validation outright
+    # rather than reaching the source-provenance check this test targets.
+    legacy_policy = _renderer_less(candidate.policy).to_dict()
     for field_name in (
         "code_state",
         "source_tree_sha256",
         "source_provenance_verified",
         "source_provenance_failure_reason",
+        "renderer_version",
+        "renderer_sha256",
+        "prompt_template_text",
     ):
         legacy_policy.pop(field_name)
     legacy_identity = dict(legacy_policy)
@@ -802,7 +814,7 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
             model=policy.model + "-" + suffix,
             prompt_name=policy.prompt_name,
             prompt_version=policy.prompt_version,
-            prompt=prompt_template(policy.prompt_version) + suffix,
+            prompt=prompt_template(policy.prompt_version),
             condition=policy.condition,
             parameters=policy.parameters,
             parser_version=policy.parser_version,
@@ -1615,3 +1627,182 @@ def test_reads_wait_for_the_shared_connection_lock(tmp_path: Path) -> None:
             assert started.wait(timeout=1)
             assert not future.done()
         assert future.result(timeout=1)[0]["submission_id"].startswith("submission-")
+
+
+def _renderer_less(policy):
+    """Build a schema-valid, registerable policy that carries no renderer identity.
+
+    Mirrors what a policy built before renderer identity existed looks like: labelled
+    with the legacy schema_version so the (unchanged) v1/v2 policy_package schema does
+    not require renderer fields for it.
+    """
+    stripped = dataclasses.replace(
+        policy,
+        schema_version=LEGACY_POLICY_SCHEMA_VERSION,
+        renderer_version=None,
+        renderer_sha256=None,
+        prompt_template_text=None,
+        policy_id="",
+    )
+    policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(stripped.identity_dict()))
+    return dataclasses.replace(stripped, policy_id=policy_id)
+
+
+def test_registration_rejects_a_policy_missing_renderer_identity(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """A policy carrying no renderer identity -- whether freshly built or explicitly
+    labelled with the legacy schema_version -- can no longer be newly registered.
+    register_candidate is a candidate's first identity checkpoint; blocking it there,
+    not only at deploy/restore, keeps a renderer-less policy from ever reaching
+    Eligible or Approved state in the first place.
+    """
+    policy, summary, report = passing_evidence
+    stripped = _renderer_less(policy)
+    control = _control(tmp_path)
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=stripped,
+            gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
+            artifacts=[],
+        )
+    assert control.list_candidates() == []
+
+
+def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    stripped = _renderer_less(candidate.policy)
+    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            stripped.policy_id,
+            canonical_json_bytes(stripped.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (stripped.policy_id, report_digest, candidate.candidate_id),
+    )
+    smoke_called = False
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+
+    assert not smoke_called
+    assert control.active() == (None, 0)
+
+
+def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """A self-consistent package -- policy_id genuinely matches identity_dict(), as a
+    worker running a different renderer implementation would honestly produce -- must
+    still be rejected before activation, because verify_renderer_binding, not the
+    schema, is what checks renderer_sha256 against the code actually running."""
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    tampered = dataclasses.replace(candidate.policy, renderer_sha256="0" * 64, policy_id="")
+    tampered = dataclasses.replace(
+        tampered, policy_id="sha256:" + sha256_bytes(canonical_json_bytes(tampered.identity_dict()))
+    )
+    rewritten_report = {**candidate.gate_report, "policy_id": tampered.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            tampered.policy_id,
+            canonical_json_bytes(tampered.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (tampered.policy_id, report_digest, candidate.candidate_id),
+    )
+    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
+
+    # The schema only checks renderer_sha256 is digest-shaped (see
+    # test_policy_schema_does_not_pin_renderer_identity_to_a_specific_value); it stays
+    # readable through get_candidate/load_policy_manifest, so verify_renderer_binding is
+    # what must reject it before activation.
+    with pytest.raises(ValueError, match="renderer implementation digest mismatch"):
+        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+
+    assert control.active() == (None, 0)
+
+
+def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_smoke(
+    tmp_path: Path,
+    passing_evidence,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+
+    stripped = _renderer_less(candidate.policy)
+    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            stripped.policy_id,
+            canonical_json_bytes(stripped.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (stripped.policy_id, report_digest, candidate.candidate_id),
+    )
+    artifact_called = False
+    smoke_called = False
+
+    def verify_artifact(_reference):
+        nonlocal artifact_called
+        artifact_called = True
+
+    def smoke(_candidate):
+        nonlocal smoke_called
+        smoke_called = True
+        return True
+
+    monkeypatch.setattr(store, "get_verified", verify_artifact)
+    restoring = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        restoring.restore_active()
+    assert not artifact_called
+    assert not smoke_called

@@ -40,6 +40,7 @@ from pixelgym.platform.operational_log import (
     ProviderMetadata,
     normalize_provider_metadata,
 )
+from pixelgym.platform.policy import render_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +71,15 @@ class ServingProvider(Protocol):
         media_type: str,
         target: str,
         policy: PolicyManifest,
+        prompt: str,
     ) -> tuple[str | None, str, float | None, dict[str, Any] | None]:
-        """Return raw final text, request ID, latency, and usage without hidden retry."""
+        """Return raw final text, request ID, latency, and usage without hidden retry.
+
+        ``prompt`` is rendered by pixelgym.platform.policy.render_prompt entirely from
+        the candidate's own packaged ``prompt_template_text`` -- the frozen bytes
+        recorded in the policy package -- with no dependency on whatever prompt code is
+        currently running. Evaluation's request material calls the same render_prompt.
+        """
 
 
 @dataclass(frozen=True)
@@ -481,6 +489,13 @@ def create_serving_app(
             raise HTTPException(503, "no approved policy is loaded")
         loaded = runtime.loaded
         _set_identity(loaded)
+        try:
+            rendered_prompt = render_prompt(loaded.manifest, target=target, width=width, height=height)
+        except ValueError as exc:
+            # Deploy/rollback/restore already verify renderer binding before traffic can
+            # reach an active deployment; this is defense-in-depth, not the expected path.
+            _set_terminal_status("renderer_binding_invalid")
+            raise HTTPException(500, "active policy package failed to render a request prompt") from exc
         borrower = object()
         provider_admitted = False
         if provider_queue_timeout_seconds == 0:
@@ -504,6 +519,7 @@ def create_serving_app(
             media_type=request.media_type,
             target=target,
             policy=loaded.manifest,
+            prompt=rendered_prompt,
         )
 
         def _on_provider_future_done(_: Future[Any]) -> None:

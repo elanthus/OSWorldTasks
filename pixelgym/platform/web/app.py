@@ -708,6 +708,22 @@ def create_control_app(
         body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>No favorable metric gets to travel alone.</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
         return layout(request, "Compare", body)
 
+    def _packaged_prompt_text(item: Any) -> tuple[str, bool]:
+        """Return (prompt text, is_legacy) reading the candidate's own immutable package.
+
+        A candidate whose policy carries renderer identity stores the exact prompt bytes
+        used to build it (``prompt_template_text``); that packaged text is read directly,
+        with no re-render. A candidate packaged before renderer identity existed carries
+        no such artifact, so its side of the diff is re-rendered from the frozen local
+        templates and labelled legacy.
+        """
+        if item.policy.prompt_template_text is not None:
+            return item.policy.prompt_template_text, False
+        try:
+            return prompt_template(item.policy.prompt_version), True
+        except ValueError as exc:
+            raise HTTPException(409, "recorded prompt version is unavailable for rendering") from exc
+
     @app.get("/compare/prompt-diff", response_class=HTMLResponse)
     def prompt_diff_view(
         request: Request, candidate: Annotated[list[str] | None, Query()] = None
@@ -716,19 +732,35 @@ def create_control_app(
         if len(selected_ids) != 2:
             raise HTTPException(422, "prompt diff requires exactly two candidates")
         before, after = [candidate_or_404(item) for item in selected_ids]
-        try:
-            before_prompt = prompt_template(before.policy.prompt_version)
-            after_prompt = prompt_template(after.policy.prompt_version)
-        except ValueError as exc:
-            raise HTTPException(409, "recorded prompt version is unavailable for rendering") from exc
+        before_prompt, before_legacy = _packaged_prompt_text(before)
+        after_prompt, after_legacy = _packaged_prompt_text(after)
+
+        def _label(item: Any, is_legacy: bool) -> str:
+            # is_legacy mirrors _packaged_prompt_text's own (text, is_legacy) return:
+            # tag the diff column so a reader can tell a packaged side from a
+            # re-rendered one without re-deriving it from the candidate.
+            tag = " (legacy · re-rendered, no packaged prompt artifact)" if is_legacy else " (packaged)"
+            return _escape(f"{item.candidate_id} · v{item.policy.prompt_version}{tag}")
+
         diff = HtmlDiff(wrapcolumn=88).make_table(
             before_prompt.splitlines(),
             after_prompt.splitlines(),
-            fromdesc=_escape(f"{before.candidate_id} · v{before.policy.prompt_version}"),
-            todesc=_escape(f"{after.candidate_id} · v{after.policy.prompt_version}"),
+            fromdesc=_label(before, before_legacy),
+            todesc=_label(after, after_legacy),
             context=True,
         )
-        body = f"""<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>This is rendered from each candidate's stored prompt version and digest using the frozen local templates; no separate immutable prompt-diff artifact was recorded.</p></section><section class="panel diff-table">{diff}</section>"""
+        if before_legacy or after_legacy:
+            explanation = (
+                "At least one selected candidate predates renderer identity and carries no "
+                "packaged prompt artifact; its side is re-rendered from the frozen local "
+                "templates instead of read from its immutable package."
+            )
+        else:
+            explanation = (
+                "Both sides are read directly from each candidate's immutable policy "
+                "package (<code>prompt_template_text</code>), not re-rendered from code."
+            )
+        body = f"""<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>{explanation}</p></section><section class="panel diff-table">{diff}</section>"""
         return layout(request, "Prompt diff", body)
 
     @app.get("/candidates/{candidate_id}/evidence/raw-responses", response_class=HTMLResponse)

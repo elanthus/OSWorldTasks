@@ -13,7 +13,11 @@ from pixelgym.platform import schema_validation
 from pixelgym.platform.contracts import GateReport, PolicyManifest
 from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
-from pixelgym.platform.policy import verify_policy_manifest
+from pixelgym.platform.policy import (
+    LEGACY_POLICY_SCHEMA_VERSION,
+    PROMPT_NAME,
+    verify_policy_manifest,
+)
 from pixelgym.platform.schema_validation import (
     CONTRACT_SCHEMA_FILES,
     ContractValidationError,
@@ -126,7 +130,7 @@ def test_registry_inventory_matches_every_d41_contract(repository_root: Path) ->
         "run_manifest": "pixelgym-platform-run-manifest-v1",
         "gate_policy": "pixelgym-promotion-gate-policy-v1",
         "gate_report": "pixelgym-promotion-gate-report-v1",
-        "policy_package": "pixelgym-grounding-policy-v1",
+        "policy_package": "pixelgym-grounding-policy-v2",
         "raw_response": "pixelgym-raw-response-v1",
         "approval": "pixelgym-policy-approval-v1",
         "deployment": "pixelgym-policy-deployment-v1",
@@ -335,26 +339,63 @@ def test_invalid_policy_reports_current_and_legacy_schema_failures(
     assert "legacy_policy_package" in str(captured.value.__cause__)
 
 
-def test_former_v1_policy_remains_readable_with_identity_and_fail_closed_provenance(
+def test_v2_policy_round_trips_through_load_policy_manifest(
     repository_root: Path, passing_evidence
 ) -> None:
+    """A current v2-schema policy package, produced by build_policy_manifest with full
+    renderer identity and provenance, loads back through load_policy_manifest via the
+    direct (non-legacy) path with its identity intact."""
     policy, _summary, _report = passing_evidence
-    legacy = policy.to_dict()
-    for field_name in (
-        "code_state",
-        "source_tree_sha256",
-        "source_provenance_verified",
-        "source_provenance_failure_reason",
-    ):
-        legacy.pop(field_name)
-    identity = dict(legacy)
-    identity.pop("policy_id")
-    legacy["policy_id"] = "sha256:" + sha256_bytes(canonical_json_bytes(identity))
+    assert policy.schema_version == "pixelgym-grounding-policy-v2"
+
+    decoded = load_policy_manifest(PlatformSchemas(repository_root), policy.to_dict())
+
+    verify_policy_manifest(decoded)
+    assert decoded.policy_id == policy.policy_id
+    assert decoded.renderer_version == policy.renderer_version
+    assert decoded.prompt_template_text == policy.prompt_template_text
+
+
+def test_former_v1_policy_with_no_renderer_keys_remains_readable_with_its_stored_id(
+    repository_root: Path,
+) -> None:
+    """A literal pre-renderer-identity v1 package -- the actual historical shape,
+    carrying no renderer_version/renderer_sha256/prompt_template_text keys and no
+    source-provenance keys at all -- must still load, unchanged, under the policy_id it
+    was stored with. The legacy schema's schema_version is const-pinned to v1 (not
+    widened to also accept v2), so this fixture only round-trips because it is
+    genuinely v1-shaped, not because the legacy schema was loosened to let it through.
+    """
+    fields = {
+        "schema_version": LEGACY_POLICY_SCHEMA_VERSION,
+        "provider": "scripted-demo",
+        "model": "day3-replay-baseline-v1",
+        "model_alias_disclosure": None,
+        "prompt_name": PROMPT_NAME,
+        "prompt_version": 1,
+        "prompt_sha256": "e" * 64,
+        "condition": "raw",
+        "parameters": {"deterministic": True, "hidden_retries": 0},
+        "parser_version": "pixelgym-grounding-parser-v1",
+        "scorer_version": "pixelgym-grounding-scorer-v1",
+        "overlay_version": "none-raw-coordinate-policy",
+        "target_semantics": "pixelgym-grounding-target-semantics-v1",
+        "code_revision": "a" * 40,
+        "dependency_lock_sha256": "b" * 64,
+    }
+    stored_policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(fields))
+    legacy = {**fields, "policy_id": stored_policy_id}
+    assert "renderer_version" not in legacy
+    assert "prompt_template_text" not in legacy
+    assert "code_state" not in legacy
 
     decoded = load_policy_manifest(PlatformSchemas(repository_root), legacy)
 
     verify_policy_manifest(decoded)
-    assert decoded.policy_id == legacy["policy_id"]
+    assert decoded.policy_id == stored_policy_id
+    assert decoded.renderer_version is None
+    assert decoded.renderer_sha256 is None
+    assert decoded.prompt_template_text is None
     assert decoded.code_state == "unverifiable"
     assert not decoded.source_provenance_verified
     assert decoded.source_provenance_failure_reason == "legacy_schema_missing_provenance"

@@ -12,7 +12,7 @@
         "run_manifest": "pixelgym-platform-run-manifest-v1",
         "gate_policy": "pixelgym-promotion-gate-policy-v1",
         "gate_report": "pixelgym-promotion-gate-report-v1",
-        "policy_package": "pixelgym-grounding-policy-v1",
+        "policy_package": "pixelgym-grounding-policy-v2",
         "raw_response": "pixelgym-raw-response-v1",
         "approval": "pixelgym-policy-approval-v1",
         "deployment": "pixelgym-policy-deployment-v1",

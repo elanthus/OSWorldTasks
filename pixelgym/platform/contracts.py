@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any
 
+from pixelgym.platform.fingerprints import sha256_bytes
+
 
 class CandidateState(StrEnum):
     GATE_FAILED = "GateFailed"
@@ -212,7 +214,24 @@ class PolicyManifest:
     source_provenance_verified: bool
     dependency_lock_sha256: str
     source_provenance_failure_reason: str | None = None
+    # Renderer identity is absent (None) only for policies packaged before the renderer
+    # was bound into the manifest; such packages are readable but cannot be newly
+    # registered or activated (see verify_renderer_binding in policy.py).
+    renderer_version: str | None = None
+    renderer_sha256: str | None = None
+    prompt_template_text: str | None = None
     policy_id: str = ""
+
+    def __post_init__(self) -> None:
+        renderer_fields = (self.renderer_version, self.renderer_sha256, self.prompt_template_text)
+        if any(item is not None for item in renderer_fields) and any(
+            item is None for item in renderer_fields
+        ):
+            raise ValueError("policy manifest renderer identity fields must be all present or all absent")
+        if self.prompt_template_text is not None and self.prompt_sha256 != sha256_bytes(
+            self.prompt_template_text.encode("utf-8")
+        ):
+            raise ValueError("packaged prompt digest does not match the packaged prompt bytes")
 
     def identity_dict(self) -> dict[str, Any]:
         value = asdict(self)
@@ -225,11 +244,15 @@ class PolicyManifest:
                 "source_provenance_failure_reason",
             ):
                 value.pop(field_name)
-            return value
         # A null failure reason is omitted from the policy identity; any recorded
         # failure reason remains identity-bound to its provenance evidence.
-        if value["source_provenance_failure_reason"] is None:
+        elif value["source_provenance_failure_reason"] is None:
             value.pop("source_provenance_failure_reason")
+        # Packages built before renderer identity existed never bound these fields
+        # into their policy_id; preserve their already-stored identity unchanged.
+        if self.renderer_version is None:
+            for field_name in ("renderer_version", "renderer_sha256", "prompt_template_text"):
+                value.pop(field_name)
         return value
 
     def to_dict(self) -> dict[str, Any]:

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from pixelgym.platform.contracts import ArtifactRef
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
 from pixelgym.platform.evaluation import (
     EvaluationRunner,
     PlatformProviderResponse,
@@ -15,7 +16,13 @@ from pixelgym.platform.evaluation import (
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
 from pixelgym.platform.mlflow_tracking import RUN_PARAM_KEYS, InMemoryTracking
+from pixelgym.platform.policy import (
+    MARKS_PROMPT_TEMPLATES,
+    PROMPT_NAME,
+    build_policy_manifest,
+)
 from pixelgym.platform.schema_validation import ContractValidationError
+from pixelgym.platform.source_provenance import SOURCE_PROVENANCE_SCHEMA_VERSION, SourceProvenance
 
 
 def _runner(
@@ -541,3 +548,54 @@ def test_failure_finalization_uses_known_run_when_inputs_later_become_invalid(
 
 def test_frozen_p95_method_has_explicit_boundary() -> None:
     assert percentile_r7([0, 10, 20, 30, 40], 0.95) == pytest.approx(38.0)
+
+
+def test_marks_condition_request_material_renders_the_pinned_prompt_for_output(
+    repository_root: Path, tmp_path: Path, gate_policy
+) -> None:
+    """A marks-condition policy must render through the same packaged renderer as raw,
+    reproducing pixelgym.grounding.evaluation.prompt_for's marks output byte-for-byte --
+    not raise, and not silently fall back to a raw-only code path."""
+    from pixelgym.grounding.evaluation import PROMPT_VERSION, prompt_for
+
+    marks_policy = build_policy_manifest(
+        provider="scripted-demo",
+        model="day3-replay-marks-v1",
+        prompt_name=PROMPT_NAME,
+        prompt_version=1,
+        prompt=MARKS_PROMPT_TEMPLATES[1],
+        condition="marks",
+        parameters={"deterministic": True, "hidden_retries": 0},
+        parser_version="pixelgym-grounding-parser-v1",
+        scorer_version=gate_policy.required_scorer_version,
+        overlay_version="pixelgym-grounding-overlay-v1",
+        target_semantics=gate_policy.required_target_semantics,
+        source_provenance=SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION, "a" * 40, "b" * 64, "clean", "git-build-inputs-v1"
+        ),
+        dependency_lock_sha256=dependency_lock_sha256(repository_root),
+    )
+    runner = EvaluationRunner(
+        repository_root=repository_root,
+        store=LocalImmutableStore(tmp_path / "immutable"),
+        tracking=None,
+        provider=InvalidProvider(),
+        policy=marks_policy,
+        gate_policy=gate_policy,
+        dataset_fingerprint=gate_policy.required_dataset_fingerprint,
+        submission_id="submission-marks",
+        metaflow_pathspec="GroundingEvaluationFlow/marks",
+    )
+    examples, overlays = runner._inputs()
+    example = examples[0]
+    overlay = overlays[example["example_id"]]
+
+    request_sha256, prompt, condition, schema, image_path = runner._request_material(
+        example, overlay
+    )
+
+    assert condition == "marks"
+    assert prompt == prompt_for(example, "marks", prompt_version=PROMPT_VERSION)
+    assert image_path == runner.root / overlay["marked_image_path"]
+    assert schema["properties"] == {"mark_id": {"type": "integer", "minimum": 1}}
+    assert request_sha256

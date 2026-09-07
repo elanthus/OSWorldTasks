@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "code_state", "source_tree_sha256", "source_provenance_verified", "source_provenance_failure_reason", "dependency_lock_sha256", "policy_id"],
   "properties": {
-    "schema_version": {"const": "pixelgym-grounding-policy-v1"},
+    "schema_version": {"enum": ["pixelgym-grounding-policy-v1", "pixelgym-grounding-policy-v2"]},
     "provider": {"type": "string", "minLength": 1},
     "model": {"type": "string", "minLength": 1},
     "model_alias_disclosure": {"type": ["string", "null"]},
@@ -24,6 +24,9 @@
     "source_provenance_verified": {"type": "boolean"},
     "source_provenance_failure_reason": {"type": ["string", "null"]},
     "dependency_lock_sha256": {"$ref": "#/$defs/digest"},
+    "renderer_version": {"type": ["string", "null"]},
+    "renderer_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]},
+    "prompt_template_text": {"type": ["string", "null"]},
     "policy_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   },
   "allOf": [
@@ -37,6 +40,17 @@
         ]
       },
       "else": {"properties": {"code_revision": {"pattern": "^[0-9a-f]{40}$"}, "source_tree_sha256": {"$ref": "#/$defs/digest"}, "source_provenance_verified": {"const": true}, "source_provenance_failure_reason": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"schema_version": {"const": "pixelgym-grounding-policy-v2"}}},
+      "then": {
+        "required": ["renderer_version", "renderer_sha256", "prompt_template_text"],
+        "properties": {
+          "renderer_version": {"type": "string", "minLength": 1},
+          "renderer_sha256": {"$ref": "#/$defs/digest"},
+          "prompt_template_text": {"type": "string"}
+        }
+      }
     }
   ],
   "$defs": {"digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
