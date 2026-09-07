@@ -1,4 +1,10 @@
 {
+  "_provenance": {
+    "note": "The runner_execution.episode_results/classifications/outcome_denominators values for each panel were originally cross-checked in this test against legacy.grounding.v5.d56_claude_subscription_campaign.legacy_runner_result_projection, d56_codex_cli_calibration.legacy_runner_result_projection, and d56_qwen_full_calibration.legacy_runner_result_projection before that recomputation was dropped (issue #170).",
+    "generated_by_command": "pytest tests/unit/test_grounding_v5_runner_plan_parity.py::test_manifest_runner_matches_legacy_result_aggregation",
+    "generated_at_revision": "595901dc4a62eccb6b545a4f205140b654f2dc24",
+    "generated_at_tag": "legacy-grounding-final"
+  },
   "plans": {
     "claude_subscription": {
       "canonical_plan_sha256": "sha256:36f66a91f827151de23b30230e8ad86aee68f697c9639af357d6361c1a180a67",

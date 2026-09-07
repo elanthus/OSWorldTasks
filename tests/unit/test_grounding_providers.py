@@ -10,8 +10,7 @@ from typing import ClassVar, Self
 import pytest
 from PIL import Image
 
-from legacy.grounding.v4c_evaluation import _parse_action
-from pixelgym.grounding.evaluation import RAW_SCHEMA
+from pixelgym.grounding.evaluation import RAW_SCHEMA, parse_prediction
 from pixelgym.grounding.providers import (
     ClaudeCodeCLIProvider,
     CodexCLIProvider,
@@ -625,8 +624,10 @@ def test_qwen_adapter_keeps_invalid_grid_coordinates_rejectable(
     response = QwenNormalizedCoordinateAdapter(inner).invoke(
         image_path=image_path, prompt="p", schema=RAW_SCHEMA
     )
-    action, error = _parse_action(response.raw_response)
+    parsed = parse_prediction(
+        response.raw_response, condition="raw", width=1024, height=768, marks=[]
+    )
 
-    assert action is None
-    assert error is not None
+    assert parsed.status == "invalid"
+    assert parsed.error is not None
     assert response.provider_metadata["original_response"] == raw_response
