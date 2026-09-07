@@ -47,7 +47,7 @@
         "required": ["renderer_version", "renderer_sha256", "prompt_template_text"],
         "properties": {
           "renderer_version": {"const": "pixelgym-platform-renderer-v1"},
-          "renderer_sha256": {"const": "a53ba5963979dde3f493964bdcc61e813383fccb4cb2cc00276a19f6bb90e1fc"},
+          "renderer_sha256": {"const": "18b0c2ade4f3f1f213c7d9566d6797738e85a4ee776ccfb08bdb937697af1be0"},
           "prompt_template_text": {"type": "string"}
         }
       }

@@ -59,22 +59,32 @@ def validate_evaluation_versions(
         )
 
 
+# Frozen module-level so the platform renderer identity (pixelgym.platform.policy) can
+# hash exactly the text every raw-coordinate request is built from.
+COMMON_PROMPT_TEMPLATE = (
+    "Locate the requested control in the attached screenshot. "
+    "Target: {target}. "
+    "The screenshot is {screen_width} pixels wide and "
+    "{screen_height} pixels high. "
+)
+RAW_PROMPT_SUFFIX = (
+    "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
+    "The origin is the upper-left. Do not explain your answer and do not use tools."
+)
+
+
 def prompt_for(
     example: dict[str, Any], condition: Condition, *, prompt_version: str = PROMPT_VERSION
 ) -> str:
     if prompt_version not in (PROMPT_VERSION, PROMPT_VERSION_V2):
         raise ValueError(f"unknown prompt version {prompt_version!r}")
-    common = (
-        "Locate the requested control in the attached screenshot. "
-        f"Target: {example['target']}. "
-        f"The screenshot is {example['screen_width']} pixels wide and "
-        f"{example['screen_height']} pixels high. "
+    common = COMMON_PROMPT_TEMPLATE.format(
+        target=example["target"],
+        screen_width=example["screen_width"],
+        screen_height=example["screen_height"],
     )
     if condition == "raw":
-        return common + (
-            "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
-            "The origin is the upper-left. Do not explain your answer and do not use tools."
-        )
+        return common + RAW_PROMPT_SUFFIX
     if condition == "marks":
         if prompt_version == PROMPT_VERSION:
             return common + (

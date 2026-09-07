@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "provider", "model", "model_alias_disclosure", "prompt_name", "prompt_version", "prompt_sha256", "condition", "parameters", "parser_version", "scorer_version", "overlay_version", "target_semantics", "code_revision", "dependency_lock_sha256", "policy_id"],
   "properties": {
-    "schema_version": {"enum": ["pixelgym-grounding-policy-v1", "pixelgym-grounding-policy-v2"]},
+    "schema_version": {"const": "pixelgym-grounding-policy-v1"},
     "provider": {"type": "string", "minLength": 1},
     "model": {"type": "string", "minLength": 1},
     "model_alias_disclosure": {"type": ["string", "null"]},

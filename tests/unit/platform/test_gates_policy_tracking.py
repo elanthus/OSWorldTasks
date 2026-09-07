@@ -117,11 +117,19 @@ def _identity_digest(manifest) -> str:
     return sha256_bytes(canonical_json_bytes(manifest.identity_dict()))
 
 
-def _prompt_text_and_digest_mutation(base):
-    text = "a completely different packaged prompt template"
-    return dataclasses.replace(
-        base, prompt_template_text=text, prompt_sha256=sha256_bytes(text.encode("utf-8"))
-    )
+def _prompt_template_text_only_mutation(base):
+    """Mutate prompt_template_text alone, bypassing __post_init__'s digest-consistency
+    check via object.__setattr__ (as verify_renderer_binding's own tests already do),
+    so this row isolates the field instead of also perturbing prompt_sha256."""
+    mutated = dataclasses.replace(base)
+    object.__setattr__(mutated, "prompt_template_text", "a completely different packaged prompt template")
+    return mutated
+
+
+def _prompt_sha256_only_mutation(base):
+    mutated = dataclasses.replace(base)
+    object.__setattr__(mutated, "prompt_sha256", "f" * 64)
+    return mutated
 
 
 @pytest.mark.parametrize(
@@ -150,7 +158,8 @@ def _prompt_text_and_digest_mutation(base):
         ),
         ("renderer_version", lambda base: dataclasses.replace(base, renderer_version="other-renderer-version")),
         ("renderer_sha256", lambda base: dataclasses.replace(base, renderer_sha256="e" * 64)),
-        ("prompt_template_text", _prompt_text_and_digest_mutation),
+        ("prompt_template_text", _prompt_template_text_only_mutation),
+        ("prompt_sha256", _prompt_sha256_only_mutation),
     ],
 )
 def test_every_identity_component_mutation_changes_policy_id(policy_factory, field, mutate) -> None:
@@ -171,6 +180,45 @@ def test_policy_package_build_is_byte_identical_across_two_builds(policy_factory
     second = policy_factory()
     assert first.policy_id == second.policy_id
     assert canonical_json_bytes(first.to_dict()) == canonical_json_bytes(second.to_dict())
+
+
+def test_prompt_for_frozen_base_text_is_byte_identical_after_constant_extraction() -> None:
+    """Pin pixelgym.grounding.evaluation.prompt_for's exact output for both prompt
+    versions and both conditions. Its frozen base text was moved into module-level
+    constants (COMMON_PROMPT_TEMPLATE, RAW_PROMPT_SUFFIX) so the platform renderer
+    identity could hash the code that composes a request; this pins the untouched
+    caller-visible behavior so that extraction alone could not silently reword a prompt.
+    """
+    from pixelgym.grounding.evaluation import PROMPT_VERSION, PROMPT_VERSION_V2, prompt_for
+
+    example = {"target": "Company name field", "screen_width": 100, "screen_height": 80}
+
+    assert prompt_for(example, "raw") == (
+        "Locate the requested control in the attached screenshot. "
+        "Target: Company name field. "
+        "The screenshot is 100 pixels wide and 80 pixels high. "
+        "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
+        "The origin is the upper-left. Do not explain your answer and do not use tools."
+    )
+    assert prompt_for(example, "raw", prompt_version=PROMPT_VERSION_V2) == prompt_for(example, "raw")
+    assert prompt_for(example, "marks", prompt_version=PROMPT_VERSION) == (
+        "Locate the requested control in the attached screenshot. "
+        "Target: Company name field. "
+        "The screenshot is 100 pixels wide and 80 pixels high. "
+        "Every candidate control is outlined and has a visible numbered badge. "
+        "Return only a JSON object with the integer mark_id of the requested control. "
+        "Do not explain your answer and do not use tools."
+    )
+    assert prompt_for(example, "marks", prompt_version=PROMPT_VERSION_V2) == (
+        "Locate the requested control in the attached screenshot. "
+        "Target: Company name field. "
+        "The screenshot is 100 pixels wide and 80 pixels high. "
+        "Every candidate control is outlined and has a visible numbered badge to help "
+        "you locate controls. "
+        "Return only a JSON object with integer x and y screenshot-pixel coordinates "
+        "of the requested control. "
+        "The origin is the upper-left. Do not explain your answer and do not use tools."
+    )
 
 
 def test_renderer_config_digest_matches_the_committed_schema_constant(repository_root: Path) -> None:
