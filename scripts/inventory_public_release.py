@@ -36,10 +36,14 @@ TOKEN_SHAPES = (
 )
 GATED_ASSET_SUFFIXES = {".ova", ".ovf", ".qcow2", ".vdi", ".vmdk", ".vhd", ".vhdx", ".iso"}
 RAW_PAYLOAD_KEY = re.compile(r'"(?:raw_response|provider_response|response_body|response_content)"\s*:')
-SAFE_PATH_USERS = {"<operator>", "operator", "private", "example", "user"}
+SAFE_PATH_USERS = {"<operator>", "operator", "private", "example", "example-user", "user"}
 SAFE_EMAIL_SUFFIXES = (".example", ".invalid", ".test")
-SYNTHETIC_EMAIL_PATHS = ("tests/", "pixelgym/tasks/", "legacy/grounding/")
-TEST_VECTOR_PATHS = ("tests/",)
+SAFE_EMAIL_DOMAINS = {"example.com", "example.net", "example.org"}
+SYNTHETIC_EMAIL_PATHS = ("pixelgym/tasks/", "legacy/grounding/")
+SAFE_TOKEN_TEST_FINGERPRINTS = {
+    "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33",
+    "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506",
+}
 
 
 def _run_git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -205,7 +209,6 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
                 "acknowledged_placeholder"
                 if (
                     user.lower() in SAFE_PATH_USERS
-                    or relative.startswith(TEST_VECTOR_PATHS)
                     or (relative.startswith("scripts/") and "re.compile" in source_line)
                 )
                 else "review_required_operator_path"
@@ -222,7 +225,11 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
             domain = match.group(2).lower()
             classification = (
                 "acknowledged_synthetic_address"
-                if domain.endswith(SAFE_EMAIL_SUFFIXES) or relative.startswith(SYNTHETIC_EMAIL_PATHS)
+                if (
+                    domain.endswith(SAFE_EMAIL_SUFFIXES)
+                    or domain in SAFE_EMAIL_DOMAINS
+                    or relative.startswith(SYNTHETIC_EMAIL_PATHS)
+                )
                 else "review_required_email_address"
             )
             emails.append(
@@ -233,7 +240,8 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
             for match in pattern.finditer(text):
                 classification = (
                     "acknowledged_test_vector"
-                    if relative.startswith(TEST_VECTOR_PATHS)
+                    if relative.startswith("tests/")
+                    and _fingerprint(match.group(0)) in SAFE_TOKEN_TEST_FINGERPRINTS
                     else "review_required_credential_shape"
                 )
                 tokens.append(

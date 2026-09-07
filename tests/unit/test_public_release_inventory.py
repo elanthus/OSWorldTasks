@@ -45,14 +45,18 @@ def test_inventory_detects_public_release_regressions(tmp_path: Path) -> None:
     readme.write_text(readme.read_text() + "\n[Ignored private evidence](ignored/result.json)\n")
     sensitive = "/" + "Users" + "/alice/private-run\n" + "ghp_" + "A" * 36
     (root / "release-notes.txt").write_text(sensitive)
+    tests_dir = root / "tests"
+    tests_dir.mkdir()
+    (tests_dir / "accidental.txt").write_text("person" + "@real-domain.com\n")
 
     regressed = module.build_inventory(root)
     assert regressed["links"]["failure_count"] == 1
-    assert regressed["redaction_and_asset_inventory"]["review_required_count"] == 3
+    assert regressed["redaction_and_asset_inventory"]["review_required_count"] == 4
     categories = regressed["redaction_and_asset_inventory"]["categories"]
     assert categories["private_paths"]["review_required_count"] == 1
     assert categories["usernames"]["review_required_count"] == 1
     assert categories["credential_or_token_shapes"]["review_required_count"] == 1
+    assert categories["email_addresses"]["review_required_count"] == 1
 
 
 def test_committed_inventory_matches_current_public_tree() -> None:
