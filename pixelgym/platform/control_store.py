@@ -21,7 +21,7 @@ from pixelgym.platform.contracts import (
     RunSummary,
 )
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
-from pixelgym.platform.policy import verify_policy_manifest
+from pixelgym.platform.policy import verify_policy_manifest, verify_renderer_binding
 from pixelgym.platform.schema_validation import (
     ContractValidationError,
     PlatformSchemas,
@@ -852,6 +852,9 @@ class ControlStore:
         self.schemas.validate("policy_package", policy.to_dict())
         self.schemas.validate("gate_report", gate_report.to_dict())
         verify_policy_manifest(policy)
+        # Block a renderer-less or corrupt-renderer policy from ever reaching Eligible or
+        # Approved state, not only from being deployed once approved.
+        verify_renderer_binding(policy)
         if gate_report.schema_version != "pixelgym-promotion-gate-report-v1":
             raise ValueError("candidate gate report schema version is unsupported")
         if gate_report.policy_id != policy.policy_id or gate_report.run_id != source_run_id:

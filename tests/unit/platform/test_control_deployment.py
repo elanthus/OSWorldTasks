@@ -686,12 +686,19 @@ def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_sm
     DeploymentCoordinator(
         control=control, store=store, load_and_smoke=lambda policy: True
     ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
-    legacy_policy = candidate.policy.to_dict()
+    # A genuinely legacy-shaped fixture: schema_version pinned to v1 (matching the
+    # legacy schema's own const) with no renderer keys, not merely a v2-labelled
+    # document missing provenance -- that shape now fails schema validation outright
+    # rather than reaching the source-provenance check this test targets.
+    legacy_policy = _renderer_less(candidate.policy).to_dict()
     for field_name in (
         "code_state",
         "source_tree_sha256",
         "source_provenance_verified",
         "source_provenance_failure_reason",
+        "renderer_version",
+        "renderer_sha256",
+        "prompt_template_text",
     ):
         legacy_policy.pop(field_name)
     legacy_identity = dict(legacy_policy)
@@ -807,7 +814,7 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
             model=policy.model + "-" + suffix,
             prompt_name=policy.prompt_name,
             prompt_version=policy.prompt_version,
-            prompt=prompt_template(policy.prompt_version) + suffix,
+            prompt=prompt_template(policy.prompt_version),
             condition=policy.condition,
             parameters=policy.parameters,
             parser_version=policy.parser_version,
@@ -1641,46 +1648,53 @@ def _renderer_less(policy):
     return dataclasses.replace(stripped, policy_id=policy_id)
 
 
-def test_registration_accepts_a_legacy_labelled_policy_missing_renderer_identity(
+def test_registration_rejects_a_policy_missing_renderer_identity(
     tmp_path: Path, passing_evidence
 ) -> None:
-    """Documents the known registration-time gap: a policy explicitly labelled with the
-    legacy schema_version is still registerable without renderer identity, because
-    registration validates only the shared policy_package schema and identity digest.
-    Activation closes this gap (see the deploy/restore tests below), so no traffic can
-    ever reach a renderer-less policy even though it can reach Eligible/Approved state.
+    """A policy carrying no renderer identity -- whether freshly built or explicitly
+    labelled with the legacy schema_version -- can no longer be newly registered.
+    register_candidate is a candidate's first identity checkpoint; blocking it there,
+    not only at deploy/restore, keeps a renderer-less policy from ever reaching
+    Eligible or Approved state in the first place.
     """
     policy, summary, report = passing_evidence
     stripped = _renderer_less(policy)
     control = _control(tmp_path)
-    candidate = control.register_candidate(
-        source_run_id=summary.run_id,
-        policy=stripped,
-        gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
-        artifacts=[],
-    )
-    assert candidate.policy.renderer_version is None
-    assert candidate.state.value == "Eligible"
+
+    with pytest.raises(ValueError, match="missing packaged renderer identity"):
+        control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=stripped,
+            gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
+            artifacts=[],
+        )
+    assert control.list_candidates() == []
 
 
 def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
     tmp_path: Path, passing_evidence
 ) -> None:
-    policy, summary, report = passing_evidence
-    stripped = _renderer_less(policy)
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
-    candidate = control.register_candidate(
-        source_run_id=summary.run_id,
-        policy=stripped,
-        gate_report=dataclasses.replace(report, policy_id=stripped.policy_id),
-        artifacts=[],
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    stripped = _renderer_less(candidate.policy)
+    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
+    _disable_approval_append_only_guards(control)
+    control.connection.execute(
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            stripped.policy_id,
+            canonical_json_bytes(stripped.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
     )
-    control.approve(
-        candidate.candidate_id,
-        actor="local-reviewer",
-        reason="reviewed",
-        gate_report_sha256=candidate.gate_report_sha256,
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (stripped.policy_id, report_digest, candidate.candidate_id),
     )
     smoke_called = False
 
