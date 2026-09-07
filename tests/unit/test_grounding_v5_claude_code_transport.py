@@ -1,15 +1,26 @@
 """Fast contract tests for `pixelgym.grounding.v5.claude_code_policy`.
 
 Ported from `test_grounding_v5_d56_claude_subscription_campaign.py`, which imported
-`legacy.grounding.v5.d56_claude_subscription_campaign` at module scope even though these
-six tests (and the fixtures they use) never called into it (issue #170) — they exercise
-only the shipped `pixelgym.grounding.v5.claude_code_policy` transport.
+`legacy.grounding.v5.d56_claude_subscription_campaign` at module scope (issue #170).
+Two groups of tests moved here:
+
+- Six tests that never actually called into the legacy campaign module at all — they
+  always exercised only the shipped `pixelgym.grounding.v5.claude_code_policy`
+  transport, and are unchanged below.
+- Eight tests that did exercise shipped `ClaudeCodeTransport`/`ClaudeInvocationJournal`
+  behaviour, but only indirectly through the legacy campaign driver's
+  `execute_smoke()`/`_summary_common()` wrappers. These are ported to call
+  `ClaudeCodeTransport.send()` (and, where the legacy test asserted a downstream
+  dispatch was blocked, `ClaudeCodePolicy.parse()`) directly, dropping only the
+  legacy-only aggregation code around them.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import signal
+import subprocess
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, NoReturn
@@ -35,6 +46,12 @@ def runtime_identity() -> policy.ClaudeRuntimeIdentity:
         reasoning_effort=policy.MODEL_REASONING_EFFORT,
         help_sha256="sha256:help",
     )
+
+
+def credential_shaped_value() -> str:
+    """Build a detector fixture without retaining credential material in source."""
+
+    return "".join(("s", "k", "-", "synthetic", "0" * 16))
 
 
 class SuccessfulProcess:
@@ -388,3 +405,373 @@ def test_runtime_probe_sanitizes_authenticated_subscription_identity() -> None:
     assert record["subscription_type"] == "max"
     assert "email" not in record
     assert "orgId" not in record
+
+
+# ── Ported from `d56_claude_subscription_campaign` (issue #170) ──
+#
+# The legacy tests below drove these same transport/journal behaviours through
+# `campaign.execute_smoke()` and `campaign._summary_common()`. Both wrappers only
+# assembled a request, called `ClaudeCodeTransport.send()` once, and read back
+# `ClaudeInvocationJournal` state; neither added behaviour of its own. These call
+# `send()` and the journal directly, and use `ClaudeCodePolicy.parse()` where the
+# legacy test asserted that a policy violation blocked dispatch before an action
+# could reach the environment.
+
+
+@pytest.mark.parametrize("stream_name", ["stdout", "stderr"])
+def test_claude_credential_shaped_raw_stdio_is_redacted_without_changing_outcome(
+    tmp_path: Path, stream_name: str
+) -> None:
+    candidate = credential_shaped_value()
+    process = SuccessfulProcess(
+        diagnostic=candidate if stream_name == "stdout" else None,
+        stderr=candidate if stream_name == "stderr" else "",
+    )
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / f"{stream_name}.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    idempotency_key = f"sha256:claude-credential-{stream_name}"
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key=idempotency_key,
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        original = process.communicate()[0 if stream_name == "stdout" else 1]
+        record = invocation_journal.record(idempotency_key)
+        assert record is not None
+        stored = record[f"raw_{stream_name}"]
+        assert candidate not in stored
+        assert record[f"raw_{stream_name}_original_sha256"] == (
+            "sha256:" + hashlib.sha256(original.encode()).hexdigest()
+        )
+        assert record["credential_redacted"] is True
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_clean_raw_stdout_is_stored_unchanged_without_redaction_marker(
+    tmp_path: Path,
+) -> None:
+    process = SuccessfulProcess()
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "clean.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    idempotency_key = "sha256:claude-clean-stdout"
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key=idempotency_key,
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        original_stdout = process.communicate()[0]
+        record = invocation_journal.record(idempotency_key)
+        assert record is not None
+        assert record["raw_stdout"] == original_stdout
+        assert record["credential_redacted"] is False
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_tool_content_is_fail_closed_before_environment_dispatch(tmp_path: Path) -> None:
+    process = SuccessfulProcess(content_block_type="tool_use")
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "tool-violation.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-tool-content",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "policy_violation"
+        assert outcome.fault is None
+        assert outcome.response is not None
+        assert "unauthorized_content_block:tool_use" in (
+            outcome.response["usage"]["policy_violation"]
+        )
+        with pytest.raises(ValueError, match="policy boundary is invalid"):
+            claude_policy.parse(policy.canonical_json_bytes(outcome.response), b"{}")
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("usage", "total_cost_usd"),
+    [
+        ({"input_tokens": True, "output_tokens": 1}, 0.01),
+        ({"input_tokens": 1, "output_tokens": 1}, float("nan")),
+        ({"input_tokens": 1, "output_tokens": 1}, float("inf")),
+    ],
+)
+def test_malformed_telemetry_is_fail_closed_before_environment_dispatch(
+    tmp_path: Path, usage: object, total_cost_usd: object
+) -> None:
+    process = SuccessfulProcess(usage=usage, total_cost_usd=total_cost_usd)
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "malformed.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-malformed-telemetry",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "policy_violation"
+        assert outcome.fault is None
+        assert outcome.response is not None
+        assert outcome.response["usage"]["policy_violation"] != "none"
+        with pytest.raises(ValueError, match="policy boundary is invalid"):
+            claude_policy.parse(policy.canonical_json_bytes(outcome.response), b"{}")
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("usage", "total_cost_usd", "expected_attempt_consumption", "expected_cost_knowledge"),
+    [
+        (
+            {"input_tokens": 1000, "output_tokens": 50},
+            0.01,
+            ModelAttemptConsumption.CONSUMED,
+            CostKnowledge.KNOWN,
+        ),
+        (
+            "unavailable",
+            None,
+            ModelAttemptConsumption.UNKNOWN,
+            CostKnowledge.UNKNOWN,
+        ),
+    ],
+)
+def test_claude_nonzero_exit_is_reported_as_infrastructure_failure(
+    tmp_path: Path,
+    usage: object,
+    total_cost_usd: object,
+    expected_attempt_consumption: ModelAttemptConsumption,
+    expected_cost_knowledge: CostKnowledge,
+) -> None:
+    process = SuccessfulProcess(
+        usage=usage,
+        total_cost_usd=total_cost_usd,
+        stderr="synthetic CLI failure",
+        returncode=2,
+    )
+    invocation_journal = policy.ClaudeInvocationJournal(
+        tmp_path / f"nonzero-{expected_cost_knowledge.value}.sqlite"
+    )
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key=f"sha256:claude-nonzero-{expected_cost_knowledge.value}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "transport_fault"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.NONZERO_EXIT
+        assert outcome.fault.classification == "infrastructure_failure"
+        assert outcome.fault.model_attempt_consumption is expected_attempt_consumption
+        assert outcome.fault.cost_knowledge is expected_cost_knowledge
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+@pytest.mark.parametrize(
+    ("process", "expected_status", "expected_violation"),
+    [
+        (SuccessfulProcess(result_text="not-json"), "response", None),
+        (
+            SuccessfulProcess(resolved_model="claude-opus-unapproved"),
+            "policy_violation",
+            "resolved_model_mismatch",
+        ),
+        (
+            SuccessfulProcess(result_text=credential_shaped_value()),
+            "policy_violation",
+            "credential_shaped_output",
+        ),
+    ],
+)
+def test_claude_exit_zero_output_and_identity_failures_remain_distinct(
+    tmp_path: Path,
+    process: SuccessfulProcess,
+    expected_status: str,
+    expected_violation: str | None,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(
+        tmp_path / f"{expected_status}-{expected_violation}.sqlite"
+    )
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: process,
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key=f"sha256:claude-{expected_status}-{expected_violation}",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == expected_status
+        assert outcome.fault is None
+        assert outcome.response is not None
+        if expected_violation is None:
+            assert outcome.response["usage"]["policy_violation"] == "none"
+        else:
+            assert expected_violation in outcome.response["usage"]["policy_violation"]
+        with pytest.raises(ValueError):
+            claude_policy.parse(policy.canonical_json_bytes(outcome.response), b"{}")
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_claude_fault_record_and_summary_keep_model_mismatch_visible(
+    tmp_path: Path,
+) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "combined.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        expected_resolved_model=RESOLVED_MODEL,
+        process_factory=lambda _command, **_kwargs: SuccessfulProcess(
+            rate_limit_status="rejected",
+            resolved_model="claude-sonnet-5-20260901",
+        ),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:rate-limit-model-mismatch",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+        record = transport.records[0]
+
+        assert outcome.status == "rate_limited"
+        assert record["cli_fault"]["classification"] == "request_failure"
+        assert "resolved_model_differs_from_smoke" in record["policy_violation"]
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+class StubbornProcess:
+    pid = 930_002
+    returncode: int | None = None
+
+    def communicate(
+        self, input: str | None = None, timeout: float | None = None
+    ) -> tuple[str, str]:
+        del input
+        raise subprocess.TimeoutExpired("claude", timeout)
+
+    def poll(self) -> int | None:
+        return None
+
+    def terminate(self) -> None:
+        return None
+
+    def kill(self) -> None:
+        return None
+
+
+def test_cleanup_does_not_claim_a_stubborn_process_was_closed(tmp_path: Path) -> None:
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "stubborn.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda _command, **_kwargs: StubbornProcess(),
+    )
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:claude-stubborn",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "deadline"
+        assert outcome.fault is not None
+        assert outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+        assert outcome.fault.cost_knowledge is CostKnowledge.UNKNOWN
+    finally:
+        transport.close()
+        invocation_journal.close()
+    assert transport.subprocesses_closed is False
