@@ -30,7 +30,7 @@ from pixelgym.grounding.v5.panel_policy import (
     action_schema,
     build_panel_policy_manifest,
 )
-from pixelgym.grounding.v5.runner import TransportOutcome
+from pixelgym.grounding.v5.runner import PolicyVisibleResult, TransportOutcome
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).parents[2]
@@ -381,7 +381,13 @@ def test_stateless_policy_does_not_retain_response_candidate_or_outcome() -> Non
         policy.post_dispatch_state(
             initial,
             candidate,
-            {"reward": 0.0, "terminated": False, "truncated": False},
+            PolicyVisibleResult(
+                screenshot_digest="sha256:" + "a" * 64,
+                reward=0.0,
+                terminated=False,
+                truncated=False,
+                step_index=0,
+            ),
         )
         == initial
     )
@@ -399,12 +405,13 @@ def test_stateful_policy_retains_only_visible_outcome_fields() -> None:
     dispatched = policy.post_dispatch_state(
         policy.post_parse_state(reduced, candidate),
         candidate,
-        {
-            "reward": 0.0,
-            "terminated": False,
-            "truncated": False,
-            "diagnostic": {"expected_answer": "secret"},
-        },
+        PolicyVisibleResult(
+            screenshot_digest="sha256:" + "a" * 64,
+            reward=0.0,
+            terminated=False,
+            truncated=False,
+            step_index=0,
+        ),
     )
 
     assert b"Visible-action" not in dispatched

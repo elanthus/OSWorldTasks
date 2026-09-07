@@ -63,8 +63,9 @@ agent interface; expected values and bounding boxes never enter the environment 
 
 The project owner declared the [historical Day 2 gate](artifacts/day-2/raw/human-gate.json) `PASS`.
 The [2026-09-06 evidence revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)
-is new raw evidence, not a replacement human verdict: its D2.11 re-grade remains pending. D4.12
-also remains a human-owned milestone gate and is not declared here.
+was re-graded by the project owner on 2026-09-07 and declared `PASS`
+([re-grade record](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json)); the historical
+record is retained unchanged. D4.12 remains a human-owned milestone gate and is not declared here.
 
 ## Grounding benchmark
 
@@ -356,8 +357,8 @@ known limitation, with the underlying evidence retained
 - The historical 1920×1080 OSWorld run established semantic task-state determinism and measured
   155 differing pixels with a maximum per-channel delta of 222 before its unmasked perceptual
   visual-stability result (minimum SSIM 0.999863); it did not establish bitwise visual determinism.
-  The 2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; its
-  D2.11 human re-grade remains pending.
+  The 2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; the
+  owner re-graded D2.11 `PASS` on that revision on 2026-09-07.
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
 - OSWorld is an optional dependency that downloads a 14.2 GB compressed guest artifact and requires
   Docker; the default fast suite uses neither OSWorld nor a VM.

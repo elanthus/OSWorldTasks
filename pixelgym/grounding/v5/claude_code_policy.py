@@ -46,6 +46,7 @@ from pixelgym.grounding.v5.evidence import (
     redact_raw_stdio,
     validate_credential_free,
 )
+from pixelgym.grounding.v5.runner import PolicyVisibleResult
 from pixelgym.grounding.v5.sandbox import (
     DECLARED_UNAVAILABLE_CAPABILITIES,
     PolicyClaim,
@@ -360,7 +361,7 @@ class ClaudeCodePolicy:
         return state
 
     def post_dispatch_state(
-        self, state: bytes, action: dict[str, int], result: dict[str, Any]
+        self, state: bytes, action: dict[str, int], result: PolicyVisibleResult
     ) -> bytes:
         del action, result
         return state

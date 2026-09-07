@@ -1,0 +1,11 @@
+{
+  "declaration": "D2.11 re-graded PASS against evidence revision artifacts/day-2-rev-2026-09-06-issues-95-101 (issues #95 and #101).",
+  "declared_at": "2026-09-07T06:12:43Z",
+  "declared_by": "project owner",
+  "evidence_revision": "artifacts/day-2-rev-2026-09-06-issues-95-101",
+  "gate": "D2.11",
+  "historical_record": "artifacts/day-2/raw/human-gate.json",
+  "schema_version": 1,
+  "supersedes": null,
+  "verdict": "PASS"
+}

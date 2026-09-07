@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +22,8 @@ def _value(value: Any) -> str:
     return str(value)
 
 
-def render(report: dict[str, Any]) -> str:
+def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str:
+    """Render the report; ``raw_link_prefix`` is the raw-evidence directory relative to the output."""
     automated = report["automated_validation"]
     evidence = report["evidence"]
     lines = [
@@ -34,13 +36,22 @@ def render(report: dict[str, Any]) -> str:
     ]
     human_gate = report.get("human_gate")
     if human_gate is not None:
+        verdict_line = f"**Human {human_gate.get('gate', 'D2.11')} verdict: {human_gate['verdict']}.**"
+        # The historical record carries a Day 3 authorization flag; later
+        # re-grade records name the evidence revision they graded instead.
+        if "day3_authorized" in human_gate:
+            verdict_line += f" Day 3 authorized: {_value(human_gate['day3_authorized'])}."
+            lines.extend([verdict_line, ""])
+        else:
+            lines.extend([verdict_line, ""])
+            declaration = human_gate.get("declaration")
+            if declaration:
+                lines.extend([f"Declaration: {declaration}", ""])
+            evidence_revision = human_gate.get("evidence_revision")
+            if evidence_revision:
+                lines.extend([f"Evidence revision graded: `{evidence_revision}`.", ""])
         lines.extend(
             [
-                (
-                    f"**Human D2.11 verdict: {human_gate['verdict']}.** "
-                    f"Day 3 authorized: {_value(human_gate['day3_authorized'])}."
-                ),
-                "",
                 f"Declared by {human_gate['declared_by']} at `{human_gate['declared_at']}`.",
                 "",
             ]
@@ -91,7 +102,32 @@ def render(report: dict[str, Any]) -> str:
         )
     lines.extend([f"- Host Python: `{report['runtime']['python_version']}`", ""])
     stop_loss = report["runtime"].get("provider_stop_loss")
-    if stop_loss is not None:
+    if stop_loss is not None and stop_loss.get("schema_version") == "pixelgym-provider-stop-loss-v1":
+        # Evidence revisions record an allocation ledger rather than a blocker narrative.
+        lines.extend(
+            [
+                "## Provider stop-loss",
+                "",
+                (
+                    f"Local Docker consumed {stop_loss['consumed_seconds']:.2f} of the authorized "
+                    f"{stop_loss['budget_seconds']} seconds across {len(stop_loss['commands'])} "
+                    "serialized real-guest commands; each command's provider closure is recorded below."
+                ),
+                "",
+                f"Accounting basis: {stop_loss['accounting_basis']}",
+                "",
+                "| Command record | Exit status | Real seconds | Hard limit (s) | Provider closed |",
+                "|---|---:|---:|---:|---|",
+            ]
+        )
+        for command in stop_loss["commands"]:
+            lines.append(
+                f"| `{command['command_record']}` | {command['exit_status']} | "
+                f"{command['real_seconds']:.2f} | {command['hard_limit_seconds']} | "
+                f"{_value(command['provider_closed'])} |"
+            )
+        lines.append("")
+    elif stop_loss is not None:
         blocker = stop_loss["final_blocker"]
         lines.extend(
             [
@@ -396,14 +432,14 @@ def render(report: dict[str, Any]) -> str:
     lines.extend(report["reproduction_commands"])
     lines.extend(["```", "", "## Underlying evidence", ""])
     evidence_paths = {
-        "fake_reset": "day-2/raw/fake-reset.json",
-        "real_reset": "day-2/raw/real-reset.json",
-        "reward_timing": "day-2/raw/reward-timing.json",
-        "space_integrity": "day-2/raw/space-integrity.json",
-        "browser_boundary": "day-2/raw/browser-boundary.json",
-        "real_space_smoke": "day-2/raw/real-space-smoke.json",
-        "reward_hacking": "day-2/raw/reward-hacking.json",
-        "real_golden_episode": "day-2/raw/real-golden-episode.json",
+        "fake_reset": f"{raw_link_prefix}/fake-reset.json",
+        "real_reset": f"{raw_link_prefix}/real-reset.json",
+        "reward_timing": f"{raw_link_prefix}/reward-timing.json",
+        "space_integrity": f"{raw_link_prefix}/space-integrity.json",
+        "browser_boundary": f"{raw_link_prefix}/browser-boundary.json",
+        "real_space_smoke": f"{raw_link_prefix}/real-space-smoke.json",
+        "reward_hacking": f"{raw_link_prefix}/reward-hacking.json",
+        "real_golden_episode": f"{raw_link_prefix}/real-golden-episode.json",
     }
     for name, section in evidence.items():
         status = f"[raw JSON]({evidence_paths[name]})" if section is not None else "missing"
@@ -419,7 +455,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     report = json.loads(args.input.read_text(encoding="utf-8"))
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(report), encoding="utf-8")
+    # Evidence revisions keep their raw evidence beside the report; the historical
+    # report at artifacts/validation-report.json keeps its links under day-2/raw.
+    revision_raw = args.input.parent / "raw"
+    raw_link_prefix = (
+        os.path.relpath(revision_raw, args.output.parent) if revision_raw.is_dir() else "day-2/raw"
+    )
+    args.output.write_text(render(report, raw_link_prefix=raw_link_prefix), encoding="utf-8")
     print(args.output)
     return 0
 
