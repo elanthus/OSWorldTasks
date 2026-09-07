@@ -7,8 +7,10 @@ import sqlite3
 import threading
 from collections import Counter
 from copy import deepcopy
+from dataclasses import fields
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -34,6 +36,7 @@ from pixelgym.grounding.v5.planning import call_cap_plan
 from pixelgym.grounding.v5.policies import golden_actions
 from pixelgym.grounding.v5.runner import (
     InjectedInterruption,
+    PolicyVisibleResult,
     ScriptedStatefulPolicy,
     ScriptedTransport,
     TransportOutcome,
@@ -105,6 +108,74 @@ def scripted_policy(seed: int) -> ScriptedStatefulPolicy:
     actions = golden_actions(task, backend)
     backend.close()
     return ScriptedStatefulPolicy(actions)
+
+
+class CapturingPolicy(ScriptedStatefulPolicy):
+    """Records the complete argument objects supplied at every policy hook."""
+
+    def __init__(self, actions: tuple[dict[str, int], ...]) -> None:
+        super().__init__(actions)
+        self.received: list[tuple[str, tuple[object, ...]]] = []
+
+    def _capture(self, hook: str, *values: object) -> None:
+        self.received.append((hook, values))
+
+    def reset(self, task_instruction: str) -> bytes:
+        self._capture("reset", task_instruction)
+        return super().reset(task_instruction)
+
+    def build_request(self, state: bytes, screenshot: bytes) -> dict[str, Any]:
+        self._capture("build_request", state, screenshot)
+        return super().build_request(state, screenshot)
+
+    def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
+        self._capture("reduce_state", state, canonical_response)
+        return super().reduce_state(state, canonical_response)
+
+    def failure_state(self, state: bytes, failure_code: str) -> bytes:
+        self._capture("failure_state", state, failure_code)
+        return super().failure_state(state, failure_code)
+
+    def retryable_response_code(self, canonical_response: bytes) -> str | None:
+        self._capture("retryable_response_code", canonical_response)
+        return super().retryable_response_code(canonical_response)
+
+    def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
+        self._capture("parse", canonical_response, state)
+        return super().parse(canonical_response, state)
+
+    def post_parse_state(self, state: bytes, candidate: dict[str, Any]) -> bytes:
+        self._capture("post_parse_state", state, candidate)
+        return super().post_parse_state(state, candidate)
+
+    def post_dispatch_state(
+        self,
+        state: bytes,
+        action: dict[str, int],
+        result: PolicyVisibleResult,
+    ) -> bytes:
+        self._capture("post_dispatch_state", state, action, result)
+        return super().post_dispatch_state(state, action, result)
+
+    def close(self) -> None:
+        self._capture("close")
+        super().close()
+
+
+class DiagnosticSentinelBackend(V5FakeBackend):
+    def read_privileged_diagnostic(self) -> dict[str, object]:
+        return {
+            **super().read_privileged_diagnostic(),
+            "expected_values": "host-only-expected-value-7dfc",
+            "boxes": [[11, 22, 33, 44]],
+            "backend_checkpoint": "host-only-backend-checkpoint-8ab1",
+            "diagnostic": "host-only-diagnostic-2c94",
+            "wrong_irreversible_commit": True,
+        }
+
+
+def capturing_policy(seed: int) -> CapturingPolicy:
+    return CapturingPolicy(scripted_policy(seed).actions)
 
 
 class ZeroCompletionRetryPolicy(ScriptedStatefulPolicy):
@@ -206,11 +277,187 @@ def test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records(tmp_p
         "parsed_action_candidate",
         "sealed_action_intent",
         "dispatch_started",
+        "privileged_dispatch_diagnostic",
         "dispatch_committed",
     ]
     assert len(transport.model_requests) == task.optimal_low_level_actions
     assert not transport.control_requests
     assert journal.integrity_report()["event_count"] > 0
+
+
+def test_policy_visible_result_has_one_strict_authorized_schema() -> None:
+    value = PolicyVisibleResult(
+        screenshot_digest="sha256:" + "a" * 64,
+        reward=0.0,
+        terminated=False,
+        truncated=True,
+        step_index=7,
+    )
+
+    assert {field.name for field in fields(PolicyVisibleResult)} == {
+        "screenshot_digest",
+        "reward",
+        "terminated",
+        "truncated",
+        "step_index",
+    }
+    assert PolicyVisibleResult.from_dict(value.to_dict()) == value
+    with pytest.raises(ValueError, match="allowed schema"):
+        PolicyVisibleResult.from_dict({**value.to_dict(), "diagnostic": {}})
+    with pytest.raises(TypeError, match="reward"):
+        PolicyVisibleResult(
+            screenshot_digest=value.screenshot_digest,
+            reward=0,  # type: ignore[arg-type]
+            terminated=False,
+            truncated=False,
+            step_index=0,
+        )
+    with pytest.raises(TypeError, match="screenshot digest"):
+        PolicyVisibleResult.from_dict(
+            {**value.to_dict(), "screenshot_digest": 7}
+        )
+    with pytest.raises(TypeError, match="episode flags"):
+        PolicyVisibleResult(
+            screenshot_digest=value.screenshot_digest,
+            reward=0.0,
+            terminated=0,  # type: ignore[arg-type]
+            truncated=False,
+            step_index=0,
+        )
+
+
+def test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    policy = capturing_policy(seed)
+    backend = DiagnosticSentinelBackend()
+    journal = V5AttemptJournal(tmp_path / "policy-visible.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=policy,
+        approved_caps=episode_caps(seed),
+    ).run(
+        trial_id="trial-policy-visible",
+        task=generate_task(seed),
+        backend=backend,
+        action_limit=1,
+    )
+
+    assert result.classification == "pilot_action_limit"
+    received_result = next(
+        values[2]
+        for hook, values in policy.received
+        if hook == "post_dispatch_state"
+    )
+    assert isinstance(received_result, PolicyVisibleResult)
+    assert not hasattr(received_result, "__dict__")
+    assert received_result.step_index == 0
+    structured_arguments = [
+        value
+        for _hook, values in policy.received
+        for value in values
+        if not isinstance(value, (bytes, bytearray))
+    ]
+    received_text = repr(structured_arguments)
+    for forbidden in (
+        "host-only-diagnostic-2c94",
+        "host-only-expected-value-7dfc",
+        "host-only-backend-checkpoint-8ab1",
+        "stage_index",
+        "irreversible_failure",
+        "wrong_irreversible_commit",
+        "expected_values",
+        "boxes",
+        "backend_checkpoint",
+        "diagnostic",
+    ):
+        assert forbidden not in received_text
+
+    dispatch = journal.event("trial-policy-visible/step-0000/dispatch_committed")
+    assert dispatch is not None
+    assert "diagnostic" not in dispatch.payload
+    checkpoint = journal.get_object(
+        dispatch.payload["post_dispatch_checkpoint_digest"],
+        expected_kind="policy_checkpoint",
+    )
+    for forbidden in (
+        b"host-only-diagnostic-2c94",
+        b"host-only-expected-value-7dfc",
+        b"host-only-backend-checkpoint-8ab1",
+        b"stage_index",
+        b"irreversible_failure",
+        b"wrong_irreversible_commit",
+        b"expected_values",
+        b"boxes",
+        b"backend_checkpoint",
+        b"diagnostic",
+    ):
+        assert forbidden not in checkpoint
+
+    diagnostic_event = journal.event(
+        dispatch.payload["privileged_diagnostic_event_key"]
+    )
+    assert diagnostic_event is not None
+    assert diagnostic_event.kind == "privileged_dispatch_diagnostic"
+    assert diagnostic_event.payload["diagnostic"]["stage_index"] == 1
+    assert (
+        diagnostic_event.payload["diagnostic"]["expected_values"]
+        == "host-only-expected-value-7dfc"
+    )
+    assert diagnostic_event.payload["policy_visible_result_digest"] == (
+        dispatch.payload["commit_result_digest"]
+    )
+    assert diagnostic_event.payload["diagnostic_digest"] == (
+        dispatch.payload["privileged_diagnostic_digest"]
+    )
+
+
+@pytest.mark.parametrize(
+    "outcome",
+    [
+        TransportOutcome("deadline", failure_code="request_deadline"),
+        TransportOutcome("pre_send_failure", failure_code="request_rejected"),
+    ],
+)
+def test_timeout_and_error_paths_checkpoint_only_policy_supplied_state(
+    tmp_path: Path, outcome: TransportOutcome
+) -> None:
+    seed = 5000
+    policy = capturing_policy(seed)
+    journal = V5AttemptJournal(tmp_path / f"{outcome.status}.sqlite")
+
+    result = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=ScriptedTransport([outcome]),
+        policy=policy,
+        approved_caps=episode_caps(seed),
+    ).run(trial_id=f"trial-{outcome.status}", task=generate_task(seed), action_limit=1)
+
+    assert result.classification in {"request_failure", "infrastructure_failure"}
+    hooks = [hook for hook, _values in policy.received]
+    assert "failure_state" in hooks
+    assert "post_dispatch_state" not in hooks
+    terminal = next(
+        event
+        for event in journal.events(f"trial-{outcome.status}")
+        if event.kind
+        in {
+            "confirmed_cancellation",
+            "confirmed_no_response_timeout",
+            "unknown_outcome_infrastructure_failure",
+        }
+    )
+    checkpoint = journal.get_object(
+        terminal.payload["post_attempt_checkpoint_digest"],
+        expected_kind="policy_checkpoint",
+    )
+    assert b"diagnostic" not in checkpoint
+    assert b"stage_index" not in checkpoint
 
 
 def test_v5_runner_binds_transport_spend_ledger_to_attempt_journal(tmp_path: Path) -> None:
@@ -1382,6 +1629,203 @@ def test_v5_recovery_with_reconciliation_disabled_sends_no_control_call(
     assert recovered["reason"] == "reconciliation_disabled"
     assert not transport.control_requests
     assert journal.terminal_attempt(identity).kind == "unknown_outcome_infrastructure_failure"
+
+
+@pytest.fixture
+def legacy_post_dispatch_journal(
+    tmp_path: Path,
+) -> tuple[V5AttemptJournal, str, bytes]:
+    """A pre-visible-result committed record and policy checkpoint."""
+
+    trial_id = "legacy-post-dispatch"
+    backend = V5FakeBackend()
+    backend.reset(5000)
+    journal_path = tmp_path / "legacy-post-dispatch.sqlite"
+    journal = V5AttemptJournal(journal_path)
+    legacy_state = canonical_json_bytes(
+        {
+            "instruction": generate_task(5000).instruction,
+            "action_index": 1,
+            "history": [{"result_digest": "sha256:" + "9" * 64}],
+        }
+    )
+    screenshot_digest = journal.put_object(
+        "screenshot", backend.screenshot().tobytes()
+    )
+    environment_checkpoint_digest = journal.put_object(
+        "environment_checkpoint", backend.checkpoint()
+    )
+    environment_resume_digest = journal.put_object(
+        "environment_resume_record",
+        canonical_json_bytes(backend.environment_resume_record(step_count=1).to_dict()),
+    )
+    policy_checkpoint_digest = journal.put_object("policy_checkpoint", legacy_state)
+    legacy_result = {
+        "screenshot_digest": screenshot_digest,
+        "reward": 0.0,
+        "terminated": False,
+        "truncated": False,
+        "diagnostic": backend.read_privileged_diagnostic(),
+    }
+    journal.append_event(
+        event_key=f"{trial_id}/step-0000/dispatch_committed",
+        kind="dispatch_committed",
+        trial_id=trial_id,
+        step_index=0,
+        payload={
+            "sealed_intent_digest": "sha256:" + "8" * 64,
+            "backend_acceptance": "accepted_once",
+            "commit_result_digest": content_digest(legacy_result),
+            "post_dispatch_checkpoint_digest": policy_checkpoint_digest,
+            "environment_checkpoint_digest": environment_checkpoint_digest,
+            "environment_resume_digest": environment_resume_digest,
+            **legacy_result,
+        },
+    )
+    backend.close()
+    before = journal.integrity_report()
+    journal.close()
+    reopened = V5AttemptJournal(journal_path)
+    assert reopened.integrity_report() == before
+    return reopened, trial_id, legacy_state
+
+
+def test_resume_loads_pre_split_dispatch_evidence_without_replaying_diagnostic(
+    legacy_post_dispatch_journal: tuple[V5AttemptJournal, str, bytes],
+) -> None:
+    journal, trial_id, legacy_state = legacy_post_dispatch_journal
+    policy = capturing_policy(5000)
+    before = journal.integrity_report()
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=policy,
+        approved_caps=episode_caps(5000),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(5000),
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered == {
+        "classification": "already_committed",
+        "state": legacy_state,
+        "redispatched": False,
+    }
+    assert policy.received == []
+    assert journal.integrity_report() == before
+    journal.close()
+
+
+def test_resume_rejects_tampered_legacy_embedded_diagnostic(
+    legacy_post_dispatch_journal: tuple[V5AttemptJournal, str, bytes],
+) -> None:
+    journal, trial_id, _legacy_state = legacy_post_dispatch_journal
+    journal_path = journal.path
+    dispatch_key = f"{trial_id}/step-0000/dispatch_committed"
+    dispatch = journal.event(dispatch_key)
+    assert dispatch is not None
+    tampered_payload = deepcopy(dispatch.payload)
+    tampered_payload["diagnostic"]["event"] = "tampered-legacy-diagnostic"
+    journal.close()
+    connection = sqlite3.connect(journal_path)
+    connection.execute(
+        "UPDATE events SET payload = ? WHERE event_key = ?",
+        (canonical_json_bytes(tampered_payload), dispatch_key),
+    )
+    connection.commit()
+    connection.close()
+    tampered = V5AttemptJournal(journal_path)
+
+    with pytest.raises(
+        RuntimeError, match="legacy committed dispatch result digest mismatch"
+    ):
+        V5Runner(
+            journal=tampered,
+            manifest=policy_manifest(),
+            transport=ScriptedTransport(),
+            policy=capturing_policy(5000),
+            approved_caps=episode_caps(5000),
+        ).recover_step(
+            trial_id=trial_id,
+            step_index=0,
+            task=generate_task(5000),
+            backend=V5FakeBackend(),
+        )
+    tampered.close()
+
+
+def test_resume_validates_split_host_diagnostic_without_replaying_policy_hook(
+    tmp_path: Path,
+) -> None:
+    seed = 5000
+    trial_id = "split-post-dispatch"
+    journal_path = tmp_path / "split-post-dispatch.sqlite"
+    journal = V5AttemptJournal(journal_path)
+    original_policy = capturing_policy(seed)
+    with pytest.raises(InjectedInterruption, match="dispatch_committed"):
+        V5Runner(
+            journal=journal,
+            manifest=policy_manifest(),
+            transport=ScriptedTransport(),
+            policy=original_policy,
+            approved_caps=episode_caps(seed),
+            interrupt_after="dispatch_committed",
+        ).run(trial_id=trial_id, task=generate_task(seed), action_limit=1)
+    committed = journal.event(f"{trial_id}/step-0000/dispatch_committed")
+    assert committed is not None
+    expected_state = journal.get_object(
+        committed.payload["post_dispatch_checkpoint_digest"],
+        expected_kind="policy_checkpoint",
+    )
+    recovery_policy = capturing_policy(seed)
+
+    recovered = V5Runner(
+        journal=journal,
+        manifest=policy_manifest(),
+        transport=ScriptedTransport(),
+        policy=recovery_policy,
+        approved_caps=episode_caps(seed),
+    ).recover_step(
+        trial_id=trial_id,
+        step_index=0,
+        task=generate_task(seed),
+        backend=V5FakeBackend(),
+    )
+
+    assert recovered["state"] == expected_state
+    assert recovery_policy.received == []
+    diagnostic_key = committed.payload["privileged_diagnostic_event_key"]
+    diagnostic_event = journal.event(diagnostic_key)
+    assert diagnostic_event is not None
+    tampered_payload = deepcopy(diagnostic_event.payload)
+    tampered_payload["diagnostic"]["event"] = "tampered-host-diagnostic"
+    journal.close()
+    connection = sqlite3.connect(journal_path)
+    connection.execute(
+        "UPDATE events SET payload = ? WHERE event_key = ?",
+        (canonical_json_bytes(tampered_payload), diagnostic_key),
+    )
+    connection.commit()
+    connection.close()
+    tampered = V5AttemptJournal(journal_path)
+    with pytest.raises(RuntimeError, match="privileged dispatch evidence"):
+        V5Runner(
+            journal=tampered,
+            manifest=policy_manifest(),
+            transport=ScriptedTransport(),
+            policy=capturing_policy(seed),
+            approved_caps=episode_caps(seed),
+        ).recover_step(
+            trial_id=trial_id,
+            step_index=0,
+            task=generate_task(seed),
+            backend=V5FakeBackend(),
+        )
+    tampered.close()
 
 
 @pytest.mark.parametrize(
