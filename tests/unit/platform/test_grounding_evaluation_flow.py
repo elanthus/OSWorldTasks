@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import random
 import sqlite3
+from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -18,7 +20,14 @@ from pixelgym.platform.evaluation import (
     ScriptedReplayProvider,
 )
 from pixelgym.platform.immutable_store import LocalImmutableStore
+from pixelgym.platform.matrix_evaluation import (
+    PLAN_SCHEMA_VERSION,
+    assignment_id,
+    canonical_seed_policy_aggregate,
+    canonical_seed_policy_plan,
+)
 from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 from pixelgym.platform.source_provenance import (
     SOURCE_PROVENANCE_SCHEMA_VERSION,
     SourceProvenance,
@@ -512,3 +521,138 @@ def test_candidate_and_submission_completion_are_atomic(
     assert next(iter(tracking.runs.values())).status == "FAILED"
     assert control.list_submissions()[0]["status"] == "Failed"
     assert control.list_candidates() == []
+
+
+def test_seed_policy_aggregate_is_byte_stable_across_branch_completion_order() -> None:
+    dataset_fingerprint = "sha256:" + "d" * 64
+    provenance = SourceProvenance(
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        "a" * 40,
+        "b" * 64,
+        "clean",
+        "git-build-inputs-v1",
+    )
+    policies = [
+        build_policy_manifest(
+            provider="scripted-demo",
+            model=model,
+            prompt_name=PROMPT_NAME,
+            prompt_version=version,
+            prompt=prompt_template(version),
+            condition="raw",
+            parameters={"deterministic": True, "hidden_retries": 0},
+            parser_version="pixelgym-grounding-parser-v1",
+            scorer_version="pixelgym-point-inside-half-open-box-v1",
+            overlay_version="none-raw-coordinate-policy",
+            target_semantics="requested-control-center-point-v1",
+            source_provenance=provenance,
+            dependency_lock_sha256="c" * 64,
+        )
+        for model, version in (
+            ("day3-replay-baseline-v1", 1),
+            ("day3-replay-revised-v2", 2),
+        )
+    ]
+    assignments = [
+        {
+            "assignment_id": assignment_id(
+                dataset_fingerprint=dataset_fingerprint,
+                seed=seed,
+                policy_id=policy.policy_id,
+            ),
+            "seed": seed,
+            "policy_id": policy.policy_id,
+        }
+        for seed, policy in ((7, policies[0]), (7, policies[1]), (9, policies[0]))
+    ]
+    plan = canonical_seed_policy_plan(
+        {
+            "schema_version": PLAN_SCHEMA_VERSION,
+            "dataset_fingerprint": dataset_fingerprint,
+            "policies": [asdict(policy) for policy in policies],
+            "assignments": assignments,
+        }
+    )
+    results = [
+        {
+            "content": {
+                **assignment,
+                "correct_count": 0,
+                "expected_count": 1,
+                "invalid_count": 1,
+                "outcome": "invalid",
+                "records": [
+                    {
+                        "correct": False,
+                        "example_id": f"example-{assignment['seed']}-{index}",
+                        "parse_error": "invalid JSON",
+                        "parse_status": "invalid",
+                        "request_failure": None,
+                    }
+                ],
+                "request_failure_count": 0,
+            },
+            "timing": {
+                "started_at_utc": f"2026-09-06T00:00:0{index}+00:00",
+                "ended_at_utc": f"2026-09-06T00:00:1{index}+00:00",
+            },
+        }
+        for index, assignment in enumerate(assignments)
+    ]
+    expected = canonical_seed_policy_aggregate(plan, results)
+
+    shuffled = list(results)
+    random.Random(113).shuffle(shuffled)
+    for index, result in enumerate(shuffled):
+        result["timing"] = {"completion_rank": index, "runtime_duration_ms": 900 - index}
+
+    assert canonical_seed_policy_aggregate(plan, shuffled) == expected
+
+
+def test_seed_policy_aggregate_rejects_duplicate_assignment_even_with_failure_outcome() -> None:
+    dataset_fingerprint = "sha256:" + "d" * 64
+    provenance = SourceProvenance(
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        "a" * 40,
+        "b" * 64,
+        "clean",
+        "git-build-inputs-v1",
+    )
+    policy = build_policy_manifest(
+        provider="scripted-demo",
+        model="day3-replay-request-failure-v1",
+        prompt_name=PROMPT_NAME,
+        prompt_version=2,
+        prompt=prompt_template(2),
+        condition="raw",
+        parameters={"deterministic": True},
+        parser_version="pixelgym-grounding-parser-v1",
+        scorer_version="pixelgym-point-inside-half-open-box-v1",
+        overlay_version="none-raw-coordinate-policy",
+        target_semantics="requested-control-center-point-v1",
+        source_provenance=provenance,
+        dependency_lock_sha256="c" * 64,
+    )
+    item = {
+        "assignment_id": assignment_id(
+            dataset_fingerprint=dataset_fingerprint, seed=3, policy_id=policy.policy_id
+        ),
+        "seed": 3,
+        "policy_id": policy.policy_id,
+    }
+    plan = canonical_seed_policy_plan(
+        {
+            "schema_version": PLAN_SCHEMA_VERSION,
+            "dataset_fingerprint": dataset_fingerprint,
+            "policies": [asdict(policy)],
+            "assignments": [item],
+        }
+    )
+    result = {
+        "content": {
+            **item,
+            "records": [{"example_id": "example-3", "parse_status": "request_failure"}],
+        }
+    }
+    with pytest.raises(ValueError, match="duplicate assignment"):
+        canonical_seed_policy_aggregate(plan, [result, result])

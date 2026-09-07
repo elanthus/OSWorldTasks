@@ -7,13 +7,16 @@ second billable operation. It is activated only by the flow's explicit test-hook
 
 from __future__ import annotations
 
+import fcntl
 import json
+import os
 import sqlite3
 import time
 from pathlib import Path
 from typing import Any
 
 from pixelgym.platform.evaluation import PlatformProviderResponse, ScriptedReplayProvider
+from pixelgym.serialization import load_jsonl
 
 _SCHEMA = """
 PRAGMA journal_mode = WAL;
@@ -53,21 +56,47 @@ class LedgeredScriptedReplayProvider:
         prediction_path: Path,
         *,
         variant: str,
+        model: str | None = None,
         ledger_path: Path,
         concurrency_barrier: int = 1,
     ) -> None:
         if concurrency_barrier <= 0:
             raise ValueError("concurrency barrier must be positive")
-        delegate = ScriptedReplayProvider(prediction_path, variant=variant)
-        self.condition = delegate.condition
-        self.model = delegate.model
-        self.latency_ms = delegate.latency_ms
-        self.responses = delegate.responses
+        self.latency_ms: float | None
+        if variant in {"baseline", "revised"}:
+            delegate = ScriptedReplayProvider(prediction_path, variant=variant, model=model)
+            self.condition = delegate.condition
+            self.model = delegate.model
+            self.latency_ms = delegate.latency_ms
+            self.responses = delegate.responses
+        elif variant in {"invalid", "request_failure"}:
+            self.condition = "raw"
+            self.model = model or f"day3-replay-{variant}-v1"
+            self.latency_ms = 25.0 if variant == "invalid" else None
+            rows = load_jsonl(prediction_path)
+            self.responses = {
+                row["example_id"]: "not-json" if variant == "invalid" else None
+                for row in rows
+                if row.get("condition") == "raw"
+            }
+        else:
+            raise ValueError("scripted variant must be baseline, revised, invalid, or request_failure")
+        self.variant = variant
         self.ledger_path = ledger_path
         self.concurrency_barrier = concurrency_barrier
         ledger_path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as connection:
-            connection.executescript(_SCHEMA)
+        descriptor = os.open(
+            ledger_path.with_name(ledger_path.name + ".init.lock"),
+            os.O_RDWR | os.O_CREAT,
+            0o600,
+        )
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+            with self._connect() as connection:
+                connection.executescript(_SCHEMA)
+        finally:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+            os.close(descriptor)
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.ledger_path, timeout=30, isolation_level=None)
@@ -108,6 +137,10 @@ class LedgeredScriptedReplayProvider:
         if condition != self.condition or example_id not in self.responses:
             response = PlatformProviderResponse(
                 None, self.latency_ms, {}, 0.0, "fixture missing"
+            )
+        elif self.variant == "request_failure":
+            response = PlatformProviderResponse(
+                None, None, None, None, "deterministic scripted request failure"
             )
         else:
             response = PlatformProviderResponse(

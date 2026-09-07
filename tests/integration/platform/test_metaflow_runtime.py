@@ -2,21 +2,30 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import signal
 import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import pytest
 
 from pixelgym.platform.control_store import ControlStore
-from pixelgym.platform.fingerprints import canonical_json_bytes
+from pixelgym.platform.dependency_lock import dependency_lock_sha256
+from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_json_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore
+from pixelgym.platform.matrix_evaluation import (
+    PLAN_SCHEMA_VERSION,
+    assignment_id,
+    canonical_seed_policy_plan,
+    seed_policy_plan_digest,
+)
 from pixelgym.platform.mlflow_tracking import MlflowTracking
+from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 from pixelgym.platform.runtime_fixture import provider_ledger_snapshot
 from pixelgym.platform.source_provenance import (
     SOURCE_PROVENANCE_SCHEMA_VERSION,
@@ -24,10 +33,11 @@ from pixelgym.platform.source_provenance import (
     source_tree_sha256,
 )
 
-pytest.importorskip("mlflow")
-
-
 pytestmark = pytest.mark.platform_integration
+requires_mlflow = pytest.mark.skipif(
+    importlib.util.find_spec("mlflow") is None,
+    reason="existing lifecycle runtime tests require the optional MLflow dependency",
+)
 
 REQUEST = {
     "dataset": "day3-frozen-v1",
@@ -311,6 +321,7 @@ def uninterrupted_runtime(
 
 
 @pytest.mark.parametrize("boundary", BOUNDARIES)
+@requires_mlflow
 def test_metaflow_resume_at_each_side_effect_boundary(
     boundary: str,
     tmp_path: Path,
@@ -356,6 +367,7 @@ def test_metaflow_resume_at_each_side_effect_boundary(
     assert tracked.data.metrics["evaluation_end_to_end_duration_ms"] > 0
 
 
+@requires_mlflow
 def test_uninterrupted_runtime_enforces_worker_and_call_caps(
     uninterrupted_runtime: RuntimeResult,
 ) -> None:
@@ -371,6 +383,7 @@ def test_uninterrupted_runtime_enforces_worker_and_call_caps(
     assert len(_final_evidence(uninterrupted_runtime)[0].splitlines()) == 100
 
 
+@requires_mlflow
 def test_graceful_cancellation_finalizes_failed_tracking_without_candidate(
     tmp_path: Path,
 ) -> None:
@@ -450,6 +463,7 @@ def test_graceful_cancellation_finalizes_failed_tracking_without_candidate(
     assert store.get_reference(f"runs/{submission_id}/raw-response-index.json") is not None
 
 
+@requires_mlflow
 def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls(
     tmp_path: Path,
     uninterrupted_runtime: RuntimeResult,
@@ -546,4 +560,175 @@ def test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_cal
         "active": 0,
         "max_active": 2,
         "billable_calls": 100,
+    }
+
+
+def _seed_policy_plan(repository_root: Path) -> dict[str, object]:
+    _, dataset_fingerprint = build_dataset_manifest(
+        repository_root=repository_root,
+        dataset_path=repository_root / "artifacts/grounding-dataset.jsonl",
+        overlays_path=repository_root / "artifacts/grounding-overlays.jsonl",
+    )
+    provenance = SourceProvenance(
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        "a" * 40,
+        source_tree_sha256(repository_root),
+        "clean",
+        "git-build-inputs-v1",
+    )
+    specs = (
+        ("day3-replay-baseline-v1", 1, "baseline"),
+        ("day3-replay-revised-v2", 2, "revised"),
+        ("day3-replay-invalid-v1", 2, "invalid"),
+        ("day3-replay-request-failure-v1", 2, "request_failure"),
+    )
+    policies = [
+        build_policy_manifest(
+            provider="scripted-demo",
+            model=model,
+            prompt_name=PROMPT_NAME,
+            prompt_version=version,
+            prompt=prompt_template(version),
+            condition="raw",
+            parameters={
+                "deterministic": True,
+                "hidden_retries": 0,
+                "scripted_outcome": outcome,
+            },
+            parser_version="pixelgym-grounding-parser-v1",
+            scorer_version="pixelgym-point-inside-half-open-box-v1",
+            overlay_version="none-raw-coordinate-policy",
+            target_semantics="requested-control-center-point-v1",
+            source_provenance=provenance,
+            dependency_lock_sha256=dependency_lock_sha256(repository_root),
+        )
+        for model, version, outcome in specs
+    ]
+    by_model = {policy.model: policy for policy in policies}
+    explicit_pairs = (
+        (0, "day3-replay-baseline-v1"),
+        (0, "day3-replay-revised-v2"),
+        (0, "day3-replay-invalid-v1"),
+        (0, "day3-replay-request-failure-v1"),
+        (1, "day3-replay-baseline-v1"),
+        (1, "day3-replay-revised-v2"),
+        (1, "day3-replay-invalid-v1"),
+        (1, "day3-replay-request-failure-v1"),
+    )
+    return canonical_seed_policy_plan(
+        {
+            "schema_version": PLAN_SCHEMA_VERSION,
+            "dataset_fingerprint": dataset_fingerprint,
+            "policies": [asdict(policy) for policy in policies],
+            "assignments": [
+                {
+                    "assignment_id": assignment_id(
+                        dataset_fingerprint=dataset_fingerprint,
+                        seed=seed,
+                        policy_id=by_model[model].policy_id,
+                    ),
+                    "seed": seed,
+                    "policy_id": by_model[model].policy_id,
+                }
+                for seed, model in explicit_pairs
+            ],
+        }
+    )
+
+
+def test_seed_policy_fanout_resume_preserves_exactly_once_assignments_and_provider_work(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(__file__).parents[3]
+    plan = _seed_policy_plan(repository_root)
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_bytes(canonical_json_bytes(plan) + b"\n")
+    output_path = tmp_path / "runtime.json"
+    origin_path = tmp_path / "origin-run-id"
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "METAFLOW_USER": "pixelgym-matrix-runtime-test",
+            "PIXELGYM_ENABLE_TEST_HOOKS": "1",
+            "PIXELGYM_IMMUTABLE_ROOT": str(tmp_path / "immutable"),
+            "PIXELGYM_REPOSITORY_ROOT": str(repository_root),
+            "PIXELGYM_TEST_CONCURRENCY_BARRIER": "4",
+            "PIXELGYM_TEST_FAIL_ONCE": "matrix_branch_persisted",
+            "PIXELGYM_TEST_PROVIDER_LEDGER": str(tmp_path / "provider.db"),
+            "PIXELGYM_TEST_STATE_ROOT": str(tmp_path / "events"),
+        }
+    )
+    command = [sys.executable, str(repository_root / "flows/seed_policy_fanout_flow.py")]
+    failed = subprocess.run(
+        [
+            *command,
+            "run",
+            "--plan-file",
+            str(plan_path),
+            "--output-file",
+            str(output_path),
+            "--worker-cap",
+            "4",
+            "--max-workers",
+            "4",
+            "--run-id-file",
+            str(origin_path),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=120,
+        check=False,
+    )
+    assert failed.returncode != 0, failed.stdout
+    assert "injected one-shot failure after matrix branch" in failed.stdout
+
+    resumed = subprocess.run(
+        [
+            *command,
+            "resume",
+            "--origin-run-id",
+            origin_path.read_text().strip(),
+            "--max-workers",
+            "4",
+            "--run-id-file",
+            str(tmp_path / "resume-run-id"),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=120,
+        check=False,
+    )
+    assert resumed.returncode == 0, resumed.stdout
+    evidence = json.loads(output_path.read_text())
+    results = evidence["aggregate"]["assignments"]
+    expected_ids = {item["assignment_id"] for item in plan["assignments"]}
+    actual_ids = [item["assignment_id"] for item in results]
+    assert len(actual_ids) == len(expected_ids) == 8
+    assert set(actual_ids) == expected_ids
+    assert len(actual_ids) == len(set(actual_ids))
+    assert {item["outcome"] for item in results} == {
+        "completed",
+        "invalid",
+        "request_failure",
+    }
+    assert evidence["plan_digest"] == seed_policy_plan_digest(plan)
+    assert evidence["resume_events"][0]["event"] == "metaflow_resume"
+    assert evidence["retry_events"] == []
+
+    expected_calls = sum(item["expected_count"] for item in results)
+    assert expected_calls == 40
+    ledger = provider_ledger_snapshot(tmp_path / "provider.db")
+    assert ledger == {
+        "attempts": expected_calls,
+        "unique_request_ids": expected_calls,
+        "cache_hits": 0,
+        "active": 0,
+        "max_active": 4,
+        "billable_calls": expected_calls,
     }
