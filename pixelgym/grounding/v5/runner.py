@@ -22,6 +22,7 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.contracts import TransportOutcome as _TransportOutcome
+from pixelgym.grounding.v5.diagnostics import privileged_diagnostic_for_step
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.journal import (
     ControlRequestKind,
@@ -34,6 +35,14 @@ from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import TaskSpec
 
 TransportOutcome = _TransportOutcome
+
+# `dispatch_committed.commit_result_digest_version` distinguishes the two digest
+# semantics a journal can carry under the unchanged `pixelgym-agent-v5-attempt-v1`
+# schema: absent/legacy (version 1) covered a combined record with an embedded
+# `diagnostic` field; this runner writes version 2, whose digest covers only
+# `PolicyVisibleResult.to_dict()` with the privileged diagnostic split into its own
+# `privileged_dispatch_diagnostic` event.
+COMMIT_RESULT_DIGEST_VERSION = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -981,6 +990,7 @@ class V5Runner:
                 "sealed_intent_digest": intent_digest,
                 "backend_acceptance": "accepted_once",
                 "commit_result_digest": result_digest,
+                "commit_result_digest_version": COMMIT_RESULT_DIGEST_VERSION,
                 "privileged_diagnostic_event_key": diagnostic_event_key,
                 "privileged_diagnostic_digest": privileged_diagnostic_digest,
                 "post_dispatch_checkpoint_digest": next_checkpoint_digest,
@@ -1732,14 +1742,15 @@ class V5Runner:
         }
         visible_record["step_index"] = event.payload.get("step_index", event.step_index)
         visible_result = PolicyVisibleResult.from_dict(visible_record)
-        diagnostic_event_key = event.payload.get("privileged_diagnostic_event_key")
-        if diagnostic_event_key is None:
-            # Before the policy-visible seam, the diagnostic was embedded in the
-            # committed payload and its digest covered the combined record. Keep
-            # that sealed evidence readable without replaying it into policy state.
-            diagnostic = event.payload.get("diagnostic")
-            if not isinstance(diagnostic, Mapping):
-                raise RuntimeError("committed dispatch is missing privileged evidence")
+        digest_version = event.payload.get("commit_result_digest_version")
+        if digest_version is None:
+            # Sealed before the policy-visible seam existed: no version field was
+            # written, the diagnostic was embedded in the committed payload, and the
+            # digest covered that combined record. Keep it readable without replaying
+            # the diagnostic into policy state.
+            diagnostic = privileged_diagnostic_for_step(
+                self.journal, trial_id=event.trial_id, step_index=event.step_index
+            )
             legacy_result = {
                 key: visible_result.to_dict()[key]
                 for key in legacy_visible_fields
@@ -1748,6 +1759,9 @@ class V5Runner:
             if content_digest(legacy_result) != event.payload["commit_result_digest"]:
                 raise RuntimeError("legacy committed dispatch result digest mismatch")
             return
+        if digest_version != COMMIT_RESULT_DIGEST_VERSION:
+            raise RuntimeError("unsupported commit result digest version")
+        diagnostic_event_key = event.payload.get("privileged_diagnostic_event_key")
         if type(diagnostic_event_key) is not str:
             raise RuntimeError("privileged diagnostic event key is invalid")
         privileged_diagnostic_digest = event.payload.get(
