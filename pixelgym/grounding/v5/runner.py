@@ -25,6 +25,7 @@ from pixelgym.grounding.v5.contracts import TransportOutcome as _TransportOutcom
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.journal import (
     ControlRequestKind,
+    JournalEvent,
     TerminalAttemptKind,
     V5AttemptJournal,
 )
@@ -33,6 +34,61 @@ from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import TaskSpec
 
 TransportOutcome = _TransportOutcome
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyVisibleResult:
+    """Exact post-dispatch fields an evaluated policy is allowed to observe."""
+
+    screenshot_digest: str
+    reward: float
+    terminated: bool
+    truncated: bool
+    step_index: int
+
+    def __post_init__(self) -> None:
+        prefix = "sha256:"
+        hexadecimal = self.screenshot_digest.removeprefix(prefix)
+        if (
+            not self.screenshot_digest.startswith(prefix)
+            or len(hexadecimal) != 64
+            or any(character not in "0123456789abcdef" for character in hexadecimal)
+        ):
+            raise ValueError("policy-visible screenshot digest must be canonical SHA-256")
+        if type(self.reward) is not float:
+            raise TypeError("policy-visible reward must be a float")
+        if type(self.terminated) is not bool or type(self.truncated) is not bool:
+            raise TypeError("policy-visible episode flags must be booleans")
+        if type(self.step_index) is not int or self.step_index < 0:
+            raise TypeError("policy-visible step index must be a non-negative integer")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "screenshot_digest": self.screenshot_digest,
+            "reward": self.reward,
+            "terminated": self.terminated,
+            "truncated": self.truncated,
+            "step_index": self.step_index,
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> PolicyVisibleResult:
+        allowed = {
+            "screenshot_digest",
+            "reward",
+            "terminated",
+            "truncated",
+            "step_index",
+        }
+        if set(value) != allowed:
+            raise ValueError("policy-visible result fields do not match the allowed schema")
+        return cls(
+            screenshot_digest=value["screenshot_digest"],
+            reward=value["reward"],
+            terminated=value["terminated"],
+            truncated=value["truncated"],
+            step_index=value["step_index"],
+        )
 
 
 @dataclass(frozen=True)
@@ -102,7 +158,7 @@ class StatefulPolicyPackage(Protocol):
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]: ...
     def post_parse_state(self, state: bytes, candidate: dict[str, Any]) -> bytes: ...
     def post_dispatch_state(
-        self, state: bytes, action: dict[str, int], result: dict[str, Any]
+        self, state: bytes, action: dict[str, int], result: PolicyVisibleResult
     ) -> bytes: ...
     def close(self) -> None: ...
 
@@ -309,12 +365,15 @@ class ScriptedStatefulPolicy:
         return canonical_json_bytes(value)
 
     def post_dispatch_state(
-        self, state: bytes, action: dict[str, int], result: dict[str, Any]
+        self, state: bytes, action: dict[str, int], result: PolicyVisibleResult
     ) -> bytes:
         value = json.loads(state)
         value.pop("pending_action_digest", None)
         value["history"].append(
-            {"action_digest": content_digest(action), "result_digest": content_digest(result)}
+            {
+                "action_digest": content_digest(action),
+                "result_digest": content_digest(result.to_dict()),
+            }
         )
         value["action_index"] += 1
         return canonical_json_bytes(value)
@@ -873,16 +932,33 @@ class V5Runner:
         self._boundary("dispatch_started")
         next_observation, reward, terminated, truncated, _info = env.step(action)
         self._boundary("backend_accepted")
-        result_record = {
-            "screenshot_digest": self.journal.put_object(
+        visible_result = PolicyVisibleResult(
+            screenshot_digest=self.journal.put_object(
                 "screenshot", next_observation.tobytes()
             ),
-            "reward": reward,
-            "terminated": terminated,
-            "truncated": truncated,
-            "diagnostic": backend.read_privileged_diagnostic(),
-        }
-        next_state = self.policy.post_dispatch_state(post_parse_state, action, result_record)
+            reward=reward,
+            terminated=terminated,
+            truncated=truncated,
+            step_index=step_index,
+        )
+        visible_result_record = visible_result.to_dict()
+        result_digest = content_digest(visible_result_record)
+        diagnostic_event_key = (
+            f"{trial_id}/step-{step_index:04d}/privileged_dispatch_diagnostic"
+        )
+        self.journal.append_event(
+            event_key=diagnostic_event_key,
+            kind="privileged_dispatch_diagnostic",
+            trial_id=trial_id,
+            step_index=step_index,
+            payload={
+                "diagnostic": backend.read_privileged_diagnostic(),
+                "policy_visible_result_digest": result_digest,
+            },
+        )
+        next_state = self.policy.post_dispatch_state(
+            post_parse_state, action, visible_result
+        )
         next_checkpoint_digest = self.journal.put_object("policy_checkpoint", next_state)
         environment_checkpoint_digest = self.journal.put_object(
             "environment_checkpoint", backend.checkpoint()
@@ -891,7 +967,6 @@ class V5Runner:
         post_dispatch_resume_digest = self.journal.put_object(
             "environment_resume_record", canonical_json_bytes(post_dispatch_resume.to_dict())
         )
-        result_digest = content_digest(result_record)
         self.journal.append_event(
             event_key=f"{trial_id}/step-{step_index:04d}/dispatch_committed",
             kind="dispatch_committed",
@@ -901,10 +976,11 @@ class V5Runner:
                 "sealed_intent_digest": intent_digest,
                 "backend_acceptance": "accepted_once",
                 "commit_result_digest": result_digest,
+                "privileged_diagnostic_event_key": diagnostic_event_key,
                 "post_dispatch_checkpoint_digest": next_checkpoint_digest,
                 "environment_checkpoint_digest": environment_checkpoint_digest,
                 "environment_resume_digest": post_dispatch_resume_digest,
-                **result_record,
+                **visible_result_record,
             },
         )
         self._boundary("dispatch_committed")
@@ -1103,6 +1179,7 @@ class V5Runner:
         by_kind = {event.kind: event for event in events}
         if "dispatch_committed" in by_kind:
             event = by_kind["dispatch_committed"]
+            self._validate_committed_dispatch_evidence(event)
             state = self.journal.get_object(
                 event.payload["post_dispatch_checkpoint_digest"],
                 expected_kind="policy_checkpoint",
@@ -1633,6 +1710,55 @@ class V5Runner:
                 "redispatched": False,
             }
         raise RuntimeError("no durable v5 recovery boundary exists for this step")
+
+    def _validate_committed_dispatch_evidence(self, event: JournalEvent) -> None:
+        """Validate split evidence while accepting sealed pre-split dispatch records."""
+
+        legacy_visible_fields = {
+            "screenshot_digest",
+            "reward",
+            "terminated",
+            "truncated",
+        }
+        visible_record = {
+            field: event.payload[field]
+            for field in legacy_visible_fields
+        }
+        visible_record["step_index"] = event.payload.get("step_index", event.step_index)
+        visible_result = PolicyVisibleResult.from_dict(visible_record)
+        diagnostic_event_key = event.payload.get("privileged_diagnostic_event_key")
+        if diagnostic_event_key is None:
+            # Before the policy-visible seam, the diagnostic was embedded in the
+            # committed payload and its digest covered the combined record. Keep
+            # that sealed evidence readable without replaying it into policy state.
+            diagnostic = event.payload.get("diagnostic")
+            if not isinstance(diagnostic, Mapping):
+                raise RuntimeError("committed dispatch is missing privileged evidence")
+            legacy_result = {
+                key: visible_result.to_dict()[key]
+                for key in legacy_visible_fields
+            }
+            legacy_result["diagnostic"] = dict(diagnostic)
+            if content_digest(legacy_result) != event.payload["commit_result_digest"]:
+                raise RuntimeError("legacy committed dispatch result digest mismatch")
+            return
+        if type(diagnostic_event_key) is not str:
+            raise RuntimeError("privileged diagnostic event key is invalid")
+        if content_digest(visible_result.to_dict()) != event.payload["commit_result_digest"]:
+            raise RuntimeError("policy-visible committed result digest mismatch")
+        diagnostic_event = self.journal.event(diagnostic_event_key)
+        if (
+            diagnostic_event is None
+            or diagnostic_event.kind != "privileged_dispatch_diagnostic"
+            or diagnostic_event.trial_id != event.trial_id
+            or diagnostic_event.step_index != event.step_index
+            or set(diagnostic_event.payload)
+            != {"diagnostic", "policy_visible_result_digest"}
+            or not isinstance(diagnostic_event.payload["diagnostic"], Mapping)
+            or diagnostic_event.payload["policy_visible_result_digest"]
+            != event.payload["commit_result_digest"]
+        ):
+            raise RuntimeError("privileged dispatch evidence does not match commit")
 
     def _restore_current_environment(
         self, *, trial_id: str, step_index: int, backend: V5FakeBackend

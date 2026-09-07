@@ -26,7 +26,7 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.coordinates import NORMALIZED_1000_ADAPTER
-from pixelgym.grounding.v5.runner import TransportOutcome
+from pixelgym.grounding.v5.runner import PolicyVisibleResult, TransportOutcome
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
 from pixelgym.serialization import canonical_json_bytes
 
@@ -183,7 +183,7 @@ class QwenV5StatefulPolicy:
         return canonical_json_bytes(value)
 
     def post_dispatch_state(
-        self, state: bytes, action: dict[str, int], result: dict[str, Any]
+        self, state: bytes, action: dict[str, int], result: PolicyVisibleResult
     ) -> bytes:
         value = json.loads(state)
         value.pop("pending_action_digest", None)
@@ -191,9 +191,9 @@ class QwenV5StatefulPolicy:
             {
                 "action": action,
                 "visible_outcome": {
-                    "reward": result["reward"],
-                    "terminated": result["terminated"],
-                    "truncated": result["truncated"],
+                    "reward": result.reward,
+                    "terminated": result.terminated,
+                    "truncated": result.truncated,
                 },
             }
         )
