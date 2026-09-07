@@ -2,7 +2,7 @@
   "after": {
     "experiment_specific_maintenance_surface_count": 0,
     "experiment_specific_maintenance_surface_files": [],
-    "grounding_production_physical_loc": 17970,
+    "grounding_production_physical_loc": 18204,
     "grounding_wheel_file_count": 56,
     "grounding_wheel_files": [
       "pixelgym/grounding/__init__.py",
@@ -62,7 +62,7 @@
       "pixelgym/grounding/v5/v5_app/static/index.html",
       "pixelgym/grounding/v5/v5_app/static/style.css"
     ],
-    "revision": "591df18e642ece209390d36d0e431997e54c2b1c",
+    "revision": "a46b70e5c61fdcede68e4052d0d15e5d4d347f7c",
     "top_level_python_script_count": 43,
     "wheel_file_count": 130
   },
@@ -207,7 +207,7 @@
   },
   "delta": {
     "experiment_specific_maintenance_surface_count": -36,
-    "grounding_production_physical_loc": -14653,
+    "grounding_production_physical_loc": -14419,
     "grounding_wheel_file_count": -35,
     "top_level_python_script_count": -24
   },
@@ -217,6 +217,6 @@
     "package_contents": "File names read from wheels built offline with pip --no-build-isolation.",
     "top_level_python_script_count": "Tracked .py files directly under scripts/."
   },
-  "reproduction_command": ".venv/bin/python scripts/measure_grounding_maintenance.py --before-revision ea8ae1826c551e6db36c6fe4f5748b7efa39431e --after-revision 591df18e642ece209390d36d0e431997e54c2b1c",
+  "reproduction_command": ".venv/bin/python scripts/measure_grounding_maintenance.py --before-revision ea8ae1826c551e6db36c6fe4f5748b7efa39431e --after-revision a46b70e5c61fdcede68e4052d0d15e5d4d347f7c",
   "schema_version": "pixelgym-grounding-maintenance-measurement-v1"
 }
