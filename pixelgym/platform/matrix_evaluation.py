@@ -38,7 +38,9 @@ def canonical_seed_policy_plan(value: dict[str, Any]) -> dict[str, Any]:
     if value.get("schema_version") != PLAN_SCHEMA_VERSION:
         raise ValueError("seed-policy plan has an unsupported schema version")
     dataset_fingerprint = value.get("dataset_fingerprint")
-    digest = dataset_fingerprint.removeprefix("sha256:") if isinstance(dataset_fingerprint, str) else ""
+    if not isinstance(dataset_fingerprint, str):
+        raise TypeError("seed-policy plan dataset fingerprint must be a string")
+    digest = dataset_fingerprint.removeprefix("sha256:")
     if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
         raise ValueError("seed-policy plan requires a dataset fingerprint")
     policies_value = value.get("policies")
