@@ -356,7 +356,13 @@ def test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook(
     assert isinstance(received_result, PolicyVisibleResult)
     assert not hasattr(received_result, "__dict__")
     assert received_result.step_index == 0
-    received_text = repr(policy.received)
+    structured_arguments = [
+        value
+        for _hook, values in policy.received
+        for value in values
+        if not isinstance(value, (bytes, bytearray))
+    ]
+    received_text = repr(structured_arguments)
     for forbidden in (
         "host-only-diagnostic-2c94",
         "host-only-expected-value-7dfc",
@@ -1712,6 +1718,44 @@ def test_resume_loads_pre_split_dispatch_evidence_without_replaying_diagnostic(
     assert policy.received == []
     assert journal.integrity_report() == before
     journal.close()
+
+
+def test_resume_rejects_tampered_legacy_embedded_diagnostic(
+    legacy_post_dispatch_journal: tuple[V5AttemptJournal, str, bytes],
+) -> None:
+    journal, trial_id, _legacy_state = legacy_post_dispatch_journal
+    journal_path = journal.path
+    dispatch_key = f"{trial_id}/step-0000/dispatch_committed"
+    dispatch = journal.event(dispatch_key)
+    assert dispatch is not None
+    tampered_payload = deepcopy(dispatch.payload)
+    tampered_payload["diagnostic"]["event"] = "tampered-legacy-diagnostic"
+    journal.close()
+    connection = sqlite3.connect(journal_path)
+    connection.execute(
+        "UPDATE events SET payload = ? WHERE event_key = ?",
+        (canonical_json_bytes(tampered_payload), dispatch_key),
+    )
+    connection.commit()
+    connection.close()
+    tampered = V5AttemptJournal(journal_path)
+
+    with pytest.raises(
+        RuntimeError, match="legacy committed dispatch result digest mismatch"
+    ):
+        V5Runner(
+            journal=tampered,
+            manifest=policy_manifest(),
+            transport=ScriptedTransport(),
+            policy=capturing_policy(5000),
+            approved_caps=episode_caps(5000),
+        ).recover_step(
+            trial_id=trial_id,
+            step_index=0,
+            task=generate_task(5000),
+            backend=V5FakeBackend(),
+        )
+    tampered.close()
 
 
 def test_resume_validates_split_host_diagnostic_without_replaying_policy_hook(
