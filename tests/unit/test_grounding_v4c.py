@@ -15,13 +15,9 @@ from uuid import uuid4
 import numpy as np
 import pytest
 
-from pixelgym.actions import ActionType
-from pixelgym.env import PixelGuiEnv
-from pixelgym.grounding.calibration_v4c import validate_v4c_capture
-from pixelgym.grounding.evaluation import ResponseCache
-from pixelgym.grounding.providers import MockProvider
-from pixelgym.grounding.v4c_backend import V4CReplayBackend
-from pixelgym.grounding.v4c_evaluation import (
+from legacy.grounding.calibration_v4c import validate_v4c_capture
+from legacy.grounding.v4c_backend import V4CReplayBackend
+from legacy.grounding.v4c_evaluation import (
     V4C_ACTION_SCHEMA_VERSION,
     V4C_PARSER_VERSION,
     V4C_PREDICTION_SCHEMA_VERSION,
@@ -43,7 +39,7 @@ from pixelgym.grounding.v4c_evaluation import (
     summarize_v4c_evaluation,
     write_v4c_attempts_snapshot,
 )
-from pixelgym.grounding.v4c_protocol import (
+from legacy.grounding.v4c_protocol import (
     V4C_CALL_CAP,
     V4C_EPISODES,
     V4C_PROTOCOL_VERSION,
@@ -55,6 +51,10 @@ from pixelgym.grounding.v4c_protocol import (
     episode_max_actions,
     validate_v4c_protocol,
 )
+from pixelgym.actions import ActionType
+from pixelgym.env import PixelGuiEnv
+from pixelgym.grounding.evaluation import ResponseCache
+from pixelgym.grounding.providers import MockProvider
 from pixelgym.serialization import load_jsonl
 
 REPOSITORY_ROOT = Path(__file__).parents[2]
@@ -163,7 +163,7 @@ def test_v4c_capture_validator_rejects_nested_target_leak() -> None:
 
 
 def test_v4c_evaluation_does_not_import_capture_instrumentation() -> None:
-    source = REPOSITORY_ROOT / "pixelgym/grounding/v4c_evaluation.py"
+    source = REPOSITORY_ROOT / "legacy/grounding/v4c_evaluation.py"
     tree = ast.parse(source.read_text())
     from_modules = {
         node.module
@@ -176,13 +176,13 @@ def test_v4c_evaluation_does_not_import_capture_instrumentation() -> None:
         if isinstance(node, ast.Import)
         for alias in node.names
     }
-    forbidden = "pixelgym.grounding.calibration_v4c"
+    forbidden = "legacy.grounding.calibration_v4c"
     assert forbidden not in from_modules
     assert forbidden not in imported_modules
 
 
 def test_v4c_capture_app_has_no_runtime_network_calls() -> None:
-    app_source = (REPOSITORY_ROOT / "pixelgym/grounding/v4c_app/static/app.js").read_text()
+    app_source = (REPOSITORY_ROOT / "legacy/grounding/v4c_app/static/app.js").read_text()
     prohibited = (
         r"\bfetch\s*\(",
         r"\bXMLHttpRequest\b",

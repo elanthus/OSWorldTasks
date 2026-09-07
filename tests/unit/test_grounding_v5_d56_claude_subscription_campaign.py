@@ -11,8 +11,8 @@ from typing import Any, NoReturn
 
 import pytest
 
+from legacy.grounding.v5 import d56_claude_subscription_campaign as campaign
 from pixelgym.grounding.v5 import claude_code_policy as policy
-from pixelgym.grounding.v5 import d56_claude_subscription_campaign as campaign
 from pixelgym.grounding.v5.contracts import (
     CliFaultKind,
     CostKnowledge,
@@ -509,6 +509,7 @@ def test_claude_process_start_failure_is_pre_send_and_costs_zero(
         assert outcome.fault.kind is CliFaultKind.PROCESS_START
         assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
         assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
+        assert transport.records[-1]["type"] == "OSError"
         assert transport.reconcile(
             idempotency_key="sha256:claude-start-failure", deadline_seconds=1
         ) == outcome

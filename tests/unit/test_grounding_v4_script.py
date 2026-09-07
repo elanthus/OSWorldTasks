@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.run_grounding_v4_pilot import default_output_path
+from legacy.grounding.scripts.run_grounding_v4_pilot import default_output_path
 
 
 def test_v4_default_prediction_paths_are_provider_specific(tmp_path: Path) -> None:

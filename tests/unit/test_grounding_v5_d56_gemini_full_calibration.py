@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d56_gemini_full_calibration as calibration
+from legacy.grounding.scripts import run_grounding_v5_d56_gemini_full_calibration
+from legacy.grounding.v5 import d56_gemini_full_calibration as calibration
+from legacy.grounding.v5.d56_bcd_calibration import _streaming_file_digest
+from legacy.grounding.v5.d56_calibration import CONSECUTIVE_FAILURE_LIMIT, _file_digest
 from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
-from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
-from pixelgym.grounding.v5.d56_calibration import CONSECUTIVE_FAILURE_LIMIT, _file_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from scripts import run_grounding_v5_d56_gemini_full_calibration
 
 ROOT = Path(__file__).parents[2]
 

@@ -10,6 +10,13 @@ from typing import Any
 
 import pytest
 
+from legacy.grounding.v4_evaluation import (
+    planned_v4_calls,
+    record_v4_evaluation,
+    run_v4_evaluation,
+    summarize_v4_evaluation,
+)
+from legacy.grounding.v4_protocol import V4_CONDITION_CALL_CAP, V4_PROTOCOL_VERSION
 from pixelgym.grounding.evaluation import (
     PARSER_VERSION_V2,
     PREDICTION_SCHEMA_VERSION_V2,
@@ -20,13 +27,6 @@ from pixelgym.grounding.evaluation import (
 )
 from pixelgym.grounding.providers import MockProvider
 from pixelgym.grounding.schema import PROTOCOL_VERSION
-from pixelgym.grounding.v4_evaluation import (
-    planned_v4_calls,
-    record_v4_evaluation,
-    run_v4_evaluation,
-    summarize_v4_evaluation,
-)
-from pixelgym.grounding.v4_protocol import V4_CONDITION_CALL_CAP, V4_PROTOCOL_VERSION
 
 
 def _write_inputs(root: Path, *, overlay_count: int = 10) -> None:
@@ -131,14 +131,14 @@ def test_v4_protocol_changes_cache_identity(tmp_path: Path) -> None:
 
 
 def test_v4_evaluation_does_not_import_capture_instrumentation() -> None:
-    source_path = Path(__file__).parents[2] / "pixelgym" / "grounding" / "v4_evaluation.py"
+    source_path = Path(__file__).parents[2] / "legacy" / "grounding" / "v4_evaluation.py"
     tree = ast.parse(source_path.read_text(encoding="utf-8"))
     imported_modules = {
         node.module
         for node in ast.walk(tree)
         if isinstance(node, ast.ImportFrom) and node.module is not None
     }
-    assert "pixelgym.grounding.calibration_v4" not in imported_modules
+    assert "legacy.grounding.calibration_v4" not in imported_modules
 
 
 def test_fixture_contains_no_target_identity_in_overlays(tmp_path: Path) -> None:

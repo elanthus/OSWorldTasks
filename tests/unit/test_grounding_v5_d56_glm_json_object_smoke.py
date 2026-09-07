@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d56_glm_json_object_smoke as smoke
+from legacy.grounding.scripts import run_grounding_v5_d56_glm_json_object_smoke
+from legacy.grounding.v5 import d56_glm_json_object_smoke as smoke
+from legacy.grounding.v5.d56_bcd_calibration import _streaming_file_digest
+from legacy.grounding.v5.d56_calibration import _file_digest
 from pixelgym.grounding.v5.contracts import CallCaps
-from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
-from pixelgym.grounding.v5.d56_calibration import _file_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from scripts import run_grounding_v5_d56_glm_json_object_smoke
 
 ROOT = Path(__file__).parents[2]
 

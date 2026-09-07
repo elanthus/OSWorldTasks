@@ -5,13 +5,13 @@ import re
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import pytest
 
+from legacy.grounding.scripts import run_grounding_v5_d56_codex_cli_calibration
+from legacy.grounding.v5 import d56_codex_cli_calibration as calibration
 from pixelgym.grounding.v5 import codex_cli_policy as policy
-from pixelgym.grounding.v5 import d56_codex_cli_calibration as calibration
-from scripts import run_grounding_v5_d56_codex_cli_calibration
 
 ROOT = Path(__file__).parents[2]
 
@@ -526,6 +526,40 @@ def test_execute_rejects_unapproved_digest_before_output(
         )
 
     assert not output.exists()
+
+
+def test_codex_process_start_failure_retains_exception_type(tmp_path: Path) -> None:
+    invocation_journal = policy.CodexCliInvocationJournal(tmp_path / "start-failure.sqlite")
+
+    def fail_to_start(_command: Sequence[str], **_kwargs: object) -> NoReturn:
+        raise OSError("synthetic process start failure")
+
+    transport = policy.CodexCliTransport(
+        ledger=policy.SubscriptionExemptLedger(
+            calibration.MAXIMUM_AGGREGATE_SPEND_USD,
+            calibration.PRIOR_BUDGET_ACCOUNTED_SPEND_USD,
+        ),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=fail_to_start,
+    )
+    codex_policy = policy.CodexCliPolicy()
+    request = codex_policy.build_request(
+        codex_policy.reset("Complete the visible task."),
+        bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3),
+    )
+    try:
+        outcome = transport.send(
+            request,
+            idempotency_key="sha256:codex-start-failure",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "pre_send_failure"
+        assert transport.records[-1]["type"] == "OSError"
+    finally:
+        transport.close()
+        invocation_journal.close()
 
 
 def test_execute_smoke_with_fake_cli_writes_restricted_journals_and_summary(

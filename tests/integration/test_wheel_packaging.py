@@ -136,6 +136,36 @@ def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
     assert installed == expected
 
 
+def test_retired_grounding_sources_are_excluded_from_the_wheel(
+    installed_wheel_site_dir,
+):
+    grounding = installed_wheel_site_dir / "pixelgym" / "grounding"
+    retired = (
+        "calibration_v3a.py",
+        "calibration_v3b.py",
+        "calibration_v3c.py",
+        "calibration_v4.py",
+        "calibration_v4b.py",
+        "calibration_v4c.py",
+        "v3_server.py",
+        "v4_server.py",
+        "v4b_app",
+        "v4c_app",
+        "v5/d56_calibration.py",
+        "v5/d56_codex_cli_calibration.py",
+        "v5/d56_claude_subscription_campaign.py",
+    )
+    assert not [name for name in retired if (grounding / name).exists()]
+    assert not (installed_wheel_site_dir / "legacy").exists()
+
+
+def test_manifest_runner_schema_is_packaged_in_the_wheel(installed_wheel_site_dir):
+    assert (
+        installed_wheel_site_dir
+        / "pixelgym/grounding/v5/schemas/runner-plan.schema.json"
+    ).is_file()
+
+
 def test_apache_license_metadata_and_text_are_packaged(installed_wheel_site_dir):
     dist_info_dirs = list(installed_wheel_site_dir.glob("pixelgym-*.dist-info"))
     assert len(dist_info_dirs) == 1, dist_info_dirs
