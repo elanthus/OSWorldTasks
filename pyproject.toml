@@ -32,7 +32,10 @@ platform = [
     "httpx2==2.9.1",  # deployment smoke uses Starlette's TestClient at runtime
 ]
 dev = [
+    "coverage==7.16.0",
+    "hypothesis==6.167.1",
     "pytest>=8.0",
+    "pytest-cov==7.1.0",
     "pytest-xdist>=3.8",
     "ruff>=0.4",
     "mypy>=1.17,<2",
@@ -72,6 +75,23 @@ markers = [
     "osworld_integration: requires the pinned local OSWorld Docker runtime and guest image",
     "v5_sandbox_integration: requires Darwin sandbox-exec outside a parent process sandbox",
 ]
+
+[tool.coverage.run]
+# Measure the complete package, including optional OSWorld, browser, grounding,
+# and platform paths. Keeping difficult modules in scope prevents the fast-suite
+# baseline from being inflated by exclusions.
+branch = true
+source = ["pixelgym"]
+
+[tool.coverage.report]
+# The branch-aware fast suite measured 80.337% before issue #114's property
+# tests were added. Fail at the rounded baseline so small regressions are caught.
+fail_under = 80
+precision = 2
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [tool.ruff]
 line-length = 100
