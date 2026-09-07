@@ -68,6 +68,10 @@ testpaths = ["tests"]
 # So `tests.support` (the privileged golden-trajectory solver, shared with
 # scripts/golden_trajectory.py) is importable from the repository root.
 pythonpath = ["."]
+# Loads the deterministic "ci" profile (registered in tests/conftest.py) for
+# every invocation, not only the CI workflow's explicit flag, so a local
+# `pytest tests/unit` run and the CI run generate identical examples.
+addopts = "--hypothesis-profile=ci"
 markers = [
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
     "platform_compose_integration: provisions an isolated Docker Compose platform stack",
@@ -79,13 +83,23 @@ markers = [
 [tool.coverage.run]
 # Measure the complete package, including optional OSWorld, browser, grounding,
 # and platform paths. Keeping difficult modules in scope prevents the fast-suite
-# baseline from being inflated by exclusions.
+# baseline from being inflated by exclusions. `source = ["pixelgym"]` matches
+# the packaging scope in [tool.setuptools.packages.find] and the mypy scope in
+# [tool.mypy] `files`: `legacy/`, `flows/`, and `scripts/` are not part of the
+# installable package and are out of scope for the same reason they are out of
+# scope for those tools, not because they are hard to cover. The 12 pre-existing
+# `# pragma: no cover` lines inside pixelgym (optional-import fallbacks and
+# exhaustiveness guards unreachable without the optional extras) remain in
+# force and are not re-justified per line here.
 branch = true
 source = ["pixelgym"]
 
 [tool.coverage.report]
 # The branch-aware fast suite measured 80.337% before issue #114's property
-# tests were added. Fail at the rounded baseline so small regressions are caught.
+# tests were added, and 80.343% after (artifacts/ci-coverage-baseline-issue-114.md)
+# — the new tests add negligible headroom (2217 -> 2216 missed statements out
+# of 13686). Fail at the rounded pre-existing baseline so small regressions are
+# caught without relying on margin the new tests themselves created.
 fail_under = 80
 precision = 2
 show_missing = true

@@ -86,6 +86,7 @@ jobs:
           --cov=pixelgym
           --cov-report=term-missing
           --cov-report=xml
+          --cov-fail-under=80
           tests/unit
 
       - name: Publish coverage summary
@@ -94,7 +95,7 @@ jobs:
           if [[ -f .coverage ]]; then
             {
               echo "## Fast-suite coverage"
-              python -m coverage report --format=markdown
+              python -m coverage report --format=markdown --fail-under=0
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 

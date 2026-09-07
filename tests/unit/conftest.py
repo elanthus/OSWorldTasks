@@ -18,7 +18,6 @@ import json
 from pathlib import Path
 
 import pytest
-from hypothesis import settings
 
 from tests.support.golden_solver import (
     build_dynamic_solve_actions,
@@ -38,12 +37,9 @@ __all__ = [
 
 GOLDEN_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
 
-# CI selects this profile explicitly. It makes generated cases repeatable across
-# runs and prevents Hypothesis from reading or writing its normal example database.
-settings.register_profile(
-    "ci",
-    settings(max_examples=50, derandomize=True, deadline=None, database=None),
-)
+# The "ci" Hypothesis profile is registered in the top-level tests/conftest.py
+# (an initial conftest for every invocation path) and loaded by default via
+# --hypothesis-profile=ci in [tool.pytest.ini_options] addopts.
 
 
 @pytest.fixture

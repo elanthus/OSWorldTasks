@@ -74,15 +74,21 @@ def _wrong_type(value: Any) -> Any:
 
 
 class _RewardIsolationBackend:
-    """Backend with arbitrary pixels/history but fixed privileged state."""
+    """Backend with arbitrary pixels/history but a controlled privileged submission.
+
+    `exact` is set by the caller, never derived from `pixels` or `action_history`,
+    so the reward it produces can be compared against the pixels/history that
+    vary independently of it.
+    """
 
     width = 2
     height = 2
     app_url = "property://evaluator"
 
-    def __init__(self, pixels: bytes, action_history: Sequence[str]) -> None:
+    def __init__(self, pixels: bytes, action_history: Sequence[str], *, exact: bool) -> None:
         self._frame = np.frombuffer(pixels, dtype=np.uint8).reshape(self.height, self.width, 3)
         self.action_history = list(action_history)
+        self._exact = exact
         self._seed = 0
 
     def reset(self, seed: int) -> Mapping[str, Any]:
@@ -106,7 +112,8 @@ class _RewardIsolationBackend:
         self.action_history.append(f"key:{key}")
 
     def read_submissions(self) -> Sequence[Submission]:
-        return [_submission({"answer": "exact"}, seed=self._seed)]
+        value = "exact" if self._exact else "wrong"
+        return [_submission({"answer": value}, seed=self._seed)]
 
     def close(self) -> None:
         return None
@@ -207,23 +214,32 @@ def test_whitespace_is_normalized_before_exact_evaluation(
     second_pixels=st.binary(min_size=12, max_size=12),
     first_history=st.lists(st.text(max_size=8), max_size=6),
     second_history=st.lists(st.text(max_size=8), max_size=6),
+    exact=st.booleans(),
 )
 def test_reward_is_independent_of_pixels_and_action_history(
     first_pixels: bytes,
     second_pixels: bytes,
     first_history: list[str],
     second_history: list[str],
+    exact: bool,
 ) -> None:
     outcomes = []
     for pixels, history in (
         (first_pixels, first_history),
         (second_pixels, second_history),
     ):
-        env = PixelGuiEnv(_RewardIsolationBackend(pixels, history), max_episode_steps=2)
+        env = PixelGuiEnv(
+            _RewardIsolationBackend(pixels, history, exact=exact), max_episode_steps=2
+        )
         env.reset(seed=7)
         _observation, reward, terminated, truncated, _info = env.step(
             {"action_type": ActionType.NOOP, "x": 0, "y": 0, "key": 0}
         )
         outcomes.append((reward, terminated, truncated))
 
-    assert outcomes == [(1.0, True, False), (1.0, True, False)]
+    # `exact` alone determines the outcome; two runs with independently varying
+    # pixels and action history but the same `exact` flag must match exactly,
+    # and the reward/termination must track `exact` itself (a regression that
+    # granted reward from pixels would report 1.0/True even when exact=False).
+    expected = (1.0 if exact else 0.0, exact, False)
+    assert outcomes == [expected, expected]

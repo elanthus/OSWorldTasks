@@ -150,7 +150,9 @@ def test_coordinate_boundaries_match_half_open_screen_bounds(
     action = {"action_type": ActionType.CLICK, "x": x, "y": y, "key": 0}
 
     if 0 <= x < width and 0 <= y < height:
-        assert validate_action(build_action_space(width, height), action).x == x
+        validated = validate_action(build_action_space(width, height), action)
+        assert validated.x == x
+        assert validated.y == y
     else:
         with pytest.raises(InvalidActionError):
             validate_action(build_action_space(width, height), action)
@@ -219,9 +221,16 @@ def test_validated_snapshot_is_immutable_and_detached_from_input(case, field: st
     width, height, action, _raw = case
     validated = validate_action(build_action_space(width, height), action)
     before = dataclasses.astuple(validated)
+    original_field_value = getattr(validated, field)
 
     action[field] = int(action[field]) + 10_000
 
+    # Two independent re-reads of the snapshot after mutating the input
+    # mapping: the whole tuple (catches any field aliasing the input) and the
+    # specific mutated field by name (catches a validator that only copies on
+    # first access instead of at validation time).
     assert dataclasses.astuple(validated) == before
+    assert getattr(validated, field) == original_field_value
     with pytest.raises(dataclasses.FrozenInstanceError):
         setattr(validated, field, 0)
+    assert getattr(validated, field) == original_field_value
