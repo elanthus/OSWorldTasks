@@ -1715,18 +1715,42 @@ def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
 def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
     tmp_path: Path, passing_evidence
 ) -> None:
+    """A self-consistent package -- policy_id genuinely matches identity_dict(), as a
+    worker running a different renderer implementation would honestly produce -- must
+    still be rejected before activation, because verify_renderer_binding, not the
+    schema, is what checks renderer_sha256 against the code actually running."""
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    tampered = dataclasses.replace(candidate.policy, renderer_sha256="0" * 64)
+    tampered = dataclasses.replace(candidate.policy, renderer_sha256="0" * 64, policy_id="")
+    tampered = dataclasses.replace(
+        tampered, policy_id="sha256:" + sha256_bytes(canonical_json_bytes(tampered.identity_dict()))
+    )
+    rewritten_report = {**candidate.gate_report, "policy_id": tampered.policy_id}
+    report_bytes = canonical_json_bytes(rewritten_report)
+    report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
     control.connection.execute(
-        "UPDATE candidates SET policy_json = ? WHERE candidate_id = ?",
-        (canonical_json_bytes(tampered.to_dict()).decode(), candidate.candidate_id),
+        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            tampered.policy_id,
+            canonical_json_bytes(tampered.to_dict()).decode(),
+            report_bytes.decode(),
+            report_digest,
+            candidate.candidate_id,
+        ),
+    )
+    control.connection.execute(
+        "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (tampered.policy_id, report_digest, candidate.candidate_id),
     )
     coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
 
-    with pytest.raises(ContractValidationError, match="policy_package"):
+    # The schema only checks renderer_sha256 is digest-shaped (see
+    # test_policy_schema_does_not_pin_renderer_identity_to_a_specific_value); it stays
+    # readable through get_candidate/load_policy_manifest, so verify_renderer_binding is
+    # what must reject it before activation.
+    with pytest.raises(ValueError, match="renderer implementation digest mismatch"):
         coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
 
     assert control.active() == (None, 0)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import json
 import logging
 import math
 import threading
@@ -22,12 +21,12 @@ from pixelgym.platform.mlflow_tracking import (
     MlflowTracking,
 )
 from pixelgym.platform.policy import (
-    RENDERER_VERSION,
     is_verified_clean_revision,
     renderer_config_sha256,
     verify_policy_manifest,
     verify_renderer_binding,
 )
+from pixelgym.platform.schema_validation import PlatformSchemas
 
 
 @pytest.fixture(autouse=True)
@@ -221,19 +220,44 @@ def test_prompt_for_frozen_base_text_is_byte_identical_after_constant_extraction
     )
 
 
-def test_renderer_config_digest_matches_the_committed_schema_constant(repository_root: Path) -> None:
-    """Guard against schema/code drift: the schema's hardcoded renderer_sha256 const must
-    track whatever the running renderer code actually computes, or registration would
-    either wrongly accept a stale renderer or wrongly reject the current one."""
-    schema = json.loads((repository_root / "config/platform-policy.schema.json").read_text())
-    v2_branch = next(
-        clause["then"]
-        for clause in schema["allOf"]
-        if clause.get("if", {}).get("properties", {}).get("schema_version", {}).get("const")
-        == "pixelgym-grounding-policy-v2"
+def test_renderer_config_sha256_is_memoised_and_a_stable_digest() -> None:
+    """renderer_config_sha256 is computed from a hand-maintained spec string, not
+    inspect.getsource, and is cached: repeated calls must return the identical,
+    digest-shaped value without recomputing it."""
+    first = renderer_config_sha256()
+    second = renderer_config_sha256()
+    assert first == second
+    assert len(first) == 64
+    assert all(character in "0123456789abcdef" for character in first)
+
+
+def test_policy_schema_does_not_pin_renderer_identity_to_a_specific_value(
+    repository_root: Path, policy_factory
+) -> None:
+    """The schema only checks that renderer_version/renderer_sha256 are shaped like a
+    name and a digest; verify_renderer_binding -- not a schema const -- is the sole
+    fail-closed gate on their actual value. A schema const on either field would make
+    every previously stored candidate unreadable (not merely unactivatable) the instant
+    the running renderer version or digest formula changes, since every read path
+    (list_candidates, the control UI, rollback) loads through this same schema.
+    """
+    schemas = PlatformSchemas(repository_root)
+    base = policy_factory()
+    mutated = dataclasses.replace(
+        base,
+        renderer_version="pixelgym-platform-renderer-v999",
+        renderer_sha256="9" * 64,
+        policy_id="",
     )
-    assert v2_branch["properties"]["renderer_version"]["const"] == RENDERER_VERSION
-    assert v2_branch["properties"]["renderer_sha256"]["const"] == renderer_config_sha256()
+    mutated = dataclasses.replace(
+        mutated,
+        policy_id="sha256:" + sha256_bytes(canonical_json_bytes(mutated.identity_dict())),
+    )
+
+    schemas.validate("policy_package", mutated.to_dict())
+
+    with pytest.raises(ValueError, match="unsupported renderer version"):
+        verify_renderer_binding(mutated)
 
 
 def test_verify_renderer_binding_fails_closed_on_missing_mismatched_or_corrupt_renderer(

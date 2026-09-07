@@ -186,6 +186,18 @@ def test_serving_forwards_the_packaged_rendered_prompt_to_the_provider(policy_fa
     assert policy.prompt_template_text is not None
     # Proves the packaged v2 addendum, not a generic/default template, drove the request.
     assert "editable control named by the target" in provider.last_request["prompt"]
+    # Pins the exact bytes sent, not only that render_prompt's own output was forwarded --
+    # a bug in render_prompt itself would still satisfy the equality check above.
+    assert provider.last_request["prompt"] == (
+        "Locate the requested control in the attached screenshot. "
+        "Target: Click the Company name field. "
+        "The screenshot is 100 pixels wide and 80 pixels high. "
+        "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
+        "The origin is the upper-left. Do not explain your answer and do not use tools. "
+        "Locate the editable control named by the target, not a matching summary label. "
+        "Target: Click the Company name field. "
+        "Return only integer screenshot-pixel coordinates as JSON."
+    )
 
 
 def test_operational_record_is_redacted_immutable_and_identifies_served_policy(
@@ -1883,9 +1895,25 @@ def test_assembled_app_deploys_only_the_isolated_smoke_tested_runtime(
         )
 
 
-@pytest.mark.parametrize("failure", ["provider", "invalid-output", "identity"])
+@pytest.mark.parametrize(
+    ("failure", "expected_exception"),
+    [
+        ("provider", DeploymentSmokeError),
+        ("invalid-output", DeploymentSmokeError),
+        # A tampered prompt_version is rejected by verify_renderer_binding before the
+        # candidate ever reaches load_and_smoke, so this is a ValueError, not a
+        # DeploymentSmokeError -- a bare pytest.raises((...)) tuple would hide a
+        # regression that let this candidate reach smoke at all.
+        ("identity", ValueError),
+    ],
+)
 def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime(
-    tmp_path: Path, repository_root: Path, monkeypatch, passing_evidence, failure: str
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    passing_evidence,
+    failure: str,
+    expected_exception: type[Exception],
 ) -> None:
     app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
     policy, summary, report = passing_evidence
@@ -1959,7 +1987,7 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
             (tampered.policy_id, report_digest, second.candidate_id),
         )
 
-    with pytest.raises((DeploymentSmokeError, TransitionError, ValueError)):
+    with pytest.raises(expected_exception):
         app.state.deployment_coordinator.deploy(
             second.candidate_id,
             actor=SyntheticDemoPrincipal(),
