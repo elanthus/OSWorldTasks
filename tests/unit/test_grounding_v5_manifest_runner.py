@@ -101,7 +101,8 @@ def _plan_value(tmp_path: Path, classifications: list[str]) -> tuple[Path, dict[
         }
         for index in range(len(classifications))
     ]
-    manifest = {"manifest_digest": "sha256:" + "b" * 64, "records": records}
+    manifest_body = {"records": records}
+    manifest = {**manifest_body, "manifest_digest": content_digest(manifest_body)}
     manifest_path = tmp_path / "tasks.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     value: dict[str, Any] = {
@@ -183,6 +184,22 @@ def test_plan_rejects_provider_transport_contract_merging(tmp_path: Path) -> Non
 
     with pytest.raises(ValueError, match="adapter and transport kind disagree"):
         CalibrationPlan.from_dict(value)
+
+
+def test_runner_recomputes_task_manifest_digest(tmp_path: Path) -> None:
+    manifest_path, value = _plan_value(tmp_path, ["success_termination"])
+    manifest = json.loads(manifest_path.read_text())
+    manifest["records"][0]["unapproved_edit"] = True
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    plan = CalibrationPlan.from_dict(value)
+
+    with pytest.raises(ValueError, match=r"task manifest digest mismatch: tasks\.json"):
+        run_calibration_plan(
+            tmp_path,
+            plan=plan,
+            approved_plan_sha256=plan.digest,
+            adapter=FakeAdapter(["success_termination"]),
+        )
 
 
 def test_single_cli_validates_without_constructing_a_provider(
@@ -272,6 +289,27 @@ def test_completed_summary_is_idempotent_and_mismatched_digest_fails_closed(
         == summary
     )
     assert second.executed == [] and second.closed
+
+    (tmp_path / "run/summary.json").write_text(
+        json.dumps({"approved_plan_sha256": plan.digest, "run_state": "complete"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="completed summary schema_version mismatch"):
+        run_calibration_plan(
+            tmp_path,
+            plan=plan,
+            approved_plan_sha256=plan.digest,
+            adapter=FakeAdapter(["success_termination"]),
+        )
+    (tmp_path / "run/summary.json").write_text(json.dumps(summary), encoding="utf-8")
+    (tmp_path / "run/attempts.sqlite").unlink()
+    with pytest.raises(FileNotFoundError, match="completed summary journal is missing"):
+        run_calibration_plan(
+            tmp_path,
+            plan=plan,
+            approved_plan_sha256=plan.digest,
+            adapter=FakeAdapter(["success_termination"]),
+        )
 
     with pytest.raises(ValueError, match="approved runner plan digest"):
         run_calibration_plan(

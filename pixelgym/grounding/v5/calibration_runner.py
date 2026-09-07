@@ -11,7 +11,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Protocol
 
-from pixelgym.grounding.v5.contracts import CallCaps
+from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.plan import (
@@ -110,6 +110,7 @@ def run_calibration_plan(
         if prior.get("approved_plan_sha256") != plan.digest:
             raise ValueError("existing summary belongs to a different runner plan")
         if prior.get("run_state") == "complete":
+            _validate_completed_summary(prior, plan=plan, journal_path=journal_path)
             adapter.close()
             return prior
 
@@ -211,6 +212,73 @@ _NORMAL_CLASSIFICATIONS = frozenset(
 )
 
 
+def _validate_completed_summary(
+    summary: Mapping[str, Any], *, plan: CalibrationPlan, journal_path: Path
+) -> None:
+    validate_credential_free(summary)
+    identities = {
+        "schema_version": RUNNER_RESULT_SCHEMA_VERSION,
+        "run_state": "complete",
+        "purpose": plan.purpose,
+        "approved_plan_sha256": plan.digest,
+        "code_revision": plan.code_revision,
+        "assigned_policy_task_pairs": len(plan.assignments),
+        "stop_conditions": list(plan.stop_conditions),
+        "execution_error": None,
+    }
+    for field, expected in identities.items():
+        if summary.get(field) != expected:
+            raise ValueError(f"completed summary {field} mismatch")
+    if not journal_path.is_file():
+        raise FileNotFoundError("completed summary journal is missing")
+    journal = V5AttemptJournal(journal_path)
+    try:
+        integrity = journal.integrity_report()
+        calls = journal.call_counts()
+        attempted = len(
+            {
+                event.trial_id
+                for event in journal.events()
+                if event.kind == "campaign_assignment_started"
+            }
+        )
+        journal_results: list[dict[str, Any]] = []
+        for assignment in plan.assignments:
+            completed = journal.event(_completed_key(assignment))
+            if completed is None:
+                break
+            result = _episode_from_mapping(completed.payload.get("episode_result"))
+            _validate_episode_identity(assignment, result)
+            journal_results.append({"slot": assignment.slot, **result.to_dict()})
+    finally:
+        journal.close()
+    classifications = Counter(str(result["classification"]) for result in journal_results)
+    denominators = {
+        "attempted": attempted,
+        "invalid_output": classifications["invalid_output"],
+        "infrastructure_failure": classifications["infrastructure_failure"],
+        "policy_violation": classifications["policy_violation"],
+    }
+    evidence = {
+        "attempted_policy_task_pairs": attempted,
+        "successful_policy_task_pairs": sum(
+            bool(result["success"]) for result in journal_results
+        ),
+        "completed_all_assigned_pairs": len(journal_results) == len(plan.assignments),
+        "classifications": dict(sorted(classifications.items())),
+        "outcome_denominators": denominators,
+        "episode_results": journal_results,
+        "model_attempt_reservations": calls[0],
+        "provider_control_requests": calls[1],
+        "provider_wire_request_reservations": calls[0] + calls[1],
+        "journal_integrity": integrity,
+        "cleanup": {"journal_closed": True, "provider_adapter_closed": True},
+    }
+    for field, expected in evidence.items():
+        if summary.get(field) != expected:
+            raise ValueError(f"completed summary {field} does not match its journal")
+
+
 def _summary(
     *,
     plan: CalibrationPlan,
@@ -277,7 +345,10 @@ def _verify_repository_state(repository_root: Path, plan: CalibrationPlan) -> No
 
 def _verify_task_manifest(repository_root: Path, plan: CalibrationPlan) -> None:
     manifest = _load_json_object(repository_root / plan.manifest_path)
-    if manifest.get("manifest_digest") != plan.manifest_digest:
+    embedded_digest = manifest.get("manifest_digest")
+    manifest_body = {key: value for key, value in manifest.items() if key != "manifest_digest"}
+    recomputed_digest = content_digest(manifest_body)
+    if embedded_digest != plan.manifest_digest or recomputed_digest != plan.manifest_digest:
         raise ValueError(f"task manifest digest mismatch: {plan.manifest_path}")
     expected = {(item.seed, item.task_id, item.family) for item in plan.assignments}
     observed: set[tuple[int, str, str]] = set()
