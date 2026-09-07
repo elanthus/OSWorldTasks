@@ -16,10 +16,7 @@ SCHEMA_VERSION = "pixelgym-public-release-inventory-v2"
 TEXT_SIZE_LIMIT = 8 * 1024 * 1024
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 MARKDOWN_REFERENCE = re.compile(r"^[ \t]{0,3}\[[^\]]+\]:[ \t]*(?:<([^>\n]+)>|(\S+))", re.MULTILINE)
-FENCED_CODE_BLOCK = re.compile(
-    r"^ {0,3}(?P<fence>`{3,}|~{3,})[^\n]*\n.*?^ {0,3}(?P=fence)[ \t]*$",
-    re.MULTILINE | re.DOTALL,
-)
+FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
 PRIVATE_PATH = re.compile(
     r"(?P<path>(?:file://)?/(?:Users|home)/(?P<user>[^/\s\"']+)(?:/[^\s\"'<>)]*)?"
@@ -97,6 +94,10 @@ PUBLISHED_STRUCTURED_MODEL_OUTPUTS = {
 }
 
 
+class HistoryScanError(RuntimeError):
+    """A Git failure that makes a complete history scan impossible."""
+
+
 def _run_git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
 
@@ -154,10 +155,30 @@ def _slug(value: str) -> str:
 def _mask_fenced_code(text: str) -> str:
     """Replace fenced blocks while preserving offsets and line numbers."""
 
-    return FENCED_CODE_BLOCK.sub(
-        lambda match: "".join("\n" if character == "\n" else " " for character in match.group(0)),
-        text,
-    )
+    masked: list[str] = []
+    fence_character: str | None = None
+    minimum_closing_length = 0
+    for line in text.splitlines(keepends=True):
+        content = line.rstrip("\r\n")
+        if fence_character is None:
+            opening = FENCE_OPEN.match(content)
+            if opening is None:
+                masked.append(line)
+                continue
+            marker = opening.group(1)
+            fence_character = marker[0]
+            minimum_closing_length = len(marker)
+        else:
+            stripped = content.lstrip(" ")
+            indent = len(content) - len(stripped)
+            closing = re.fullmatch(
+                rf"{re.escape(fence_character)}{{{minimum_closing_length},}}[ \t]*", stripped
+            )
+            if indent <= 3 and closing is not None:
+                fence_character = None
+                minimum_closing_length = 0
+        masked.append("".join("\n" if character == "\n" else " " for character in line))
+    return "".join(masked)
 
 
 def _tracked_target(path: Path, root: Path, tracked: set[str]) -> bool:
@@ -370,7 +391,7 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
 def _history_objects(root: Path) -> list[tuple[str, str | None]]:
     result = _run_git(root, "rev-list", "--objects", "--all")
     if result.returncode != 0:
-        return []
+        raise HistoryScanError("git_rev_list_failed")
     objects: list[tuple[str, str | None]] = []
     for line in result.stdout.splitlines():
         object_id, separator, path = line.partition(" ")
@@ -392,7 +413,7 @@ def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
         check=False,
     )
     if checked.returncode != 0:
-        return
+        raise HistoryScanError("git_cat_file_batch_check_failed")
     paths = {object_id: path for object_id, path in objects}
     blob_ids: list[str] = []
     for line in checked.stdout.splitlines():
@@ -410,7 +431,7 @@ def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
         check=False,
     )
     if batch.returncode != 0:
-        return
+        raise HistoryScanError("git_cat_file_batch_failed")
     payload = batch.stdout
     offset = 0
     for expected_id in blob_ids:
@@ -443,7 +464,7 @@ def _history_boundary_commits(root: Path) -> dict[str, list[str]]:
         "--patch",
     )
     if result.returncode != 0:
-        return {}
+        raise HistoryScanError("git_log_patch_scan_failed")
     commits: dict[str, set[str]] = {}
     commit = ""
     patterns = (PRIVATE_PATH, EMAIL, *(pattern for _, pattern in TOKEN_SHAPES))
@@ -467,7 +488,12 @@ def scan_history(root: Path) -> dict[str, object]:
         "email_addresses": [],
         "credential_or_token_shapes": [],
     }
-    commits_by_fingerprint = _history_boundary_commits(root)
+    failures: list[str] = []
+    try:
+        commits_by_fingerprint = _history_boundary_commits(root)
+    except HistoryScanError as error:
+        commits_by_fingerprint = {}
+        failures.append(str(error))
 
     def record(
         category: str,
@@ -491,59 +517,63 @@ def scan_history(root: Path) -> dict[str, object]:
         finding.update(extra)
         categories[category].append(finding)
 
-    for object_id, path, text in _reachable_text_blobs(root):
-        relative = path or "<unknown>"
-        for match in PRIVATE_PATH.finditer(text):
-            user = match.group("user") or match.group("windows_user") or ""
-            source_line = text.splitlines()[_line_number(text, match.start()) - 1]
-            classification = (
-                "acknowledged_placeholder"
-                if (
-                    user.lower() in SAFE_PATH_USERS
-                    or (relative.startswith("scripts/") and "re.compile" in source_line)
-                )
-                else "review_required_operator_path"
-            )
-            record(
-                "private_paths",
-                object_id=object_id,
-                path=path,
-                line=_line_number(text, match.start()),
-                value=match.group("path"),
-                classification=classification,
-            )
-        for match in EMAIL.finditer(text):
-            domain = match.group(2).lower()
-            classification = (
-                "acknowledged_synthetic_address"
-                if domain.endswith(SAFE_EMAIL_SUFFIXES) or domain in SAFE_EMAIL_DOMAINS
-                else "review_required_email_address"
-            )
-            record(
-                "email_addresses",
-                object_id=object_id,
-                path=path,
-                line=_line_number(text, match.start()),
-                value=match.group(0),
-                classification=classification,
-            )
-        for shape_name, pattern in TOKEN_SHAPES:
-            for match in pattern.finditer(text):
-                classification = (
-                    "acknowledged_test_vector"
-                    if relative.startswith("tests/")
-                    and _fingerprint(match.group(0)) in SAFE_TOKEN_TEST_FINGERPRINTS
-                    else "review_required_credential_shape"
-                )
-                record(
-                    "credential_or_token_shapes",
-                    object_id=object_id,
-                    path=path,
-                    line=_line_number(text, match.start()),
-                    value=match.group(0),
-                    classification=classification,
-                    shape=shape_name,
-                )
+    if not failures:
+        try:
+            for object_id, path, text in _reachable_text_blobs(root):
+                relative = path or "<unknown>"
+                for match in PRIVATE_PATH.finditer(text):
+                    user = match.group("user") or match.group("windows_user") or ""
+                    source_line = text.splitlines()[_line_number(text, match.start()) - 1]
+                    classification = (
+                        "acknowledged_placeholder"
+                        if (
+                            user.lower() in SAFE_PATH_USERS
+                            or (relative.startswith("scripts/") and "re.compile" in source_line)
+                        )
+                        else "review_required_operator_path"
+                    )
+                    record(
+                        "private_paths",
+                        object_id=object_id,
+                        path=path,
+                        line=_line_number(text, match.start()),
+                        value=match.group("path"),
+                        classification=classification,
+                    )
+                for match in EMAIL.finditer(text):
+                    domain = match.group(2).lower()
+                    classification = (
+                        "acknowledged_synthetic_address"
+                        if domain.endswith(SAFE_EMAIL_SUFFIXES) or domain in SAFE_EMAIL_DOMAINS
+                        else "review_required_email_address"
+                    )
+                    record(
+                        "email_addresses",
+                        object_id=object_id,
+                        path=path,
+                        line=_line_number(text, match.start()),
+                        value=match.group(0),
+                        classification=classification,
+                    )
+                for shape_name, pattern in TOKEN_SHAPES:
+                    for match in pattern.finditer(text):
+                        classification = (
+                            "acknowledged_test_vector"
+                            if relative.startswith("tests/")
+                            and _fingerprint(match.group(0)) in SAFE_TOKEN_TEST_FINGERPRINTS
+                            else "review_required_credential_shape"
+                        )
+                        record(
+                            "credential_or_token_shapes",
+                            object_id=object_id,
+                            path=path,
+                            line=_line_number(text, match.start()),
+                            value=match.group(0),
+                            classification=classification,
+                            shape=shape_name,
+                        )
+        except HistoryScanError as error:
+            failures.append(str(error))
 
     review_required = sum(
         item["classification"].startswith("review_required")
@@ -553,6 +583,8 @@ def scan_history(root: Path) -> dict[str, object]:
     return {
         "source": "all objects reachable from git rev-list --objects --all",
         "sensitive_values": "represented only by SHA-256 fingerprints",
+        "failure_count": len(failures),
+        "failures": failures,
         "categories": {
             name: {
                 "finding_count": len(findings),
@@ -564,7 +596,7 @@ def scan_history(root: Path) -> dict[str, object]:
             for name, findings in categories.items()
         },
         "review_required_count": review_required,
-        "passed": review_required == 0,
+        "passed": not failures and review_required == 0,
     }
 
 

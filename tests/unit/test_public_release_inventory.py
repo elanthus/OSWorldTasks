@@ -109,6 +109,16 @@ def test_history_inventory_finds_sensitive_values_removed_from_head(tmp_path: Pa
     assert "ghp_" not in serialized
 
 
+def test_history_inventory_fails_closed_outside_git(tmp_path: Path) -> None:
+    module = _load_script()
+
+    history = module.scan_history(tmp_path)
+
+    assert history["passed"] is False
+    assert history["failure_count"] == 1
+    assert history["failures"] == ["git_log_patch_scan_failed"]
+
+
 def test_committed_inventory_matches_current_public_tree() -> None:
     module = _load_script()
     committed = json.loads(
