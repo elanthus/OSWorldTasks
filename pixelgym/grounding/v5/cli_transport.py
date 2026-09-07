@@ -58,6 +58,7 @@ class CliExecutionEnvelope[ParsedT]:
     stderr: RedactedRawStdio
     parsed: ParsedT | None
     fault: CliFault | None
+    error_type: str | None
     process_confirmed_stopped: bool
 
 
@@ -124,9 +125,12 @@ class CliSubprocessTransport[ParsedT]:
                 text=True,
                 start_new_session=True,
             )
-        except (OSError, ValueError):
+        except (OSError, ValueError) as exc:
             return self._empty(
-                cli_pre_send_fault("process_start_failure", kind=CliFaultKind.PROCESS_START)
+                cli_pre_send_fault(
+                    "process_start_failure", kind=CliFaultKind.PROCESS_START
+                ),
+                error_type=type(exc).__name__,
             )
         with self._lock:
             self._started.append(process)
@@ -149,7 +153,12 @@ class CliSubprocessTransport[ParsedT]:
                 raise CliProcessInterrupted(
                     exc,
                     self._result(
-                        process, raw_stdout, raw_stderr, parsed=None, fault=fault
+                        process,
+                        raw_stdout,
+                        raw_stderr,
+                        parsed=None,
+                        fault=fault,
+                        error_type=type(exc).__name__,
                     ),
                 ) from exc
             try:
@@ -176,7 +185,12 @@ class CliSubprocessTransport[ParsedT]:
                 if fault is None:
                     raise RuntimeError("CLI process exception was not classified") from exc
                 return self._result(
-                    process, raw_stdout, raw_stderr, parsed=None, fault=fault
+                    process,
+                    raw_stdout,
+                    raw_stderr,
+                    parsed=None,
+                    fault=fault,
+                    error_type=type(exc).__name__,
                 )
             except BaseException as exc:
                 raw_stdout, raw_stderr = self._terminate(process)
@@ -191,7 +205,12 @@ class CliSubprocessTransport[ParsedT]:
                 raise CliProcessInterrupted(
                     exc,
                     self._result(
-                        process, raw_stdout, raw_stderr, parsed=None, fault=fault
+                        process,
+                        raw_stdout,
+                        raw_stderr,
+                        parsed=None,
+                        fault=fault,
+                        error_type=type(exc).__name__,
                     ),
                 ) from exc
             parsed = self.parser(raw_stdout)
@@ -249,9 +268,13 @@ class CliSubprocessTransport[ParsedT]:
                 return "", ""
 
     @staticmethod
-    def _empty(fault: CliFault) -> CliExecutionEnvelope[ParsedT]:
+    def _empty(
+        fault: CliFault, *, error_type: str | None = None
+    ) -> CliExecutionEnvelope[ParsedT]:
         empty = redact_raw_stdio("")
-        return CliExecutionEnvelope(None, None, empty, empty, None, fault, True)
+        return CliExecutionEnvelope(
+            None, None, empty, empty, None, fault, error_type, True
+        )
 
     @staticmethod
     def _result(
@@ -261,6 +284,7 @@ class CliSubprocessTransport[ParsedT]:
         *,
         parsed: ParsedT | None,
         fault: CliFault | None,
+        error_type: str | None = None,
     ) -> CliExecutionEnvelope[ParsedT]:
         return CliExecutionEnvelope(
             process_id=process.pid,
@@ -269,5 +293,6 @@ class CliSubprocessTransport[ParsedT]:
             stderr=redact_raw_stdio(raw_stderr),
             parsed=parsed,
             fault=fault,
+            error_type=error_type,
             process_confirmed_stopped=process.poll() is not None,
         )

@@ -64,6 +64,7 @@ _OPENROUTER_CONFIGS = {
         QWEN_STATELESS,
     )
 }
+_OPENROUTER_UNKNOWN_RESERVATION_RULE = "retain every unknown reservation"
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,9 @@ class _BaseAdapter:
         self._policy_records = {policy.slot: policy for policy in plan.policies}
         self._records: list[dict[str, Any]] = []
         self._closed = False
+
+    def bind_journal(self, journal: V5AttemptJournal) -> None:
+        self._bind_resume_journal(journal)
 
     def execute(
         self,
@@ -160,6 +164,12 @@ class _BaseAdapter:
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
         return tuple(self._records)
 
+    def provider_accounting(self) -> Mapping[str, Any]:
+        return {}
+
+    def cleanup_evidence(self) -> Mapping[str, bool]:
+        return {"provider_adapter_closed": self._closed}
+
     def _manifest(self, slot: str) -> PolicyManifest:
         raise NotImplementedError
 
@@ -184,6 +194,15 @@ class OpenRouterHttpAdapter(_BaseAdapter):
         unknown_slots = set(self._policy_records) - set(_OPENROUTER_CONFIGS)
         if unknown_slots:
             raise ValueError(f"unsupported OpenRouter policy slot: {min(unknown_slots)}")
+        request_maxima = {self._config(slot).request_maximum_usd for slot in self._policy_records}
+        if request_maxima != {plan.budgets.per_request_theoretical_maximum_usd}:
+            raise ValueError(
+                "runner plan per-request theoretical maximum differs from provider transport"
+            )
+        if plan.budgets.unknown_reservation_rule != _OPENROUTER_UNKNOWN_RESERVATION_RULE:
+            raise ValueError(
+                "runner plan unknown reservation rule differs from provider transport"
+            )
         self.ledger = SpendLedger(plan.budgets.maximum_spend_usd, Decimal(0))
         self._transports: dict[str, OpenRouterPanelTransport] = {}
 
@@ -223,8 +242,18 @@ class OpenRouterHttpAdapter(_BaseAdapter):
         )
 
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
-        provider = [record for transport in self._transports.values() for record in transport.records]
+        provider = [
+            record
+            for transport in self._transports.values()
+            for record in transport.records
+        ]
         return (*provider, *super().transport_records())
+
+    def provider_accounting(self) -> Mapping[str, Any]:
+        return {
+            "provider_calls_made": self.ledger.wire_requests_sent,
+            "unknown_charge_outcomes": self.ledger.unknown_charge_outcomes,
+        }
 
     def close(self) -> None:
         self._closed = True
@@ -263,7 +292,9 @@ class CodexCliAdapter(_BaseAdapter):
         config = CODEX_POLICY_BY_SLOT[slot]
         if self._invocation_journal is None:
             self._invocation_journal = CodexCliInvocationJournal(
-                self.repository_root / self.plan.outputs.directory / self.settings.invocation_journal,
+                self.repository_root
+                / self.plan.outputs.directory
+                / self.settings.invocation_journal,
                 config,
             )
         elif self._invocation_journal.config != config:
@@ -294,8 +325,33 @@ class CodexCliAdapter(_BaseAdapter):
             blocked=self.ledger.blocked,
         )
 
+    def provider_accounting(self) -> Mapping[str, Any]:
+        invocation_integrity = (
+            None
+            if self._invocation_journal is None
+            else self._invocation_journal.integrity_report()
+        )
+        return {
+            "provider_calls_made": self.ledger.processes_started,
+            "incremental_experiment_charge_usd": str(
+                self.ledger.incremental_experiment_charge_usd
+            ),
+            "informational_list_price_equivalent_usd": str(
+                self.ledger.incremental_informational_list_price_equivalent_usd
+            ),
+            "unresolved_invocation_count": len(self.ledger.unresolved),
+            "usage_telemetry_unavailable_count": len(
+                self.ledger.usage_telemetry_unavailable
+            ),
+            "invocation_journal_integrity": invocation_integrity,
+        }
+
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
-        provider = [record for transport in self._transports.values() for record in transport.records]
+        provider = [
+            record
+            for transport in self._transports.values()
+            for record in transport.records
+        ]
         return (*provider, *super().transport_records())
 
     def close(self) -> None:
@@ -304,6 +360,14 @@ class CodexCliAdapter(_BaseAdapter):
         if self._invocation_journal is not None:
             self._invocation_journal.close()
         self._closed = True
+
+    def cleanup_evidence(self) -> Mapping[str, bool]:
+        return {
+            **super().cleanup_evidence(),
+            "subprocesses_closed": all(
+                transport.subprocesses_closed for transport in self._transports.values()
+            ),
+        }
 
 
 class ClaudeCliAdapter(_BaseAdapter):
@@ -337,7 +401,9 @@ class ClaudeCliAdapter(_BaseAdapter):
         del slot, journal
         if self._invocation_journal is None:
             self._invocation_journal = ClaudeInvocationJournal(
-                self.repository_root / self.plan.outputs.directory / self.settings.invocation_journal
+                self.repository_root
+                / self.plan.outputs.directory
+                / self.settings.invocation_journal
             )
         if self._transport_value is None:
             self._transport_value = ClaudeCodeTransport(
@@ -360,6 +426,27 @@ class ClaudeCliAdapter(_BaseAdapter):
             blocked=self.ledger.blocked,
         )
 
+    def provider_accounting(self) -> Mapping[str, Any]:
+        invocation_integrity = (
+            None
+            if self._invocation_journal is None
+            else self._invocation_journal.integrity_report()
+        )
+        return {
+            "provider_calls_made": self.ledger.processes_started,
+            "incremental_experiment_charge_usd": str(
+                self.ledger.incremental_experiment_charge_usd
+            ),
+            "informational_cost_telemetry_usd": str(
+                self.ledger.incremental_informational_list_price_equivalent_usd
+            ),
+            "unresolved_invocation_count": len(self.ledger.unresolved),
+            "usage_telemetry_unavailable_count": len(
+                self.ledger.usage_telemetry_unavailable
+            ),
+            "invocation_journal_integrity": invocation_integrity,
+        }
+
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
         provider = [] if self._transport_value is None else self._transport_value.records
         return (*provider, *super().transport_records())
@@ -370,6 +457,15 @@ class ClaudeCliAdapter(_BaseAdapter):
         if self._invocation_journal is not None:
             self._invocation_journal.close()
         self._closed = True
+
+    def cleanup_evidence(self) -> Mapping[str, bool]:
+        return {
+            **super().cleanup_evidence(),
+            "subprocesses_closed": (
+                self._transport_value is None
+                or self._transport_value.subprocesses_closed
+            ),
+        }
 
 
 def build_provider_adapter(repository_root: Path, plan: CalibrationPlan) -> _BaseAdapter:

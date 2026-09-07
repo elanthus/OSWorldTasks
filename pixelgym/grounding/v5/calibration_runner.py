@@ -61,6 +61,8 @@ class CalibrationProviderAdapter(Protocol):
     adapter_name: str
     transport_name: str
 
+    def bind_journal(self, journal: V5AttemptJournal) -> None: ...
+
     def execute(
         self,
         assignment: TaskAssignment,
@@ -78,8 +80,10 @@ class CalibrationProviderAdapter(Protocol):
     ) -> EpisodeResult: ...
 
     def spend_snapshot(self) -> SpendSnapshot: ...
+    def provider_accounting(self) -> Mapping[str, Any]: ...
     def transport_records(self) -> Sequence[Mapping[str, Any]]: ...
     def close(self) -> None: ...
+    def cleanup_evidence(self) -> Mapping[str, bool]: ...
 
 
 def run_calibration_plan(
@@ -110,8 +114,15 @@ def run_calibration_plan(
         if prior.get("approved_plan_sha256") != plan.digest:
             raise ValueError("existing summary belongs to a different runner plan")
         if prior.get("run_state") == "complete":
-            _validate_completed_summary(prior, plan=plan, journal_path=journal_path)
-            adapter.close()
+            try:
+                _validate_completed_summary(
+                    prior,
+                    plan=plan,
+                    journal_path=journal_path,
+                    adapter=adapter,
+                )
+            finally:
+                adapter.close()
             return prior
 
     journal = V5AttemptJournal(journal_path)
@@ -120,6 +131,7 @@ def run_calibration_plan(
     stop_reason = "completed_all_assignments"
     consecutive_failures = 0
     try:
+        adapter.bind_journal(journal)
         for assignment in plan.assignments:
             completed = journal.event(_completed_key(assignment))
             if completed is not None:
@@ -146,7 +158,8 @@ def run_calibration_plan(
                         journal=journal,
                         approved_caps=plan.budgets.caps,
                     )
-                _validate_episode_identity(assignment, result)
+            _validate_episode_identity(assignment, result)
+            if completed is None:
                 journal.append_event(
                     event_key=_completed_key(assignment),
                     kind="campaign_assignment_completed",
@@ -180,6 +193,7 @@ def run_calibration_plan(
         raise
     finally:
         spend = adapter.spend_snapshot()
+        provider_accounting = dict(adapter.provider_accounting())
         transport_records = [dict(record) for record in adapter.transport_records()]
         integrity = journal.integrity_report()
         calls = journal.call_counts()
@@ -192,16 +206,22 @@ def run_calibration_plan(
         )
         journal.close()
         adapter.close()
+        cleanup = {
+            "journal_closed": True,
+            **adapter.cleanup_evidence(),
+        }
         summary = _summary(
             plan=plan,
             episode_results=episode_results,
             transport_records=transport_records,
             spend=spend,
+            provider_accounting=provider_accounting,
             call_counts=calls,
             journal_integrity=integrity,
             execution_error=execution_error,
             stop_reason=stop_reason,
             attempted_count=attempted_count,
+            cleanup=cleanup,
         )
         _write_json(summary_path, summary)
     return summary
@@ -213,7 +233,11 @@ _NORMAL_CLASSIFICATIONS = frozenset(
 
 
 def _validate_completed_summary(
-    summary: Mapping[str, Any], *, plan: CalibrationPlan, journal_path: Path
+    summary: Mapping[str, Any],
+    *,
+    plan: CalibrationPlan,
+    journal_path: Path,
+    adapter: CalibrationProviderAdapter,
 ) -> None:
     validate_credential_free(summary)
     identities = {
@@ -233,6 +257,7 @@ def _validate_completed_summary(
         raise FileNotFoundError("completed summary journal is missing")
     journal = V5AttemptJournal(journal_path)
     try:
+        adapter.bind_journal(journal)
         integrity = journal.integrity_report()
         calls = journal.call_counts()
         attempted = len(
@@ -250,6 +275,7 @@ def _validate_completed_summary(
             result = _episode_from_mapping(completed.payload.get("episode_result"))
             _validate_episode_identity(assignment, result)
             journal_results.append({"slot": assignment.slot, **result.to_dict()})
+        spend = _validated_spend(adapter.spend_snapshot(), plan)
     finally:
         journal.close()
     classifications = Counter(str(result["classification"]) for result in journal_results)
@@ -271,8 +297,8 @@ def _validate_completed_summary(
         "model_attempt_reservations": calls[0],
         "provider_control_requests": calls[1],
         "provider_wire_request_reservations": calls[0] + calls[1],
+        "spend": spend.to_dict(),
         "journal_integrity": integrity,
-        "cleanup": {"journal_closed": True, "provider_adapter_closed": True},
     }
     for field, expected in evidence.items():
         if summary.get(field) != expected:
@@ -285,11 +311,13 @@ def _summary(
     episode_results: Sequence[Mapping[str, Any]],
     transport_records: Sequence[Mapping[str, Any]],
     spend: SpendSnapshot,
+    provider_accounting: Mapping[str, Any],
     call_counts: tuple[int, int],
     journal_integrity: Mapping[str, Any],
     execution_error: Mapping[str, str] | None,
     stop_reason: str,
     attempted_count: int,
+    cleanup: Mapping[str, bool],
 ) -> dict[str, Any]:
     classifications = Counter(str(result["classification"]) for result in episode_results)
     denominators = {
@@ -315,12 +343,13 @@ def _summary(
         "provider_control_requests": call_counts[1],
         "provider_wire_request_reservations": call_counts[0] + call_counts[1],
         "spend": spend.to_dict(),
+        "provider_accounting": dict(provider_accounting),
         "stop_reason": stop_reason,
         "execution_error": execution_error,
         "transport_records": list(transport_records),
         "journal_integrity": dict(journal_integrity),
         "stop_conditions": list(plan.stop_conditions),
-        "cleanup": {"journal_closed": True, "provider_adapter_closed": True},
+        "cleanup": dict(cleanup),
     }
 
 

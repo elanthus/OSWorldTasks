@@ -1079,6 +1079,10 @@ class CodexCliTransport:
         )
         self._closed = False
 
+    @property
+    def subprocesses_closed(self) -> bool:
+        return self._lifecycle.subprocesses_closed
+
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
     ) -> TransportOutcome:
@@ -1204,6 +1208,7 @@ class CodexCliTransport:
                 transport_outcome = cli_fault_outcome(execution_fault)
                 failure_outcome = {
                     "failure_code": execution_fault.code,
+                    "type": execution.error_type,
                     "cli_fault": execution_fault.to_dict(),
                     "process_confirmed_stopped": execution.process_confirmed_stopped,
                     "runtime_enforcement": enforcement_record,
@@ -1415,6 +1420,7 @@ class CodexCliTransport:
                 "informational_list_price_equivalent_usd"
             ),
             "policy_violation": outcome.get("policy_violation", "none"),
+            "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
             "price_guard": outcome.get("price_guard"),
             "usage_telemetry_status": outcome.get(

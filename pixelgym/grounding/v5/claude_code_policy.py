@@ -871,6 +871,7 @@ class ClaudeCodeTransport:
                 transport_outcome = cli_fault_outcome(execution_fault)
                 outcome = {
                     "failure_code": execution_fault.code,
+                    "type": execution.error_type,
                     "cli_fault": execution_fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
                     "transport_outcome": transport_outcome.to_dict(),
@@ -1068,6 +1069,7 @@ class ClaudeCodeTransport:
                 "informational_cost_telemetry_usd"
             ),
             "policy_violation": outcome.get("policy_violation", "none"),
+            "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
             "usage_telemetry_status": outcome.get(
                 "usage_telemetry_status", "unavailable"
