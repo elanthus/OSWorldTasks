@@ -75,10 +75,11 @@ class ServingProvider(Protocol):
     ) -> tuple[str | None, str, float | None, dict[str, Any] | None]:
         """Return raw final text, request ID, latency, and usage without hidden retry.
 
-        ``prompt`` is the exact request text rendered from the candidate's own packaged
-        renderer (see pixelgym.platform.policy.render_prompt) -- the same renderer
-        evaluation uses to build its request material, so serving and evaluation invoke
-        one narrow rendering implementation rather than parallel behavior.
+        ``prompt`` is rendered by pixelgym.platform.policy.render_prompt from the
+        candidate's own packaged ``prompt_template_text`` -- the frozen bytes recorded in
+        the policy package, not whatever the running code's PROMPT_TEMPLATES constant
+        currently holds -- built from the same pixelgym.grounding.evaluation.prompt_for
+        base text and per-version addendum rule that evaluation's request material uses.
         """
 
 
