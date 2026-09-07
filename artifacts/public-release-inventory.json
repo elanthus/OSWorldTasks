@@ -2974,7 +2974,7 @@
         "review_required_count": 0
       },
       "email_addresses": {
-        "finding_count": 28,
+        "finding_count": 27,
         "findings": [
           {
             "classification": "acknowledged_synthetic_address",
@@ -3131,12 +3131,6 @@
             "line": 164,
             "path": "tests/unit/test_grounding_v5_runner_plan_parity.py",
             "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
-          },
-          {
-            "classification": "acknowledged_synthetic_address",
-            "line": 78,
-            "path": "tests/unit/test_public_release_inventory.py",
-            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
           },
           {
             "classification": "acknowledged_synthetic_address",

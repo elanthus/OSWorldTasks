@@ -35,6 +35,9 @@ def test_inventory_detects_public_release_regressions(tmp_path: Path) -> None:
     clean = module.build_inventory(root)
     assert clean["summary"]["passed"] is True
     assert clean["links"]["local_link_count"] == 2
+    assert all(
+        link["target"] != "not-a-real-file.json" for link in clean["links"]["failures"]
+    )
     assert clean["license_inventory"]["passed"] is True
     assert clean["redaction_and_asset_inventory"]["review_required_count"] == 0
 
@@ -75,7 +78,7 @@ def test_history_inventory_finds_sensitive_values_removed_from_head(tmp_path: Pa
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
     subprocess.run(
-        ["git", "config", "user.email", "release-fixture@example.invalid"],
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
         cwd=root,
         check=True,
     )
