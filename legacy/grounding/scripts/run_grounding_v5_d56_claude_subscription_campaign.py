@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan and execute the preauthorized Sonnet medium smoke and full run."""
+"""Plan and execute the preauthorized Sonnet medium smoke and full run.
+
+Run with ``python -m legacy.grounding.scripts.run_grounding_v5_d56_claude_subscription_campaign``.
+"""
 
 from __future__ import annotations
 

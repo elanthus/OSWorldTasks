@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate Codex CLI plans or execute one exactly approved smoke task."""
+"""Generate Codex CLI plans or execute one exactly approved smoke task.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_codex_cli_calibration``.
+"""
 
 from __future__ import annotations
 

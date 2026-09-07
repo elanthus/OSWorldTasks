@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Audit the frozen Gemini 3.7 Flash calibration without making provider calls."""
+"""Audit the frozen Gemini 3.7 Flash calibration without making provider calls.
+
+Run as ``python -m legacy.grounding.scripts.audit_grounding_v5_d56_gemini_full_calibration``.
+"""
 
 from __future__ import annotations
 

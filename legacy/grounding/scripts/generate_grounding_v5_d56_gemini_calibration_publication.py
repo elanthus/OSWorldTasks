@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate publishable Gemini calibration evidence from sealed local artifacts."""
+"""Generate publishable Gemini calibration evidence from sealed local artifacts.
+
+Run with ``python -m legacy.grounding.scripts.generate_grounding_v5_d56_gemini_calibration_publication``.
+"""
 
 from __future__ import annotations
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the v4c result summary from stored records without model calls."""
+"""Generate the v4c result summary from stored records without model calls.
+
+Run as ``python -m legacy.grounding.scripts.record_grounding_v4c_evaluation``.
+"""
 
 from __future__ import annotations
 

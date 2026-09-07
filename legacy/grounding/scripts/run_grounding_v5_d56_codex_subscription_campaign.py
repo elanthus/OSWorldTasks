@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan and execute preauthorized Luna/Terra medium smoke and full runs."""
+"""Plan and execute preauthorized Luna/Terra medium smoke and full runs.
+
+Run with ``python -m legacy.grounding.scripts.run_grounding_v5_d56_codex_subscription_campaign``.
+"""
 
 from __future__ import annotations
 

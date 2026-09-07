@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or run the capped Luna evaluation for the frozen v4 pilot."""
+"""Plan or run the capped Luna evaluation for the frozen v4 pilot.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v4_pilot``.
+"""
 
 from __future__ import annotations
 

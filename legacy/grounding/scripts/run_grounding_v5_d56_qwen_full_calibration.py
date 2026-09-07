@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute the fifty-task Qwen3-VL retry successor calibration."""
+"""Plan or execute the fifty-task Qwen3-VL retry successor calibration.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_qwen_full_calibration``.
+"""
 
 from __future__ import annotations
 

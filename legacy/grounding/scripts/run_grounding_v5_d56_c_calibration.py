@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute the Slot C successor to the frozen B/C/D calibration."""
+"""Plan or execute the Slot C successor to the frozen B/C/D calibration.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_c_calibration``.
+"""
 
 from __future__ import annotations
 

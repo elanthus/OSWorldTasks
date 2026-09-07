@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Summarize stored v4 predictions and update the evidence manifest offline."""
+"""Summarize stored v4 predictions and update the evidence manifest offline.
+
+Run as ``python -m legacy.grounding.scripts.record_grounding_v4_evaluation``.
+"""
 
 from __future__ import annotations
 

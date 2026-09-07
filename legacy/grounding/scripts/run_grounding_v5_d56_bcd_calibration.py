@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute the B/C/D successor to the frozen D5.6 calibration."""
+"""Plan or execute the B/C/D successor to the frozen D5.6 calibration.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_bcd_calibration``.
+"""
 
 from __future__ import annotations
 

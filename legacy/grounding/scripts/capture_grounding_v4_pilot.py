@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Capture and validate the deterministic v4 compositional pilot."""
+"""Capture and validate the deterministic v4 compositional pilot.
+
+Run as ``python -m legacy.grounding.scripts.capture_grounding_v4_pilot``.
+"""
 
 from __future__ import annotations
 

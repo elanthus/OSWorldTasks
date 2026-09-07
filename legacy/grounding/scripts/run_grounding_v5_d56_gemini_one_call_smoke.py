@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute one Gemini 3.7 Flash smoke request."""
+"""Plan or execute one Gemini 3.7 Flash smoke request.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_gemini_one_call_smoke``.
+"""
 
 from __future__ import annotations
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a no-call coordinate/transport audit from stored v4c predictions."""
+"""Generate a no-call coordinate/transport audit from stored v4c predictions.
+
+Run as ``python -m legacy.grounding.scripts.audit_grounding_v4c_floor``.
+"""
 
 from __future__ import annotations
 

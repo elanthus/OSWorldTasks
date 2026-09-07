@@ -15,11 +15,21 @@ ROOT = Path(__file__).parents[2]
 SCHEMA = "pixelgym-grounding-capture-provenance-v1"
 REVISION = re.compile(r"[0-9a-f]{40}")
 SIDECAR_SHA256 = {
-    "grounding-v3a-capture.json": "4281a48a6c0d1909cfa3b6fa6ad9d828b8bcadaeba5183b3327cf623c8834371",
-    "grounding-v3b-capture.json": "ba7c1605757d51a2b732168401b3735e47663ac7bb7190837917047d99e6ca87",
-    "grounding-v3c-capture.json": "b4d73e595b7ed631c82c03c3d19f00f88fe6234b9c92daaf80d7bc04f705e76b",
-    "grounding-v4b-pilot-capture.json": "c3011bc0938463c7903470b2532da47d0c94bb890076edbd6a2aabe253d1d045",
-    "grounding-v4c-pilot-capture.json": "d9d7a8eadd2e60e53626ade3c39acb18f3cc4eebd6025adb6fd2130e7bc72509",
+    "grounding-v3a-capture.json": (
+        "4281a48a6c0d1909cfa3b6fa6ad9d828b8bcadaeba5183b3327cf623c8834371"
+    ),
+    "grounding-v3b-capture.json": (
+        "ba7c1605757d51a2b732168401b3735e47663ac7bb7190837917047d99e6ca87"
+    ),
+    "grounding-v3c-capture.json": (
+        "b4d73e595b7ed631c82c03c3d19f00f88fe6234b9c92daaf80d7bc04f705e76b"
+    ),
+    "grounding-v4b-pilot-capture.json": (
+        "c3011bc0938463c7903470b2532da47d0c94bb890076edbd6a2aabe253d1d045"
+    ),
+    "grounding-v4c-pilot-capture.json": (
+        "d9d7a8eadd2e60e53626ade3c39acb18f3cc4eebd6025adb6fd2130e7bc72509"
+    ),
 }
 
 
@@ -52,6 +62,7 @@ def _load_sidecar(path: Path, capture_name: str) -> dict[str, Any]:
     }
     assert value["schema_version"] == SCHEMA
     assert value["capture_artifact"] == f"artifacts/{capture_name}"
+    assert isinstance(value["derivation"], str) and value["derivation"]
     for field in ("earliest_matching_revision", "matching_range_end"):
         assert isinstance(value[field], str) and REVISION.fullmatch(value[field])
     paths = value["verified_paths"]

@@ -159,6 +159,13 @@ def test_retired_grounding_sources_are_excluded_from_the_wheel(
     assert not (installed_wheel_site_dir / "legacy").exists()
 
 
+def test_manifest_runner_schema_is_packaged_in_the_wheel(installed_wheel_site_dir):
+    assert (
+        installed_wheel_site_dir
+        / "pixelgym/grounding/v5/schemas/runner-plan.schema.json"
+    ).is_file()
+
+
 def test_apache_license_metadata_and_text_are_packaged(installed_wheel_site_dir):
     dist_info_dirs = list(installed_wheel_site_dir.glob("pixelgym-*.dist-info"))
     assert len(dist_info_dirs) == 1, dist_info_dirs

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute one normalized-coordinate Slot C semantic trial."""
+"""Plan or execute one normalized-coordinate Slot C semantic trial.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_c_normalized_trial``.
+"""
 
 from __future__ import annotations
 

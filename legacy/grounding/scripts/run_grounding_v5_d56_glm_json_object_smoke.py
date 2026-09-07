@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute one GLM Novita FP8 JSON-mode smoke request."""
+"""Plan or execute one GLM Novita FP8 JSON-mode smoke request.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v5_d56_glm_json_object_smoke``.
+"""
 
 from __future__ import annotations
 

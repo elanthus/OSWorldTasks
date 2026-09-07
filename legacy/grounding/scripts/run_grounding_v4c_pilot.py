@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or run a preregistered capped v4c provider evaluation."""
+"""Plan or run a preregistered capped v4c provider evaluation.
+
+Run as ``python -m legacy.grounding.scripts.run_grounding_v4c_pilot``.
+"""
 
 from __future__ import annotations
 

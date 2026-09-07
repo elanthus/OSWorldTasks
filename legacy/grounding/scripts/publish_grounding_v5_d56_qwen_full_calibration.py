@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Audit and publish the frozen Qwen3-VL calibration without provider calls."""
+"""Audit and publish the frozen Qwen3-VL calibration without provider calls.
+
+Run as ``python -m legacy.grounding.scripts.publish_grounding_v5_d56_qwen_full_calibration``.
+"""
 
 from __future__ import annotations
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
@@ -22,4 +23,19 @@ def test_grounding_maintenance_measurement_is_pinned_and_self_describing() -> No
     assert value["after"]["top_level_python_script_count"] == 43
     assert value["after"]["experiment_specific_maintenance_surface_count"] == 0
     assert not any(name.startswith("legacy/") for name in value["after"]["grounding_wheel_files"])
-    assert str(ROOT) not in value["reproduction_command"]
+    strings = _string_values(value)
+    assert not [
+        item
+        for item in strings
+        if item.startswith(("/", "~")) or re.match(r"^[A-Za-z]:[\\/]", item)
+    ]
+
+
+def _string_values(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [item for member in value for item in _string_values(member)]
+    if isinstance(value, dict):
+        return [item for member in value.values() for item in _string_values(member)]
+    return []

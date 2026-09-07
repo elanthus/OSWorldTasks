@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute the fifty-task Gemini 3.7 Flash successor calibration."""
+"""Plan or execute the fifty-task Gemini 3.7 Flash successor calibration.
+
+Run with ``python -m legacy.grounding.scripts.run_grounding_v5_d56_gemini_full_calibration``.
+"""
 
 from __future__ import annotations
 
