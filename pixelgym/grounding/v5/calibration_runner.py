@@ -346,8 +346,7 @@ def _verify_repository_state(repository_root: Path, plan: CalibrationPlan) -> No
 def _verify_task_manifest(repository_root: Path, plan: CalibrationPlan) -> None:
     manifest = _load_json_object(repository_root / plan.manifest_path)
     embedded_digest = manifest.get("manifest_digest")
-    manifest_body = {key: value for key, value in manifest.items() if key != "manifest_digest"}
-    recomputed_digest = content_digest(manifest_body)
+    recomputed_digest = _task_manifest_content_digest(manifest)
     if embedded_digest != plan.manifest_digest or recomputed_digest != plan.manifest_digest:
         raise ValueError(f"task manifest digest mismatch: {plan.manifest_path}")
     expected = {(item.seed, item.task_id, item.family) for item in plan.assignments}
@@ -369,6 +368,12 @@ def _verify_task_manifest(repository_root: Path, plan: CalibrationPlan) -> None:
     missing = sorted(expected - observed)
     if missing:
         raise ValueError(f"task manifest does not contain approved assignment: {missing[0]}")
+
+
+def _task_manifest_content_digest(manifest: Mapping[str, Any]) -> str:
+    return content_digest(
+        {key: value for key, value in manifest.items() if key != "manifest_digest"}
+    )
 
 
 def _validated_spend(snapshot: SpendSnapshot, plan: CalibrationPlan) -> SpendSnapshot:
