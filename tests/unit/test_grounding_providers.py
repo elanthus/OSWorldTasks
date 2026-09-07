@@ -10,6 +10,7 @@ from typing import ClassVar, Self
 import pytest
 from PIL import Image
 
+from legacy.grounding.v4c_evaluation import _parse_action
 from pixelgym.grounding.evaluation import RAW_SCHEMA
 from pixelgym.grounding.providers import (
     ClaudeCodeCLIProvider,
@@ -20,7 +21,6 @@ from pixelgym.grounding.providers import (
     ProviderResponse,
     QwenNormalizedCoordinateAdapter,
 )
-from pixelgym.grounding.v4c_evaluation import _parse_action
 
 
 def test_codex_provider_uses_ephemeral_read_only_image_and_schema_flags(tmp_path: Path) -> None:

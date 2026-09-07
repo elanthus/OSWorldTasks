@@ -9,9 +9,9 @@ from typing import Any
 
 import pytest
 
+from legacy.grounding.scripts import run_grounding_v5_d56_codex_cli_calibration
+from legacy.grounding.v5 import d56_codex_cli_calibration as calibration
 from pixelgym.grounding.v5 import codex_cli_policy as policy
-from pixelgym.grounding.v5 import d56_codex_cli_calibration as calibration
-from scripts import run_grounding_v5_d56_codex_cli_calibration
 
 ROOT = Path(__file__).parents[2]
 

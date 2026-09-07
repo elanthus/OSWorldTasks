@@ -5,16 +5,16 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d56_glm_relaxed_trial
-from pixelgym.grounding.v5.contracts import CallCaps
-from pixelgym.grounding.v5.d56_bcd_calibration import _streaming_file_digest
-from pixelgym.grounding.v5.d56_calibration import _file_digest
-from pixelgym.grounding.v5.d56_glm_relaxed_trial import (
+from legacy.grounding.v5 import d56_glm_relaxed_trial
+from legacy.grounding.v5.d56_bcd_calibration import _streaming_file_digest
+from legacy.grounding.v5.d56_calibration import _file_digest
+from legacy.grounding.v5.d56_glm_relaxed_trial import (
     FROZEN_STRICT_GLM_TERMINAL_IDENTITY,
     build_plan,
     execute_trial,
     plan_digest,
 )
+from pixelgym.grounding.v5.contracts import CallCaps
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 
 ROOT = Path(__file__).parents[2]

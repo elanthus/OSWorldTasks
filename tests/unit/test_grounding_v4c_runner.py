@@ -1,7 +1,7 @@
 import pytest
+from scripts.run_grounding_v4c_pilot import provider_for_name
 
 from pixelgym.grounding.providers import OpenRouterProvider, QwenNormalizedCoordinateAdapter
-from scripts.run_grounding_v4c_pilot import provider_for_name
 
 
 def test_v4c_runner_selects_environment_configured_openrouter(

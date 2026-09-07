@@ -49,6 +49,7 @@ tests/{unit,integration}/
 artifacts/            # validation, grounding, and platform evidence
 deploy/               # local Compose stack and platform runtime images
 scripts/
+legacy/grounding/       # repository-only historical calibration validators and apps; not packaged
 ```
 
 Python 3.12. Narrow dependencies: Gymnasium, NumPy, Pillow, FastAPI, Uvicorn, pytest, plus only the formatting/type-checking tools actually wired up. **OSWorld is an optional extra** — the fast unit path must install and run without it.

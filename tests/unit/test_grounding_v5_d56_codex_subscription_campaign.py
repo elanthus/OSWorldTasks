@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
+from legacy.grounding.v5 import d56_codex_subscription_campaign as campaign
 from pixelgym.grounding.v5 import codex_cli_policy as policy
-from pixelgym.grounding.v5 import d56_codex_subscription_campaign as campaign
 from pixelgym.grounding.v5.generator import generate_task
 
 ROOT = Path(__file__).parents[2]

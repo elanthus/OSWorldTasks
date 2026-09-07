@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pixelgym.grounding.v5.contracts import AttemptIdentity
-from pixelgym.grounding.v5.journal import V5AttemptJournal
 from scripts.publish_grounding_v5_d56_qwen_full_calibration import (
     _file_digest,
     _format_cost,
@@ -12,6 +10,9 @@ from scripts.publish_grounding_v5_d56_qwen_full_calibration import (
     build_derivative,
     render_report,
 )
+
+from pixelgym.grounding.v5.contracts import AttemptIdentity
+from pixelgym.grounding.v5.journal import V5AttemptJournal
 
 ROOT = Path(__file__).parents[2]
 AUDIT = ROOT / "artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json"

@@ -11,8 +11,8 @@ from typing import Any, NoReturn
 
 import pytest
 
+from legacy.grounding.v5 import d56_claude_subscription_campaign as campaign
 from pixelgym.grounding.v5 import claude_code_policy as policy
-from pixelgym.grounding.v5 import d56_claude_subscription_campaign as campaign
 from pixelgym.grounding.v5.contracts import (
     CliFaultKind,
     CostKnowledge,

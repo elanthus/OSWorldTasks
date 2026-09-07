@@ -11,13 +11,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from pixelgym.actions import ActionType
-from pixelgym.env import PixelGuiEnv
-from pixelgym.grounding.calibration_v4b import validate_v4b_capture
-from pixelgym.grounding.evaluation import ResponseCache
-from pixelgym.grounding.providers import MockProvider
-from pixelgym.grounding.v4b_backend import V4BReplayBackend
-from pixelgym.grounding.v4b_evaluation import (
+from legacy.grounding.calibration_v4b import validate_v4b_capture
+from legacy.grounding.v4b_backend import V4BReplayBackend
+from legacy.grounding.v4b_evaluation import (
     _load_inputs,
     _parse_action,
     _state_for_observation,
@@ -27,12 +23,16 @@ from pixelgym.grounding.v4b_evaluation import (
     run_v4b_evaluation,
     summarize_v4b_evaluation,
 )
-from pixelgym.grounding.v4b_protocol import (
+from legacy.grounding.v4b_protocol import (
     V4B_CALL_CAP,
     V4B_EPISODES,
     V4B_MAX_ACTIONS,
     validate_v4b_protocol,
 )
+from pixelgym.actions import ActionType
+from pixelgym.env import PixelGuiEnv
+from pixelgym.grounding.evaluation import ResponseCache
+from pixelgym.grounding.providers import MockProvider
 from pixelgym.serialization import load_jsonl
 
 REPOSITORY_ROOT = Path(__file__).parents[2]
@@ -95,7 +95,7 @@ def test_v4b_capture_validator_rejects_nested_target_leak() -> None:
 
 
 def test_v4b_evaluation_does_not_import_capture_instrumentation() -> None:
-    source = REPOSITORY_ROOT / "pixelgym/grounding/v4b_evaluation.py"
+    source = REPOSITORY_ROOT / "legacy/grounding/v4b_evaluation.py"
     tree = ast.parse(source.read_text())
     from_modules = {
         node.module
@@ -108,13 +108,13 @@ def test_v4b_evaluation_does_not_import_capture_instrumentation() -> None:
         if isinstance(node, ast.Import)
         for alias in node.names
     }
-    forbidden = "pixelgym.grounding.calibration_v4b"
+    forbidden = "legacy.grounding.calibration_v4b"
     assert forbidden not in from_modules
     assert forbidden not in imported_modules
 
 
 def test_v4b_capture_app_has_no_runtime_network_calls() -> None:
-    app_source = (REPOSITORY_ROOT / "pixelgym/grounding/v4b_app/static/app.js").read_text()
+    app_source = (REPOSITORY_ROOT / "legacy/grounding/v4b_app/static/app.js").read_text()
     prohibited = (
         r"\bfetch\s*\(",
         r"\bXMLHttpRequest\b",

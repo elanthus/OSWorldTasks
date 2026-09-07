@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.calibration_v4 import capture_v4_calibration_dataset
-from pixelgym.grounding.v4_protocol import V4_CONDITION_CALL_CAP
+from legacy.grounding.calibration_v4 import capture_v4_calibration_dataset
+from legacy.grounding.v4_protocol import V4_CONDITION_CALL_CAP
 
 pytestmark = [
     pytest.mark.browser_integration,
