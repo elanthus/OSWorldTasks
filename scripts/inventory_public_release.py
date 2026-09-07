@@ -55,6 +55,9 @@ SAFE_EMAIL_DOMAINS = {
     "pacifictrading.com",
     "pinnacle-sys.com",
 }
+# Deliberate token-shape fixtures live in tests/unit/test_grounding_v5.py and
+# tests/unit/test_grounding_v5_d56_completed_calibration_publication.py. Acknowledge a new test
+# vector only after confirming it is synthetic, then add its SHA-256 fingerprint and source here.
 SAFE_TOKEN_TEST_FINGERPRINTS = {
     "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33",
     "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506",
@@ -305,14 +308,15 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
                 )
                 else "review_required_operator_path"
             )
-            private_paths.append(
-                _finding(
-                    relative, _line_number(text, match.start()), match.group("path"), classification
-                )
+            private_path_finding = _finding(
+                relative, _line_number(text, match.start()), match.group("path"), classification
             )
-            usernames.append(
-                _finding(relative, _line_number(text, match.start()), user, classification)
+            username_finding = _finding(
+                relative, _line_number(text, match.start()), user, classification
             )
+            private_paths.append(private_path_finding)
+            if username_finding["value_fingerprint"] != private_path_finding["value_fingerprint"]:
+                usernames.append(username_finding)
 
         for match in EMAIL.finditer(text):
             address = match.group(0)
@@ -679,11 +683,73 @@ def build_inventory(root: Path, *, tracked_only: bool = False) -> dict[str, obje
     }
 
 
+def _inventory_differences(expected: object, actual: object, path: str = "$") -> list[str]:
+    if type(expected) is not type(actual):
+        return [f"{path}: expected {type(expected).__name__}, found {type(actual).__name__}"]
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        differences: list[str] = []
+        for key in sorted(expected.keys() | actual.keys()):
+            child = f"{path}.{key}"
+            if key not in expected:
+                differences.append(f"{child}: added")
+            elif key not in actual:
+                differences.append(f"{child}: missing")
+            else:
+                differences.extend(_inventory_differences(expected[key], actual[key], child))
+        return differences
+    if isinstance(expected, list) and isinstance(actual, list):
+        differences = []
+        if len(expected) != len(actual):
+            differences.append(f"{path}: expected {len(expected)} items, found {len(actual)}")
+        for index, (expected_item, actual_item) in enumerate(zip(expected, actual, strict=False)):
+            differences.extend(
+                _inventory_differences(expected_item, actual_item, f"{path}[{index}]")
+            )
+        return differences
+    if expected != actual:
+        return [
+            (
+                f"{path}: expected {json.dumps(expected, sort_keys=True)}, "
+                f"found {json.dumps(actual, sort_keys=True)}"
+            )
+        ]
+    return []
+
+
+def check_committed_inventory(root: Path) -> dict[str, object]:
+    """Compare the committed inventory with a tracked-only rebuild."""
+
+    artifact = root / "artifacts" / "public-release-inventory.json"
+    try:
+        expected = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        return {
+            "artifact": "artifacts/public-release-inventory.json",
+            "checked_scope": "tracked files",
+            "difference_count": 1,
+            "differences": [f"artifact could not be read as JSON: {type(error).__name__}"],
+            "passed": False,
+        }
+    actual = build_inventory(root, tracked_only=True)
+    differences = _inventory_differences(expected, actual)
+    reported_limit = 50
+    return {
+        "artifact": "artifacts/public-release-inventory.json",
+        "checked_scope": "tracked files",
+        "difference_count": len(differences),
+        "differences": differences[:reported_limit],
+        "differences_truncated": len(differences) > reported_limit,
+        "passed": not differences,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument(
-        "--mode", choices=("inventory", "links", "redaction", "history"), default="inventory"
+        "--mode",
+        choices=("inventory", "links", "redaction", "history", "check"),
+        default="inventory",
     )
     parser.add_argument(
         "--tracked-only",
@@ -692,9 +758,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    if args.mode == "links":
+    if args.mode == "check":
+        output: object = check_committed_inventory(root)
+        passed = bool(output["passed"])
+    elif args.mode == "links":
         _, tracked = repository_files(root, tracked_only=args.tracked_only)
-        output: object = scan_readme_links(root, tracked)
+        output = scan_readme_links(root, tracked)
         passed = bool(output["passed"])
     elif args.mode == "redaction":
         files, tracked = repository_files(root, tracked_only=args.tracked_only)

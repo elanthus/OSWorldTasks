@@ -20,12 +20,20 @@ def _load_script() -> ModuleType:
     return module
 
 
+def _init_repository(root: Path) -> None:
+    subprocess.run(
+        ["git", "-c", "init.templateDir=", "-c", "core.hooksPath=", "init", "-q"],
+        cwd=root,
+        check=True,
+    )
+
+
 def test_inventory_detects_public_release_regressions(tmp_path: Path) -> None:
     module = _load_script()
     root = tmp_path / "repository"
     shutil.copytree(FIXTURE, root)
     (root / ".gitignore").write_text("ignored/\n")
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    _init_repository(root)
     subprocess.run(
         ["git", "add", "README.md", "evidence.json", "LICENSE", "NOTICE", ".gitignore"],
         cwd=root,
@@ -75,7 +83,7 @@ def test_history_inventory_finds_sensitive_values_removed_from_head(tmp_path: Pa
     module = _load_script()
     root = tmp_path / "repository"
     shutil.copytree(FIXTURE, root)
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    _init_repository(root)
     subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
     subprocess.run(
         ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
@@ -122,15 +130,32 @@ def test_history_inventory_fails_closed_outside_git(tmp_path: Path) -> None:
     assert history["failures"] == ["git_log_patch_scan_failed"]
 
 
-def test_committed_inventory_matches_current_public_tree() -> None:
+def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
+    tmp_path: Path,
+) -> None:
     module = _load_script()
-    committed = json.loads(
-        (REPOSITORY_ROOT / "artifacts/public-release-inventory.json").read_text()
+    root = tmp_path / "repository"
+    shutil.copytree(FIXTURE, root)
+    _init_repository(root)
+    artifact = root / "artifacts" / "public-release-inventory.json"
+    artifact.parent.mkdir()
+    artifact.write_text("{}\n")
+    subprocess.run(
+        ["git", "add", "README.md", "evidence.json", "LICENSE", "NOTICE", "artifacts"],
+        cwd=root,
+        check=True,
+    )
+    artifact.write_text(
+        json.dumps(module.build_inventory(root, tracked_only=True), indent=2, sort_keys=True) + "\n"
     )
 
-    untracked = REPOSITORY_ROOT / "inventory-untracked-regression.txt"
+    untracked = root / "inventory-untracked-regression.txt"
     untracked.write_text("This untracked scratch file must not change the locked inventory.\n")
-    try:
-        assert module.build_inventory(REPOSITORY_ROOT, tracked_only=True) == committed
-    finally:
-        untracked.unlink()
+    assert module.check_committed_inventory(root)["passed"] is True
+
+    readme = root / "README.md"
+    readme.write_text(readme.read_text() + "\n[New evidence](new-evidence.json)\n")
+    mismatch = module.check_committed_inventory(root)
+    assert mismatch["passed"] is False
+    assert mismatch["difference_count"] > 0
+    assert any("links" in difference for difference in mismatch["differences"])

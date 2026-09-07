@@ -51,9 +51,9 @@ agent interface; expected values and bounding boxes never enter the environment 
   [dataset](artifacts/grounding-dataset.jsonl)).
 - Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across
   4 seeds × 4 deterministic scripted-policy aliases: 16 branches and 80 scripted calls, with a
-  maximum of 4 branches observed concurrently and 4 invalid assignments retained. The provider was
-  the no-cost `scripted-demo` fixture on one local host; these are orchestration fixtures, not model
-  quality or production-throughput measurements
+  maximum of 4 branches observed concurrently and 4 invalid and 4 request-failure assignments
+  retained. The provider was the no-cost `scripted-demo` fixture on one local host; these are
+  orchestration fixtures, not model quality or production-throughput measurements
   ([fan-out evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json),
   [versioned plan](artifacts/platform/seed-policy-plan-v1.json),
   [frozen dataset](artifacts/grounding-dataset.jsonl)).
@@ -364,6 +364,12 @@ known limitation, with the underlying evidence retained
   descriptive and remain neither benchmark scores nor a milestone-gate verdict.
 
 ## Project evidence
+
+| Check | Stored result | Evidence |
+|---|---|---|
+| Fake reset repeatability | 10/10 semantically and bitwise identical; 0 differing pixels | [`validation-report.json`](artifacts/validation-report.json) |
+| Reward timing | 122/122 stored trajectories met their expected reward/termination outcome | [`reward-timing.json`](artifacts/day-2/raw/reward-timing.json) |
+| Space integrity | Gymnasium checker; 500 sampled actions; 14 invalid and 4 boundary probes | [`space-integrity.json`](artifacts/day-2/raw/space-integrity.json) |
 
 - [`artifacts/validation-report.md`](artifacts/validation-report.md) — generated Day 2 report
 - [`artifacts/day-2/real-golden/contact-sheet.png`](artifacts/day-2/real-golden/contact-sheet.png) — real episode frames

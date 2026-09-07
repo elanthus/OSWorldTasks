@@ -36,9 +36,9 @@ output directly.
 - [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode history` and inspect every
   fingerprinted finding from blobs reachable through all Git refs. Do not paste matched values into
   an issue, pull request, or release record.
-- [ ] Compare a fresh full inventory from
-  `.venv/bin/python scripts/inventory_public_release.py --mode inventory --tracked-only` with
-  `artifacts/public-release-inventory.json`. Investigate any difference before release.
+- [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode check`. This rebuilds the
+  inventory from tracked files only and compares it with
+  `artifacts/public-release-inventory.json`; investigate any reported difference before release.
 - [ ] Confirm no ignored/private evidence, restricted attempt journal, gated OSWorld task asset,
   raw private provider payload, operator path, personal e-mail address, credential, or token is
   tracked or linked from the README.
@@ -54,9 +54,10 @@ output directly.
   infer it from automated status.
 - [ ] Review the stored D4.12 raw evidence. Record any human milestone verdict separately; this
   release checklist does not declare one.
-- [ ] Decide how to handle the fingerprinted absolute operator paths retained in historical blobs:
-  accept their publication, authorize a separately reviewed history rewrite, or keep the repository
-  private. Do not change visibility while this decision is unresolved.
+- [ ] Confirm the 2026-09-07 owner decision to accept the Git history without rewriting the seven
+  ancestor commits whose earlier file versions retain fingerprinted absolute operator paths. Review
+  the raw history inventory before ticking this item; the owner, not an automated check, records
+  acceptance of those findings for publication.
 - [ ] Change the GitHub repository visibility from private to public.
 - [ ] From a logged-out browser, verify the README, local artifact links, license files, and release
   media are accessible in the public repository.
