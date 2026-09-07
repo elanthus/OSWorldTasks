@@ -600,15 +600,18 @@ def test_qwen_adapter_rejects_nonpositive_grid_size() -> None:
 
 
 @pytest.mark.parametrize(
-    "raw_response",
+    ("raw_response", "expected_error"),
     (
-        '{"action_type":1,"x":1001,"y":500,"key":0}',
-        '{"action_type":1,"x":-1,"y":500,"key":0}',
-        '{"action_type":1,"x":1.5,"y":500,"key":0}',
+        # x=1001 is outside the 0..1000 grid, so the adapter rescales it linearly
+        # (1001 * 1024 / 1000 = 1025) instead of clamping it into range; 1025 is
+        # then rejected as outside the 1024-wide screenshot.
+        ('{"x":1001,"y":500}', "point lies outside screenshot"),
+        ('{"x":-1,"y":500}', "point lies outside screenshot"),
+        ('{"x":1.5,"y":500}', "x and y must be integers"),
     ),
 )
 def test_qwen_adapter_keeps_invalid_grid_coordinates_rejectable(
-    tmp_path: Path, raw_response: str
+    tmp_path: Path, raw_response: str, expected_error: str
 ) -> None:
     image_path = tmp_path / "screenshot.png"
     Image.new("RGB", (1024, 768), "white").save(image_path)
@@ -629,5 +632,5 @@ def test_qwen_adapter_keeps_invalid_grid_coordinates_rejectable(
     )
 
     assert parsed.status == "invalid"
-    assert parsed.error is not None
+    assert parsed.error == expected_error
     assert response.provider_metadata["original_response"] == raw_response
