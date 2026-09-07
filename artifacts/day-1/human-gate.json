@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "gate": "D1.8",
+  "verdict": "PASS",
+  "declared_by": "project owner",
+  "declared_at": "2026-09-07T19:01:56Z",
+  "declaration": "D1.8 PASS.",
+  "graded_revision": "5b3295271715ff5f9b64d548620d5535bf368019",
+  "evidence": {
+    "environment": "fresh python3.12 venv, pip install -e \".[dev]\", OSWorld not installed (desktop_env not importable)",
+    "python_version": "3.12.14",
+    "ruff_check": {"exit_status": 0, "output": "All checks passed!"},
+    "mypy_pixelgym": {"exit_status": 0, "output": "Success: no issues found in 127 source files"},
+    "pytest_unit_n_auto": [
+      {"run": 1, "passed": 1235, "failed": 1, "seconds": 29.31, "failed_test": "tests/unit/platform/test_grounding_evaluation_flow.py::test_flow_resumes_at_each_side_effect_boundary_without_duplicate_calls[verify_raw_artifacts]"},
+      {"run": 2, "passed": 1236, "failed": 0, "seconds": 28.18},
+      {"run": 3, "passed": 1236, "failed": 0, "seconds": 29.27}
+    ],
+    "failed_test_rerun_alone": {"passed": 1, "failed": 0, "note": "platform-milestone test, not a Sprint 1 test; assertion text from run 1 was not captured"},
+    "golden_trajectory_check": {"exit_status": 0, "fixture": "tests/unit/fixtures/golden_trajectory_seed7.json", "seed": 7, "task_id": "vf-6bed55ed612d3c5a", "action_count": 109, "reward_vector": "[0.0 x108, 1.0]", "blind_replays_identical": true, "post_episode_step_raises": true},
+    "demo_fake_backend_seed_7": {"exit_status": 0, "action_count": 45, "total_reward": 0.0, "submissions_recorded": 1, "incomplete_submit_refused": true},
+    "core_module_osworld_import": false
+  }
+}

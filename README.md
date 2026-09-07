@@ -61,6 +61,13 @@ agent interface; expected values and bounding boxes never enter the environment 
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
+**Status.** This is a personal portfolio project, public for review. Sprints 1–3 are complete and
+gated by the owner ([D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2/raw/human-gate.json),
+[D3.11](artifacts/day-3/raw/human-gate.json)); the platform milestone (D4.12) and the v5 agent
+benchmark are in progress and their gates are not declared. Every number below links to a
+checked-in artifact. Pull requests run lint, strict type checking, and the fast suite in CI; the
+Docker-based platform integration suite runs only on manual dispatch.
+
 The project owner declared the [historical Day 2 gate](artifacts/day-2/raw/human-gate.json) `PASS`.
 The [2026-09-06 evidence revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)
 was re-graded by the project owner on 2026-09-07 and declared `PASS`
@@ -162,6 +169,8 @@ previous direct invocation created a directory at `.cache/platform/source-proven
 the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
 The deployment guide also documents the separate fast, local-runtime, and isolated
 Compose/Playwright test commands, their prerequisites, cleanup scope, and expected cold-run time.
+The same integration suite is wired as a manually dispatched GitHub Actions workflow
+(`.github/workflows/platform-integration.yml`); it is not scheduled.
 
 The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
 limitations are available in the [demo script](artifacts/platform/demo-script.md),

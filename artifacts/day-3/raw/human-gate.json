@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "gate": "D3.11",
+  "verdict": "PASS",
+  "declared_by": "project owner",
+  "declared_at": "2026-09-07T19:01:56Z",
+  "declaration": "D3.11 PASS.",
+  "graded_revision": "5b3295271715ff5f9b64d548620d5535bf368019",
+  "supersedes": "artifacts/day-3/raw/human-approvals.json public_claims (2026-08-10), which predates the README rewrite in PR #161 and the v5 section",
+  "evidence": {
+    "sprint_1_gate": "artifacts/day-1/human-gate.json",
+    "real_osworld_episode": {"path": "artifacts/day-2/raw/real-golden-episode.json", "action_count": 112, "positive_reward_count": 1, "first_positive_reward_step": 112, "terminal_step": 112, "provider_closed": true},
+    "upstream_metadata": {"guest_tag": "v2026.06.24", "guest_archive_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa", "provider": "docker-local", "python_version": "3.12.13", "host": "arm64 Darwin, kvm unavailable"},
+    "validation_report_regeneration": {"command": "python scripts/generate_validation_report.py", "exit_status": 0, "tracked_files_changed": 0},
+    "reward_hacking_audit": {"attack_count": 14, "dispositions": {"tested": 11, "blocked": 2, "mitigated": 1}, "known_limitation_count": 5, "valid_dispositions": true},
+    "protocol_freeze": {"protocol_first_commit": "901734b87d339a33556270797c6ed2491f03c415 2026-08-09T23:27:56-07:00", "run_window_utc": "2026-08-10T07:06:26Z..2026-08-10T08:05:49Z", "results_first_commit": "0d48d977a8aa6a375c6e6e7f2e4fb9d9e336da38 2026-08-10T01:17:27-07:00", "protocol_last_edit_after_run": "f6a247b057712ba4cd97e6babc7190083c57fdf2 2026-08-14T13:46:32-07:00", "post_run_edit_diffed_for_metric_changes": false},
+    "paired_records": {"example_count": 100, "condition_record_count": 200, "examples_with_both_conditions": 100, "excluded_example_count": 0},
+    "offline_reproduction": {"command": "python scripts/generate_grounding_report.py", "exit_status": 0, "headline_identical_to_committed": true, "raw_correct": 56, "marks_correct": 100, "bootstrap_95_ci_percentage_points": [35.0, 54.0], "mcnemar_exact_p_value": 1.1368683772161603e-13, "regenerated_extra_keys": ["distance_threshold_accuracy"]},
+    "proposal_coverage_reported_separately": true,
+    "readme_claims_traced_to_artifacts": true,
+    "demo_media": {"path": "artifacts/day-3/review/real-osworld-episode.gif", "frames": 113, "size": "960x594", "bytes": 4579881, "frames_reinspected_at_this_gate": false, "prior_approval": "2026-08-10T08:40:16Z"},
+    "resume_bullets": {"path": "artifacts/resume-bullets.md", "bullet_count": 3, "every_number_traced": true}
+  }
+}
