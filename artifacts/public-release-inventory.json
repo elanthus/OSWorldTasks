@@ -143,7 +143,7 @@
         "review_required_count": 0
       },
       "email_addresses": {
-        "finding_count": 101,
+        "finding_count": 103,
         "findings": [
           {
             "blob_oid": "ff4892b6cfd659fc024f10e1fd39c135f3124659",
@@ -385,7 +385,7 @@
             "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
           },
           {
-            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
+            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
             "boundary_commits": [
               "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
             ],
@@ -521,7 +521,7 @@
             "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
           },
           {
-            "blob_oid": "8667c665b897ccd7b5b9c4a2da135c70f61d6d83",
+            "blob_oid": "a2e14d980e7a3974e4f6a28b3bbb05d6248a19d3",
             "boundary_commits": [
               "1cdf3722774197f4ce611ed4340d8ddd359200e0"
             ],
@@ -539,6 +539,26 @@
             "line": 209,
             "path": "tests/unit/test_vendor_form_app.py",
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
+          },
+          {
+            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
+            "boundary_commits": [
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 13,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
+          },
+          {
+            "blob_oid": "8667c665b897ccd7b5b9c4a2da135c70f61d6d83",
+            "boundary_commits": [
+              "1cdf3722774197f4ce611ed4340d8ddd359200e0"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 78,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
           },
           {
             "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
@@ -1177,7 +1197,7 @@
         "review_required_count": 0
       },
       "private_paths": {
-        "finding_count": 153,
+        "finding_count": 154,
         "findings": [
           {
             "blob_oid": "0ced117e26f581e6e417ed40c60d36b1e5f74807",
@@ -1763,7 +1783,7 @@
             "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
           },
           {
-            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
+            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
             "boundary_commits": [
               "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
             ],
@@ -1893,6 +1913,16 @@
             "line": 5,
             "path": "tests/unit/test_grounding_v5_evidence_paths.py",
             "value_fingerprint": "sha256:953df0068aeddc0beec0e0229c72d0204981831e08505f81f70f7437e6146884"
+          },
+          {
+            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
+            "boundary_commits": [
+              "360fe9b5cc270abf01f97f3a0be2d0067ce06855"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 13,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
           },
           {
             "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
@@ -2888,6 +2918,8 @@
         "review_required_count": 57
       }
     },
+    "failure_count": 0,
+    "failures": [],
     "passed": false,
     "review_required_count": 57,
     "sensitive_values": "represented only by SHA-256 fingerprints",
