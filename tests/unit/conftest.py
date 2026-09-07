@@ -37,6 +37,10 @@ __all__ = [
 
 GOLDEN_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
 
+# The "ci" Hypothesis profile is registered in the top-level tests/conftest.py
+# (an initial conftest for every invocation path) and loaded by default via
+# --hypothesis-profile=ci in [tool.pytest.ini_options] addopts.
+
 
 @pytest.fixture
 def dynamic_solve_actions():
