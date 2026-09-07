@@ -1,2 +1,12 @@
 PixelGym-OSWorld
 Copyright 2026 Michael Swailes
+
+This product bundles DejaVu Sans and DejaVu Sans Bold font software.
+DejaVu changes are in the public domain. Portions are Copyright (c) 2003 by
+Bitstream, Inc., and glyphs imported from Arev fonts are Copyright (c) 2006
+by Tavmjong Bah. The applicable copyright notices, permission notices, and
+license terms are distributed with the fonts at:
+
+  pixelgym/tasks/vendor_form/app/static/fonts/LICENSE-DejaVu.txt
+  legacy/grounding/v3b_app/static/fonts/LICENSE-DejaVu.txt
+  legacy/grounding/v3c_app/static/fonts/LICENSE-DejaVu.txt

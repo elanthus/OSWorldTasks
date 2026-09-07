@@ -1,0 +1,381 @@
+{
+  "links": {
+    "checked_file": "README.md",
+    "external_link_count": 2,
+    "failure_count": 0,
+    "failures": [],
+    "link_count": 60,
+    "local_link_count": 58,
+    "passed": true
+  },
+  "license_inventory": {
+    "bundled_dejavu_font_count": 6,
+    "bundled_font_count": 6,
+    "dejavu_license_paths": [
+      "legacy/grounding/v3b_app/static/fonts/LICENSE-DejaVu.txt",
+      "legacy/grounding/v3c_app/static/fonts/LICENSE-DejaVu.txt",
+      "pixelgym/tasks/vendor_form/app/static/fonts/LICENSE-DejaVu.txt"
+    ],
+    "failure_count": 0,
+    "failures": [],
+    "license_expression": "Apache-2.0",
+    "license_path": "LICENSE",
+    "missing_dejavu_license_paths": [],
+    "notice_path": "NOTICE",
+    "passed": true
+  },
+  "redaction_and_asset_inventory": {
+    "binary_or_large_files_skipped_for_content": 1798,
+    "categories": {
+      "credential_or_token_shapes": {
+        "finding_count": 2,
+        "findings": [
+          {
+            "classification": "acknowledged_test_vector",
+            "line": 400,
+            "path": "tests/unit/test_grounding_v5.py",
+            "shape": "openai_style_token",
+            "value_fingerprint": "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506"
+          },
+          {
+            "classification": "acknowledged_test_vector",
+            "line": 375,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
+          }
+        ],
+        "review_required_count": 0
+      },
+      "email_addresses": {
+        "finding_count": 27,
+        "findings": [
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 34,
+            "path": "artifacts/day-1-revision-2-layout-equivalence/golden-trajectory-seed-7.md",
+            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 34,
+            "path": "artifacts/day-1-revision-3-layout-equivalence/golden-trajectory-seed-7.md",
+            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 34,
+            "path": "artifacts/day-1/golden-trajectory-seed-7.md",
+            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 57,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:195eadaff80b56237de4efe1bcde97bf7c21dbdb127341996118dc3b8c07554d"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 67,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:fbe0ec42a16e496d94cc84933672f9dcddec357f4ccf5c8a7ab1971411dc9e38"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 77,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:2fdee28a2b82ae176a689df9df34101ba04b8184b61d3914bbe0641013b4ba52"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 87,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:4eae0636b0ef7a6ec018ed97475a4043980d9ae5e820c6808792f17c0093dd95"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 97,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:55410871c56d1622360c79b5f39865c97a4941ddd1fb9c1c235d85dd894bc047"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 107,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:17e881fac09ea520b773e251558e1321c1a6ee131ebc03f34c819649a91d6136"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 117,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:46a0935d1369e39a4cd1d42b1e2c46cbf4016ee45a85b621273f00c03d958bf3"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 127,
+            "path": "legacy/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:a9e2601ce63721f353a9ad97f0fb597b3fc632ed60fcf3fce8219b71c013d306"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 58,
+            "path": "legacy/grounding/v4_app/static/index.html",
+            "value_fingerprint": "sha256:a13d179255cf35a736822d0bdf2300e063a436d666706d391343fbc5ee6fb9bf"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 5,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 18,
+            "path": "tests/unit/test_evaluator.py",
+            "value_fingerprint": "sha256:c47a1cba63c066f4d048a49f148c2f317eaf383104fbd3fb2553d48438ae2927"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 148,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 151,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 568,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 70,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 96,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 35,
+            "path": "tests/unit/test_grounding_v3_server.py",
+            "value_fingerprint": "sha256:af3c82544f648b38dc7d403473bb4b957cd04353afd9096fa871c1e469656c8c"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 397,
+            "path": "tests/unit/test_grounding_v5.py",
+            "value_fingerprint": "sha256:63a8c5d6155de596ed86dcf517b17c863f7cf28ecaabd881a6c0b0b52bdb504d"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 413,
+            "path": "tests/unit/test_grounding_v5.py",
+            "value_fingerprint": "sha256:b838307aa1c7bc0115e7aaedb2ed6100322a94e3ce31f5c42e7f4081c853499a"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 786,
+            "path": "tests/unit/test_grounding_v5_d56_claude_subscription_campaign.py",
+            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 134,
+            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 240,
+            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 164,
+            "path": "tests/unit/test_grounding_v5_runner_plan_parity.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 209,
+            "path": "tests/unit/test_vendor_form_app.py",
+            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
+          }
+        ],
+        "review_required_count": 0
+      },
+      "gated_osworld_or_vm_assets": {
+        "finding_count": 0,
+        "findings": [],
+        "review_required_count": 0
+      },
+      "private_paths": {
+        "finding_count": 13,
+        "findings": [
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 36,
+            "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
+            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 5,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 396,
+            "path": "tests/unit/platform/test_d412_evidence_report.py",
+            "value_fingerprint": "sha256:15d6c5293213e380d9c80cb8ceb500e7c5354d857264db92163dcd9649992c78"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 69,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:9307c76fd1807e73f1cec843eacf3ab127a9c7d1f3801f41e7af302dcd41bb6d"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 95,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 216,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:26715ecec64b3a6dfe87cf4de6b06dec6c1c926bf5aa11b9c5066586367f19a0"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 225,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 308,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 317,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 327,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:0d9248cede73aacd0b8bd69f17d445d4b516ba0916c7abe42b8d9e915d127452"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 335,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 374,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 5,
+            "path": "tests/unit/test_grounding_v5_evidence_paths.py",
+            "value_fingerprint": "sha256:953df0068aeddc0beec0e0229c72d0204981831e08505f81f70f7437e6146884"
+          }
+        ],
+        "review_required_count": 0
+      },
+      "raw_provider_payloads": {
+        "finding_count": 31,
+        "findings": [
+          {"classification": "published_structured_model_output", "path": "artifacts/day-3/pilot/audit.json"},
+          {"classification": "published_structured_model_output", "path": "artifacts/day-3/pilot/pilot-predictions.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-predictions.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions-gemini-2.5-pro.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash-adapted.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions-gemma-3-27b.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-calibration-predictions.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-predictions.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5-pilot.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-scored-predictions-gemini-3.7-flash-adapted-pilot.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3a-scored-predictions-gemini-3.7-flash-adapted.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3b-calibration-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3b-calibration-predictions-gemini-3.7-flash-adapted.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3b-ordinal-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3b-semantic-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-gemini-3.7-flash-adapted.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-gemma-3-27b.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-gemma-3-4b.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-llama-4-scout.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v3c-calibration-predictions-qwen-2.5-vl-7b.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4-pilot-predictions-luna.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4b-pilot-predictions-haiku.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4b-pilot-predictions-luna.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4c-pilot-predictions-luna.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b-normalized-1000.jsonl"},
+          {"classification": "published_structured_model_output", "path": "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b.jsonl"}
+        ],
+        "review_required_count": 0
+      },
+      "usernames": {
+        "finding_count": 13,
+        "findings": [
+          {"classification": "acknowledged_placeholder", "line": 36, "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py", "value_fingerprint": "sha256:cbe5cfdf7c2118a9c3d78ef1d684f3afa089201352886449a06a6511cfef74a7"},
+          {"classification": "acknowledged_placeholder", "line": 5, "path": "tests/unit/fixtures/public_release/README.md", "value_fingerprint": "sha256:98bf8ca25bff9be3336d946250713a61531e19413e325596bc7ca601479fc9c3"},
+          {"classification": "acknowledged_placeholder", "line": 396, "path": "tests/unit/platform/test_d412_evidence_report.py", "value_fingerprint": "sha256:2938354af5a9f3e52aac0e865ea7017ae6a330702a4cccdbea0df2b7bd6dccc8"},
+          {"classification": "acknowledged_placeholder", "line": 69, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 95, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 216, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 225, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 308, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 317, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 327, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 335, "path": "tests/unit/test_grounding_providers.py", "value_fingerprint": "sha256:715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e"},
+          {"classification": "acknowledged_placeholder", "line": 374, "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py", "value_fingerprint": "sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23"},
+          {"classification": "acknowledged_placeholder", "line": 5, "path": "tests/unit/test_grounding_v5_evidence_paths.py", "value_fingerprint": "sha256:98bf8ca25bff9be3336d946250713a61531e19413e325596bc7ca601479fc9c3"}
+        ],
+        "review_required_count": 0
+      }
+    },
+    "files_scanned": 2680,
+    "passed": true,
+    "review_required_count": 0,
+    "text_files_scanned": 882
+  },
+  "schema_version": "pixelgym-public-release-inventory-v1",
+  "scope": {
+    "external_links": "inventoried but not fetched",
+    "repository_files": "tracked files plus non-ignored working-tree additions",
+    "sensitive_values": "represented only by SHA-256 fingerprints"
+  },
+  "summary": {
+    "link_failures": 0,
+    "license_failures": 0,
+    "passed": true,
+    "review_required_findings": 0
+  }
+}

@@ -29,6 +29,7 @@ _STATIC_ASSETS = (
     "style.css",
     "fonts/DejaVuSans.ttf",
     "fonts/DejaVuSans-Bold.ttf",
+    "fonts/LICENSE-DejaVu.txt",
 )
 
 
@@ -176,9 +177,11 @@ def test_apache_license_metadata_and_text_are_packaged(installed_wheel_site_dir)
     license_text = (dist_info / "licenses" / "LICENSE").read_text()
     assert license_text.lstrip().startswith("Apache License\n")
     assert "Version 2.0, January 2004" in license_text
-    assert (dist_info / "licenses" / "NOTICE").read_text() == (
-        "PixelGym-OSWorld\nCopyright 2026 Michael Swailes\n"
-    )
+    notice_text = (dist_info / "licenses" / "NOTICE").read_text()
+    assert notice_text == (REPO_ROOT / "NOTICE").read_text()
+    assert "DejaVu Sans and DejaVu Sans Bold" in notice_text
+    assert "Bitstream, Inc." in notice_text
+    assert "Tavmjong Bah" in notice_text
 
 
 def test_installed_wheel_serves_index_html_from_outside_the_source_checkout(

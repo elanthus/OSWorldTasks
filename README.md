@@ -1,28 +1,69 @@
 # PixelGym-OSWorld
 
-PixelGym-OSWorld is a Gymnasium-compliant, pixel-only GUI environment on OSWorld-V2 with
-bounded clicks and keystrokes, exact host-side sparse rewards, deterministic seeded task
-generation, and stored validation evidence for a synthetic vendor-onboarding workflow.
+PixelGym-OSWorld is a pixel-only Gymnasium environment and GUI-grounding benchmark for one
+deterministic synthetic vendor-onboarding form, with an optional pinned OSWorld-V2 backend.
+It tests whether bounded screenshot-only interaction, privileged exact-state reward, and seeded
+reset behavior can be implemented and audited without leaking task answers to the agent.
+Committed evidence measures that single workload, a 100-example grounding experiment, and a
+local scripted evaluation-platform rehearsal—not broad desktop generalization or production scale.
+The strongest visual claim is bitwise repeatability at 1024×768 on one local host; portability,
+the frozen v1 allocation, model aliases, synthetic platform metrics, and human gates remain limited.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["Agent"] -->|"NOOP / bounded CLICK / allowlisted KEY"| E["PixelGuiEnv"]
+    E --> B["Backend protocol"]
+    B --> F["Fast deterministic backend"]
+    B --> O["Pinned OSWorld-V2 adapter"]
+    F --> P["RGB screenshot"]
+    O --> P
+    P --> A
+    F --> V["Privileged host-side evaluator"]
+    O --> V
+    V -->|"0 until exact submitted state; then 1 once"| E
+    D["Build-time bounding boxes"] --> G["Frozen grounding dataset"]
+    G --> R["Raw vs set-of-marks paired analysis"]
+```
+
+The observation is only an RGB screenshot. The evaluator reads privileged task state outside the
+agent interface; expected values and bounding boxes never enter the environment observation or
+`info`. Build-time grounding instrumentation is separate from the evaluation adapter.
+
+## Evidence-backed claims
+
+- Built and audited one seeded synthetic vendor-form environment with no learned model: for seed 7,
+  five OSWorld resets were semantically and bitwise identical at 1024×768 on one local Apple
+  Silicon Docker/QEMU host, and all 14 reward-hacking surfaces had evidence and a classified
+  disposition. This does not establish cross-host bitwise portability; the historical 1920×1080
+  OSWorld run established semantic task-state determinism and only perceptual visual stability
+  ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json),
+  [audit evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json),
+  [revision environment](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json),
+  [historical evidence](artifacts/day-2/raw/real-reset.json)).
+- Evaluated 100 paired targets from the same synthetic form at 1024×768 with the Codex CLI provider
+  and the moving `gpt-5.4-mini` alias: raw coordinates scored 56/100 and deterministic
+  set-of-marks overlays scored 100/100, a +44.0-point paired difference with a fixed-seed bootstrap
+  95% CI of [+35.0, +54.0]. This is one model alias, prompt, layout, and target-agnostic proposal
+  generator—not evidence about other models or GUI workloads
+  ([structured results](artifacts/grounding-results.json),
+  [dataset](artifacts/grounding-dataset.jsonl)).
+- Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across
+  4 seeds × 4 deterministic scripted-policy aliases: 16 branches and 80 scripted calls, with a
+  maximum of 4 branches observed concurrently and 4 invalid assignments retained. The provider was
+  the no-cost `scripted-demo` fixture on one local host; these are orchestration fixtures, not model
+  quality or production-throughput measurements
+  ([fan-out evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json),
+  [versioned plan](artifacts/platform/seed-policy-plan-v1.json),
+  [frozen dataset](artifacts/grounding-dataset.jsonl)).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
-## Results at a glance
-
-| Check | Stored result | Evidence |
-|---|---|---|
-| Real OSWorld episode | 112 actions; reward `1.0` once on the terminal submission | [`real-golden-episode.json`](artifacts/day-2/raw/real-golden-episode.json) |
-| Fake reset repeatability | 10/10 semantically and bitwise identical; 0 differing pixels | [`validation-report.json`](artifacts/validation-report.json) |
-| Historical real reset stability | 5/5 semantically exact; at most 155 clock-region pixels differed; minimum SSIM 0.999863 | [`validation-report.json`](artifacts/validation-report.json) |
-| 2026-09-06 real reset stability | 5/5 semantically and bitwise identical at 1024×768 on one local Docker host; portability is not established | [`real-reset.json`](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json) |
-| Reward timing | 122/122 stored trajectories met their expected reward/termination outcome | [`reward-timing.json`](artifacts/day-2/raw/reward-timing.json) |
-| Space integrity | Gymnasium checker; 500 sampled actions; 14 invalid and 4 boundary probes | [`space-integrity.json`](artifacts/day-2/raw/space-integrity.json) |
-| Reward-hacking audit | 14/14 surfaces have evidence and a classified disposition | [`reward-hacking.json`](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json) |
-| Grounding experiment | Raw 56/100; marks 100/100; +44.0 points, paired bootstrap 95% CI [+35.0, +54.0] | [`grounding-results.json`](artifacts/grounding-results.json) |
-
-The project owner reviewed the historical Day 2 evidence and declared that gate `PASS`. Automated
-status is not substituted for the human verdict. That historical reset result is semantic, **not
-bitwise visual**. The 2026-09-06 revision records five bitwise-identical frames on one local Docker
-host, which does not establish bitwise portability; see [Limitations](#limitations).
+The project owner declared the [historical Day 2 gate](artifacts/day-2/raw/human-gate.json) `PASS`.
+The [2026-09-06 evidence revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)
+is new raw evidence, not a replacement human verdict: its D2.11 re-grade remains pending. D4.12
+also remains a human-owned milestone gate and is not declared here.
 
 ## Grounding benchmark
 
@@ -57,10 +98,11 @@ errors included 31 wrong-semantic-element labels, 6 just-outside labels, and 7 c
 labels treated explicitly as reviewer inference. Labels are non-exclusive
 ([review decisions](artifacts/grounding-error-review-decisions.json)).
 
-Offline reproduction makes no model or network calls:
+After the [default development setup](#quick-reproduction-without-osworld), offline reproduction
+makes no model or network calls:
 
 ```bash
-python scripts/generate_grounding_report.py
+.venv/bin/python scripts/generate_grounding_report.py
 ```
 
 The recorded run used the Codex CLI provider and current Codex login. An implemented but unused
@@ -70,7 +112,7 @@ OpenRouter alternative reads configuration only from the process environment:
 export OPENROUTER_API_KEY="..."
 export OPENROUTER_MODEL="provider/model-id"
 
-python scripts/run_grounding_evaluation.py \
+.venv/bin/python scripts/run_grounding_evaluation.py \
   --provider openrouter --full --max-new-calls 0 --plan-only
 ```
 
@@ -79,6 +121,52 @@ uses strict JSON Schema, requires routed parameter support, and enables neither 
 hidden retries. See OpenRouter's official
 [image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
 [structured-output](https://openrouter.ai/docs/guides/features/structured-outputs) documentation.
+
+## Platform milestone
+
+The local-first platform wraps the frozen grounding workload with resumable evaluation, immutable
+evidence storage, mechanical promotion gates, explicit human approval, exact-version serving, and
+audited rollback. Its architecture keeps the control plane separate from MLflow metadata and the
+authoritative immutable artifact store. See the [platform architecture](artifacts/platform/architecture.md)
+and the [platform milestone plan](plans/grounding-evaluation-platform.md) for boundaries and
+current scope.
+
+### Local no-cost platform reproduction
+
+The scripted lifecycle demo uses local services and a deterministic provider; its metrics are
+synthetic governance fixtures, not model-quality evidence. It requires Docker and does not make
+network model/provider calls. After the
+[default development setup](#quick-reproduction-without-osworld), run from the repository root:
+
+```bash
+python3.12 scripts/platform_compose.py up --build --wait
+```
+
+Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
+stack while retaining its local evidence with:
+
+```bash
+python3.12 scripts/platform_compose.py down
+```
+
+Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
+protection but no caller authentication; it must not be exposed or proxied onto a shared network.
+Add authentication and authorization in front of both the control plane and MLflow before any
+shared deployment.
+
+Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
+derives and bind-mounts the source-provenance file required to verify the packaged source. If a
+previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
+the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
+The deployment guide also documents the separate fast, local-runtime, and isolated
+Compose/Playwright test commands, their prerequisites, cleanup scope, and expected cold-run time.
+
+The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
+limitations are available in the [demo script](artifacts/platform/demo-script.md),
+[API transcript](artifacts/platform/demo-api-transcript.jsonl),
+[integrity evidence](artifacts/platform/immutable-artifact-verification.json), and
+[platform limitations](artifacts/platform/known-limitations.md). D4.12 remains a human-owned
+milestone gate; this documentation does not declare it passed.
 
 ## v5 agent benchmark (in progress)
 
@@ -138,73 +226,6 @@ declared `must_not_commit` in the
 and the [integrity audit](artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json)
 discloses that their file hashes and row-level contents are unavailable from a public clone.
 
-## Architecture
-
-```mermaid
-flowchart LR
-    A["Agent"] -->|"NOOP / bounded CLICK / allowlisted KEY"| E["PixelGuiEnv"]
-    E --> B["Backend protocol"]
-    B --> F["Fast deterministic backend"]
-    B --> O["Pinned OSWorld-V2 adapter"]
-    F --> P["RGB screenshot"]
-    O --> P
-    P --> A
-    F --> V["Privileged host-side evaluator"]
-    O --> V
-    V -->|"0 until exact submitted state; then 1 once"| E
-    D["Build-time bounding boxes"] --> G["Frozen grounding dataset"]
-    G --> R["Raw vs set-of-marks paired analysis"]
-```
-
-The observation is only an RGB screenshot. The evaluator reads privileged task state outside the
-agent interface; expected values and bounding boxes never enter the environment observation or
-`info`. Build-time grounding instrumentation is separate from the evaluation adapter.
-
-## Platform milestone
-
-The local-first platform wraps the frozen grounding workload with resumable evaluation, immutable
-evidence storage, mechanical promotion gates, explicit human approval, exact-version serving, and
-audited rollback. Its architecture keeps the control plane separate from MLflow metadata and the
-authoritative immutable artifact store. See the [platform architecture](artifacts/platform/architecture.md)
-and the [platform milestone plan](plans/grounding-evaluation-platform.md) for boundaries and
-current scope.
-
-### Local no-cost platform reproduction
-
-The scripted lifecycle demo uses local services and a deterministic provider; its metrics are
-synthetic governance fixtures, not model-quality evidence. It requires Docker and does not make
-provider calls. From the repository root:
-
-```bash
-python3.12 scripts/platform_compose.py up --build --wait
-```
-
-Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
-stack while retaining its local evidence with:
-
-```bash
-python3.12 scripts/platform_compose.py down
-```
-
-Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
-protection but no caller authentication; it must not be exposed or proxied onto a shared network.
-Add authentication and authorization in front of both the control plane and MLflow before any
-shared deployment.
-
-Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
-derives and bind-mounts the source-provenance file required to verify the packaged source. If a
-previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
-the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
-The deployment guide also documents the separate fast, local-runtime, and isolated
-Compose/Playwright test commands, their prerequisites, cleanup scope, and expected cold-run time.
-
-The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
-limitations are available in the [demo script](artifacts/platform/demo-script.md),
-[API transcript](artifacts/platform/demo-api-transcript.jsonl),
-[integrity evidence](artifacts/platform/immutable-artifact-verification.json), and
-[platform limitations](artifacts/platform/known-limitations.md). D4.12 remains a human-owned
-milestone gate; this documentation does not declare it passed.
-
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
@@ -212,14 +233,13 @@ does not need a VM, browser, network, or provider credentials.
 
 ```bash
 python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+.venv/bin/pip install -e ".[dev]"
 
-ruff check .
-mypy pixelgym
-pytest -q -n auto tests/unit
-python scripts/golden_trajectory.py check
-python scripts/demo_fake_backend.py --seed 7
+.venv/bin/ruff check .
+.venv/bin/mypy pixelgym
+.venv/bin/pytest -q -n auto tests/unit
+.venv/bin/python scripts/golden_trajectory.py check
+.venv/bin/python scripts/demo_fake_backend.py --seed 7
 ```
 
 The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
@@ -229,24 +249,24 @@ check of the complete `pixelgym` package. Re-capturing the
 frozen browser dataset additionally requires Playwright's Chromium binary, installed once with:
 
 ```bash
-python -m playwright install chromium
-python scripts/validate_vendor_form_browser_boundary.py \
+.venv/bin/python -m playwright install chromium
+.venv/bin/python scripts/validate_vendor_form_browser_boundary.py \
   --output artifacts/local/browser-boundary.json
-python scripts/capture_grounding_dataset.py
+.venv/bin/python scripts/capture_grounding_dataset.py
 ```
 
 To revalidate the checked-in dataset, candidate records, image hashes, allocation summary, and
 known design limitations without launching a browser or rewriting capture assets, run:
 
 ```bash
-python scripts/capture_grounding_dataset.py --summary-only
+.venv/bin/python scripts/capture_grounding_dataset.py --summary-only
 ```
 
 To deterministically rebuild the balanced v2 metadata and audit sheets from the checked-in,
 target-neutral v1 capture assets without any model calls, run:
 
 ```bash
-python scripts/build_grounding_benchmark_v2.py
+.venv/bin/python scripts/build_grounding_benchmark_v2.py
 ```
 
 The scripted incomplete-submit demo stays at reward `0.0`. The separate golden trajectory checks
@@ -262,20 +282,21 @@ used a digest-pinned native ARM64 QEMU host around the release's unchanged x86-6
 provider and image metadata are recorded in the historical
 [validation artifact](artifacts/validation-report.json) and the
 [current revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json).
+Start with the [default development setup](#quick-reproduction-without-osworld), then install the
+optional integration dependency and run:
 
 ```bash
-source .venv/bin/activate
-pip install -e ".[osworld]"
-python scripts/prepare_osworld_docker.py
-python scripts/validate_vendor_form_browser_boundary.py \
+.venv/bin/pip install -e ".[osworld]"
+.venv/bin/python scripts/prepare_osworld_docker.py
+.venv/bin/python scripts/validate_vendor_form_browser_boundary.py \
   --output artifacts/local/browser-boundary.json
-python scripts/smoke_osworld_reset.py
-python scripts/osworld_space_smoke.py
-python scripts/osworld_golden_trajectory.py check
-python scripts/validate_day2.py real-resets
-python scripts/validate_day2.py audit
-python scripts/validate_day2.py assemble
-python scripts/generate_validation_report.py
+.venv/bin/python scripts/smoke_osworld_reset.py
+.venv/bin/python scripts/osworld_space_smoke.py
+.venv/bin/python scripts/osworld_golden_trajectory.py check
+.venv/bin/python scripts/validate_day2.py real-resets
+.venv/bin/python scripts/validate_day2.py audit
+.venv/bin/python scripts/validate_day2.py assemble
+.venv/bin/python scripts/generate_validation_report.py
 ```
 
 Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
@@ -308,7 +329,7 @@ known limitation, with the underlying evidence retained
 ## Limitations
 
 - This is one deterministic synthetic form, not a broad desktop-task distribution.
-- The current app-mode reset evidence records five mutually bitwise-identical 1024x768 frames,
+- The current app-mode reset evidence records five mutually bitwise-identical 1024×768 frames,
   without a mask or tolerance. That single local-Docker run does not establish bitwise portability
   across hosts. The retained `04b` navigation-boundary frame was captured before page
   initialization completed because the prior launch/readiness path did not prevent an intermediate
@@ -318,7 +339,13 @@ known limitation, with the underlying evidence retained
   frames: 0 differing pixels and maximum per-channel delta 0 before the separately reported SSIM.
   The immutable historical evidence also retains its earlier live-clock differences
   ([current comparison](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
+- The historical 1920×1080 OSWorld run established semantic task-state determinism and measured
+  unmasked perceptual visual stability (minimum SSIM 0.999863), not bitwise visual determinism. The
+  2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; its
+  D2.11 human re-grade remains pending.
 - The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
+- OSWorld is an optional dependency that downloads a 14.2 GB compressed guest artifact and requires
+  Docker; the default fast suite uses neither OSWorld nor a VM.
 - Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
 - The privileged state endpoint exists inside the guest. The guest Chromium app-mode contract removes
   address-bar, tab, and desktop navigation affordances from the tested bounded-click observation;
@@ -329,6 +356,11 @@ known limitation, with the underlying evidence retained
   allocation crosses every target with every state, with only two seed replicates per cell.
 - The grounding experiment covers one model, prompt, resolution, synthetic application layout, and
   target-agnostic candidate generator; its result should not be generalized beyond that scope.
+- Platform demo and seed-by-policy fan-out metrics use deterministic scripted providers on one
+  local host. They are synthetic governance and orchestration fixtures, not model-quality,
+  production-throughput, or external-deployment evidence.
+- D4.12 has stored raw evidence but no human milestone verdict. V5 calibration results are
+  descriptive and remain neither benchmark scores nor a milestone-gate verdict.
 
 ## Project evidence
 
@@ -339,6 +371,8 @@ known limitation, with the underlying evidence retained
 - [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
 - [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
 - [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
+- [`artifacts/platform/seed-policy-fanout-evidence-v1.json`](artifacts/platform/seed-policy-fanout-evidence-v1.json) — local scripted fan-out evidence
+- [`artifacts/public-release-inventory.json`](artifacts/public-release-inventory.json) — public-path, redaction, restricted-asset, and raw-payload inventory
 - Incomplete v5 calibration reports, response-content-free derivatives, and stored-evidence
   integrity audits are linked from
   [v5 agent benchmark (in progress)](#v5-agent-benchmark-in-progress) above, with their coverage
@@ -351,8 +385,10 @@ known limitation, with the underlying evidence retained
 - [`plans/sprint-3-grounding-and-portfolio.md`](plans/sprint-3-grounding-and-portfolio.md)
 - [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)
 - [`plans/grounding-v5-agent-benchmark.md`](plans/grounding-v5-agent-benchmark.md)
+- [`plans/public-release-checklist.md`](plans/public-release-checklist.md) — unticked human release gate
 
 ## License
 
 Copyright 2026 Michael Swailes. Licensed under the Apache License, Version 2.0. See
-[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). Bundled DejaVu fonts retain their separate notices and
+license terms listed in `NOTICE`.
