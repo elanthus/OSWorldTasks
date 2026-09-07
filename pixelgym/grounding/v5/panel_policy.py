@@ -26,7 +26,7 @@ from pixelgym.grounding.v5.coordinates import (
 )
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.openrouter_policy import _png_data_url, _usage_cost
-from pixelgym.grounding.v5.runner import TransportOutcome
+from pixelgym.grounding.v5.runner import PolicyVisibleResult, TransportOutcome
 from pixelgym.grounding.v5.sandbox import build_sandbox_manifest
 from pixelgym.serialization import canonical_json_bytes
 
@@ -498,7 +498,7 @@ class OpenRouterPanelPolicy:
         return canonical_json_bytes(value)
 
     def post_dispatch_state(
-        self, state: bytes, action: dict[str, int], result: dict[str, Any]
+        self, state: bytes, action: dict[str, int], result: PolicyVisibleResult
     ) -> bytes:
         if not self.config.stateful:
             return state
@@ -508,9 +508,9 @@ class OpenRouterPanelPolicy:
             {
                 "action": action,
                 "visible_outcome": {
-                    "reward": result["reward"],
-                    "terminated": result["terminated"],
-                    "truncated": result["truncated"],
+                    "reward": result.reward,
+                    "terminated": result.terminated,
+                    "truncated": result.truncated,
                 },
             }
         )
