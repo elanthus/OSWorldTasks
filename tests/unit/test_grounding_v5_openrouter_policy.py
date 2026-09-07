@@ -16,6 +16,7 @@ from pixelgym.grounding.v5.openrouter_policy import (
     QwenV5StatefulPolicy,
     build_policy_manifest,
 )
+from pixelgym.grounding.v5.runner import PolicyVisibleResult
 from pixelgym.serialization import canonical_json_bytes
 
 
@@ -73,12 +74,13 @@ def test_qwen_policy_maps_normalized_click_and_excludes_privileged_diagnostic() 
     reduced = policy.post_dispatch_state(
         policy.post_parse_state(state, candidate),
         candidate,
-        {
-            "reward": 0.0,
-            "terminated": False,
-            "truncated": False,
-            "diagnostic": {"secret": "privileged"},
-        },
+        PolicyVisibleResult(
+            screenshot_digest="sha256:" + "a" * 64,
+            reward=0.0,
+            terminated=False,
+            truncated=False,
+            step_index=0,
+        ),
     )
     assert b"privileged" not in reduced
     assert b"diagnostic" not in reduced
