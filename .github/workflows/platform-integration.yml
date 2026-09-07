@@ -1,8 +1,6 @@
 name: Platform integration
 
 on:
-  schedule:
-    - cron: "0 8 * * *"
   workflow_dispatch:
 
 permissions:
