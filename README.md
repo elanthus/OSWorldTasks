@@ -88,35 +88,55 @@ pilot saturated at the episode level. It preserves the pixel-only observation, b
 privileged evaluator, and sparse reward contracts described below
 ([v5 plan](plans/grounding-v5-agent-benchmark.md)).
 
-**Calibration is incomplete and no v5 result is a benchmark score.** One policy slot has retained
-evidence, and it did not complete its 50 assigned tasks. Unattempted assignments are retained in the
-denominator rather than dropped:
+**Completed calibration results are now published, but no v5 result is a benchmark score or a
+milestone-gate verdict.** Every retained D5.6 full-calibration run that completed its 50 assigned
+tasks and passed the committed-evidence checks appears below. Attempted tasks and every terminal
+classification remain separate:
 
-| Policy slot | Assigned | Attempted | Exact success | Stop reason | Evidence |
-|---|---:|---:|---|---|---|
-| `B-qwen-stateful-v2` | 50 | 13 | 0 / 13 attempted (0.0%) | first invalid output, as the approved plan required; 37 unattempted | [report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) |
+| Policy slot | Provider / model alias | Assigned | Attempted | Exact success | Invalid output | Request failure | Infrastructure failure | Policy violation | Truncation | Unknown-charge reservation |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `A-gemini-stateful-v3` | `openrouter/google-vertex/global` / `google/gemini-3.7-flash` | 50 | 50 | 35 (70.0%) | 1 | 1 | 0 | 0 | 13 | $1.990656000 (20 outcomes) |
+| `B-qwen-stateful-v3` | `openrouter/alibaba` / `qwen/qwen3-vl-8b-instruct` | 50 | 50 | 0 (0.0%) | 3 | 0 | 0 | 0 | 47 | $0.000000000 (0 outcomes) |
 
-These are descriptive calibration numbers for one incomplete run. They are not a complete-run score,
-not a confirmatory result, and not a milestone-gate verdict.
+These are descriptive calibration results, not confirmatory results or controlled model
+comparisons. Both runs reached their assigned denominator without tripping a hard-stop guard.
+Both runs bind the same prompt, memory, parser, response-schema, coordinate-adapter, retry-policy,
+and calibration-partition manifest (`sha256:41034ec1…`). Their approved stop conditions, spend
+reconciliation, and evidence bindings are recorded in the
+[generated report](artifacts/grounding-v5-d56-completed-calibrations-report.md) and
+[response-content-free derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json).
+They are not controlled comparisons: policy-manifest digests, code revisions, and runtime digests
+differ; Qwen v3 records temperature 0 while Gemini v3b records no temperature; and Gemini v3b
+records strict upstream `json_schema` response validation while Qwen v3 has no
+`response_validation` block.
+The approved endpoint records were observed on 2026-08-28 and the retained evidence was committed
+with author dates on 2026-09-02 (committed-history dates, not execution timestamps); the run
+execution dates were not recorded in the committed plans or summaries.
 
-The `A-gemini-stateful-v2` calibration was **withdrawn**, and its evidence and reports were removed
-from this repository rather than corrected in place. Its stored plan and run summaries recorded
-absolute operator paths, which cannot be redacted without invalidating the SHA-256 values its own
-integrity audit recorded for them, and no code path regenerates a run summary from its attempt
-journal. That slot will be re-run from scratch under a new approval; until then this repository
-makes no Gemini claim. The path defect itself is fixed at the producer
-(`pixelgym/grounding/v5/evidence.py`), so a re-run records repository-relative paths.
+Two other retained runs were inventoried and audited but not promoted into this completed table.
+Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked and failed
+`completed_assigned_denominator` and `publication_relation_verified`. The older
+`B-qwen-stateful-v2` run stopped after 13 of 50 assignments at the first invalid output, as its
+approved plan required, and failed `completed_assigned_denominator`; its historical
+[partial report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) remains available.
 
-The run's authoritative attempt journal holds raw provider responses, screenshots, and private
-policy checkpoints. It is sealed as `must_not_commit` in the run's
-`*-publication-relation.json` and is excluded from this repository by policy, enforced by
-`tests/unit/test_restricted_evidence_excluded.py`. What is published instead is a
-response-content-free derivative plus an integrity audit recording each authoritative artifact's
-path and SHA-256:
-[audit](artifacts/grounding-v5-d56-qwen-full-calibration-integrity-audit.json) ·
-[derivative](artifacts/grounding-v5-d56-qwen-full-calibration-publishable.json). Every
-non-restricted artifact the audit references is committed, so the recorded hashes can be checked
-from a clone.
+The earlier `A-gemini-stateful-v2` calibration remains **withdrawn**. Its evidence and reports were
+removed rather than corrected in place because its stored plan and summaries contained absolute
+operator paths whose removal would invalidate their recorded SHA-256 values. It is not repaired or
+included in the published result. The producer-side path defect is fixed in
+`pixelgym/grounding/v5/evidence.py`.
+
+PR #155 changed the taxonomy for CLI process failures. All four retained runs used HTTP/OpenRouter
+transports, and no episode or transport row carries a `cli_fault` key, so the number of
+`invalid_output` rows that could be former-taxonomy CLI process failures is bounded at zero;
+historical labels are not rewritten. Qwen v3's separate frozen predecessor records one attempted
+pair terminated by an HTTP 429 `unknown_outcome_infrastructure_failure`; that predecessor is not
+part of Qwen v3's 50-assignment row, whose infrastructure-failure count remains zero. Restricted
+attempt journals still hold raw provider responses, screenshots, and private checkpoints. They are
+declared `must_not_commit` in the
+[publication relation](artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json),
+and the [integrity audit](artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json)
+discloses that their file hashes and row-level contents are unavailable from a public clone.
 
 ## Architecture
 

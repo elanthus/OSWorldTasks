@@ -1,0 +1,287 @@
+{
+  "date_provenance": {
+    "endpoint_record_dates": "copied from each approved plan",
+    "run_execution_dates": "not recorded in committed plans or summaries",
+    "source_commit_dates": "author dates derived from immutable committed history; not execution timestamps"
+  },
+  "errata_corrections": [
+    {
+      "corrected_interpretation": "Each listed plan used an independent ledger initialized at zero and bounded by its own caps.maximum_run_spend_usd. The stale shared-ledger and ten-dollar phrases are non-operative prose and do not supersede caps.spend_lineage, caps.enforcement, the approved numeric cap, or the recorded per-run accounting.",
+      "id": "per-run-ledger-wording"
+    },
+    {
+      "corrected_interpretation": "Both plans and their summaries are Gemini v3 evidence. policy.slot is A-gemini-stateful-v3 and policy.policy_manifest.transport_retry_rule is the v3 retry rule. Historical d56-gemini-v2 trial identifiers and v2 prose are retained as immutable recorded identifiers and must not be used to relabel the policy generation.",
+      "id": "gemini-policy-generation-label"
+    }
+  ],
+  "limitations": [
+    "Calibration is development evidence, not a benchmark score or milestone-gate verdict.",
+    "Gemini v3b reserves USD 1.990656000 for 20 outcomes whose charges are unknown.",
+    "Qwen v3 completed 50 assignments with zero exact-success terminations.",
+    "The two completed slots use different model/provider routes and are descriptive, not a controlled model comparison.",
+    "The completed slots bind the same calibration-partition manifest, prompt, memory, parser, response-schema, coordinate-adapter, and retry-policy versions.",
+    "Their policy-manifest digests, code revisions, and runtime digests differ.",
+    "Qwen v3 records temperature 0 while Gemini v3b records no temperature; Gemini v3b records strict upstream json_schema response validation while Qwen v3 has no response_validation block.",
+    "Execution dates and restricted-journal file hashes were not retained in committed evidence.",
+    "The historical classification labels are preserved without reinterpretation."
+  ],
+  "provider_calls_made": 0,
+  "purpose": "publish completed D5.6 calibration runs from retained committed evidence",
+  "redaction": {
+    "excluded": [
+      "raw provider requests and responses",
+      "screenshots and screenshot bytes",
+      "private policy and environment checkpoints",
+      "credentials and absolute operator paths",
+      "restricted attempt journals"
+    ],
+    "policy_version": "pixelgym-agent-v5-redaction-v1",
+    "public_verification_limit": "The committed summaries expose aggregate transport rows and journal event-chain digests, but not restricted journals or their file hashes; row-level journal verification is unavailable from a public clone."
+  },
+  "runs": [
+    {
+      "assigned_tasks": 50,
+      "classification_counts": {
+        "attempted": 50,
+        "infrastructure_failure": 0,
+        "invalid_output": 1,
+        "policy_violation": 0,
+        "request_failure": 1,
+        "success": 35,
+        "truncation": 13
+      },
+      "endpoint_record_observed_at_utc": "2026-08-28T00:32:11Z",
+      "fault_taxonomy": {
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 50,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 1,
+          "manifest_provider_alias": "openrouter/google-vertex/global",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 1333,
+          "transport_rows_with_cli_fault_key": 0
+        },
+        "legacy_cli_process_failures_recorded_as_invalid_output": 0,
+        "stored_taxonomy_preserved": true
+      },
+      "model_alias": "google/gemini-3.7-flash",
+      "plan_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": null,
+        "policy_predecessor": {
+          "frozen_plan_sha256": "sha256:8144512f2790333874a706681860e6d7c4def4aa98d4d33b21e03c16302a71a6",
+          "frozen_summary_sha256": "sha256:db7a80b5c2c623d370678d6c610578721b5551b68a1fd9055c23b54a5a267741",
+          "rule": "this v2 policy is a distinct successor run; do not resume, retry, replace, or reinterpret any frozen predecessor Slot A request or assignment"
+        }
+      },
+      "provider_alias": "openrouter/google-vertex/global",
+      "run_execution_date": null,
+      "run_execution_date_disclosure": "not recorded in committed plan or summary",
+      "run_id": "gemini-v3b",
+      "slot": "A-gemini-stateful-v3",
+      "source_commit_date": "2026-09-02T22:49:08-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
+      "spend": {
+        "budget_accounted_run_spend_usd": "6.901905750",
+        "known_run_spend_usd": "4.911249750",
+        "maximum_run_spend_usd": "7.000000000",
+        "remaining_run_spend_usd": "0.098094250",
+        "reservation_basis": "per_request_theoretical_maximum",
+        "transport_rows_without_cost": 20,
+        "unknown_charge_outcomes": 20,
+        "unknown_charge_reservation_usd": "1.990656000"
+      },
+      "stop_conditions": {
+        "approved": [
+          "run spend ledger blocked",
+          "policy or request identity mismatch",
+          "a charge above the per-request theoretical maximum",
+          "non-retryable HTTP status",
+          "evidence-integrity failure"
+        ],
+        "consecutive_failure_limit": 5,
+        "observed_stop": "completed_assigned_denominator",
+        "trip_reason": null,
+        "tripped": false
+      },
+      "summary_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/summary.json",
+      "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "d534091983db650c0b7c5bd9fe0db0cf32bbc729",
+        "coordinate_adapter": "normalized-1000x1000",
+        "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:90bb53a933a13b8bf91631a6590694ef032e8567bf37cd3e349c5c7c54c97f15",
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": {
+          "invalid_or_unparseable_output_rule": "retain_fail_the_assignment_and_continue_without_retry",
+          "local_exact_action_parser": true,
+          "upstream_json_schema_strict": true,
+          "upstream_response_format": "json_schema"
+        },
+        "runtime_digest": "sha256:075818c0943959b0be4aa5782d5672c74a7089823a15335e1e87b941889e5cb5",
+        "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": null,
+        "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+      }
+    },
+    {
+      "assigned_tasks": 50,
+      "classification_counts": {
+        "attempted": 50,
+        "infrastructure_failure": 0,
+        "invalid_output": 3,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 47
+      },
+      "endpoint_record_observed_at_utc": "2026-08-28T13:34:08Z",
+      "fault_taxonomy": {
+        "bound": "zero invalid_output rows can be former-taxonomy CLI process failures",
+        "inputs": {
+          "episode_rows_checked": 50,
+          "episode_rows_with_cli_fault_key": 0,
+          "http_openrouter_transport": true,
+          "invalid_output_rows": 3,
+          "manifest_provider_alias": "openrouter/alibaba",
+          "provider_endpoint": "https://openrouter.ai",
+          "provider_name": "openrouter",
+          "transport_rows_checked": 1376,
+          "transport_rows_with_cli_fault_key": 0
+        },
+        "legacy_cli_process_failures_recorded_as_invalid_output": 0,
+        "stored_taxonomy_preserved": true
+      },
+      "model_alias": "qwen/qwen3-vl-8b-instruct",
+      "plan_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-plan.json",
+      "predecessor_disclosures": {
+        "frozen_infrastructure_predecessor": {
+          "actual_aggregate_spend_usd": "2.040917557",
+          "approved_plan_sha256": "sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9",
+          "attempted_policy_task_pairs": 1,
+          "attempted_slots": [
+            "B-qwen-stateful"
+          ],
+          "code_revision": "e25bfbe384a583ef853682481f56d08659cfe40f",
+          "journal_integrity": {
+            "event_chain_digest": "sha256:fe80c9c9d81756515716e1fbe42135302df730646b6027c0d4597a47892efbab",
+            "event_count": 171,
+            "object_count": 163,
+            "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+          },
+          "journal_path": "artifacts/grounding-v5-d56-bcd-calibration-run/attempts.sqlite",
+          "journal_sha256": "sha256:78dbb0e3d819c06604c3b664120df35448f6642ac13b3c367ef0bb9f7f8ef7fe",
+          "remaining_aggregate_spend_usd": "7.959082443",
+          "summary_path": "artifacts/grounding-v5-d56-bcd-calibration-run/summary.json",
+          "summary_sha256": "sha256:630f765bc44ce7cb85c91e0ae3b906fcedf4e1374556d6074d84cc2e95b447f4",
+          "terminal": {
+            "attempt_index": 0,
+            "classification": "unknown_outcome_infrastructure_failure",
+            "failure_code": "provider_request_unknown",
+            "http_status": 429,
+            "provider_error_code": 429,
+            "request_outcome": "unknown",
+            "retry_eligible": false,
+            "step_index": 24,
+            "trial_id": "d56-bcd-B-qwen-stateful-00-v5-bfe5707f6b44202a0e7f493e"
+          },
+          "unattempted_successor_slots": [
+            "C-llama-stateful",
+            "D-qwen-stateless"
+          ]
+        },
+        "policy_predecessor": null
+      },
+      "provider_alias": "openrouter/alibaba",
+      "run_execution_date": null,
+      "run_execution_date_disclosure": "not recorded in committed plan or summary",
+      "run_id": "qwen-v3",
+      "slot": "B-qwen-stateful-v3",
+      "source_commit_date": "2026-09-02T22:49:08-07:00",
+      "source_commit_date_disclosure": "committed-history date, not an execution timestamp",
+      "spend": {
+        "budget_accounted_run_spend_usd": "0.498141709",
+        "known_run_spend_usd": "0.498141709",
+        "maximum_run_spend_usd": "3.000000000",
+        "remaining_run_spend_usd": "2.501858291",
+        "reservation_basis": "per_request_theoretical_maximum",
+        "transport_rows_without_cost": 0,
+        "unknown_charge_outcomes": 0,
+        "unknown_charge_reservation_usd": "0.000000000"
+      },
+      "stop_conditions": {
+        "approved": [
+          "run spend ledger blocked",
+          "policy or request identity mismatch",
+          "missing, invalid, or exceeded price guard",
+          "non-retryable HTTP status",
+          "evidence-integrity failure"
+        ],
+        "consecutive_failure_limit": 5,
+        "observed_stop": "completed_assigned_denominator",
+        "trip_reason": null,
+        "tripped": false
+      },
+      "summary_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/summary.json",
+      "versions": {
+        "calibration_partition_manifest_digest": "sha256:41034ec1ddaf31be37e54d0fe2889cb1b9e48763504ec04857b03cae3aa8f6f9",
+        "code_revision": "0ed7ec2c84f510c7ea814024a0785436c808d9ed",
+        "coordinate_adapter": "normalized-1000x1000",
+        "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+        "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+        "policy_manifest_digest": "sha256:151a04d1e2a54c121bbf5d86db42713d4632d65019836edd4b75122c9922d535",
+        "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+        "response_validation": null,
+        "runtime_digest": "sha256:38f7d6cb71a3595678ff3e08f6b438078f5922fd0bdd2c8f5011d3feeeffb2b2",
+        "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+        "temperature": "0",
+        "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+      }
+    }
+  ],
+  "schema_version": "pixelgym-agent-v5-d56-completed-calibrations-v1",
+  "status": {
+    "benchmark_score": false,
+    "calibration_result": "descriptive",
+    "milestone_gate_verdict": "not_evaluated_human_owned"
+  },
+  "unpublished_retained_runs": [
+    {
+      "classification_counts": {
+        "attempted": 13,
+        "infrastructure_failure": 0,
+        "invalid_output": 1,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 12
+      },
+      "failed_checks": [
+        "completed_assigned_denominator"
+      ],
+      "run_id": "qwen-v2",
+      "slot": "B-qwen-stateful-v2"
+    },
+    {
+      "classification_counts": {
+        "attempted": 5,
+        "infrastructure_failure": 0,
+        "invalid_output": 1,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 3,
+        "truncation": 1
+      },
+      "failed_checks": [
+        "completed_assigned_denominator",
+        "publication_relation_verified"
+      ],
+      "run_id": "gemini-v3",
+      "slot": "A-gemini-stateful-v3"
+    }
+  ]
+}

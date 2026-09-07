@@ -1,0 +1,53 @@
+{
+  "authoritative": {
+    "errata_file_sha256": "sha256:c6a21a58b376c77e130cf414b640c75385d8f1415ececce70b6db879b62fbe93",
+    "errata_path": "artifacts/grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json",
+    "runs": [
+      {
+        "approved_plan_content_sha256": "sha256:4c60f91bdc36bd584954e78bff07d823fab9140a23d172c099df3beb3f7a0e52",
+        "journal_event_chain_sha256": "sha256:1f5e3dc79d545259d25e427b14a1d39f5d09c3a55c12d3d3f7e74071980a0b84",
+        "plan_file_sha256": "sha256:86cc8af553f56c06c466f425200383a3bb7bd0bb809f2a10a1750b9e5d2c046b",
+        "plan_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-plan.json",
+        "run_id": "gemini-v3b",
+        "summary_file_sha256": "sha256:291b471cc345255c40ed93ec74f3e5b67c5046c375bc80765fee38370a9af53d",
+        "summary_path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/summary.json"
+      },
+      {
+        "approved_plan_content_sha256": "sha256:8aa068cdf6ac2b4f3f14d03983dfc21f7edcf5457d0d628a4d65eed1a6a8077b",
+        "journal_event_chain_sha256": "sha256:fdd7374f05722d27c95b68950abf410bc364d48ee7b4189e79ccffa77d9a15a0",
+        "plan_file_sha256": "sha256:7c12d121618c7ffcdcd2088830e395f7713d347bc6107d288754cc706ee1270b",
+        "plan_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-plan.json",
+        "run_id": "qwen-v3",
+        "summary_file_sha256": "sha256:15a229482ffaf136af0a1a0c26922656d5e24e0c16e8c05f5222791e4bfec7ea",
+        "summary_path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/summary.json"
+      }
+    ]
+  },
+  "excluded_authoritative_artifacts": [
+    {
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/attempts.sqlite",
+      "public_verification_limit": "file hash and size are not recorded in committed v3 evidence",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/attempts.sqlite",
+      "public_verification_limit": "file hash and size are not recorded in committed v3 evidence",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": null,
+      "size_bytes": null
+    }
+  ],
+  "publishable": {
+    "derivative_content_sha256": "sha256:140a7d4f9f453eb62aa02d2486815d9e6c9311340b35126b2f811fee374c5090",
+    "derivative_file_sha256": "sha256:17e599ce1d701073e057a67f79f57371cb93c83217c321f33ac1218b8197b901",
+    "derivative_path": "artifacts/grounding-v5-d56-completed-calibrations-publishable.json",
+    "report_file_sha256": "sha256:20fb65d2cf50402012d53e5fae396be1d2131d5fa292c04ed6f91495b067e31a",
+    "report_path": "artifacts/grounding-v5-d56-completed-calibrations-report.md"
+  },
+  "redaction_policy_version": "pixelgym-agent-v5-redaction-v1",
+  "schema_version": "pixelgym-agent-v5-d56-completed-calibrations-relation-v1"
+}
