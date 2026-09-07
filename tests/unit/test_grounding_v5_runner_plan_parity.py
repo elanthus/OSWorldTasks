@@ -6,7 +6,7 @@ against `legacy.grounding.v5.d56_claude_subscription_campaign`,
 `d56_codex_cli_calibration`, and `d56_qwen_full_calibration`'s
 `legacy_runner_result_projection` functions; that recomputation is dropped here (issue
 #170) since the fixture already stores their output. See the fixture's `_provenance`
-field for the generating command and revision.
+field for the command and revision that verified the values before they were frozen.
 """
 
 from __future__ import annotations
