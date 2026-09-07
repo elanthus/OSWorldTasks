@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from scripts.generate_grounding_v5_d56_gemini_calibration_publication import (
+from legacy.grounding.scripts.generate_grounding_v5_d56_gemini_calibration_publication import (
     DERIVATIVE_SCHEMA_VERSION,
     _format_cost,
     _known_cost,

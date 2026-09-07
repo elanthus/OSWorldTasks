@@ -6,8 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
-from pixelgym.grounding.v5.d56_calibration import (
+from legacy.grounding.v5.d56_calibration import (
     CONSECUTIVE_FAILURE_LIMIT,
     CURRENT_CALIBRATION_MANIFEST,
     HISTORICAL_CALIBRATION_MANIFEST,
@@ -18,6 +17,7 @@ from pixelgym.grounding.v5.d56_calibration import (
     execute_calibration,
     plan_digest,
 )
+from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 
 ROOT = Path(__file__).parents[2]

@@ -2,7 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from scripts.audit_grounding_v4c_floor import audit
+from legacy.grounding.scripts.audit_grounding_v4c_floor import audit
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 

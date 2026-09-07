@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from pixelgym.grounding.v3_server import create_v3b_app, create_v3c_app
+from legacy.grounding.v3_server import create_v3b_app, create_v3c_app
 from pixelgym.tasks.vendor_form.ui import INCOMPLETE_SUBMISSION_MESSAGE
 
 

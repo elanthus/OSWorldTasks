@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 
-from pixelgym.grounding.calibration_v3b import (
+from legacy.grounding.calibration_v3b import (
     V3B_CALIBRATION_SEEDS,
     V3B_CANDIDATE_SCHEMA_VERSION,
     V3B_EXAMPLE_SCHEMA_VERSION,

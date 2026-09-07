@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from jsonschema import Draft202012Validator
 
-from pixelgym.grounding.v5.d56_spend import (
+from legacy.grounding.v5.d56_spend import (
     LEGACY_SPEND_SCHEMA_VERSION,
     SPEND_SCHEMA_VERSION,
     UNKNOWN_SPEND,

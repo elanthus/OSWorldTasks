@@ -6,7 +6,6 @@ import base64
 import io
 import json
 import os
-import signal
 import sqlite3
 import subprocess
 import tempfile
@@ -16,27 +15,33 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Literal, Protocol, cast
+from typing import Any, Literal
 
 from PIL import Image
 
 from pixelgym.actions import KEY_ALLOWLIST
+from pixelgym.grounding.v5 import cli_transport
+from pixelgym.grounding.v5.cli_transport import (
+    CliProcessInterrupted,
+    CliSubprocessTransport,
+    StreamParseEnvelope,
+    start_process,
+)
 from pixelgym.grounding.v5.contracts import (
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     CliFaultKind,
     PolicyManifest,
     TransportOutcome,
-    classify_cli_process_fault,
     cli_fault_outcome,
     cli_pre_send_fault,
-    cli_timeout_fault,
     content_digest,
     sha256_bytes,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
 from pixelgym.grounding.v5.evidence import (
     CredentialValidationError,
+    RedactedRawStdio,
     redact_raw_stdio,
     validate_credential_free,
 )
@@ -50,6 +55,8 @@ from pixelgym.grounding.v5.sandbox import (
     validate_runtime_enforcement,
 )
 from pixelgym.serialization import canonical_json_bytes
+
+RunningProcess = cli_transport.RunningProcess
 
 CODEX_CLI_VERSION = "codex-cli 0.150.1"
 AUTH_MODE = "chatgpt_subscription"
@@ -770,13 +777,17 @@ class CodexCliInvocationJournal:
         *,
         status: str,
         exit_code: int | None,
-        raw_stdout: str,
-        raw_stderr: str,
+        raw_stdout: str | RedactedRawStdio,
+        raw_stderr: str | RedactedRawStdio,
         outcome: dict[str, Any],
     ) -> None:
         validate_credential_free(outcome)
-        stdout = redact_raw_stdio(raw_stdout)
-        stderr = redact_raw_stdio(raw_stderr)
+        stdout = (
+            raw_stdout if isinstance(raw_stdout, RedactedRawStdio) else redact_raw_stdio(raw_stdout)
+        )
+        stderr = (
+            raw_stderr if isinstance(raw_stderr, RedactedRawStdio) else redact_raw_stdio(raw_stderr)
+        )
         self._update(
             idempotency_key,
             status=status,
@@ -888,21 +899,8 @@ class CodexCliInvocationJournal:
                 raise RuntimeError("Codex invocation journal reservation is missing")
 
 
-class RunningProcess(Protocol):
-    pid: int
-    returncode: int | None
-
-    def communicate(
-        self, input: str | None = None, timeout: float | None = None
-    ) -> tuple[str, str]: ...
-
-    def poll(self) -> int | None: ...
-    def terminate(self) -> None: ...
-    def kill(self) -> None: ...
-
-
 def _start_process(command: Sequence[str], **kwargs: Any) -> RunningProcess:
-    return cast(RunningProcess, subprocess.Popen(command, **kwargs))
+    return start_process(command, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -1019,6 +1017,20 @@ def _parse_cli_stream(
     )
 
 
+def _codex_parse_envelope(
+    raw_stdout: str, *, context_window_tokens: int
+) -> StreamParseEnvelope[ParsedCliStream]:
+    parsed = _parse_cli_stream(raw_stdout, context_window_tokens=context_window_tokens)
+    return StreamParseEnvelope(
+        parsed=parsed,
+        stream_malformed=bool(
+            _MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)
+        ),
+        usage_observed=parsed.usage is not None,
+        cost_observed=parsed.usage is not None,
+    )
+
+
 def informational_list_price_equivalent(usage: Mapping[str, int]) -> Decimal:
     input_tokens = usage["input_tokens"]
     output_tokens = usage["output_tokens"]
@@ -1057,9 +1069,19 @@ class CodexCliTransport:
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
         self.records: list[dict[str, Any]] = []
-        self._active: dict[str, RunningProcess] = {}
-        self._active_lock = threading.Lock()
+        self._lifecycle = CliSubprocessTransport(
+            parser=lambda raw: _codex_parse_envelope(
+                raw, context_window_tokens=self.config.model_context_window_tokens
+            ),
+            process_factory=process_factory,
+            terminate_grace_seconds=TERMINATE_GRACE_SECONDS,
+            kill_grace_seconds=KILL_GRACE_SECONDS,
+        )
         self._closed = False
+
+    @property
+    def subprocesses_closed(self) -> bool:
+        return self._lifecycle.subprocesses_closed
 
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
@@ -1082,9 +1104,6 @@ class CodexCliTransport:
                 cli_pre_send_fault("duplicate_invocation_blocked")
             )
 
-        raw_stdout = ""
-        raw_stderr = ""
-        process: RunningProcess | None = None
         with tempfile.TemporaryDirectory(prefix="pixelgym-codex-cli-") as temporary:
             temporary_root = Path(temporary)
             working_directory = temporary_root / "work"
@@ -1132,154 +1151,88 @@ class CodexCliTransport:
                 )
                 self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
                 return transport_outcome
+            def mark_started(started: RunningProcess) -> None:
+                self.ledger.mark_process_started()
+                self.invocation_journal.mark_running(idempotency_key, started.pid)
+
             try:
-                process = self.process_factory(
-                    command,
+                execution = self._lifecycle.run(
+                    invocation_id=idempotency_key,
+                    command=command,
+                    input_text=str(request["prompt"]),
                     cwd=working_directory,
-                    env=self.environment,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    start_new_session=True,
+                    environment=self.environment,
+                    timeout_seconds=min(self.process_timeout_seconds, deadline_seconds),
+                    timeout_failure_code="codex_process_timeout",
+                    on_started=mark_started,
                 )
-            except (OSError, ValueError) as exc:
-                self.ledger.release_pre_send(idempotency_key)
-                fault = cli_pre_send_fault(
-                    "process_start_failure", kind=CliFaultKind.PROCESS_START
-                )
-                outcome = {
-                    "failure_code": "process_start_failure",
-                    "type": type(exc).__name__,
-                    "cli_fault": fault.to_dict(),
-                    "runtime_enforcement": enforcement_record,
-                }
-                transport_outcome = cli_fault_outcome(fault)
-                outcome["transport_outcome"] = transport_outcome.to_dict()
-                self.invocation_journal.finish(
-                    idempotency_key,
-                    status="pre_send_failure",
-                    exit_code=None,
-                    raw_stdout="",
-                    raw_stderr="",
-                    outcome=outcome,
-                )
-                self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
-                return transport_outcome
-            self.ledger.mark_process_started()
-            self.invocation_journal.mark_running(idempotency_key, process.pid)
-            with self._active_lock:
-                self._active[idempotency_key] = process
-            try:
-                raw_stdout, raw_stderr = process.communicate(
-                    str(request["prompt"]),
-                    timeout=min(self.process_timeout_seconds, deadline_seconds),
-                )
-            except subprocess.TimeoutExpired:
-                raw_stdout, raw_stderr = self._terminate_process(process)
+            except CliProcessInterrupted as interrupted:
+                execution = interrupted.envelope
                 self.ledger.retain_unresolved_and_block(idempotency_key)
-                fault = cli_timeout_fault("codex_process_timeout")
-                timeout_outcome: dict[str, Any] = {
-                    "failure_code": "codex_process_timeout",
-                    "cli_fault": fault.to_dict(),
-                    "process_confirmed_stopped": process.poll() is not None,
-                    "runtime_enforcement": enforcement_record,
-                }
-                transport_outcome = cli_fault_outcome(fault)
-                timeout_outcome["transport_outcome"] = transport_outcome.to_dict()
-                self.invocation_journal.finish(
-                    idempotency_key,
-                    status="timeout",
-                    exit_code=process.poll(),
-                    raw_stdout=raw_stdout,
-                    raw_stderr=raw_stderr,
-                    outcome=timeout_outcome,
-                )
-                self.records.append(self._record(idempotency_key, "timeout", timeout_outcome))
-                return transport_outcome
-            except OSError as exc:
-                raw_stdout, raw_stderr = self._terminate_process(process)
-                self.ledger.retain_unresolved_and_block(idempotency_key)
-                classified_fault = classify_cli_process_fault(
-                    return_code=process.poll(),
-                    stderr=raw_stderr,
-                    stream_malformed=False,
-                    error_type=type(exc).__name__,
-                )
-                if classified_fault is None:
-                    raise RuntimeError("CLI process exception was not classified") from exc
-                fault = classified_fault
-                transport_outcome = cli_fault_outcome(fault)
-                failure_outcome: dict[str, Any] = {
+                assert execution.fault is not None
+                fault = execution.fault
+                interrupt_outcome: dict[str, Any] = {
                     "failure_code": fault.code,
-                    "type": type(exc).__name__,
                     "cli_fault": fault.to_dict(),
+                    "process_confirmed_stopped": execution.process_confirmed_stopped,
+                    "type": type(interrupted.cause).__name__,
+                    "runtime_enforcement": enforcement_record,
+                }
+                interrupt_outcome["transport_outcome"] = cli_fault_outcome(fault).to_dict()
+                self.invocation_journal.finish(
+                    idempotency_key,
+                    status="interrupted",
+                    exit_code=execution.return_code,
+                    raw_stdout=execution.stdout,
+                    raw_stderr=execution.stderr,
+                    outcome=interrupt_outcome,
+                )
+                self.records.append(
+                    self._record(idempotency_key, "interrupted", interrupt_outcome)
+                )
+                raise interrupted.cause
+
+            execution_fault = execution.fault
+            if execution_fault is not None and execution.parsed is None:
+                failure_status: str = (
+                    "pre_send_failure"
+                    if execution_fault.phase == "pre_send"
+                    else execution_fault.classification
+                )
+                if execution_fault.phase == "pre_send":
+                    self.ledger.release_pre_send(idempotency_key)
+                else:
+                    self.ledger.retain_unresolved_and_block(idempotency_key)
+                if execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT:
+                    failure_status = "timeout"
+                transport_outcome = cli_fault_outcome(execution_fault)
+                failure_outcome = {
+                    "failure_code": execution_fault.code,
+                    "type": execution.error_type,
+                    "cli_fault": execution_fault.to_dict(),
+                    "process_confirmed_stopped": execution.process_confirmed_stopped,
                     "runtime_enforcement": enforcement_record,
                     "transport_outcome": transport_outcome.to_dict(),
                 }
                 self.invocation_journal.finish(
                     idempotency_key,
-                    status=fault.classification,
-                    exit_code=process.poll(),
-                    raw_stdout=raw_stdout,
-                    raw_stderr=raw_stderr,
+                    status=failure_status,
+                    exit_code=execution.return_code,
+                    raw_stdout=execution.stdout,
+                    raw_stderr=execution.stderr,
                     outcome=failure_outcome,
                 )
                 self.records.append(
-                    self._record(idempotency_key, fault.classification, failure_outcome)
+                    self._record(idempotency_key, failure_status, failure_outcome)
                 )
                 return transport_outcome
-            except BaseException as exc:
-                raw_stdout, raw_stderr = self._terminate_process(process)
+            if execution.parsed is None:
                 self.ledger.retain_unresolved_and_block(idempotency_key)
-                classified_fault = classify_cli_process_fault(
-                    return_code=process.poll(),
-                    stderr=raw_stderr,
-                    stream_malformed=False,
-                    error_type=type(exc).__name__,
-                )
-                if classified_fault is None:
-                    raise RuntimeError("CLI process interruption was not classified") from exc
-                fault = classified_fault
-                interrupt_outcome: dict[str, Any] = {
-                    "failure_code": fault.code,
-                    "process_confirmed_stopped": process.poll() is not None,
-                    "type": type(exc).__name__,
-                    "cli_fault": fault.to_dict(),
-                    "runtime_enforcement": enforcement_record,
-                }
-                interrupt_outcome["transport_outcome"] = cli_fault_outcome(
-                    fault
-                ).to_dict()
-                self.invocation_journal.finish(
-                    idempotency_key,
-                    status="interrupted",
-                    exit_code=process.poll(),
-                    raw_stdout=raw_stdout,
-                    raw_stderr=raw_stderr,
-                    outcome=interrupt_outcome,
-                )
-                self.records.append(self._record(idempotency_key, "interrupted", interrupt_outcome))
-                raise
-            finally:
-                with self._active_lock:
-                    self._active.pop(idempotency_key, None)
+                raise RuntimeError("CLI lifecycle returned neither parsed output nor a fault")
 
-        assert process is not None
-        parsed = _parse_cli_stream(
-            raw_stdout,
-            context_window_tokens=self.config.model_context_window_tokens,
-        )
+        parsed = execution.parsed
         policy_violations = list(parsed.policy_violations)
-        completed_fault = classify_cli_process_fault(
-            return_code=process.returncode,
-            stderr=raw_stderr,
-            stream_malformed=bool(
-                _MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)
-            ),
-            usage_observed=parsed.usage is not None,
-            cost_observed=parsed.usage is not None,
-        )
+        completed_fault = execution.fault
         content = parsed.content
         try:
             validate_credential_free(content)
@@ -1306,7 +1259,7 @@ class CodexCliTransport:
             outcome_record = {
                 "event_counts": parsed.event_counts,
                 "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
-                "exit_code": process.returncode,
+                "exit_code": execution.return_code,
                 "runtime_enforcement": enforcement_record,
                 "policy_violation": violation_value,
                 "stream_violations": policy_violations,
@@ -1324,9 +1277,9 @@ class CodexCliTransport:
             self.invocation_journal.finish(
                 idempotency_key,
                 status=fault.classification,
-                exit_code=process.returncode,
-                raw_stdout=raw_stdout,
-                raw_stderr=raw_stderr,
+                exit_code=execution.return_code,
+                raw_stdout=execution.stdout,
+                raw_stderr=execution.stderr,
                 outcome=outcome_record,
             )
             self.records.append(
@@ -1348,11 +1301,11 @@ class CodexCliTransport:
             "price_guard": "subscription_exempt",
             "usage_telemetry_status": parsed.usage_telemetry_status,
             "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
-            "raw_stdout_sha256": "sha256:" + sha256_bytes(raw_stdout.encode("utf-8")),
-            "raw_stderr_sha256": "sha256:" + sha256_bytes(raw_stderr.encode("utf-8")),
+            "raw_stdout_sha256": execution.stdout.original_sha256,
+            "raw_stderr_sha256": execution.stderr.original_sha256,
         }
         canonical = {
-            "response_id": "sha256:" + sha256_bytes(raw_stdout.encode("utf-8")),
+            "response_id": execution.stdout.original_sha256,
             "model": self.config.model,
             "content": content,
             "finish_reason": "stop" if violation_value == "none" else "policy_violation",
@@ -1361,7 +1314,7 @@ class CodexCliTransport:
         outcome_record = {
             "event_counts": parsed.event_counts,
             "accepted_cli_diagnostic_count": parsed.accepted_cli_diagnostic_count,
-            "exit_code": process.returncode,
+            "exit_code": execution.return_code,
             "runtime_enforcement": enforcement_record,
             "policy_violation": violation_value,
             "price_guard": "subscription_exempt",
@@ -1380,9 +1333,9 @@ class CodexCliTransport:
         self.invocation_journal.finish(
             idempotency_key,
             status=status,
-            exit_code=process.returncode,
-            raw_stdout=raw_stdout,
-            raw_stderr=raw_stderr,
+            exit_code=execution.return_code,
+            raw_stdout=execution.stdout,
+            raw_stderr=execution.stderr,
             outcome=outcome_record,
         )
         self.records.append(self._record(idempotency_key, status, outcome_record))
@@ -1390,11 +1343,8 @@ class CodexCliTransport:
 
     def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
         del mode
-        with self._active_lock:
-            process = self._active.get(idempotency_key)
-        if process is not None:
-            self._terminate_process(process)
-            return "cancelled" if process.poll() is not None else "unknown"
+        if self._lifecycle.cancel(idempotency_key):
+            return "cancelled"
         record = self.invocation_journal.record(idempotency_key)
         if record is not None and record["status"] in {"timeout", "interrupted"}:
             return "cancelled"
@@ -1415,10 +1365,7 @@ class CodexCliTransport:
         return TransportOutcome("unknown", failure_code="invocation_outcome_not_recoverable")
 
     def close(self) -> None:
-        with self._active_lock:
-            active = list(self._active.values())
-        for process in active:
-            self._terminate_process(process)
+        self._lifecycle.close()
         self._closed = True
 
     def _validate_request(self, request: dict[str, Any], *, deadline_seconds: float) -> str | None:
@@ -1457,25 +1404,6 @@ class CodexCliTransport:
             return "image_digest_mismatch"
         return None
 
-    def _terminate_process(self, process: RunningProcess) -> tuple[str, str]:
-        if process.poll() is None:
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except (OSError, ProcessLookupError):
-                process.terminate()
-        try:
-            return process.communicate(timeout=TERMINATE_GRACE_SECONDS)
-        except subprocess.TimeoutExpired:
-            if process.poll() is None:
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except (OSError, ProcessLookupError):
-                    process.kill()
-            try:
-                return process.communicate(timeout=KILL_GRACE_SECONDS)
-            except subprocess.TimeoutExpired:
-                return "", ""
-
     def _record(
         self, idempotency_key: str, status: str, outcome: Mapping[str, Any]
     ) -> dict[str, Any]:
@@ -1492,6 +1420,7 @@ class CodexCliTransport:
                 "informational_list_price_equivalent_usd"
             ),
             "policy_violation": outcome.get("policy_violation", "none"),
+            "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
             "price_guard": outcome.get("price_guard"),
             "usage_telemetry_status": outcome.get(
@@ -1520,6 +1449,9 @@ def build_codex_cli_policy_manifest(
     runtime_digest = content_digest(
         {
             "provider_module": _file_digest(module_path),
+            "cli_transport_module": _file_digest(
+                repository_root / "pixelgym/grounding/v5/cli_transport.py"
+            ),
             "runner_module": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
             "pyproject": _file_digest(repository_root / "pyproject.toml"),
             "lock": _file_digest(repository_root / "requirements/platform-py312.lock"),

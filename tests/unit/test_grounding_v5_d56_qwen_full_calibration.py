@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d56_qwen_full_calibration as calibration
+from legacy.grounding.scripts import run_grounding_v5_d56_qwen_full_calibration
+from legacy.grounding.v5 import d56_qwen_full_calibration as calibration
 from pixelgym.grounding.v5.panel_policy import (
     PANEL,
     QWEN_STATEFUL,
     QWEN_STATEFUL_RETRY_SUCCESSOR,
 )
-from scripts import run_grounding_v5_d56_qwen_full_calibration
 
 ROOT = Path(__file__).parents[2]
 

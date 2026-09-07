@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from pixelgym.grounding.calibration_v4 import (
+from legacy.grounding.calibration_v4 import (
     V4_CALIBRATION_SEEDS,
     V4_CANDIDATE_IDS,
     V4_CANDIDATE_SCHEMA_VERSION,
@@ -21,8 +21,8 @@ from pixelgym.grounding.calibration_v4 import (
     v4_example_id,
     validate_v4_calibration_dataset,
 )
+from legacy.grounding.v4_protocol import V4_PROTOCOL_VERSION
 from pixelgym.grounding.schema import SCREEN_STATES, TASK_SEEDS
-from pixelgym.grounding.v4_protocol import V4_PROTOCOL_VERSION
 
 
 def test_v4_has_ten_unique_targets_and_disjoint_calibration_seeds() -> None:

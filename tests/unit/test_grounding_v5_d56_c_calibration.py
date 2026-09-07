@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d56_c_calibration
-from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
-from pixelgym.grounding.v5.d56_c_calibration import (
+from legacy.grounding.v5 import d56_c_calibration
+from legacy.grounding.v5.d56_c_calibration import (
     FROZEN_BCD_TERMINAL_IDENTITY,
     build_plan,
     execute_calibration,
     plan_digest,
 )
+from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from tests.unit.test_grounding_v5_d56_bcd_calibration import (
     fake_frozen_calibration_output,
