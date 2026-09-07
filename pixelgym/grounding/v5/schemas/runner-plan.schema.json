@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.invalid/schemas/runner-plan-v1.json",
+  "title": "PixelGym manifest-driven calibration runner plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "purpose",
+    "code_revision",
+    "policy_panel",
+    "task_allocation",
+    "provider",
+    "budgets",
+    "retry_breaker",
+    "stop_conditions",
+    "outputs",
+    "requires_clean_tracked_worktree",
+    "provider_calls_made_while_planning",
+    "approval_required"
+  ],
+  "properties": {
+    "schema_version": {"const": "pixelgym-agent-v5-runner-plan-v1"},
+    "purpose": {"type": "string", "minLength": 1},
+    "code_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "policy_panel": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot", "policy_manifest", "policy_manifest_digest"],
+        "properties": {
+          "slot": {"type": "string", "minLength": 1},
+          "policy_manifest": {"type": "object"},
+          "policy_manifest_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "task_allocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_path", "manifest_digest", "assignments"],
+      "properties": {
+        "manifest_path": {"type": "string", "minLength": 1},
+        "manifest_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "assignments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ordinal", "slot", "seed", "task_id", "family", "action_limit"],
+            "properties": {
+              "ordinal": {"type": "integer", "minimum": 0},
+              "slot": {"type": "string", "minLength": 1},
+              "seed": {"type": "integer", "minimum": 0},
+              "task_id": {"type": "string", "minLength": 1},
+              "family": {"type": "string", "minLength": 1},
+              "action_limit": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter", "transport", "config"],
+      "properties": {
+        "adapter": {
+          "enum": ["openrouter_http", "codex_cli", "claude_cli", "deterministic_fake"]
+        },
+        "transport": {"enum": ["http", "cli_subprocess", "deterministic_fake"]},
+        "config": {"type": "object"}
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_action_cap",
+        "model_attempt_cap",
+        "provider_control_request_cap",
+        "provider_wire_request_cap",
+        "maximum_spend_usd",
+        "per_request_theoretical_maximum_usd",
+        "unknown_reservation_rule"
+      ],
+      "properties": {
+        "environment_action_cap": {"type": "integer", "minimum": 1},
+        "model_attempt_cap": {"type": "integer", "minimum": 1},
+        "provider_control_request_cap": {"type": "integer", "minimum": 0},
+        "provider_wire_request_cap": {"type": "integer", "minimum": 1},
+        "maximum_spend_usd": {"type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+)?$"},
+        "per_request_theoretical_maximum_usd": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "unknown_reservation_rule": {"type": "string", "minLength": 1}
+      }
+    },
+    "retry_breaker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_bounded_retries_per_action",
+        "consecutive_failure_limit",
+        "continue_classifications",
+        "hard_stop_classifications"
+      ],
+      "properties": {
+        "max_bounded_retries_per_action": {"type": "integer", "minimum": 0},
+        "consecutive_failure_limit": {"type": "integer", "minimum": 1},
+        "continue_classifications": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "hard_stop_classifications": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directory", "journal", "summary", "resume_mode"],
+      "properties": {
+        "directory": {"type": "string", "minLength": 1},
+        "journal": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "resume_mode": {"enum": ["forbid", "reconcile_existing"]}
+      }
+    },
+    "requires_clean_tracked_worktree": {"const": true},
+    "provider_calls_made_while_planning": {"const": 0},
+    "approval_required": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "exact_plan_sha256"],
+      "properties": {
+        "owner": {"const": "human"},
+        "exact_plan_sha256": {"const": "sha256 of canonical plan bytes"}
+      }
+    }
+  }
+}
