@@ -172,7 +172,7 @@ def _mutate_coordinate_convention(snapshot: _Snapshot, manifest: Manifest) -> Ma
         snapshot,
         manifest,
         field="coordinate_convention",
-        value="one-based inclusive screenshot pixels",
+        value=f"{manifest['coordinate_convention']}; mutated",
     )
 
 
