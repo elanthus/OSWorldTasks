@@ -37,8 +37,10 @@ output directly.
   fingerprinted finding from blobs reachable through all Git refs. Do not paste matched values into
   an issue, pull request, or release record.
 - [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode check`. This rebuilds the
-  inventory from tracked files only and compares it with
-  `artifacts/public-release-inventory.json`; investigate any reported difference before release.
+  inventory from tracked files only and compares its links, license, and redaction sections with
+  `artifacts/public-release-inventory.json`; investigate any difference in those sections before
+  release. Its history comparison is informational because shallow or partial clones can differ;
+  `--mode history` remains the release-time history gate.
 - [ ] Confirm no ignored/private evidence, restricted attempt journal, gated OSWorld task asset,
   raw private provider payload, operator path, personal e-mail address, credential, or token is
   tracked or linked from the README.
@@ -58,8 +60,8 @@ output directly.
   ancestor commits whose earlier file versions retain fingerprinted absolute operator paths. Review
   the raw history inventory before ticking this item; the owner, not an automated check, records
   acceptance of those findings for publication.
+- [ ] Complete revocation or rotation of any credential the history scan found, then re-run
+  `--mode history` and confirm zero credential/token findings.
 - [ ] Change the GitHub repository visibility from private to public.
 - [ ] From a logged-out browser, verify the README, local artifact links, license files, and release
   media are accessible in the public repository.
-- [ ] Revoke or rotate any credential if the final Git history review discovers that it was ever
-  committed; removing it from the current tree is not sufficient.

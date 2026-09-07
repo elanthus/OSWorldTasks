@@ -151,7 +151,31 @@ def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
 
     untracked = root / "inventory-untracked-regression.txt"
     untracked.write_text("This untracked scratch file must not change the locked inventory.\n")
-    assert module.check_committed_inventory(root)["passed"] is True
+    check = module.check_committed_inventory(root)
+    assert check["passed"] is True
+    assert check["history_comparison"]["matched"] is True
+
+    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(["git", "add", "-u"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "add release fixture"], cwd=root, check=True)
+    historical = root / "historical.txt"
+    historical.write_text("/" + "home" + "/release-auditor/private-run\n")
+    subprocess.run(["git", "add", "historical.txt"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "add historical fixture"], cwd=root, check=True)
+    historical.unlink()
+    subprocess.run(["git", "add", "-u"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "remove historical fixture"], cwd=root, check=True)
+
+    history_mismatch = module.check_committed_inventory(root)
+    assert history_mismatch["passed"] is True
+    assert history_mismatch["difference_count"] == 0
+    assert history_mismatch["history_comparison"]["matched"] is False
+    assert history_mismatch["history_comparison"]["difference_count"] > 0
 
     readme = root / "README.md"
     readme.write_text(readme.read_text() + "\n[New evidence](new-evidence.json)\n")

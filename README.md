@@ -51,9 +51,10 @@ agent interface; expected values and bounding boxes never enter the environment 
   [dataset](artifacts/grounding-dataset.jsonl)).
 - Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across
   4 seeds × 4 deterministic scripted-policy aliases: 16 branches and 80 scripted calls, with a
-  maximum of 4 branches observed concurrently and 4 invalid and 4 request-failure assignments
-  retained. The provider was the no-cost `scripted-demo` fixture on one local host; these are
-  orchestration fixtures, not model quality or production-throughput measurements
+  maximum of 4 branches observed concurrently; it retained 4 invalid assignments and 4
+  request-failure assignments containing 20 failed requests. The provider was the no-cost
+  `scripted-demo` fixture on one local host; these are orchestration fixtures, not model quality or
+  production-throughput measurements
   ([fan-out evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json),
   [versioned plan](artifacts/platform/seed-policy-plan-v1.json),
   [frozen dataset](artifacts/grounding-dataset.jsonl)).

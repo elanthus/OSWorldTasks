@@ -717,7 +717,7 @@ def _inventory_differences(expected: object, actual: object, path: str = "$") ->
 
 
 def check_committed_inventory(root: Path) -> dict[str, object]:
-    """Compare the committed inventory with a tracked-only rebuild."""
+    """Compare tracked-tree sections and report history equality informationally."""
 
     artifact = root / "artifacts" / "public-release-inventory.json"
     try:
@@ -731,14 +731,36 @@ def check_committed_inventory(root: Path) -> dict[str, object]:
             "passed": False,
         }
     actual = build_inventory(root, tracked_only=True)
-    differences = _inventory_differences(expected, actual)
+    tracked_sections = ("links", "license_inventory", "redaction_and_asset_inventory")
+    differences = [
+        difference
+        for section in tracked_sections
+        for difference in _inventory_differences(
+            expected.get(section), actual[section], f"$.{section}"
+        )
+    ]
+    history_differences = _inventory_differences(
+        expected.get("history_redaction_inventory"),
+        actual["history_redaction_inventory"],
+        "$.history_redaction_inventory",
+    )
     reported_limit = 50
     return {
         "artifact": "artifacts/public-release-inventory.json",
-        "checked_scope": "tracked files",
+        "checked_scope": {
+            "repository_files": "tracked files",
+            "compared_sections": list(tracked_sections),
+        },
         "difference_count": len(differences),
         "differences": differences[:reported_limit],
         "differences_truncated": len(differences) > reported_limit,
+        "history_comparison": {
+            "informational": True,
+            "matched": not history_differences,
+            "difference_count": len(history_differences),
+            "differences": history_differences[:reported_limit],
+            "differences_truncated": len(history_differences) > reported_limit,
+        },
         "passed": not differences,
     }
 
