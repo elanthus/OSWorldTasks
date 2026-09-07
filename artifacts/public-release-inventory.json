@@ -3453,10 +3453,10 @@
         "review_required_count": 0
       }
     },
-    "files_scanned": 2681,
+    "files_scanned": 2683,
     "passed": true,
     "review_required_count": 0,
-    "text_files_scanned": 883
+    "text_files_scanned": 885
   },
   "schema_version": "pixelgym-public-release-inventory-v2",
   "scope": {
