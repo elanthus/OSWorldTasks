@@ -134,19 +134,19 @@ current scope.
 ### Local no-cost platform reproduction
 
 The scripted lifecycle demo uses local services and a deterministic provider; its metrics are
-synthetic governance fixtures, not model-quality evidence. It requires Docker and does not make
-network model/provider calls. After the
-[default development setup](#quick-reproduction-without-osworld), run from the repository root:
+synthetic governance fixtures, not model-quality evidence. It requires Docker and Python 3.12 but
+does not require the project virtual environment or make network model/provider calls. Run from the
+repository root:
 
 ```bash
-.venv/bin/python scripts/platform_compose.py up --build --wait
+python3.12 scripts/platform_compose.py up --build --wait
 ```
 
 Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
 stack while retaining its local evidence with:
 
 ```bash
-.venv/bin/python scripts/platform_compose.py down
+python3.12 scripts/platform_compose.py down
 ```
 
 Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
