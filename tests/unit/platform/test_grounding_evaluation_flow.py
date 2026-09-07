@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from copy import deepcopy
+from dataclasses import asdict
+from itertools import permutations
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -17,8 +20,18 @@ from pixelgym.platform.evaluation import (
     PlatformProviderResponse,
     ScriptedReplayProvider,
 )
+from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_json_bytes
 from pixelgym.platform.immutable_store import LocalImmutableStore
+from pixelgym.platform.matrix_evaluation import (
+    PLAN_SCHEMA_VERSION,
+    assignment_id,
+    canonical_seed_policy_aggregate,
+    canonical_seed_policy_plan,
+    load_seed_policy_plan,
+    summarize_parallel_timing,
+)
 from pixelgym.platform.mlflow_tracking import InMemoryTracking
+from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 from pixelgym.platform.source_provenance import (
     SOURCE_PROVENANCE_SCHEMA_VERSION,
     SourceProvenance,
@@ -512,3 +525,261 @@ def test_candidate_and_submission_completion_are_atomic(
     assert next(iter(tracking.runs.values())).status == "FAILED"
     assert control.list_submissions()[0]["status"] == "Failed"
     assert control.list_candidates() == []
+
+
+def _seed_policy_fixture(
+    dataset_fingerprint: str = "sha256:" + "d" * 64,
+    *,
+    assignment_keys: tuple[tuple[int, int], ...] = ((7, 0), (7, 1), (9, 0)),
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    provenance = SourceProvenance(
+        SOURCE_PROVENANCE_SCHEMA_VERSION,
+        "a" * 40,
+        "b" * 64,
+        "clean",
+        "git-build-inputs-v1",
+    )
+    policies = [
+        build_policy_manifest(
+            provider="scripted-demo",
+            model=model,
+            prompt_name=PROMPT_NAME,
+            prompt_version=version,
+            prompt=prompt_template(version),
+            condition="raw",
+            parameters={"deterministic": True, "hidden_retries": 0},
+            parser_version="pixelgym-grounding-parser-v1",
+            scorer_version="pixelgym-point-inside-half-open-box-v1",
+            overlay_version="none-raw-coordinate-policy",
+            target_semantics="requested-control-center-point-v1",
+            source_provenance=provenance,
+            dependency_lock_sha256="c" * 64,
+        )
+        for model, version in (
+            ("day3-replay-baseline-v1", 1),
+            ("day3-replay-revised-v2", 2),
+        )
+    ]
+    assignment_pairs = [(seed, policies[policy_index]) for seed, policy_index in assignment_keys]
+    assignments: list[dict[str, Any]] = [
+        {
+            "assignment_id": assignment_id(
+                dataset_fingerprint=dataset_fingerprint,
+                seed=seed,
+                policy_id=policy.policy_id,
+            ),
+            "seed": seed,
+            "policy_id": policy.policy_id,
+        }
+        for seed, policy in assignment_pairs
+    ]
+    plan = canonical_seed_policy_plan(
+        {
+            "schema_version": PLAN_SCHEMA_VERSION,
+            "dataset_fingerprint": dataset_fingerprint,
+            "policies": [asdict(policy) for policy in policies],
+            "assignments": assignments,
+        }
+    )
+    return plan, assignments
+
+
+def _invalid_branch_result(assignment: dict[str, Any], index: int = 0) -> dict[str, Any]:
+    return {
+        "content": {
+            **assignment,
+            "correct_count": 0,
+            "expected_count": 1,
+            "invalid_count": 1,
+            "outcome": "invalid",
+            "records": [
+                {
+                    "correct": False,
+                    "example_id": f"example-{assignment['seed']}-{index}",
+                    "parse_error": "invalid JSON",
+                    "parse_status": "invalid",
+                    "request_failure": None,
+                }
+            ],
+            "request_failure_count": 0,
+        },
+        "timing": {
+            "ended_at_utc": f"2026-09-06T00:00:1{index}+00:00",
+            "started_at_utc": f"2026-09-06T00:00:0{index}+00:00",
+        },
+    }
+
+
+def test_seed_policy_aggregate_is_byte_stable_across_every_completion_order() -> None:
+    plan, assignments = _seed_policy_fixture()
+    results = [_invalid_branch_result(item, index) for index, item in enumerate(assignments)]
+    expected = canonical_seed_policy_aggregate(plan, results)
+
+    completion_orders = list(permutations(results))
+    assert len(completion_orders) == 6
+    for order in completion_orders:
+        reordered = deepcopy(list(order))
+        for completion_rank, result in enumerate(reordered):
+            result["timing"] = {
+                "completion_rank": completion_rank,
+                "runtime_duration_ms": 900 - completion_rank,
+            }
+        assert canonical_seed_policy_aggregate(plan, reordered) == expected
+
+
+def test_seed_policy_aggregate_rejects_duplicate_assignment_even_with_failure_outcome() -> None:
+    plan, assignments = _seed_policy_fixture(assignment_keys=((3, 0),))
+    item = assignments[0]
+    result = _invalid_branch_result(item)
+    with pytest.raises(ValueError, match="duplicate assignment"):
+        canonical_seed_policy_aggregate(plan, [result, result])
+
+
+@pytest.mark.parametrize(
+    ("field", "contradictory_value"),
+    (("correct_count", 1), ("invalid_count", 0), ("outcome", "completed")),
+)
+def test_seed_policy_aggregate_rejects_each_contradictory_summary_field(
+    field: str,
+    contradictory_value: object,
+) -> None:
+    plan, assignments = _seed_policy_fixture(assignment_keys=((4, 0),))
+    contradictory = _invalid_branch_result(assignments[0])
+    contradictory["content"][field] = contradictory_value
+
+    with pytest.raises(ValueError, match="summary differs"):
+        canonical_seed_policy_aggregate(plan, [contradictory])
+
+
+def test_seed_policy_aggregate_rejects_missing_required_field() -> None:
+    plan, assignments = _seed_policy_fixture(assignment_keys=((4, 0),))
+    result = _invalid_branch_result(assignments[0])
+    result["content"].pop("outcome")
+
+    with pytest.raises(ValueError, match="unknown or missing canonical fields"):
+        canonical_seed_policy_aggregate(plan, [result])
+
+
+def test_seed_policy_aggregate_rejects_expected_count_different_from_records() -> None:
+    plan, assignments = _seed_policy_fixture(assignment_keys=((4, 0),))
+    result = _invalid_branch_result(assignments[0])
+    result["content"]["expected_count"] = 2
+
+    with pytest.raises(ValueError, match="expected count differs"):
+        canonical_seed_policy_aggregate(plan, [result])
+
+
+@pytest.mark.parametrize(
+    ("case", "expected_error"),
+    (
+        ("assignment_digest", "assignment digest mismatch"),
+        ("duplicate_pair", "assignments must be unique"),
+        ("unknown_policy", "unknown policy"),
+        ("string_seed", "nonnegative integer"),
+        ("bool_seed", "nonnegative integer"),
+        ("negative_seed", "nonnegative integer"),
+        ("duplicate_policy", "policy IDs must be unique"),
+        ("malformed_fingerprint", "requires a dataset fingerprint"),
+    ),
+)
+def test_canonical_seed_policy_plan_rejects_invalid_identity_inputs(
+    case: str,
+    expected_error: str,
+) -> None:
+    plan, _ = _seed_policy_fixture(assignment_keys=((7, 0), (7, 1)))
+    candidate = deepcopy(plan)
+    if case == "assignment_digest":
+        candidate["assignments"][0]["assignment_id"] = "sha256:" + "f" * 64
+    elif case == "duplicate_pair":
+        candidate["assignments"].append(deepcopy(candidate["assignments"][0]))
+    elif case == "unknown_policy":
+        candidate["assignments"][0]["policy_id"] = "sha256:" + "e" * 64
+    elif case == "duplicate_policy":
+        candidate["policies"].append(deepcopy(candidate["policies"][0]))
+    elif case == "malformed_fingerprint":
+        candidate["dataset_fingerprint"] = "d" * 64
+    else:
+        candidate["assignments"][0]["seed"] = {
+            "string_seed": "7",
+            "bool_seed": True,
+            "negative_seed": -1,
+        }[case]
+
+    with pytest.raises(ValueError, match=expected_error):
+        canonical_seed_policy_plan(candidate)
+
+
+@pytest.mark.parametrize("case", ("mismatched_fingerprint", "absent_seed"))
+def test_load_seed_policy_plan_rejects_dataset_identity_mismatch(
+    case: str,
+    repository_root: Path,
+    tmp_path: Path,
+) -> None:
+    _, actual_fingerprint = build_dataset_manifest(
+        repository_root=repository_root,
+        dataset_path=repository_root / "artifacts/grounding-dataset.jsonl",
+        overlays_path=repository_root / "artifacts/grounding-overlays.jsonl",
+    )
+    fingerprint = "sha256:" + "0" * 64 if case == "mismatched_fingerprint" else actual_fingerprint
+    seed = 999_999 if case == "absent_seed" else 0
+    plan, _ = _seed_policy_fixture(fingerprint, assignment_keys=((seed, 0),))
+    path = tmp_path / "plan.json"
+    path.write_bytes(canonical_json_bytes(plan) + b"\n")
+
+    expected_error = (
+        "differs from the frozen dataset" if case == "mismatched_fingerprint" else "seed absent"
+    )
+    with pytest.raises(ValueError, match=expected_error):
+        load_seed_policy_plan(path, repository_root=repository_root)
+
+
+def _timing_evidence(intervals: list[tuple[str, str]]) -> dict[str, Any]:
+    return {
+        "branches": [
+            {
+                "assignment_id": f"assignment-{index}",
+                "ended_at_utc": f"2026-09-06T00:00:{end}+00:00",
+                "queue_duration_ms": index + 0.25,
+                "runtime_duration_ms": index + 1.5,
+                "started_at_utc": f"2026-09-06T00:00:{start}+00:00",
+            }
+            for index, (start, end) in enumerate(intervals)
+        ],
+        "flow_ended_at_utc": "2026-09-06T00:01:00+00:00",
+        "flow_started_at_utc": "2026-09-06T00:00:00+00:00",
+        "join_ended_at_utc": "2026-09-06T00:00:59+00:00",
+        "join_started_at_utc": "2026-09-06T00:00:58+00:00",
+        "plan_digest": "sha256:" + "a" * 64,
+    }
+
+
+def test_parallel_timing_summarizes_strictly_sequential_intervals() -> None:
+    summary = summarize_parallel_timing(_timing_evidence([("00", "01"), ("02", "03")]))
+
+    assert summary["overlapping_branch_pairs"] == 0
+    assert summary["maximum_observed_parallel_branches"] == 1
+    assert summary["serial_equivalent_branch_runtime_ms"] == 4.0
+    assert summary["observed_branch_window_ms"] == 3_000.0
+    assert summary["overlap_demonstrated"] is False
+
+
+def test_parallel_timing_summarizes_four_nested_intervals() -> None:
+    summary = summarize_parallel_timing(
+        _timing_evidence([("00", "09"), ("01", "08"), ("02", "07"), ("03", "06")])
+    )
+
+    assert summary["overlapping_branch_pairs"] == 6
+    assert summary["maximum_observed_parallel_branches"] == 4
+    assert summary["overlap_demonstrated"] is True
+
+
+def test_parallel_timing_does_not_count_touching_intervals_as_overlap() -> None:
+    summary = summarize_parallel_timing(_timing_evidence([("00", "01"), ("01", "02")]))
+
+    assert summary["overlapping_branch_pairs"] == 0
+    assert summary["maximum_observed_parallel_branches"] == 1
+
+
+def test_parallel_timing_rejects_interval_ending_before_start() -> None:
+    with pytest.raises(ValueError, match="ends before it starts"):
+        summarize_parallel_timing(_timing_evidence([("02", "01")]))
