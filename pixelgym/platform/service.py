@@ -11,9 +11,10 @@ import math
 import time
 import traceback
 import uuid
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from concurrent.futures import Future, ThreadPoolExecutor
-from contextvars import ContextVar
+from contextlib import asynccontextmanager
+from contextvars import ContextVar, copy_context
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import partial
@@ -24,6 +25,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.utils import is_body_allowed_for_status_code
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -230,12 +232,22 @@ def _attach_identity_headers(response: Response, context: _OperationalContext) -
     ]
 
 
-def _error_response(status_code: int, detail: object) -> JSONResponse:
+def _error_response(
+    status_code: int,
+    detail: object,
+    *,
+    headers: Mapping[str, str] | None = None,
+) -> Response:
+    response_headers = dict(headers) if headers is not None else None
+    if not is_body_allowed_for_status_code(status_code):
+        return Response(status_code=status_code, headers=response_headers)
     content: dict[str, object] = {"detail": detail}
     identity = _identity()
     if identity is not None:
         content["identity"] = identity
-    return JSONResponse(status_code=status_code, content=jsonable_encoder(content))
+    return JSONResponse(
+        status_code=status_code, content=jsonable_encoder(content), headers=response_headers
+    )
 
 
 def _release_provider_capacity(
@@ -292,11 +304,6 @@ def create_serving_app(
         raise ValueError("provider queue timeout must be finite and nonnegative")
     if max_provider_output_bytes <= 0:
         raise ValueError("maximum provider output bytes must be positive")
-    app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None)
-    app.state.operational_log = operational_log
-    # Install this before the audit middleware below so the audit wrapper remains outermost and
-    # records body-limit rejections without allowing request parsing to occur first.
-    app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
     # Audit I/O may wait for its configured storage deadline, but it must not occupy Starlette's
     # shared worker capacity while it does. Waiting here preserves the rule that no response is
     # released before its immutable evidence is verified.
@@ -308,19 +315,36 @@ def create_serving_app(
         max_workers=provider_concurrency,
         thread_name_prefix="pixelgym-provider",
     )
+
+    @asynccontextmanager
+    async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            # Abandoned/timed-out calls are never cancelled (see the timeout handling below), so
+            # this releases the pool without waiting for them and without a hidden retry.
+            provider_executor.shutdown(wait=False, cancel_futures=True)
+
+    app = FastAPI(
+        title="PixelGym Grounding API", docs_url=None, redoc_url=None, lifespan=_lifespan
+    )
+    app.state.operational_log = operational_log
     app.state.provider_executor = provider_executor
+    # Install this before the audit middleware below so the audit wrapper remains outermost and
+    # records body-limit rejections without allowing request parsing to occur first.
+    app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(
         request: Request, exc: StarletteHTTPException
-    ) -> JSONResponse:
+    ) -> Response:
         del request
-        return _error_response(exc.status_code, exc.detail)
+        return _error_response(exc.status_code, exc.detail, headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def request_validation_exception_handler(
         request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    ) -> Response:
         del request
         safe_errors = [
             {key: error[key] for key in ("type", "loc", "msg") if key in error}
@@ -446,7 +470,9 @@ def create_serving_app(
 
     @app.post("/api/v1/ground", response_model=GroundResponse)
     async def ground(request: GroundRequest, response: Response) -> GroundResponse:
-        image, width, height = _decode_and_validate(request)
+        # Base64 decoding and Image.verify() are CPU-bound; keep them off the shared event loop
+        # so a large screenshot cannot stall /health/live or other requests behind it.
+        image, width, height = await anyio.to_thread.run_sync(_decode_and_validate, request)
         target = request.target.strip()
         if not target:
             raise HTTPException(422, "target must contain non-whitespace text")
@@ -456,6 +482,7 @@ def create_serving_app(
         loaded = runtime.loaded
         _set_identity(loaded)
         borrower = object()
+        provider_admitted = False
         if provider_queue_timeout_seconds == 0:
             try:
                 provider_limiter.acquire_on_behalf_of_nowait(borrower)
@@ -463,9 +490,9 @@ def create_serving_app(
             except anyio.WouldBlock:
                 provider_admitted = False
         else:
-            with anyio.move_on_after(provider_queue_timeout_seconds) as queue_scope:
+            with anyio.move_on_after(provider_queue_timeout_seconds):
                 await provider_limiter.acquire_on_behalf_of(borrower)
-            provider_admitted = not queue_scope.cancel_called
+                provider_admitted = True
         if not provider_admitted:
             _set_terminal_status("provider_concurrency_saturated")
             raise HTTPException(503, "provider concurrency limit is saturated")
@@ -478,30 +505,41 @@ def create_serving_app(
             target=target,
             policy=loaded.manifest,
         )
+
+        def _on_provider_future_done(_: Future[Any]) -> None:
+            try:
+                loop.call_soon_threadsafe(
+                    _release_provider_capacity, provider_limiter, borrower
+                )
+            except RuntimeError:
+                # The event loop already closed (interpreter/app shutdown); the executor is
+                # being torn down too, so the limiter borrower is abandoned along with it.
+                pass
+
         try:
+            # Run inside a copy of the caller's context so request-scoped ContextVars reach the
+            # provider thread, matching the audit path's propagation via anyio.to_thread.run_sync.
             provider_future: Future[
                 tuple[str | None, str, float | None, dict[str, Any] | None]
-            ] = provider_executor.submit(provider_call)
+            ] = provider_executor.submit(copy_context().run, provider_call)
         except BaseException:
             provider_limiter.release_on_behalf_of(borrower)
             raise
-        provider_future.add_done_callback(
-            lambda _: loop.call_soon_threadsafe(
-                _release_provider_capacity, provider_limiter, borrower
-            )
-        )
+        provider_future.add_done_callback(_on_provider_future_done)
         try:
-            raw, provider_request_id, provider_latency_ms, usage = await asyncio.wait_for(
-                asyncio.shield(asyncio.wrap_future(provider_future)),
-                timeout=provider_timeout_seconds,
-            )
-        except TimeoutError as exc:
-            _set_terminal_status("provider_timeout")
-            raise HTTPException(504, "provider request timed out") from exc
+            with anyio.move_on_after(provider_timeout_seconds) as timeout_scope:
+                raw, provider_request_id, provider_latency_ms, usage = await asyncio.shield(
+                    asyncio.wrap_future(provider_future)
+                )
         except ProviderFailure as exc:
             _set_terminal_status(f"provider_{exc.code}")
             status = 504 if exc.code == "timeout" else 429 if exc.code == "rate_limit" else 502
             raise HTTPException(status, f"provider request failed: {exc.code}") from exc
+        if timeout_scope.cancel_called:
+            # The service's own deadline fired; the call is abandoned, never cancelled or
+            # retried, and stays distinct from a provider-reported ``ProviderFailure(timeout)``.
+            _set_terminal_status("provider_timeout_enforced")
+            raise HTTPException(504, "provider request timed out")
         output_bytes = len(raw.encode("utf-8")) if raw is not None else None
         context = _operational_context.get()
         if context is not None:

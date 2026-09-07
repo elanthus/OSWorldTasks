@@ -148,7 +148,8 @@ class OperationalRecord:
         if not isinstance(value, dict):
             raise TypeError("operational record must be a JSON object")
         payload = dict(value)
-        payload.setdefault("provider_output_bytes", None)
+        # ``provider_output_bytes`` is optional: v1 records written before this field existed omit
+        # it entirely, and the dataclass default (None) below covers that case without a schema bump.
         try:
             provider_request_id = payload.pop("provider_request_id")
         except KeyError as exc:

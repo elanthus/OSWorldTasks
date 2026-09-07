@@ -13,6 +13,7 @@ import sqlite3
 import stat
 import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from http.cookies import SimpleCookie
 from pathlib import Path
@@ -119,16 +120,16 @@ def _serving_app(runtime: PolicyRuntime):
     return create_serving_app(runtime, operational_log=MemoryOperationalLog())
 
 
-def _assert_error_identity(response: httpx.Response, policy_id: str) -> None:
+def _assert_error_identity(response: httpx.Response, loaded: LoadedPolicy) -> None:
     assert response.headers["x-pixelgym-api-version"] == API_SCHEMA_VERSION
-    assert response.headers["x-pixelgym-policy-id"] == policy_id
-    assert response.headers["x-pixelgym-deployment-id"] == "deployment-1"
-    assert response.headers["x-pixelgym-exact-policy-version"] == "candidate-1"
+    assert response.headers["x-pixelgym-policy-id"] == loaded.manifest.policy_id
+    assert response.headers["x-pixelgym-deployment-id"] == loaded.deployment_id
+    assert response.headers["x-pixelgym-exact-policy-version"] == loaded.exact_policy_version
     assert response.json()["identity"] == {
         "api_version": API_SCHEMA_VERSION,
-        "policy_id": policy_id,
-        "deployment_id": "deployment-1",
-        "exact_policy_version": "candidate-1",
+        "policy_id": loaded.manifest.policy_id,
+        "deployment_id": loaded.deployment_id,
+        "exact_policy_version": loaded.exact_policy_version,
     }
 
 
@@ -390,10 +391,9 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
         def get(self, request_id):
             return None
 
+    loaded = _loaded(policy_factory(), ServingFake())
     response = TestClient(
-        create_serving_app(
-            PolicyRuntime(_loaded(policy_factory(), ServingFake())), operational_log=FailingLog()
-        )
+        create_serving_app(PolicyRuntime(loaded), operational_log=FailingLog())
     ).post(
         "/api/v1/ground",
         json={
@@ -404,7 +404,7 @@ def test_unavailable_operational_storage_fails_closed(policy_factory) -> None:
     )
     assert response.status_code == 503
     assert response.json()["detail"] == "serving audit storage is unavailable"
-    _assert_error_identity(response, policy_factory().policy_id)
+    _assert_error_identity(response, loaded)
 
 
 def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, caplog) -> None:
@@ -413,12 +413,10 @@ def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, capl
             raise RuntimeError(f"private provider and request payload: {request['target']}")
 
     secret_target = "redaction-contract-token-7f0f"
+    loaded = _loaded(policy_factory(), ExplodingProvider())
     with caplog.at_level(logging.ERROR, logger="pixelgym.platform.service"):
         response = TestClient(
-            create_serving_app(
-                PolicyRuntime(_loaded(policy_factory(), ExplodingProvider())),
-                operational_log=MemoryOperationalLog(),
-            )
+            create_serving_app(PolicyRuntime(loaded), operational_log=MemoryOperationalLog())
         ).post(
             "/api/v1/ground",
             json={
@@ -429,7 +427,7 @@ def test_unexpected_handler_failure_logs_redacted_traceback(policy_factory, capl
         )
     assert response.status_code == 500
     assert response.json()["detail"] == "internal server error"
-    _assert_error_identity(response, policy_factory().policy_id)
+    _assert_error_identity(response, loaded)
     assert secret_target not in response.text
     assert "type=RuntimeError" in caplog.text
     assert "test_service_web.py" in caplog.text
@@ -698,6 +696,22 @@ def test_provider_bounds_reject_invalid_configuration(
         )
 
 
+def test_serving_app_lifespan_shuts_down_provider_executor_on_exit(policy_factory) -> None:
+    app = _serving_app(PolicyRuntime(_loaded(policy_factory(), ServingFake())))
+    executor = app.state.provider_executor
+
+    with TestClient(app) as client:
+        assert client.get("/health/live").status_code == 200
+        # ASGI startup has run inside this context; the executor is still usable.
+        started = executor.submit(lambda: 1)
+        assert started.result(timeout=1) == 1
+
+    # ASGI shutdown runs on exit and must reclaim the executor rather than leaking its threads,
+    # which matters because deployment smoke checks construct one serving app per candidate.
+    with pytest.raises(RuntimeError, match="cannot schedule new futures after shutdown"):
+        executor.submit(lambda: 1)
+
+
 def test_immutable_operational_log_does_not_serialize_distinct_request_writes(
     tmp_path: Path,
 ) -> None:
@@ -818,23 +832,26 @@ def test_encoded_image_limit_rejects_before_base64_decode(
         raise AssertionError("oversized encoded input must not be decoded")
 
     monkeypatch.setattr(service_module.base64, "b64decode", unexpected_decode)
-    client = TestClient(_serving_app(PolicyRuntime(_loaded(policy_factory(), provider))))
+    loaded = _loaded(policy_factory(), provider)
+    client = TestClient(_serving_app(PolicyRuntime(loaded)))
 
     response = client.post("/api/v1/ground", json=payload)
 
     assert response.status_code == 422
     assert decode_called is False
     assert provider.calls == 0
+    # FastAPI's default validation handler echoes the rejected field value back in ``input``,
+    # which would leak the oversized screenshot; the custom handler must redact it.
+    for error in response.json()["detail"]:
+        assert "input" not in error
+    _assert_error_identity(response, loaded)
 
 
 def test_declared_oversized_body_is_rejected_before_json_parsing(policy_factory) -> None:
     provider = ServingFake()
     log = MemoryOperationalLog()
-    client = TestClient(
-        create_serving_app(
-            PolicyRuntime(_loaded(policy_factory(), provider)), operational_log=log
-        )
-    )
+    loaded = _loaded(policy_factory(), provider)
+    client = TestClient(create_serving_app(PolicyRuntime(loaded), operational_log=log))
 
     response = client.post(
         "/api/v1/ground",
@@ -847,7 +864,7 @@ def test_declared_oversized_body_is_rejected_before_json_parsing(policy_factory)
 
     assert response.status_code == 413
     assert response.json()["detail"] == "request body exceeds the byte limit"
-    _assert_error_identity(response, policy_factory().policy_id)
+    _assert_error_identity(response, loaded)
     assert provider.calls == 0
     record = log.get(response.headers["x-pixelgym-request-id"])
     assert record is not None and record.terminal_status == "request_rejected"
@@ -924,13 +941,10 @@ def test_parser_and_provider_failures_are_explicit_without_retry(policy_factory)
 
 
 def test_validation_error_discloses_loaded_identity_before_provider(policy_factory) -> None:
-    policy = policy_factory()
     provider = ServingFake()
+    loaded = _loaded(policy_factory(), provider)
     response = TestClient(
-        create_serving_app(
-            PolicyRuntime(_loaded(policy, provider)),
-            operational_log=MemoryOperationalLog(),
-        )
+        create_serving_app(PolicyRuntime(loaded), operational_log=MemoryOperationalLog())
     ).post(
         "/api/v1/ground",
         json={
@@ -942,7 +956,7 @@ def test_validation_error_discloses_loaded_identity_before_provider(policy_facto
 
     assert response.status_code == 422
     assert response.json()["detail"] == "target must contain non-whitespace text"
-    _assert_error_identity(response, policy.policy_id)
+    _assert_error_identity(response, loaded)
     assert provider.calls == 0
 
 
@@ -963,11 +977,13 @@ def test_serving_enforces_provider_timeout_without_retry(policy_factory) -> None
             finally:
                 self.finished.set()
 
-    async def exercise() -> tuple[httpx.Response, TimedOutProvider, MemoryOperationalLog]:
-        provider = TimedOutProvider()
+    provider = TimedOutProvider()
+    loaded = _loaded(policy_factory(), provider)
+
+    async def exercise() -> tuple[httpx.Response, MemoryOperationalLog]:
         log = MemoryOperationalLog()
         app = create_serving_app(
-            PolicyRuntime(_loaded(policy_factory(), provider)),
+            PolicyRuntime(loaded),
             operational_log=log,
             provider_timeout_seconds=0.01,
         )
@@ -981,19 +997,23 @@ def test_serving_enforces_provider_timeout_without_retry(policy_factory) -> None
                     "target": "target",
                 },
             )
-            assert provider.started.is_set()
+            # The service already abandoned the call by the time this response returns, but the
+            # executor thread that runs it may not have reached ``started.set()`` yet under load.
+            # Release first so the thread can never block waiting on this test, then bound the
+            # wait on ``started`` instead of asserting it in place.
             provider.release.set()
+            assert await asyncio.to_thread(provider.started.wait, 1)
             assert await asyncio.to_thread(provider.finished.wait, 1)
-        return response, provider, log
+        return response, log
 
-    response, provider, log = asyncio.run(exercise())
+    response, log = asyncio.run(exercise())
 
     assert response.status_code == 504
     assert response.json()["detail"] == "provider request timed out"
-    _assert_error_identity(response, policy_factory().policy_id)
+    _assert_error_identity(response, loaded)
     assert provider.calls == 1
     record = log.get(response.headers["x-pixelgym-request-id"])
-    assert record is not None and record.terminal_status == "provider_timeout"
+    assert record is not None and record.terminal_status == "provider_timeout_enforced"
     assert record.provider_metadata is None
 
 
@@ -1010,11 +1030,13 @@ def test_provider_concurrency_saturation_rejects_before_invocation(policy_factor
             assert self.release.wait(timeout=1)
             return '{"x":20,"y":30}', "request-1", 5.0, None
 
-    async def exercise() -> tuple[list[httpx.Response], SaturatedProvider, MemoryOperationalLog]:
-        provider = SaturatedProvider()
+    provider = SaturatedProvider()
+    loaded = _loaded(policy_factory(), provider)
+
+    async def exercise() -> tuple[list[httpx.Response], MemoryOperationalLog]:
         log = MemoryOperationalLog()
         app = create_serving_app(
-            PolicyRuntime(_loaded(policy_factory(), provider)),
+            PolicyRuntime(loaded),
             operational_log=log,
             provider_concurrency=1,
             provider_queue_timeout_seconds=0,
@@ -1034,19 +1056,76 @@ def test_provider_concurrency_saturation_rejects_before_invocation(policy_factor
                 client.post("/api/v1/ground", json=payload),
             )
             provider.release.set()
-            return [await admitted, *rejected], provider, log
+            return [await admitted, *rejected], log
 
-    responses, provider, log = asyncio.run(exercise())
+    responses, log = asyncio.run(exercise())
 
     assert responses[0].status_code == 200
     assert [response.status_code for response in responses[1:]] == [503, 503]
     for response in responses[1:]:
         assert response.json()["detail"] == "provider concurrency limit is saturated"
-        _assert_error_identity(response, policy_factory().policy_id)
+        _assert_error_identity(response, loaded)
         record = log.get(response.headers["x-pixelgym-request-id"])
         assert record is not None
         assert record.terminal_status == "provider_concurrency_saturated"
         assert record.provider_metadata is None
+    assert provider.calls == 1
+
+
+def test_provider_concurrency_saturation_respects_bounded_queue_wait(policy_factory) -> None:
+    class SaturatedProvider:
+        def __init__(self) -> None:
+            self.calls = 0
+            self.started = threading.Event()
+            self.release = threading.Event()
+
+        def ground(self, **request):
+            self.calls += 1
+            self.started.set()
+            assert self.release.wait(timeout=1)
+            return '{"x":20,"y":30}', "request-1", 5.0, None
+
+    provider = SaturatedProvider()
+    loaded = _loaded(policy_factory(), provider)
+    queue_timeout_seconds = 0.05
+
+    async def exercise() -> tuple[httpx.Response, httpx.Response, float, MemoryOperationalLog]:
+        log = MemoryOperationalLog()
+        app = create_serving_app(
+            PolicyRuntime(loaded),
+            operational_log=log,
+            provider_concurrency=1,
+            provider_queue_timeout_seconds=queue_timeout_seconds,
+            provider_timeout_seconds=1.0,
+        )
+        transport = httpx.ASGITransport(app=app)
+        payload = {
+            "image_base64": base64.b64encode(_image()).decode(),
+            "media_type": "image/png",
+            "target": "target",
+        }
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            admitted = asyncio.create_task(client.post("/api/v1/ground", json=payload))
+            assert await asyncio.to_thread(provider.started.wait, 1)
+            started_waiting = time.perf_counter()
+            queued = asyncio.create_task(client.post("/api/v1/ground", json=payload))
+            # A bound well above the queue timeout turns "the wait was never enforced" (the
+            # ``move_on_after`` wrapper deleted, request blocks on the limiter indefinitely) into
+            # an explicit test failure here instead of a hang.
+            rejected = await asyncio.wait_for(queued, timeout=queue_timeout_seconds + 5.0)
+            elapsed = time.perf_counter() - started_waiting
+            provider.release.set()
+            return await admitted, rejected, elapsed, log
+
+    admitted, rejected, elapsed, log = asyncio.run(exercise())
+
+    assert admitted.status_code == 200
+    assert rejected.status_code == 503
+    assert rejected.json()["detail"] == "provider concurrency limit is saturated"
+    _assert_error_identity(rejected, loaded)
+    assert queue_timeout_seconds <= elapsed < queue_timeout_seconds + 5.0
+    record = log.get(rejected.headers["x-pixelgym-request-id"])
+    assert record is not None and record.terminal_status == "provider_concurrency_saturated"
     assert provider.calls == 1
 
 
@@ -1055,11 +1134,11 @@ def test_oversized_provider_output_is_recorded_and_never_parsed(
 ) -> None:
     from pixelgym.platform import service as service_module
 
-    policy = policy_factory()
     provider = ServingFake(
         "x" * (DEFAULT_MAX_PROVIDER_OUTPUT_BYTES + 1),
         latency_ms=float("nan"),
     )
+    loaded = _loaded(policy_factory(), provider)
     log = MemoryOperationalLog()
 
     def unexpected_parse(*args, **kwargs):
@@ -1067,10 +1146,7 @@ def test_oversized_provider_output_is_recorded_and_never_parsed(
 
     monkeypatch.setattr(service_module, "parse_prediction", unexpected_parse)
     response = TestClient(
-        create_serving_app(
-            PolicyRuntime(_loaded(policy, provider)),
-            operational_log=log,
-        )
+        create_serving_app(PolicyRuntime(loaded), operational_log=log)
     ).post(
         "/api/v1/ground",
         json={
@@ -1082,7 +1158,7 @@ def test_oversized_provider_output_is_recorded_and_never_parsed(
 
     assert response.status_code == 502
     assert response.json()["detail"] == "provider output exceeds the byte limit"
-    _assert_error_identity(response, policy.policy_id)
+    _assert_error_identity(response, loaded)
     assert provider.calls == 1
     record = log.get(response.headers["x-pixelgym-request-id"])
     assert record is not None

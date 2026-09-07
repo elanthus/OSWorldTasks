@@ -198,9 +198,10 @@ Provider execution has four deployment settings. Invalid, non-finite, or non-pos
 stop application construction (the queue wait alone may be zero):
 
 - `PIXELGYM_PROVIDER_TIMEOUT_SECONDS` defaults to `30.0`. The service returns `504`, records
-  `provider_timeout`, and does not retry or fall back when the call exceeds this duration. Because
-  the provider contract is synchronous, a timed-out call is abandoned; it retains its concurrency
-  slot until the underlying call finishes.
+  `provider_timeout_enforced`, and does not retry or fall back when the call exceeds this
+  duration. Because the provider contract is synchronous, a timed-out call is abandoned, never
+  cancelled; it retains its concurrency slot until the underlying call finishes, and the worker
+  thread pool is shut down (without waiting for abandoned calls) when the application stops.
 - `PIXELGYM_PROVIDER_CONCURRENCY` defaults to `4`. This provider-call bulkhead is independent of
   the immutable-audit I/O limiter.
 - `PIXELGYM_PROVIDER_QUEUE_TIMEOUT_SECONDS` defaults to `0.25`. A request that cannot enter the
@@ -211,12 +212,14 @@ stop application construction (the queue wait alone may be zero):
   an over-limit response returns `502`, records `provider_output_too_large` plus the observed byte
   count, and is never partially parsed.
 
-Provider-reported timeout, rate-limit, and other upstream failures remain distinct as `504`
-`provider_timeout`, `429` `provider_rate_limit`, and `502` `provider_<code>`. Attributable errors,
-including validation (`422`), saturation (`503`), timeout (`504`), and oversized output (`502`),
-include API, policy, deployment, and exact-policy identity in the structured `identity` object and
-the corresponding `X-PixelGym-*` response headers. Errors before a policy can be resolved do not
-claim an identity.
+The service-enforced timeout above (`provider_timeout_enforced`) stays distinct from a
+provider-reported timeout: a provider that raises its own timeout failure records
+`provider_timeout` instead, so the operational record always shows which side gave up. Other
+provider-reported failures remain distinct too, as `429` `provider_rate_limit` and `502`
+`provider_<code>`. Attributable errors, including validation (`422`), saturation (`503`), timeout
+(`504`), and oversized output (`502`), include API, policy, deployment, and exact-policy identity
+in the structured `identity` object and the corresponding `X-PixelGym-*` response headers. Errors
+before a policy can be resolved do not claim an identity.
 
 ## Serving operational records
 
