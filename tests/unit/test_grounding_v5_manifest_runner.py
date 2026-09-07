@@ -192,14 +192,17 @@ def test_runner_recomputes_task_manifest_digest(tmp_path: Path) -> None:
     manifest["records"][0]["unapproved_edit"] = True
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     plan = CalibrationPlan.from_dict(value)
+    adapter = FakeAdapter(["success_termination"])
 
     with pytest.raises(ValueError, match=r"task manifest digest mismatch: tasks\.json"):
         run_calibration_plan(
             tmp_path,
             plan=plan,
             approved_plan_sha256=plan.digest,
-            adapter=FakeAdapter(["success_termination"]),
+            adapter=adapter,
         )
+    assert adapter.executed == []
+    assert not (tmp_path / "run").exists()
 
 
 def test_single_cli_validates_without_constructing_a_provider(
