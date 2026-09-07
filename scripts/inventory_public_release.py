@@ -12,9 +12,14 @@ from collections.abc import Iterable
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-SCHEMA_VERSION = "pixelgym-public-release-inventory-v1"
+SCHEMA_VERSION = "pixelgym-public-release-inventory-v2"
 TEXT_SIZE_LIMIT = 8 * 1024 * 1024
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+MARKDOWN_REFERENCE = re.compile(r"^[ \t]{0,3}\[[^\]]+\]:[ \t]*(?:<([^>\n]+)>|(\S+))", re.MULTILINE)
+FENCED_CODE_BLOCK = re.compile(
+    r"^ {0,3}(?P<fence>`{3,}|~{3,})[^\n]*\n.*?^ {0,3}(?P=fence)[ \t]*$",
+    re.MULTILINE | re.DOTALL,
+)
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
 PRIVATE_PATH = re.compile(
     r"(?P<path>(?:file://)?/(?:Users|home)/(?P<user>[^/\s\"']+)(?:/[^\s\"'<>)]*)?"
@@ -35,31 +40,79 @@ TOKEN_SHAPES = (
     ("private_key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
 )
 GATED_ASSET_SUFFIXES = {".ova", ".ovf", ".qcow2", ".vdi", ".vmdk", ".vhd", ".vhdx", ".iso"}
-RAW_PAYLOAD_KEY = re.compile(r'"(?:raw_response|provider_response|response_body|response_content)"\s*:')
+RAW_PAYLOAD_KEY = re.compile(
+    r'"(?:raw_response|provider_response|response_body|response_content)"\s*:'
+)
 SAFE_PATH_USERS = {"<operator>", "operator", "private", "example", "example-user", "user"}
 SAFE_EMAIL_SUFFIXES = (".example", ".invalid", ".test")
-SAFE_EMAIL_DOMAINS = {"example.com", "example.net", "example.org"}
-SYNTHETIC_EMAIL_PATHS = ("pixelgym/tasks/", "legacy/grounding/")
+SAFE_EMAIL_DOMAINS = {
+    "acme-ind.com",
+    "atlas-logistics.com",
+    "coastal-ventures.com",
+    "example.com",
+    "example.net",
+    "example.org",
+    "globaltech.com",
+    "meridian-partners.com",
+    "nordic-supplies.se",
+    "pacifictrading.com",
+    "pinnacle-sys.com",
+}
 SAFE_TOKEN_TEST_FINGERPRINTS = {
     "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33",
     "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506",
 }
+PUBLISHED_STRUCTURED_MODEL_OUTPUTS = {
+    "artifacts/day-3/pilot/audit.json",
+    "artifacts/day-3/pilot/pilot-predictions.jsonl",
+    "artifacts/grounding-predictions.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions-gemini-2.5-pro.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions-gemini-3.7-flash.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions-gemma-3-27b.jsonl",
+    "artifacts/grounding-v3a-calibration-predictions.jsonl",
+    "artifacts/grounding-v3a-predictions.jsonl",
+    "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5-pilot.jsonl",
+    "artifacts/grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3a-scored-predictions-gemini-3.7-flash-adapted-pilot.jsonl",
+    "artifacts/grounding-v3a-scored-predictions-gemini-3.7-flash-adapted.jsonl",
+    "artifacts/grounding-v3b-calibration-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3b-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+    "artifacts/grounding-v3b-ordinal-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3b-semantic-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-claude-haiku-4.5.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-gemini-3.7-flash-adapted.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-gemma-3-27b.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-gemma-3-4b.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-llama-4-scout.jsonl",
+    "artifacts/grounding-v3c-calibration-predictions-qwen-2.5-vl-7b.jsonl",
+    "artifacts/grounding-v4-pilot-predictions-luna.jsonl",
+    "artifacts/grounding-v4b-pilot-predictions-haiku.jsonl",
+    "artifacts/grounding-v4b-pilot-predictions-luna-pre-review.jsonl",
+    "artifacts/grounding-v4b-pilot-predictions-luna.jsonl",
+    "artifacts/grounding-v4c-pilot-predictions-luna.jsonl",
+    "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b-normalized-1000.jsonl",
+    "artifacts/grounding-v4c-pilot-predictions-qwen3-8-27b.jsonl",
+}
 
 
 def _run_git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args], cwd=root, capture_output=True, text=True, check=False
-    )
+    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
 
 
-def repository_files(root: Path) -> tuple[list[Path], set[str]]:
+def repository_files(root: Path, *, tracked_only: bool = False) -> tuple[list[Path], set[str]]:
     """Return public working-tree files and paths already tracked by Git."""
 
     tracked_result = _run_git(root, "ls-files", "-z")
     visible_result = _run_git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard")
     if tracked_result.returncode == 0 and visible_result.returncode == 0:
         tracked = {path for path in tracked_result.stdout.split("\0") if path}
-        visible = sorted(path for path in visible_result.stdout.split("\0") if path)
+        visible = sorted(
+            tracked
+            if tracked_only
+            else (path for path in visible_result.stdout.split("\0") if path)
+        )
         return [root / path for path in visible], tracked
 
     excluded = {".git", ".venv", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
@@ -98,6 +151,15 @@ def _slug(value: str) -> str:
     return re.sub(r"[\s-]+", "-", value).strip("-")
 
 
+def _mask_fenced_code(text: str) -> str:
+    """Replace fenced blocks while preserving offsets and line numbers."""
+
+    return FENCED_CODE_BLOCK.sub(
+        lambda match: "".join("\n" if character == "\n" else " " for character in match.group(0)),
+        text,
+    )
+
+
 def _tracked_target(path: Path, root: Path, tracked: set[str]) -> bool:
     relative = path.relative_to(root).as_posix()
     if path.is_dir():
@@ -109,12 +171,17 @@ def _tracked_target(path: Path, root: Path, tracked: set[str]) -> bool:
 def scan_readme_links(root: Path, tracked: set[str]) -> dict[str, object]:
     readme = root / "README.md"
     text = readme.read_text(encoding="utf-8")
-    anchors = {_slug(match.group(1)) for match in HEADING.finditer(text)}
+    searchable_text = _mask_fenced_code(text)
+    anchors = {_slug(match.group(1)) for match in HEADING.finditer(searchable_text)}
     links: list[dict[str, object]] = []
     failures: list[dict[str, object]] = []
 
-    for match in MARKDOWN_LINK.finditer(text):
-        raw_target = match.group(1).strip()
+    matches = [(match, match.group(1)) for match in MARKDOWN_LINK.finditer(searchable_text)] + [
+        (match, match.group(1) or match.group(2))
+        for match in MARKDOWN_REFERENCE.finditer(searchable_text)
+    ]
+    for match, captured_target in sorted(matches, key=lambda item: item[0].start()):
+        raw_target = captured_target.strip()
         if raw_target.startswith("<") and raw_target.endswith(">"):
             raw_target = raw_target[1:-1]
         target = raw_target.split(maxsplit=1)[0]
@@ -143,8 +210,10 @@ def scan_readme_links(root: Path, tracked: set[str]) -> dict[str, object]:
                 record["tracked"] = candidate.exists() and _tracked_target(candidate, root, tracked)
                 record["resolved"] = bool(record["exists"] and record["tracked"])
                 if parsed.fragment and candidate.is_file() and candidate.suffix.lower() == ".md":
-                    target_text = candidate.read_text(encoding="utf-8")
-                    target_anchors = {_slug(item.group(1)) for item in HEADING.finditer(target_text)}
+                    target_text = _mask_fenced_code(candidate.read_text(encoding="utf-8"))
+                    target_anchors = {
+                        _slug(item.group(1)) for item in HEADING.finditer(target_text)
+                    }
                     record["resolved"] = bool(
                         record["resolved"] and _slug(unquote(parsed.fragment)) in target_anchors
                     )
@@ -165,7 +234,9 @@ def scan_readme_links(root: Path, tracked: set[str]) -> dict[str, object]:
     }
 
 
-def _finding(path: str, line: int | None, value: str, classification: str, **extra: object) -> dict[str, object]:
+def _finding(
+    path: str, line: int | None, value: str, classification: str, **extra: object
+) -> dict[str, object]:
     result: dict[str, object] = {
         "path": path,
         "classification": classification,
@@ -214,7 +285,9 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
                 else "review_required_operator_path"
             )
             private_paths.append(
-                _finding(relative, _line_number(text, match.start()), match.group("path"), classification)
+                _finding(
+                    relative, _line_number(text, match.start()), match.group("path"), classification
+                )
             )
             usernames.append(
                 _finding(relative, _line_number(text, match.start()), user, classification)
@@ -225,11 +298,7 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
             domain = match.group(2).lower()
             classification = (
                 "acknowledged_synthetic_address"
-                if (
-                    domain.endswith(SAFE_EMAIL_SUFFIXES)
-                    or domain in SAFE_EMAIL_DOMAINS
-                    or relative.startswith(SYNTHETIC_EMAIL_PATHS)
-                )
+                if (domain.endswith(SAFE_EMAIL_SUFFIXES) or domain in SAFE_EMAIL_DOMAINS)
                 else "review_required_email_address"
             )
             emails.append(
@@ -260,8 +329,7 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
                     "path": relative,
                     "classification": (
                         "published_structured_model_output"
-                        if "prediction" in path.name
-                        or relative == "artifacts/day-3/pilot/audit.json"
+                        if relative in PUBLISHED_STRUCTURED_MODEL_OUTPUTS
                         else "review_required_raw_provider_payload"
                     ),
                 }
@@ -284,6 +352,207 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
         "files_scanned": scanned_text + scanned_binary,
         "text_files_scanned": scanned_text,
         "binary_or_large_files_skipped_for_content": scanned_binary,
+        "categories": {
+            name: {
+                "finding_count": len(findings),
+                "review_required_count": sum(
+                    item["classification"].startswith("review_required") for item in findings
+                ),
+                "findings": findings,
+            }
+            for name, findings in categories.items()
+        },
+        "review_required_count": review_required,
+        "passed": review_required == 0,
+    }
+
+
+def _history_objects(root: Path) -> list[tuple[str, str | None]]:
+    result = _run_git(root, "rev-list", "--objects", "--all")
+    if result.returncode != 0:
+        return []
+    objects: list[tuple[str, str | None]] = []
+    for line in result.stdout.splitlines():
+        object_id, separator, path = line.partition(" ")
+        objects.append((object_id, path if separator else None))
+    return objects
+
+
+def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
+    objects = _history_objects(root)
+    if not objects:
+        return
+    object_ids = [object_id for object_id, _ in objects]
+    checked = subprocess.run(
+        ["git", "cat-file", "--batch-check=%(objectname) %(objecttype) %(objectsize)"],
+        cwd=root,
+        input="\n".join(object_ids) + "\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if checked.returncode != 0:
+        return
+    paths = {object_id: path for object_id, path in objects}
+    blob_ids: list[str] = []
+    for line in checked.stdout.splitlines():
+        object_id, object_type, size_text = line.split()
+        if object_type == "blob" and int(size_text) <= TEXT_SIZE_LIMIT:
+            blob_ids.append(object_id)
+    if not blob_ids:
+        return
+
+    batch = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=root,
+        input=("\n".join(blob_ids) + "\n").encode(),
+        capture_output=True,
+        check=False,
+    )
+    if batch.returncode != 0:
+        return
+    payload = batch.stdout
+    offset = 0
+    for expected_id in blob_ids:
+        header_end = payload.index(b"\n", offset)
+        header = payload[offset:header_end].decode("ascii")
+        object_id, object_type, size_text = header.split()
+        if object_id != expected_id or object_type != "blob":
+            raise RuntimeError(f"unexpected git cat-file response for {expected_id}")
+        size = int(size_text)
+        start = header_end + 1
+        raw = payload[start : start + size]
+        offset = start + size + 1
+        if b"\0" in raw:
+            continue
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        yield object_id, paths.get(object_id), text
+
+
+def _history_boundary_commits(root: Path) -> dict[str, list[str]]:
+    result = _run_git(
+        root,
+        "log",
+        "--all",
+        "--format=@@PIXELGYM_COMMIT %H",
+        "--no-ext-diff",
+        "--unified=0",
+        "--patch",
+    )
+    if result.returncode != 0:
+        return {}
+    commits: dict[str, set[str]] = {}
+    commit = ""
+    patterns = (PRIVATE_PATH, EMAIL, *(pattern for _, pattern in TOKEN_SHAPES))
+    for line in result.stdout.splitlines():
+        if line.startswith("@@PIXELGYM_COMMIT "):
+            commit = line.removeprefix("@@PIXELGYM_COMMIT ")
+            continue
+        if not commit or not line.startswith(("+", "-")) or line.startswith(("+++", "---")):
+            continue
+        for pattern in patterns:
+            for match in pattern.finditer(line[1:]):
+                commits.setdefault(_fingerprint(match.group(0)), set()).add(commit)
+    return {fingerprint: sorted(values) for fingerprint, values in commits.items()}
+
+
+def scan_history(root: Path) -> dict[str, object]:
+    """Scan every reachable text blob without reproducing sensitive values."""
+
+    categories: dict[str, list[dict[str, object]]] = {
+        "private_paths": [],
+        "email_addresses": [],
+        "credential_or_token_shapes": [],
+    }
+    commits_by_fingerprint = _history_boundary_commits(root)
+
+    def record(
+        category: str,
+        *,
+        object_id: str,
+        path: str | None,
+        line: int,
+        value: str,
+        classification: str,
+        **extra: object,
+    ) -> None:
+        fingerprint = _fingerprint(value)
+        finding: dict[str, object] = {
+            "blob_oid": object_id,
+            "boundary_commits": commits_by_fingerprint.get(fingerprint, []),
+            "classification": classification,
+            "line": line,
+            "path": path,
+            "value_fingerprint": fingerprint,
+        }
+        finding.update(extra)
+        categories[category].append(finding)
+
+    for object_id, path, text in _reachable_text_blobs(root):
+        relative = path or "<unknown>"
+        for match in PRIVATE_PATH.finditer(text):
+            user = match.group("user") or match.group("windows_user") or ""
+            source_line = text.splitlines()[_line_number(text, match.start()) - 1]
+            classification = (
+                "acknowledged_placeholder"
+                if (
+                    user.lower() in SAFE_PATH_USERS
+                    or (relative.startswith("scripts/") and "re.compile" in source_line)
+                )
+                else "review_required_operator_path"
+            )
+            record(
+                "private_paths",
+                object_id=object_id,
+                path=path,
+                line=_line_number(text, match.start()),
+                value=match.group("path"),
+                classification=classification,
+            )
+        for match in EMAIL.finditer(text):
+            domain = match.group(2).lower()
+            classification = (
+                "acknowledged_synthetic_address"
+                if domain.endswith(SAFE_EMAIL_SUFFIXES) or domain in SAFE_EMAIL_DOMAINS
+                else "review_required_email_address"
+            )
+            record(
+                "email_addresses",
+                object_id=object_id,
+                path=path,
+                line=_line_number(text, match.start()),
+                value=match.group(0),
+                classification=classification,
+            )
+        for shape_name, pattern in TOKEN_SHAPES:
+            for match in pattern.finditer(text):
+                classification = (
+                    "acknowledged_test_vector"
+                    if relative.startswith("tests/")
+                    and _fingerprint(match.group(0)) in SAFE_TOKEN_TEST_FINGERPRINTS
+                    else "review_required_credential_shape"
+                )
+                record(
+                    "credential_or_token_shapes",
+                    object_id=object_id,
+                    path=path,
+                    line=_line_number(text, match.start()),
+                    value=match.group(0),
+                    classification=classification,
+                    shape=shape_name,
+                )
+
+    review_required = sum(
+        item["classification"].startswith("review_required")
+        for findings in categories.values()
+        for item in findings
+    )
+    return {
+        "source": "all objects reachable from git rev-list --objects --all",
+        "sensitive_values": "represented only by SHA-256 fingerprints",
         "categories": {
             name: {
                 "finding_count": len(findings),
@@ -344,26 +613,36 @@ def scan_licenses(root: Path, files: Iterable[Path], tracked: set[str]) -> dict[
     }
 
 
-def build_inventory(root: Path) -> dict[str, object]:
-    files, tracked = repository_files(root)
+def build_inventory(root: Path, *, tracked_only: bool = False) -> dict[str, object]:
+    root = root.resolve()
+    files, tracked = repository_files(root, tracked_only=tracked_only)
     links = scan_readme_links(root, tracked)
     surface = scan_release_surface(root, files)
     licenses = scan_licenses(root, files, tracked)
+    history = scan_history(root)
     return {
         "schema_version": SCHEMA_VERSION,
         "scope": {
-            "repository_files": "tracked files plus non-ignored working-tree additions",
+            "repository_files": (
+                "tracked files"
+                if tracked_only
+                else "tracked files plus non-ignored working-tree additions"
+            ),
             "external_links": "inventoried but not fetched",
             "sensitive_values": "represented only by SHA-256 fingerprints",
         },
         "links": links,
         "license_inventory": licenses,
         "redaction_and_asset_inventory": surface,
+        "history_redaction_inventory": history,
         "summary": {
             "link_failures": links["failure_count"],
             "license_failures": licenses["failure_count"],
             "review_required_findings": surface["review_required_count"],
-            "passed": bool(links["passed"] and licenses["passed"] and surface["passed"]),
+            "history_review_required_findings": history["review_required_count"],
+            "passed": bool(
+                links["passed"] and licenses["passed"] and surface["passed"] and history["passed"]
+            ),
         },
     }
 
@@ -371,24 +650,35 @@ def build_inventory(root: Path) -> dict[str, object]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--mode", choices=("inventory", "links", "redaction"), default="inventory")
+    parser.add_argument(
+        "--mode", choices=("inventory", "links", "redaction", "history"), default="inventory"
+    )
+    parser.add_argument(
+        "--tracked-only",
+        action="store_true",
+        help="exclude untracked working-tree files from the tree inventory",
+    )
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    inventory = build_inventory(root)
     if args.mode == "links":
-        output: object = inventory["links"]
-        passed = bool(inventory["links"]["passed"])
+        _, tracked = repository_files(root, tracked_only=args.tracked_only)
+        output: object = scan_readme_links(root, tracked)
+        passed = bool(output["passed"])
     elif args.mode == "redaction":
+        files, tracked = repository_files(root, tracked_only=args.tracked_only)
+        licenses = scan_licenses(root, files, tracked)
+        surface = scan_release_surface(root, files)
         output = {
-            "license_inventory": inventory["license_inventory"],
-            "redaction_and_asset_inventory": inventory["redaction_and_asset_inventory"],
-            "passed": bool(
-                inventory["license_inventory"]["passed"]
-                and inventory["redaction_and_asset_inventory"]["passed"]
-            ),
+            "license_inventory": licenses,
+            "redaction_and_asset_inventory": surface,
+            "passed": bool(licenses["passed"] and surface["passed"]),
         }
         passed = bool(output["passed"])
+    elif args.mode == "history":
+        output = scan_history(root)
+        passed = bool(output["passed"])
     else:
+        inventory = build_inventory(root, tracked_only=args.tracked_only)
         output = inventory
         passed = bool(inventory["summary"]["passed"])
     print(json.dumps(output, indent=2, sort_keys=True))
