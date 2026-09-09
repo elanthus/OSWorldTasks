@@ -21,6 +21,7 @@ from typing import Any
 from metaflow import FlowSpec, Parameter, current, step
 
 from pixelgym.platform.approved_providers import (
+    ApprovedCallLedger,
     ApprovedProviderError,
     ApprovedProviderPolicy,
     build_platform_provider,
@@ -169,10 +170,25 @@ def _provider(flow: object) -> object:
     if approved is not None:
         if os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER"):
             raise RuntimeError("the ledgered test provider cannot wrap an approved provider")
+        # One durable ledger per submission: every shard task and every resume of this run
+        # reserves attempts in the same file, so the approved cap holds across the whole
+        # flow rather than per task. Run-wide concurrency is bounded by the supported launch
+        # commands (--max-workers 1) plus the per-task provider_concurrency cap.
+        ledger_root = Path(
+            os.environ.get(
+                "PIXELGYM_APPROVED_CALL_LEDGER_ROOT", _root() / ".cache/platform/approved-calls"
+            )
+        )
+        ledger = ApprovedCallLedger(
+            ledger_root / f"{flow.submission_id}.sqlite",
+            submission_id=flow.submission_id,
+            call_cap=approved.call_cap,
+        )
         return build_platform_provider(
             approved,
             price_catalog=_approved_price_catalog(approved),
             environment=os.environ,
+            ledger=ledger,
         )
     variant = SCRIPTED_MODEL_VARIANTS.get((flow.prompt_version, flow.model))
     if variant is None:

@@ -274,12 +274,19 @@ registry record and prove that the exact record was approved.
 - **Credential.** The named environment variable must be set when the flow starts, before any
   MLflow run, storage write, or request. Only the variable name enters the policy manifest,
   tracking parameters, or raw envelopes.
-- **Call cap and retries.** The adapter counts attempts under a lock and raises before sending
-  once the approved cap is reached. Request failures, unparseable answers, and wrong answers are
-  stored once and never retried; the raw provider text is stored byte-for-byte before parsing.
-  Because the frozen dataset has 100 examples and the runner rejects a cap below the example
-  count, an approved grounding record's `call_cap` is exactly the number of paid calls the run may
-  make.
+- **Call cap and retries.** Every attempt is reserved in a durable per-submission SQLite ledger
+  (`.cache/platform/approved-calls/<submission>.sqlite`, or `PIXELGYM_APPROVED_CALL_LEDGER_ROOT`)
+  before the request is sent, so the cap holds across every Metaflow shard task and every resume
+  of the same run, not only within one process. A reservation is never released; an attempt
+  with an unknown outcome still counts. Request failures, unparseable answers, and wrong answers
+  are stored once and never retried; the raw provider text is stored byte-for-byte before
+  parsing. Run-wide provider concurrency is bounded by the supported launch commands
+  (`--max-workers 1`) together with the per-task `--provider-concurrency` value, which the record's
+  `max_concurrency` caps. The frozen dataset
+  ([`artifacts/grounding-dataset.jsonl`](../artifacts/grounding-dataset.jsonl)) has 100 examples
+  and the runner rejects a cap below the example count
+  (`build_shards` in [`pixelgym/platform/evaluation.py`](../pixelgym/platform/evaluation.py)),
+  so an approved grounding record's `call_cap` bounds the paid calls the run may make.
 
 Print the digest to approve, and launch only after a human has approved that exact value:
 
@@ -288,7 +295,7 @@ Print the digest to approve, and launch only after a human has approved that exa
 ```
 
 ```bash
-OPENROUTER_API_KEY=... .venv/bin/python flows/grounding_evaluation_flow.py run --submission-id <id> --approved-provider <reference> --approved-provider-sha256 sha256:<digest> --model <record model> --prompt-version <record prompt_version> --maximum-calls <record call_cap> --provider-concurrency 1 --max-workers 1
+<record credential_env>=... .venv/bin/python flows/grounding_evaluation_flow.py run --submission-id <id> --approved-provider <reference> --approved-provider-sha256 sha256:<digest> --model <record model> --prompt-version <record prompt_version> --maximum-calls <record call_cap> --provider-concurrency 1 --max-workers 1
 ```
 
 Adding a registry record, a price-catalog file, and the approval itself are human decisions under

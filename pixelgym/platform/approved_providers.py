@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 import threading
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
@@ -341,6 +342,78 @@ def price_entry_for(
     raise ApprovedProviderError("price catalog has no entry for the approved provider/model")
 
 
+class ApprovedCallLedger:
+    """Durable, run-wide attempt ledger shared by every adapter instance of one run.
+
+    Metaflow executes each shard in its own task process and constructs a fresh adapter
+    there, so an in-process counter alone would enforce the approved cap per shard rather
+    than per run. This ledger lives in SQLite keyed by submission and reserves one row per
+    attempt inside an immediate transaction *before* the request is sent. A reservation is
+    never released: an attempt with an unknown outcome still counts, matching the v5 rule.
+    """
+
+    def __init__(self, path: Path, *, submission_id: str, call_cap: int) -> None:
+        if call_cap <= 0:
+            raise ApprovedProviderError("call_cap must be positive")
+        self.path = path
+        self.submission_id = submission_id
+        self.call_cap = call_cap
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connect() as connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS attempts ("
+                " submission_id TEXT NOT NULL,"
+                " attempt_index INTEGER NOT NULL,"
+                " request_id TEXT NOT NULL,"
+                " reserved_at_utc TEXT NOT NULL,"
+                " PRIMARY KEY (submission_id, attempt_index))"
+            )
+
+    def _connect(self) -> sqlite3.Connection:
+        connection = sqlite3.connect(self.path, timeout=30.0, isolation_level=None)
+        connection.execute("PRAGMA journal_mode=WAL")
+        return connection
+
+    def reserved(self) -> int:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) FROM attempts WHERE submission_id = ?", (self.submission_id,)
+            ).fetchone()
+        return int(row[0])
+
+    def reserve(self, request_id: str) -> int:
+        """Atomically reserve the next attempt index or raise before any request is sent."""
+        from datetime import UTC, datetime
+
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                row = connection.execute(
+                    "SELECT COALESCE(MAX(attempt_index), -1) + 1 FROM attempts"
+                    " WHERE submission_id = ?",
+                    (self.submission_id,),
+                ).fetchone()
+                index = int(row[0])
+                if index >= self.call_cap:
+                    raise ApprovedProviderError(
+                        "approved call cap reached for this run; refusing to send another request"
+                    )
+                connection.execute(
+                    "INSERT INTO attempts VALUES (?, ?, ?, ?)",
+                    (
+                        self.submission_id,
+                        index,
+                        request_id,
+                        datetime.now(UTC).isoformat(),
+                    ),
+                )
+                connection.execute("COMMIT")
+            except BaseException:
+                connection.execute("ROLLBACK")
+                raise
+        return index
+
+
 class ApprovedGroundingProviderAdapter:
     """Platform provider around a Day 3 grounding provider with a pre-send call cap."""
 
@@ -352,10 +425,14 @@ class ApprovedGroundingProviderAdapter:
         *,
         inner: GroundingProvider,
         price_entry: Mapping[str, float],
+        ledger: ApprovedCallLedger | None = None,
     ) -> None:
         if policy.model != inner.model:
             raise ApprovedProviderError("inner provider model does not match the approved record")
+        if ledger is not None and ledger.call_cap != policy.call_cap:
+            raise ApprovedProviderError("ledger call cap does not match the approved record")
         self.policy = policy
+        self.ledger = ledger
         self.name = policy.provider
         self.model = policy.model
         self._inner = inner
@@ -383,7 +460,7 @@ class ApprovedGroundingProviderAdapter:
         prompt: str,
         schema: dict[str, Any],
     ) -> PlatformProviderResponse:
-        del request_id, example_id
+        del example_id
         if condition != self.policy.condition:
             raise ApprovedProviderError("condition differs from the approved record")
         with self._lock:
@@ -391,6 +468,10 @@ class ApprovedGroundingProviderAdapter:
                 raise ApprovedProviderError(
                     "approved call cap reached; refusing to send another request"
                 )
+            # The durable reservation is the run-wide guard; the in-process counter is the
+            # per-instance backstop. Both happen before the request leaves the process.
+            if self.ledger is not None:
+                self.ledger.reserve(request_id)
             self.attempts += 1
         response = self._inner.invoke(image_path=image_path, prompt=prompt, schema=schema)
         usage: dict[str, float] | None = None
@@ -445,6 +526,7 @@ def build_platform_provider(
     price_catalog: Mapping[str, Any],
     environment: Mapping[str, str],
     urlopen: Callable[..., Any] | None = None,
+    ledger: ApprovedCallLedger | None = None,
 ) -> ApprovedGroundingProviderAdapter:
     """Construct the capped adapter; fails closed when the credential is absent."""
     if not policy.credential_present(environment):
@@ -453,4 +535,6 @@ def build_platform_provider(
         )
     price_entry = price_entry_for(price_catalog, policy)
     inner = _TRANSPORT_BUILDERS[policy.transport](policy, environment, urlopen)
-    return ApprovedGroundingProviderAdapter(policy, inner=inner, price_entry=price_entry)
+    return ApprovedGroundingProviderAdapter(
+        policy, inner=inner, price_entry=price_entry, ledger=ledger
+    )

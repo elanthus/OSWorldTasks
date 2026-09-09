@@ -548,3 +548,91 @@ def test_frozen_inputs_bind_the_approved_identity_into_the_policy_manifest(
     assert scripted.policy["provider"] == "scripted-demo"
     assert scripted.price_catalog_version == "pixelgym-demo-prices-v1"
     assert scripted.policy["policy_id"] != manifest["policy_id"]
+
+
+# --- run-wide durable ledger -------------------------------------------------------------------
+
+
+def test_ledger_enforces_the_cap_across_adapter_instances_and_processes(
+    tmp_path: Path, image: Path
+) -> None:
+    from pixelgym.platform.approved_providers import ApprovedCallLedger
+
+    ledger_path = tmp_path / "ledger.sqlite"
+
+    def shard_adapter(bodies: list[object]) -> tuple[ApprovedGroundingProviderAdapter, list]:
+        urlopen, seen = _fake_urlopen(bodies)
+        ledger = ApprovedCallLedger(ledger_path, submission_id="sub-1", call_cap=3)
+        adapter = build_platform_provider(
+            _policy(call_cap=3, max_concurrency=1),
+            price_catalog=PRICE_CATALOG,
+            environment=ENVIRONMENT,
+            urlopen=urlopen,
+            ledger=ledger,
+        )
+        return adapter, seen
+
+    first, seen_first = shard_adapter([_openrouter_body("{}") for _ in range(5)])
+    _invoke(first, image, example="a")
+    _invoke(first, image, example="b")
+    # A fresh adapter, as a second shard task or a resume would construct, sees the same ledger.
+    second, seen_second = shard_adapter([_openrouter_body("{}") for _ in range(5)])
+    _invoke(second, image, example="c")
+    with pytest.raises(ApprovedProviderError, match="call cap reached for this run"):
+        _invoke(second, image, example="d")
+    with pytest.raises(ApprovedProviderError, match="call cap reached for this run"):
+        _invoke(first, image, example="e")
+
+    assert len(seen_first) == 2 and len(seen_second) == 1
+    assert ApprovedCallLedger(ledger_path, submission_id="sub-1", call_cap=3).reserved() == 3
+    # Another submission's ledger rows are independent even in the same file.
+    assert ApprovedCallLedger(ledger_path, submission_id="sub-2", call_cap=3).reserved() == 0
+
+
+def test_ledger_reservation_survives_a_send_failure(tmp_path: Path, image: Path) -> None:
+    from pixelgym.platform.approved_providers import ApprovedCallLedger
+
+    ledger = ApprovedCallLedger(tmp_path / "ledger.sqlite", submission_id="sub", call_cap=1)
+    urlopen, seen = _fake_urlopen([OSError("reset")])
+    adapter = build_platform_provider(
+        _policy(call_cap=1, max_concurrency=1),
+        price_catalog=PRICE_CATALOG,
+        environment=ENVIRONMENT,
+        urlopen=urlopen,
+        ledger=ledger,
+    )
+    response = _invoke(adapter, image)
+    assert response.request_failure is not None
+    assert ledger.reserved() == 1
+    with pytest.raises(ApprovedProviderError, match="call cap reached"):
+        _invoke(adapter, image, example="again")
+    assert len(seen) == 1
+
+
+def test_ledger_cap_must_match_the_approved_record(tmp_path: Path) -> None:
+    from pixelgym.platform.approved_providers import ApprovedCallLedger
+
+    ledger = ApprovedCallLedger(tmp_path / "ledger.sqlite", submission_id="sub", call_cap=5)
+    urlopen, _ = _fake_urlopen([])
+    with pytest.raises(ApprovedProviderError, match="ledger call cap does not match"):
+        build_platform_provider(
+            _policy(call_cap=100),
+            price_catalog=PRICE_CATALOG,
+            environment=ENVIRONMENT,
+            urlopen=urlopen,
+            ledger=ledger,
+        )
+
+
+def test_flow_provider_uses_a_per_submission_ledger_under_the_configured_root(
+    approved_root: Path, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("PIXELGYM_TEST_OPENROUTER_KEY", "dummy-not-a-real-key")
+    monkeypatch.delenv("PIXELGYM_TEST_PROVIDER_LEDGER", raising=False)
+    monkeypatch.setenv("PIXELGYM_APPROVED_CALL_LEDGER_ROOT", str(tmp_path / "ledgers"))
+    provider = flow_module._provider(_approved_flow(_policy()))
+    assert isinstance(provider, ApprovedGroundingProviderAdapter)
+    assert provider.ledger is not None
+    assert provider.ledger.path == tmp_path / "ledgers" / "submission-approved.sqlite"
+    assert provider.ledger.call_cap == _policy().call_cap
+    assert provider.ledger.reserved() == 0
