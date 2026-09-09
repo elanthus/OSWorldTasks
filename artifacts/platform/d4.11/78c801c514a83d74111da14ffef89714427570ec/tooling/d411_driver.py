@@ -115,11 +115,15 @@ def phase1b(page):
     """Resume after screenshot 04: MLflow lineage, blocked direct deploy of unapproved B."""
     s = state()
     if "candidate_a" not in s:  # recover ids from the driver log of the interrupted phase 1
+        submissions = {"day3-replay-baseline-v1": "submission_a", "day3-replay-revised-v2": "submission_b"}
+        candidates = {"day3-replay-baseline-v1": "candidate_a", "day3-replay-revised-v2": "candidate_b"}
         for line in LOG.read_text().splitlines():
             r = json.loads(line)
-            if "submitted" in r: s[{"day3-replay-baseline-v1": "submission_a", "day3-replay-revised-v2": "submission_b"}[r["model"]]] = r["submitted"]
-            if "candidate" in r: s[{"day3-replay-baseline-v1": "candidate_a", "day3-replay-revised-v2": "candidate_b"}[r["model"]]] = r["candidate"]
-            if "candidate_a_ui_approve_forms" in r: s["candidate_a_ui_approve_forms"] = r["candidate_a_ui_approve_forms"]
+            # Only phase-1 models are recognised; the first occurrence wins so later
+            # phase-2/phase-4 records for the same model cannot overwrite phase-1 identifiers.
+            if "submitted" in r and r.get("model") in submissions: s.setdefault(submissions[r["model"]], r["submitted"])
+            if "candidate" in r and r.get("model") in candidates: s.setdefault(candidates[r["model"]], r["candidate"])
+            if "candidate_a_ui_approve_forms" in r: s.setdefault("candidate_a_ui_approve_forms", r["candidate_a_ui_approve_forms"])
         save(**s)
     cid_a, cid_b, sid_a, sid_b, approve_forms = s["candidate_a"], s["candidate_b"], s["submission_a"], s["submission_b"], s["candidate_a_ui_approve_forms"]
     exp_id, run_b = mlflow_run_id("day3-replay-revised-v2")

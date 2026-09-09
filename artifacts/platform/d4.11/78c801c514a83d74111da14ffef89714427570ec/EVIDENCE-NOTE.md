@@ -4,7 +4,7 @@ Recorded 2026-09-09 from a detached `git worktree` of the `origin/main` head wit
 porcelain status, a fresh `python3.12 -m venv` installed with `pip install -e ".[dev,platform]"`,
 and Playwright Chromium. No provider, network model, paid, or external-deployment calls were made.
 
-## Deviations and re-recorded steps (all originals retained)
+## Deviations and re-recorded steps (originals retained except where stated)
 
 - `commands/11-compose-ps.json` was re-recorded with a field-filtered table format. The first
   JSON-format capture included the MinIO image's vendor `maintainer` label, which contains an
@@ -24,6 +24,29 @@ and Playwright Chromium. No provider, network model, paid, or external-deploymen
 - Reviewer attribution at this revision is the fixed `synthetic-demo` actor with
   `actor_verification_source: synthetic_demo`, per the loopback attestation in Compose. The
   August bundle's `local-reviewer` identity no longer applies.
+
+## Driver revisions behind each record
+
+`tooling/d411_driver.py` is the final revision. It was edited twice during the rehearsal and
+once after PR review; the pre-edit revisions were not preserved as separate files. The exact
+differences are:
+
+- **Record 17 (`phase1`)** ran the initial revision: `phase1` ended with an inline MLflow capture
+  that called `page.wait_for_load_state("networkidle")` and then saved state; there was no
+  `phase1b` function and no `"1b"` dispatch entry. The recorded traceback shows that revision's
+  line numbers.
+- **Records 18, 21, 24, 27** ran the second revision: the MLflow capture and the blocked-deploy
+  check moved into `phase1b` (called from `phase1` and dispatchable as `"1b"`), the wait became
+  `wait_for_load_state("load")` plus a fixed 6 s pause, and `phase1b` recovers identifiers from
+  `driver-log.jsonl` when `driver-state.json` has none.
+- **Record 28** ran the third revision: `phase4` submits prompt version `"2"` with the baseline
+  model instead of `"1"`.
+- **Post-review edits** (not executed): Ruff import ordering and unused-variable renames, and
+  the `phase1b` log recovery now ignores unrecognised models and keeps the first occurrence of
+  each phase-1 identifier.
+
+No other lines changed between revisions. Records 22, 23, 25, 26 used `scripts/capture_platform_api.py`
+at the recorded git revision, unmodified.
 
 ## What was not done
 
