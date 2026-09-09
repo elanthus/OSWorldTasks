@@ -20,6 +20,15 @@ from typing import Any
 
 from metaflow import FlowSpec, Parameter, current, step
 
+from pixelgym.platform.approved_providers import (
+    ApprovedCallLedger,
+    ApprovedProviderError,
+    ApprovedProviderPolicy,
+    build_platform_provider,
+    load_approved_providers,
+    price_entry_for,
+    resolve_approved_provider,
+)
 from pixelgym.platform.contracts import (
     ArtifactRef,
     GatePolicy,
@@ -111,9 +120,7 @@ def _test_pause_once(name: str) -> None:
     except FileExistsError:
         return
     os.close(descriptor)
-    deadline = time.monotonic() + float(
-        os.environ.get("PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS", "60")
-    )
+    deadline = time.monotonic() + float(os.environ.get("PIXELGYM_TEST_PAUSE_TIMEOUT_SECONDS", "60"))
     while time.monotonic() < deadline:
         if release.exists():
             return
@@ -121,7 +128,68 @@ def _test_pause_once(name: str) -> None:
     raise RuntimeError(f"test pause after {name} timed out before hard kill")
 
 
+def _approved_registry() -> dict[str, ApprovedProviderPolicy]:
+    return load_approved_providers(_root())
+
+
+def _approved_policy(flow: object) -> ApprovedProviderPolicy | None:
+    """Resolve the approved real-provider record, or None for the scripted default.
+
+    Every launch parameter must restate the registry record and the caller must supply the
+    record's exact approval digest. A scripted launch that carries an approval digest is
+    rejected so a digest can never be attached to the wrong provider path.
+    """
+    reference = flow.approved_provider or ""
+    digest = flow.approved_provider_sha256 or ""
+    if not reference:
+        if digest:
+            raise ValueError("an approval digest requires an approved provider reference")
+        return None
+    return resolve_approved_provider(
+        _approved_registry(),
+        reference,
+        approved_sha256=digest,
+        model=flow.model,
+        prompt_version=flow.prompt_version,
+        maximum_calls=flow.maximum_calls,
+        provider_concurrency=flow.provider_concurrency,
+    )
+
+
+def _approved_price_catalog(policy: ApprovedProviderPolicy) -> dict[str, Any]:
+    root = _root()
+    catalog = load_price_catalog(
+        root, root / f"config/price-catalog.{policy.price_catalog_version}.json"
+    )
+    price_entry_for(catalog, policy)
+    return catalog
+
+
 def _provider(flow: object) -> object:
+    approved = _approved_policy(flow)
+    if approved is not None:
+        if os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER"):
+            raise RuntimeError("the ledgered test provider cannot wrap an approved provider")
+        # One durable ledger per submission: every shard task and every resume of this run
+        # reserves attempts in the same file, so the approved cap holds across the whole
+        # flow rather than per task. Run-wide concurrency is bounded by the supported launch
+        # commands (--max-workers 1) plus the per-task provider_concurrency cap.
+        ledger_root = Path(
+            os.environ.get(
+                "PIXELGYM_APPROVED_CALL_LEDGER_ROOT", _root() / ".cache/platform/approved-calls"
+            )
+        )
+        ledger = ApprovedCallLedger(
+            ledger_root / f"{flow.submission_id}.sqlite",
+            submission_id=flow.submission_id,
+            call_cap=approved.call_cap,
+        )
+        return build_platform_provider(
+            approved,
+            price_catalog=_approved_price_catalog(approved),
+            environment=os.environ,
+            ledger=ledger,
+        )
     variant = SCRIPTED_MODEL_VARIANTS.get((flow.prompt_version, flow.model))
     if variant is None:
         raise ValueError("prompt/model pairing is outside the scripted allowlist")
@@ -135,9 +203,7 @@ def _provider(flow: object) -> object:
             _root() / "artifacts/grounding-predictions.jsonl",
             variant=variant,
             ledger_path=Path(ledger),
-            concurrency_barrier=int(
-                os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")
-            ),
+            concurrency_barrier=int(os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")),
         )
     return ScriptedReplayProvider(
         _root() / "artifacts/grounding-predictions.jsonl",
@@ -200,13 +266,28 @@ class GroundingEvaluationFlow(FlowSpec):
     maximum_calls = Parameter("maximum-calls", type=int, default=100)
     shard_size = Parameter("shard-size", type=int, default=25)
     provider_concurrency = Parameter("provider-concurrency", type=int, default=1)
+    # Approved real-provider path (issue #164). Both default to empty: the scripted replay
+    # remains the only provider unless a launcher names a registry reference *and* its
+    # exact approval digest. The web submit form never sets these.
+    approved_provider = Parameter("approved-provider", default="")
+    approved_provider_sha256 = Parameter("approved-provider-sha256", default="")
 
     @step
     def start(self) -> None:
-        if (self.prompt_version, self.model) not in SCRIPTED_MODEL_VARIANTS:
-            raise ValueError("prompt/model pairing is outside the scripted allowlist")
-        if self.maximum_calls != 100:
-            raise ValueError("the frozen flow requires exactly 100 maximum calls")
+        approved = _approved_policy(self)
+        if approved is not None:
+            # Fail closed before MLflow, storage, or any request: the credential must exist
+            # by name only, and the priced catalog entry must already be frozen.
+            if not approved.credential_present(os.environ):
+                raise ApprovedProviderError(
+                    f"credential environment variable {approved.credential_env} is not set"
+                )
+            _approved_price_catalog(approved)
+        else:
+            if (self.prompt_version, self.model) not in SCRIPTED_MODEL_VARIANTS:
+                raise ValueError("prompt/model pairing is outside the scripted allowlist")
+            if self.maximum_calls != 100:
+                raise ValueError("the frozen flow requires exactly 100 maximum calls")
         if not 1 <= self.shard_size <= self.maximum_calls:
             raise ValueError("shard size must be between one and maximum calls")
         if not 1 <= self.provider_concurrency <= self.maximum_calls:
@@ -230,9 +311,19 @@ class GroundingEvaluationFlow(FlowSpec):
         )
         self.dataset_fingerprint = fingerprint
         self.gate_policy = load_gate_policy(root).to_dict()
-        price_catalog = load_price_catalog(root)
-        if price_catalog["catalog_version"] != "pixelgym-demo-prices-v1":
-            raise ValueError("the frozen flow requires the demo-v1 price catalog")
+        approved = _approved_policy(self)
+        if approved is None:
+            price_catalog = load_price_catalog(root)
+            if price_catalog["catalog_version"] != "pixelgym-demo-prices-v1":
+                raise ValueError("the frozen flow requires the demo-v1 price catalog")
+            provider_name = "scripted-demo"
+            parameters: dict[str, Any] = {"deterministic": True, "hidden_retries": 0}
+            model_alias_disclosure = None
+        else:
+            price_catalog = _approved_price_catalog(approved)
+            provider_name = approved.provider
+            parameters = approved.manifest_parameters()
+            model_alias_disclosure = approved.model_alias_disclosure
         self.price_catalog_version = price_catalog["catalog_version"]
         provenance_path = os.environ.get("PIXELGYM_SOURCE_PROVENANCE_PATH")
         provenance = load_packaged_source_provenance(
@@ -241,19 +332,20 @@ class GroundingEvaluationFlow(FlowSpec):
         lock_digest = dependency_lock_sha256(root)
         self.policy = asdict(
             build_policy_manifest(
-                provider="scripted-demo",
+                provider=provider_name,
                 model=self.model,
                 prompt_name=PROMPT_NAME,
                 prompt_version=self.prompt_version,
                 prompt=prompt_template(self.prompt_version),
                 condition="raw",
-                parameters={"deterministic": True, "hidden_retries": 0},
+                parameters=parameters,
                 parser_version="pixelgym-grounding-parser-v1",
                 scorer_version="pixelgym-point-inside-half-open-box-v1",
                 overlay_version="none-raw-coordinate-policy",
                 target_semantics="requested-control-center-point-v1",
                 source_provenance=provenance,
                 dependency_lock_sha256=lock_digest,
+                model_alias_disclosure=model_alias_disclosure,
             )
         )
         self.next(self.create_or_recover_mlflow_run)

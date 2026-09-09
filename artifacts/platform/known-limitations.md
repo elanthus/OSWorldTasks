@@ -17,3 +17,7 @@
   would need a target-neutral proposal generator that does not expose build-time boxes.
 - Runtime policy activation is process-local in the MVP combined control/serving process. A
   multi-replica deployment requires an authenticated activation channel and readiness-aware router.
+- The approved real-provider path admits only the OpenRouter transport, the `raw` condition, and
+  no coordinate rescaling; models that emit normalized coordinates cannot be evaluated on it until
+  rescaling moves behind the parse boundary. The registry ships empty and no approved provider
+  run has been executed.

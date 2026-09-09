@@ -58,6 +58,9 @@ class FlowHarness:
     """Minimal Metaflow task object that executes the production step bodies directly."""
 
     def __init__(self, **values: Any) -> None:
+        # Metaflow resolves Parameters to values on a live flow; the harness would otherwise
+        # hand back the Parameter descriptor for the two optional approved-provider fields.
+        self.__dict__.update({"approved_provider": "", "approved_provider_sha256": ""})
         self.__dict__.update(values)
         self.transition: tuple[str, dict[str, Any]] | None = None
 

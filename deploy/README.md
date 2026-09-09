@@ -243,6 +243,68 @@ evidence, with the configured 30-day governance retention. Local filesystem runs
 application put-once adapter and do **not** claim storage-enforced WORM retention. Restrict object
 read access to the operational-review role; records are not exposed through the serving API.
 
+## Approved real-provider evaluations
+
+The evaluation flow's default and only web-submittable provider is the no-cost scripted replay.
+A second path, added for the D4.5 residual (issue #164), lets a command-line launch select one
+*preconfigured, allowlisted* real provider policy. It is designed so that nothing about the
+provider, model, prompt, price, or cap can be chosen at launch time: the launcher can only name a
+registry record and prove that the exact record was approved.
+
+- **Registry.** `config/approved-providers.json` lists `ApprovedProviderPolicy` records
+  (`pixelgym/platform/approved_providers.py`). Each record fixes the transport (`openrouter` is
+  the only one this version admits), the policy-manifest provider label, the exact model string,
+  the prompt version, the `raw` condition, the per-run call cap, the maximum provider
+  concurrency, the frozen price-catalog version, the **name** of the credential environment
+  variable, scalar request parameters, and provider routing. Records are data: no value is ever
+  interpreted as a path, module, command, or flow name, unknown keys are rejected, and a record
+  that names the scripted demo, the demo price catalog, a `marks` condition, or a coordinate
+  rescaling adapter is refused. The checked-in registry ships empty.
+- **Approval digest.** Every record has a content-bound `approval_sha256` over its canonical
+  JSON. The flow requires `--approved-provider <reference>` together with
+  `--approved-provider-sha256 <digest>`, and refuses to start when the digest differs from the
+  record on disk or when `--model`, `--prompt-version`, or `--maximum-calls` do not restate the
+  record exactly. Changing any field therefore invalidates the previous approval. A scripted
+  launch that carries a digest is also refused.
+- **Price catalog.** The record's `price_catalog_version` selects
+  `config/price-catalog.<version>.json`, validated by the existing price-catalog schema, and the
+  catalog must contain an entry for the record's provider/model. Cost per call is derived from the
+  provider's reported token usage and that entry; a response without usage is retained as an
+  unpriced call, never estimated.
+- **Credential.** The named environment variable must be set when the flow starts, before any
+  MLflow run, storage write, or request. Only the variable name enters the policy manifest,
+  tracking parameters, or raw envelopes.
+- **Call cap and retries.** Every attempt is reserved in a durable per-submission SQLite ledger
+  (`.cache/platform/approved-calls/<submission>.sqlite`, or `PIXELGYM_APPROVED_CALL_LEDGER_ROOT`)
+  before the request is sent, so the cap holds across every Metaflow shard task and every resume
+  of the same run, not only within one process. A reservation is never released; an attempt
+  with an unknown outcome still counts. Request failures, unparseable answers, and wrong answers
+  are stored once and never retried; the raw provider text is stored byte-for-byte before
+  parsing. Run-wide provider concurrency is bounded by the supported launch commands
+  (`--max-workers 1`) together with the per-task `--provider-concurrency` value, which the record's
+  `max_concurrency` caps. The frozen dataset
+  ([`artifacts/grounding-dataset.jsonl`](../artifacts/grounding-dataset.jsonl)) has 100 examples
+  and the runner rejects a cap below the example count
+  (`build_shards` in [`pixelgym/platform/evaluation.py`](../pixelgym/platform/evaluation.py)),
+  so an approved grounding record's `call_cap` bounds the paid calls the run may make.
+
+Print the digest to approve, and launch only after a human has approved that exact value:
+
+```bash
+.venv/bin/python -c "from pathlib import Path; from pixelgym.platform.approved_providers import load_approved_providers; [print(p.reference, p.approval_sha256) for p in load_approved_providers(Path('.')).values()]"
+```
+
+```bash
+<record credential_env>=... .venv/bin/python flows/grounding_evaluation_flow.py run --submission-id <id> --approved-provider <reference> --approved-provider-sha256 sha256:<digest> --model <record model> --prompt-version <record prompt_version> --maximum-calls <record call_cap> --provider-concurrency 1 --max-workers 1
+```
+
+Adding a registry record, a price-catalog file, and the approval itself are human decisions under
+AGENTS.md §4 (provider choice and cloud spend). Agents may add records and tests but must not
+launch this path. Candidates produced this way carry `provider` other than `scripted-demo`, are
+labelled non-synthetic in the control plane, and remain subject to the same promotion gates. The
+registry's `kind` field is fixed to `grounding`; a stateful v5 policy kind requires the separate
+versioned flow described in the v5 plan's platform-boundary section and its own approval.
+
 ## Production reference
 
 The immutable adapter pins S3 object version IDs and verifies SHA-256 on every boundary. Use a
