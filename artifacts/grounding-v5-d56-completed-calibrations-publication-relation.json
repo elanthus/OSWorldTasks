@@ -2,6 +2,8 @@
   "authoritative": {
     "errata_file_sha256": "sha256:c6a21a58b376c77e130cf414b640c75385d8f1415ececce70b6db879b62fbe93",
     "errata_path": "artifacts/grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json",
+    "retained_development_runs_file_sha256": "sha256:c3ef62f8561762bbad251c75ffc5a750d3ee8bd4e154a0279a68ffa99636d291",
+    "retained_development_runs_path": "artifacts/grounding-v5-d56-retained-development-runs.json",
     "runs": [
       {
         "approved_plan_content_sha256": "sha256:4c60f91bdc36bd584954e78bff07d823fab9140a23d172c099df3beb3f7a0e52",
@@ -39,13 +41,165 @@
       "reason": "restricted raw provider responses, screenshots, and private checkpoints",
       "sha256": null,
       "size_bytes": null
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-bcd-calibration-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:7482110b3ff2b01d2f559852b25048c80593798e6acfc61f7d74175d7f5c9fe5",
+      "size_bytes": 32730
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-bcd-calibration-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:630f765bc44ce7cb85c91e0ae3b906fcedf4e1374556d6074d84cc2e95b447f4",
+      "size_bytes": 14258
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-bcd-calibration-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:78dbb0e3d819c06604c3b664120df35448f6642ac13b3c367ef0bb9f7f8ef7fe",
+      "size_bytes": 9994240
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-calibration-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:37183428aee8106a518ee33511231bd4a2378945c2e129f21d7c96239f004f66",
+      "size_bytes": 22050
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-calibration-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:73cfd90ae6594a4d826520be3aa971ba049554c5d69196111edb672a78f0da0f",
+      "size_bytes": 542672
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-calibration-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:d67a8c9197e3d2d54f62fd28002e7c9e054c0e5cdb3872b1042ff76537272cf6",
+      "size_bytes": 299106304
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-normalized-trial-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:45e53daf31996d30a8745fa5fd920b794a7d8f56a237218cdfa161bb7a42e86b",
+      "size_bytes": 7375
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-normalized-trial-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:7e3c8778a7e35fd48ef81db9fb56a70fdd45c8f71f7736e3b1e961076cd1fd66",
+      "size_bytes": 12237
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-c-normalized-trial-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:1742f25baca698807f33407d1b046083f4731828796ce8b707f6374b71ec648e",
+      "size_bytes": 7499776
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-json-object-smoke-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:626253f550421276dee103bce62ad18eec1495f6dbe6e9951baf97e9f767dbc3",
+      "size_bytes": 7058
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:8d1a6d5b29dd64774415c6b5cea71ab3343061292a18877454f7d621d3ba14f3",
+      "size_bytes": 3960
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-json-object-smoke-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:67a272f788200db7a2afb894916a14b614ca01c3e66a66c6d0cc08997314087d",
+      "size_bytes": 2404352
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-normalized-trial-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:cf5cb586d0687b95c9ec150b6cf51aae4c04732f53be1332d38e9481607ae7f1",
+      "size_bytes": 7865
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-normalized-trial-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:884650f5a35b7767eb195de549857235d9aa0092d03ab9e7528627d66f8f823d",
+      "size_bytes": 4079
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-normalized-trial-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:639592ffa11973550702eafabd69e7f8e6b94f973d6c30f42933ef60524f7294",
+      "size_bytes": 2404352
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:59dd635974ae1521f19b6868d509dad37cdd9f8ee527ff14803a28dacaeec94b",
+      "size_bytes": 8191
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-relaxed-trial-run/summary.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:3045e479de15ff9ca887950d8e9f612f1e593ff6bea7203dc23282466736df6b",
+      "size_bytes": 4057
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-glm-relaxed-trial-run/attempts.sqlite",
+      "reason": "restricted raw provider responses, screenshots, and private checkpoints",
+      "sha256": "sha256:1077c5015396b02be32fb3453acca66aa507f236b5824e80638a6efe1242c244",
+      "size_bytes": 2404352
+    },
+    {
+      "digest_source": "artifacts/grounding-v5-d56-retained-development-runs.json",
+      "git_status": "must_not_commit",
+      "path": "artifacts/grounding-v5-d56-calibration-plan.json",
+      "reason": "absolute operator paths in digest-bound fields",
+      "sha256": "sha256:bc3ed5813e27a7b41758e36aeed011bd76ae2fb31d67eb89c8e6d2cf22120a0f",
+      "size_bytes": 36269
     }
   ],
   "publishable": {
-    "derivative_content_sha256": "sha256:140a7d4f9f453eb62aa02d2486815d9e6c9311340b35126b2f811fee374c5090",
-    "derivative_file_sha256": "sha256:17e599ce1d701073e057a67f79f57371cb93c83217c321f33ac1218b8197b901",
+    "derivative_content_sha256": "sha256:57229a2582e550d49bb4e673a7e70c397247e3e2faf6b20e9d7339c4b207a0fe",
+    "derivative_file_sha256": "sha256:6e0f4bda96b285138f94e04127afb323c28d27e083f3dfbabcc5ca6b6bb0c29f",
     "derivative_path": "artifacts/grounding-v5-d56-completed-calibrations-publishable.json",
-    "report_file_sha256": "sha256:20fb65d2cf50402012d53e5fae396be1d2131d5fa292c04ed6f91495b067e31a",
+    "report_file_sha256": "sha256:b9e79e389a4b0be036dfe18ad416e5ad686d78a357ddaafea1a7cfd258d91e40",
     "report_path": "artifacts/grounding-v5-d56-completed-calibrations-report.md"
   },
   "redaction_policy_version": "pixelgym-agent-v5-redaction-v1",

@@ -235,3 +235,22 @@ mlruns/
 artifacts/**/*.sqlite
 artifacts/**/*.sqlite-shm
 artifacts/**/*.sqlite-wal
+
+# Retained D5.6 development runs whose approved plans and summaries record absolute operator
+# paths inside digest-bound fields. Only their digests are committed, in
+# artifacts/grounding-v5-d56-retained-development-runs.json; the same relation/test pair
+# above declares and enforces these paths as "must_not_commit".
+artifacts/grounding-v5-d56-bcd-calibration-plan.json
+artifacts/grounding-v5-d56-bcd-calibration-run/summary.json
+artifacts/grounding-v5-d56-c-calibration-plan.json
+artifacts/grounding-v5-d56-c-calibration-run/summary.json
+artifacts/grounding-v5-d56-c-normalized-trial-plan.json
+artifacts/grounding-v5-d56-c-normalized-trial-run/summary.json
+artifacts/grounding-v5-d56-glm-json-object-smoke-plan.json
+artifacts/grounding-v5-d56-glm-json-object-smoke-run/summary.json
+artifacts/grounding-v5-d56-glm-normalized-trial-plan.json
+artifacts/grounding-v5-d56-glm-normalized-trial-run/summary.json
+artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json
+artifacts/grounding-v5-d56-glm-relaxed-trial-run/summary.json
+artifacts/grounding-v5-d56-calibration-plan.json
+artifacts/grounding-v5-d56-calibration-plan-v2.json
