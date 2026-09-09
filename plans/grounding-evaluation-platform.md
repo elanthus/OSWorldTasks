@@ -855,22 +855,22 @@ reviewer can trace each UI state to MLflow, an immutable artifact, and an audit 
 Agents run the documented checks and report the raw command, exit status, test count, runtime, and
 full output. Agents do not declare this gate passed and do not tick these boxes.
 
-- [ ] Existing PixelGym fast suite still passes from the documented clean install.
-- [ ] Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.
-- [ ] Marked platform integration tests pass against a fresh local stack.
-- [ ] Metaflow resume tests prove no duplicate fixture-provider calls.
-- [ ] MLflow contains the complete run contract and links back to Metaflow.
-- [ ] Dataset and raw-response hashes verify from immutable storage.
-- [ ] Missing cost or latency blocks promotion.
-- [ ] Gate failure blocks both UI and direct approval API.
-- [ ] Passing gates do not bypass human approval.
-- [ ] Serving rejects an unapproved exact version.
-- [ ] Failed deployment leaves the current version active.
-- [ ] Rollback restores the previous approved exact version.
-- [ ] Concurrent transition tests produce one active deployment.
-- [ ] Demo evidence clearly distinguishes scripted and real provider results.
-- [ ] No credentials, private payloads, or privileged benchmark data appear in artifacts.
-- [ ] Retention, backup, recovery, and known limitations are documented.
+- [x] Existing PixelGym fast suite still passes from the documented clean install.
+- [x] Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.
+- [x] Marked platform integration tests pass against a fresh local stack.
+- [x] Metaflow resume tests prove no duplicate fixture-provider calls.
+- [x] MLflow contains the complete run contract and links back to Metaflow.
+- [x] Dataset and raw-response hashes verify from immutable storage.
+- [x] Missing cost or latency blocks promotion.
+- [x] Gate failure blocks both UI and direct approval API.
+- [x] Passing gates do not bypass human approval.
+- [x] Serving rejects an unapproved exact version.
+- [x] Failed deployment leaves the current version active.
+- [x] Rollback restores the previous approved exact version.
+- [x] Concurrent transition tests produce one active deployment.
+- [x] Demo evidence clearly distinguishes scripted and real provider results.
+- [x] No credentials, private payloads, or privileged benchmark data appear in artifacts.
+- [x] Retention, backup, recovery, and known limitations are documented.
 
 ## Test strategy
 
