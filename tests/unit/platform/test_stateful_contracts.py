@@ -271,6 +271,17 @@ def test_session_store_requires_a_durable_checkpoint_and_consistent_intent_state
             session_state(phase=SessionResumePhase.CLOSED),
             terminal_classification=None,
         )
+
+
+def test_session_store_excludes_policy_state_and_task_instruction_bytes() -> None:
+    value = session_state().to_dict()
+    assert "policy_state" not in value
+    assert "task_instruction" not in value
+
+    schemas = PlatformSchemas(Path(__file__).resolve().parents[3])
+    for forbidden in ("policy_state", "task_instruction"):
+        with pytest.raises(ContractValidationError, match=forbidden):
+            schemas.validate("episode_session_state", {**value, forbidden: "secret bytes"})
     with pytest.raises(ValueError, match="must match"):
         replace(
             session_state(phase=SessionResumePhase.SEALED),
