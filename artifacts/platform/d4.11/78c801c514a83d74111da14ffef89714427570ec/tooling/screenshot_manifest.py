@@ -1,5 +1,9 @@
-import hashlib, json, struct, sys
+import hashlib
+import json
+import struct
+import sys
 from pathlib import Path
+
 shots = Path(sys.argv[1]); revision = sys.argv[2]; states = json.loads(Path(sys.argv[3]).read_text())
 entries = []
 for png in sorted(shots.glob("*.png")):

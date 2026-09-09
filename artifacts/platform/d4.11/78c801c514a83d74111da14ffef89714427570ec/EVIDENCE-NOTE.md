@@ -33,3 +33,14 @@ and Playwright Chromium. No provider, network model, paid, or external-deploymen
 - No public wording, README numbers, or gate checklist boxes were changed.
 
 The four D4.11 confirmations and the D4.12 verdict belong to the project owner.
+
+## Post-PR adjustments (CI on PR #177)
+
+- `commands/09-compose-up.json`: the Docker build log named the image's ephemeral pip wheel cache
+  under the container's `/tmp`. That string was replaced with `<container-pip-ephem-wheel-cache>`
+  after recording and the replacement is declared in the record's `post_recording_redaction`
+  field. It was a container-internal path, not a host path; the record's exit status and all other
+  output are unchanged.
+- `tooling/*.py`: import ordering fixed and four unused unpacked variables renamed with a leading
+  underscore so the repository Ruff configuration passes. Behaviour is unchanged; these copies are
+  for reproduction and were not re-executed.

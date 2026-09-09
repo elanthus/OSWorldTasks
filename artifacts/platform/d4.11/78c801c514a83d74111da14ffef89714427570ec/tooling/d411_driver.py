@@ -1,10 +1,17 @@
 """D4.11 lifecycle driver: browser-driven, phase-based, records what it observed."""
 from __future__ import annotations
-import json, os, re, sys, time, urllib.request
+
+import json
+import os
+import re
+import sys
+import time
+import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlencode
-from playwright.sync_api import sync_playwright, expect
+
+from playwright.sync_api import expect, sync_playwright
 
 BASE = os.environ["D411_PLATFORM_URL"].rstrip("/")
 MLFLOW = os.environ["D411_MLFLOW_URL"].rstrip("/")
@@ -85,7 +92,7 @@ def phase1(page):
     page.goto(f"{BASE}/runs")
     expect(page.locator("main")).to_contain_text("No evaluated candidates")
     shot(page, "01-empty-run-history.png")
-    st, body = policy(page)
+    st, _body = policy(page)
     save(initial_policy_status=st)
     sid_a = submit(page, "1", "day3-replay-baseline-v1")
     shot(page, "02-submission-a-status.png")
@@ -147,7 +154,7 @@ def phase2(page):
     shot(page, "07-candidate-b-eligible.png")
     approve(page, s["candidate_b"], "D4.11 rehearsal: candidate B passed every gate; reviewer approval recorded with reason")
     page.goto(f"{BASE}/candidates/{s['candidate_b']}"); shot(page, "08-candidate-b-approved.png")
-    st, still_seed = policy(page)
+    _st, still_seed = policy(page)
     assert still_seed["policy_id"] == seed_policy["policy_id"], "approval must not change the active policy"
     b_policy = deploy(page, s["candidate_b"], "D4.11 rehearsal: deploy approved candidate B as generation 2")
     page.goto(f"{BASE}/deployment"); shot(page, "09-candidate-b-deployed.png")
@@ -160,7 +167,7 @@ def phase3(page):
     page.locator('form[action="/rollback"] textarea[name="reason"]').fill("D4.11 rehearsal: rollback to the immediately previous approved exact policy (rollback seed)")
     page.locator('form[action="/rollback"] button').click()
     page.wait_for_url(f"{BASE}/deployment")
-    st, rolled = policy(page)
+    _st, rolled = policy(page)
     shot(page, "10-rollback-restored-seed.png")
     shot(page, "11-rollback-restored-seed-viewport.png", full=False)
     save(rolled_back_policy=rolled,
@@ -179,7 +186,7 @@ def phase4(page):
     expect(page.locator("main")).to_contain_text("Cancelled")
     expect(page.locator("main")).to_contain_text("Cancellation is no longer available")
     shot(page, "13-submission-c-cancelled.png")
-    st, after = policy(page)
+    _st, after = policy(page)
     page.goto(f"{BASE}/deployment/audit"); shot(page, "14-audit-history.png")
     page.goto(f"{BASE}/runs"); shot(page, "15-run-history-final.png")
     save(submission_c=sid, policy_after_cancellation=after)
