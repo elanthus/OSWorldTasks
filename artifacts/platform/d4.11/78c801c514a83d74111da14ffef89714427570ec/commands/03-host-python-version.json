@@ -1,0 +1,15 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "--version"
+  ],
+  "command": ".venv/bin/python --version",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.011731,
+  "ended_at_utc": "2026-09-09T18:24:02.399118+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Python 3.12.14\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:24:02.386168+00:00"
+}

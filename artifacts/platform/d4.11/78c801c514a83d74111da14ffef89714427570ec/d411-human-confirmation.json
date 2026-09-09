@@ -1,0 +1,21 @@
+{
+  "schema_version": "pixelgym-d411-human-confirmation-v1",
+  "recorded_at_utc": "2026-09-09T18:47:10Z",
+  "revision": "78c801c514a83d74111da14ffef89714427570ec",
+  "source": "project owner message in issue #64 implementation task",
+  "source_user_message": "I confirm all four, record it and open the PR",
+  "confirmed_items": [
+    "The failed candidate cannot be approved through the API.",
+    "Passing gates still require reviewer approval.",
+    "Deployment and rollback change the policy ID shown by /api/v1.",
+    "Immutable hashes verify after the demo."
+  ],
+  "confirmation_count": 4,
+  "caveats_acknowledged": [
+    "Reviewer attribution at this revision is the fixed synthetic-demo actor (loopback attestation), not a named reviewer.",
+    "tests/integration/platform/test_compose_lifecycle.py was not run as part of this rehearsal.",
+    "One bounded /api/v1/ground call was captured per active policy."
+  ],
+  "d412_verdict": null,
+  "d412_verdict_owner": "project owner"
+}

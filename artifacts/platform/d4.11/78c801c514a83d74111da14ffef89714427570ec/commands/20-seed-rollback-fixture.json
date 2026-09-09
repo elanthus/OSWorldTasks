@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "scripts/platform_demo.py",
+    "--database",
+    "/state/control.db",
+    "--fixture",
+    "rollback-seed"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python scripts/platform_demo.py --database /state/control.db --fixture rollback-seed",
+  "cwd": "<path-0>",
+  "duration_seconds": 28.197133,
+  "ended_at_utc": "2026-09-09T18:30:20.125995+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Metaflow 2.19.35 executing GroundingEvaluationFlow for user:pixelgym\nValidating your flow...\n    The graph looks good!\nRunning pylint...\n    Pylint not found, so extra checks are disabled.\n2026-09-09 18:29:53.687 Workflow starting (run-id 1788978593686274):\n2026-09-09 18:29:53.692 [1788978593686274/start/1 (pid 575)] Task is starting.\n2026-09-09 18:29:54.643 [1788978593686274/start/1 (pid 575)] Task finished successfully.\n2026-09-09 18:29:54.644 [1788978593686274/validate_and_freeze_inputs/2 (pid 584)] Task is starting.\n2026-09-09 18:29:55.900 [1788978593686274/validate_and_freeze_inputs/2 (pid 584)] Task finished successfully.\n2026-09-09 18:29:55.901 [1788978593686274/create_or_recover_mlflow_run/3 (pid 587)] Task is starting.\n2026-09-09 18:30:00.400 [1788978593686274/create_or_recover_mlflow_run/3 (pid 587)] Task finished successfully.\n2026-09-09 18:30:00.403 [1788978593686274/build_shards/4 (pid 613)] Task is starting.\n2026-09-09 18:30:01.560 [1788978593686274/build_shards/4 (pid 613)] Foreach yields 4 child steps.\n2026-09-09 18:30:01.560 [1788978593686274/build_shards/4 (pid 613)] Task finished successfully.\n2026-09-09 18:30:01.563 [1788978593686274/evaluate_shard/5 (pid 616)] Task is starting.\n2026-09-09 18:30:02.926 [1788978593686274/evaluate_shard/5 (pid 616)] Task finished successfully.\n2026-09-09 18:30:02.927 [1788978593686274/evaluate_shard/6 (pid 620)] Task is starting.\n2026-09-09 18:30:04.279 [1788978593686274/evaluate_shard/6 (pid 620)] Task finished successfully.\n2026-09-09 18:30:04.281 [1788978593686274/evaluate_shard/7 (pid 624)] Task is starting.\n2026-09-09 18:30:05.551 [1788978593686274/evaluate_shard/7 (pid 624)] Task finished successfully.\n2026-09-09 18:30:05.553 [1788978593686274/evaluate_shard/8 (pid 634)] Task is starting.\n2026-09-09 18:30:06.859 [1788978593686274/evaluate_shard/8 (pid 634)] Task finished successfully.\n2026-09-09 18:30:06.860 [1788978593686274/join_responses/9 (pid 638)] Task is starting.\n2026-09-09 18:30:08.002 [1788978593686274/join_responses/9 (pid 638)] Task finished successfully.\n2026-09-09 18:30:08.004 [1788978593686274/verify_raw_artifacts/10 (pid 641)] Task is starting.\n2026-09-09 18:30:09.332 [1788978593686274/verify_raw_artifacts/10 (pid 641)] Task finished successfully.\n2026-09-09 18:30:09.334 [1788978593686274/parse_and_score/11 (pid 644)] Task is starting.\n2026-09-09 18:30:10.504 [1788978593686274/parse_and_score/11 (pid 644)] Task finished successfully.\n2026-09-09 18:30:10.505 [1788978593686274/aggregate_metrics/12 (pid 653)] Task is starting.\n2026-09-09 18:30:11.649 [1788978593686274/aggregate_metrics/12 (pid 653)] Task finished successfully.\n2026-09-09 18:30:11.651 [1788978593686274/evaluate_gates/13 (pid 656)] Task is starting.\n2026-09-09 18:30:12.894 [1788978593686274/evaluate_gates/13 (pid 656)] Task finished successfully.\n2026-09-09 18:30:12.896 [1788978593686274/finalize_mlflow_run/14 (pid 659)] Task is starting.\n2026-09-09 18:30:17.322 [1788978593686274/finalize_mlflow_run/14 (pid 659)] 2026/09/09 18:30:17 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: pixelgym-grounding-policy, version 3\n2026-09-09 18:30:17.332 [1788978593686274/finalize_mlflow_run/14 (pid 659)] \ud83c\udfc3 View run bedecked-shad-269 at: http://mlflow:5000/#/experiments/1/runs/1f61bf467a3d49e88b7702f4ebd76fbe\n2026-09-09 18:30:17.672 [1788978593686274/finalize_mlflow_run/14 (pid 659)] \ud83e\uddea View experiment at: http://mlflow:5000/#/experiments/1\n2026-09-09 18:30:17.674 [1788978593686274/finalize_mlflow_run/14 (pid 659)] Task finished successfully.\n2026-09-09 18:30:17.676 [1788978593686274/register_candidate/15 (pid 684)] Task is starting.\n2026-09-09 18:30:18.753 [1788978593686274/register_candidate/15 (pid 684)] Task finished successfully.\n2026-09-09 18:30:18.756 [1788978593686274/end/16 (pid 687)] Task is starting.\n2026-09-09 18:30:19.909 [1788978593686274/end/16 (pid 687)] Task finished successfully.\n2026-09-09 18:30:19.909 Done!\nPrepared scripted lifecycle fixture selection: rollback-seed. Approval, deployment, and rollback remain manual.\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:29:51.926548+00:00"
+}

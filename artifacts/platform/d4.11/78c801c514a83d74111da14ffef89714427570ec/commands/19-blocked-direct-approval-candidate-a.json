@@ -1,0 +1,26 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/capture_platform_api.py",
+    "blocked-approval",
+    "--base-url",
+    "http://127.0.0.1:60542",
+    "--candidate-id",
+    "candidate-256bf4b72d198f142f31785e",
+    "--reason",
+    "D4.11 blocked-path rehearsal: direct API approval of gate-failed candidate A",
+    "--output",
+    "<path-1>/bundle/demo-api-transcript.jsonl",
+    "--expect-status",
+    "409"
+  ],
+  "command": ".venv/bin/python scripts/capture_platform_api.py blocked-approval --base-url http://127.0.0.1:60542 --candidate-id candidate-256bf4b72d198f142f31785e --reason 'D4.11 blocked-path rehearsal: direct API approval of gate-failed candidate A' --output <path-1>/bundle/demo-api-transcript.jsonl --expect-status 409",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.111155,
+  "ended_at_utc": "2026-09-09T18:29:51.852312+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"captured_at_utc\": \"2026-09-09T18:29:51.842856+00:00\",\n  \"event\": \"blocked-approval\",\n  \"request\": {\n    \"body\": {\n      \"reason\": \"D4.11 blocked-path rehearsal: direct API approval of gate-failed candidate A\"\n    },\n    \"method\": \"POST\",\n    \"path\": \"/api/candidates/candidate-256bf4b72d198f142f31785e/approve\"\n  },\n  \"response\": {\n    \"body\": {\n      \"detail\": \"only an eligible candidate can be approved\",\n      \"title\": \"Action blocked\"\n    },\n    \"deployment_id\": null,\n    \"policy_id\": null,\n    \"status\": 409\n  },\n  \"schema_version\": \"pixelgym-platform-api-transcript-v1\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:29:51.739032+00:00"
+}

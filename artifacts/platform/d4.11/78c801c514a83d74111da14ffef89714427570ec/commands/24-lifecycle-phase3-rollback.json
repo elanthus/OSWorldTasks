@@ -1,0 +1,19 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "<path-1>/d411_driver.py",
+    "3"
+  ],
+  "command": ".venv/bin/python <path-1>/d411_driver.py 3",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.545145,
+  "ended_at_utc": "2026-09-09T18:31:04.385157+00:00",
+  "environment": {
+    "D411_MLFLOW_URL": "http://127.0.0.1:60543",
+    "D411_PLATFORM_URL": "http://127.0.0.1:60542"
+  },
+  "exit_status": 0,
+  "output": "{\"api\": \"/api/v1/policy\", \"at_utc\": \"2026-09-09T18:31:04.226411+00:00\", \"body\": {\"deployment_id\": \"deployment-9b9ba47f999d129231f655d5\", \"exact_policy_version\": \"candidate-580afb9f3e74ee75204d71f1\", \"model\": \"day3-replay-revised-rollback-seed-v1\", \"policy_id\": \"sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6\", \"prompt_version\": 2, \"provider\": \"scripted-demo\", \"schema_version\": \"pixelgym-grounding-api-v1\"}, \"status\": 200}\n{\"at_utc\": \"2026-09-09T18:31:04.323883+00:00\", \"screenshot\": \"10-rollback-restored-seed.png\", \"url\": \"<platform>/deployment\"}\n{\"at_utc\": \"2026-09-09T18:31:04.341814+00:00\", \"screenshot\": \"11-rollback-restored-seed-viewport.png\", \"url\": \"<platform>/deployment\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:31:02.838266+00:00"
+}

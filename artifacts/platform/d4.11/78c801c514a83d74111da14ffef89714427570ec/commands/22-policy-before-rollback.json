@@ -1,0 +1,22 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/capture_platform_api.py",
+    "policy",
+    "--base-url",
+    "http://127.0.0.1:60542",
+    "--output",
+    "<path-1>/bundle/demo-api-transcript.jsonl",
+    "--expect-status",
+    "200"
+  ],
+  "command": ".venv/bin/python scripts/capture_platform_api.py policy --base-url http://127.0.0.1:60542 --output <path-1>/bundle/demo-api-transcript.jsonl --expect-status 200",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.118782,
+  "ended_at_utc": "2026-09-09T18:30:48.176390+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"captured_at_utc\": \"2026-09-09T18:30:48.167438+00:00\",\n  \"event\": \"policy\",\n  \"request\": {\n    \"method\": \"GET\",\n    \"path\": \"/api/v1/policy\"\n  },\n  \"response\": {\n    \"body\": {\n      \"deployment_id\": \"deployment-093b797f378e92feed765c44\",\n      \"exact_policy_version\": \"candidate-9d78e49832fc7226fae5f5ce\",\n      \"model\": \"day3-replay-revised-v2\",\n      \"policy_id\": \"sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b\",\n      \"prompt_version\": 2,\n      \"provider\": \"scripted-demo\",\n      \"schema_version\": \"pixelgym-grounding-api-v1\"\n    },\n    \"deployment_id\": null,\n    \"policy_id\": null,\n    \"status\": 200\n  },\n  \"schema_version\": \"pixelgym-platform-api-transcript-v1\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:30:48.055837+00:00"
+}

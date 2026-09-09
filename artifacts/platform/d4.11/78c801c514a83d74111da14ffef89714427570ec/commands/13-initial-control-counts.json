@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "-c",
+    "import sqlite3,json; c=sqlite3.connect('/state/control.db'); print(json.dumps({t: c.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0] for t in ('submissions','candidates','approvals','deployments','audit_events')}))"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python -c 'import sqlite3,json; c=sqlite3.connect('\"'\"'/state/control.db'\"'\"'); print(json.dumps({t: c.execute(f'\"'\"'SELECT COUNT(*) FROM {t}'\"'\"').fetchone()[0] for t in ('\"'\"'submissions'\"'\"','\"'\"'candidates'\"'\"','\"'\"'approvals'\"'\"','\"'\"'deployments'\"'\"','\"'\"'audit_events'\"'\"')}))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.133113,
+  "ended_at_utc": "2026-09-09T18:27:16.248269+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"submissions\": 0, \"candidates\": 0, \"approvals\": 0, \"deployments\": 0, \"audit_events\": 1}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:27:16.113031+00:00"
+}

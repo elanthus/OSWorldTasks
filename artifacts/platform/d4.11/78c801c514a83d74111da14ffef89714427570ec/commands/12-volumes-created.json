@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "docker",
+    "volume",
+    "ls",
+    "--filter",
+    "name=pixelgym-d411-78c801c_",
+    "--format",
+    "{{.Name}}"
+  ],
+  "command": "docker volume ls --filter name=pixelgym-d411-78c801c_ --format '{{.Name}}'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.016816,
+  "ended_at_utc": "2026-09-09T18:27:16.068207+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "pixelgym-d411-78c801c_control-data\npixelgym-d411-78c801c_minio-data\npixelgym-d411-78c801c_postgres-data\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:27:16.049824+00:00"
+}

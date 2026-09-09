@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "-c",
+    "import os; me=str(os.getpid()); print([open(f'/proc/{p}/cmdline','rb').read().replace(b'\\0',b' ')[:120] for p in os.listdir('/proc') if p.isdigit() and p!=me and b'flows/' in open(f'/proc/{p}/cmdline','rb').read()])"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python -c 'import os; me=str(os.getpid()); print([open(f'\"'\"'/proc/{p}/cmdline'\"'\"','\"'\"'rb'\"'\"').read().replace(b'\"'\"'\\0'\"'\"',b'\"'\"' '\"'\"')[:120] for p in os.listdir('\"'\"'/proc'\"'\"') if p.isdigit() and p!=me and b'\"'\"'flows/'\"'\"' in open(f'\"'\"'/proc/{p}/cmdline'\"'\"','\"'\"'rb'\"'\"').read()])'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.200768,
+  "ended_at_utc": "2026-09-09T18:35:37.439933+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "[]\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:35:37.237159+00:00"
+}

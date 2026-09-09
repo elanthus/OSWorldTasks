@@ -1,0 +1,323 @@
+{
+  "schema_version": "pixelgym-platform-screenshot-manifest-v1",
+  "captured_revision": "78c801c514a83d74111da14ffef89714427570ec",
+  "redaction": "Browser chrome is excluded; no credentials, hostnames, usernames, private provider payloads, expected answers, or privileged bounding boxes are shown.",
+  "screenshots": [
+    {
+      "path": "01-empty-run-history.png",
+      "sha256": "6581cbfe4b29ba1dbb08d9baec8669637f54dbc875e24caf42788115c16b271c",
+      "size": 99490,
+      "width": 1265,
+      "height": 1635,
+      "state": "fresh isolated stack with no evaluated candidates",
+      "candidate_ids": [],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "deployment_ids": [],
+      "audit_event_types": []
+    },
+    {
+      "path": "02-submission-a-status.png",
+      "sha256": "9ccc685214cb825dd8c704055b2cd335682cfb52d8eb9c35ab8587b371d1fc6d",
+      "size": 115170,
+      "width": 1265,
+      "height": 1094,
+      "state": "candidate A submission page immediately after submit: status Submitted, cancellation form offered",
+      "candidate_ids": [],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "deployment_ids": [],
+      "audit_event_types": [
+        "submission.created"
+      ]
+    },
+    {
+      "path": "03-candidate-a-gate-blocked.png",
+      "sha256": "28d9f5e27296a759769c487d2d995d81260ac75fca7baad27595715a3d02344c",
+      "size": 137837,
+      "width": 1265,
+      "height": 1019,
+      "state": "candidate A failed the accuracy gate and exposes no approval control",
+      "candidate_ids": [
+        "candidate-256bf4b72d198f142f31785e"
+      ],
+      "mlflow_run_ids": [
+        "95a33816718c47b0b0bd53b973a79523"
+      ],
+      "policy_ids": [
+        "sha256:256bf4b72d198f142f31785e79897aa380484373f500ec0be26fa64ac6b5c382"
+      ],
+      "deployment_ids": [],
+      "audit_event_types": [
+        "candidate.gates_evaluated"
+      ]
+    },
+    {
+      "path": "04-compatible-comparison.png",
+      "sha256": "af8cbfe2abeba54dd801d972b378d04e12bdb718852e2d8cfda4aa5781c66df9",
+      "size": 130180,
+      "width": 1265,
+      "height": 1210,
+      "state": "candidate A and B compatible stored-metric comparison",
+      "candidate_ids": [
+        "candidate-256bf4b72d198f142f31785e",
+        "candidate-9d78e49832fc7226fae5f5ce"
+      ],
+      "mlflow_run_ids": [
+        "95a33816718c47b0b0bd53b973a79523",
+        "139367b1a304475e8649ae08c1913f6f"
+      ],
+      "policy_ids": [
+        "sha256:256bf4b72d198f142f31785e79897aa380484373f500ec0be26fa64ac6b5c382",
+        "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b"
+      ],
+      "deployment_ids": [],
+      "audit_event_types": [
+        "candidate.gates_evaluated"
+      ]
+    },
+    {
+      "path": "05-mlflow-candidate-b-lineage.png",
+      "sha256": "e5d32e14b5c474d261a8b2af554aca79425cfa37a0316c7c7b48eb8773d4202c",
+      "size": 174672,
+      "width": 1280,
+      "height": 720,
+      "state": "candidate B MLflow metrics, run ID, synthetic and Metaflow tags, dataset fingerprint, and registered prompt",
+      "candidate_ids": [
+        "candidate-9d78e49832fc7226fae5f5ce"
+      ],
+      "mlflow_run_ids": [
+        "139367b1a304475e8649ae08c1913f6f"
+      ],
+      "policy_ids": [
+        "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b"
+      ],
+      "deployment_ids": [],
+      "audit_event_types": [
+        "candidate.gates_evaluated"
+      ]
+    },
+    {
+      "path": "06-rollback-seed-deployed.png",
+      "sha256": "49f32ae7c965a724ad24c5ec3afbc18ed2b3bdf0515e08d01e45ffc58970aa60",
+      "size": 234701,
+      "width": 1613,
+      "height": 1950,
+      "state": "earlier approved rollback seed active at generation 1",
+      "candidate_ids": [
+        "candidate-580afb9f3e74ee75204d71f1"
+      ],
+      "mlflow_run_ids": [
+        "1f61bf467a3d49e88b7702f4ebd76fbe"
+      ],
+      "policy_ids": [
+        "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6"
+      ],
+      "deployment_ids": [
+        "deployment-a6bc20d85b53b06974ff60d1"
+      ],
+      "audit_event_types": [
+        "candidate.approved",
+        "deployment.deploy"
+      ]
+    },
+    {
+      "path": "07-candidate-b-eligible.png",
+      "sha256": "f90dbe3e24573ef669663a5bbc7fb45d1736718fb6ffc6f99ac0b5c4be50074b",
+      "size": 160937,
+      "width": 1265,
+      "height": 1157,
+      "state": "passing candidate B still requires reviewer approval while the seed is active",
+      "candidate_ids": [
+        "candidate-9d78e49832fc7226fae5f5ce"
+      ],
+      "mlflow_run_ids": [
+        "139367b1a304475e8649ae08c1913f6f"
+      ],
+      "policy_ids": [
+        "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b"
+      ],
+      "deployment_ids": [
+        "deployment-a6bc20d85b53b06974ff60d1"
+      ],
+      "audit_event_types": [
+        "candidate.gates_evaluated"
+      ]
+    },
+    {
+      "path": "08-candidate-b-approved.png",
+      "sha256": "3575101fac4073aaff87b8843558dfad6f734b2e446a60a6b7fab2d9ebd61eee",
+      "size": 162136,
+      "width": 1265,
+      "height": 1157,
+      "state": "candidate B approved but not yet deployed; seed remains active",
+      "candidate_ids": [
+        "candidate-9d78e49832fc7226fae5f5ce"
+      ],
+      "mlflow_run_ids": [
+        "139367b1a304475e8649ae08c1913f6f"
+      ],
+      "policy_ids": [
+        "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b"
+      ],
+      "deployment_ids": [
+        "deployment-a6bc20d85b53b06974ff60d1"
+      ],
+      "audit_event_types": [
+        "candidate.approved"
+      ]
+    },
+    {
+      "path": "09-candidate-b-deployed.png",
+      "sha256": "bc355d4f888184ee464af6e2108ac02cb19a3802254e5b6c1c82f93706b3ab10",
+      "size": 280603,
+      "width": 1610,
+      "height": 2269,
+      "state": "candidate B active at generation 2 with rollback available",
+      "candidate_ids": [
+        "candidate-9d78e49832fc7226fae5f5ce"
+      ],
+      "mlflow_run_ids": [
+        "139367b1a304475e8649ae08c1913f6f"
+      ],
+      "policy_ids": [
+        "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b"
+      ],
+      "deployment_ids": [
+        "deployment-093b797f378e92feed765c44"
+      ],
+      "audit_event_types": [
+        "candidate.approved",
+        "deployment.deploy"
+      ]
+    },
+    {
+      "path": "10-rollback-restored-seed.png",
+      "sha256": "10c96c5677822ccfaeef52c5967ce9c3c275a991ea4bd6248a114915e5e0abc6",
+      "size": 289929,
+      "width": 1613,
+      "height": 2429,
+      "state": "rollback restored the seed policy under generation 3",
+      "candidate_ids": [
+        "candidate-580afb9f3e74ee75204d71f1"
+      ],
+      "mlflow_run_ids": [
+        "1f61bf467a3d49e88b7702f4ebd76fbe"
+      ],
+      "policy_ids": [
+        "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6"
+      ],
+      "deployment_ids": [
+        "deployment-9b9ba47f999d129231f655d5"
+      ],
+      "audit_event_types": [
+        "deployment.rollback"
+      ]
+    },
+    {
+      "path": "11-rollback-restored-seed-viewport.png",
+      "sha256": "eb44f085d5fde589411fc9598709dfcaa76b8d26d5c532ae76469bc529ab33e8",
+      "size": 66638,
+      "width": 1265,
+      "height": 900,
+      "state": "readable viewport capture of the restored generation-3 policy identity",
+      "candidate_ids": [
+        "candidate-580afb9f3e74ee75204d71f1"
+      ],
+      "mlflow_run_ids": [
+        "1f61bf467a3d49e88b7702f4ebd76fbe"
+      ],
+      "policy_ids": [
+        "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6"
+      ],
+      "deployment_ids": [
+        "deployment-9b9ba47f999d129231f655d5"
+      ],
+      "audit_event_types": [
+        "deployment.rollback"
+      ]
+    },
+    {
+      "path": "12-submission-c-status-cancellable.png",
+      "sha256": "f14c033d3cf258ca06eded467b7b0bcbb46409a22f6d880aba9072c568751cfe",
+      "size": 113356,
+      "width": 1265,
+      "height": 1094,
+      "state": "separate submission C (prompt v2, baseline model) in Submitted state with the cancellation form; not part of the A/B lifecycle",
+      "candidate_ids": [],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "deployment_ids": [],
+      "audit_event_types": [
+        "submission.created"
+      ]
+    },
+    {
+      "path": "13-submission-c-cancelled.png",
+      "sha256": "028d700837fa0ebb8abe101de9ef941a92ca877a3ba769f615ce6a481dd53bdf",
+      "size": 98473,
+      "width": 1265,
+      "height": 1094,
+      "state": "submission C Cancelled; cancellation no longer offered; active policy unchanged",
+      "candidate_ids": [],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "deployment_ids": [
+        "deployment-9b9ba47f999d129231f655d5"
+      ],
+      "audit_event_types": [
+        "submission.cancelled"
+      ]
+    },
+    {
+      "path": "14-audit-history.png",
+      "sha256": "b09ca70ac74c9483b84af0bc9c6709f949dfd5db7b1fdf0bdee561395e4a1609",
+      "size": 280483,
+      "width": 1265,
+      "height": 2318,
+      "state": "append-only audit history after the full lifecycle and the cancellation exercise",
+      "candidate_ids": [
+        "candidate-256bf4b72d198f142f31785e",
+        "candidate-9d78e49832fc7226fae5f5ce",
+        "candidate-580afb9f3e74ee75204d71f1"
+      ],
+      "mlflow_run_ids": [],
+      "policy_ids": [],
+      "deployment_ids": [
+        "deployment-a6bc20d85b53b06974ff60d1",
+        "deployment-093b797f378e92feed765c44",
+        "deployment-9b9ba47f999d129231f655d5"
+      ],
+      "audit_event_types": [
+        "submission.created",
+        "candidate.gates_evaluated",
+        "candidate.approved",
+        "deployment.deploy",
+        "deployment.rollback",
+        "submission.resubmitted",
+        "submission.cancelled"
+      ]
+    },
+    {
+      "path": "15-run-history-final.png",
+      "sha256": "97c471a99d5678c48d6fbbc23d5081e192d33b1372ef3727a104c3e57e4c56e5",
+      "size": 147210,
+      "width": 1265,
+      "height": 1842,
+      "state": "final run history: A GateFailed, B Approved (previously deployed), seed Approved and active",
+      "candidate_ids": [
+        "candidate-256bf4b72d198f142f31785e",
+        "candidate-9d78e49832fc7226fae5f5ce",
+        "candidate-580afb9f3e74ee75204d71f1"
+      ],
+      "mlflow_run_ids": [
+        "95a33816718c47b0b0bd53b973a79523",
+        "139367b1a304475e8649ae08c1913f6f",
+        "1f61bf467a3d49e88b7702f4ebd76fbe"
+      ],
+      "policy_ids": [],
+      "deployment_ids": [],
+      "audit_event_types": []
+    }
+  ]
+}
