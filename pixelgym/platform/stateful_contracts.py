@@ -254,7 +254,11 @@ class EvidenceBinding:
 
 @dataclass(frozen=True)
 class StatefulPolicyPackage:
-    """Exact-version package of one v5 policy system for registration and serving."""
+    """Exact-version package of one v5 policy system for registration and serving.
+
+    Construction revalidates the embedded manifest and every duplicated outer binding so a
+    deserialized package cannot substitute different policy bytes behind a retained policy ID.
+    """
 
     policy_manifest: dict[str, Any]
     policy_manifest_sha256: str
