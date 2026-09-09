@@ -63,8 +63,8 @@ agent interface; expected values and bounding boxes never enter the environment 
 
 **Status.** This is a personal portfolio project, public for review. Sprints 1–3 are complete and
 gated by the owner ([D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2/raw/human-gate.json),
-[D3.11](artifacts/day-3/raw/human-gate.json)); the platform milestone (D4.12) and the v5 agent
-benchmark are in progress and their gates are not declared. Every number below links to a
+[D3.11](artifacts/day-3/raw/human-gate.json), [D4.12](artifacts/platform/human-gate.json)); the v5 agent
+benchmark is in progress and its gate is not declared. Every number below links to a
 checked-in artifact. Pull requests run lint, strict type checking, and the fast suite in CI; the
 Docker-based platform integration suite runs only on manual dispatch.
 
@@ -72,7 +72,9 @@ The project owner declared the [historical Day 2 gate](artifacts/day-2/raw/human
 The [2026-09-06 evidence revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)
 was re-graded by the project owner on 2026-09-07 and declared `PASS`
 ([re-grade record](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json)); the historical
-record is retained unchanged. D4.12 remains a human-owned milestone gate and is not declared here.
+record is retained unchanged. The project owner declared the platform milestone gate D4.12 `PASS`
+on 2026-09-09 against the evidence at revision `4c4a7fb`
+([gate record](artifacts/platform/human-gate.json), [evidence index](artifacts/platform/d4.12/4c4a7fb2fcb983e81084542365abc0ec2d7df538/REPORT.md)).
 
 ## Grounding benchmark
 
@@ -176,8 +178,11 @@ The recorded lifecycle, generated API transcript, immutable-artifact verificatio
 limitations are available in the [demo script](artifacts/platform/demo-script.md),
 [API transcript](artifacts/platform/demo-api-transcript.jsonl),
 [integrity evidence](artifacts/platform/immutable-artifact-verification.json), and
-[platform limitations](artifacts/platform/known-limitations.md). D4.12 remains a human-owned
-milestone gate; this documentation does not declare it passed.
+[platform limitations](artifacts/platform/known-limitations.md). The D4.11 lifecycle was
+re-rehearsed at revision `78c801c` with owner confirmations
+([refreshed bundle](artifacts/platform/d4.11/78c801c514a83d74111da14ffef89714427570ec/EVIDENCE_REVIEW.md)).
+The D4.12 milestone gate was declared `PASS` by the project owner
+([gate record](artifacts/platform/human-gate.json)); the scripted-provider caveats above still apply.
 
 ## v5 agent benchmark (in progress)
 
@@ -400,8 +405,9 @@ known limitation, with the underlying evidence retained
 - Platform demo and seed-by-policy fan-out metrics use deterministic scripted providers on one
   local host. They are synthetic governance and orchestration fixtures, not model-quality,
   production-throughput, or external-deployment evidence.
-- D4.12 has stored raw evidence but no human milestone verdict. V5 calibration results are
-  descriptive and remain neither benchmark scores nor a milestone-gate verdict.
+- The D4.12 verdict grades governance and orchestration behaviour on a scripted provider; it is
+  not a model-quality claim. V5 calibration results are descriptive and remain neither benchmark
+  scores nor a milestone-gate verdict.
 
 ## Project evidence
 
