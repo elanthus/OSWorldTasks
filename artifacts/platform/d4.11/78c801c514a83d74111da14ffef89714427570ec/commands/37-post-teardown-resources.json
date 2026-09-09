@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "sh",
+    "-c",
+    "echo containers:; docker ps -a --filter label=com.docker.compose.project=pixelgym-d411-78c801c --format '{{.Names}}'; echo volumes:; docker volume ls --filter name=pixelgym-d411-78c801c_ --format '{{.Name}}'; echo images:; docker images --format '{{.Repository}}:{{.Tag}}' | grep '^pixelgym-d411-78c801c' ; echo other-projects-untouched:; docker compose ls -a --format json | python3 -c 'import json,sys; print([p[\"Name\"] for p in json.load(sys.stdin)])'"
+  ],
+  "command": "sh -c 'echo containers:; docker ps -a --filter label=com.docker.compose.project=pixelgym-d411-78c801c --format '\"'\"'{{.Names}}'\"'\"'; echo volumes:; docker volume ls --filter name=pixelgym-d411-78c801c_ --format '\"'\"'{{.Name}}'\"'\"'; echo images:; docker images --format '\"'\"'{{.Repository}}:{{.Tag}}'\"'\"' | grep '\"'\"'^pixelgym-d411-78c801c'\"'\"' ; echo other-projects-untouched:; docker compose ls -a --format json | python3 -c '\"'\"'import json,sys; print([p[\"Name\"] for p in json.load(sys.stdin)])'\"'\"''",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.21621,
+  "ended_at_utc": "2026-09-09T18:36:25.493092+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "containers:\nvolumes:\nimages:\nother-projects-untouched:\n['docker', 'job-ops', 'pixelgym-platform']\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:36:25.275318+00:00"
+}

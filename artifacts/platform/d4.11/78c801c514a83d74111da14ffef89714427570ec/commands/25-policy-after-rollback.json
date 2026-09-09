@@ -1,0 +1,22 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/capture_platform_api.py",
+    "policy",
+    "--base-url",
+    "http://127.0.0.1:60542",
+    "--output",
+    "<path-1>/bundle/demo-api-transcript.jsonl",
+    "--expect-status",
+    "200"
+  ],
+  "command": ".venv/bin/python scripts/capture_platform_api.py policy --base-url http://127.0.0.1:60542 --output <path-1>/bundle/demo-api-transcript.jsonl --expect-status 200",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.105813,
+  "ended_at_utc": "2026-09-09T18:31:20.327186+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"captured_at_utc\": \"2026-09-09T18:31:20.317676+00:00\",\n  \"event\": \"policy\",\n  \"request\": {\n    \"method\": \"GET\",\n    \"path\": \"/api/v1/policy\"\n  },\n  \"response\": {\n    \"body\": {\n      \"deployment_id\": \"deployment-9b9ba47f999d129231f655d5\",\n      \"exact_policy_version\": \"candidate-580afb9f3e74ee75204d71f1\",\n      \"model\": \"day3-replay-revised-rollback-seed-v1\",\n      \"policy_id\": \"sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6\",\n      \"prompt_version\": 2,\n      \"provider\": \"scripted-demo\",\n      \"schema_version\": \"pixelgym-grounding-api-v1\"\n    },\n    \"deployment_id\": null,\n    \"policy_id\": null,\n    \"status\": 200\n  },\n  \"schema_version\": \"pixelgym-platform-api-transcript-v1\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:31:20.219402+00:00"
+}

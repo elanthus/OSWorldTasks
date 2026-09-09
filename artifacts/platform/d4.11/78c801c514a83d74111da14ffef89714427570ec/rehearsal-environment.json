@@ -1,0 +1,107 @@
+{
+  "captured_at_utc": "2026-09-09T18:27:38.145734+00:00",
+  "checkout": "detached git worktree of origin/main at the recorded revision; see commands/00-02",
+  "compose_project": "pixelgym-d411-78c801c",
+  "compose_version": "Docker Compose version v5.2.0",
+  "dependency_lock": {
+    "path": "requirements/platform-py312.lock",
+    "sha256": "4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b"
+  },
+  "docker_server_version": "29.6.1",
+  "fresh_state": {
+    "created_volumes": [
+      "pixelgym-d411-78c801c_control-data",
+      "pixelgym-d411-78c801c_minio-data",
+      "pixelgym-d411-78c801c_postgres-data"
+    ],
+    "final_counts": {
+      "approvals": 2,
+      "audit_events": 15,
+      "candidates": 3,
+      "deployments": 3,
+      "submissions": 4
+    },
+    "initial_counts": {
+      "approvals": 0,
+      "audit_events": 1,
+      "candidates": 0,
+      "deployments": 0,
+      "submissions": 0
+    },
+    "teardown": "compose down --volumes --remove-orphans --rmi local for this project only, after export and verification; see commands/36 and 37"
+  },
+  "host_python_version": "3.12.14",
+  "provider": {
+    "external_deployment": false,
+    "network_model_calls": false,
+    "paid_calls": 0,
+    "type": "deterministic scripted replay"
+  },
+  "reviewer_identity": {
+    "actor": "synthetic-demo",
+    "actor_verification_source": "synthetic_demo",
+    "note": "Compose publishes the platform port on host loopback and attests loopback-only deployment; at this revision requests not arriving through a trusted identity proxy use the fixed synthetic-demo actor (deploy/README.md, Reviewer attribution)."
+  },
+  "runtime_python_version": "3.12.11",
+  "schema_version": "pixelgym-platform-rehearsal-environment-v1",
+  "services": [
+    {
+      "image": "pixelgym-d411-78c801c-migrate",
+      "image_id": "sha256:13855d07c2b2341a8688d9bc74bf36ac1ba12969be9f877fc639c29403d9ff31",
+      "name": "migrate",
+      "published_port": null,
+      "status": "Exited (0) 2 minutes ago",
+      "target_port": null
+    },
+    {
+      "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
+      "image_id": "sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e",
+      "name": "minio",
+      "published_port": 60545,
+      "status": "Up 2 minutes (healthy)",
+      "target_port": 9000
+    },
+    {
+      "image": "minio/mc:RELEASE.2025-04-16T18-13-26Z",
+      "image_id": "sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3",
+      "name": "minio-init",
+      "published_port": null,
+      "status": "Exited (0) 2 minutes ago",
+      "target_port": null
+    },
+    {
+      "image": "pixelgym-d411-78c801c-mlflow",
+      "image_id": "sha256:7eb8cfb6133f3c46d636999f5cad83ca45f7609b3ade359d43e5ce4d575fc4a8",
+      "name": "mlflow",
+      "published_port": 60543,
+      "status": "Up 2 minutes (healthy)",
+      "target_port": 5000
+    },
+    {
+      "image": "pixelgym-d411-78c801c-platform",
+      "image_id": "sha256:fa7f6dd3709578343fd8ee2e55c3fe37fefc63e5582b5ce3aaa3e9731bd6bc97",
+      "name": "platform",
+      "published_port": 60542,
+      "status": "Up 2 minutes (healthy)",
+      "target_port": 8000
+    },
+    {
+      "image": "postgres:17.5-bookworm",
+      "image_id": "sha256:fbcea1bd13b6a882cd6caa6b58db3ae5c102efe50ec625b3e2a5cbc50db5bfe4",
+      "name": "postgres",
+      "published_port": 60544,
+      "status": "Up 2 minutes (healthy)",
+      "target_port": 5432
+    }
+  ],
+  "source_provenance": {
+    "failure_reason": null,
+    "revision": "78c801c514a83d74111da14ffef89714427570ec",
+    "schema_version": "pixelgym-source-provenance-v1",
+    "source_tree_sha256": "ce88a5a9aad171dbbd49977dbdb867d808f5bb4a3735ff55b1655c23a4a74969",
+    "state": "clean",
+    "verification_method": "git-build-inputs-v1"
+  },
+  "start_command": ".venv/bin/python scripts/platform_compose.py --project-name pixelgym-d411-78c801c up --build --wait --wait-timeout 240 (four loopback ports selected from free ephemeral ports; see commands/09-compose-up.json)",
+  "worktree_porcelain_at_start": ""
+}

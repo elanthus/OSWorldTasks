@@ -1,0 +1,53 @@
+{
+  "b_policy": {
+    "deployment_id": "deployment-093b797f378e92feed765c44",
+    "exact_policy_version": "candidate-9d78e49832fc7226fae5f5ce",
+    "model": "day3-replay-revised-v2",
+    "policy_id": "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b",
+    "prompt_version": 2,
+    "provider": "scripted-demo",
+    "schema_version": "pixelgym-grounding-api-v1"
+  },
+  "blocked_deploy_of_unapproved_b_status": 409,
+  "candidate_a": "candidate-256bf4b72d198f142f31785e",
+  "candidate_a_ui_approve_forms": 0,
+  "candidate_b": "candidate-9d78e49832fc7226fae5f5ce",
+  "candidate_seed": "candidate-580afb9f3e74ee75204d71f1",
+  "initial_policy_status": 503,
+  "mlflow_experiment_id": "1",
+  "mlflow_run_a": "95a33816718c47b0b0bd53b973a79523",
+  "mlflow_run_b": "139367b1a304475e8649ae08c1913f6f",
+  "policy_after_b_approval_unchanged": true,
+  "policy_after_cancellation": {
+    "deployment_id": "deployment-9b9ba47f999d129231f655d5",
+    "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1",
+    "model": "day3-replay-revised-rollback-seed-v1",
+    "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6",
+    "prompt_version": 2,
+    "provider": "scripted-demo",
+    "schema_version": "pixelgym-grounding-api-v1"
+  },
+  "rollback_new_deployment": true,
+  "rollback_restored_seed_policy": true,
+  "rolled_back_policy": {
+    "deployment_id": "deployment-9b9ba47f999d129231f655d5",
+    "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1",
+    "model": "day3-replay-revised-rollback-seed-v1",
+    "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6",
+    "prompt_version": 2,
+    "provider": "scripted-demo",
+    "schema_version": "pixelgym-grounding-api-v1"
+  },
+  "seed_policy": {
+    "deployment_id": "deployment-a6bc20d85b53b06974ff60d1",
+    "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1",
+    "model": "day3-replay-revised-rollback-seed-v1",
+    "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6",
+    "prompt_version": 2,
+    "provider": "scripted-demo",
+    "schema_version": "pixelgym-grounding-api-v1"
+  },
+  "submission_a": "submission-450fea074cb82b1a8ab216ec",
+  "submission_b": "submission-685e994b3d7c4b950bcefbea",
+  "submission_c": "submission-351120d2f4d727b837c0cc42"
+}

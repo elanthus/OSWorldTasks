@@ -1,0 +1,34 @@
+{"at_utc": "2026-09-09T18:27:41.531317+00:00", "screenshot": "01-empty-run-history.png", "url": "<platform>/runs"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:27:41.539813+00:00", "body": null, "status": 503}
+{"at_utc": "2026-09-09T18:27:41.671507+00:00", "model": "day3-replay-baseline-v1", "prompt_version": "1", "status_text": "Submitted", "submitted": "submission-450fea074cb82b1a8ab216ec"}
+{"at_utc": "2026-09-09T18:27:41.703111+00:00", "screenshot": "02-submission-a-status.png", "url": "<platform>/submissions/submission-450fea074cb82b1a8ab216ec"}
+{"at_utc": "2026-09-09T18:28:08.340435+00:00", "candidate": "candidate-256bf4b72d198f142f31785e", "model": "day3-replay-baseline-v1", "state": "GateFailed"}
+{"at_utc": "2026-09-09T18:28:08.360679+00:00", "candidate_a_ui_approve_forms": 0}
+{"at_utc": "2026-09-09T18:28:08.396067+00:00", "screenshot": "03-candidate-a-gate-blocked.png", "url": "<platform>/candidates/candidate-256bf4b72d198f142f31785e"}
+{"at_utc": "2026-09-09T18:28:08.460345+00:00", "model": "day3-replay-revised-v2", "prompt_version": "2", "status_text": "Submitted", "submitted": "submission-685e994b3d7c4b950bcefbea"}
+{"at_utc": "2026-09-09T18:28:35.140232+00:00", "candidate": "candidate-9d78e49832fc7226fae5f5ce", "model": "day3-replay-revised-v2", "state": "Eligible"}
+{"at_utc": "2026-09-09T18:28:35.204301+00:00", "screenshot": "04-compatible-comparison.png", "url": "<platform>/compare?candidate=candidate-256bf4b72d198f142f31785e&candidate=candidate-9d78e49832fc7226fae5f5ce"}
+{"at_utc": "2026-09-09T18:29:38.568343+00:00", "screenshot": "05-mlflow-candidate-b-lineage.png", "url": "<mlflow>/#/experiments/1/runs/139367b1a304475e8649ae08c1913f6f"}
+{"at_utc": "2026-09-09T18:29:38.642965+00:00", "blocked_deploy_of_unapproved_b_status": 409}
+{"at_utc": "2026-09-09T18:30:32.772362+00:00", "candidate": "candidate-580afb9f3e74ee75204d71f1", "model": "day3-replay-revised-rollback-seed-v1", "state": "Eligible"}
+{"approved": "candidate-580afb9f3e74ee75204d71f1", "at_utc": "2026-09-09T18:30:33.194866+00:00", "reason": "D4.11 rehearsal: approve distinct rollback seed so an earlier approved exact policy exists"}
+{"at_utc": "2026-09-09T18:30:33.553733+00:00", "deployed": "candidate-580afb9f3e74ee75204d71f1", "reason": "D4.11 rehearsal: deploy rollback seed as generation 1"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:30:33.563034+00:00", "body": {"deployment_id": "deployment-a6bc20d85b53b06974ff60d1", "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1", "model": "day3-replay-revised-rollback-seed-v1", "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6", "prompt_version": 2, "provider": "scripted-demo", "schema_version": "pixelgym-grounding-api-v1"}, "status": 200}
+{"at_utc": "2026-09-09T18:30:33.664133+00:00", "screenshot": "06-rollback-seed-deployed.png", "url": "<platform>/deployment"}
+{"at_utc": "2026-09-09T18:30:33.715763+00:00", "screenshot": "07-candidate-b-eligible.png", "url": "<platform>/candidates/candidate-9d78e49832fc7226fae5f5ce"}
+{"approved": "candidate-9d78e49832fc7226fae5f5ce", "at_utc": "2026-09-09T18:30:33.996339+00:00", "reason": "D4.11 rehearsal: candidate B passed every gate; reviewer approval recorded with reason"}
+{"at_utc": "2026-09-09T18:30:34.059276+00:00", "screenshot": "08-candidate-b-approved.png", "url": "<platform>/candidates/candidate-9d78e49832fc7226fae5f5ce"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:30:34.066973+00:00", "body": {"deployment_id": "deployment-a6bc20d85b53b06974ff60d1", "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1", "model": "day3-replay-revised-rollback-seed-v1", "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6", "prompt_version": 2, "provider": "scripted-demo", "schema_version": "pixelgym-grounding-api-v1"}, "status": 200}
+{"at_utc": "2026-09-09T18:30:34.382207+00:00", "deployed": "candidate-9d78e49832fc7226fae5f5ce", "reason": "D4.11 rehearsal: deploy approved candidate B as generation 2"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:30:34.386305+00:00", "body": {"deployment_id": "deployment-093b797f378e92feed765c44", "exact_policy_version": "candidate-9d78e49832fc7226fae5f5ce", "model": "day3-replay-revised-v2", "policy_id": "sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b", "prompt_version": 2, "provider": "scripted-demo", "schema_version": "pixelgym-grounding-api-v1"}, "status": 200}
+{"at_utc": "2026-09-09T18:30:34.472485+00:00", "screenshot": "09-candidate-b-deployed.png", "url": "<platform>/deployment"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:31:04.226411+00:00", "body": {"deployment_id": "deployment-9b9ba47f999d129231f655d5", "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1", "model": "day3-replay-revised-rollback-seed-v1", "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6", "prompt_version": 2, "provider": "scripted-demo", "schema_version": "pixelgym-grounding-api-v1"}, "status": 200}
+{"at_utc": "2026-09-09T18:31:04.323883+00:00", "screenshot": "10-rollback-restored-seed.png", "url": "<platform>/deployment"}
+{"at_utc": "2026-09-09T18:31:04.341814+00:00", "screenshot": "11-rollback-restored-seed-viewport.png", "url": "<platform>/deployment"}
+{"at_utc": "2026-09-09T18:31:21.733235+00:00", "model": "day3-replay-baseline-v1", "prompt_version": "1", "status_text": "Complete", "submitted": "submission-450fea074cb82b1a8ab216ec"}
+{"at_utc": "2026-09-09T18:32:07.323512+00:00", "model": "day3-replay-baseline-v1", "prompt_version": "2", "status_text": "Submitted", "submitted": "submission-351120d2f4d727b837c0cc42"}
+{"at_utc": "2026-09-09T18:32:07.373375+00:00", "screenshot": "12-submission-c-status-cancellable.png", "url": "<platform>/submissions/submission-351120d2f4d727b837c0cc42"}
+{"at_utc": "2026-09-09T18:32:07.472940+00:00", "screenshot": "13-submission-c-cancelled.png", "url": "<platform>/submissions/submission-351120d2f4d727b837c0cc42"}
+{"api": "/api/v1/policy", "at_utc": "2026-09-09T18:32:07.481007+00:00", "body": {"deployment_id": "deployment-9b9ba47f999d129231f655d5", "exact_policy_version": "candidate-580afb9f3e74ee75204d71f1", "model": "day3-replay-revised-rollback-seed-v1", "policy_id": "sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6", "prompt_version": 2, "provider": "scripted-demo", "schema_version": "pixelgym-grounding-api-v1"}, "status": 200}
+{"at_utc": "2026-09-09T18:32:07.556971+00:00", "screenshot": "14-audit-history.png", "url": "<platform>/deployment/audit"}
+{"at_utc": "2026-09-09T18:32:07.640421+00:00", "screenshot": "15-run-history-final.png", "url": "<platform>/runs"}

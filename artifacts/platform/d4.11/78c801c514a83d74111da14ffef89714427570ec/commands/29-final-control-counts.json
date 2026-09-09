@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "-c",
+    "import sqlite3,json; c=sqlite3.connect('/state/control.db'); print(json.dumps({t: c.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0] for t in ('submissions','candidates','approvals','deployments','audit_events')})); print(json.dumps([list(r) for r in c.execute('SELECT submission_id,status FROM submissions ORDER BY rowid')]))"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python -c 'import sqlite3,json; c=sqlite3.connect('\"'\"'/state/control.db'\"'\"'); print(json.dumps({t: c.execute(f'\"'\"'SELECT COUNT(*) FROM {t}'\"'\"').fetchone()[0] for t in ('\"'\"'submissions'\"'\"','\"'\"'candidates'\"'\"','\"'\"'approvals'\"'\"','\"'\"'deployments'\"'\"','\"'\"'audit_events'\"'\"')})); print(json.dumps([list(r) for r in c.execute('\"'\"'SELECT submission_id,status FROM submissions ORDER BY rowid'\"'\"')]))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.194575,
+  "ended_at_utc": "2026-09-09T18:35:05.259972+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"submissions\": 4, \"candidates\": 3, \"approvals\": 2, \"deployments\": 3, \"audit_events\": 15}\n[[\"submission-450fea074cb82b1a8ab216ec\", \"Complete\"], [\"submission-685e994b3d7c4b950bcefbea\", \"Complete\"], [\"submission-b46e213e11321d817bf6509f\", \"Complete\"], [\"submission-351120d2f4d727b837c0cc42\", \"Cancelled\"]]\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:35:05.063321+00:00"
+}

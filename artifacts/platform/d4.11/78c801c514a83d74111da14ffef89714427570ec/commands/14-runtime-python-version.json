@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "--version"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python --version",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.094162,
+  "ended_at_utc": "2026-09-09T18:27:16.397816+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Python 3.12.11\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:27:16.301577+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "<path-1>/d411_driver.py",
+    "4"
+  ],
+  "command": ".venv/bin/python <path-1>/d411_driver.py 4",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.395524,
+  "ended_at_utc": "2026-09-09T18:32:07.686918+00:00",
+  "environment": {
+    "D411_MLFLOW_URL": "http://127.0.0.1:60543",
+    "D411_PLATFORM_URL": "http://127.0.0.1:60542"
+  },
+  "exit_status": 0,
+  "output": "{\"at_utc\": \"2026-09-09T18:32:07.323512+00:00\", \"model\": \"day3-replay-baseline-v1\", \"prompt_version\": \"2\", \"status_text\": \"Submitted\", \"submitted\": \"submission-351120d2f4d727b837c0cc42\"}\n{\"at_utc\": \"2026-09-09T18:32:07.373375+00:00\", \"screenshot\": \"12-submission-c-status-cancellable.png\", \"url\": \"<platform>/submissions/submission-351120d2f4d727b837c0cc42\"}\n{\"at_utc\": \"2026-09-09T18:32:07.472940+00:00\", \"screenshot\": \"13-submission-c-cancelled.png\", \"url\": \"<platform>/submissions/submission-351120d2f4d727b837c0cc42\"}\n{\"api\": \"/api/v1/policy\", \"at_utc\": \"2026-09-09T18:32:07.481007+00:00\", \"body\": {\"deployment_id\": \"deployment-9b9ba47f999d129231f655d5\", \"exact_policy_version\": \"candidate-580afb9f3e74ee75204d71f1\", \"model\": \"day3-replay-revised-rollback-seed-v1\", \"policy_id\": \"sha256:580afb9f3e74ee75204d71f15260d1fb75be7401a231b0ba31e1d743fa60c9b6\", \"prompt_version\": 2, \"provider\": \"scripted-demo\", \"schema_version\": \"pixelgym-grounding-api-v1\"}, \"status\": 200}\n{\"at_utc\": \"2026-09-09T18:32:07.556971+00:00\", \"screenshot\": \"14-audit-history.png\", \"url\": \"<platform>/deployment/audit\"}\n{\"at_utc\": \"2026-09-09T18:32:07.640421+00:00\", \"screenshot\": \"15-run-history-final.png\", \"url\": \"<platform>/runs\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:32:06.289592+00:00"
+}

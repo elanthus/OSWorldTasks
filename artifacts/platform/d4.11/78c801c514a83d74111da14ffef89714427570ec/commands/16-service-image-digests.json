@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "images",
+    "--format",
+    "json"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c images --format json",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.14134,
+  "ended_at_utc": "2026-09-09T18:27:16.639864+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "[{\"ID\":\"sha256:13855d07c2b2341a8688d9bc74bf36ac1ba12969be9f877fc639c29403d9ff31\",\"ContainerName\":\"pixelgym-d411-78c801c-migrate-1\",\"Repository\":\"pixelgym-d411-78c801c-migrate\",\"Tag\":\"latest\",\"Platform\":\"linux/arm64\",\"Size\":323846386,\"Created\":\"2026-09-09T18:24:33.225369007Z\",\"LastTagTime\":\"2026-09-09T18:24:33.653292424Z\"},{\"ID\":\"sha256:fbcea1bd13b6a882cd6caa6b58db3ae5c102efe50ec625b3e2a5cbc50db5bfe4\",\"ContainerName\":\"pixelgym-d411-78c801c-postgres-1\",\"Repository\":\"postgres\",\"Tag\":\"17.5-bookworm\",\"Platform\":\"linux/arm64/v8\",\"Size\":154221220,\"Created\":\"2025-06-06T18:27:47Z\",\"LastTagTime\":\"2026-08-12T18:13:14.709926218Z\"},{\"ID\":\"sha256:7eb8cfb6133f3c46d636999f5cad83ca45f7609b3ade359d43e5ce4d575fc4a8\",\"ContainerName\":\"pixelgym-d411-78c801c-mlflow-1\",\"Repository\":\"pixelgym-d411-78c801c-mlflow\",\"Tag\":\"latest\",\"Platform\":\"linux/arm64\",\"Size\":298880120,\"Created\":\"2026-08-12T18:14:04.74978638Z\",\"LastTagTime\":\"2026-09-09T18:24:28.937817171Z\"},{\"ID\":\"sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3\",\"ContainerName\":\"pixelgym-d411-78c801c-minio-init-1\",\"Repository\":\"minio/mc\",\"Tag\":\"RELEASE.2025-04-16T18-13-26Z\",\"Platform\":\"linux/arm64\",\"Size\":27206827,\"Created\":\"2025-04-22T22:07:11.596233044Z\",\"LastTagTime\":\"2026-08-12T18:13:13.633746426Z\"},{\"ID\":\"sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e\",\"ContainerName\":\"pixelgym-d411-78c801c-minio-1\",\"Repository\":\"minio/minio\",\"Tag\":\"RELEASE.2025-04-22T22-12-26Z\",\"Platform\":\"linux/arm64\",\"Size\":59344841,\"Created\":\"2025-04-22T22:38:05.04745197Z\",\"LastTagTime\":\"2026-08-12T18:13:13.158809592Z\"},{\"ID\":\"sha256:fa7f6dd3709578343fd8ee2e55c3fe37fefc63e5582b5ce3aaa3e9731bd6bc97\",\"ContainerName\":\"pixelgym-d411-78c801c-platform-1\",\"Repository\":\"pixelgym-d411-78c801c-platform\",\"Tag\":\"latest\",\"Platform\":\"linux/arm64\",\"Size\":323846387,\"Created\":\"2026-09-09T18:24:33.225369007Z\",\"LastTagTime\":\"2026-09-09T18:24:33.653798132Z\"}]\n\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:27:16.496875+00:00"
+}

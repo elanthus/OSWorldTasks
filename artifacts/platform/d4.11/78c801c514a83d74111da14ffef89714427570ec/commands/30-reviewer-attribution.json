@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "exec",
+    "-T",
+    "platform",
+    "python",
+    "-c",
+    "import json,sqlite3; c=sqlite3.connect('/state/control.db'); print(json.dumps([[r[0],r[1],r[2],json.loads(r[3]).get('actor_verification_source')] for r in c.execute('SELECT event_type,subject_id,actor,details_json FROM audit_events ORDER BY rowid')], indent=1))"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c exec -T platform python -c 'import json,sqlite3; c=sqlite3.connect('\"'\"'/state/control.db'\"'\"'); print(json.dumps([[r[0],r[1],r[2],json.loads(r[3]).get('\"'\"'actor_verification_source'\"'\"')] for r in c.execute('\"'\"'SELECT event_type,subject_id,actor,details_json FROM audit_events ORDER BY rowid'\"'\"')], indent=1))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.128677,
+  "ended_at_utc": "2026-09-09T18:35:05.506485+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "[\n [\n  \"tracking.reconciliation_resolved\",\n  \"policy-registry\",\n  \"system\",\n  \"internal_system\"\n ],\n [\n  \"submission.created\",\n  \"submission-450fea074cb82b1a8ab216ec\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"candidate.gates_evaluated\",\n  \"candidate-256bf4b72d198f142f31785e\",\n  \"system\",\n  \"internal_system\"\n ],\n [\n  \"submission.created\",\n  \"submission-685e994b3d7c4b950bcefbea\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"candidate.gates_evaluated\",\n  \"candidate-9d78e49832fc7226fae5f5ce\",\n  \"system\",\n  \"internal_system\"\n ],\n [\n  \"submission.created\",\n  \"submission-b46e213e11321d817bf6509f\",\n  \"system\",\n  \"internal_system\"\n ],\n [\n  \"candidate.gates_evaluated\",\n  \"candidate-580afb9f3e74ee75204d71f1\",\n  \"system\",\n  \"internal_system\"\n ],\n [\n  \"candidate.approved\",\n  \"candidate-580afb9f3e74ee75204d71f1\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"deployment.deploy\",\n  \"deployment-a6bc20d85b53b06974ff60d1\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"candidate.approved\",\n  \"candidate-9d78e49832fc7226fae5f5ce\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"deployment.deploy\",\n  \"deployment-093b797f378e92feed765c44\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"deployment.rollback\",\n  \"deployment-9b9ba47f999d129231f655d5\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"submission.resubmitted\",\n  \"submission-450fea074cb82b1a8ab216ec\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"submission.created\",\n  \"submission-351120d2f4d727b837c0cc42\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ],\n [\n  \"submission.cancelled\",\n  \"submission-351120d2f4d727b837c0cc42\",\n  \"synthetic-demo\",\n  \"synthetic_demo\"\n ]\n]\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:35:05.375698+00:00"
+}

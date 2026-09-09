@@ -1,0 +1,19 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "<path-1>/d411_driver.py",
+    "4"
+  ],
+  "command": ".venv/bin/python <path-1>/d411_driver.py 4",
+  "cwd": "<path-0>",
+  "duration_seconds": 6.116214,
+  "ended_at_utc": "2026-09-09T18:31:26.808884+00:00",
+  "environment": {
+    "D411_MLFLOW_URL": "http://127.0.0.1:60543",
+    "D411_PLATFORM_URL": "http://127.0.0.1:60542"
+  },
+  "exit_status": 1,
+  "output": "{\"at_utc\": \"2026-09-09T18:31:21.733235+00:00\", \"model\": \"day3-replay-baseline-v1\", \"prompt_version\": \"1\", \"status_text\": \"Complete\", \"submitted\": \"submission-450fea074cb82b1a8ab216ec\"}\nTraceback (most recent call last):\n  File \"<path-1>/d411_driver.py\", line 189, in <module>\n    try: {\"1\": phase1, \"1b\": phase1b, \"2\": phase2, \"3\": phase3, \"4\": phase4}[sys.argv[1]](page)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<path-1>/d411_driver.py\", line 173, in phase4\n    expect(page.locator(\"main\")).to_contain_text(\"Cancel experiment\")\n  File \"<path-0>/.venv/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 22016, in to_contain_text\n    self._sync(\n  File \"<path-0>/.venv/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"<path-0>/.venv/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 303, in to_contain_text\n    await self._expect_impl(\n  File \"<path-0>/.venv/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 128, in _expect_impl\n    _record_soft_or_raise(\n  File \"<path-0>/.venv/lib/python3.12/site-packages/playwright/_impl/_assertions.py\", line 60, in _record_soft_or_raise\n    raise error\nAssertionError: Locator expected to contain text 'Cancel experiment'\nActual value: SUBMISSIONsubmission-450fea074cb82b1a8ab216ecCompleteExecution lineageStatusCompleteMetaflow pathspecGroundingEvaluationFlow/1788978462550892TrackingMLflow run \u2197Resolved requestconditionrawdatasetday3-frozen-v1maximum_calls100modelday3-replay-baseline-v1price_catalogpixelgym-demo-prices-v1prompt_version1CancellationCancellation is no longer available for this terminal run. \nCall log:\n  - Expect \"to_contain_text\" with timeout 5000ms\n  - waiting for locator(\"main\")\n    14 \u00d7 locator resolved to <main class=\"shell\">\u2026</main>\n       - unexpected value \"SUBMISSIONsubmission-450fea074cb82b1a8ab216ecCompleteExecution lineageStatusCompleteMetaflow pathspecGroundingEvaluationFlow/1788978462550892TrackingMLflow run \u2197Resolved requestconditionrawdatasetday3-frozen-v1maximum_calls100modelday3-replay-baseline-v1price_catalogpixelgym-demo-prices-v1prompt_version1CancellationCancellation is no longer available for this terminal run.\"\n\nAria snapshot:\n- main:\n  - paragraph: SUBMISSION\n  - heading \"submission-450fea074cb82b1a8ab216ec\" [level=1]\n  - paragraph: Complete\n  - heading \"Execution lineage\" [level=2]\n  - term: Status\n  - definition: Complete\n  - term: Metaflow pathspec\n  - definition: GroundingEvaluationFlow/1788978462550892\n  - term: Tracking\n  - definition:\n    - link \"MLflow run \u2197\":\n      - /url: http://localhost:60543/#/experiments/0/runs/95a33816718c47b0b0bd53b973a79523\n  - heading \"Resolved request\" [level=3]\n  - term: condition\n  - definition: raw\n  - term: dataset\n  - definition: day3-frozen-v1\n  - term: maximum_calls\n  - definition: \"100\"\n  - term: model\n  - definition: day3-replay-baseline-v1\n  - term: price_catalog\n  - definition: pixelgym-demo-prices-v1\n  - term: prompt_version\n  - definition: \"1\"\n  - complementary:\n    - heading \"Cancellation\" [level=2]\n    - paragraph: Cancellation is no longer available for this terminal run.\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:31:20.690267+00:00"
+}

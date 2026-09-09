@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "docker",
+    "compose",
+    "-p",
+    "pixelgym-d411-78c801c",
+    "ps",
+    "--all",
+    "--format",
+    "table {{.Service}}\\t{{.Image}}\\t{{.Status}}\\t{{.Health}}\\t{{.Ports}}"
+  ],
+  "command": "docker compose -p pixelgym-d411-78c801c ps --all --format 'table {{.Service}}\\t{{.Image}}\\t{{.Status}}\\t{{.Health}}\\t{{.Ports}}'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.151321,
+  "ended_at_utc": "2026-09-09T18:27:38.298776+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "SERVICE      IMAGE                                      STATUS                     <no value>   PORTS\nmigrate      pixelgym-d411-78c801c-migrate              Exited (0) 2 minutes ago                \nminio        minio/minio:RELEASE.2025-04-22T22-12-26Z   Up 2 minutes (healthy)     healthy      127.0.0.1:60545->9000/tcp\nminio-init   minio/mc:RELEASE.2025-04-16T18-13-26Z      Exited (0) 2 minutes ago                \nmlflow       pixelgym-d411-78c801c-mlflow               Up 2 minutes (healthy)     healthy      127.0.0.1:60543->5000/tcp\nplatform     pixelgym-d411-78c801c-platform             Up 2 minutes (healthy)     healthy      127.0.0.1:60542->8000/tcp\npostgres     postgres:17.5-bookworm                     Up 2 minutes (healthy)     healthy      127.0.0.1:60544->5432/tcp\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:27:38.145734+00:00"
+}

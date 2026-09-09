@@ -1,0 +1,26 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/capture_platform_api.py",
+    "ground",
+    "--base-url",
+    "http://127.0.0.1:60542",
+    "--image",
+    "artifacts/grounding/images/raw/vendor-form-0001.png",
+    "--target",
+    "Click the Company name field",
+    "--output",
+    "<path-1>/bundle/demo-api-transcript.jsonl",
+    "--expect-status",
+    "200"
+  ],
+  "command": ".venv/bin/python scripts/capture_platform_api.py ground --base-url http://127.0.0.1:60542 --image artifacts/grounding/images/raw/vendor-form-0001.png --target 'Click the Company name field' --output <path-1>/bundle/demo-api-transcript.jsonl --expect-status 200",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.092749,
+  "ended_at_utc": "2026-09-09T18:30:48.366302+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"captured_at_utc\": \"2026-09-09T18:30:48.357567+00:00\",\n  \"event\": \"ground\",\n  \"request\": {\n    \"body\": {\n      \"image_base64\": \"<redacted; digest recorded>\",\n      \"image_sha256\": \"925c173382c08729ff0dd5989f2fd8d86ad973fb34b9433a50dea8aa9907dbaa\",\n      \"media_type\": \"image/png\",\n      \"target\": \"Click the Company name field\"\n    },\n    \"method\": \"POST\",\n    \"path\": \"/api/v1/ground\"\n  },\n  \"response\": {\n    \"body\": {\n      \"deployment_id\": \"deployment-093b797f378e92feed765c44\",\n      \"exact_policy_version\": \"candidate-9d78e49832fc7226fae5f5ce\",\n      \"parse_error\": null,\n      \"parse_status\": \"parsed\",\n      \"policy_id\": \"sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b\",\n      \"prediction\": {\n        \"x\": 768,\n        \"y\": 94\n      },\n      \"provider_request_id\": \"sha256:9fa3911b050719e50f6597d3274bd529c1f439067a0911224e87ca45245a7562\",\n      \"schema_version\": \"pixelgym-grounding-api-v1\"\n    },\n    \"deployment_id\": \"deployment-093b797f378e92feed765c44\",\n    \"policy_id\": \"sha256:9d78e49832fc7226fae5f5ce63c8c7300c1cdc212e4597f69766ca101496296b\",\n    \"status\": 200\n  },\n  \"schema_version\": \"pixelgym-platform-api-transcript-v1\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T18:30:48.271373+00:00"
+}
