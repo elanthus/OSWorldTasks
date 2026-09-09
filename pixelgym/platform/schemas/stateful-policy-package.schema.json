@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/stateful-policy-package-v1.json",
+  "title": "PixelGym stateful (v5) policy package",
+  "description": "An exact-version, content-bound package of one v5 stateful policy system for control-plane registration, approval, deployment, and serving. It embeds the v5 policy manifest and binds it by digest; the manifest itself is validated by the v5 policy schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "policy_manifest",
+    "policy_manifest_sha256",
+    "v5_policy_id",
+    "provider",
+    "model",
+    "model_alias_disclosure",
+    "sandbox_manifest_sha256",
+    "package_source_sha256",
+    "dependency_lock_sha256",
+    "screen",
+    "action_schema_version",
+    "key_allowlist_version",
+    "max_steps",
+    "evidence_class",
+    "evidence",
+    "code_revision",
+    "code_state",
+    "source_tree_sha256",
+    "source_provenance_verified",
+    "source_provenance_failure_reason",
+    "policy_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pixelgym-stateful-policy-package-v1"
+    },
+    "kind": {
+      "const": "stateful-v5"
+    },
+    "policy_manifest": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "policy_manifest_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "v5_policy_id": {
+      "type": "string",
+      "pattern": "^policy-[0-9a-f]{20}$"
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_alias_disclosure": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sandbox_manifest_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "package_source_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "dependency_lock_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "screen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "width",
+        "height"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "action_schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key_allowlist_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_steps": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "evidence_class": {
+      "enum": [
+        "calibration",
+        "confirmatory"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_kind",
+        "run_reference",
+        "plan_sha256",
+        "summary_sha256",
+        "assigned_episodes",
+        "attempted_episodes",
+        "exact_successes"
+      ],
+      "properties": {
+        "run_kind": {
+          "enum": [
+            "d56-calibration",
+            "d59-confirmatory"
+          ]
+        },
+        "run_reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "plan_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "summary_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "assigned_episodes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "attempted_episodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exact_successes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "code_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "code_state": {
+      "enum": [
+        "clean",
+        "dirty",
+        "unverifiable"
+      ]
+    },
+    "source_tree_sha256": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/digest"
+        }
+      ]
+    },
+    "source_provenance_verified": {
+      "type": "boolean"
+    },
+    "source_provenance_failure_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_id": {
+      "$ref": "#/$defs/prefixed_digest"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "code_state": {
+            "const": "unverifiable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "source_tree_sha256": {
+            "type": "null"
+          },
+          "source_provenance_verified": {
+            "const": false
+          },
+          "source_provenance_failure_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code_revision": {
+            "const": "unverifiable"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "code_revision": {
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "source_tree_sha256": {
+            "$ref": "#/$defs/digest"
+          },
+          "source_provenance_verified": {
+            "const": true
+          },
+          "source_provenance_failure_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evidence_class": {
+            "const": "calibration"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "properties": {
+              "run_kind": {
+                "const": "d56-calibration"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "evidence": {
+            "properties": {
+              "run_kind": {
+                "const": "d59-confirmatory"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prefixed_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

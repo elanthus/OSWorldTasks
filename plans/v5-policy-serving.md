@@ -1,7 +1,8 @@
 # PixelGym v5 Policy Serving — Stateful Episode API on the Platform
 
-**Status:** design only — this document authorizes neither implementation nor model calls. It
-requests a D1.1 scope decision under AGENTS.md §4.
+**Status:** S1 approved by the owner on 2026-09-09; S2 (frozen contracts) delivered. This
+document authorizes no model calls. Each later stage starts only in the order of the delivery
+table.
 
 **Primary reader:** the project owner deciding whether the Milestone 4 platform should serve v5
 stateful policy systems, and under which contracts
@@ -191,7 +192,7 @@ evidence class it evaluated.
 | ID | Owner | Deliverable | Stop condition |
 |---|---|---|---|
 | S1 | **YOU** | Approve this scope, the `/api/v2` shape, the caller-owns-the-environment decision, and sequencing relative to D5.8/D5.9 | No implementation before approval |
-| S2 | **AGENT · high** | Freeze schemas: package kind v3, session API request/response contracts, operational-record and session-store schemas, registry `stateful-v5` record | Interface review before code |
+| S2 | **AGENT · high** | Freeze schemas: package kind v3, session API request/response contracts, operational-record and session-store schemas, registry `stateful-v5` record | Delivered: `config/stateful-policy-package.schema.json`, `config/stateful-serving.schema.json`, `pixelgym/platform/stateful_contracts.py`; interface review before S3 code |
 | S3 | **AGENT · high** | `ServingEpisodeHost` over the v5 transaction with a fake policy and scripted transport; restart-recovery, sealed-failure, intent-reference, and cap tests | Stop if a v5 checkpoint or resume rule would need to change |
 | S4 | **AGENT · medium** | `/api/v2` routes, bounds, error mapping, identity headers, operational records | Contract tests before provider code |
 | S5 | **AGENT · high** | Policy subprocess under OS sandbox enforcement inside the serving process; credential injection at the transport only; egress-denial integration test | Stop if isolation cannot be proven without network |
@@ -267,9 +268,10 @@ Decided by the owner on 2026-09-09, before S1 approval of the whole note:
 
 ## Done when
 
-- [ ] The owner explicitly approves S1.
-- [ ] Package kind v3, session API, session-store, and operational-record schemas are frozen and
-  versioned before any host code.
+- [x] The owner explicitly approves S1 (2026-09-09).
+- [x] Package kind v3, session API, session-store, and operational-record schemas are frozen and
+  versioned before any host code (`pixelgym-stateful-policy-package-v1`,
+  `pixelgym-serving-session-v2`, `pixelgym-serving-episode-record-v1`).
 - [ ] A fake v5 policy serves a complete episode through `/api/v2` with every step recorded, and
   the same episode recovers after a process kill at every durable boundary without a duplicate
   provider call.

@@ -130,7 +130,7 @@ def test_checked_in_registry_is_valid_and_ships_no_approved_provider(repository_
 @pytest.mark.parametrize(
     ("overrides", "message"),
     [
-        ({"kind": "stateful-v5"}, "unsupported policy kind"),
+        ({"kind": "stateful-v6"}, "unsupported policy kind"),
         ({"transport": "python:pixelgym.evil"}, "unsupported transport"),
         ({"provider": "scripted-demo"}, "not an approved provider"),
         ({"reference": "../etc/passwd"}, "reference must be"),
