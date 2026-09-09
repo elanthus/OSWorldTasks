@@ -140,6 +140,7 @@
       ]
     },
     "result": {
+      "description": "Exact caller-reported environment result; terminated and truncated are mutually exclusive.",
       "type": "object",
       "additionalProperties": false,
       "required": [
