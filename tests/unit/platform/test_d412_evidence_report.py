@@ -12,6 +12,8 @@ import scripts.generate_d412_evidence_report as d412_report
 from scripts.generate_d412_evidence_report import (
     CHECKLIST,
     DOCUMENTATION_PATHS,
+    RECORDED_PYTEST_COUNTS,
+    SANDBOX_BLOCKED_FIRST_COMPOSE_REVISIONS,
     SUPPORTING_PATHS,
     _git_file_bytes,
     generate,
@@ -397,4 +399,22 @@ def test_generator_rejects_host_identity_in_evidence_artifact(
     command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
 
     with pytest.raises(ValueError, match="redaction scan found prohibited data"):
+        generate(isolated_root, evidence_dir)
+
+
+def test_every_committed_revision_has_reviewed_pytest_counts() -> None:
+    assert set(COMMITTED_REVISIONS) <= set(RECORDED_PYTEST_COUNTS)
+
+
+def test_sandbox_blocked_first_compose_attempt_is_revision_specific(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    assert REVISION in SANDBOX_BLOCKED_FIRST_COMPOSE_REVISIONS
+    isolated_root, evidence_dir = _isolated_evidence(repository_root, tmp_path)
+    command_path = evidence_dir / "commands/29-compose-browser.json"
+    command = json.loads(command_path.read_text())
+    command["exit_status"] = 0
+    command_path.write_text(json.dumps(command, indent=2, sort_keys=True) + "\n")
+
+    with pytest.raises(ValueError, match="29-compose-browser.json: 0 != 1"):
         generate(isolated_root, evidence_dir)

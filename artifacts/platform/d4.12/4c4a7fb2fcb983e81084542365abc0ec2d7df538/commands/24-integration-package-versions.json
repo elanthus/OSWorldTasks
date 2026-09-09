@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-c",
+    "import importlib.metadata as m, json; names=('pixelgym','mlflow','metaflow','boto3','psycopg2-binary','playwright','pytest','greenlet','httpx2'); print(json.dumps({n:m.version(n) for n in names},sort_keys=True))"
+  ],
+  "command": "<path-2>/integration-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'mlflow'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'boto3'\"'\"','\"'\"'psycopg2-binary'\"'\"','\"'\"'playwright'\"'\"','\"'\"'pytest'\"'\"','\"'\"'greenlet'\"'\"','\"'\"'httpx2'\"'\"'); print(json.dumps({n:m.version(n) for n in names},sort_keys=True))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.065075,
+  "ended_at_utc": "2026-09-09T16:31:44.055140+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"boto3\": \"1.40.1\", \"greenlet\": \"3.5.4\", \"httpx2\": \"2.9.1\", \"metaflow\": \"2.19.35\", \"mlflow\": \"3.14.0\", \"pixelgym\": \"0.1.0\", \"playwright\": \"1.62.0\", \"psycopg2-binary\": \"2.9.10\", \"pytest\": \"9.1.1\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:31:43.988543+00:00"
+}

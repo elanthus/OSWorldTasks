@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-m",
+    "platform_compose_integration",
+    "tests/integration/platform/test_compose_lifecycle.py"
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pytest -q -m platform_compose_integration tests/integration/platform/test_compose_lifecycle.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 133.118866,
+  "ended_at_utc": "2026-09-09T16:37:48.059683+00:00",
+  "environment": {
+    "PIXELGYM_RUN_COMPOSE_TESTS": "1"
+  },
+  "exit_status": 0,
+  "output": "..                                                                       [100%]\n2 passed in 132.14s (0:02:12)\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:35:34.934868+00:00"
+}

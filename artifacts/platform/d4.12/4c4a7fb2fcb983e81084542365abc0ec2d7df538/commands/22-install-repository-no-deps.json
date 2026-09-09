@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "<path-2>/integration-venv/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "--no-deps",
+    "-e",
+    "."
+  ],
+  "command": "<path-2>/integration-venv/bin/python -m pip install --no-deps -e .",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.580685,
+  "ended_at_utc": "2026-09-09T16:31:41.139603+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Obtaining file://<path-0>\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'done'\n  Checking if build backend supports build_editable: started\n  Checking if build backend supports build_editable: finished with status 'done'\n  Getting requirements to build editable: started\n  Getting requirements to build editable: finished with status 'done'\n  Preparing editable metadata (pyproject.toml): started\n  Preparing editable metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: pixelgym\n  Building editable for pixelgym (pyproject.toml): started\n  Building editable for pixelgym (pyproject.toml): finished with status 'done'\n  Created wheel for pixelgym: filename=pixelgym-0.1.0-0.editable-py3-none-any.whl size=18354 sha256=24e76ea657313d8409ef665e0e86003b9701847878900a63b43192e7e567c914\n  Stored in directory: <system-temp>/pip-ephem-wheel-cache-a5srmaco/wheels/a1/ab/9d/8ef2b5565a979abe7411adb955b67ae76e7e822787efb63454\nSuccessfully built pixelgym\nInstalling collected packages: pixelgym\n  Attempting uninstall: pixelgym\n    Found existing installation: pixelgym 0.1.0\n    Not uninstalling pixelgym at <path-0>, outside environment <path-2>/integration-venv\n    Can't uninstall 'pixelgym'. No files were found to uninstall.\nSuccessfully installed pixelgym-0.1.0\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:31:39.557252+00:00"
+}

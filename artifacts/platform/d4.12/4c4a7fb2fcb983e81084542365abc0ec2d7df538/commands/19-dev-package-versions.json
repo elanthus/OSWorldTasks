@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "import importlib.metadata as m, json; names=('pixelgym','pytest','ruff','gymnasium','metaflow','mlflow'); available={d.metadata['Name'].lower() for d in m.distributions()}; print(json.dumps({n:(m.version(n) if n in available else None) for n in names}, sort_keys=True))"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'import importlib.metadata as m, json; names=('\"'\"'pixelgym'\"'\"','\"'\"'pytest'\"'\"','\"'\"'ruff'\"'\"','\"'\"'gymnasium'\"'\"','\"'\"'metaflow'\"'\"','\"'\"'mlflow'\"'\"'); available={d.metadata['\"'\"'Name'\"'\"'].lower() for d in m.distributions()}; print(json.dumps({n:(m.version(n) if n in available else None) for n in names}, sort_keys=True))'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.077071,
+  "ended_at_utc": "2026-09-09T16:31:14.892155+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"gymnasium\": \"0.28.1\", \"metaflow\": \"2.19.35\", \"mlflow\": null, \"pixelgym\": \"0.1.0\", \"pytest\": \"9.1.1\", \"ruff\": \"0.16.6\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:31:14.813762+00:00"
+}
