@@ -1059,6 +1059,7 @@
       ]
     },
     "episode_session_state": {
+      "description": "Durable recovery state for one episode. Policy-state and task-instruction bytes remain in authoritative objects; this document stores only their content-addressed references and caller-visible session metadata.",
       "type": "object",
       "additionalProperties": false,
       "required": [
