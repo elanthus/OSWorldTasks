@@ -30,6 +30,7 @@
         "serving_close_request": "pixelgym-serving-session-v2",
         "serving_close_response": "pixelgym-serving-session-v2",
         "serving_episode_status": "pixelgym-serving-session-v2",
+        "episode_session_state": "pixelgym-serving-session-v2",
         "episode_opened_record": "pixelgym-serving-episode-record-v1",
         "episode_step_record": "pixelgym-serving-episode-record-v1",
         "episode_closed_record": "pixelgym-serving-episode-record-v1"

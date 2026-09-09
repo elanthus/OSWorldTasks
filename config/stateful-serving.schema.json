@@ -164,6 +164,20 @@
         "screenshot_sha256": {
           "$ref": "#/$defs/prefixed_digest"
         }
+      },
+      "not": {
+        "properties": {
+          "terminated": {
+            "const": true
+          },
+          "truncated": {
+            "const": true
+          }
+        },
+        "required": [
+          "terminated",
+          "truncated"
+        ]
       }
     },
     "sealed_failure_code": {
@@ -1041,6 +1055,381 @@
               "type": "string"
             }
           }
+        }
+      ]
+    },
+    "episode_session_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "client_episode_ref",
+        "identity",
+        "created_at_utc",
+        "updated_at_utc",
+        "revision",
+        "resume_phase",
+        "task_instruction_sha256",
+        "screen",
+        "max_steps",
+        "max_model_attempts_per_action",
+        "deployment_attempt_cap",
+        "step_index",
+        "policy_checkpoint_sha256",
+        "policy_checkpoint_object_key",
+        "last_intent_id",
+        "last_intent_status",
+        "last_action",
+        "sealed_failure",
+        "terminal_classification",
+        "model_attempts",
+        "provider_control_requests",
+        "usage",
+        "attributed_cost_usd"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "client_episode_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "created_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resume_phase": {
+          "enum": [
+            "initialized",
+            "pre_call",
+            "post_attempt",
+            "post_parse",
+            "intent_issued",
+            "post_dispatch",
+            "sealed",
+            "closed"
+          ]
+        },
+        "task_instruction_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "screen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "const": 1024
+            },
+            "height": {
+              "const": 768
+            }
+          }
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_model_attempts_per_action": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "deployment_attempt_cap": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_checkpoint_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "policy_checkpoint_object_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "last_intent_status": {
+          "enum": [
+            "none",
+            "issued",
+            "result_reported",
+            "sealed"
+          ]
+        },
+        "last_action": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/action"
+            }
+          ]
+        },
+        "sealed_failure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sealed_failure_code"
+            }
+          ]
+        },
+        "terminal_classification": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                "closed_by_caller",
+                "terminated",
+                "truncated",
+                "parse_failure",
+                "invalid_action",
+                "request_failure",
+                "cap_reached",
+                "infrastructure_failure",
+                "max_steps_reached"
+              ]
+            }
+          ]
+        },
+        "model_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider_control_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "attributed_cost_usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "last_intent_id": {
+                  "type": "null"
+                },
+                "last_action": {
+                  "type": "null"
+                },
+                "last_intent_status": {
+                  "enum": [
+                    "none",
+                    "sealed"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "last_intent_id": {
+                  "type": "string"
+                },
+                "last_action": {
+                  "type": "object"
+                },
+                "last_intent_status": {
+                  "enum": [
+                    "issued",
+                    "result_reported",
+                    "sealed"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "resume_phase": {
+                "const": "intent_issued"
+              }
+            },
+            "required": [
+              "resume_phase"
+            ]
+          },
+          "then": {
+            "properties": {
+              "last_intent_id": {
+                "type": "string"
+              },
+              "last_action": {
+                "type": "object"
+              },
+              "last_intent_status": {
+                "const": "issued"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "last_intent_status": {
+                "not": {
+                  "const": "issued"
+                }
+              }
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "resume_phase": {
+                  "enum": [
+                    "initialized",
+                    "pre_call",
+                    "post_attempt",
+                    "post_parse",
+                    "intent_issued",
+                    "post_dispatch"
+                  ]
+                },
+                "sealed_failure": {
+                  "type": "null"
+                },
+                "terminal_classification": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "resume_phase": {
+                  "const": "sealed"
+                },
+                "sealed_failure": {
+                  "type": "string"
+                },
+                "terminal_classification": {
+                  "type": "string"
+                }
+              },
+              "oneOf": [
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "parse_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "parse_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "invalid_action"
+                    },
+                    "terminal_classification": {
+                      "const": "invalid_action"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "request_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "request_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "cap_reached"
+                    },
+                    "terminal_classification": {
+                      "const": "cap_reached"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "infrastructure_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "infrastructure_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "max_steps_reached"
+                    },
+                    "terminal_classification": {
+                      "const": "max_steps_reached"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "properties": {
+                "resume_phase": {
+                  "const": "closed"
+                },
+                "sealed_failure": {
+                  "type": "null"
+                },
+                "terminal_classification": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
         }
       ]
     }

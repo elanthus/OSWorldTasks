@@ -28,6 +28,7 @@ from pixelgym.grounding.v5.contracts import (
     ACTION_SCHEMA_VERSION,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
+    SandboxManifest,
 )
 from pixelgym.grounding.v5.contracts import (
     PolicyManifest as V5PolicyManifest,
@@ -87,6 +88,19 @@ class IntentStatus(StrEnum):
     SEALED = "sealed"
 
 
+class SessionResumePhase(StrEnum):
+    """Last durable serving boundary used to recover one episode."""
+
+    INITIALIZED = "initialized"
+    PRE_CALL = "pre_call"
+    POST_ATTEMPT = "post_attempt"
+    POST_PARSE = "post_parse"
+    INTENT_ISSUED = "intent_issued"
+    POST_DISPATCH = "post_dispatch"
+    SEALED = "sealed"
+    CLOSED = "closed"
+
+
 def _require_prefixed_digest(value: str, name: str) -> None:
     if not isinstance(value, str) or not _PREFIXED_DIGEST_RE.fullmatch(value):
         raise ValueError(f"{name} must be a canonical sha256: digest")
@@ -95,6 +109,37 @@ def _require_prefixed_digest(value: str, name: str) -> None:
 def _require_digest(value: str, name: str) -> None:
     if not isinstance(value, str) or not _DIGEST_RE.fullmatch(value):
         raise ValueError(f"{name} must be a bare SHA-256 hex digest")
+
+
+def _decode_v5_manifest(value: dict[str, Any]) -> V5PolicyManifest:
+    """Rebuild the embedded manifest so its own frozen identity checks run."""
+
+    fields = dict(value)
+    sandbox_value = fields.get("sandbox")
+    if not isinstance(sandbox_value, dict):
+        raise TypeError("policy_manifest sandbox must be an object")
+    try:
+        fields["sandbox"] = SandboxManifest(
+            runtime_digest=sandbox_value["runtime_digest"],
+            network_policy_version=sandbox_value["network_policy_version"],
+            provider_endpoint=sandbox_value["provider_endpoint"],
+            endpoint_allowlist_digest=sandbox_value["endpoint_allowlist_digest"],
+            denied_capabilities=tuple(sandbox_value["denied_capabilities"]),
+        )
+        inference_parameters = fields.get("inference_parameters")
+        if not isinstance(inference_parameters, list) or any(
+            not isinstance(item, list)
+            or len(item) != 2
+            or any(not isinstance(component, str) for component in item)
+            for item in inference_parameters
+        ):
+            raise ValueError("policy_manifest inference_parameters are malformed")
+        fields["inference_parameters"] = tuple(
+            (item[0], item[1]) for item in inference_parameters
+        )
+        return V5PolicyManifest(**fields)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("policy_manifest violates the frozen v5 contract") from exc
 
 
 @dataclass(frozen=True)
@@ -249,6 +294,25 @@ class StatefulPolicyPackage:
             _require_digest(getattr(self, name), name)
         if not re.fullmatch(r"policy-[0-9a-f]{20}", self.v5_policy_id):
             raise ValueError("v5_policy_id must be a v5 policy identifier")
+        manifest = _decode_v5_manifest(self.policy_manifest)
+        if manifest.to_dict() != self.policy_manifest:
+            raise ValueError("policy_manifest is not the canonical frozen v5 document")
+        manifest_sha256 = sha256_bytes(canonical_json_bytes(manifest.identity_fields()))
+        if self.policy_manifest_sha256 != manifest_sha256:
+            raise ValueError("policy_manifest_sha256 does not match the embedded manifest")
+        if self.v5_policy_id != manifest.policy_id:
+            raise ValueError("v5_policy_id does not match the embedded manifest")
+        if self.provider != manifest.provider or self.model != manifest.model:
+            raise ValueError("provider and model must match the embedded manifest")
+        sandbox_sha256 = sha256_bytes(canonical_json_bytes(manifest.sandbox.to_dict()))
+        if self.sandbox_manifest_sha256 != sandbox_sha256:
+            raise ValueError("sandbox_manifest_sha256 does not match the embedded manifest")
+        if self.screen != {"width": SCREEN_WIDTH, "height": SCREEN_HEIGHT}:
+            raise ValueError("screen must match the embedded v5 inference dimensions")
+        if self.action_schema_version != ACTION_SCHEMA_VERSION:
+            raise ValueError("action_schema_version must match the embedded v5 contract")
+        if self.key_allowlist_version != KEY_ALLOWLIST_VERSION:
+            raise ValueError("key_allowlist_version must match the embedded v5 contract")
         if self.max_steps <= 0:
             raise ValueError("max_steps must be positive")
         object.__setattr__(self, "evidence_class", EvidenceClass(self.evidence_class))
@@ -256,6 +320,29 @@ class StatefulPolicyPackage:
             raise ValueError("evidence run_kind does not match evidence_class")
         if self.code_state not in {"clean", "dirty", "unverifiable"}:
             raise ValueError("code_state is invalid")
+        if self.code_state == "unverifiable":
+            if self.code_revision != "unverifiable":
+                raise ValueError("unverifiable code requires code_revision='unverifiable'")
+            if self.source_tree_sha256 is not None:
+                raise ValueError("unverifiable code must not carry a source-tree digest")
+            if self.source_provenance_verified is not False:
+                raise ValueError("unverifiable code cannot have verified source provenance")
+            if not isinstance(self.source_provenance_failure_reason, str) or not (
+                self.source_provenance_failure_reason
+            ):
+                raise ValueError("unverifiable code requires a provenance failure reason")
+        else:
+            if not isinstance(self.code_revision, str) or not re.fullmatch(
+                r"[0-9a-f]{40}", self.code_revision
+            ):
+                raise ValueError("verifiable code_revision must be a 40-character Git SHA")
+            if self.source_tree_sha256 is None:
+                raise ValueError("verifiable code requires a source-tree digest")
+            _require_digest(self.source_tree_sha256, "source_tree_sha256")
+            if self.source_provenance_verified is not True:
+                raise ValueError("verifiable code requires verified source provenance")
+            if self.source_provenance_failure_reason is not None:
+                raise ValueError("verifiable code cannot carry a provenance failure reason")
         expected = "sha256:" + sha256_bytes(canonical_json_bytes(self.identity_dict()))
         if self.policy_id != expected:
             raise ValueError("policy_id does not match the package identity")
@@ -376,6 +463,140 @@ class StepCheckpoints:
 
     def to_dict(self) -> dict[str, Any]:
         return dict(self.__dict__)
+
+
+@dataclass(frozen=True)
+class EpisodeSessionState:
+    """Durable per-episode state at one recoverable serving boundary.
+
+    Policy checkpoint bytes live in the authoritative object store. This record contains only
+    their digest and object key plus the minimum state needed to recover or fail closed after a
+    process restart. The attempt journal remains the authority for provider-attempt settlement.
+    """
+
+    episode_id: str
+    client_episode_ref: str
+    identity: ServingIdentity
+    created_at_utc: str
+    updated_at_utc: str
+    revision: int
+    resume_phase: SessionResumePhase
+    task_instruction_sha256: str
+    screen: dict[str, int]
+    max_steps: int
+    max_model_attempts_per_action: int
+    deployment_attempt_cap: int
+    step_index: int
+    policy_checkpoint_sha256: str
+    policy_checkpoint_object_key: str
+    last_intent_id: str | None
+    last_intent_status: IntentStatus
+    last_action: ServedAction | None
+    sealed_failure: SealedFailure | None
+    terminal_classification: TerminalClassification | None
+    model_attempts: int
+    provider_control_requests: int
+    usage: dict[str, float] | None
+    attributed_cost_usd: float | None
+    schema_version: str = SESSION_SCHEMA_VERSION
+
+    def __post_init__(self) -> None:
+        if self.schema_version != SESSION_SCHEMA_VERSION:
+            raise ValueError("unsupported serving session-store schema")
+        if not episode_id_is_valid(self.episode_id):
+            raise ValueError("episode_id is malformed")
+        if not self.client_episode_ref:
+            raise ValueError("client_episode_ref must be non-empty")
+        object.__setattr__(self, "resume_phase", SessionResumePhase(self.resume_phase))
+        object.__setattr__(self, "last_intent_status", IntentStatus(self.last_intent_status))
+        if self.sealed_failure is not None:
+            object.__setattr__(self, "sealed_failure", SealedFailure(self.sealed_failure))
+        if self.terminal_classification is not None:
+            object.__setattr__(
+                self,
+                "terminal_classification",
+                TerminalClassification(self.terminal_classification),
+            )
+        _require_prefixed_digest(self.task_instruction_sha256, "task_instruction_sha256")
+        _require_prefixed_digest(self.policy_checkpoint_sha256, "policy_checkpoint_sha256")
+        if not self.policy_checkpoint_object_key:
+            raise ValueError("policy_checkpoint_object_key must be non-empty")
+        if self.screen != {"width": SCREEN_WIDTH, "height": SCREEN_HEIGHT}:
+            raise ValueError("session screen must match the v5 inference dimensions")
+        for name in (
+            "revision",
+            "step_index",
+            "model_attempts",
+            "provider_control_requests",
+        ):
+            value = getattr(self, name)
+            if type(value) is not int or value < 0:
+                raise ValueError(f"{name} must be a non-negative integer")
+        for name in ("max_steps", "max_model_attempts_per_action", "deployment_attempt_cap"):
+            value = getattr(self, name)
+            if type(value) is not int or value <= 0:
+                raise ValueError(f"{name} must be a positive integer")
+        if (self.last_intent_id is None) != (self.last_action is None):
+            raise ValueError("last_intent_id and last_action are stored together")
+        if self.last_intent_id is not None and not intent_id_is_valid(self.last_intent_id):
+            raise ValueError("last_intent_id is malformed")
+        if self.last_intent_status is IntentStatus.NONE and self.last_intent_id is not None:
+            raise ValueError("an absent last intent must not carry an id or action")
+        if self.last_intent_status in {IntentStatus.ISSUED, IntentStatus.RESULT_REPORTED} and (
+            self.last_intent_id is None
+        ):
+            raise ValueError("an issued or reported intent requires its id and action")
+        if self.resume_phase is SessionResumePhase.INTENT_ISSUED and (
+            self.last_intent_status is not IntentStatus.ISSUED
+        ):
+            raise ValueError("intent_issued phase requires an outstanding issued intent")
+        if self.last_intent_status is IntentStatus.ISSUED and (
+            self.resume_phase is not SessionResumePhase.INTENT_ISSUED
+        ):
+            raise ValueError("an outstanding intent requires the intent_issued phase")
+        terminal = self.resume_phase in {SessionResumePhase.SEALED, SessionResumePhase.CLOSED}
+        if terminal != (self.terminal_classification is not None):
+            raise ValueError("only a terminal session carries a terminal classification")
+        if (self.resume_phase is SessionResumePhase.SEALED) != (self.sealed_failure is not None):
+            raise ValueError("only a sealed session carries a sealed failure")
+        if self.sealed_failure is not None and (
+            self.terminal_classification is None
+            or self.terminal_classification.value != self.sealed_failure.value
+        ):
+            raise ValueError("sealed failure and terminal classification must match")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "episode_id": self.episode_id,
+            "client_episode_ref": self.client_episode_ref,
+            "identity": self.identity.to_dict(),
+            "created_at_utc": self.created_at_utc,
+            "updated_at_utc": self.updated_at_utc,
+            "revision": self.revision,
+            "resume_phase": self.resume_phase.value,
+            "task_instruction_sha256": self.task_instruction_sha256,
+            "screen": dict(self.screen),
+            "max_steps": self.max_steps,
+            "max_model_attempts_per_action": self.max_model_attempts_per_action,
+            "deployment_attempt_cap": self.deployment_attempt_cap,
+            "step_index": self.step_index,
+            "policy_checkpoint_sha256": self.policy_checkpoint_sha256,
+            "policy_checkpoint_object_key": self.policy_checkpoint_object_key,
+            "last_intent_id": self.last_intent_id,
+            "last_intent_status": self.last_intent_status.value,
+            "last_action": None if self.last_action is None else self.last_action.to_dict(),
+            "sealed_failure": None if self.sealed_failure is None else self.sealed_failure.value,
+            "terminal_classification": (
+                None
+                if self.terminal_classification is None
+                else self.terminal_classification.value
+            ),
+            "model_attempts": self.model_attempts,
+            "provider_control_requests": self.provider_control_requests,
+            "usage": None if self.usage is None else dict(self.usage),
+            "attributed_cost_usd": self.attributed_cost_usd,
+        }
 
 
 @dataclass(frozen=True)

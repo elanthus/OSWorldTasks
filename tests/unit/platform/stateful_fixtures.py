@@ -12,12 +12,14 @@ from pixelgym.grounding.v5.contracts import (
 from pixelgym.platform.stateful_contracts import (
     EpisodeClosedRecord,
     EpisodeOpenedRecord,
+    EpisodeSessionState,
     EpisodeStepRecord,
     EvidenceBinding,
     EvidenceClass,
     ReportedResult,
     ServedAction,
     ServingIdentity,
+    SessionResumePhase,
     StatefulPolicyPackage,
     StepCheckpoints,
 )
@@ -107,6 +109,48 @@ def result() -> ReportedResult:
     return ReportedResult(reward=0.0, terminated=False, truncated=False, screenshot_sha256=D)
 
 
+def session_state(
+    *,
+    phase: SessionResumePhase = SessionResumePhase.INTENT_ISSUED,
+) -> EpisodeSessionState:
+    sealed = phase is SessionResumePhase.SEALED
+    has_intent = phase not in {SessionResumePhase.INITIALIZED, SessionResumePhase.SEALED}
+    return EpisodeSessionState(
+        episode_id=EPISODE,
+        client_episode_ref="client-ep-1",
+        identity=identity(),
+        created_at_utc="2026-09-09T00:00:00+00:00",
+        updated_at_utc="2026-09-09T00:00:10+00:00",
+        revision=3,
+        resume_phase=phase,
+        task_instruction_sha256=D,
+        screen={"width": 1024, "height": 768},
+        max_steps=40,
+        max_model_attempts_per_action=2,
+        deployment_attempt_cap=500,
+        step_index=1,
+        policy_checkpoint_sha256=D,
+        policy_checkpoint_object_key="serving-policy-checkpoints/" + "a" * 64 + ".json",
+        last_intent_id=INTENT if has_intent else None,
+        last_intent_status=(
+            "issued"
+            if phase is SessionResumePhase.INTENT_ISSUED
+            else "result_reported" if has_intent else "sealed" if sealed else "none"
+        ),
+        last_action=ServedAction("CLICK", x=10, y=20) if has_intent else None,
+        sealed_failure="parse_failure" if sealed else None,
+        terminal_classification=(
+            "parse_failure"
+            if sealed
+            else "terminated" if phase is SessionResumePhase.CLOSED else None
+        ),
+        model_attempts=2,
+        provider_control_requests=0,
+        usage={"prompt_tokens": 200},
+        attributed_cost_usd=0.0002,
+    )
+
+
 def step_record(*, sealed: bool = False) -> EpisodeStepRecord:
     return EpisodeStepRecord(
         episode_id=EPISODE,
@@ -194,6 +238,7 @@ def stateful_representatives() -> dict[str, dict[str, Any]]:
             "last_intent_id": INTENT,
             "last_intent_status": "issued",
         },
+        "episode_session_state": session_state().to_dict(),
         "episode_opened_record": EpisodeOpenedRecord(
             episode_id=EPISODE,
             client_episode_ref="client-ep-1",

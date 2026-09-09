@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,7 @@ from pixelgym.platform.stateful_contracts import (
     ReportedResult,
     ServedAction,
     ServingIdentity,
+    SessionResumePhase,
     StatefulPolicyPackage,
     StepCheckpoints,
 )
@@ -32,6 +34,7 @@ from tests.unit.platform.stateful_fixtures import (
     identity,
     package,
     result,
+    session_state,
     stateful_representatives,
     step_record,
     v5_manifest,
@@ -97,6 +100,78 @@ def test_package_rejects_mismatched_evidence_class_and_bad_counts() -> None:
         EvidenceBinding("d56-calibration", "run", D, D, 50, 50, 51)
     with pytest.raises(ValueError, match="run_kind"):
         EvidenceBinding("d57-something", "run", D, D, 50, 50, 1)
+
+
+@pytest.mark.parametrize("code_state", ["clean", "dirty"])
+def test_package_accepts_only_verified_provenance_for_verifiable_code(code_state: str) -> None:
+    base = {
+        "manifest": v5_manifest(),
+        "model_alias_disclosure": None,
+        "package_source_sha256": "9" * 64,
+        "dependency_lock_sha256": "8" * 64,
+        "max_steps": 40,
+        "evidence_class": EvidenceClass.CALIBRATION,
+        "evidence": evidence(),
+        "code_revision": "2" * 40,
+        "code_state": code_state,
+        "source_tree_sha256": "7" * 64,
+        "source_provenance_verified": True,
+        "source_provenance_failure_reason": None,
+    }
+    assert StatefulPolicyPackage.build(**base).code_state == code_state
+    invalid = (
+        {"code_revision": "not-a-git-sha"},
+        {"source_tree_sha256": None},
+        {"source_tree_sha256": "not-a-digest"},
+        {"source_provenance_verified": False},
+        {"source_provenance_failure_reason": "unexpected"},
+    )
+    for changes in invalid:
+        with pytest.raises(ValueError):
+            StatefulPolicyPackage.build(**{**base, **changes})
+
+
+def test_package_accepts_only_failed_provenance_for_unverifiable_code() -> None:
+    base = {
+        "manifest": v5_manifest(),
+        "model_alias_disclosure": None,
+        "package_source_sha256": "9" * 64,
+        "dependency_lock_sha256": "8" * 64,
+        "max_steps": 40,
+        "evidence_class": EvidenceClass.CALIBRATION,
+        "evidence": evidence(),
+        "code_revision": "unverifiable",
+        "code_state": "unverifiable",
+        "source_tree_sha256": None,
+        "source_provenance_verified": False,
+        "source_provenance_failure_reason": "source archive omitted Git metadata",
+    }
+    assert StatefulPolicyPackage.build(**base).code_state == "unverifiable"
+    invalid = (
+        {"code_revision": "2" * 40},
+        {"source_tree_sha256": "7" * 64},
+        {"source_provenance_verified": True},
+        {"source_provenance_failure_reason": None},
+        {"source_provenance_failure_reason": ""},
+    )
+    for changes in invalid:
+        with pytest.raises(ValueError):
+            StatefulPolicyPackage.build(**{**base, **changes})
+
+
+def test_package_rejects_an_embedded_manifest_that_disagrees_with_its_bindings() -> None:
+    fields = package().to_dict()
+    fields["evidence"] = EvidenceBinding(**fields["evidence"])
+
+    tampered = copy.deepcopy(fields)
+    tampered["policy_manifest"]["model"] = "fake/replaced-model"
+    with pytest.raises(ValueError, match="frozen v5 contract|embedded manifest"):
+        StatefulPolicyPackage(**tampered)
+
+    with pytest.raises(ValueError, match="provider and model"):
+        StatefulPolicyPackage(**{**fields, "model": "fake/replaced-model"})
+    with pytest.raises(ValueError, match="sandbox_manifest_sha256"):
+        StatefulPolicyPackage(**{**fields, "sandbox_manifest_sha256": "0" * 64})
 
 
 # --- wire types -----------------------------------------------------------------------------
@@ -176,6 +251,33 @@ def test_checkpoints_must_be_sequential() -> None:
         StepCheckpoints(D, D, None, D)
 
 
+def test_session_store_freezes_every_recoverable_and_terminal_phase() -> None:
+    schemas = PlatformSchemas(Path(__file__).resolve().parents[3])
+    for phase in SessionResumePhase:
+        state = session_state(phase=phase)
+        schemas.validate("episode_session_state", state.to_dict())
+
+
+def test_session_store_requires_a_durable_checkpoint_and_consistent_intent_state() -> None:
+    state = session_state()
+    with pytest.raises(ValueError, match="policy_checkpoint_object_key"):
+        replace(state, policy_checkpoint_object_key="")
+    with pytest.raises(ValueError, match="last_intent_id and last_action"):
+        replace(state, last_action=None)
+    with pytest.raises(ValueError, match="intent_issued phase"):
+        replace(state, resume_phase=SessionResumePhase.POST_PARSE)
+    with pytest.raises(ValueError, match="terminal classification"):
+        replace(
+            session_state(phase=SessionResumePhase.CLOSED),
+            terminal_classification=None,
+        )
+    with pytest.raises(ValueError, match="must match"):
+        replace(
+            session_state(phase=SessionResumePhase.SEALED),
+            terminal_classification="request_failure",
+        )
+
+
 def test_closed_record_requires_the_stored_final_screenshot_with_a_final_result() -> None:
     fields = {
         "episode_id": EPISODE,
@@ -223,6 +325,11 @@ def test_every_representative_validates_and_round_trips_through_its_schema(
             lambda v: v["evidence"].update(run_kind="d59-confirmatory"),
             "run_kind",
         ),
+        (
+            "serving_act_request",
+            lambda v: v["previous_result"].update(terminated=True, truncated=True),
+            "previous_result",
+        ),
         ("serving_create_request", lambda v: v.update(task_instruction=""), "task_instruction"),
         (
             "serving_create_request",
@@ -263,6 +370,26 @@ def test_every_representative_validates_and_round_trips_through_its_schema(
             "episode_opened_record",
             lambda v: v.update(task_instruction="Fill in the form"),
             "task_instruction",
+        ),
+        (
+            "episode_session_state",
+            lambda v: v.update(policy_checkpoint_object_key=""),
+            "policy_checkpoint_object_key",
+        ),
+        (
+            "episode_session_state",
+            lambda v: v.update(last_intent_status="result_reported"),
+            "episode_session_state",
+        ),
+        (
+            "episode_session_state",
+            lambda v: v.update(
+                resume_phase="sealed",
+                sealed_failure="parse_failure",
+                terminal_classification="request_failure",
+                last_intent_status="sealed",
+            ),
+            "episode_session_state",
         ),
     ],
 )
