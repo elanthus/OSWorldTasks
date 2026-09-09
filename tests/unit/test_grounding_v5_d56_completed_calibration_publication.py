@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import subprocess
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from scripts.publish_grounding_v5_d56_completed_calibrations import (
     EXPECTED_MAIN_SUMMARIES,
     RELATION_PATH,
     REPORT_PATH,
+    RETAINED_PATH,
     RUN_SPECS,
     PublicationError,
     _attach_relation_checks,
@@ -316,12 +318,27 @@ def test_relation_binds_sources_and_excludes_both_restricted_journals() -> None:
         "qwen-v3",
     ]
     exclusions = relation["excluded_authoritative_artifacts"]
-    assert [row["path"] for row in exclusions] == [
+    journal_rows = [row for row in exclusions if "digest_source" not in row]
+    registry_rows = [row for row in exclusions if "digest_source" in row]
+    assert [row["path"] for row in journal_rows] == [
         "artifacts/grounding-v5-d56-gemini-v3b-full-calibration-run/attempts.sqlite",
         "artifacts/grounding-v5-d56-qwen-v3-full-calibration-run/attempts.sqlite",
     ]
     assert all(row["git_status"] == "must_not_commit" for row in exclusions)
-    assert all(row["sha256"] is None and row["size_bytes"] is None for row in exclusions)
+    assert all(row["sha256"] is None and row["size_bytes"] is None for row in journal_rows)
+    assert registry_rows, "the retained development runs registry declares its sealed files"
+    assert all(
+        row["digest_source"] == RETAINED_PATH.as_posix()
+        and row["sha256"].startswith("sha256:")
+        and row["size_bytes"] > 0
+        for row in registry_rows
+    )
+    assert relation["authoritative"]["retained_development_runs_path"] == (
+        RETAINED_PATH.as_posix()
+    )
+    assert relation["authoritative"]["retained_development_runs_file_sha256"] == (
+        _file_digest(ROOT / RETAINED_PATH)
+    )
     for row in exclusions:
         assert subprocess.run(
             ["git", "check-ignore", "--quiet", "--no-index", "--", row["path"]],
@@ -399,3 +416,60 @@ def test_readme_numbers_trace_to_generated_derivative() -> None:
     assert "no v5 result is a benchmark score or a\nmilestone-gate verdict" in section
     assert "`A-gemini-stateful-v2` calibration remains **withdrawn**" in section
     assert DERIVATIVE_PATH.as_posix() in section
+
+
+def test_retained_development_runs_are_digest_only_entries() -> None:
+    registry = _load_json(ROOT / RETAINED_PATH)
+    derivative = _load_json(ROOT / DERIVATIVE_PATH)
+    retained = {
+        row["run_id"]: row
+        for row in derivative["unpublished_retained_runs"]
+        if "authoritative_digests" in row
+    }
+
+    assert registry["provider_calls_made"] == 0
+    assert [run["run_id"] for run in registry["runs"]] == list(retained)
+    assert len(derivative["unpublished_retained_plans"]) == len(registry["plans"])
+    for run in registry["runs"]:
+        row = retained[run["run_id"]]
+        assert row["failed_checks"] == run["failed_checks"]
+        assert "committable_credential_free_paths" in row["failed_checks"]
+        assert row["authoritative_digests"] == run["authoritative_digests"]
+        assert row["classification_counts"]["attempted"] >= 1
+        assert row["provider_calls_made"] >= 1
+    # Nothing beyond digests, counts, and identities is published for these runs.
+    assert not ({"episode_results", "transport_records", "journal_path", "summary_path"} & _keys(retained))
+    report = (ROOT / REPORT_PATH).read_text(encoding="utf-8")
+    for run in registry["runs"]:
+        assert f"| `{run['run_id']}` |" in report
+    assert any("retained locally" in item for item in derivative["limitations"])
+
+
+def test_retained_registry_with_an_operator_path_is_rejected(tmp_path: Path) -> None:
+    registry = _load_json(ROOT / RETAINED_PATH)
+    registry["runs"][0]["purpose"] = "recorded at /Users/operator/checkout"
+    root = tmp_path / "repository"
+    (root / RETAINED_PATH).parent.mkdir(parents=True)
+    (root / RETAINED_PATH).write_text(json.dumps(registry), encoding="utf-8")
+
+    with pytest.raises(PublicationError, match="absolute operator path"):
+        publication._load_retained(root)
+
+
+def test_retained_registry_run_must_name_a_failed_check(tmp_path: Path) -> None:
+    registry = _load_json(ROOT / RETAINED_PATH)
+    registry["runs"][0]["failed_checks"] = []
+    root = tmp_path / "repository"
+    (root / RETAINED_PATH).parent.mkdir(parents=True)
+    (root / RETAINED_PATH).write_text(json.dumps(registry), encoding="utf-8")
+
+    with pytest.raises(PublicationError, match="failed publication check"):
+        publication._load_retained(root)
+
+
+def test_missing_registry_keeps_the_derivative_shape() -> None:
+    audits = _source_audits(ROOT)
+    derivative = build_derivative(audits, None)
+
+    assert derivative["unpublished_retained_plans"] == []
+    assert all("authoritative_digests" not in row for row in derivative["unpublished_retained_runs"])

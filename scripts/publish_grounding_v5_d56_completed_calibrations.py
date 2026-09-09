@@ -32,6 +32,11 @@ RELATION_PATH = Path(
     "artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json"
 )
 AUDIT_PATH = Path("artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json")
+# Digest-only registry of development runs whose sealed originals stay local because their
+# digest-bound path fields record absolute operator paths. Optional: absent in isolated roots.
+RETAINED_PATH = Path("artifacts/grounding-v5-d56-retained-development-runs.json")
+RETAINED_SCHEMA_VERSION = "pixelgym-agent-v5-d56-retained-development-runs-v1"
+_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 _LOCAL_PATH = re.compile(r"(?:/Users/|/home/|[A-Za-z]:\\\\Users\\\\)")
 _CREDENTIAL_VALUE = re.compile(
@@ -161,6 +166,116 @@ def _json_strings(value: Any) -> Iterable[str]:
             yield from _json_strings(child)
     elif isinstance(value, str):
         yield value
+
+
+_RETAINED_RUN_KEYS = {
+    "run_id",
+    "slot",
+    "purpose",
+    "classification_counts",
+    "assigned_tasks",
+    "failed_checks",
+    "code_revision",
+    "policy_manifest_digest",
+    "provider_alias",
+    "provider_calls_made",
+    "spend",
+    "authoritative_digests",
+    "excluded_artifacts",
+}
+_RETAINED_PLAN_KEYS = {
+    "plan_path",
+    "purpose",
+    "code_revision",
+    "status",
+    "committed_run_summary",
+    "committed_summary_records_this_content_digest",
+    "authoritative_digests",
+    "excluded_artifacts",
+}
+_COUNT_KEYS = {
+    "attempted",
+    "infrastructure_failure",
+    "invalid_output",
+    "policy_violation",
+    "request_failure",
+    "success",
+    "truncation",
+}
+
+
+def _require_exclusions(rows: Any, owner: str) -> None:
+    _require(isinstance(rows, list) and bool(rows), f"{owner}: excluded_artifacts missing")
+    for row in rows:
+        _require(
+            isinstance(row, dict)
+            and str(row.get("path", "")).startswith("artifacts/")
+            and bool(_DIGEST.match(str(row.get("sha256"))))
+            and isinstance(row.get("size_bytes"), int)
+            and row["size_bytes"] > 0
+            and isinstance(row.get("reason"), str),
+            f"{owner}: malformed excluded artifact row",
+        )
+
+
+def _load_retained(repository_root: Path) -> dict[str, Any] | None:
+    """Load and validate the optional digest-only registry of retained development runs."""
+
+    path = repository_root / RETAINED_PATH
+    if not path.exists():
+        return None
+    retained = _load_json(path)
+    _require(
+        retained.get("schema_version") == RETAINED_SCHEMA_VERSION,
+        "retained development runs registry has an unexpected schema version",
+    )
+    _require(
+        retained.get("provider_calls_made") == 0,
+        "retained development runs registry unexpectedly records provider calls",
+    )
+    validate_credential_free(retained)
+    _require(
+        not any(_LOCAL_PATH.search(text) for text in _json_strings(retained)),
+        "retained development runs registry contains an absolute operator path",
+    )
+    for run in retained.get("runs", []):
+        _require(set(run) >= _RETAINED_RUN_KEYS, f"retained run is missing keys: {run.get('run_id')}")
+        _require(
+            set(run["classification_counts"]) == _COUNT_KEYS,
+            f"retained run has unexpected classification keys: {run['run_id']}",
+        )
+        _require(
+            isinstance(run["failed_checks"], list) and bool(run["failed_checks"]),
+            f"retained run must name at least one failed publication check: {run['run_id']}",
+        )
+        _require(
+            all(_DIGEST.match(str(value)) for value in run["authoritative_digests"].values() if isinstance(value, str)),
+            f"retained run records a malformed digest: {run['run_id']}",
+        )
+        _require_exclusions(run["excluded_artifacts"], run["run_id"])
+    for plan in retained.get("plans", []):
+        _require(set(plan) >= _RETAINED_PLAN_KEYS, f"retained plan is missing keys: {plan.get('plan_path')}")
+        _require_exclusions(plan["excluded_artifacts"], str(plan["plan_path"]))
+    return retained
+
+
+def _retained_exclusions(retained: dict[str, Any] | None) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if retained is None:
+        return rows
+    for entry in (*retained.get("runs", []), *retained.get("plans", [])):
+        for artifact in entry["excluded_artifacts"]:
+            rows.append(
+                {
+                    "path": artifact["path"],
+                    "sha256": artifact["sha256"],
+                    "size_bytes": artifact["size_bytes"],
+                    "reason": artifact["reason"],
+                    "git_status": "must_not_commit",
+                    "digest_source": RETAINED_PATH.as_posix(),
+                }
+            )
+    return rows
 
 
 def _git(repository_root: Path, *args: str) -> str:
@@ -685,7 +800,35 @@ def _published_row(audit: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
+def _retained_run_row(run: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: run[key]
+        for key in (
+            "run_id",
+            "slot",
+            "classification_counts",
+            "failed_checks",
+            "purpose",
+            "assigned_tasks",
+            "code_revision",
+            "policy_manifest_digest",
+            "provider_alias",
+            "provider_calls_made",
+            "spend",
+            "authoritative_digests",
+        )
+    } | {"retention": "sealed originals retained locally; digest-only entry from the registry"}
+
+
+def _retained_plan_row(plan: dict[str, Any]) -> dict[str, Any]:
+    return {key: plan[key] for key in sorted(_RETAINED_PLAN_KEYS - {"excluded_artifacts"})} | {
+        "retention": "sealed original retained locally; digest-only entry from the registry"
+    }
+
+
+def build_derivative(
+    run_audits: list[dict[str, Any]], retained: dict[str, Any] | None = None
+) -> dict[str, Any]:
     publishable = [row for row in run_audits if row["source_checks_passed"]]
     _require(
         tuple(row["run_id"] for row in publishable) == EXPECTED_PUBLISHED_RUNS,
@@ -705,6 +848,8 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
                 ),
             }
         )
+    retained_rows = [_retained_run_row(run) for run in (retained or {}).get("runs", [])]
+    retained_plans = [_retained_plan_row(plan) for plan in (retained or {}).get("plans", [])]
     derivative = {
         "schema_version": DERIVATIVE_SCHEMA_VERSION,
         "purpose": "publish completed D5.6 calibration runs from retained committed evidence",
@@ -721,7 +866,8 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "runs": [_published_row(row) for row in publishable],
         "errata_corrections": run_audits[0]["errata_corrections"],
-        "unpublished_retained_runs": excluded,
+        "unpublished_retained_runs": [*excluded, *retained_rows],
+        "unpublished_retained_plans": retained_plans,
         "redaction": {
             "policy_version": REDACTION_POLICY_VERSION,
             "excluded": [
@@ -749,6 +895,13 @@ def build_derivative(run_audits: list[dict[str, Any]]) -> dict[str, Any]:
             "The historical classification labels are preserved without reinterpretation.",
         ],
     }
+    if retained_rows or retained_plans:
+        derivative["limitations"].append(
+            f"{len(retained_rows)} later development runs and {len(retained_plans)} plans are "
+            "retained locally and unpublished because their digest-bound path fields record "
+            "absolute operator paths; only their digests are listed under "
+            "unpublished_retained_runs and unpublished_retained_plans."
+        )
     validate_credential_free(derivative)
     return derivative
 
@@ -847,6 +1000,52 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         [
             "",
             "Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked. The older Qwen v2 run stopped after 13 of 50 assignments under its approved first-invalid-output rule. Neither incomplete run is included in the calibration table.",
+        ]
+    )
+    retained_runs = [
+        run for run in derivative["unpublished_retained_runs"] if "authoritative_digests" in run
+    ]
+    retained_plans = derivative.get("unpublished_retained_plans", [])
+    if retained_runs or retained_plans:
+        lines.extend(
+            [
+                "",
+                (
+                    f"{len(retained_runs)} later development runs and {len(retained_plans)} plans "
+                    "are retained locally and are not committed in any form. Their approved plans "
+                    "and summaries record absolute operator paths inside digest-bound fields, so "
+                    "committing them would publish host identity and rewriting them would break "
+                    "the approved-plan content digests that later summaries cite. Their plan "
+                    "content, plan file, summary file, journal event-chain, and attempt-journal "
+                    "digests are listed under `unpublished_retained_runs` and "
+                    "`unpublished_retained_plans` in the publishable derivative. None is "
+                    "calibration evidence."
+                ),
+                "",
+                "| Retained run | Purpose | Provider calls | Code revision |",
+                "|---|---|---:|---|",
+            ]
+        )
+        for run in retained_runs:
+            lines.append(
+                f"| `{run['run_id']}` | {run['purpose']} | {run['provider_calls_made']} | "
+                f"`{run['code_revision'][:12]}` |"
+            )
+        if retained_plans:
+            lines.extend(
+                [
+                    "",
+                    "| Retained plan | Status | Plan content digest |",
+                    "|---|---|---|",
+                ]
+            )
+            for plan in retained_plans:
+                lines.append(
+                    f"| `{plan['plan_path']}` | {plan['status']} | "
+                    f"`{plan['authoritative_digests']['plan_content_sha256']}` |"
+                )
+    lines.extend(
+        [
             "",
             "## Fault-taxonomy disclosure",
             "",
@@ -919,7 +1118,9 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
 
 
 def build_relation_sources(
-    repository_root: Path, run_audits: list[dict[str, Any]]
+    repository_root: Path,
+    run_audits: list[dict[str, Any]],
+    retained: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     by_id = {row["run_id"]: row for row in run_audits}
     sources = []
@@ -954,14 +1155,21 @@ def build_relation_sources(
                 "public_verification_limit": "file hash and size are not recorded in committed v3 evidence",
             }
         )
+    authoritative: dict[str, Any] = {
+        "runs": sources,
+        "errata_path": ERRATA_PATH.as_posix(),
+        "errata_file_sha256": _file_digest(repository_root / ERRATA_PATH),
+    }
+    if retained is not None:
+        authoritative["retained_development_runs_path"] = RETAINED_PATH.as_posix()
+        authoritative["retained_development_runs_file_sha256"] = _file_digest(
+            repository_root / RETAINED_PATH
+        )
+        exclusions.extend(_retained_exclusions(retained))
     relation_sources = {
         "schema_version": RELATION_SCHEMA_VERSION,
         "redaction_policy_version": REDACTION_POLICY_VERSION,
-        "authoritative": {
-            "runs": sources,
-            "errata_path": ERRATA_PATH.as_posix(),
-            "errata_file_sha256": _file_digest(repository_root / ERRATA_PATH),
-        },
+        "authoritative": authoritative,
         "excluded_authoritative_artifacts": exclusions,
     }
     validate_credential_free(relation_sources)
@@ -1022,10 +1230,22 @@ def validate_relation_sources(
         ):
             return False
     validate_credential_free(relation)
+    registry_path = relation["authoritative"].get("retained_development_runs_path")
+    if registry_path is not None and (
+        registry_path != RETAINED_PATH.as_posix()
+        or not (repository_root / RETAINED_PATH).exists()
+        or _file_digest(repository_root / RETAINED_PATH)
+        != relation["authoritative"].get("retained_development_runs_file_sha256")
+    ):
+        return False
     exclusions_ok = all(
         row["git_status"] == "must_not_commit"
-        and row["sha256"] is None
-        and row["size_bytes"] is None
+        and (
+            # Registry-declared files carry recorded digests; v3 journals recorded none.
+            (bool(_DIGEST.match(str(row["sha256"]))) and isinstance(row["size_bytes"], int))
+            if row.get("digest_source") == RETAINED_PATH.as_posix()
+            else (row["sha256"] is None and row["size_bytes"] is None)
+        )
         and not _is_tracked(repository_root, Path(row["path"]))
         and _is_ignored(repository_root, Path(row["path"]))
         for row in relation["excluded_authoritative_artifacts"]
@@ -1145,7 +1365,9 @@ def _source_audits(
     errata = _load_json(repository_root / ERRATA_PATH)
     _require(errata["provider_calls_made"] == 0, "errata unexpectedly records provider calls")
     run_audits = [audit_run(repository_root, spec, errata=errata) for spec in RUN_SPECS]
-    relation_sources = relation or build_relation_sources(repository_root, run_audits)
+    relation_sources = relation or build_relation_sources(
+        repository_root, run_audits, _load_retained(repository_root)
+    )
     _attach_relation_checks(repository_root, run_audits, relation_sources)
     return run_audits
 
@@ -1154,12 +1376,13 @@ def _build_outputs(
     repository_root: Path, *, relation: dict[str, Any] | None = None
 ) -> tuple[dict[Path, bytes], list[dict[str, Any]]]:
     run_audits = _source_audits(repository_root, relation=relation)
-    relation_sources = build_relation_sources(repository_root, run_audits)
+    retained = _load_retained(repository_root)
+    relation_sources = build_relation_sources(repository_root, run_audits, retained)
     _require(
         validate_relation_sources(repository_root, relation_sources),
         "publication relation sources did not validate before derivative generation",
     )
-    derivative = build_derivative(run_audits)
+    derivative = build_derivative(run_audits, retained)
     derivative_bytes = (json.dumps(derivative, indent=2, sort_keys=True) + "\n").encode()
     report_bytes = render_report(
         derivative, derivative_sha256=_bytes_digest(derivative_bytes)

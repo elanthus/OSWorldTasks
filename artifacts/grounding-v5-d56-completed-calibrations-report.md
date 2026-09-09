@@ -51,8 +51,29 @@ Null and negative results are shown unchanged. Attempted is kept separate from e
 |---|---|---:|---|
 | `qwen-v2` | `B-qwen-stateful-v2` | 13 | `completed_assigned_denominator` |
 | `gemini-v3` | `A-gemini-stateful-v3` | 5 | `completed_assigned_denominator`, `publication_relation_verified` |
+| `bcd-calibration` | `B-qwen-stateful` | 1 | `completed_assigned_denominator`, `committable_credential_free_paths` |
+| `c-calibration` | `C-llama-stateful` | 42 | `completed_assigned_denominator`, `committable_credential_free_paths` |
+| `c-normalized-trial` | `C-llama-stateful` | 1 | `development_only_not_calibration_evidence`, `committable_credential_free_paths` |
+| `glm-json-object-smoke` | `C-glm-stateful-json-object-smoke-candidate` | 1 | `development_only_not_calibration_evidence`, `committable_credential_free_paths` |
+| `glm-normalized-trial` | `C-glm-stateful-candidate` | 1 | `development_only_not_calibration_evidence`, `committable_credential_free_paths` |
+| `glm-relaxed-trial` | `C-glm-stateful-relaxed-schema-candidate` | 1 | `development_only_not_calibration_evidence`, `committable_credential_free_paths` |
 
 Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked. The older Qwen v2 run stopped after 13 of 50 assignments under its approved first-invalid-output rule. Neither incomplete run is included in the calibration table.
+
+6 later development runs and 1 plans are retained locally and are not committed in any form. Their approved plans and summaries record absolute operator paths inside digest-bound fields, so committing them would publish host identity and rewriting them would break the approved-plan content digests that later summaries cite. Their plan content, plan file, summary file, journal event-chain, and attempt-journal digests are listed under `unpublished_retained_runs` and `unpublished_retained_plans` in the publishable derivative. None is calibration evidence.
+
+| Retained run | Purpose | Provider calls | Code revision |
+|---|---|---:|---|
+| `bcd-calibration` | evaluate only the three unattempted B/C/D policy slots on the frozen fifty-task D5.6 calibration partition | 25 | `e25bfbe384a5` |
+| `c-calibration` | evaluate only the previously unattempted Slot C policy on the frozen fifty-task D5.6 calibration partition | 1180 | `e63c45d8d1a3` |
+| `c-normalized-trial` | one complete development-only Slot C episode to test the normalized coordinate adapter; not calibration evidence | 20 | `b34d7d3ba716` |
+| `glm-json-object-smoke` | one development-only request testing exact Novita FP8 routing with OpenRouter JSON mode and the unchanged local exact-action parser; not calibration evidence | 1 | `968ea744c725` |
+| `glm-normalized-trial` | one complete development-only GLM candidate episode using the normalized coordinate adapter; comparative diagnostic evidence, not calibration evidence | 1 | `dd9709e4db53` |
+| `glm-relaxed-trial` | one complete development-only GLM candidate episode with upstream strict JSON schema disabled and the local exact-action parser unchanged; comparative diagnostic evidence, not calibration evidence | 1 | `98bfc434553f` |
+
+| Retained plan | Status | Plan content digest |
+|---|---|---|
+| `artifacts/grounding-v5-d56-calibration-plan.json` | executed; its committed run summary records this plan's content digest | `sha256:270d4b1941cac585fa51907df170463460e723639372c5f68eee5e1f888857d1` |
 
 ## Fault-taxonomy disclosure
 
@@ -68,7 +89,7 @@ PR #155 changed classification of CLI process failures. These four retained runs
 ## Evidence and redaction
 
 - Report schema: `pixelgym-agent-v5-d56-completed-calibrations-report-v1`
-- Publishable derivative: `sha256:17e599ce1d701073e057a67f79f57371cb93c83217c321f33ac1218b8197b901`
+- Publishable derivative: `sha256:6e0f4bda96b285138f94e04127afb323c28d27e083f3dfbabcc5ca6b6bb0c29f`
 - [Publishable derivative](grounding-v5-d56-completed-calibrations-publishable.json)
 - [Integrity audit](grounding-v5-d56-completed-calibrations-integrity-audit.json)
 - [Publication relation](grounding-v5-d56-completed-calibrations-publication-relation.json)
@@ -95,3 +116,4 @@ The derivative and report contain no response bodies, request bodies, screenshot
 - Qwen v3 records temperature 0 while Gemini v3b records no temperature; Gemini v3b records strict upstream json_schema response validation while Qwen v3 has no response_validation block.
 - Execution dates and restricted-journal file hashes were not retained in committed evidence.
 - The historical classification labels are preserved without reinterpretation.
+- 6 later development runs and 1 plans are retained locally and unpublished because their digest-bound path fields record absolute operator paths; only their digests are listed under unpublished_retained_runs and unpublished_retained_plans.

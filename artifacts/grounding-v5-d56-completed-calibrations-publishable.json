@@ -23,7 +23,8 @@
     "Their policy-manifest digests, code revisions, and runtime digests differ.",
     "Qwen v3 records temperature 0 while Gemini v3b records no temperature; Gemini v3b records strict upstream json_schema response validation while Qwen v3 has no response_validation block.",
     "Execution dates and restricted-journal file hashes were not retained in committed evidence.",
-    "The historical classification labels are preserved without reinterpretation."
+    "The historical classification labels are preserved without reinterpretation.",
+    "6 later development runs and 1 plans are retained locally and unpublished because their digest-bound path fields record absolute operator paths; only their digests are listed under unpublished_retained_runs and unpublished_retained_plans."
   ],
   "provider_calls_made": 0,
   "purpose": "publish completed D5.6 calibration runs from retained committed evidence",
@@ -249,6 +250,21 @@
     "calibration_result": "descriptive",
     "milestone_gate_verdict": "not_evaluated_human_owned"
   },
+  "unpublished_retained_plans": [
+    {
+      "authoritative_digests": {
+        "plan_content_sha256": "sha256:270d4b1941cac585fa51907df170463460e723639372c5f68eee5e1f888857d1",
+        "plan_file_sha256": "sha256:bc3ed5813e27a7b41758e36aeed011bd76ae2fb31d67eb89c8e6d2cf22120a0f"
+      },
+      "code_revision": "0541192a9952ab90f9b3dc2d69e413243e5a1bd3",
+      "committed_run_summary": "artifacts/grounding-v5-d56-calibration-run/summary.json",
+      "committed_summary_records_this_content_digest": true,
+      "plan_path": "artifacts/grounding-v5-d56-calibration-plan.json",
+      "purpose": "complete four-policy D5.6 calibration on fifty pilot-unexposed tasks",
+      "retention": "sealed original retained locally; digest-only entry from the registry",
+      "status": "executed; its committed run summary records this plan's content digest"
+    }
+  ],
   "unpublished_retained_runs": [
     {
       "classification_counts": {
@@ -282,6 +298,240 @@
       ],
       "run_id": "gemini-v3",
       "slot": "A-gemini-stateful-v3"
+    },
+    {
+      "assigned_tasks": 150,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:880fa35de9616a5a46a766ab9babecf495315d4e4ff3d46e5c1eeb49809e68a9",
+        "attempt_journal_file_sha256": "sha256:78dbb0e3d819c06604c3b664120df35448f6642ac13b3c367ef0bb9f7f8ef7fe",
+        "attempt_journal_size_bytes": 9994240,
+        "journal_event_chain_sha256": "sha256:fe80c9c9d81756515716e1fbe42135302df730646b6027c0d4597a47892efbab",
+        "plan_file_sha256": "sha256:7482110b3ff2b01d2f559852b25048c80593798e6acfc61f7d74175d7f5c9fe5",
+        "summary_file_sha256": "sha256:630f765bc44ce7cb85c91e0ae3b906fcedf4e1374556d6074d84cc2e95b447f4"
+      },
+      "classification_counts": {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0
+      },
+      "code_revision": "e25bfbe384a583ef853682481f56d08659cfe40f",
+      "failed_checks": [
+        "completed_assigned_denominator",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:26859b2cd39d1ba77cca18db58edfc8c272402c3cc4d34e00bfa6daf2c18caac",
+      "provider_alias": "openrouter/Alibaba",
+      "provider_calls_made": 25,
+      "purpose": "evaluate only the three unattempted B/C/D policy slots on the frozen fifty-task D5.6 calibration partition",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "bcd-calibration",
+      "slot": "B-qwen-stateful",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.040917557",
+        "incremental_spend_usd": "0.008042372",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.032875185"
+      }
+    },
+    {
+      "assigned_tasks": 50,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:beb618d74b79d93b12afe37347057850483252ffb173cbf37d03198d5d2e4c37",
+        "attempt_journal_file_sha256": "sha256:d67a8c9197e3d2d54f62fd28002e7c9e054c0e5cdb3872b1042ff76537272cf6",
+        "attempt_journal_size_bytes": 299106304,
+        "journal_event_chain_sha256": "sha256:3da77834eda9fa68cc8dc8c03c26a545caa9e3277d3b53c67316135f5e81f77c",
+        "plan_file_sha256": "sha256:37183428aee8106a518ee33511231bd4a2378945c2e129f21d7c96239f004f66",
+        "summary_file_sha256": "sha256:73cfd90ae6594a4d826520be3aa971ba049554c5d69196111edb672a78f0da0f"
+      },
+      "classification_counts": {
+        "attempted": 42,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 41
+      },
+      "code_revision": "e63c45d8d1a3334d79d4b62659c11a7a64afe689",
+      "failed_checks": [
+        "completed_assigned_denominator",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:ed76ea1f2745a52552c8cd9560185327e8bec4080c4850be6daf3c2d355772de",
+      "provider_alias": "openrouter/DeepInfra",
+      "provider_calls_made": 1180,
+      "purpose": "evaluate only the previously unattempted Slot C policy on the frozen fifty-task D5.6 calibration partition",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "c-calibration",
+      "slot": "C-llama-stateful",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.481019457",
+        "incremental_spend_usd": "0.440101900",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.040917557"
+      }
+    },
+    {
+      "assigned_tasks": 1,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:1e87da05960de2b1ae44926f2d83b34c7e47e6a2871e1e22d293859036ff7d15",
+        "attempt_journal_file_sha256": "sha256:1742f25baca698807f33407d1b046083f4731828796ce8b707f6374b71ec648e",
+        "attempt_journal_size_bytes": 7499776,
+        "journal_event_chain_sha256": "sha256:b68efcdfe838eeb04141e64bb9735af015fa5e8b11aa3e06340e07ff8de24db9",
+        "plan_file_sha256": "sha256:45e53daf31996d30a8745fa5fd920b794a7d8f56a237218cdfa161bb7a42e86b",
+        "summary_file_sha256": "sha256:7e3c8778a7e35fd48ef81db9fb56a70fdd45c8f71f7736e3b1e961076cd1fd66"
+      },
+      "classification_counts": {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0
+      },
+      "code_revision": "b34d7d3ba7163c09b23dc60d06bc8978a49690f2",
+      "failed_checks": [
+        "development_only_not_calibration_evidence",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:c79d047c252aaccf04015d964412c9ef3301509625a2ad845bd34fd8a47c5509",
+      "provider_alias": "openrouter/DeepInfra",
+      "provider_calls_made": 20,
+      "purpose": "one complete development-only Slot C episode to test the normalized coordinate adapter; not calibration evidence",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "c-normalized-trial",
+      "slot": "C-llama-stateful",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.487339457",
+        "incremental_spend_usd": "0.006320000",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.481019457"
+      }
+    },
+    {
+      "assigned_tasks": null,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:495c301d999e045647a8a933634ceae7d59387ff669c451c5bbaae5231d98fca",
+        "attempt_journal_file_sha256": "sha256:67a272f788200db7a2afb894916a14b614ca01c3e66a66c6d0cc08997314087d",
+        "attempt_journal_size_bytes": 2404352,
+        "journal_event_chain_sha256": "sha256:1f33a7940e19017a22597db86f11500849835091445c715cd228deead458bb60",
+        "plan_file_sha256": "sha256:626253f550421276dee103bce62ad18eec1495f6dbe6e9951baf97e9f767dbc3",
+        "summary_file_sha256": "sha256:8d1a6d5b29dd64774415c6b5cea71ab3343061292a18877454f7d621d3ba14f3"
+      },
+      "classification_counts": {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0
+      },
+      "code_revision": "968ea744c7258fb3d2c9544e6e60be410663eb3d",
+      "failed_checks": [
+        "development_only_not_calibration_evidence",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:b07ce5dcb5140db05c7360184d5527bbd36006c3ce3b54f5ee797265968f9d79",
+      "provider_alias": "openrouter/Novita",
+      "provider_calls_made": 1,
+      "purpose": "one development-only request testing exact Novita FP8 routing with OpenRouter JSON mode and the unchanged local exact-action parser; not calibration evidence",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "glm-json-object-smoke",
+      "slot": "C-glm-stateful-json-object-smoke-candidate",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.487339457",
+        "incremental_spend_usd": "0E-9",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.487339457"
+      }
+    },
+    {
+      "assigned_tasks": 1,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:e05780e1ba5487b024c8b3a76ff00ceae3d5cda7c28cb051d59777044e5f9f62",
+        "attempt_journal_file_sha256": "sha256:639592ffa11973550702eafabd69e7f8e6b94f973d6c30f42933ef60524f7294",
+        "attempt_journal_size_bytes": 2404352,
+        "journal_event_chain_sha256": "sha256:c14ddbf6c1e6f9d5dc67854d33e3eeb855f565a931552a4a413e53fced245de1",
+        "plan_file_sha256": "sha256:cf5cb586d0687b95c9ec150b6cf51aae4c04732f53be1332d38e9481607ae7f1",
+        "summary_file_sha256": "sha256:884650f5a35b7767eb195de549857235d9aa0092d03ab9e7528627d66f8f823d"
+      },
+      "classification_counts": {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0
+      },
+      "code_revision": "dd9709e4db535316246cfd618e0f1abdc13a3d8c",
+      "failed_checks": [
+        "development_only_not_calibration_evidence",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:5c230d458f2fb3efba370602e66f04c174c5fcc694b5b0a9d073fed7a71ed769",
+      "provider_alias": "openrouter/Novita",
+      "provider_calls_made": 1,
+      "purpose": "one complete development-only GLM candidate episode using the normalized coordinate adapter; comparative diagnostic evidence, not calibration evidence",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "glm-normalized-trial",
+      "slot": "C-glm-stateful-candidate",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.487339457",
+        "incremental_spend_usd": "0E-9",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.487339457"
+      }
+    },
+    {
+      "assigned_tasks": 1,
+      "authoritative_digests": {
+        "approved_plan_content_sha256": "sha256:fcdf25ff8627a5305ab5e02830daf6c63d45ad071c327ff14af5e6cceca7ebd9",
+        "attempt_journal_file_sha256": "sha256:1077c5015396b02be32fb3453acca66aa507f236b5824e80638a6efe1242c244",
+        "attempt_journal_size_bytes": 2404352,
+        "journal_event_chain_sha256": "sha256:75edc10fd82795bfc2068a78dae97e6bc07d9339976f6925344c51a367ef72a3",
+        "plan_file_sha256": "sha256:59dd635974ae1521f19b6868d509dad37cdd9f8ee527ff14803a28dacaeec94b",
+        "summary_file_sha256": "sha256:3045e479de15ff9ca887950d8e9f612f1e593ff6bea7203dc23282466736df6b"
+      },
+      "classification_counts": {
+        "attempted": 1,
+        "infrastructure_failure": 1,
+        "invalid_output": 0,
+        "policy_violation": 0,
+        "request_failure": 0,
+        "success": 0,
+        "truncation": 0
+      },
+      "code_revision": "98bfc434553f9c9eb1714c164dd0014e1f3a0f83",
+      "failed_checks": [
+        "development_only_not_calibration_evidence",
+        "committable_credential_free_paths"
+      ],
+      "policy_manifest_digest": "sha256:d6852d3f040f3ba302cd6b229f08e1a40f439d76bb0863d8e18ab7ae4f6f160b",
+      "provider_alias": "openrouter/Novita",
+      "provider_calls_made": 1,
+      "purpose": "one complete development-only GLM candidate episode with upstream strict JSON schema disabled and the local exact-action parser unchanged; comparative diagnostic evidence, not calibration evidence",
+      "retention": "sealed originals retained locally; digest-only entry from the registry",
+      "run_id": "glm-relaxed-trial",
+      "slot": "C-glm-stateful-relaxed-schema-candidate",
+      "spend": {
+        "actual_aggregate_spend_usd": "2.487339457",
+        "incremental_spend_usd": "0E-9",
+        "ledger": "aggregate campaign ledger as recorded by the run; not a per-run cap",
+        "maximum_aggregate_spend_usd": "10.00",
+        "prior_aggregate_spend_usd": "2.487339457"
+      }
     }
   ]
 }
