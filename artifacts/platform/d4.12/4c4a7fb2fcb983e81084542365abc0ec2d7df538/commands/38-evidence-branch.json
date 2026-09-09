@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "git",
+    "branch",
+    "--show-current"
+  ],
+  "command": "git branch --show-current",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.013173,
+  "ended_at_utc": "2026-09-09T16:40:04.012856+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "evidence/d412-4c4a7fb2\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:40:03.998334+00:00"
+}

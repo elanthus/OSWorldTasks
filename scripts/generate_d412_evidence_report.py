@@ -18,11 +18,47 @@ CREDENTIALS_ABSENT_REVISIONS = {
     LEGACY_EVIDENCE_REVISION,
     "0d161893f9e0cd500bd57cecde2ce5d80e991730",
     "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+    "4c4a7fb2fcb983e81084542365abc0ec2d7df538",
 }
 PRE_FINAL_REDACTION_REVISIONS = {
     LEGACY_EVIDENCE_REVISION,
     "0d161893f9e0cd500bd57cecde2ce5d80e991730",
     "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+}
+# Revisions whose first fresh-stack Compose attempt was blocked by the recording
+# sandbox (loopback port reservation raised PermissionError) before the retry passed.
+# Every other revision records a first attempt that must itself pass.
+SANDBOX_BLOCKED_FIRST_COMPOSE_REVISIONS = {
+    LEGACY_EVIDENCE_REVISION,
+    "0d161893f9e0cd500bd57cecde2ce5d80e991730",
+    "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+    "672a6556716e4779a7c494637d839d18bcdc9453",
+}
+# Revisions recorded before PR #131 renamed the deploy-failure mechanical boundary test
+# to `test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_source`.
+PRE_ROLLBACK_LINEAGE_REVISIONS = {
+    LEGACY_EVIDENCE_REVISION,
+    "0d161893f9e0cd500bd57cecde2ce5d80e991730",
+    "421570dfbe78fca0d65f97968211c4e2d3f299d7",
+    "672a6556716e4779a7c494637d839d18bcdc9453",
+}
+# Exact skipped/warning counts stored by each reviewed evidence revision. A revision
+# without an entry cannot be indexed until its stored counts are reviewed and added.
+_AUGUST_2026_PYTEST_COUNTS = {
+    "fast": {"skipped": 5, "warnings": 3},
+    "platform_units": {"warnings": 3},
+    "mechanical": {"warnings": 3},
+}
+RECORDED_PYTEST_COUNTS: dict[str, dict[str, dict[str, int]]] = {
+    LEGACY_EVIDENCE_REVISION: _AUGUST_2026_PYTEST_COUNTS,
+    "0d161893f9e0cd500bd57cecde2ce5d80e991730": _AUGUST_2026_PYTEST_COUNTS,
+    "421570dfbe78fca0d65f97968211c4e2d3f299d7": _AUGUST_2026_PYTEST_COUNTS,
+    "672a6556716e4779a7c494637d839d18bcdc9453": _AUGUST_2026_PYTEST_COUNTS,
+    "4c4a7fb2fcb983e81084542365abc0ec2d7df538": {
+        "fast": {"skipped": 30, "warnings": 4},
+        "platform_units": {"warnings": 4},
+        "mechanical": {"warnings": 4},
+    },
 }
 PYTEST_SUMMARY = re.compile(
     r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?"
@@ -443,18 +479,25 @@ def _validate_commands(
         missing = sorted(set(EXPECTED_COMMAND_STATUSES) - set(records))
         extra = sorted(set(records) - set(EXPECTED_COMMAND_STATUSES))
         raise ValueError(f"unexpected command record set; missing={missing}, extra={extra}")
-    for path, expected in EXPECTED_COMMAND_STATUSES.items():
-        if records[path]["exit_status"] != expected:
-            raise ValueError(
-                f"unexpected exit status in {path}: {records[path]['exit_status']} != {expected}"
-            )
-
     revision = records["commands/00-git-revision.json"]["output"].strip()
     if revision != evidence_directory_name:
         raise ValueError(
             "recorded revision does not match evidence directory: "
             f"{revision} != {evidence_directory_name}"
         )
+    expected_statuses = dict(EXPECTED_COMMAND_STATUSES)
+    if revision not in SANDBOX_BLOCKED_FIRST_COMPOSE_REVISIONS:
+        expected_statuses["commands/29-compose-browser.json"] = 0
+    for path, expected in expected_statuses.items():
+        if records[path]["exit_status"] != expected:
+            raise ValueError(
+                f"unexpected exit status in {path}: {records[path]['exit_status']} != {expected}"
+            )
+    if revision not in RECORDED_PYTEST_COUNTS:
+        raise ValueError(
+            f"no reviewed pytest skipped/warning counts are recorded for revision {revision}"
+        )
+    counts = RECORDED_PYTEST_COUNTS[revision]
     pass_floors = {
         "fast": 679,
         "platform_units": 300,
@@ -475,15 +518,14 @@ def _validate_commands(
             records,
             "commands/08-fast-suite.json",
             passed=pass_floors["fast"],
-            skipped=5,
-            warnings=3,
+            **counts["fast"],
         ),
         "environment": _summary(records, "commands/09-environment-checker.json", passed=1),
         "platform_units": _summary(
             records,
             "commands/11-platform-unit-boundaries.json",
             passed=pass_floors["platform_units"],
-            warnings=3,
+            **counts["platform_units"],
         ),
         "local_runtime": _summary(
             records,
@@ -495,7 +537,7 @@ def _validate_commands(
             records,
             "commands/31-mechanical-boundaries.json",
             passed=pass_floors["mechanical"],
-            warnings=3,
+            **counts["mechanical"],
         ),
     }
     _require_text(records, "commands/10-golden-trajectory.json", "OK")
@@ -549,12 +591,17 @@ def _validate_commands(
         "test_metaflow_hard_kill_after_durable_evidence_resumes_without_duplicate_calls",
     ):
         _require_text(records, "commands/26-integration-test-inventory.json", name)
+    deploy_failure_test = (
+        "test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order"
+        if revision in PRE_ROLLBACK_LINEAGE_REVISIONS
+        else "test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_source"
+    )
     for name in (
         "test_missing_and_nonfinite_gate_evidence_fails_closed",
         "test_gate_failure_blocks_direct_approval_and_passing_gates_do_not_autoapprove",
         "test_deployment_coordinator_rejects_unapproved_candidate_before_smoke",
         "test_serving_restore_rejects_unapproved_or_gate_failed_active_policy",
-        "test_deploy_failure_preserves_active_and_repeated_rollbacks_follow_event_order",
+        deploy_failure_test,
         "test_stale_compare_and_swap_loses_cleanly",
         "test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runtime",
     ):

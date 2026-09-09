@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "."
+  ],
+  "command": "<path-2>/dev-venv/bin/python -m ruff check .",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.575488,
+  "ended_at_utc": "2026-09-09T16:31:13.959162+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "All checks passed!\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:31:13.381804+00:00"
+}

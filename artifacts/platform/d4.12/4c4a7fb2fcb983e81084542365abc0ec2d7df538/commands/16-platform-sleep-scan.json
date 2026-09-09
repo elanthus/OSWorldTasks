@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "<path-2>/dev-venv/bin/python",
+    "-c",
+    "import re, sys; from pathlib import Path; pattern=re.compile(r\"time\\.sleep|sleep\\(\"); matches=[f\"{p}:{i}:{l}\" for p in sorted(Path(\"tests/unit/platform\").rglob(\"*.py\")) for i,l in enumerate(p.read_text().splitlines(),1) if pattern.search(l)]; sys.stdout.write(\"\\n\".join(matches) + (\"\\n\" if matches else \"\")); sys.exit(0 if matches else 1)"
+  ],
+  "command": "<path-2>/dev-venv/bin/python -c 'import re, sys; from pathlib import Path; pattern=re.compile(r\"time\\.sleep|sleep\\(\"); matches=[f\"{p}:{i}:{l}\" for p in sorted(Path(\"tests/unit/platform\").rglob(\"*.py\")) for i,l in enumerate(p.read_text().splitlines(),1) if pattern.search(l)]; sys.stdout.write(\"\\n\".join(matches) + (\"\\n\" if matches else \"\")); sys.exit(0 if matches else 1)'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.040332,
+  "ended_at_utc": "2026-09-09T16:46:19.341693+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-09-09T16:46:19.299761+00:00"
+}
