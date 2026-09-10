@@ -269,6 +269,23 @@ LLAMA_STATEFUL_RETRY_SUCCESSOR = replace(
     max_bounded_retries_per_action=3,
     rate_limit_backoff_base_seconds=15.0,
 )
+LLAMA_STATEFUL_VERTEX = replace(
+    LLAMA_STATEFUL_RETRY_SUCCESSOR,
+    slot="C-llama-stateful-vertex-v1",
+    provider_route="google-vertex/us-east5",
+    response_provider="Google",
+    prompt_price_per_token_usd=Decimal("0.00000025"),
+    completion_price_per_token_usd=Decimal("0.0000007"),
+    # The route catalog does not specify quantization; do not claim FP8 parity.
+    quantizations=(),
+)
+LLAMA_STATEFUL_VERTEX_SMOKE = replace(
+    LLAMA_STATEFUL_VERTEX,
+    slot="C-llama-stateful-vertex-v1-smoke",
+    max_model_attempts_per_action=1,
+    max_rate_limit_retries_per_action=0,
+    max_bounded_retries_per_action=0,
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",

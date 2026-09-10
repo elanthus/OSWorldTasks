@@ -169,3 +169,8 @@ exact owner approval. Fifty fresh calibration assignments imply 1,431 environmen
 most 5,724 model attempts/wire requests, with zero control requests. A proposed fresh $2 ceiling
 remains binding; longer backoff does not guarantee completion. Preserve stopped predecessor rows
 as incomplete evidence, never fill them with a successor, and never reuse their paid-call approval.
+
+The owner subsequently selected a fixed Google Vertex route for Llama Scout. See the
+[Slot C Vertex successor procedure](slot-c-vertex-successor.md) for its separate smoke and
+calibration plans. That selection does not authorize new paid calls or retire the frozen
+DeepInfra evidence.
