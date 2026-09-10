@@ -61,8 +61,15 @@ output directly.
   ancestor commits whose earlier file versions retain fingerprinted absolute operator paths. Review
   the raw history inventory before ticking this item; the owner, not an automated check, records
   acceptance of those findings for publication.
-- [ ] Complete revocation or rotation of any credential the history scan found, then re-run
-  `--mode history` and confirm zero credential/token findings.
+- [ ] Review the [privacy evidence](../artifacts/public-release/privacy-review.md), including exact
+  ref scope, hosted findings, inaccessible logs/artifacts, attachments, and unreviewed media.
+  Historical operator-path acceptance applies only to its matched fingerprints and ancestor commits;
+  it does not approve hosted records or new identifying disclosures.
+- [ ] Confirm zero unreviewed actual credential findings within the approved publication scope.
+  Distinguish acknowledged synthetic test vectors from actual credentials; retain accepted historical
+  path findings visibly. If an actual credential is established, approve concrete rotation/revocation
+  or record-removal work separately and repeat the affected review. A shape match alone is not proof
+  of a live credential, and a zero shape count is not exhaustive privacy clearance.
 - [ ] Change the GitHub repository visibility from private to public.
 - [ ] From a logged-out browser, verify the README, local artifact links, license files, and release
   media are accessible in the public repository.
