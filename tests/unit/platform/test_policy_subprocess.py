@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import subprocess
 import sys
@@ -164,6 +165,24 @@ def test_serving_profile_is_deny_by_default_and_scopes_authority(tmp_path: Path)
             import_roots=(source,),
             protected_paths=(),
         )
+
+
+def test_worker_bootstrap_has_no_pixelgym_application_imports() -> None:
+    worker_path = REPOSITORY_ROOT / "pixelgym/platform/policy_worker.py"
+    tree = ast.parse(worker_path.read_text(encoding="utf-8"))
+    imported_modules = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    imported_modules.update(
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    )
+
+    assert all(not module.startswith("pixelgym") for module in imported_modules)
 
 
 def test_unenforced_launcher_is_rejected_by_default() -> None:
