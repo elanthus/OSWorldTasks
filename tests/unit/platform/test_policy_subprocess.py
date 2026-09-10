@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import runpy
+import signal
 import subprocess
 import sys
 import sysconfig
@@ -210,6 +212,25 @@ def test_partial_worker_output_cannot_bypass_rpc_deadline() -> None:
             request_timeout_seconds=0.1,
         )
     assert time.monotonic() - started < 3.0
+
+
+def test_worker_that_stops_reading_cannot_block_request_write() -> None:
+    launcher = LocalWorkerLauncher()
+    policy = SandboxedPolicyProcess(
+        spec=_scripted_spec(), launcher=launcher, require_os_sandbox=False
+    )
+    assert launcher.process is not None
+    try:
+        os.kill(launcher.process.pid, signal.SIGSTOP)
+        os.waitpid(launcher.process.pid, os.WUNTRACED)
+        policy.request_timeout_seconds = 0.1
+        started = time.monotonic()
+        with pytest.raises(PolicySubprocessUnavailableError, match="timed out"):
+            policy.build_request(b"{}", b"x" * (5 * 1024 * 1024))
+        assert time.monotonic() - started < 3.0
+        assert launcher.process.poll() is not None
+    finally:
+        policy.close()
 
 
 def test_policy_protocol_round_trips_only_canonical_values() -> None:

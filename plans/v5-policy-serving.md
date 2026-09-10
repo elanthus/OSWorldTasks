@@ -94,10 +94,16 @@ same content-bound approval digest rule applies.
 
 | Method and path | Body | Response |
 |---|---|---|
-| `POST /api/v2/episodes` | `task_instruction`, `screen_width`, `screen_height`, `client_episode_ref` | `episode_id`, policy/deployment/exact-policy identity, `max_steps`, action-schema and key-allowlist versions |
-| `POST /api/v2/episodes/{id}/act` | `screenshot_base64`, `media_type`, `previous_intent_id`, `previous_result` (`reward`, `terminated`, `truncated`, `screenshot_sha256`) — omitted only on the first call | `intent_id`, `action` (`NOOP` / `CLICK x y` / `KEY index`) **or** `sealed_failure` (`parse_failure`, `invalid_action`, `request_failure`, `cap_reached`, `infrastructure_failure`), `attempt_count`, identity |
-| `POST /api/v2/episodes/{id}/close` | `final_screenshot_base64`, `media_type`, `final_result` (`reward`, `terminated`, `truncated`) for the last issued intent, when one is outstanding | terminal summary: steps, attempts, control requests, tokens, attributed cost, terminal classification, final screenshot digest |
+| `POST /api/v2/episodes` | `schema_version`, `task_instruction`, `screen_width`, `screen_height`, `client_episode_ref` | `episode_id`, policy/deployment/exact-policy identity, `max_steps`, action-schema and key-allowlist versions |
+| `POST /api/v2/episodes/{id}/act` | `schema_version`, `screenshot` (`image_base64`, `media_type`), `previous_intent_id`, `previous_result` (`reward`, `terminated`, `truncated`, `screenshot_sha256`) — both previous fields explicitly `null` on the first call | `intent_id`, `action` (`NOOP` / `CLICK x y` / `KEY index`) **or** `sealed_failure` (`parse_failure`, `invalid_action`, `request_failure`, `cap_reached`, `infrastructure_failure`), `attempt_count`, identity |
+| `POST /api/v2/episodes/{id}/close` | `schema_version`, `final_screenshot` (`image_base64`, `media_type`), `final_intent_id`, `final_result` (`reward`, `terminated`, `truncated`, `screenshot_sha256`) — nullable fields must be present | terminal summary: steps, attempts, control requests, tokens, attributed cost, terminal classification, final screenshot digest |
 | `GET /api/v2/episodes/{id}` | none | current step, last intent status, whether the episode is open |
+
+Every request body uses `schema_version: "pixelgym-serving-session-v2"`. A final result
+requires its intent id and a final screenshot with the same digest. Retry an interrupted close
+with the same final result even if the result was already persisted. An `act` on a sealed
+episode repairs a pending operational step write before returning `episode_ended`; it never
+executes another action or provider attempt.
 
 Rules the API enforces before any provider request:
 

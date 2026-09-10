@@ -481,16 +481,34 @@ class SandboxedPolicyProcess:
             encoded = canonical_json_bytes(request) + b"\n"
             if len(encoded) > MAX_POLICY_RPC_BYTES:
                 raise PolicySubprocessProtocolError("policy RPC request exceeds the byte limit")
+            deadline = time.monotonic() + self.request_timeout_seconds
+            descriptor = stdin.fileno()
+            was_blocking = os.get_blocking(descriptor)
             try:
-                stdin.write(encoded)
-                stdin.flush()
+                os.set_blocking(descriptor, False)
+                pending = memoryview(encoded)
+                while pending:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0 or not select.select([], [descriptor], [], remaining)[1]:
+                        raise PolicySubprocessUnavailableError("policy subprocess timed out")
+                    try:
+                        written = os.write(descriptor, pending)
+                    except BlockingIOError:
+                        continue
+                    pending = pending[written:]
+            except PolicySubprocessError:
+                _stop_process(process)
+                raise
             except (BrokenPipeError, OSError) as exc:
+                _stop_process(process)
                 raise PolicySubprocessUnavailableError(
                     "policy subprocess is unavailable"
                 ) from exc
+            finally:
+                os.set_blocking(descriptor, was_blocking)
             try:
                 response_bytes = _read_response_line(
-                    stdout, timeout_seconds=self.request_timeout_seconds
+                    stdout, timeout_seconds=deadline - time.monotonic()
                 )
             except PolicySubprocessError:
                 _stop_process(process)

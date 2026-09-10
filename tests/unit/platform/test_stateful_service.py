@@ -658,3 +658,81 @@ def test_immutable_episode_log_verifies_put_once_records_and_final_screenshot(
         assert store.get_verified(reference).endswith(b"\n")
     screenshot_keys = tuple((tmp_path / "immutable" / "metadata").rglob("*.png.metadata.json"))
     assert len(screenshot_keys) == 1
+
+
+def test_close_retries_after_final_result_saved_but_close_record_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    client, factory, _ = _app(tmp_path)
+    assert client.post("/api/v2/episodes", json=_create_body()).status_code == 201
+    screen = _png()
+    acted = client.post(
+        f"/api/v2/episodes/{EPISODE_ID}/act",
+        json={
+            "schema_version": SESSION_SCHEMA_VERSION,
+            "screenshot": _screenshot(screen),
+            "previous_intent_id": None,
+            "previous_result": None,
+        },
+    )
+    body = {
+        "schema_version": SESSION_SCHEMA_VERSION,
+        "final_screenshot": _screenshot(screen),
+        "final_intent_id": acted.json()["intent_id"],
+        "final_result": {
+            "reward": 1.0,
+            "terminated": True,
+            "truncated": False,
+            "screenshot_sha256": "sha256:" + sha256_bytes(screen),
+        },
+    }
+    host = factory.hosts[0]
+    original = host.journal.put_object
+
+    def fail_close_record(kind: str, payload: bytes) -> str:
+        if kind == "episode_closed_record":
+            raise RuntimeError("storage unavailable")
+        return original(kind, payload)
+
+    monkeypatch.setattr(host.journal, "put_object", fail_close_record)
+    assert client.post(f"/api/v2/episodes/{EPISODE_ID}/close", json=body).status_code == 503
+    assert host.get(EPISODE_ID).resume_phase.value == "post_dispatch"
+    monkeypatch.setattr(host.journal, "put_object", original)
+    retried = client.post(f"/api/v2/episodes/{EPISODE_ID}/close", json=body)
+    assert retried.status_code == 200
+    assert retried.json()["terminal_classification"] == "terminated"
+    assert retried.json()["steps"] == 1
+    assert client.post(f"/api/v2/episodes/{EPISODE_ID}/close", json=body).json() == retried.json()
+
+
+def test_sealed_act_retry_repairs_operational_log_without_another_attempt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    client, factory, records = _app(tmp_path)
+    assert client.post("/api/v2/episodes", json=_create_body()).status_code == 201
+    host = factory.hosts[0]
+    host.policy = ScriptedStatefulPolicy(({"action_type": 1, "x": 1024, "y": 0, "key": 0},))
+    original = records.append
+
+    def fail_append(record: object) -> None:
+        raise EpisodeOperationalLogError("storage unavailable")
+
+    monkeypatch.setattr(records, "append", fail_append)
+    body = {
+        "schema_version": SESSION_SCHEMA_VERSION,
+        "screenshot": _screenshot(_png()),
+        "previous_intent_id": None,
+        "previous_result": None,
+    }
+    assert client.post(f"/api/v2/episodes/{EPISODE_ID}/act", json=body).status_code == 503
+    before = host.get(EPISODE_ID)
+    assert before.resume_phase.value == "sealed"
+    counts = host.journal.call_counts()
+    monkeypatch.setattr(records, "append", original)
+    retried = client.post(f"/api/v2/episodes/{EPISODE_ID}/act", json=body)
+    assert retried.status_code == 409
+    assert retried.json()["detail"]["code"] == "episode_ended"
+    assert host.get(EPISODE_ID) == before
+    assert host.journal.call_counts() == counts
+    key = f"serving-episode-records/{EPISODE_ID}/steps/0000.json"
+    assert records.records[key] == host.step_record(EPISODE_ID, 0)

@@ -604,6 +604,12 @@ def create_episode_router(
                 None if body.previous_result is None else body.previous_result.to_contract()
             )
             async with registration.lock:
+                state = await anyio.to_thread.run_sync(registration.host.get, episode_id)
+                if state.resume_phase.value == "sealed":
+                    record = await anyio.to_thread.run_sync(
+                        registration.host.step_record, episode_id, state.step_index
+                    )
+                    await anyio.to_thread.run_sync(operational_log.append, record)
                 result = await anyio.to_thread.run_sync(
                     partial(
                         registration.host.act,
@@ -663,7 +669,7 @@ def create_episode_router(
                         "intent reference is invalid",
                     )
                 if (
-                    state.resume_phase.value != "closed"
+                    state.resume_phase.value not in {"closed", "post_dispatch"}
                     and state.last_intent_status.value != "issued"
                     and body.final_intent_id is not None
                 ):

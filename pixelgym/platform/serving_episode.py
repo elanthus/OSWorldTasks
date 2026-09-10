@@ -654,6 +654,11 @@ class ServingEpisodeHost:
             classification = self._classification_for_close(
                 cast(ReportedResult, final_result)
             )
+        elif state.resume_phase is SessionResumePhase.POST_DISPATCH:
+            self._validate_report_replay(state, final_intent_id, final_result)
+            classification = self._classification_for_close(
+                cast(ReportedResult, final_result)
+            )
         else:
             if final_intent_id is not None:
                 raise IntentReferenceError("the episode has no outstanding intent")
