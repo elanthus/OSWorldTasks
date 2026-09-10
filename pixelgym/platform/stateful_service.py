@@ -226,6 +226,17 @@ class EpisodeOperationalLog(Protocol):
     ) -> StoredScreenshot: ...
 
 
+def _screenshot_reference(
+    *, episode_id: str, data: bytes, media_type: str
+) -> StoredScreenshot:
+    digest = sha256_bytes(data)
+    extension = "png" if media_type == "image/png" else "jpg"
+    return StoredScreenshot(
+        sha256="sha256:" + digest,
+        object_key=f"serving-final-screenshots/{episode_id}/{digest}.{extension}",
+    )
+
+
 def _record_key(record: EpisodeRecord) -> str:
     prefix = f"serving-episode-records/{record.episode_id}"
     if isinstance(record, EpisodeOpenedRecord):
@@ -261,11 +272,11 @@ class ImmutableEpisodeOperationalLog:
     def store_final_screenshot(
         self, *, episode_id: str, data: bytes, media_type: str
     ) -> StoredScreenshot:
-        digest = sha256_bytes(data)
-        extension = "png" if media_type == "image/png" else "jpg"
-        key = f"serving-final-screenshots/{episode_id}/{digest}.{extension}"
+        stored = _screenshot_reference(
+            episode_id=episode_id, data=data, media_type=media_type
+        )
         try:
-            reference = self.store.put_once(key, data, media_type=media_type)
+            reference = self.store.put_once(stored.object_key, data, media_type=media_type)
             if self.store.get_verified(reference) != data:
                 raise EpisodeOperationalLogError(
                     "final screenshot verification returned changed bytes"
@@ -276,7 +287,7 @@ class ImmutableEpisodeOperationalLog:
             raise EpisodeOperationalLogError(
                 "failed to durably store the final screenshot"
             ) from exc
-        return StoredScreenshot(sha256="sha256:" + digest, object_key=key)
+        return stored
 
 
 class MemoryEpisodeOperationalLog:
@@ -298,16 +309,16 @@ class MemoryEpisodeOperationalLog:
     def store_final_screenshot(
         self, *, episode_id: str, data: bytes, media_type: str
     ) -> StoredScreenshot:
-        digest = sha256_bytes(data)
-        extension = "png" if media_type == "image/png" else "jpg"
-        key = f"serving-final-screenshots/{episode_id}/{digest}.{extension}"
+        stored = _screenshot_reference(
+            episode_id=episode_id, data=data, media_type=media_type
+        )
         with self._lock:
-            existing = self.screenshots.get(key)
+            existing = self.screenshots.get(stored.object_key)
             candidate = (data, media_type)
             if existing is not None and existing != candidate:
                 raise EpisodeOperationalLogError("conflicting final screenshot")
-            self.screenshots[key] = candidate
-        return StoredScreenshot(sha256="sha256:" + digest, object_key=key)
+            self.screenshots[stored.object_key] = candidate
+        return stored
 
 
 class _ApiError(Exception):
@@ -537,7 +548,26 @@ def create_episode_router(
                 max_steps=state.max_steps,
                 deployment_attempt_cap=state.deployment_attempt_cap,
             )
-            await anyio.to_thread.run_sync(operational_log.append, opened)
+            try:
+                await anyio.to_thread.run_sync(operational_log.append, opened)
+            except Exception:
+                try:
+                    await anyio.to_thread.run_sync(
+                        partial(
+                            host.close_episode,
+                            episode_id=state.episode_id,
+                            final_intent_id=None,
+                            final_result=None,
+                            final_screenshot_sha256=None,
+                            final_screenshot_object_key=None,
+                        )
+                    )
+                except Exception as cleanup_exc:  # noqa: BLE001 - closed error surface.
+                    logger.error(
+                        "failed to compensate episode creation type=%s",
+                        type(cleanup_exc).__name__,
+                    )
+                raise
             await anyio.to_thread.run_sync(
                 session_registry.register, state.episode_id, registration
             )
@@ -642,24 +672,38 @@ def create_episode_router(
                         "intent_reference_invalid",
                         "intent reference is invalid",
                     )
-                stored = None
+                final_screenshot_reference = None
                 if final_bytes is not None and body.final_screenshot is not None:
-                    stored = await anyio.to_thread.run_sync(
-                        partial(
-                            operational_log.store_final_screenshot,
-                            episode_id=episode_id,
-                            data=final_bytes,
-                            media_type=body.final_screenshot.media_type,
-                        )
+                    final_screenshot_reference = _screenshot_reference(
+                        episode_id=episode_id,
+                        data=final_bytes,
+                        media_type=body.final_screenshot.media_type,
                     )
+                    if state.resume_phase.value != "closed":
+                        final_screenshot_reference = await anyio.to_thread.run_sync(
+                            partial(
+                                operational_log.store_final_screenshot,
+                                episode_id=episode_id,
+                                data=final_bytes,
+                                media_type=body.final_screenshot.media_type,
+                            )
+                        )
                 record = await anyio.to_thread.run_sync(
                     partial(
                         registration.host.close_episode,
                         episode_id=episode_id,
                         final_intent_id=body.final_intent_id,
                         final_result=final_result,
-                        final_screenshot_sha256=None if stored is None else stored.sha256,
-                        final_screenshot_object_key=(None if stored is None else stored.object_key),
+                        final_screenshot_sha256=(
+                            None
+                            if final_screenshot_reference is None
+                            else final_screenshot_reference.sha256
+                        ),
+                        final_screenshot_object_key=(
+                            None
+                            if final_screenshot_reference is None
+                            else final_screenshot_reference.object_key
+                        ),
                     )
                 )
                 await anyio.to_thread.run_sync(operational_log.append, record)

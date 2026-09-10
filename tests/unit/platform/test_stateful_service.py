@@ -315,6 +315,7 @@ def test_create_does_not_register_episode_when_open_record_cannot_be_written(
     }
     _assert_identity(response, host.identity.to_dict())
     assert registry.get(EPISODE_ID) is None
+    assert host.get(EPISODE_ID).resume_phase.value == "closed"
     assert "private storage failure" not in response.text
 
 
@@ -503,22 +504,48 @@ def test_close_requires_outstanding_intent_and_act_after_close_is_rejected(
     assert wrong_digest.status_code == 409
     assert records.screenshots == {}
 
+    close_body: dict[str, Any] = {
+        "schema_version": SESSION_SCHEMA_VERSION,
+        "final_screenshot": _screenshot(screen),
+        "final_intent_id": first.json()["intent_id"],
+        "final_result": {
+            "reward": 0.0,
+            "terminated": False,
+            "truncated": False,
+            "screenshot_sha256": "sha256:" + sha256_bytes(screen),
+        },
+    }
     closed = client.post(
         f"/api/v2/episodes/{EPISODE_ID}/close",
-        json={
-            "schema_version": SESSION_SCHEMA_VERSION,
-            "final_screenshot": _screenshot(screen),
-            "final_intent_id": first.json()["intent_id"],
-            "final_result": {
-                "reward": 0.0,
-                "terminated": False,
-                "truncated": False,
-                "screenshot_sha256": "sha256:" + sha256_bytes(screen),
-            },
-        },
+        json=close_body,
     )
     assert closed.status_code == 200
     assert closed.json()["terminal_classification"] == "closed_by_caller"
+    assert len(records.screenshots) == 1
+
+    retried = client.post(
+        f"/api/v2/episodes/{EPISODE_ID}/close",
+        json=close_body,
+    )
+    assert retried.status_code == 200
+    assert retried.json() == closed.json()
+    assert len(records.screenshots) == 1
+
+    different_screen = screen + b"\0"
+    different_retry = client.post(
+        f"/api/v2/episodes/{EPISODE_ID}/close",
+        json={
+            **close_body,
+            "final_screenshot": _screenshot(different_screen),
+            "final_result": {
+                **close_body["final_result"],
+                "screenshot_sha256": "sha256:" + sha256_bytes(different_screen),
+            },
+        },
+    )
+    assert different_retry.status_code == 409
+    assert different_retry.json()["detail"]["code"] == "episode_ended"
+    assert len(records.screenshots) == 1
 
     after_close = client.post(
         f"/api/v2/episodes/{EPISODE_ID}/act",

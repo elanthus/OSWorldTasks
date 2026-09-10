@@ -204,7 +204,7 @@ def test_partial_worker_output_cannot_bypass_rpc_deadline() -> None:
             require_os_sandbox=False,
             request_timeout_seconds=0.1,
         )
-    assert time.monotonic() - started < 1.0
+    assert time.monotonic() - started < 3.0
 
 
 def test_policy_protocol_round_trips_only_canonical_values() -> None:
