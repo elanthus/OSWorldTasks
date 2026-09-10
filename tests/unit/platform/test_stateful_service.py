@@ -31,6 +31,7 @@ from pixelgym.platform.stateful_contracts import (
     StatefulPolicyPackage,
 )
 from pixelgym.platform.stateful_service import (
+    EpisodeOperationalLogError,
     ImmutableEpisodeOperationalLog,
     MemoryEpisodeOperationalLog,
     MemoryEpisodeSessionRegistry,
@@ -277,6 +278,44 @@ def test_create_maps_the_deployment_cap_without_exposing_host_diagnostics(
     }
     _assert_identity(response, host.identity.to_dict())
     assert "refusing" not in response.text
+
+
+def test_create_does_not_register_episode_when_open_record_cannot_be_written(
+    tmp_path: Path,
+) -> None:
+    host = _host(tmp_path / "host")
+    registry = MemoryEpisodeSessionRegistry()
+
+    class FailingOperationalLog(MemoryEpisodeOperationalLog):
+        def append(self, record: object) -> None:
+            del record
+            raise EpisodeOperationalLogError("private storage failure")
+
+    router = create_episode_router(
+        host_factory=lambda: host,
+        session_registry=registry,
+        operational_log=FailingOperationalLog(),
+    )
+    client = TestClient(
+        create_serving_app(
+            PolicyRuntime(),
+            operational_log=MemoryOperationalLog(),
+            episode_router=router,
+        )
+    )
+
+    response = client.post("/api/v2/episodes", json=_create_body())
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": {
+            "code": "operational_storage_unavailable",
+            "message": "episode operational storage is unavailable",
+        }
+    }
+    _assert_identity(response, host.identity.to_dict())
+    assert registry.get(EPISODE_ID) is None
+    assert "private storage failure" not in response.text
 
 
 @pytest.mark.parametrize(

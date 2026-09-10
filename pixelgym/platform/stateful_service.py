@@ -505,6 +505,7 @@ def create_episode_router(
 
     @router.post("/episodes")
     async def create_episode(request: Request) -> JSONResponse:
+        identity: ServingIdentity | None = None
         try:
             body = await _parse_body(request, CreateEpisodeBody, limit=CREATE_BODY_LIMIT)
             if (body.screen_width, body.screen_height) != (SCREEN_WIDTH, SCREEN_HEIGHT):
@@ -514,6 +515,7 @@ def create_episode_router(
                     "screen dimensions do not match the frozen policy",
                 )
             host = await anyio.to_thread.run_sync(host_factory)
+            identity = host.identity
             state = await anyio.to_thread.run_sync(
                 partial(
                     host.create_episode,
@@ -521,11 +523,9 @@ def create_episode_router(
                     client_episode_ref=body.client_episode_ref,
                 )
             )
+            identity = state.identity
             registration = RegisteredEpisode(
                 host=host, identity=state.identity, screen=dict(state.screen)
-            )
-            await anyio.to_thread.run_sync(
-                session_registry.register, state.episode_id, registration
             )
             opened = EpisodeOpenedRecord(
                 episode_id=state.episode_id,
@@ -538,6 +538,9 @@ def create_episode_router(
                 deployment_attempt_cap=state.deployment_attempt_cap,
             )
             await anyio.to_thread.run_sync(operational_log.append, opened)
+            await anyio.to_thread.run_sync(
+                session_registry.register, state.episode_id, registration
+            )
             payload = {
                 "schema_version": SESSION_SCHEMA_VERSION,
                 "episode_id": state.episode_id,
@@ -551,13 +554,6 @@ def create_episode_router(
         except _ApiError as exc:
             return _error_response(exc)
         except Exception as exc:  # noqa: BLE001 - error mapping is intentionally closed.
-            identity = (
-                state.identity
-                if "state" in locals()
-                else host.identity
-                if "host" in locals()
-                else None
-            )
             return _error_response(_map_host_error(exc), identity)
 
     @router.post("/episodes/{episode_id}/act")

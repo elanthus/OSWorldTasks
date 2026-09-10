@@ -421,6 +421,37 @@ def test_each_policy_failure_is_sealed_once_and_never_attempted_again(
     assert len(transport.model_requests) == requests
 
 
+def test_sealed_episode_can_close_once_with_valid_closed_state(tmp_path: Path) -> None:
+    host = _host(tmp_path, actions=({"action_type": 1, "x": 1024, "y": 10, "key": 0},))
+    host.create_episode(task_instruction="Complete", client_episode_ref="client-1")
+    result = host.act(episode_id=EPISODE_ID, screenshot=b"screen")
+    assert result.sealed_failure is SealedFailure.INVALID_ACTION
+
+    closed = host.close_episode(
+        episode_id=EPISODE_ID,
+        final_intent_id=None,
+        final_result=None,
+        final_screenshot_sha256=None,
+        final_screenshot_object_key=None,
+    )
+    replay = host.close_episode(
+        episode_id=EPISODE_ID,
+        final_intent_id=None,
+        final_result=None,
+        final_screenshot_sha256=None,
+        final_screenshot_object_key=None,
+    )
+
+    state = host.get(EPISODE_ID)
+    assert replay == closed
+    assert closed.terminal_classification.value == "invalid_action"
+    assert state.resume_phase is SessionResumePhase.CLOSED
+    assert state.sealed_failure is None
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
+        "episode_closed"
+    ) == 1
+
+
 def test_restart_after_sealed_event_rejects_changed_terminal_record_input(
     tmp_path: Path,
 ) -> None:

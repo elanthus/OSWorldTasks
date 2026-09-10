@@ -701,6 +701,7 @@ class ServingEpisodeHost:
                 else state.last_intent_status
             ),
             terminal_classification=record.terminal_classification,
+            sealed_failure=None,
             model_attempts=record.model_attempts,
             provider_control_requests=record.provider_control_requests,
             usage=record.usage,
