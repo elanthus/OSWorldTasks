@@ -48,6 +48,7 @@ from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.stateful_contracts import (
     MAX_TASK_INSTRUCTION_CHARS,
     SESSION_SCHEMA_VERSION,
+    EpisodeClosedRecord,
     EpisodeSessionState,
     EpisodeStepRecord,
     IntentStatus,
@@ -79,6 +80,10 @@ class IntentReferenceError(ServingEpisodeError):
 
 
 class SessionConflictError(ServingEpisodeError):
+    pass
+
+
+class DeploymentAttemptCapError(ServingEpisodeError):
     pass
 
 
@@ -138,6 +143,19 @@ def _decode_step_record(value: Mapping[str, Any]) -> EpisodeStepRecord:
     for name in ("attempt_ids", "canonical_response_sha256s", "provider_request_ids"):
         fields[name] = tuple(fields[name])
     return EpisodeStepRecord(**fields)
+
+
+def _decode_closed_record(value: Mapping[str, Any]) -> EpisodeClosedRecord:
+    fields = dict(value)
+    fields.pop("schema_version", None)
+    fields.pop("record_kind", None)
+    fields["identity"] = ServingIdentity(**fields["identity"])
+    fields["final_result"] = (
+        None
+        if fields["final_result"] is None
+        else ReportedResult(**fields["final_result"])
+    )
+    return EpisodeClosedRecord(**fields)
 
 
 def _is_post_dispatch_completion(
@@ -497,7 +515,9 @@ class ServingEpisodeHost:
             raise ValueError("client_episode_ref is required")
         validate_credential_free({"task_instruction": task_instruction})
         if self.journal.call_counts()[0] >= self.deployment_attempt_cap:
-            raise ServingEpisodeError("deployment attempt cap reached; refusing a new episode")
+            raise DeploymentAttemptCapError(
+                "deployment attempt cap reached; refusing a new episode"
+            )
         episode_id = self.episode_id_factory()
         state_bytes = self.policy.reset(task_instruction)
         if not isinstance(state_bytes, bytes):
@@ -551,6 +571,155 @@ class ServingEpisodeHost:
         if state.identity != self.identity:
             raise ServingEpisodeError("episode identity does not match this host")
         return state
+
+    def step_record(self, episode_id: str, step_index: int) -> EpisodeStepRecord:
+        """Return the durable record produced by one completed ``act`` boundary."""
+
+        self.get(episode_id)
+        record = next(
+            (
+                item
+                for item in self.session_store.records(episode_id)
+                if item.step_index == step_index
+            ),
+            None,
+        )
+        if record is None:
+            raise ServingEpisodeError("serving step record is unavailable")
+        return record
+
+    def close_episode(
+        self,
+        *,
+        episode_id: str,
+        final_intent_id: str | None,
+        final_result: ReportedResult | None,
+        final_screenshot_sha256: str | None,
+        final_screenshot_object_key: str | None,
+    ) -> EpisodeClosedRecord:
+        """Close an episode without dispatching or asking the policy for another action.
+
+        Final screenshot bytes are stored by the API's immutable operational store before this
+        method is called.  The host receives only the verified reference, applies an outstanding
+        result through the same post-dispatch reducer used by ``act``, and durably binds the
+        terminal record before returning it.
+        """
+
+        if (final_intent_id is None) != (final_result is None):
+            raise IntentReferenceError("final intent and result must be reported together")
+        if (final_screenshot_sha256 is None) != (final_screenshot_object_key is None):
+            raise ValueError("final screenshot digest and object key must be supplied together")
+        if final_result is not None and (
+            final_screenshot_sha256 is None
+            or final_result.screenshot_sha256 != final_screenshot_sha256
+        ):
+            raise IntentReferenceError(
+                "final result screenshot digest must match the final screenshot"
+            )
+
+        state = self.get(episode_id)
+        event_key = f"{episode_id}/episode_closed"
+        existing = self.journal.event(event_key)
+        if existing is not None:
+            record = _decode_closed_record(
+                json.loads(
+                    self.journal.get_object(
+                        existing.payload["closed_record_digest"],
+                        expected_kind="episode_closed_record",
+                    )
+                )
+            )
+            if (
+                record.final_intent_id != final_intent_id
+                or record.final_result != final_result
+                or record.final_screenshot_sha256 != final_screenshot_sha256
+                or record.final_screenshot_object_key != final_screenshot_object_key
+            ):
+                raise EpisodeEndedError("the episode was closed with different final input")
+            if state.resume_phase is not SessionResumePhase.CLOSED:
+                state = self._save_closed_state(state, record)
+            return record
+        if state.resume_phase is SessionResumePhase.CLOSED:
+            raise ServingEpisodeError("closed episode record is missing")
+
+        if state.resume_phase is SessionResumePhase.SEALED:
+            if final_intent_id is not None:
+                raise IntentReferenceError("a sealed episode has no outstanding intent")
+            classification = state.terminal_classification
+            if classification is None:
+                raise ServingEpisodeError("sealed episode has no terminal classification")
+        elif state.resume_phase is SessionResumePhase.INTENT_ISSUED:
+            self._validate_outstanding_intent(state, final_intent_id, final_result)
+            state = self._report_result(state, cast(ReportedResult, final_result))
+            classification = self._classification_for_close(
+                cast(ReportedResult, final_result)
+            )
+        elif state.resume_phase is SessionResumePhase.POST_DISPATCH:
+            self._validate_report_replay(state, final_intent_id, final_result)
+            classification = self._classification_for_close(
+                cast(ReportedResult, final_result)
+            )
+        else:
+            if final_intent_id is not None:
+                raise IntentReferenceError("the episode has no outstanding intent")
+            classification = TerminalClassification.CLOSED_BY_CALLER
+
+        model_attempts, control_requests = self._episode_counts(episode_id)
+        record = EpisodeClosedRecord(
+            episode_id=episode_id,
+            identity=self.identity,
+            closed_at_utc=self._now(),
+            terminal_classification=classification,
+            final_intent_id=final_intent_id,
+            final_result=final_result,
+            final_screenshot_sha256=final_screenshot_sha256,
+            final_screenshot_object_key=final_screenshot_object_key,
+            steps=state.step_index,
+            model_attempts=model_attempts,
+            provider_control_requests=control_requests,
+            usage=self._episode_usage(episode_id),
+            attributed_cost_usd=state.attributed_cost_usd,
+        )
+        record_digest = self.journal.put_object(
+            "episode_closed_record", canonical_json_bytes(record.to_dict())
+        )
+        self.journal.append_event(
+            event_key=event_key,
+            kind="episode_closed",
+            trial_id=episode_id,
+            step_index=state.step_index,
+            payload={"closed_record_digest": record_digest},
+        )
+        self._save_closed_state(state, record)
+        return record
+
+    def _save_closed_state(
+        self, state: EpisodeSessionState, record: EpisodeClosedRecord
+    ) -> EpisodeSessionState:
+        return self._save_phase(
+            state,
+            SessionResumePhase.CLOSED,
+            checkpoint_digest=state.policy_checkpoint_sha256,
+            last_intent_status=(
+                IntentStatus.RESULT_REPORTED
+                if record.final_intent_id is not None
+                else state.last_intent_status
+            ),
+            terminal_classification=record.terminal_classification,
+            sealed_failure=None,
+            model_attempts=record.model_attempts,
+            provider_control_requests=record.provider_control_requests,
+            usage=record.usage,
+            attributed_cost_usd=record.attributed_cost_usd,
+        )
+
+    @staticmethod
+    def _classification_for_close(result: ReportedResult) -> TerminalClassification:
+        if result.terminated:
+            return TerminalClassification.TERMINATED
+        if result.truncated:
+            return TerminalClassification.TRUNCATED
+        return TerminalClassification.CLOSED_BY_CALLER
 
     def act(
         self,
