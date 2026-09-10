@@ -20,3 +20,26 @@ Read the separate [history/privacy review](privacy-review.md) for the matched an
 new hosted disclosures, media gaps, and owner decisions. Synthetic scanner vectors are not actual
 credentials; no rotation is indicated by the verified fixture. This candidate does not approve
 publication, change visibility, execute models or a VM, or declare any milestone gate.
+
+## Recorded commands
+
+Source revision: `79ef2a03f40a256d94f080fcc76570898b868453`. Full output is in the linked command records.
+
+| Command | Exit status | Elapsed seconds |
+|---|---:|---:|
+| `python3.12 -m venv .venv` | 0 | 0.831 |
+| `.venv/bin/pip install -e .[dev]` | 0 | 1.809 |
+| `.venv/bin/ruff check .` | 0 | 0.617 |
+| `.venv/bin/mypy pixelgym` | 0 | 6.559 |
+| `.venv/bin/pytest -q -n auto tests/unit` | 0 | 66.827 |
+| `.venv/bin/python scripts/golden_trajectory.py check` | 0 | 2.628 |
+| `.venv/bin/python scripts/inventory_public_release.py --mode links` | 0 | 0.083 |
+| `.venv/bin/python scripts/inventory_public_release.py --mode redaction` | 0 | 2.496 |
+| `.venv/bin/python scripts/inventory_public_release.py --mode history` | 1 | 8.374 |
+| `.venv/bin/python scripts/inventory_public_release.py --mode check` | 0 | 10.381 |
+
+The fast-suite stdout records `1786 passed, 56 warnings in 61.15s`; subprocess elapsed time
+includes startup and teardown. Mypy records 105 source files. Golden replay records 110 actions,
+reward zero for the preceding 109 actions, then reward one at the exact valid submission.
+Both initial and final tracked/untracked status were empty. No OSWorld extra, VM, browser, or
+provider call was used. Dependency installation required network access; validation was local.
