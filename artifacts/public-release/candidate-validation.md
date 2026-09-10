@@ -1,9 +1,10 @@
-# Stacked release-candidate validation — issue 185
+# Release-candidate validation — issue 185 follow-up
 
 This evidence covers the candidate containing the status corrections (#187), README restructuring
 (#188), and scoped privacy review (#186), plus the exact synthetic-vector acknowledgment (#185).
-These changes are proposed in dependent review-ready PRs; they are not yet merged into main.
-The owner must review and merge the stack in that order, then recheck any changed final candidate.
+PRs #189 and #191 are on main, including the README changes originally proposed in #190.
+PR #192 merged into a retired stack branch; this follow-up brings its scanner acknowledgment and
+refreshed inventory to main. Media remains unchanged. The hosted-redaction follow-up is included.
 
 The [command records](candidate-command-records.json) retain source revision, clean-clone/ref scope,
 Python version, commands, exit status, stdout/stderr with disclosed path placeholders and original stream hashes, and elapsed time. Results are measurements,
@@ -17,7 +18,7 @@ artifacts from the user's working checkout are not copied into this candidate.
 
 The history scan deliberately retains accepted operator-path findings and a nonzero exit status.
 Read the separate [history/privacy review](privacy-review.md) for the matched ancestor acceptance,
-new hosted disclosures, media gaps, and owner decisions. Synthetic scanner vectors are not actual
+completed hosted redactions, media gaps, and owner decisions. Synthetic scanner vectors are not actual
 credentials; no rotation is indicated by the verified fixture. This candidate does not approve
 publication, change visibility, execute models or a VM, or declare any milestone gate.
 
