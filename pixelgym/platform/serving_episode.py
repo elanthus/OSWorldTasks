@@ -543,6 +543,9 @@ class ServingEpisodeHost:
             )
         sealed_event = self.journal.event(f"{episode_id}/episode_sealed")
         if sealed_event is not None:
+            self._validate_act_context_if_present(
+                state, screenshot_digest, previous_intent_id, previous_result
+            )
             return self._seal(
                 state,
                 SealedFailure(sealed_event.payload["sealed_failure"]),
@@ -850,6 +853,7 @@ class ServingEpisodeHost:
             payload={"sealed_failure": failure.value},
         )
         del event
+        self._interrupt("sealed_event")
         record = self._step_record(
             state,
             screenshot_digest=screenshot_digest,

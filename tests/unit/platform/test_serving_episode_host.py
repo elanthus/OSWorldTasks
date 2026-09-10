@@ -330,6 +330,37 @@ def test_each_policy_failure_is_sealed_once_and_never_attempted_again(
     assert len(transport.model_requests) == requests
 
 
+def test_restart_after_sealed_event_rejects_changed_terminal_record_input(
+    tmp_path: Path,
+) -> None:
+    response = {
+        "response_id": "parse-bad",
+        "model": "fake",
+        "content": "not-json",
+        "finish_reason": "stop",
+        "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+    }
+    transport = ScriptedTransport([TransportOutcome("response", response)])
+    interrupted = _host(
+        tmp_path, transport=transport, interrupt_after="sealed_event"
+    )
+    interrupted.create_episode(task_instruction="Complete", client_episode_ref="client-1")
+    with pytest.raises(InjectedInterruption, match="sealed_event"):
+        interrupted.act(episode_id=EPISODE_ID, screenshot=b"original-screen")
+
+    recovered = _host(tmp_path, transport=transport)
+    before = recovered.get(EPISODE_ID)
+    with pytest.raises(IntentReferenceError, match="durable request context"):
+        recovered.act(episode_id=EPISODE_ID, screenshot=b"changed-screen")
+    assert recovered.get(EPISODE_ID) == before
+    assert recovered.session_store.records(EPISODE_ID) == ()
+
+    result = recovered.act(episode_id=EPISODE_ID, screenshot=b"original-screen")
+    assert result.sealed_failure is SealedFailure.PARSE_FAILURE
+    assert len(transport.model_requests) == 1
+    assert len(recovered.session_store.records(EPISODE_ID)) == 1
+
+
 def test_deployment_call_cap_is_checked_before_send_and_seals_open_episode(
     tmp_path: Path,
 ) -> None:
