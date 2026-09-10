@@ -10,7 +10,7 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from email.utils import parsedate_to_datetime
@@ -260,6 +260,14 @@ LLAMA_STATEFUL = PanelPolicyConfig(
     coordinate_input_convention="integer-normalized-square/0..999-inclusive",
     stateful=True,
     quantizations=("fp8",),
+)
+LLAMA_STATEFUL_RETRY_SUCCESSOR = replace(
+    LLAMA_STATEFUL,
+    slot="C-llama-stateful-v2",
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
+    rate_limit_backoff_base_seconds=15.0,
 )
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",

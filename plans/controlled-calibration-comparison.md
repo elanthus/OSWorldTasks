@@ -141,3 +141,31 @@ both arms afresh on the same fifty tasks and does not fill missing predecessor r
 or reuse the predecessor's paid-call approval. Review and approve the new exact digest before any
 execution. Selecting `--generation v2 --phase smoke` also supports an optional no-retry smoke with
 the existing twenty-call bound; that is a separate package and is not executed by the planner.
+
+## Offline panel diagnostics and a Llama retry successor
+
+`pixelgym.grounding.v5.calibration_diagnostics` scores stored host-side stage diagnostics without
+executing the environment or a provider. It reports first decisions at critical stages, consumer
+entry and resolution, visible recovery entries, irreversible commits, and action overhead. Missing
+episodes and unentered decisions stay separate from observed incorrect decisions. A correctly
+chosen action that intentionally enters a declared repair state counts as a correct first decision.
+
+The owner selected both exploratory dependency-retention readings: resolution before any visible
+error and resolution before the consumer enters its declared repair state. Both use entered
+consumers as their conditional denominator and disclose unentered consumers. These diagnostics do
+not change frozen terminal success. The benchmark plan does not supply a concrete frozen loop
+rule; an exploratory repeated screenshot/action signature must not be labeled its protocol loop rate.
+
+If the original `C-llama-stateful` run exhausts rate-limit retries, the registered
+`C-llama-stateful-v2` configuration supports a separately approved successor. It preserves the
+model, DeepInfra FP8 route, no-fallback routing, prompts, coordinate adapter, state reducer, and
+180-second request deadline. It changes only the slot identity and bounded retry controls: four
+attempts per action, three shared retries, and a fifteen-second fallback backoff base. The existing
+sixty-second ceiling gives fallback waits of fifteen, thirty, and sixty seconds. Valid provider
+retry hints retain precedence. The original two-attempt configuration remains available unchanged.
+
+A successor must freeze a fresh plan at its committed revision, recheck route prices, and receive
+exact owner approval. Fifty fresh calibration assignments imply 1,431 environment actions and at
+most 5,724 model attempts/wire requests, with zero control requests. A proposed fresh $2 ceiling
+remains binding; longer backoff does not guarantee completion. Preserve stopped predecessor rows
+as incomplete evidence, never fill them with a successor, and never reuse their paid-call approval.
