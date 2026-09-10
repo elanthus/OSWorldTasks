@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "issue": 187,
+  "observed_on": "2026-09-10",
+  "source_revision": "06d695a327b02cb83e22f25cc47407d0b344bff5",
+  "visibility": {
+    "command": "gh repo view --json visibility,url,defaultBranchRef",
+    "exit_status": 0,
+    "output": {
+      "defaultBranchRef": {
+        "name": "main"
+      },
+      "url": "https://github.com/elanthus/OSWorldTasks",
+      "visibility": "PRIVATE"
+    }
+  },
+  "ci": {
+    "path": ".github/workflows/ci.yml",
+    "timeout_minutes": {
+      "fast-suite": 20,
+      "lint": 10,
+      "type-check": 10
+    },
+    "coverage_command": "python -m pytest -q -n 4 --dist worksteal --hypothesis-profile=ci --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit"
+  },
+  "historical_local_timing": {
+    "source": "README.md at 06d695a327b02cb83e22f25cc47407d0b344bff5",
+    "plain_seconds_range": [
+      54.6,
+      69.5
+    ],
+    "coverage_seconds_range": [
+      66.9,
+      82.2
+    ],
+    "limitation": "Historical prose observations; not a fresh measurement or a hosted runtime estimate."
+  },
+  "owner_gate": {
+    "schema_version": 1,
+    "gate": "D4.12",
+    "verdict": "PASS",
+    "declared_by": "project owner",
+    "declared_at": "2026-09-09T18:54:15Z",
+    "declaration": "pass on all 16, record it against 4c4a7fb",
+    "graded_revision": "4c4a7fb2fcb983e81084542365abc0ec2d7df538",
+    "evidence_index": "artifacts/platform/d4.12/4c4a7fb2fcb983e81084542365abc0ec2d7df538/REPORT.md",
+    "checklist_rows_passed": 16,
+    "checklist_rows_failed": 0,
+    "evidence": {
+      "observation_window_utc": [
+        "2026-09-09T16:26:00Z",
+        "2026-09-09T16:46:20Z"
+      ],
+      "fast_suite": {
+        "passed": 1569,
+        "skipped": 30,
+        "warnings": 4,
+        "seconds": 184.81
+      },
+      "platform_unit": {
+        "passed": 604,
+        "warnings": 4,
+        "seconds": 108.3
+      },
+      "compose_browser_integration": {
+        "passed": 2,
+        "seconds": 128.81
+      },
+      "metaflow_local_runtime": {
+        "passed": 11,
+        "seconds": 209.85
+      },
+      "mechanical_boundaries": {
+        "passed": 30,
+        "seconds": 4.51
+      },
+      "immutable_verification": {
+        "verified": 310,
+        "failures": 0
+      },
+      "redaction_scan": {
+        "files_scanned": 65,
+        "findings": 0
+      },
+      "command_records": 35,
+      "nonzero_exit_records": [
+        "commands/16-platform-sleep-scan.json (exit 1 = no matches, expected)"
+      ]
+    },
+    "d411_rehearsals": {
+      "indexed_by_this_report": "fa4f414db15bf4a9f46dfcf0781828d2bf78afe9 (artifacts/platform/, 2026-08-17)",
+      "reconfirmed_at_current_head": "78c801c514a83d74111da14ffef89714427570ec (artifacts/platform/d4.11/78c801c\u2026/, PR #177, 2026-09-09)"
+    },
+    "not_declared": [
+      "public README wording changes",
+      "paid provider calls",
+      "external deployment",
+      "production WORM retention"
+    ]
+  },
+  "scope": "Documentation correction only; owner review of public wording remains required. No new gate verdict, visibility change, or v5 completion."
+}

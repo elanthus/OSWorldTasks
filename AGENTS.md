@@ -29,8 +29,11 @@ If this file and a sprint plan disagree, the sprint plan wins for task detail; t
 ## 2. Current repository state
 
 The core environment, OSWorld adapter, validation suite, frozen grounding experiment, and
-local-first platform components are implemented. The platform milestone is in progress; its D4.12
-milestone gate is owned by the human and must not be declared passed by an agent.
+local-first platform components are implemented. The project owner recorded D4.12 `PASS` on 2026-09-09 against revision
+`4c4a7fb2fcb983e81084542365abc0ec2d7df538` in `artifacts/platform/human-gate.json`.
+That decision covers the reviewed scripted-provider governance and orchestration evidence; it is
+not a model-quality or production-readiness claim and does not grade later changes. The v5 agent
+benchmark and v5 serving work remain unfinished; agents must not infer a new milestone verdict.
 
 Current repository layout includes the following core paths:
 

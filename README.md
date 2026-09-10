@@ -61,10 +61,11 @@ agent interface; expected values and bounding boxes never enter the environment 
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
-**Status.** This is a personal portfolio project, public for review. Sprints 1–3 are complete and
+**Status.** This is a personal portfolio project prepared for review. Sprints 1–3 are complete and
 gated by the owner ([D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2/raw/human-gate.json),
 [D3.11](artifacts/day-3/raw/human-gate.json), [D4.12](artifacts/platform/human-gate.json)); the v5 agent
-benchmark is in progress and its gate is not declared. Every number below links to a
+benchmark and v5 serving work remain in progress and no v5 gate is declared. The recorded
+D4.12 decision applies to its reviewed revision and scripted-provider scope, not to later v5 work. Every number below links to a
 checked-in artifact. Pull requests run lint, strict type checking, and the fast suite in CI; the
 Docker-based platform integration suite runs only on manual dispatch.
 
@@ -283,12 +284,14 @@ identical coverage gate locally with:
   --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit
 ```
 
-Coverage instrumentation has measurable overhead: local runs of the plain fast suite (the command in
-the reproduction block above) ranged 54.6-69.5s across repeated measurements, and the same suite with
-the coverage gate above ranged 66.9-82.2s; both are reported (rather than a single cherry-picked
-number) so the coverage overhead is disclosed alongside its own run-to-run variance instead of being
-folded into a single fast-suite timing claim. The `timeout-minutes: 10` CI job budget comfortably
-covers both.
+The [CI workflow](.github/workflows/ci.yml) gives the fast-suite job a **20-minute timeout**;
+lint and type checking each have a 10-minute timeout. Hosted coverage runtime includes runner,
+setup, instrumentation, and reporting costs and is a different measurement from a local plain
+suite. Historical local measurements in the README at revision `06d695a` ranged 54.6–69.5s for
+the plain suite and 66.9–82.2s with coverage. These are historical observations, not current timing
+guarantees or evidence that a hosted job should finish in a minute. See the
+[status source record](artifacts/public-release/status-sources.json) for the checked configuration,
+visibility, and owner-gate sources.
 
 Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
 installed once with:
