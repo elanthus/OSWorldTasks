@@ -1,0 +1,1439 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/stateful-serving-v2.json",
+  "title": "PixelGym stateful serving session contracts (pixelgym-serving-v2)",
+  "description": "Request and response bodies for /api/v2/episodes and the immutable episode records the serving host writes. Screenshots sent to act are recorded by digest only; the final screenshot sent to close is stored as an authoritative object and referenced by digest.",
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prefixed_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "episode_id": {
+      "type": "string",
+      "pattern": "^ep-[0-9a-f]{32}$"
+    },
+    "intent_id": {
+      "type": "string",
+      "pattern": "^intent-[0-9a-f]{32}$"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "deployment_id",
+        "exact_policy_version",
+        "evidence_class"
+      ],
+      "properties": {
+        "policy_id": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "deployment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exact_policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_class": {
+          "enum": [
+            "calibration",
+            "confirmatory"
+          ]
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_type",
+        "x",
+        "y",
+        "key"
+      ],
+      "properties": {
+        "action_type": {
+          "enum": [
+            "NOOP",
+            "CLICK",
+            "KEY"
+          ]
+        },
+        "x": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "y": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "key": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "action_type": {
+              "const": "NOOP"
+            },
+            "x": {
+              "type": "null"
+            },
+            "y": {
+              "type": "null"
+            },
+            "key": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "action_type": {
+              "const": "CLICK"
+            },
+            "x": {
+              "type": "integer"
+            },
+            "y": {
+              "type": "integer"
+            },
+            "key": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "action_type": {
+              "const": "KEY"
+            },
+            "x": {
+              "type": "null"
+            },
+            "y": {
+              "type": "null"
+            },
+            "key": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "result": {
+      "description": "Exact caller-reported environment result; terminated and truncated are mutually exclusive.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reward",
+        "terminated",
+        "truncated",
+        "screenshot_sha256"
+      ],
+      "properties": {
+        "reward": {
+          "enum": [
+            0.0,
+            1.0
+          ]
+        },
+        "terminated": {
+          "type": "boolean"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "screenshot_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        }
+      },
+      "not": {
+        "properties": {
+          "terminated": {
+            "const": true
+          },
+          "truncated": {
+            "const": true
+          }
+        },
+        "required": [
+          "terminated",
+          "truncated"
+        ]
+      }
+    },
+    "sealed_failure_code": {
+      "enum": [
+        "parse_failure",
+        "invalid_action",
+        "request_failure",
+        "cap_reached",
+        "infrastructure_failure",
+        "max_steps_reached"
+      ]
+    },
+    "checkpoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pre_call",
+        "post_attempt",
+        "post_parse",
+        "post_dispatch"
+      ],
+      "properties": {
+        "pre_call": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "post_attempt": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/prefixed_digest"
+            }
+          ]
+        },
+        "post_parse": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/prefixed_digest"
+            }
+          ]
+        },
+        "post_dispatch": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/prefixed_digest"
+            }
+          ]
+        }
+      }
+    },
+    "usage": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[a-z][a-z0-9_]{0,63}$": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "screenshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image_base64",
+        "media_type"
+      ],
+      "properties": {
+        "image_base64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 6990508
+        },
+        "media_type": {
+          "enum": [
+            "image/png",
+            "image/jpeg"
+          ]
+        }
+      }
+    },
+    "create_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_instruction",
+        "screen_width",
+        "screen_height",
+        "client_episode_ref"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "task_instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "screen_width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "screen_height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "client_episode_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        }
+      }
+    },
+    "create_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "identity",
+        "max_steps",
+        "max_model_attempts_per_action",
+        "action_schema_version",
+        "key_allowlist_version"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_model_attempts_per_action": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "action_schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key_allowlist_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "act_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "screenshot",
+        "previous_intent_id",
+        "previous_result"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "screenshot": {
+          "$ref": "#/$defs/screenshot"
+        },
+        "previous_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "previous_result": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/result"
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "previous_intent_id": {
+              "type": "null"
+            },
+            "previous_result": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "previous_intent_id": {
+              "type": "string"
+            },
+            "previous_result": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "act_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "step_index",
+        "intent_id",
+        "action",
+        "sealed_failure",
+        "attempt_count",
+        "identity"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "action": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/action"
+            }
+          ]
+        },
+        "sealed_failure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sealed_failure_code"
+            }
+          ]
+        },
+        "attempt_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "intent_id": {
+              "type": "string"
+            },
+            "action": {
+              "type": "object"
+            },
+            "sealed_failure": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "intent_id": {
+              "type": "null"
+            },
+            "action": {
+              "type": "null"
+            },
+            "sealed_failure": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "close_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "final_screenshot",
+        "final_intent_id",
+        "final_result"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "final_screenshot": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/screenshot"
+            }
+          ]
+        },
+        "final_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "final_result": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/result"
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "final_intent_id": {
+              "type": "null"
+            },
+            "final_result": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "final_intent_id": {
+              "type": "string"
+            },
+            "final_result": {
+              "type": "object"
+            },
+            "final_screenshot": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "close_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "identity",
+        "terminal_classification",
+        "steps",
+        "model_attempts",
+        "provider_control_requests",
+        "usage",
+        "attributed_cost_usd",
+        "final_screenshot_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "terminal_classification": {
+          "enum": [
+            "closed_by_caller",
+            "terminated",
+            "truncated",
+            "parse_failure",
+            "invalid_action",
+            "request_failure",
+            "cap_reached",
+            "infrastructure_failure",
+            "max_steps_reached"
+          ]
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider_control_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "attributed_cost_usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "final_screenshot_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/prefixed_digest"
+            }
+          ]
+        }
+      }
+    },
+    "episode_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "identity",
+        "open",
+        "step_index",
+        "last_intent_id",
+        "last_intent_status"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "open": {
+          "type": "boolean"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "last_intent_status": {
+          "enum": [
+            "none",
+            "issued",
+            "result_reported",
+            "sealed"
+          ]
+        }
+      }
+    },
+    "episode_opened_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "record_kind",
+        "episode_id",
+        "client_episode_ref",
+        "identity",
+        "opened_at_utc",
+        "task_instruction_sha256",
+        "screen",
+        "max_steps",
+        "deployment_attempt_cap"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-episode-record-v1"
+        },
+        "record_kind": {
+          "const": "episode_opened"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "client_episode_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "opened_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "task_instruction_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "screen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "deployment_attempt_cap": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "episode_step_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "record_kind",
+        "episode_id",
+        "step_index",
+        "identity",
+        "recorded_at_utc",
+        "screenshot_sha256",
+        "previous_intent_id",
+        "previous_result",
+        "attempt_ids",
+        "canonical_response_sha256s",
+        "checkpoints",
+        "intent_id",
+        "action",
+        "sealed_failure",
+        "provider_request_ids",
+        "latency_ms",
+        "usage",
+        "attributed_cost_usd"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-episode-record-v1"
+        },
+        "record_kind": {
+          "const": "episode_step"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "recorded_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "screenshot_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "previous_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "previous_result": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/result"
+            }
+          ]
+        },
+        "attempt_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "canonical_response_sha256s": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prefixed_digest"
+          }
+        },
+        "checkpoints": {
+          "$ref": "#/$defs/checkpoints"
+        },
+        "intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "action": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/action"
+            }
+          ]
+        },
+        "sealed_failure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sealed_failure_code"
+            }
+          ]
+        },
+        "provider_request_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._:-]{1,256}$"
+          }
+        },
+        "latency_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "attributed_cost_usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "intent_id": {
+              "type": "string"
+            },
+            "action": {
+              "type": "object"
+            },
+            "sealed_failure": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "intent_id": {
+              "type": "null"
+            },
+            "action": {
+              "type": "null"
+            },
+            "sealed_failure": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "episode_closed_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "record_kind",
+        "episode_id",
+        "identity",
+        "closed_at_utc",
+        "terminal_classification",
+        "final_intent_id",
+        "final_result",
+        "final_screenshot_sha256",
+        "final_screenshot_object_key",
+        "steps",
+        "model_attempts",
+        "provider_control_requests",
+        "usage",
+        "attributed_cost_usd"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-episode-record-v1"
+        },
+        "record_kind": {
+          "const": "episode_closed"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "closed_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "terminal_classification": {
+          "enum": [
+            "closed_by_caller",
+            "terminated",
+            "truncated",
+            "parse_failure",
+            "invalid_action",
+            "request_failure",
+            "cap_reached",
+            "infrastructure_failure",
+            "max_steps_reached"
+          ]
+        },
+        "final_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "final_result": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/result"
+            }
+          ]
+        },
+        "final_screenshot_sha256": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/prefixed_digest"
+            }
+          ]
+        },
+        "final_screenshot_object_key": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider_control_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "attributed_cost_usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "final_screenshot_sha256": {
+              "type": "null"
+            },
+            "final_screenshot_object_key": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "final_screenshot_sha256": {
+              "type": "string"
+            },
+            "final_screenshot_object_key": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "episode_session_state": {
+      "description": "Durable recovery state for one episode. Policy-state and task-instruction bytes remain in authoritative objects; this document stores only their content-addressed references and caller-visible session metadata.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "episode_id",
+        "client_episode_ref",
+        "identity",
+        "created_at_utc",
+        "updated_at_utc",
+        "revision",
+        "resume_phase",
+        "task_instruction_sha256",
+        "screen",
+        "max_steps",
+        "max_model_attempts_per_action",
+        "deployment_attempt_cap",
+        "step_index",
+        "policy_checkpoint_sha256",
+        "policy_checkpoint_object_key",
+        "last_intent_id",
+        "last_intent_status",
+        "last_action",
+        "sealed_failure",
+        "terminal_classification",
+        "model_attempts",
+        "provider_control_requests",
+        "usage",
+        "attributed_cost_usd"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "pixelgym-serving-session-v2"
+        },
+        "episode_id": {
+          "$ref": "#/$defs/episode_id"
+        },
+        "client_episode_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        },
+        "created_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resume_phase": {
+          "enum": [
+            "initialized",
+            "pre_call",
+            "post_attempt",
+            "post_parse",
+            "intent_issued",
+            "post_dispatch",
+            "sealed",
+            "closed"
+          ]
+        },
+        "task_instruction_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "screen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "const": 1024
+            },
+            "height": {
+              "const": 768
+            }
+          }
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_model_attempts_per_action": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "deployment_attempt_cap": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_checkpoint_sha256": {
+          "$ref": "#/$defs/prefixed_digest"
+        },
+        "policy_checkpoint_object_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_intent_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/intent_id"
+            }
+          ]
+        },
+        "last_intent_status": {
+          "enum": [
+            "none",
+            "issued",
+            "result_reported",
+            "sealed"
+          ]
+        },
+        "last_action": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/action"
+            }
+          ]
+        },
+        "sealed_failure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sealed_failure_code"
+            }
+          ]
+        },
+        "terminal_classification": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                "closed_by_caller",
+                "terminated",
+                "truncated",
+                "parse_failure",
+                "invalid_action",
+                "request_failure",
+                "cap_reached",
+                "infrastructure_failure",
+                "max_steps_reached"
+              ]
+            }
+          ]
+        },
+        "model_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider_control_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "attributed_cost_usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "last_intent_id": {
+                  "type": "null"
+                },
+                "last_action": {
+                  "type": "null"
+                },
+                "last_intent_status": {
+                  "enum": [
+                    "none",
+                    "sealed"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "last_intent_id": {
+                  "type": "string"
+                },
+                "last_action": {
+                  "type": "object"
+                },
+                "last_intent_status": {
+                  "enum": [
+                    "issued",
+                    "result_reported",
+                    "sealed"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "resume_phase": {
+                "const": "intent_issued"
+              }
+            },
+            "required": [
+              "resume_phase"
+            ]
+          },
+          "then": {
+            "properties": {
+              "last_intent_id": {
+                "type": "string"
+              },
+              "last_action": {
+                "type": "object"
+              },
+              "last_intent_status": {
+                "const": "issued"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "last_intent_status": {
+                "not": {
+                  "const": "issued"
+                }
+              }
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "resume_phase": {
+                  "enum": [
+                    "initialized",
+                    "pre_call",
+                    "post_attempt",
+                    "post_parse",
+                    "intent_issued",
+                    "post_dispatch"
+                  ]
+                },
+                "sealed_failure": {
+                  "type": "null"
+                },
+                "terminal_classification": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "resume_phase": {
+                  "const": "sealed"
+                },
+                "sealed_failure": {
+                  "type": "string"
+                },
+                "terminal_classification": {
+                  "type": "string"
+                }
+              },
+              "oneOf": [
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "parse_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "parse_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "invalid_action"
+                    },
+                    "terminal_classification": {
+                      "const": "invalid_action"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "request_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "request_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "cap_reached"
+                    },
+                    "terminal_classification": {
+                      "const": "cap_reached"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "infrastructure_failure"
+                    },
+                    "terminal_classification": {
+                      "const": "infrastructure_failure"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "sealed_failure": {
+                      "const": "max_steps_reached"
+                    },
+                    "terminal_classification": {
+                      "const": "max_steps_reached"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "properties": {
+                "resume_phase": {
+                  "const": "closed"
+                },
+                "sealed_failure": {
+                  "type": "null"
+                },
+                "terminal_classification": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

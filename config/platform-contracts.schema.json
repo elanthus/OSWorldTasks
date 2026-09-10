@@ -4,9 +4,14 @@
   "title": "PixelGym platform schema registry",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "contracts"],
+  "required": [
+    "schema_version",
+    "contracts"
+  ],
   "properties": {
-    "schema_version": {"const": "pixelgym-platform-schema-registry-v1"},
+    "schema_version": {
+      "const": "pixelgym-platform-schema-registry-v1"
+    },
     "contracts": {
       "const": {
         "run_manifest": "pixelgym-platform-run-manifest-v1",
@@ -16,7 +21,19 @@
         "raw_response": "pixelgym-raw-response-v1",
         "approval": "pixelgym-policy-approval-v1",
         "deployment": "pixelgym-policy-deployment-v1",
-        "audit_event": "pixelgym-platform-audit-event-v1"
+        "audit_event": "pixelgym-platform-audit-event-v1",
+        "stateful_policy_package": "pixelgym-stateful-policy-package-v1",
+        "serving_create_request": "pixelgym-serving-session-v2",
+        "serving_create_response": "pixelgym-serving-session-v2",
+        "serving_act_request": "pixelgym-serving-session-v2",
+        "serving_act_response": "pixelgym-serving-session-v2",
+        "serving_close_request": "pixelgym-serving-session-v2",
+        "serving_close_response": "pixelgym-serving-session-v2",
+        "serving_episode_status": "pixelgym-serving-session-v2",
+        "episode_session_state": "pixelgym-serving-session-v2",
+        "episode_opened_record": "pixelgym-serving-episode-record-v1",
+        "episode_step_record": "pixelgym-serving-episode-record-v1",
+        "episode_closed_record": "pixelgym-serving-episode-record-v1"
       }
     }
   }

@@ -25,11 +25,35 @@ CONTRACT_SCHEMA_FILES = {
     "approval": "control-events.schema.json",
     "deployment": "control-events.schema.json",
     "audit_event": "control-events.schema.json",
+    "stateful_policy_package": "stateful-policy-package.schema.json",
+    "serving_create_request": "stateful-serving.schema.json",
+    "serving_create_response": "stateful-serving.schema.json",
+    "serving_act_request": "stateful-serving.schema.json",
+    "serving_act_response": "stateful-serving.schema.json",
+    "serving_close_request": "stateful-serving.schema.json",
+    "serving_close_response": "stateful-serving.schema.json",
+    "serving_episode_status": "stateful-serving.schema.json",
+    "episode_session_state": "stateful-serving.schema.json",
+    "episode_opened_record": "stateful-serving.schema.json",
+    "episode_step_record": "stateful-serving.schema.json",
+    "episode_closed_record": "stateful-serving.schema.json",
 }
+# Contracts that live under a shared file's ``$defs`` rather than at its root.
 CONTROL_EVENT_DEFINITIONS = {
     "approval": "approval",
     "deployment": "deployment",
     "audit_event": "audit",
+    "serving_create_request": "create_request",
+    "serving_create_response": "create_response",
+    "serving_act_request": "act_request",
+    "serving_act_response": "act_response",
+    "serving_close_request": "close_request",
+    "serving_close_response": "close_response",
+    "serving_episode_status": "episode_status",
+    "episode_session_state": "episode_session_state",
+    "episode_opened_record": "episode_opened_record",
+    "episode_step_record": "episode_step_record",
+    "episode_closed_record": "episode_closed_record",
 }
 PRICE_CATALOG_SCHEMA_FILE = "price-catalog.schema.json"
 REGISTRY_SCHEMA_FILE = "platform-contracts.schema.json"
@@ -141,7 +165,16 @@ class PlatformSchemas:
             if contract not in self._validators:
                 root_schema = self._schema(CONTRACT_SCHEMA_FILES[contract])
                 definition = CONTROL_EVENT_DEFINITIONS.get(contract)
-                schema = root_schema if definition is None else root_schema["$defs"][definition]
+                if definition is None:
+                    schema = root_schema
+                else:
+                    # Validate the named definition as the root while keeping the file's
+                    # shared ``$defs`` reachable, so intra-file ``$ref``s still resolve.
+                    schema = {
+                        "$schema": root_schema["$schema"],
+                        "$defs": root_schema["$defs"],
+                        "$ref": f"#/$defs/{definition}",
+                    }
                 self._validators[contract] = Draft202012Validator(
                     schema,
                     format_checker=FormatChecker(),

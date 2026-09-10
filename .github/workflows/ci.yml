@@ -60,7 +60,9 @@ jobs:
   fast-suite:
     name: Fast suite
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Comparable green runs take about eight minutes with coverage; keep enough runner variance
+    # headroom for the suite to report assertions and coverage instead of being hard-cancelled.
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository

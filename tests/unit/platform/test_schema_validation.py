@@ -27,6 +27,7 @@ from pixelgym.platform.schema_validation import (
     load_price_catalog,
 )
 from scripts.export_platform_evidence import export_evidence
+from tests.unit.platform.stateful_fixtures import stateful_representatives
 
 COMMITTED_EXPORTS = {
     "demo-run-manifests.jsonl": "run_manifest",
@@ -44,6 +45,18 @@ WRONG_TYPE_FIELDS = {
     "approval": "actor",
     "deployment": "generation",
     "audit_event": "event_type",
+    "stateful_policy_package": "provider",
+    "serving_create_request": "task_instruction",
+    "serving_create_response": "max_steps",
+    "serving_act_request": "screenshot",
+    "serving_act_response": "attempt_count",
+    "serving_close_request": "final_screenshot",
+    "serving_close_response": "steps",
+    "serving_episode_status": "open",
+    "episode_session_state": "revision",
+    "episode_opened_record": "max_steps",
+    "episode_step_record": "step_index",
+    "episode_closed_record": "steps",
 }
 
 
@@ -119,6 +132,7 @@ def _representatives(
         "approval": _jsonl(platform / "demo-approval-events.jsonl")[0],
         "deployment": _jsonl(platform / "demo-deployment-events.jsonl")[0],
         "audit_event": _jsonl(platform / "demo-audit-events.jsonl")[0],
+        **stateful_representatives(),
     }
 
 
@@ -135,6 +149,18 @@ def test_registry_inventory_matches_every_d41_contract(repository_root: Path) ->
         "approval": "pixelgym-policy-approval-v1",
         "deployment": "pixelgym-policy-deployment-v1",
         "audit_event": "pixelgym-platform-audit-event-v1",
+        "stateful_policy_package": "pixelgym-stateful-policy-package-v1",
+        "serving_create_request": "pixelgym-serving-session-v2",
+        "serving_create_response": "pixelgym-serving-session-v2",
+        "serving_act_request": "pixelgym-serving-session-v2",
+        "serving_act_response": "pixelgym-serving-session-v2",
+        "serving_close_request": "pixelgym-serving-session-v2",
+        "serving_close_response": "pixelgym-serving-session-v2",
+        "serving_episode_status": "pixelgym-serving-session-v2",
+        "episode_session_state": "pixelgym-serving-session-v2",
+        "episode_opened_record": "pixelgym-serving-episode-record-v1",
+        "episode_step_record": "pixelgym-serving-episode-record-v1",
+        "episode_closed_record": "pixelgym-serving-episode-record-v1",
     }
 
 

@@ -43,7 +43,7 @@ from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
 
 REGISTRY_SCHEMA_VERSION = "pixelgym-approved-providers-v1"
 REGISTRY_RELATIVE_PATH = Path("config/approved-providers.json")
-SUPPORTED_KINDS = frozenset({"grounding"})
+SUPPORTED_KINDS = frozenset({"grounding", "stateful-v5"})
 SUPPORTED_TRANSPORTS = frozenset({"openrouter"})
 SUPPORTED_COORDINATE_ADAPTERS = frozenset({"none"})
 SUPPORTED_CONDITIONS = frozenset({"raw"})
@@ -72,10 +72,11 @@ _RECORD_FIELDS = frozenset(
         "request_parameters",
         "provider_routing",
         "coordinate_adapter",
+        "policy_manifest_sha256",
     }
 )
 _OPTIONAL_RECORD_FIELDS = frozenset(
-    {"model_alias_disclosure", "request_parameters", "provider_routing"}
+    {"model_alias_disclosure", "request_parameters", "provider_routing", "policy_manifest_sha256"}
 )
 
 
@@ -126,6 +127,10 @@ class ApprovedProviderPolicy:
     model_alias_disclosure: str | None = None
     request_parameters: dict[str, Any] = field(default_factory=dict)
     provider_routing: dict[str, Any] = field(default_factory=dict)
+    # Present only for kind "stateful-v5": the bare SHA-256 of the v5 PolicyManifest identity
+    # fields (see pixelgym.platform.stateful_contracts). Such records are served, not run by
+    # the grounding evaluation flow, which refuses them at resolve time.
+    policy_manifest_sha256: str | None = None
 
     def __post_init__(self) -> None:
         if not _REFERENCE_RE.fullmatch(self.reference):
@@ -156,11 +161,26 @@ class ApprovedProviderPolicy:
             raise ApprovedProviderError("an approved provider cannot bill against the demo catalog")
         if not _ENV_NAME_RE.fullmatch(self.credential_env):
             raise ApprovedProviderError("credential_env must name an environment variable")
-        if self.coordinate_adapter not in SUPPORTED_COORDINATE_ADAPTERS:
-            raise ApprovedProviderError(
-                "coordinate adapters rewrite raw responses before storage; "
-                f"only {sorted(SUPPORTED_COORDINATE_ADAPTERS)} are admitted"
-            )
+        if self.kind == "stateful-v5":
+            if not isinstance(self.policy_manifest_sha256, str) or not re.fullmatch(
+                r"[0-9a-f]{64}", self.policy_manifest_sha256
+            ):
+                raise ApprovedProviderError(
+                    "stateful-v5 records must bind a v5 policy_manifest_sha256"
+                )
+            if self.coordinate_adapter != "manifest-bound":
+                raise ApprovedProviderError(
+                    "stateful-v5 records carry their coordinate adapter inside the v5 manifest;"
+                    " set coordinate_adapter to manifest-bound"
+                )
+        else:
+            if self.policy_manifest_sha256 is not None:
+                raise ApprovedProviderError("only stateful-v5 records bind a policy manifest")
+            if self.coordinate_adapter not in SUPPORTED_COORDINATE_ADAPTERS:
+                raise ApprovedProviderError(
+                    "coordinate adapters rewrite raw responses before storage; "
+                    f"only {sorted(SUPPORTED_COORDINATE_ADAPTERS)} are admitted"
+                )
         if self.model_alias_disclosure is not None and not isinstance(
             self.model_alias_disclosure, str
         ):
@@ -229,6 +249,7 @@ class ApprovedProviderPolicy:
             "coordinate_adapter": self.coordinate_adapter,
             "request_parameters": dict(self.request_parameters),
             "provider_routing": dict(self.provider_routing),
+            "policy_manifest_sha256": self.policy_manifest_sha256,
         }
 
     @property
@@ -305,6 +326,10 @@ def resolve_approved_provider(
     policy = registry.get(reference)
     if policy is None:
         raise ApprovedProviderError(f"{reference!r} is not an approved provider reference")
+    if policy.kind != "grounding":
+        raise ApprovedProviderError(
+            f"{reference!r} is a {policy.kind} record; the grounding evaluation flow cannot run it"
+        )
     if approved_sha256 != policy.approval_sha256:
         raise ApprovedProviderError(
             f"approval digest does not match the registry record for {reference!r}"
