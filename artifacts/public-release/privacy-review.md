@@ -1,6 +1,7 @@
 # Publication privacy review — issue 186
 
-Prepared for owner review on 2026-09-10. This record does not approve publication, change visibility,
+Historical review snapshot prepared on 2026-09-10. See the [final refresh](final-privacy-review.md)
+for updated scans and the owner's acceptance of its documented coverage limits. This record does not approve publication, change visibility,
 or extend the existing acceptance of historical paths to other surfaces. No actual credential was
 established in the reviewed content; unreviewed surfaces remain explicitly unresolved.
 
@@ -93,12 +94,12 @@ The owner chose to leave media unchanged for now after spot checks and a separat
 No media was deleted, deduplicated, regenerated, or migrated to LFS. This retention decision does
 not establish exhaustive visual review or publication approval.
 
-## Publication decisions still required
+## Publication decisions at the original snapshot
 
 The established actual-credential count is zero in the inspected scope. That is different from
 certifying zero unreviewed actual credentials across every possible publication surface. Keep the
-release checklist unticked until the owner disposes of the remaining publication-review limits
-for media and other scope gaps, and public wording. The authorized current-comment redactions
+release checklist unticked until the owner disposes of the publication-review limits and public
+wording. The later acceptance of the documented coverage limits is recorded in the final refresh. The authorized current-comment redactions
 are complete; they do not clear historical copies. Recheck the final candidate and current hosted state
 before a visibility change. No credential rotation, history rewrite, record deletion, visibility
 change, or milestone verdict was performed.
