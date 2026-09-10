@@ -42,26 +42,31 @@ No releases, release assets, or recognized GitHub attachment links were returned
 or non-synthetic email match was found in the retrieved bodies/comments/logs; artifact scans found
 runner source paths and no token shape.
 
-Path disposition after inspecting the surrounding text:
+Original snapshot disposition, corrected by the follow-up inspection:
 
 - **22,853 occurrences:** ordinary GitHub-hosted runner paths, including coverage source paths.
   They identify the hosted runtime, not an operator home directory; no removal proposed.
-- **12 occurrences:** documentation examples or regular-expression fragments. Retained as examples;
+- **13 occurrences:** documentation examples or regular-expression fragments. Retained as examples;
   they are not evidence of a real operator directory.
-- **6 occurrences in three discussion comments:** concrete operator-path disclosures. These are
-  new hosted surfaces and are **not** covered by the seven-ancestor acceptance. The exact
-  fingerprints and resource mappings are under `owner_review_findings` in the hosted review.
+- **5 occurrences in two discussion comments:** concrete operator-path disclosures, subsequently
+  redacted with owner authorization. These hosted surfaces were **not** covered by the
+  seven-ancestor acceptance. The original snapshot incorrectly classified the generic example
+  in PR 134 as a sixth concrete disclosure; its original fingerprint remains in
+  `owner_review_findings` for traceability.
 
-The owner must choose whether to accept these hosted disclosures or authorize replacing the
-matched path text with a neutral placeholder in these exact comments:
+The owner authorized neutral-placeholder replacements on 2026-09-10 in these exact comments:
 
 - [Issue 44 comment 5313139648](https://github.com/elanthus/OSWorldTasks/issues/44#issuecomment-5313139648): four paths in pasted test warnings.
-- [PR 134 comment 5532587952](https://github.com/elanthus/OSWorldTasks/pull/134#issuecomment-5532587952): one path quoted in review feedback.
+- [PR 134 comment 5532587952](https://github.com/elanthus/OSWorldTasks/pull/134#issuecomment-5532587952): one already generic abbreviated path example, also replaced.
 - [PR 161 comment 5565199634](https://github.com/elanthus/OSWorldTasks/pull/161#issuecomment-5565199634): one operator-path prefix in a historical-scan example.
 
-No discussion was edited or deleted. Any approved replacement must preserve the surrounding
-technical discussion and be followed by a fresh scan. Editing current text cannot prove that
-historical edits, notifications, caches, or copies have disappeared.
+All three current comment bodies were edited and read back to verify the exact replacements
+with surrounding technical text preserved; no comments were deleted. A fresh scan of those bodies
+found zero private-path or credential-shape matches. The
+[follow-up evidence](hosted-redaction-followup.json) records body hashes, timestamps, counts,
+and the classification correction. Original snapshot files remain unchanged as historical evidence.
+Editing current text cannot prove that historical edits, notifications, caches, or copies have
+disappeared.
 
 This is a time-window snapshot, not an atomic repository freeze. New PRs and runs from this release
 stack require a release-time recheck. Deleted records, comment edit histories, hidden refs, commit
@@ -84,11 +89,16 @@ The remaining **1,780 files** are inventoried but not visually reviewed. Histori
 are also unreviewed. Contact sheets do not establish full-resolution inspection of every small
 text field. These are open publication-review limits, not a claim that all repository media is safe.
 
-## Owner decision still required
+The owner chose to leave media unchanged for now after spot checks and a separate retention audit.
+No media was deleted, deduplicated, regenerated, or migrated to LFS. This retention decision does
+not establish exhaustive visual review or publication approval.
+
+## Publication decisions still required
 
 The established actual-credential count is zero in the inspected scope. That is different from
 certifying zero unreviewed actual credentials across every possible publication surface. Keep the
-release checklist unticked until the owner disposes of the three hosted disclosures, remaining
-media and scope gaps, and public wording. Recheck the final candidate and current hosted state
+release checklist unticked until the owner disposes of the remaining publication-review limits
+for media and other scope gaps, and public wording. The authorized current-comment redactions
+are complete; they do not clear historical copies. Recheck the final candidate and current hosted state
 before a visibility change. No credential rotation, history rewrite, record deletion, visibility
 change, or milestone verdict was performed.

@@ -64,7 +64,9 @@ output directly.
 - [ ] Review the [privacy evidence](../artifacts/public-release/privacy-review.md), including exact
   ref scope, hosted findings, inaccessible logs/artifacts, attachments, and unreviewed media.
   Historical operator-path acceptance applies only to its matched fingerprints and ancestor commits;
-  it does not approve hosted records or new identifying disclosures.
+  it does not approve hosted records or new identifying disclosures. The owner-authorized current
+  comment redactions are recorded in the [follow-up evidence](../artifacts/public-release/hosted-redaction-followup.json).
+  Media retention is unchanged; the owner has not declared exhaustive media review or publication approval.
 - [ ] Confirm zero unreviewed actual credential findings within the approved publication scope.
   Distinguish acknowledged synthetic test vectors from actual credentials; retain accepted historical
   path findings visibly. If an actual credential is established, approve concrete rotation/revocation
