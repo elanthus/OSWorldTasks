@@ -6,7 +6,6 @@ import http.server
 import json
 import os
 import platform
-import sysconfig
 import threading
 import urllib.request
 from dataclasses import replace
@@ -34,7 +33,6 @@ pytestmark = [
     ),
 ]
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 EPISODE_ID = "ep-" + "5" * 32
 NOOP = {"action_type": 0, "x": 0, "y": 0, "key": 0}
 
@@ -178,8 +176,6 @@ def test_serving_policy_worker_denies_peer_listener_and_excludes_transport_crede
         encoding="utf-8",
     )
 
-    purelib = Path(sysconfig.get_paths()["purelib"])
-    platlib = Path(sysconfig.get_paths()["platlib"])
     provider_endpoint = f"http://127.0.0.1:{provider_server.server_port}/"
     session_path = tmp_path / "host" / "sessions.sqlite"
     journal_path = tmp_path / "host" / "attempts.sqlite"
@@ -192,7 +188,7 @@ def test_serving_policy_worker_denies_peer_listener_and_excludes_transport_crede
             "denied_url": denied_url,
             "probe_variable": credential_variable,
         },
-        import_roots=(REPOSITORY_ROOT, purelib, platlib, policy_source),
+        import_roots=(policy_source,),
         provider_endpoint=provider_endpoint,
         protected_paths=(session_path, journal_path),
     )

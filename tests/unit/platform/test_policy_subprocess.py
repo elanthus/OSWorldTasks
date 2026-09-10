@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 import sysconfig
+import time
 from pathlib import Path
 
 import pytest
@@ -36,7 +37,9 @@ class LocalWorkerLauncher:
     def launch(self, *, spec: PolicyWorkerSpec, workspace: Path) -> LaunchedPolicyWorker:
         self.process = subprocess.Popen(
             policy_worker_command(
-                runtime_executable=Path(sys.executable), import_roots=spec.import_roots
+                runtime_executable=Path(sys.executable),
+                worker_path=REPOSITORY_ROOT / "pixelgym/platform/policy_worker.py",
+                import_roots=spec.import_roots,
             ),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -54,6 +57,33 @@ class LocalWorkerLauncher:
         return LaunchedPolicyWorker(
             process=self.process,
             mechanism="unit_test_unenforced",
+            profile_digest=None,
+            os_sandbox_applied=False,
+        )
+
+
+class PartialLineLauncher:
+    def launch(self, *, spec: PolicyWorkerSpec, workspace: Path) -> LaunchedPolicyWorker:
+        del spec
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-I",
+                "-B",
+                "-c",
+                (
+                    "import sys,time;sys.stdin.buffer.readline();"
+                    "sys.stdout.buffer.write(b'{');sys.stdout.buffer.flush();time.sleep(5)"
+                ),
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            cwd=workspace,
+        )
+        return LaunchedPolicyWorker(
+            process=process,
+            mechanism="partial_line_fixture",
             profile_digest=None,
             os_sandbox_applied=False,
         )
@@ -106,6 +136,7 @@ def test_serving_profile_is_deny_by_default_and_scopes_authority(tmp_path: Path)
         provider_endpoint="http://127.0.0.1:8765/",
         runtime_root=runtime,
         runtime_executable=executable,
+        worker_path=REPOSITORY_ROOT / "pixelgym/platform/policy_worker.py",
         workspace=workspace,
         import_roots=(source,),
         protected_paths=(protected,),
@@ -118,12 +149,17 @@ def test_serving_profile_is_deny_by_default_and_scopes_authority(tmp_path: Path)
     assert "(deny network*)" in profile
     assert "(deny network-bind)" in profile
     assert f'(deny file-read* file-write* (subpath "{protected}"))' in profile
+    assert (
+        f'(allow file-read* (literal "{REPOSITORY_ROOT}/pixelgym/platform/policy_worker.py"))'
+        in profile
+    )
 
     with pytest.raises(PolicySubprocessUnavailableError, match="non-loopback"):
         darwin_serving_profile(
             provider_endpoint="https://provider.example/v1",
             runtime_root=runtime,
             runtime_executable=executable,
+            worker_path=REPOSITORY_ROOT / "pixelgym/platform/policy_worker.py",
             workspace=workspace,
             import_roots=(source,),
             protected_paths=(),
@@ -138,6 +174,18 @@ def test_unenforced_launcher_is_rejected_by_default() -> None:
 
     assert launcher.process is not None
     assert launcher.process.poll() is not None
+
+
+def test_partial_worker_output_cannot_bypass_rpc_deadline() -> None:
+    started = time.monotonic()
+    with pytest.raises(PolicySubprocessUnavailableError, match="timed out"):
+        SandboxedPolicyProcess(
+            spec=_scripted_spec(),
+            launcher=PartialLineLauncher(),
+            require_os_sandbox=False,
+            request_timeout_seconds=0.1,
+        )
+    assert time.monotonic() - started < 1.0
 
 
 def test_policy_protocol_round_trips_only_canonical_values() -> None:

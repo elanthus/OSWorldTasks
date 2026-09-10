@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import base64
 import binascii
-import importlib
 import json
+import os
 import platform
 import re
 import select
@@ -20,14 +20,16 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, BinaryIO, Protocol, cast
 from urllib.parse import urlsplit
 
-from pixelgym.grounding.v5.contracts import PolicyVisibleResult, sha256_bytes
+from pixelgym.grounding.v5.contracts import sha256_bytes
 from pixelgym.grounding.v5.evidence import validate_credential_free
+from pixelgym.grounding.v5.runner import PolicyVisibleResult
 from pixelgym.platform.fingerprints import canonical_json_bytes
 
 POLICY_WORKER_PROTOCOL_VERSION = "pixelgym-serving-policy-worker-v1"
@@ -160,6 +162,7 @@ def darwin_serving_profile(
     provider_endpoint: str,
     runtime_root: Path,
     runtime_executable: Path,
+    worker_path: Path,
     workspace: Path,
     import_roots: Sequence[Path],
     protected_paths: Sequence[Path],
@@ -188,6 +191,9 @@ def darwin_serving_profile(
             + _escaped_sbpl(str(runtime_root.resolve()))
             + '"))'
         ),
+        '(allow file-read* (literal "'
+        + _escaped_sbpl(str(worker_path.resolve()))
+        + '"))',
     ]
     for root in _deduplicated_resolved(import_roots):
         lines.append(
@@ -244,15 +250,12 @@ def _resolve_darwin_runtime(python_executable: Path) -> tuple[Path, Path]:
 
 
 def policy_worker_command(
-    *, runtime_executable: Path, import_roots: Sequence[Path]
+    *, runtime_executable: Path, worker_path: Path, import_roots: Sequence[Path]
 ) -> list[str]:
-    roots = [str(path.resolve()) for path in _deduplicated_resolved(import_roots)]
-    bootstrap = (
-        "import runpy,sys;"
-        f"sys.path[:0]={roots!r};"
-        "runpy.run_module('pixelgym.platform.policy_subprocess',run_name='__main__')"
-    )
-    return [str(runtime_executable), "-I", "-B", "-c", bootstrap]
+    command = [str(runtime_executable), "-I", "-B", str(worker_path.resolve())]
+    for root in _deduplicated_resolved(import_roots):
+        command.extend(("--import-root", str(root)))
+    return command
 
 
 class DarwinPolicyWorkerLauncher:
@@ -267,10 +270,14 @@ class DarwinPolicyWorkerLauncher:
                 "stateful policy serving requires Darwin sandbox-exec"
             )
         runtime_executable, runtime_root = _resolve_darwin_runtime(self.python_executable)
+        worker_path = Path(__file__).with_name("policy_worker.py").resolve()
+        if not worker_path.is_file():
+            raise PolicySubprocessUnavailableError("policy worker entrypoint is unavailable")
         profile = darwin_serving_profile(
             provider_endpoint=spec.provider_endpoint,
             runtime_root=runtime_root,
             runtime_executable=runtime_executable,
+            worker_path=worker_path,
             workspace=workspace,
             import_roots=spec.import_roots,
             protected_paths=spec.protected_paths,
@@ -281,6 +288,7 @@ class DarwinPolicyWorkerLauncher:
             profile,
             *policy_worker_command(
                 runtime_executable=runtime_executable,
+                worker_path=worker_path,
                 import_roots=spec.import_roots,
             ),
         ]
@@ -299,6 +307,35 @@ class DarwinPolicyWorkerLauncher:
             profile_digest="sha256:" + sha256_bytes(profile.encode("utf-8")),
             os_sandbox_applied=True,
         )
+
+
+def _read_response_line(stdout: BinaryIO, *, timeout_seconds: float) -> bytes:
+    """Read exactly one bounded line without letting a partial write defeat the deadline."""
+
+    deadline = time.monotonic() + timeout_seconds
+    response = bytearray()
+    descriptor = stdout.fileno()
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise PolicySubprocessUnavailableError("policy subprocess timed out")
+        ready, _, _ = select.select([descriptor], [], [], remaining)
+        if not ready:
+            raise PolicySubprocessUnavailableError("policy subprocess timed out")
+        chunk = os.read(descriptor, min(64 * 1024, MAX_POLICY_RPC_BYTES + 1 - len(response)))
+        if not chunk:
+            raise PolicySubprocessProtocolError("policy RPC response is unavailable")
+        newline = chunk.find(b"\n")
+        if newline >= 0:
+            response.extend(chunk[:newline])
+            if newline != len(chunk) - 1:
+                raise PolicySubprocessProtocolError(
+                    "policy RPC response contains trailing output"
+                )
+            return bytes(response)
+        response.extend(chunk)
+        if len(response) >= MAX_POLICY_RPC_BYTES:
+            raise PolicySubprocessProtocolError("policy RPC response exceeds the byte limit")
 
 
 class SandboxedPolicyProcess:
@@ -443,22 +480,15 @@ class SandboxedPolicyProcess:
                 raise PolicySubprocessUnavailableError(
                     "policy subprocess is unavailable"
                 ) from exc
-            ready, _, _ = select.select(
-                [stdout], [], [], self.request_timeout_seconds
-            )
-            if not ready:
-                _stop_process(process)
-                raise PolicySubprocessUnavailableError("policy subprocess timed out")
-            response_bytes = stdout.readline(MAX_POLICY_RPC_BYTES + 1)
-            if not response_bytes or len(response_bytes) > MAX_POLICY_RPC_BYTES:
-                _stop_process(process)
-                raise PolicySubprocessProtocolError(
-                    "policy RPC response is unavailable or oversized"
-                )
             try:
-                response = _decode_canonical_object(
-                    response_bytes.rstrip(b"\n"), "RPC response"
+                response_bytes = _read_response_line(
+                    stdout, timeout_seconds=self.request_timeout_seconds
                 )
+            except PolicySubprocessError:
+                _stop_process(process)
+                raise
+            try:
+                response = _decode_canonical_object(response_bytes, "RPC response")
                 required = {"protocol_version", "request_id", "ok"}
                 if (
                     response.get("protocol_version") != POLICY_WORKER_PROTOCOL_VERSION
@@ -552,166 +582,3 @@ def _decode_canonical_object(data: bytes, field: str) -> dict[str, Any]:
     if canonical_json_bytes(value) != data:
         raise PolicySubprocessProtocolError(f"{field} must use canonical JSON encoding")
     return cast(dict[str, Any], value)
-
-
-def _require_payload(payload: object, expected: set[str]) -> dict[str, Any]:
-    if not isinstance(payload, dict) or set(payload) != expected:
-        raise ValueError("policy RPC payload fields are invalid")
-    return cast(dict[str, Any], payload)
-
-
-def _resolve_factory(module_name: object, factory_name: object) -> Any:
-    if (
-        not isinstance(module_name, str)
-        or not isinstance(factory_name, str)
-        or not _IMPORT_NAME.fullmatch(module_name)
-        or not _IMPORT_NAME.fullmatch(factory_name)
-    ):
-        raise ValueError("policy factory identity is malformed")
-    target: Any = importlib.import_module(module_name)
-    for component in factory_name.split("."):
-        if component.startswith("_"):
-            raise ValueError("private policy factories are forbidden")
-        target = getattr(target, component)
-    if not callable(target):
-        raise TypeError("policy factory is not callable")
-    return target
-
-
-def _worker_invoke(policy: Any, method: str, payload: object) -> tuple[Any, bool]:
-    if method == "reset":
-        values = _require_payload(payload, {"task_instruction"})
-        if not isinstance(values["task_instruction"], str):
-            raise TypeError("task instruction must be text")
-        return _encode_rpc_bytes(policy.reset(values["task_instruction"])), False
-    if method == "build_request":
-        values = _require_payload(payload, {"state", "screenshot"})
-        result = policy.build_request(
-            _decode_rpc_bytes(values["state"], "policy state"),
-            _decode_rpc_bytes(values["screenshot"], "screenshot"),
-        )
-        if not isinstance(result, dict):
-            raise TypeError("policy request must be an object")
-        return result, False
-    if method == "reduce_state":
-        values = _require_payload(payload, {"state", "canonical_response"})
-        result = policy.reduce_state(
-            _decode_rpc_bytes(values["state"], "policy state"),
-            _decode_rpc_bytes(values["canonical_response"], "canonical response"),
-        )
-        return _encode_rpc_bytes(result), False
-    if method == "failure_state":
-        values = _require_payload(payload, {"state", "failure_code"})
-        if not isinstance(values["failure_code"], str):
-            raise TypeError("failure code must be text")
-        result = policy.failure_state(
-            _decode_rpc_bytes(values["state"], "policy state"), values["failure_code"]
-        )
-        return _encode_rpc_bytes(result), False
-    if method == "retryable_response_code":
-        values = _require_payload(payload, {"canonical_response"})
-        result = policy.retryable_response_code(
-            _decode_rpc_bytes(values["canonical_response"], "canonical response")
-        )
-        if result is not None and not isinstance(result, str):
-            raise TypeError("retry code must be text or null")
-        return result, False
-    if method == "parse":
-        values = _require_payload(payload, {"canonical_response", "state"})
-        result = policy.parse(
-            _decode_rpc_bytes(values["canonical_response"], "canonical response"),
-            _decode_rpc_bytes(values["state"], "policy state"),
-        )
-        if not isinstance(result, dict):
-            raise TypeError("parsed action must be an object")
-        return result, False
-    if method == "post_parse_state":
-        values = _require_payload(payload, {"state", "candidate"})
-        if not isinstance(values["candidate"], dict):
-            raise TypeError("action candidate must be an object")
-        result = policy.post_parse_state(
-            _decode_rpc_bytes(values["state"], "policy state"), values["candidate"]
-        )
-        return _encode_rpc_bytes(result), False
-    if method == "post_dispatch_state":
-        values = _require_payload(payload, {"state", "action", "result"})
-        if not isinstance(values["action"], dict) or not isinstance(values["result"], dict):
-            raise TypeError("post-dispatch values must be objects")
-        result = policy.post_dispatch_state(
-            _decode_rpc_bytes(values["state"], "policy state"),
-            values["action"],
-            PolicyVisibleResult.from_dict(values["result"]),
-        )
-        return _encode_rpc_bytes(result), False
-    if method == "close":
-        _require_payload(payload, set())
-        policy.close()
-        return None, True
-    raise ValueError("unsupported policy RPC method")
-
-
-def _worker_response(request_id: int, *, result: Any = None, error: bool = False) -> bytes:
-    value = {
-        "protocol_version": POLICY_WORKER_PROTOCOL_VERSION,
-        "request_id": request_id,
-        "ok": not error,
-        **({"error_code": "policy_error"} if error else {"result": result}),
-    }
-    return canonical_json_bytes(value) + b"\n"
-
-
-def _worker_main() -> int:
-    policy: Any | None = None
-    for line in sys.stdin.buffer:
-        request_id: int | None = None
-        if len(line) > MAX_POLICY_RPC_BYTES or not line.endswith(b"\n"):
-            return 2
-        try:
-            request = _decode_canonical_object(line[:-1], "RPC request")
-            if set(request) != {"protocol_version", "request_id", "method", "payload"}:
-                raise ValueError("policy RPC request fields are invalid")
-            if request["protocol_version"] != POLICY_WORKER_PROTOCOL_VERSION:
-                raise ValueError("policy RPC version is invalid")
-            request_id_value = request["request_id"]
-            method = request["method"]
-            if (
-                type(request_id_value) is not int
-                or request_id_value < 0
-                or not isinstance(method, str)
-            ):
-                raise ValueError("policy RPC request identity is invalid")
-            request_id = request_id_value
-            if method == "initialize":
-                if policy is not None:
-                    raise ValueError("policy worker is already initialized")
-                values = _require_payload(
-                    request["payload"],
-                    {"factory_module", "factory_name", "factory_kwargs"},
-                )
-                kwargs = values["factory_kwargs"]
-                if not isinstance(kwargs, dict):
-                    raise TypeError("policy factory kwargs must be an object")
-                validate_credential_free(kwargs, field_class="policy_factory_kwargs")
-                factory = _resolve_factory(values["factory_module"], values["factory_name"])
-                policy = factory(**kwargs)
-                result, should_close = {"ready": True}, False
-            else:
-                if policy is None:
-                    raise ValueError("policy worker is not initialized")
-                result, should_close = _worker_invoke(
-                    policy, method, request["payload"]
-                )
-        except Exception:  # noqa: BLE001 - worker returns only a stable error code.
-            if request_id is not None:
-                sys.stdout.buffer.write(_worker_response(request_id, error=True))
-                sys.stdout.buffer.flush()
-            return 1
-        sys.stdout.buffer.write(_worker_response(request_id, result=result))
-        sys.stdout.buffer.flush()
-        if should_close:
-            return 0
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(_worker_main())
