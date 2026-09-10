@@ -48,6 +48,10 @@ class JournalConflictError(RuntimeError):
     pass
 
 
+class CallCapExceededError(RuntimeError):
+    """A durable provider-call reservation would exceed its approved cap."""
+
+
 @dataclass(frozen=True)
 class JournalEvent:
     sequence: int
@@ -489,18 +493,18 @@ class V5AttemptJournal:
             raise JournalConflictError("conflicting provider call reservation")
         model_attempts, control_requests = self._call_counts_locked()
         if model_delta and model_attempts + model_delta > approved_caps.model_attempt_cap:
-            raise RuntimeError("approved model-attempt cap reached")
+            raise CallCapExceededError("approved model-attempt cap reached")
         if control_delta and (
             control_requests + control_delta > approved_caps.provider_control_request_cap
         ):
-            raise RuntimeError("approved provider-control-request cap reached")
+            raise CallCapExceededError("approved provider-control-request cap reached")
         if (
             model_attempts
             + control_requests
             + wire_capacity_delta
             > approved_caps.provider_wire_request_cap
         ):
-            raise RuntimeError("approved provider-wire-request cap reached")
+            raise CallCapExceededError("approved provider-wire-request cap reached")
         self._connection.execute(
             """
             INSERT INTO events(event_key, kind, trial_id, step_index, attempt_index, payload)

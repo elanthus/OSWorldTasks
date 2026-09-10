@@ -610,7 +610,7 @@ class EpisodeSessionState:
 
 @dataclass(frozen=True)
 class EpisodeStepRecord:
-    """Immutable record of one ``act``: what was received, attempted, sealed, and returned."""
+    """Record of one ``act``, immutable after one optional post-dispatch completion."""
 
     episode_id: str
     step_index: int

@@ -29,7 +29,11 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.evidence import validate_credential_free
-from pixelgym.grounding.v5.journal import JournalEvent, V5AttemptJournal
+from pixelgym.grounding.v5.journal import (
+    CallCapExceededError,
+    JournalEvent,
+    V5AttemptJournal,
+)
 from pixelgym.grounding.v5.runner import (
     DeadlineExecutor,
     InjectedInterruption,
@@ -134,6 +138,25 @@ def _decode_step_record(value: Mapping[str, Any]) -> EpisodeStepRecord:
     for name in ("attempt_ids", "canonical_response_sha256s", "provider_request_ids"):
         fields[name] = tuple(fields[name])
     return EpisodeStepRecord(**fields)
+
+
+def _is_post_dispatch_completion(
+    existing_payload: bytes, updated: EpisodeStepRecord
+) -> bool:
+    existing = _decode_step_record(json.loads(existing_payload))
+    if (
+        existing.checkpoints.post_dispatch is not None
+        or updated.checkpoints.post_dispatch is None
+    ):
+        return False
+    completed = replace(
+        existing,
+        checkpoints=replace(
+            existing.checkpoints,
+            post_dispatch=updated.checkpoints.post_dispatch,
+        ),
+    )
+    return completed == updated
 
 
 class ServingSessionStore(Protocol):
@@ -242,7 +265,17 @@ class SQLiteServingSessionStore:
                             """,
                             (step_record.episode_id, step_record.step_index, record_bytes),
                         )
-                    elif bytes(existing[0]) != record_bytes:
+                    elif bytes(existing[0]) == record_bytes:
+                        pass
+                    elif _is_post_dispatch_completion(bytes(existing[0]), step_record):
+                        self._connection.execute(
+                            """
+                            UPDATE serving_step_records SET payload = ?
+                            WHERE episode_id = ? AND step_index = ?
+                            """,
+                            (record_bytes, step_record.episode_id, step_record.step_index),
+                        )
+                    else:
                         raise SessionConflictError("serving step record changed after commit")
             except BaseException:
                 self._connection.execute("ROLLBACK")
@@ -648,15 +681,15 @@ class ServingEpisodeHost:
                 )
         except InjectedInterruption:
             raise
-        except RuntimeError as exc:
-            if "cap reached" in str(exc):
-                return self._seal(
-                    self.get(episode_id),
-                    SealedFailure.CAP_REACHED,
-                    screenshot_digest=screenshot_digest,
-                    previous_intent_id=previous_intent_id,
-                    previous_result=previous_result,
-                )
+        except CallCapExceededError:
+            return self._seal(
+                self.get(episode_id),
+                SealedFailure.CAP_REACHED,
+                screenshot_digest=screenshot_digest,
+                previous_intent_id=previous_intent_id,
+                previous_result=previous_result,
+            )
+        except RuntimeError:
             return self._seal(
                 self.get(episode_id),
                 SealedFailure.INFRASTRUCTURE_FAILURE,
@@ -802,14 +835,33 @@ class ServingEpisodeHost:
                     "post_dispatch_checkpoint_digest": checkpoint,
                 },
             )
+            self._interrupt("result_reported")
         elif existing.payload.get("intent_id") != state.last_intent_id or (
             existing.payload.get("result_digest") != content_digest(result.to_dict())
         ):
             raise IntentReferenceError("the reported result conflicts with durable evidence")
+        record = next(
+            (
+                item
+                for item in self.session_store.records(state.episode_id)
+                if item.step_index == state.step_index
+            ),
+            None,
+        )
+        if record is None:
+            raise ServingEpisodeError("outstanding intent step record is missing")
+        completed_record = replace(
+            record,
+            checkpoints=replace(
+                record.checkpoints,
+                post_dispatch=existing.payload["post_dispatch_checkpoint_digest"],
+            ),
+        )
         updated = self._save_phase(
             state,
             SessionResumePhase.POST_DISPATCH,
             checkpoint_digest=existing.payload["post_dispatch_checkpoint_digest"],
+            step_record=completed_record,
             step_index=state.step_index + 1,
             last_intent_status=IntentStatus.RESULT_REPORTED,
         )
@@ -822,6 +874,7 @@ class ServingEpisodeHost:
         phase: SessionResumePhase,
         *,
         checkpoint_digest: str,
+        step_record: EpisodeStepRecord | None = None,
         **changes: Any,
     ) -> EpisodeSessionState:
         updated = replace(
@@ -833,7 +886,11 @@ class ServingEpisodeHost:
             policy_checkpoint_object_key=self._checkpoint_key(checkpoint_digest),
             **changes,
         )
-        self.session_store.save(updated, expected_revision=state.revision)
+        self.session_store.save(
+            updated,
+            expected_revision=state.revision,
+            step_record=step_record,
+        )
         return updated
 
     def _seal(
