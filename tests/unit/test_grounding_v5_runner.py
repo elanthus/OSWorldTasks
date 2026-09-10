@@ -29,7 +29,11 @@ from pixelgym.grounding.v5.contracts import (
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
 from pixelgym.grounding.v5.fixtures import scripted_policy_manifest
 from pixelgym.grounding.v5.generator import generate_task
-from pixelgym.grounding.v5.journal import JournalConflictError, V5AttemptJournal
+from pixelgym.grounding.v5.journal import (
+    CallCapExceededError,
+    JournalConflictError,
+    V5AttemptJournal,
+)
 from pixelgym.grounding.v5.manifests import partition_manifest
 from pixelgym.grounding.v5.panel_policy import SpendLedger
 from pixelgym.grounding.v5.planning import call_cap_plan
@@ -1382,7 +1386,7 @@ def test_v5_model_cap_is_checked_before_attempt_started_or_transport(tmp_path: P
     task = generate_task(seed)
     journal = V5AttemptJournal(tmp_path / "zero-cap.sqlite")
     transport = ScriptedTransport()
-    with pytest.raises(RuntimeError, match="model-attempt cap"):
+    with pytest.raises(CallCapExceededError, match="model-attempt cap"):
         V5Runner(
             journal=journal,
             manifest=policy_manifest(),
@@ -1413,7 +1417,7 @@ def test_v5_control_reservation_is_checked_before_attempt_started_or_transport(
         approved_caps=CallCaps(1, 1, 2, 1),
     )
 
-    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+    with pytest.raises(CallCapExceededError, match="provider-wire-request cap"):
         runner.run(trial_id="trial-control-reservation-cap", task=task, action_limit=1)
 
     events = journal.events("trial-control-reservation-cap")
@@ -1439,7 +1443,7 @@ def test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap(
         approved_caps=CallCaps(1, 1, 2, 1),
     )
 
-    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+    with pytest.raises(CallCapExceededError, match="provider-wire-request cap"):
         runner.run(trial_id=trial_id, task=task, action_limit=1)
     wire_requests_before_recovery = len(transport.model_requests) + len(
         transport.control_requests
@@ -1488,7 +1492,7 @@ def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(
     )
     assert restarted.model_attempts == 1
     assert restarted.control_requests == 1
-    with pytest.raises(RuntimeError, match="model-attempt cap"):
+    with pytest.raises(CallCapExceededError, match="model-attempt cap"):
         restarted.run(trial_id="after-restart", task=task)
     assert not transport.model_requests
     assert "attempt_started" not in {
@@ -1554,7 +1558,7 @@ def test_v5_restart_enforces_durable_control_request_cap(tmp_path: Path) -> None
         policy=scripted_policy(seed),
         approved_caps=CallCaps(40, 3, 1, 5),
     )
-    with pytest.raises(RuntimeError, match="provider-control-request cap"):
+    with pytest.raises(CallCapExceededError, match="provider-control-request cap"):
         runner.recover_step(
             trial_id=current.trial_id,
             step_index=0,
@@ -1585,7 +1589,7 @@ def test_v5_restart_enforces_durable_total_wire_cap(tmp_path: Path) -> None:
         policy=scripted_policy(seed),
         approved_caps=CallCaps(task.max_episode_steps, 2, 1, 2),
     )
-    with pytest.raises(RuntimeError, match="provider-wire-request cap"):
+    with pytest.raises(CallCapExceededError, match="provider-wire-request cap"):
         runner.run(trial_id="after-wire-cap", task=task)
     assert not transport.model_requests
 
@@ -1611,7 +1615,7 @@ def test_v5_concurrent_runners_cannot_overreserve_model_cap(tmp_path: Path) -> N
                 approved_caps=CallCaps(1, 1, 0, 1),
             )
             outcomes.append("created" if created else "duplicate")
-        except RuntimeError as exc:
+        except CallCapExceededError as exc:
             outcomes.append(str(exc))
 
     threads = [threading.Thread(target=reserve, args=(index,)) for index in range(2)]
