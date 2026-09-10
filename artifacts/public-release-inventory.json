@@ -2,18 +2,18 @@
   "history_redaction_inventory": {
     "categories": {
       "credential_or_token_shapes": {
-        "finding_count": 12,
+        "finding_count": 14,
         "findings": [
           {
-            "blob_oid": "5151d1664792956ca5af7d6a6a6158e4e84e0c6b",
+            "blob_oid": "95a6ede39bba95d556ebbc2dabb7d02687839a89",
             "boundary_commits": [
-              "63d250a852c86d8de45e6b561a45889e565003cd"
+              "06d695a327b02cb83e22f25cc47407d0b344bff5"
             ],
             "classification": "acknowledged_test_vector",
-            "line": 337,
-            "path": "tests/unit/test_grounding_v5.py",
-            "shape": "openai_style_token",
-            "value_fingerprint": "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506"
+            "line": 323,
+            "path": "tests/unit/platform/test_policy_subprocess.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c"
           },
           {
             "blob_oid": "4f5bdad6b98003b805b5d56c5aa9d739271a35a0",
@@ -27,37 +27,56 @@
             "value_fingerprint": "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506"
           },
           {
+            "blob_oid": "64b16fbfcfcb94ffae023cfe9d406d682743b9ad",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
+            ],
+            "classification": "acknowledged_test_vector",
+            "line": 392,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
+          },
+          {
+            "blob_oid": "417d8c216867962a56b6966b414e5b93a655fb34",
+            "boundary_commits": [
+              "06d695a327b02cb83e22f25cc47407d0b344bff5"
+            ],
+            "classification": "acknowledged_test_vector",
+            "line": 302,
+            "path": "tests/unit/platform/test_policy_subprocess.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c"
+          },
+          {
+            "blob_oid": "5151d1664792956ca5af7d6a6a6158e4e84e0c6b",
+            "boundary_commits": [
+              "63d250a852c86d8de45e6b561a45889e565003cd"
+            ],
+            "classification": "acknowledged_test_vector",
+            "line": 337,
+            "path": "tests/unit/test_grounding_v5.py",
+            "shape": "openai_style_token",
+            "value_fingerprint": "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506"
+          },
+          {
+            "blob_oid": "7cae62f3b8a2b5fee47a63885c9b13516a4d7196",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
+            ],
+            "classification": "acknowledged_test_vector",
+            "line": 392,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
+          },
+          {
             "blob_oid": "4959d0d99f19f42605fded31ec411d1843b16be2",
             "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
             ],
             "classification": "acknowledged_test_vector",
             "line": 375,
-            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
-            "shape": "bearer_token",
-            "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
-          },
-          {
-            "blob_oid": "d1dc11f73bee85aa51e4f2180f9b7daf8ade4c78",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_test_vector",
-            "line": 204,
-            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
-            "shape": "bearer_token",
-            "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
-          },
-          {
-            "blob_oid": "6a97493236c8e3a0c0b5a136a5da55000d84b1a0",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_test_vector",
-            "line": 193,
             "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
             "shape": "bearer_token",
             "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
@@ -143,14 +162,34 @@
         "review_required_count": 0
       },
       "email_addresses": {
-        "finding_count": 111,
+        "finding_count": 91,
         "findings": [
+          {
+            "blob_oid": "405a300b99611cdc503debbdc8f26e4b1d49efe0",
+            "boundary_commits": [
+              "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
+              "f73d9761bce51e7efc06470b679ad166dddb718b"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 34,
+            "path": "artifacts/day-1-revision-2-layout-equivalence/golden-trajectory-seed-7.md",
+            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+          },
+          {
+            "blob_oid": "92cb44693293f282efe066776a29163e9bb89fd6",
+            "boundary_commits": [
+              "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
+              "f73d9761bce51e7efc06470b679ad166dddb718b"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 34,
+            "path": "artifacts/day-1-revision-3-layout-equivalence/golden-trajectory-seed-7.md",
+            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+          },
           {
             "blob_oid": "ff4892b6cfd659fc024f10e1fd39c135f3124659",
             "boundary_commits": [
-              "2c00eaff9a6cef71ebd8b20d7fe981fcbb66dffd",
               "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
-              "9c7a0d308e348faa9f16b15a3000b957d232262c",
               "f73d9761bce51e7efc06470b679ad166dddb718b"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -159,103 +198,14 @@
             "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
           },
           {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
+              "b586289abd00661530971e5488817c8c5b5c8787"
             ],
             "classification": "acknowledged_synthetic_address",
-            "line": 57,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:195eadaff80b56237de4efe1bcde97bf7c21dbdb127341996118dc3b8c07554d"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 67,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:fbe0ec42a16e496d94cc84933672f9dcddec357f4ccf5c8a7ab1971411dc9e38"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 77,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:2fdee28a2b82ae176a689df9df34101ba04b8184b61d3914bbe0641013b4ba52"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 87,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:4eae0636b0ef7a6ec018ed97475a4043980d9ae5e820c6808792f17c0093dd95"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 97,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:55410871c56d1622360c79b5f39865c97a4941ddd1fb9c1c235d85dd894bc047"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 107,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:17e881fac09ea520b773e251558e1321c1a6ee131ebc03f34c819649a91d6136"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 117,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:46a0935d1369e39a4cd1d42b1e2c46cbf4016ee45a85b621273f00c03d958bf3"
-          },
-          {
-            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 127,
-            "path": "pixelgym/grounding/v3c_app/static/index.html",
-            "value_fingerprint": "sha256:a9e2601ce63721f353a9ad97f0fb597b3fc632ed60fcf3fce8219b71c013d306"
-          },
-          {
-            "blob_oid": "4c2ca2a48487ef7bf8f2d7dadd3cbe2861b8946b",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "e91216228e0507c32c7fd3100d4426c812bd2969"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 58,
-            "path": "pixelgym/grounding/v4_app/static/index.html",
-            "value_fingerprint": "sha256:a13d179255cf35a736822d0bdf2300e063a436d666706d391343fbc5ee6fb9bf"
+            "line": 13,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
           },
           {
             "blob_oid": "4125a1f49927c95ae1c3574fc4702de661efc478",
@@ -266,6 +216,226 @@
             "line": 18,
             "path": "tests/unit/test_evaluator.py",
             "value_fingerprint": "sha256:c47a1cba63c066f4d048a49f148c2f317eaf383104fbd3fb2553d48438ae2927"
+          },
+          {
+            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
+            "boundary_commits": [
+              "f73d9761bce51e7efc06470b679ad166dddb718b"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 148,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
+            "boundary_commits": [
+              "f73d9761bce51e7efc06470b679ad166dddb718b"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 151,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
+            "boundary_commits": [
+              "f73d9761bce51e7efc06470b679ad166dddb718b"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 568,
+            "path": "tests/unit/test_fake_backend.py",
+            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 69,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 95,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
+          },
+          {
+            "blob_oid": "4f5bdad6b98003b805b5d56c5aa9d739271a35a0",
+            "boundary_commits": [
+              "63d250a852c86d8de45e6b561a45889e565003cd"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 397,
+            "path": "tests/unit/test_grounding_v5.py",
+            "value_fingerprint": "sha256:63a8c5d6155de596ed86dcf517b17c863f7cf28ecaabd881a6c0b0b52bdb504d"
+          },
+          {
+            "blob_oid": "4f5bdad6b98003b805b5d56c5aa9d739271a35a0",
+            "boundary_commits": [
+              "743d9c2a8793389a12232e94fa7af8260a7f6dd3"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 413,
+            "path": "tests/unit/test_grounding_v5.py",
+            "value_fingerprint": "sha256:b838307aa1c7bc0115e7aaedb2ed6100322a94e3ce31f5c42e7f4081c853499a"
+          },
+          {
+            "blob_oid": "75b5047bcda3794e4991c6d84c9347a3e38b4865",
+            "boundary_commits": [
+              "add98a170ef9995477c0df3513342049158f0c27",
+              "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 387,
+            "path": "tests/unit/test_grounding_v5_claude_code_transport.py",
+            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
+          },
+          {
+            "blob_oid": "766077e24009b81390bbe68759f4527c444e26a8",
+            "boundary_commits": [
+              "595901dc4a62eccb6b545a4f205140b654f2dc24"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 134,
+            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "blob_oid": "766077e24009b81390bbe68759f4527c444e26a8",
+            "boundary_commits": [
+              "595901dc4a62eccb6b545a4f205140b654f2dc24"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 240,
+            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "blob_oid": "16bb1519b623207076a8eeb82d1b3f8da579941f",
+            "boundary_commits": [
+              "595901dc4a62eccb6b545a4f205140b654f2dc24"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 153,
+            "path": "tests/unit/test_grounding_v5_runner_plan_parity.py",
+            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
+          },
+          {
+            "blob_oid": "47aab7f789e38a28594d1428218ce4001fb03f86",
+            "boundary_commits": [
+              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 209,
+            "path": "tests/unit/test_vendor_form_app.py",
+            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 57,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:195eadaff80b56237de4efe1bcde97bf7c21dbdb127341996118dc3b8c07554d"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 67,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:fbe0ec42a16e496d94cc84933672f9dcddec357f4ccf5c8a7ab1971411dc9e38"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 77,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:2fdee28a2b82ae176a689df9df34101ba04b8184b61d3914bbe0641013b4ba52"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 87,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:4eae0636b0ef7a6ec018ed97475a4043980d9ae5e820c6808792f17c0093dd95"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 97,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:55410871c56d1622360c79b5f39865c97a4941ddd1fb9c1c235d85dd894bc047"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 107,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:17e881fac09ea520b773e251558e1321c1a6ee131ebc03f34c819649a91d6136"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 117,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:46a0935d1369e39a4cd1d42b1e2c46cbf4016ee45a85b621273f00c03d958bf3"
+          },
+          {
+            "blob_oid": "6115ffa2f7ea81c20ace8a8fb8480eb1044a2c46",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560",
+              "add98a170ef9995477c0df3513342049158f0c27"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 127,
+            "path": "pixelgym/grounding/v3c_app/static/index.html",
+            "value_fingerprint": "sha256:a9e2601ce63721f353a9ad97f0fb597b3fc632ed60fcf3fce8219b71c013d306"
+          },
+          {
+            "blob_oid": "4c2ca2a48487ef7bf8f2d7dadd3cbe2861b8946b",
+            "boundary_commits": [
+              "add98a170ef9995477c0df3513342049158f0c27",
+              "e91216228e0507c32c7fd3100d4426c812bd2969"
+            ],
+            "classification": "acknowledged_synthetic_address",
+            "line": 58,
+            "path": "pixelgym/grounding/v4_app/static/index.html",
+            "value_fingerprint": "sha256:a13d179255cf35a736822d0bdf2300e063a436d666706d391343fbc5ee6fb9bf"
           },
           {
             "blob_oid": "9361088f252e00d27cbd40bfdb0e5e08d0fab57d",
@@ -321,7 +491,7 @@
             "blob_oid": "7304f739760b9874fe9dc077963a1ca6c83191e9",
             "boundary_commits": [
               "16d10a161b384d75772c1e0a622d78232d5dab4f",
-              "6a9196210cb660bdd3021efb705abf145515748b"
+              "add98a170ef9995477c0df3513342049158f0c27"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 35,
@@ -351,8 +521,7 @@
           {
             "blob_oid": "f45261d0a0364bcd01903309e869507bbf22ed30",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -371,71 +540,26 @@
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
           },
           {
-            "blob_oid": "405a300b99611cdc503debbdc8f26e4b1d49efe0",
+            "blob_oid": "cac610b5d26be079f465e40ce86366c8918b08c8",
             "boundary_commits": [
-              "2c00eaff9a6cef71ebd8b20d7fe981fcbb66dffd",
-              "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
-              "9c7a0d308e348faa9f16b15a3000b957d232262c",
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
+              "125819ba2fc9b1a45f2bc1646d29bdcb9019f27a",
+              "8e856ec8207fa6d7103b539ff231538e1cac2150"
             ],
             "classification": "acknowledged_synthetic_address",
-            "line": 34,
-            "path": "artifacts/day-1-revision-2-layout-equivalence/golden-trajectory-seed-7.md",
-            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
+            "line": 220,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:cc6d96611cffa9f02c3626f0b9ee897dc171e2d540a5cae349d4ec316104997b"
           },
           {
-            "blob_oid": "92cb44693293f282efe066776a29163e9bb89fd6",
+            "blob_oid": "cac610b5d26be079f465e40ce86366c8918b08c8",
             "boundary_commits": [
-              "2c00eaff9a6cef71ebd8b20d7fe981fcbb66dffd",
-              "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
-              "9c7a0d308e348faa9f16b15a3000b957d232262c",
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
+              "125819ba2fc9b1a45f2bc1646d29bdcb9019f27a",
+              "8e856ec8207fa6d7103b539ff231538e1cac2150"
             ],
             "classification": "acknowledged_synthetic_address",
-            "line": 34,
-            "path": "artifacts/day-1-revision-3-layout-equivalence/golden-trajectory-seed-7.md",
-            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
-          },
-          {
-            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
-            "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 13,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
-          },
-          {
-            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 148,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 151,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "cdf39661e6f9387370c10b1a01db26c583cac48d",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 568,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
+            "line": 227,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:cc6d96611cffa9f02c3626f0b9ee897dc171e2d540a5cae349d4ec316104997b"
           },
           {
             "blob_oid": "b378dc8a303a61a93d1bdaa835fbbb8c4e7728c4",
@@ -461,7 +585,7 @@
             "blob_oid": "defaf5565f8065ccadbadf317f5990936123e89a",
             "boundary_commits": [
               "16d10a161b384d75772c1e0a622d78232d5dab4f",
-              "6a9196210cb660bdd3021efb705abf145515748b"
+              "add98a170ef9995477c0df3513342049158f0c27"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 35,
@@ -469,30 +593,9 @@
             "value_fingerprint": "sha256:af3c82544f648b38dc7d403473bb4b957cd04353afd9096fa871c1e469656c8c"
           },
           {
-            "blob_oid": "4f5bdad6b98003b805b5d56c5aa9d739271a35a0",
-            "boundary_commits": [
-              "63d250a852c86d8de45e6b561a45889e565003cd"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 397,
-            "path": "tests/unit/test_grounding_v5.py",
-            "value_fingerprint": "sha256:63a8c5d6155de596ed86dcf517b17c863f7cf28ecaabd881a6c0b0b52bdb504d"
-          },
-          {
-            "blob_oid": "4f5bdad6b98003b805b5d56c5aa9d739271a35a0",
-            "boundary_commits": [
-              "743d9c2a8793389a12232e94fa7af8260a7f6dd3"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 413,
-            "path": "tests/unit/test_grounding_v5.py",
-            "value_fingerprint": "sha256:b838307aa1c7bc0115e7aaedb2ed6100322a94e3ce31f5c42e7f4081c853499a"
-          },
-          {
             "blob_oid": "38b78b585c0f1cf10a2168d93089b32b9ed4e298",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -501,35 +604,9 @@
             "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
           },
           {
-            "blob_oid": "766077e24009b81390bbe68759f4527c444e26a8",
-            "boundary_commits": [
-              "16145c4eda434f0124a81f01d329cd537725aa68",
-              "595901dc4a62eccb6b545a4f205140b654f2dc24",
-              "646d54db48344c52aa4d1d5d9ceaee3220093976"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 134,
-            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
-            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
-          },
-          {
-            "blob_oid": "766077e24009b81390bbe68759f4527c444e26a8",
-            "boundary_commits": [
-              "16145c4eda434f0124a81f01d329cd537725aa68",
-              "595901dc4a62eccb6b545a4f205140b654f2dc24",
-              "646d54db48344c52aa4d1d5d9ceaee3220093976"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 240,
-            "path": "tests/unit/test_grounding_v5_manifest_runner.py",
-            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
-          },
-          {
             "blob_oid": "03a4012c22f50907dc27e7cd27cfef050bafef3c",
             "boundary_commits": [
-              "16145c4eda434f0124a81f01d329cd537725aa68",
-              "595901dc4a62eccb6b545a4f205140b654f2dc24",
-              "646d54db48344c52aa4d1d5d9ceaee3220093976"
+              "595901dc4a62eccb6b545a4f205140b654f2dc24"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 164,
@@ -537,188 +614,20 @@
             "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
           },
           {
-            "blob_oid": "47aab7f789e38a28594d1428218ce4001fb03f86",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 209,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 69,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 95,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
-          },
-          {
-            "blob_oid": "73f416ed804d76620ae4c1e2075f09672e606868",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
-              "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 386,
-            "path": "tests/unit/test_grounding_v5_claude_code_transport.py",
-            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
-          },
-          {
-            "blob_oid": "16bb1519b623207076a8eeb82d1b3f8da579941f",
-            "boundary_commits": [
-              "16145c4eda434f0124a81f01d329cd537725aa68",
-              "595901dc4a62eccb6b545a4f205140b654f2dc24",
-              "646d54db48344c52aa4d1d5d9ceaee3220093976"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 153,
-            "path": "tests/unit/test_grounding_v5_runner_plan_parity.py",
-            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
-          },
-          {
-            "blob_oid": "48b683845b7fe8e265fe2dc13895d8aba7551148",
-            "boundary_commits": [
-              "16145c4eda434f0124a81f01d329cd537725aa68",
-              "595901dc4a62eccb6b545a4f205140b654f2dc24",
-              "646d54db48344c52aa4d1d5d9ceaee3220093976"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 153,
-            "path": "tests/unit/test_grounding_v5_runner_plan_parity.py",
-            "value_fingerprint": "sha256:91d11ce8bc827a0e6d95efdf578d9cb46f4bb1ff58086626d236ff24ecd6f35f"
-          },
-          {
-            "blob_oid": "fd23b0714605ca62335eefbe05f9808d2f559013",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
-              "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 369,
-            "path": "tests/unit/test_grounding_v5_claude_code_transport.py",
-            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 69,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 95,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:f0b5dcefb36ae98306c447747bd1983bd4bc001c5f0ea96fe7ba423c4fb0b0f8"
-          },
-          {
-            "blob_oid": "a2e14d980e7a3974e4f6a28b3bbb05d6248a19d3",
-            "boundary_commits": [
-              "1cdf3722774197f4ce611ed4340d8ddd359200e0",
-              "cc48540f212934a2b0f40eaf49f35bfa2260b5cf"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 78,
-            "path": "tests/unit/test_public_release_inventory.py",
-            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
-          },
-          {
-            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
-            "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 13,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
-          },
-          {
-            "blob_oid": "8667c665b897ccd7b5b9c4a2da135c70f61d6d83",
-            "boundary_commits": [
-              "1cdf3722774197f4ce611ed4340d8ddd359200e0",
-              "cc48540f212934a2b0f40eaf49f35bfa2260b5cf"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 78,
-            "path": "tests/unit/test_public_release_inventory.py",
-            "value_fingerprint": "sha256:b3a2387c187756b9b8e839bca3fed2603b40b0d4c93c411d40cc3956bf3bf3d7"
-          },
-          {
-            "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
-            "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 5,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:852e7b941ea2052143c1b0a0f7b007a06c49c056312aac64e2649dc35d13f994"
-          },
-          {
-            "blob_oid": "2a4c459baac9f7d3a9af76baaf6d34c9406b7833",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
-              "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 785,
-            "path": "tests/unit/test_grounding_v5_d56_claude_subscription_campaign.py",
-            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
-          },
-          {
             "blob_oid": "7c25c10920580fbe48682f3e344c4290fd5676a4",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 785,
-            "path": "tests/unit/test_grounding_v5_d56_claude_subscription_campaign.py",
-            "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
-          },
-          {
-            "blob_oid": "3f36f65e18e149f783275a5dc5d39d7f5b7247db",
-            "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
-              "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 729,
             "path": "tests/unit/test_grounding_v5_d56_claude_subscription_campaign.py",
             "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
           },
           {
             "blob_oid": "0906bac0ecca55ffa6900da030adf75fbf8ee9d6",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -737,53 +646,9 @@
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
           },
           {
-            "blob_oid": "afe75369a7a94164f598c6ef07bff08227beab3d",
-            "boundary_commits": [
-              "2c00eaff9a6cef71ebd8b20d7fe981fcbb66dffd",
-              "71e5dce7eab1fb64179f03b4fba8b873d624be1a",
-              "9c7a0d308e348faa9f16b15a3000b957d232262c",
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 34,
-            "path": "artifacts/day-1-revision-2-layout-equivalence/golden-trajectory-seed-7.md",
-            "value_fingerprint": "sha256:f358f59edb546f3f400decebf0a9b90a31e74444a26a7b1acb246ad99244f868"
-          },
-          {
-            "blob_oid": "6ab4f3807e864d2875a9f879bca74049e392f99f",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 148,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "6ab4f3807e864d2875a9f879bca74049e392f99f",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 151,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "6ab4f3807e864d2875a9f879bca74049e392f99f",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 539,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
             "blob_oid": "eebbfe45c08958a8875f904f9f19caab46f81972",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -792,42 +657,12 @@
             "value_fingerprint": "sha256:f087d460fe5b3892bb9a890d624dd3bf96d05e61793a25504dca647066b6d318"
           },
           {
-            "blob_oid": "eadd2b7fbe17c3c97166257feb2e1236addaba4e",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 135,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
             "blob_oid": "b8da25429c4b6e525b35868eaa9dc894dd70666e",
             "boundary_commits": [
               "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
             ],
             "classification": "acknowledged_synthetic_address",
             "line": 191,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
-            "blob_oid": "b3d46370d6de326d3f2901689b663d45c1b17458",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 191,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
-            "blob_oid": "1e3c397838ab94fc16a3e02f000a343c526fd8cc",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 116,
             "path": "tests/unit/test_vendor_form_app.py",
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
           },
@@ -842,60 +677,9 @@
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
           },
           {
-            "blob_oid": "8246d7726e568ddc1b4f28e25060b5906964c364",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 161,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
-            "blob_oid": "331367260312b3a1f26d2ae8c681326802a3b8c5",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 148,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "331367260312b3a1f26d2ae8c681326802a3b8c5",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 151,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "331367260312b3a1f26d2ae8c681326802a3b8c5",
-            "boundary_commits": [
-              "f73d9761bce51e7efc06470b679ad166dddb718b"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 552,
-            "path": "tests/unit/test_fake_backend.py",
-            "value_fingerprint": "sha256:ebb18a030bf15174f5714e24d63af1a81355c951ea7389bd2a9bd18e3d0c2477"
-          },
-          {
-            "blob_oid": "40dee88f1a525a613d2de11a3741e7a79b109533",
-            "boundary_commits": [
-              "37485c2b4d4b7393ca907a4aa0f6c5c204903758"
-            ],
-            "classification": "acknowledged_synthetic_address",
-            "line": 140,
-            "path": "tests/unit/test_vendor_form_app.py",
-            "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
-          },
-          {
             "blob_oid": "8dcf6ae74b03d3a300fd948464bd94ab214d2fed",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -906,8 +690,7 @@
           {
             "blob_oid": "5a8e32a56e63211e8f988d32ee90365ecb590a86",
             "boundary_commits": [
-              "6a9196210cb660bdd3021efb705abf145515748b",
-              "7bfa6d8e5ed8993c6b2bf8c6e71fe1d18d417633",
+              "add98a170ef9995477c0df3513342049158f0c27",
               "fa3093a2ac39d1ae7193795ac6fd98daac4a31e2"
             ],
             "classification": "acknowledged_synthetic_address",
@@ -1319,8 +1102,190 @@
         "review_required_count": 0
       },
       "private_paths": {
-        "finding_count": 170,
+        "finding_count": 156,
         "findings": [
+          {
+            "blob_oid": "4560a894e0ce1a93587fb30cb2da41625e257d9d",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 41,
+            "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
+            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
+          },
+          {
+            "blob_oid": "c4c2422797ae5fee7296b7fab7283edb1c60c558",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "scripts/record_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
+          },
+          {
+            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
+            "boundary_commits": [
+              "b586289abd00661530971e5488817c8c5b5c8787"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 13,
+            "path": "tests/unit/fixtures/public_release/README.md",
+            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
+          },
+          {
+            "blob_oid": "e7fbb324535c9e31c240b05816c0d466d0967d3b",
+            "boundary_commits": [
+              "63648547675a5511b7ba2855d62f0f0ef3672db5"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 398,
+            "path": "tests/unit/platform/test_d412_evidence_report.py",
+            "value_fingerprint": "sha256:15d6c5293213e380d9c80cb8ceb500e7c5354d857264db92163dcd9649992c78"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 68,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:9307c76fd1807e73f1cec843eacf3ab127a9c7d1f3801f41e7af302dcd41bb6d"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6",
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 94,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 215,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:26715ecec64b3a6dfe87cf4de6b06dec6c1c926bf5aa11b9c5066586367f19a0"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6",
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 224,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6",
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 307,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6",
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 316,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 326,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:0d9248cede73aacd0b8bd69f17d445d4b516ba0916c7abe42b8d9e915d127452"
+          },
+          {
+            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
+            "boundary_commits": [
+              "300aa089edcf4cc697524215d44552c7faa9d9a6",
+              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
+              "8bb364ce7578a6649abbe23e129c634530d00560"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 334,
+            "path": "tests/unit/test_grounding_providers.py",
+            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
+          },
+          {
+            "blob_oid": "64b16fbfcfcb94ffae023cfe9d406d682743b9ad",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 391,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
+          },
+          {
+            "blob_oid": "64b16fbfcfcb94ffae023cfe9d406d682743b9ad",
+            "boundary_commits": [
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 450,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:1428ce1ef2fbb4059e2ba05bf6d97307ad92f1cc9ddbe3276001d1f61d4b6b07"
+          },
+          {
+            "blob_oid": "fe2bfe92dd1e24b0ec423a424fee064bcf34461e",
+            "boundary_commits": [
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 30,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:0991bea49c86f0e0c1bbbbe979e71c6d15a4ede458d52835c4f16f0331f0299f"
+          },
+          {
+            "blob_oid": "fe2bfe92dd1e24b0ec423a424fee064bcf34461e",
+            "boundary_commits": [
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:f6c828a95b6b70db604e914db73707bf8b4469445ea1f69a060ff6a95b76febc"
+          },
+          {
+            "blob_oid": "1ecb1a73e79a70e162620f5996543d6cb909238b",
+            "boundary_commits": [
+              "342ca50e9dae3f80435d86121a6c4aa3baf4842e"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 5,
+            "path": "tests/unit/test_grounding_v5_evidence_paths.py",
+            "value_fingerprint": "sha256:953df0068aeddc0beec0e0229c72d0204981831e08505f81f70f7437e6146884"
+          },
           {
             "blob_oid": "0ced117e26f581e6e417ed40c60d36b1e5f74807",
             "boundary_commits": [
@@ -1720,7 +1685,6 @@
           {
             "blob_oid": "f8988d35b77de66d7557da2923cde9a74cf2c8d0",
             "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
               "63648547675a5511b7ba2855d62f0f0ef3672db5",
               "b7c62c04880efea7846f9f15cbd55fa743f46bec"
             ],
@@ -1830,74 +1794,30 @@
             "value_fingerprint": "sha256:953df0068aeddc0beec0e0229c72d0204981831e08505f81f70f7437e6146884"
           },
           {
-            "blob_oid": "f025a8d321f3722d9469db1c6164dac471c5703c",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 252,
-            "path": "artifacts/grounding-v5-d56-gemini-full-calibration-plan.json",
-            "value_fingerprint": "sha256:62922d5019fc5b7e027b169b6259161614f2f1ba5f7af29ea336608b7537e759"
+            "blob_oid": "7cae62f3b8a2b5fee47a63885c9b13516a4d7196",
+            "boundary_commits": [
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 391,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
           },
           {
-            "blob_oid": "f025a8d321f3722d9469db1c6164dac471c5703c",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 256,
-            "path": "artifacts/grounding-v5-d56-gemini-full-calibration-plan.json",
-            "value_fingerprint": "sha256:be881a5ecef74d1e989a9f37e2766cad32f2da9452d156933382295d97ba981a"
-          },
-          {
-            "blob_oid": "0cfb41866c58aab6cd1949bfb3e2827440e2a875",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 546,
-            "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/summary.json",
-            "value_fingerprint": "sha256:62922d5019fc5b7e027b169b6259161614f2f1ba5f7af29ea336608b7537e759"
-          },
-          {
-            "blob_oid": "0cfb41866c58aab6cd1949bfb3e2827440e2a875",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 550,
-            "path": "artifacts/grounding-v5-d56-gemini-full-calibration-run/summary.json",
-            "value_fingerprint": "sha256:be881a5ecef74d1e989a9f37e2766cad32f2da9452d156933382295d97ba981a"
-          },
-          {
-            "blob_oid": "3ebfa6b1d1f9fbe50d167f9c7a07ebae7c9820e0",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 25,
-            "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-plan.json",
-            "value_fingerprint": "sha256:4e6c58ac097e281f95ec8ce7614a5097043a6670c1e9a14d86628aa23b40361f"
-          },
-          {
-            "blob_oid": "3ebfa6b1d1f9fbe50d167f9c7a07ebae7c9820e0",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 27,
-            "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-plan.json",
-            "value_fingerprint": "sha256:7cc6901e0b344ab952c1b90d810ffcb5480021939435a6a0b82a3a7eda04383d"
-          },
-          {
-            "blob_oid": "53438bfcfab08d70daaea6a05944ec63a5904854",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 30,
-            "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-run/summary.json",
-            "value_fingerprint": "sha256:4e6c58ac097e281f95ec8ce7614a5097043a6670c1e9a14d86628aa23b40361f"
-          },
-          {
-            "blob_oid": "53438bfcfab08d70daaea6a05944ec63a5904854",
-            "boundary_commits": [],
-            "classification": "review_required_operator_path",
-            "line": 32,
-            "path": "artifacts/grounding-v5-d56-gemini-one-call-smoke-run/summary.json",
-            "value_fingerprint": "sha256:7cc6901e0b344ab952c1b90d810ffcb5480021939435a6a0b82a3a7eda04383d"
+            "blob_oid": "7cae62f3b8a2b5fee47a63885c9b13516a4d7196",
+            "boundary_commits": [
+              "78c801c514a83d74111da14ffef89714427570ec"
+            ],
+            "classification": "acknowledged_placeholder",
+            "line": 453,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:1428ce1ef2fbb4059e2ba05bf6d97307ad92f1cc9ddbe3276001d1f61d4b6b07"
           },
           {
             "blob_oid": "0669d7244f4957f43664767b2e6c15d843eb61fd",
             "boundary_commits": [
               "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
+              "78c801c514a83d74111da14ffef89714427570ec"
             ],
             "classification": "acknowledged_placeholder",
             "line": 36,
@@ -1905,20 +1825,18 @@
             "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
           },
           {
-            "blob_oid": "416125ad092856f32cad016886979bf88574a3f0",
+            "blob_oid": "4959d0d99f19f42605fded31ec411d1843b16be2",
             "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
+              "51c3b4843ddc4a5a79c158603aaf473db58f8276"
             ],
             "classification": "acknowledged_placeholder",
-            "line": 13,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
+            "line": 374,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
           },
           {
             "blob_oid": "41e73ab66a6b39fc0cd51f2685476dc98815e32d",
             "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
               "63648547675a5511b7ba2855d62f0f0ef3672db5"
             ],
             "classification": "acknowledged_placeholder",
@@ -2017,293 +1935,13 @@
             "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
           },
           {
-            "blob_oid": "4959d0d99f19f42605fded31ec411d1843b16be2",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 374,
-            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
-            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
-          },
-          {
-            "blob_oid": "1ecb1a73e79a70e162620f5996543d6cb909238b",
-            "boundary_commits": [
-              "342ca50e9dae3f80435d86121a6c4aa3baf4842e"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 5,
-            "path": "tests/unit/test_grounding_v5_evidence_paths.py",
-            "value_fingerprint": "sha256:953df0068aeddc0beec0e0229c72d0204981831e08505f81f70f7437e6146884"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 68,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:9307c76fd1807e73f1cec843eacf3ab127a9c7d1f3801f41e7af302dcd41bb6d"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 94,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 215,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:26715ecec64b3a6dfe87cf4de6b06dec6c1c926bf5aa11b9c5066586367f19a0"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 224,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 307,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 316,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 326,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:0d9248cede73aacd0b8bd69f17d445d4b516ba0916c7abe42b8d9e915d127452"
-          },
-          {
-            "blob_oid": "565e29365f8bce2633d3d32b246351ea14a57724",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 334,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 68,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:9307c76fd1807e73f1cec843eacf3ab127a9c7d1f3801f41e7af302dcd41bb6d"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 94,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 215,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:26715ecec64b3a6dfe87cf4de6b06dec6c1c926bf5aa11b9c5066586367f19a0"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 224,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 307,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 316,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 326,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:0d9248cede73aacd0b8bd69f17d445d4b516ba0916c7abe42b8d9e915d127452"
-          },
-          {
-            "blob_oid": "ead8ef8576993a4f29fd7db51b20384e9f0ccb2e",
-            "boundary_commits": [
-              "300aa089edcf4cc697524215d44552c7faa9d9a6",
-              "68e66b078c03c13e78ec224d7243c804d36f1a9c",
-              "8bb364ce7578a6649abbe23e129c634530d00560"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 334,
-            "path": "tests/unit/test_grounding_providers.py",
-            "value_fingerprint": "sha256:67e99cdc8b7d7656e5409eb6b8710561d6b67bd0f64b236b372e5f8b098a3de5"
-          },
-          {
-            "blob_oid": "51868d4c55f1ea2adc3fc14aab26c35235cc67cb",
-            "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 13,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
-          },
-          {
-            "blob_oid": "85baf2a13b663ead26eb4863b541d71e1378b39f",
-            "boundary_commits": [
-              "360fe9b5cc270abf01f97f3a0be2d0067ce06855",
-              "b586289abd00661530971e5488817c8c5b5c8787"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 5,
-            "path": "tests/unit/fixtures/public_release/README.md",
-            "value_fingerprint": "sha256:c900b1df1125fbc41fbf6574eb9388efc1ed49f456c3a03cfafbe05d4db0451c"
-          },
-          {
-            "blob_oid": "e67dfcab5ed720c5a0efb46a13391c3c31125ee2",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 36,
-            "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
-            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
-          },
-          {
-            "blob_oid": "d1dc11f73bee85aa51e4f2180f9b7daf8ade4c78",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 203,
-            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
-            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
-          },
-          {
-            "blob_oid": "665e07fb38f60ce256d089d9e425576a83a1caa5",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 36,
-            "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
-            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
-          },
-          {
-            "blob_oid": "6a97493236c8e3a0c0b5a136a5da55000d84b1a0",
-            "boundary_commits": [
-              "51c3b4843ddc4a5a79c158603aaf473db58f8276",
-              "c333238434ac43422440ea3377a27c94e3839175"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 192,
-            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
-            "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
-          },
-          {
             "blob_oid": "5b283eef5947425ccecd3cd2c60c63f5489abde4",
             "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
               "63648547675a5511b7ba2855d62f0f0ef3672db5",
               "b7c62c04880efea7846f9f15cbd55fa743f46bec"
             ],
             "classification": "acknowledged_placeholder",
             "line": 312,
-            "path": "tests/unit/platform/test_d412_evidence_report.py",
-            "value_fingerprint": "sha256:80a73bedaa9749fcc98196d67d66e2d30ad90313fdbc4ce6ed5780fb58d80351"
-          },
-          {
-            "blob_oid": "ede2910ccb95e26ae2b73294552deba77f026ef9",
-            "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
-              "63648547675a5511b7ba2855d62f0f0ef3672db5",
-              "b7c62c04880efea7846f9f15cbd55fa743f46bec"
-            ],
-            "classification": "acknowledged_placeholder",
-            "line": 264,
             "path": "tests/unit/platform/test_d412_evidence_report.py",
             "value_fingerprint": "sha256:80a73bedaa9749fcc98196d67d66e2d30ad90313fdbc4ce6ed5780fb58d80351"
           },
@@ -3112,7 +2750,6 @@
           {
             "blob_oid": "2684df6bc580d181e3ca5f9f3682126a2b8cfdda",
             "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
               "63648547675a5511b7ba2855d62f0f0ef3672db5",
               "b7c62c04880efea7846f9f15cbd55fa743f46bec"
             ],
@@ -3124,7 +2761,6 @@
           {
             "blob_oid": "67c180ee9487647a06cc885bea4794a64bb5211e",
             "boundary_commits": [
-              "4ab63b9115ea5e7c267df8930838fc696ada44b7",
               "63648547675a5511b7ba2855d62f0f0ef3672db5",
               "b7c62c04880efea7846f9f15cbd55fa743f46bec"
             ],
@@ -3220,13 +2856,13 @@
             "value_fingerprint": "sha256:e8aaa81d17b2f2f58ca0f375cebd1ec0ed5956b63a4e53fff3ce0434e6687e05"
           }
         ],
-        "review_required_count": 57
+        "review_required_count": 49
       }
     },
     "failure_count": 0,
     "failures": [],
     "passed": false,
-    "review_required_count": 57,
+    "review_required_count": 49,
     "sensitive_values": "represented only by SHA-256 fingerprints",
     "source": "all objects reachable from git rev-list --objects --all"
   },
@@ -3246,19 +2882,26 @@
   },
   "links": {
     "checked_file": "README.md",
-    "external_link_count": 2,
+    "external_link_count": 3,
     "failure_count": 0,
     "failures": [],
-    "link_count": 64,
-    "local_link_count": 62,
+    "link_count": 68,
+    "local_link_count": 65,
     "passed": true
   },
   "redaction_and_asset_inventory": {
-    "binary_or_large_files_skipped_for_content": 1794,
+    "binary_or_large_files_skipped_for_content": 1809,
     "categories": {
       "credential_or_token_shapes": {
-        "finding_count": 2,
+        "finding_count": 3,
         "findings": [
+          {
+            "classification": "acknowledged_test_vector",
+            "line": 323,
+            "path": "tests/unit/platform/test_policy_subprocess.py",
+            "shape": "bearer_token",
+            "value_fingerprint": "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c"
+          },
           {
             "classification": "acknowledged_test_vector",
             "line": 400,
@@ -3268,7 +2911,7 @@
           },
           {
             "classification": "acknowledged_test_vector",
-            "line": 375,
+            "line": 392,
             "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
             "shape": "bearer_token",
             "value_fingerprint": "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33"
@@ -3277,7 +2920,7 @@
         "review_required_count": 0
       },
       "email_addresses": {
-        "finding_count": 17,
+        "finding_count": 19,
         "findings": [
           {
             "classification": "acknowledged_synthetic_address",
@@ -3377,6 +3020,18 @@
           },
           {
             "classification": "acknowledged_synthetic_address",
+            "line": 220,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:cc6d96611cffa9f02c3626f0b9ee897dc171e2d540a5cae349d4ec316104997b"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
+            "line": 227,
+            "path": "tests/unit/test_public_release_inventory.py",
+            "value_fingerprint": "sha256:cc6d96611cffa9f02c3626f0b9ee897dc171e2d540a5cae349d4ec316104997b"
+          },
+          {
+            "classification": "acknowledged_synthetic_address",
             "line": 209,
             "path": "tests/unit/test_vendor_form_app.py",
             "value_fingerprint": "sha256:6b0fd45d9bbec425c1deac25c906396524d2c7d9339d535391145420b00ab6f2"
@@ -3390,12 +3045,18 @@
         "review_required_count": 0
       },
       "private_paths": {
-        "finding_count": 13,
+        "finding_count": 17,
         "findings": [
           {
             "classification": "acknowledged_placeholder",
-            "line": 36,
+            "line": 41,
             "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
+            "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "scripts/record_grounding_v5_d56_retained_development_runs.py",
             "value_fingerprint": "sha256:818bc18b0b3d5ed117e4d1f741ceb435d9d17ce05eb50c814980d74ce698bf3d"
           },
           {
@@ -3406,7 +3067,7 @@
           },
           {
             "classification": "acknowledged_placeholder",
-            "line": 396,
+            "line": 398,
             "path": "tests/unit/platform/test_d412_evidence_report.py",
             "value_fingerprint": "sha256:15d6c5293213e380d9c80cb8ceb500e7c5354d857264db92163dcd9649992c78"
           },
@@ -3460,9 +3121,27 @@
           },
           {
             "classification": "acknowledged_placeholder",
-            "line": 374,
+            "line": 391,
             "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
             "value_fingerprint": "sha256:2de90e887fe0d6ddde346c7bd4041cd3790c353b393dc1034f756985d732d347"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 453,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:1428ce1ef2fbb4059e2ba05bf6d97307ad92f1cc9ddbe3276001d1f61d4b6b07"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 30,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:0991bea49c86f0e0c1bbbbe979e71c6d15a4ede458d52835c4f16f0331f0299f"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:f6c828a95b6b70db604e914db73707bf8b4469445ea1f69a060ff6a95b76febc"
           },
           {
             "classification": "acknowledged_placeholder",
@@ -3604,12 +3283,18 @@
         "review_required_count": 0
       },
       "usernames": {
-        "finding_count": 13,
+        "finding_count": 17,
         "findings": [
           {
             "classification": "acknowledged_placeholder",
-            "line": 36,
+            "line": 41,
             "path": "scripts/publish_grounding_v5_d56_completed_calibrations.py",
+            "value_fingerprint": "sha256:cbe5cfdf7c2118a9c3d78ef1d684f3afa089201352886449a06a6511cfef74a7"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "scripts/record_grounding_v5_d56_retained_development_runs.py",
             "value_fingerprint": "sha256:cbe5cfdf7c2118a9c3d78ef1d684f3afa089201352886449a06a6511cfef74a7"
           },
           {
@@ -3620,7 +3305,7 @@
           },
           {
             "classification": "acknowledged_placeholder",
-            "line": 396,
+            "line": 398,
             "path": "tests/unit/platform/test_d412_evidence_report.py",
             "value_fingerprint": "sha256:2938354af5a9f3e52aac0e865ea7017ae6a330702a4cccdbea0df2b7bd6dccc8"
           },
@@ -3674,8 +3359,26 @@
           },
           {
             "classification": "acknowledged_placeholder",
-            "line": 374,
+            "line": 391,
             "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 453,
+            "path": "tests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
+            "value_fingerprint": "sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 30,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
+            "value_fingerprint": "sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23"
+          },
+          {
+            "classification": "acknowledged_placeholder",
+            "line": 31,
+            "path": "tests/unit/test_grounding_v5_d56_retained_development_runs.py",
             "value_fingerprint": "sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23"
           },
           {
@@ -3688,10 +3391,10 @@
         "review_required_count": 0
       }
     },
-    "files_scanned": 2581,
+    "files_scanned": 2733,
     "passed": true,
     "review_required_count": 0,
-    "text_files_scanned": 787
+    "text_files_scanned": 924
   },
   "schema_version": "pixelgym-public-release-inventory-v2",
   "scope": {
@@ -3700,7 +3403,7 @@
     "sensitive_values": "represented only by SHA-256 fingerprints"
   },
   "summary": {
-    "history_review_required_findings": 57,
+    "history_review_required_findings": 49,
     "license_failures": 0,
     "link_failures": 0,
     "passed": false,

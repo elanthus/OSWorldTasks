@@ -56,9 +56,13 @@ SAFE_EMAIL_DOMAINS = {
     "pinnacle-sys.com",
 }
 # Deliberate token-shape fixtures live in tests/unit/test_grounding_v5.py and
-# tests/unit/test_grounding_v5_d56_completed_calibration_publication.py. Acknowledge a new test
+# tests/unit/test_grounding_v5_d56_completed_calibration_publication.py, and
+# tests/unit/platform/test_policy_subprocess.py::test_policy_request_cannot_carry_transport_credentials.
+# The latter writes a literal into a temporary LeakingPolicy and expects rejection before transport.
+# Acknowledge a new test
 # vector only after confirming it is synthetic, then add its SHA-256 fingerprint and source here.
 SAFE_TOKEN_TEST_FINGERPRINTS = {
+    "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c",
     "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33",
     "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506",
 }

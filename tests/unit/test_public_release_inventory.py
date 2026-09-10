@@ -183,3 +183,53 @@ def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
     assert mismatch["passed"] is False
     assert mismatch["difference_count"] > 0
     assert any("links" in difference for difference in mismatch["differences"])
+
+
+def test_policy_transport_fixture_is_acknowledged_only_as_exact_test_vector(tmp_path: Path) -> None:
+    module = _load_script()
+    # Read the real fixture so changing its literal cannot silently retain the acknowledgment.
+    source_path = "tests/unit/platform/test_policy_subprocess.py"
+    text = (REPOSITORY_ROOT / source_path).read_text()
+    shape = dict(module.TOKEN_SHAPES)["bearer_token"]
+    values = [match.group(0) for match in shape.finditer(text)]
+    assert len(values) == 1
+    value = values[0]
+    assert module._fingerprint(value) == (
+        "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c"
+    )
+    root = tmp_path / "repository"
+    (root / "tests").mkdir(parents=True)
+    fixture = root / "tests" / "fixture.py"
+    unacknowledged = root / "tests" / "different.py"
+    outside_tests = root / "release.txt"
+    fixture.write_text(value)
+    unacknowledged.write_text(value + "-different")
+    outside_tests.write_text("Release content: " + value)
+    result = module.scan_release_surface(root, [fixture, unacknowledged, outside_tests])
+    tokens = result["categories"]["credential_or_token_shapes"]
+    assert tokens["finding_count"] == 3
+    assert tokens["review_required_count"] == 2
+    assert {row["path"]: row["classification"] for row in tokens["findings"]} == {
+        "tests/fixture.py": "acknowledged_test_vector",
+        "tests/different.py": "review_required_credential_shape",
+        "release.txt": "review_required_credential_shape",
+    }
+    _init_repository(root)
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Release Fixture", "-c", "user.email=fixture@example.invalid",
+         "commit", "-qm", "credential classification fixtures"], cwd=root, check=True,
+    )
+    # Remove from HEAD: history must still classify exact test values and reject other shapes.
+    fixture.unlink()
+    subprocess.run(["git", "add", "-u"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=Release Fixture", "-c", "user.email=fixture@example.invalid",
+         "commit", "-qm", "remove test fixture"], cwd=root, check=True,
+    )
+    history = module.scan_history(root)["categories"]["credential_or_token_shapes"]
+    assert history["finding_count"] == 3
+    assert history["review_required_count"] == 2
+    assert any(row["classification"] == "acknowledged_test_vector" for row in history["findings"])
+    assert value not in json.dumps(result)
+    assert value not in json.dumps(history)
