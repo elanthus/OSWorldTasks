@@ -399,23 +399,26 @@ def test_readme_numbers_trace_to_generated_derivative() -> None:
     )[0]
 
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
+    report_path = Path("artifacts/grounding-v5-d56-completed-calibrations-report.md")
+    report = (ROOT / report_path).read_text(encoding="utf-8")
     for run in derivative["runs"]:
         counts = run["classification_counts"]
-        spend = run["spend"]
         percentage = 100 * counts["success"] / counts["attempted"]
+        assert f"{counts['success']}/{run['assigned_tasks']}" in section
+        # The linked report still carries all terminal classifications, including negative results.
         expected = (
-            f"| `{run['slot']}` | `{run['provider_alias']}` / `{run['model_alias']}` | "
-            f"{run['assigned_tasks']} | {counts['attempted']} | "
+            f"| `{run['slot']}` | {run['assigned_tasks']} | {counts['attempted']} | "
             f"{counts['success']} ({percentage:.1f}%) | {counts['invalid_output']} | "
             f"{counts['request_failure']} | {counts['infrastructure_failure']} | "
-            f"{counts['policy_violation']} | {counts['truncation']} | "
-            f"${spend['unknown_charge_reservation_usd']} "
-            f"({spend['unknown_charge_outcomes']} outcomes) |"
+            f"{counts['policy_violation']} | {counts['truncation']} |"
         )
-        assert expected in section
-    assert "no v5 result is a benchmark score or a\nmilestone-gate verdict" in section
-    assert "`A-gemini-stateful-v2` calibration remains **withdrawn**" in section
+        assert expected in report
+    assert "Retained descriptive calibration" in section
+    assert "confirmatory benchmark and v5 serving work remain unfinished" in section
+    assert "Gemini v2 calibration is **withdrawn**" in section
+    assert "public clone cannot verify" in section
     assert DERIVATIVE_PATH.as_posix() in section
+    assert report_path.as_posix() in section
 
 
 def test_retained_development_runs_are_digest_only_entries() -> None:
