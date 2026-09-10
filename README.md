@@ -157,7 +157,8 @@ Retained descriptive calibration includes Gemini v3 with 35/50 exact successes a
 0/50. These are different policy systems and runtime configurations, not a controlled model
 comparison ([structured derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json)).
 The [generated calibration report](artifacts/grounding-v5-d56-completed-calibrations-report.md)
-retains every terminal classification, incomplete run, spend reservation, and historical taxonomy.
+retains assigned and attempted denominators, every terminal classification, incomplete runs,
+spend reservations, and historical taxonomy.
 
 The earlier Gemini v2 calibration is **withdrawn**, not repaired or included: removing absolute
 operator paths from its digest-bound evidence would invalidate the recorded hashes. Restricted
