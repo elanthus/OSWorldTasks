@@ -162,7 +162,7 @@ class ApprovedProviderPolicy:
         if not _ENV_NAME_RE.fullmatch(self.credential_env):
             raise ApprovedProviderError("credential_env must name an environment variable")
         if self.kind == "stateful-v5":
-            if self.policy_manifest_sha256 is None or not re.fullmatch(
+            if not isinstance(self.policy_manifest_sha256, str) or not re.fullmatch(
                 r"[0-9a-f]{64}", self.policy_manifest_sha256
             ):
                 raise ApprovedProviderError(

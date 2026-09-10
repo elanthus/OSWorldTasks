@@ -127,6 +127,22 @@ def test_checked_in_registry_is_valid_and_ships_no_approved_provider(repository_
     assert load_approved_providers(repository_root) == {}
 
 
+def test_registry_rejects_a_non_string_stateful_manifest_digest(tmp_path: Path) -> None:
+    record = {
+        **RECORD,
+        "kind": "stateful-v5",
+        "coordinate_adapter": "manifest-bound",
+        "policy_manifest_sha256": 123,
+    }
+    _write_registry(tmp_path, [record])
+
+    with pytest.raises(
+        ApprovedProviderError,
+        match="stateful-v5 records must bind a v5 policy_manifest_sha256",
+    ):
+        load_approved_providers(tmp_path)
+
+
 @pytest.mark.parametrize(
     ("overrides", "message"),
     [
