@@ -125,6 +125,57 @@ def test_fake_policy_serves_multiple_actions_and_applies_reported_result(tmp_pat
     ) == 1
 
 
+def test_close_applies_the_outstanding_result_and_is_an_exactly_once_replay(
+    tmp_path: Path,
+) -> None:
+    host = _host(tmp_path)
+    host.create_episode(task_instruction="Complete", client_episode_ref="client-1")
+    intent = host.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
+    final_screen = b"screen-1"
+    final_result = _result(final_screen, terminated=True)
+    arguments = {
+        "episode_id": EPISODE_ID,
+        "final_intent_id": intent.intent_id,
+        "final_result": final_result,
+        "final_screenshot_sha256": final_result.screenshot_sha256,
+        "final_screenshot_object_key": "serving-final-screenshots/final.png",
+    }
+
+    closed = host.close_episode(**arguments)
+    replay = host.close_episode(**arguments)
+
+    assert replay == closed
+    assert closed.terminal_classification.value == "terminated"
+    assert closed.steps == 1
+    assert host.get(EPISODE_ID).resume_phase is SessionResumePhase.CLOSED
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
+        "episode_closed"
+    ) == 1
+    with pytest.raises(EpisodeEndedError):
+        host.act(episode_id=EPISODE_ID, screenshot=final_screen)
+
+
+def test_close_rejects_a_mismatched_final_screenshot_before_state_changes(
+    tmp_path: Path,
+) -> None:
+    host = _host(tmp_path)
+    host.create_episode(task_instruction="Complete", client_episode_ref="client-1")
+    intent = host.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
+    before = host.get(EPISODE_ID)
+
+    with pytest.raises(IntentReferenceError, match="must match"):
+        host.close_episode(
+            episode_id=EPISODE_ID,
+            final_intent_id=intent.intent_id,
+            final_result=_result(b"screen-1"),
+            final_screenshot_sha256="sha256:" + sha256_bytes(b"other"),
+            final_screenshot_object_key="serving-final-screenshots/final.png",
+        )
+
+    assert host.get(EPISODE_ID) == before
+    assert host.journal.event(f"{EPISODE_ID}/episode_closed") is None
+
+
 def test_intent_reference_and_screenshot_digest_are_validated_before_mutation(
     tmp_path: Path,
 ) -> None:

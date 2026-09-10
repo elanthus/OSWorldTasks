@@ -21,7 +21,7 @@ from functools import partial
 from typing import Any, Protocol
 
 import anyio
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -293,6 +293,7 @@ def create_serving_app(
     runtime: PolicyRuntime,
     *,
     operational_log: OperationalLog,
+    episode_router: APIRouter | None = None,
     operational_audit_concurrency: int = 4,
     provider_timeout_seconds: float = DEFAULT_PROVIDER_TIMEOUT_SECONDS,
     provider_concurrency: int = DEFAULT_PROVIDER_CONCURRENCY,
@@ -591,5 +592,8 @@ def create_serving_app(
             exact_policy_version=loaded.exact_policy_version,
             provider_request_id=provider_metadata.request_id,
         )
+
+    if episode_router is not None:
+        app.include_router(episode_router)
 
     return app
