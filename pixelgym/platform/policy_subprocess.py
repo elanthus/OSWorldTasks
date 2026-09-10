@@ -258,6 +258,16 @@ def policy_worker_command(
     return command
 
 
+def _bundled_worker_path() -> Path:
+    """Resolve only the standalone sibling entrypoint, never an importable app module."""
+
+    module_directory = Path(__file__).resolve().parent
+    worker_path = module_directory / "policy_worker.py"
+    if not worker_path.is_file() or worker_path.resolve().parent != module_directory:
+        raise PolicySubprocessUnavailableError("policy worker entrypoint is unavailable")
+    return worker_path.resolve()
+
+
 class DarwinPolicyWorkerLauncher:
     """Launch a policy worker under a content-observable Darwin sandbox profile."""
 
@@ -270,9 +280,7 @@ class DarwinPolicyWorkerLauncher:
                 "stateful policy serving requires Darwin sandbox-exec"
             )
         runtime_executable, runtime_root = _resolve_darwin_runtime(self.python_executable)
-        worker_path = Path(__file__).with_name("policy_worker.py").resolve()
-        if not worker_path.is_file():
-            raise PolicySubprocessUnavailableError("policy worker entrypoint is unavailable")
+        worker_path = _bundled_worker_path()
         profile = darwin_serving_profile(
             provider_endpoint=spec.provider_endpoint,
             runtime_root=runtime_root,
