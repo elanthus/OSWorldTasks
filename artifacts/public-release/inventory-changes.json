@@ -1,31 +1,19 @@
 {
   "schema_version": 1,
-  "comparison_base_revision": "06d695a327b02cb83e22f25cc47407d0b344bff5",
-  "candidate_revision": "79ef2a03f40a256d94f080fcc76570898b868453",
-  "method": "Recursive structural comparison using scripts/inventory_public_release.py::_inventory_differences; all differences retained, without the check-mode display limit. History is recorded separately because ref scope is material.",
+  "comparison_base_revision": "14a55a041b8cfa769fd9eefbca84db7dbc94ae62",
+  "candidate_revision": "b4668ba4276c8b4251a7dd99293b0a2382820e2c",
+  "method": "Complete structural comparison of tracked inventory sections against main; history differs by explicit ref scope and is retained separately.",
   "dispositions": {
-    "links": "README restructuring changes link targets and line numbers; new guides and checked status sources are tracked. All targets verified by links mode.",
-    "license_inventory": "No license or bundled-font change intended; the full comparison below is authoritative.",
-    "redaction_and_asset_inventory": "Tracked files added since the old inventory, the exact synthetic credential vector acknowledgment, and changed source line locations. Structured model output acknowledgments remain explicit; no local evaluation scratch files added."
+    "links": "Carries README link inventory changes from the original release stack.",
+    "license_inventory": "No license changes.",
+    "redaction_and_asset_inventory": "Includes the exact synthetic fixture acknowledgment and newly tracked release evidence, including the hosted redaction follow-up."
   },
   "tracked_file_changes_since_base": [
-    "M\tAGENTS.md",
-    "M\tREADME.md",
     "M\tartifacts/public-release-inventory.json",
     "A\tartifacts/public-release/candidate-command-records.json",
     "A\tartifacts/public-release/candidate-validation.md",
-    "A\tartifacts/public-release/history-review.json",
-    "A\tartifacts/public-release/hosted-path-findings.jsonl",
-    "A\tartifacts/public-release/hosted-review.json",
     "A\tartifacts/public-release/inventory-changes.json",
-    "A\tartifacts/public-release/media-review.json",
-    "A\tartifacts/public-release/privacy-review.md",
-    "A\tartifacts/public-release/status-sources.json",
-    "A\tdocs/evidence-index.md",
-    "A\tdocs/reproduction.md",
-    "M\tplans/public-release-checklist.md",
     "M\tscripts/inventory_public_release.py",
-    "M\ttests/unit/test_grounding_v5_d56_completed_calibration_publication.py",
     "M\ttests/unit/test_public_release_inventory.py"
   ],
   "differences": {
@@ -107,13 +95,8 @@
       "$.redaction_and_asset_inventory.categories.usernames.findings[12].line: expected 5, found 391",
       "$.redaction_and_asset_inventory.categories.usernames.findings[12].path: expected \"tests/unit/test_grounding_v5_evidence_paths.py\", found \"tests/unit/test_grounding_v5_d56_completed_calibration_publication.py\"",
       "$.redaction_and_asset_inventory.categories.usernames.findings[12].value_fingerprint: expected \"sha256:98bf8ca25bff9be3336d946250713a61531e19413e325596bc7ca601479fc9c3\", found \"sha256:06e55b633481f7bb072957eabcf110c972e86691c3cfedabe088024bffe42f23\"",
-      "$.redaction_and_asset_inventory.files_scanned: expected 2581, found 2732",
-      "$.redaction_and_asset_inventory.text_files_scanned: expected 787, found 923"
+      "$.redaction_and_asset_inventory.files_scanned: expected 2581, found 2733",
+      "$.redaction_and_asset_inventory.text_files_scanned: expected 787, found 924"
     ]
-  },
-  "difference_counts": {
-    "links": 3,
-    "license_inventory": 0,
-    "redaction_and_asset_inventory": 73
   }
 }
