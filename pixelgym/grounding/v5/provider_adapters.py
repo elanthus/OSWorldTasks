@@ -26,6 +26,11 @@ from pixelgym.grounding.v5.codex_cli_policy import (
     probe_codex_runtime,
 )
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, sha256_bytes
+from pixelgym.grounding.v5.controlled_comparison import (
+    CONTROLLED_PAIR,
+    SMOKE_PAIR,
+    validate_controlled_pair,
+)
 from pixelgym.grounding.v5.generator import generate_task
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
@@ -62,6 +67,8 @@ _OPENROUTER_CONFIGS = {
         GLM_STATEFUL_RELAXED_SCHEMA_CANDIDATE,
         GLM_STATEFUL_JSON_OBJECT_SMOKE_CANDIDATE,
         QWEN_STATELESS,
+        *CONTROLLED_PAIR,
+        *SMOKE_PAIR,
     )
 }
 _OPENROUTER_UNKNOWN_RESERVATION_RULE = "retain every unknown reservation"
@@ -194,6 +201,8 @@ class OpenRouterHttpAdapter(_BaseAdapter):
         unknown_slots = set(self._policy_records) - set(_OPENROUTER_CONFIGS)
         if unknown_slots:
             raise ValueError(f"unsupported OpenRouter policy slot: {min(unknown_slots)}")
+        if any(self._config(slot).controlled_history_prompt for slot in self._policy_records):
+            validate_controlled_pair(plan)
         request_maxima = {self._config(slot).request_maximum_usd for slot in self._policy_records}
         if request_maxima != {plan.budgets.per_request_theoretical_maximum_usd}:
             raise ValueError(
