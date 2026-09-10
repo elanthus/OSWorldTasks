@@ -110,3 +110,34 @@ unchanged. The derivative binds its source summary digest but does not independe
 restricted journal. Journal verification and the other item/family diagnostics required by D5.6
 remain necessary before publishing the completed panel. No significance test treats robustness
 twins as independent, and no benchmark or milestone verdict is generated.
+
+## A rate-limited successor
+
+If a run stops at `rate_limit_retry_exhausted`, first audit the frozen summary and journal without
+making another call. Preserve that run as incomplete. The optional `--generation v2` configuration
+raises the fallback backoff base from two to fifteen seconds in **both** arms. Its three retries
+therefore wait fifteen, thirty, and sixty seconds when the provider supplies no usable retry hint.
+This shared backoff also applies to retryable transport faults. The existing sixty-second ceiling,
+four-attempt limit, request deadlines, tasks, prompts, adapters, parsing, and stop rules remain in
+place. Valid `Retry-After` hints retain their existing precedence and bound.
+
+Longer backoff is a proposed response to transient rate limits, not a guarantee of completion.
+OpenRouter documents [exponential backoff and provider-side capacity limits](
+https://openrouter.ai/docs/api_reference/limits). Provider fallbacks remain disabled to preserve the
+controlled route. The original configuration remains the default; existing plan bytes and results
+are not changed by selecting the new generation.
+
+After committing and reviewing the successor implementation, prepare a fresh full comparison:
+
+```bash
+.venv/bin/python scripts/prepare_grounding_v5_comparison.py plan \
+  --phase calibration --generation v2 --maximum-spend-usd 10.00 \
+  --run-output artifacts/grounding-v5-controlled-qwen-calibration-v2-run \
+  --output artifacts/grounding-v5-controlled-qwen-calibration-v2-plan.json
+```
+
+This proposes a new 100-assignment run with its own $10 ceiling and unchanged call caps. It starts
+both arms afresh on the same fifty tasks and does not fill missing predecessor rows, pool outcomes,
+or reuse the predecessor's paid-call approval. Review and approve the new exact digest before any
+execution. Selecting `--generation v2 --phase smoke` also supports an optional no-retry smoke with
+the existing twenty-call bound; that is a separate package and is not executed by the planner.

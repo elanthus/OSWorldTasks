@@ -12,6 +12,7 @@ import pytest
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.controlled_comparison import (
     CONTROLLED_PAIR,
+    CONTROLLED_PAIR_V2,
     SMOKE_PAIR,
     build_comparison_plan,
     summarize_comparison,
@@ -23,6 +24,37 @@ from pixelgym.grounding.v5.provider_adapters import OpenRouterHttpAdapter
 from pixelgym.grounding.v5.runner import PolicyVisibleResult
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.parametrize("phase", ["smoke", "calibration"])
+def test_v2_changes_only_backoff_and_preserves_matched_tasks_and_caps(phase: str) -> None:
+    common = {
+        "code_revision": "a" * 40,
+        "phase": phase,
+        "maximum_spend_usd": "10",
+        "output_directory": "artifacts/comparison-v2-test-unused",
+    }
+    before = build_comparison_plan(ROOT, **common)
+    after = build_comparison_plan(ROOT, **common, generation="v2")
+    validate_controlled_pair(after)
+    assert before.budgets == after.budgets
+    assert before.retry_breaker == after.retry_breaker
+    assert [(a.seed, a.task_id, a.action_limit) for a in before.assignments] == [
+        (a.seed, a.task_id, a.action_limit) for a in after.assignments
+    ]
+    for old, new in zip(before.policies, after.policies, strict=True):
+        assert (
+            old.policy_manifest["system_prompt_digest"]
+            == new.policy_manifest["system_prompt_digest"]
+        )
+        old_parameters = dict(old.policy_manifest["inference_parameters"])
+        new_parameters = dict(new.policy_manifest["inference_parameters"])
+        assert new_parameters.pop("rate_limit_backoff_base_seconds") == "15.0"
+        assert old_parameters.pop("rate_limit_backoff_base_seconds") == "2.0"
+        assert old_parameters == new_parameters
+    for old, new in zip(CONTROLLED_PAIR, CONTROLLED_PAIR_V2, strict=True):
+        assert replace(old, slot=new.slot, rate_limit_backoff_base_seconds=15.0) == new
+    OpenRouterHttpAdapter(ROOT, after).close()
 
 
 @pytest.fixture

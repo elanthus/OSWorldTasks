@@ -26,6 +26,10 @@ QWEN_CONTROLLED_STATELESS = replace(
     QWEN_CONTROLLED_STATEFUL, slot="qwen-controlled-stateless-v1", stateful=False
 )
 CONTROLLED_PAIR = (QWEN_CONTROLLED_STATEFUL, QWEN_CONTROLLED_STATELESS)
+CONTROLLED_PAIR_V2 = tuple(
+    replace(config, slot=config.slot.replace("-v1", "-v2"), rate_limit_backoff_base_seconds=15.0)
+    for config in CONTROLLED_PAIR
+)
 SMOKE_PAIR = tuple(
     replace(
         config,
@@ -35,6 +39,10 @@ SMOKE_PAIR = tuple(
         max_bounded_retries_per_action=0,
     )
     for config in CONTROLLED_PAIR
+)
+SMOKE_PAIR_V2 = tuple(
+    replace(config, slot=config.slot.replace("-v1", "-v2"), rate_limit_backoff_base_seconds=15.0)
+    for config in SMOKE_PAIR
 )
 
 
@@ -78,11 +86,14 @@ def build_comparison_plan(
     phase: Literal["smoke", "calibration"],
     maximum_spend_usd: str,
     output_directory: str,
+    generation: Literal["v1", "v2"] = "v1",
 ) -> CalibrationPlan:
     """Freeze ten development probes or fifty full calibration episodes per arm."""
 
     if phase not in {"smoke", "calibration"}:
         raise ValueError("only smoke and calibration phases are supported")
+    if generation not in {"v1", "v2"}:
+        raise ValueError("unsupported controlled comparison generation")
     partition = Partition.DEVELOPMENT if phase == "smoke" else Partition.CALIBRATION
     filename = "development.json" if phase == "smoke" else "calibration-d56.json"
     manifest_path = Path("artifacts/grounding-v5-manifests/v2") / filename
@@ -100,7 +111,10 @@ def build_comparison_plan(
         )[:10]
     if len(records) != (10 if phase == "smoke" else 50):
         raise ValueError("unexpected comparison partition size")
-    configs = SMOKE_PAIR if phase == "smoke" else CONTROLLED_PAIR
+    if generation == "v1":
+        configs = SMOKE_PAIR if phase == "smoke" else CONTROLLED_PAIR
+    else:
+        configs = SMOKE_PAIR_V2 if phase == "smoke" else CONTROLLED_PAIR_V2
     policies = []
     for config in configs:
         policy = build_panel_policy_manifest(root, config=config, code_revision=code_revision)

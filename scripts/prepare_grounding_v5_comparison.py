@@ -20,6 +20,7 @@ def main() -> None:
     commands = parser.add_subparsers(dest="command", required=True)
     prepare = commands.add_parser("plan")
     prepare.add_argument("--phase", choices=("smoke", "calibration"), required=True)
+    prepare.add_argument("--generation", choices=("v1", "v2"), default="v1")
     prepare.add_argument("--maximum-spend-usd", required=True)
     prepare.add_argument("--run-output", required=True)
     prepare.add_argument("--output", type=Path, required=True)
@@ -44,6 +45,7 @@ def main() -> None:
             phase=args.phase,
             maximum_spend_usd=args.maximum_spend_usd,
             output_directory=args.run_output,
+            generation=args.generation,
         )
         value = plan.raw
         result = {"plan_sha256": plan.digest, "budgets": value["budgets"], "provider_calls_made": 0}

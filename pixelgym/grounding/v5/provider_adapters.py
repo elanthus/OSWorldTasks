@@ -28,7 +28,9 @@ from pixelgym.grounding.v5.codex_cli_policy import (
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, sha256_bytes
 from pixelgym.grounding.v5.controlled_comparison import (
     CONTROLLED_PAIR,
+    CONTROLLED_PAIR_V2,
     SMOKE_PAIR,
+    SMOKE_PAIR_V2,
     validate_controlled_pair,
 )
 from pixelgym.grounding.v5.generator import generate_task
@@ -69,6 +71,8 @@ _OPENROUTER_CONFIGS = {
         QWEN_STATELESS,
         *CONTROLLED_PAIR,
         *SMOKE_PAIR,
+        *CONTROLLED_PAIR_V2,
+        *SMOKE_PAIR_V2,
     )
 }
 _OPENROUTER_UNKNOWN_RESERVATION_RULE = "retain every unknown reservation"

@@ -11,6 +11,7 @@ from typing import Any, Self
 import pytest
 
 from pixelgym.grounding.v5.contracts import sha256_bytes
+from pixelgym.grounding.v5.controlled_comparison import CONTROLLED_PAIR_V2
 from pixelgym.grounding.v5.panel_policy import (
     GEMINI_FULL_CALIBRATION_POLICY_GENERATION,
     GEMINI_STATEFUL,
@@ -26,6 +27,7 @@ from pixelgym.grounding.v5.panel_policy import (
     TRANSPORT_RETRY_RULE,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
+    PanelPolicyConfig,
     SpendLedger,
     action_schema,
     build_panel_policy_manifest,
@@ -659,8 +661,17 @@ def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
     assert transport.records[1]["pre_send_backoff_seconds"] == 3.0
 
 
-def test_panel_transport_uses_exponential_429_fallback() -> None:
-    config = GEMINI_STATEFUL_FULL_CALIBRATION
+@pytest.mark.parametrize(
+    "config, delays",
+    [
+        (GEMINI_STATEFUL_FULL_CALIBRATION, (2.0, 4.0, 8.0, 16.0)),
+        (CONTROLLED_PAIR_V2[0], (15.0, 30.0, 60.0, 60.0)),
+        (CONTROLLED_PAIR_V2[1], (15.0, 30.0, 60.0, 60.0)),
+    ],
+)
+def test_panel_transport_uses_exponential_429_fallback(
+    config: PanelPolicyConfig, delays: tuple[float, ...]
+) -> None:
     clock = FakeClock()
 
     def urlopen(*_args: object, **_kwargs: object) -> None:
@@ -686,16 +697,15 @@ def test_panel_transport_uses_exponential_429_fallback() -> None:
     first = transport.send(request, idempotency_key="one", deadline_seconds=100.0)
     second = transport.send(request, idempotency_key="two", deadline_seconds=100.0)
     third = transport.send(request, idempotency_key="three", deadline_seconds=100.0)
+    fourth = transport.send(request, idempotency_key="four", deadline_seconds=100.0)
 
-    assert first.retry_after_seconds == 2.0
-    assert second.retry_after_seconds == 4.0
-    assert third.retry_after_seconds == 8.0
+    assert tuple(r.retry_after_seconds for r in (first, second, third, fourth)) == delays
     assert {
         first.backoff_source,
         second.backoff_source,
         third.backoff_source,
     } == {"exponential_fallback"}
-    assert clock.sleeps == [2.0, 4.0]
+    assert clock.sleeps == list(delays[:3])
 
 
 def test_panel_transport_retains_safe_successful_error_envelope_metadata() -> None:
