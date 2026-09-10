@@ -1,0 +1,37 @@
+# Evidence index
+
+Use the README for the implementation and measured claims. These records retain the audit detail.
+Reports summarize stored evidence; reading or regenerating them does not authorize provider calls.
+
+| Question | Evidence and limits |
+|---|---|
+| What establishes the environment contract? | [Validation JSON](../artifacts/validation-report.json), [generated report](../artifacts/validation-report.md), and [reward-hacking audit](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json). |
+| What changed in the visual evidence? | [Revision report](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json) and [raw renderer comparisons](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json) retain intermediate-readiness and historical differences. One-host bitwise evidence does not establish portability. |
+| What does the grounding improvement measure? | [Frozen results](../artifacts/grounding-results.json) and [analysis](../artifacts/grounding-report.md). V1 aliases target with state; [unrun v2](../artifacts/grounding-v2-manifest.json) crosses them. The moving model alias is not an immutable model snapshot. |
+| What did the platform demonstrate? | [Scripted fan-out](../artifacts/platform/seed-policy-fanout-evidence-v1.json), [D4.11 rehearsal](../artifacts/platform/d4.11/78c801c514a83d74111da14ffef89714427570ec/EVIDENCE_REVIEW.md), and [owner D4.12 record](../artifacts/platform/human-gate.json). Synthetic orchestration evidence, not production or model-quality evidence. |
+| What happened in v5 calibration? | [Generated calibration report](../artifacts/grounding-v5-d56-completed-calibrations-report.md) and [structured derivative](../artifacts/grounding-v5-d56-completed-calibrations-publishable.json) retain completed and negative results, incomplete runs, policy identities, spend and unknown-charge reservations, dates, taxonomy, and predecessor disclosures. |
+| What can a public clone verify? | [Integrity audit](../artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json), [publication relation](../artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json), and [errata](../artifacts/grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json). Aggregate bindings are published; restricted journals, raw provider responses, screenshots, and private checkpoints remain `must_not_commit`. Journal file hashes and row-level contents cannot be verified from a public clone. |
+
+## Withdrawn and historical work
+
+The earlier `A-gemini-stateful-v2` calibration remains withdrawn. Its evidence and reports were
+removed rather than corrected in place because absolute operator paths occurred in digest-bound
+plans and summaries. Removing the paths would invalidate the recorded hashes. It is not repaired
+or included in the retained calibration result. The producer-side fix is in
+[`evidence.py`](../pixelgym/grounding/v5/evidence.py); the historical withdrawal disclosure is in
+`README.md` at revision `06d695a327b02cb83e22f25cc47407d0b344bff5`.
+
+The older incomplete [Qwen report](../artifacts/grounding-v5-d56-qwen-full-calibration-report.md)
+remains available. The completed-calibration report preserves the separate Gemini ledger stop,
+HTTP infrastructure predecessor, and CLI-versus-HTTP fault-taxonomy disclosure. Stored labels are
+not rewritten. These runs do not constitute a completed confirmatory benchmark or a v5 gate.
+
+Superseded v3/v4 calibration apps and v5 D5.6 experiment drivers remain reproducible at the
+`legacy-grounding-final` tag. Their removal from the current tree does not remove their frozen
+evidence or turn calibration into a benchmark score.
+
+## Reproduce and review
+
+Follow the [reproduction guide](reproduction.md) for local checks, capture, and optional OSWorld.
+Use the [public release checklist](../plans/public-release-checklist.md) for inventory and privacy
+review. Public wording, publication approval, and any new milestone verdict remain owner decisions.
