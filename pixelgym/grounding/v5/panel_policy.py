@@ -10,7 +10,7 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from email.utils import parsedate_to_datetime
@@ -95,6 +95,7 @@ class PanelPolicyConfig:
     rate_limit_backoff_base_seconds: float = 2.0
     rate_limit_backoff_max_seconds: float = 60.0
     request_deadline_seconds: float = 180.0
+    controlled_history_prompt: bool = False
 
     def __post_init__(self) -> None:
         if not 0 <= self.max_rate_limit_retries_per_action < self.max_model_attempts_per_action:
@@ -260,6 +261,14 @@ LLAMA_STATEFUL = PanelPolicyConfig(
     stateful=True,
     quantizations=("fp8",),
 )
+LLAMA_STATEFUL_RETRY_SUCCESSOR = replace(
+    LLAMA_STATEFUL,
+    slot="C-llama-stateful-v2",
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
+    rate_limit_backoff_base_seconds=15.0,
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",
@@ -355,7 +364,9 @@ def system_prompt(config: PanelPolicyConfig) -> str:
             "y is 0 through 767, with origin at the upper-left"
         )
     memory_rule = (
-        "the visible-action history supplied below"
+        "the visible-action history supplied below (which may be empty)"
+        if config.controlled_history_prompt
+        else "the visible-action history supplied below"
         if config.stateful
         else "no prior action or outcome history"
     )
@@ -383,8 +394,9 @@ class OpenRouterPanelPolicy:
 
     def build_request(self, state: bytes, screenshot: bytes) -> dict[str, Any]:
         value = json.loads(state)
-        if self.config.stateful:
-            history_text = json.dumps(value["history"], sort_keys=True, separators=(",", ":"))
+        if self.config.stateful or self.config.controlled_history_prompt:
+            history = value["history"] if self.config.stateful else []
+            history_text = json.dumps(history, sort_keys=True, separators=(",", ":"))
             context = f"Visible-action history: {history_text}\n"
         else:
             context = ""
