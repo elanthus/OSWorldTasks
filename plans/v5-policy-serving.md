@@ -1,8 +1,8 @@
 # PixelGym v5 Policy Serving — Stateful Episode API on the Platform
 
-**Status:** S1 approved by the owner on 2026-09-09; S2 (frozen contracts) delivered. This
-document authorizes no model calls. Each later stage starts only in the order of the delivery
-table.
+**Status:** S1 approved by the owner on 2026-09-09; S2 (frozen contracts) and S3 (durable
+episode host with no-cost fake-policy coverage) delivered. This document authorizes no model
+calls. Each later stage starts only in the order of the delivery table.
 
 **Primary reader:** the project owner deciding whether the Milestone 4 platform should serve v5
 stateful policy systems, and under which contracts
@@ -193,7 +193,7 @@ evidence class it evaluated.
 |---|---|---|---|
 | S1 | **YOU** | Approve this scope, the `/api/v2` shape, the caller-owns-the-environment decision, and sequencing relative to D5.8/D5.9 | No implementation before approval |
 | S2 | **AGENT · high** | Freeze schemas: package kind v3, session API request/response contracts, operational-record and session-store schemas, registry `stateful-v5` record | Delivered: `config/stateful-policy-package.schema.json`, `config/stateful-serving.schema.json`, `pixelgym/platform/stateful_contracts.py`; interface review before S3 code |
-| S3 | **AGENT · high** | `ServingEpisodeHost` over the v5 transaction with a fake policy and scripted transport; restart-recovery, sealed-failure, intent-reference, and cap tests | Stop if a v5 checkpoint or resume rule would need to change |
+| S3 | **AGENT · high** | `ServingEpisodeHost` over the v5 transaction with a fake policy and scripted transport; restart-recovery, sealed-failure, intent-reference, and cap tests. Delivered: `pixelgym/platform/serving_episode.py`, with the v5 runner transaction shared through external-dispatch recovery hooks | Stop if a v5 checkpoint or resume rule would need to change |
 | S4 | **AGENT · medium** | `/api/v2` routes, bounds, error mapping, identity headers, operational records | Contract tests before provider code |
 | S5 | **AGENT · high** | Policy subprocess under OS sandbox enforcement inside the serving process; credential injection at the transport only; egress-denial integration test | Stop if isolation cannot be proven without network |
 | S6 | **AGENT · high** | Control-plane wiring: package verification, deploy, readiness smoke with a fake policy, rollback, and kind-aware `PolicyRuntime` | Stop if v1 behaviour changes |

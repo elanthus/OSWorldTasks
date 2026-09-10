@@ -858,6 +858,34 @@ class V5Runner:
             "y": validated.y,
             "key": validated.key,
         }
+        return self._seal_validated_action(
+            trial_id=trial_id,
+            step_index=step_index,
+            env=env,
+            backend=backend,
+            action=action,
+            candidate_digest=candidate_digest,
+            post_parse_state=post_parse_state,
+        )
+
+    def _seal_validated_action(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        env: PixelGuiEnv,
+        backend: V5FakeBackend,
+        action: dict[str, int],
+        candidate_digest: str,
+        post_parse_state: bytes,
+    ) -> dict[str, Any]:
+        """Seal and dispatch a validated action.
+
+        Stateful serving overrides this one boundary because the caller, rather than the
+        runner, owns dispatch.  Attempt settlement, parsing, candidate persistence, and action
+        validation remain the exact runner transaction above.
+        """
+
         resume_checkpoint = backend.checkpoint()
         resume_checkpoint_digest = self.journal.put_object(
             "environment_checkpoint", resume_checkpoint
@@ -1177,13 +1205,38 @@ class V5Runner:
         if self.interrupt_after == name:
             raise InjectedInterruption(name)
 
+    def _recover_external_intent(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        events: Sequence[JournalEvent],
+        by_kind: Mapping[str, JournalEvent],
+    ) -> dict[str, Any] | None:
+        """Extension point for a caller-owned dispatch boundary."""
+
+        del trial_id, step_index, events, by_kind
+        return None
+
+    def _recover_external_candidate(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        candidate_event: JournalEvent,
+    ) -> dict[str, Any] | None:
+        """Extension point for validating a recovered candidate without a backend."""
+
+        del trial_id, step_index, candidate_event
+        return None
+
     def recover_step(
         self,
         *,
         trial_id: str,
         step_index: int,
-        task: V5Task,
-        backend: V5FakeBackend,
+        task: V5Task | None,
+        backend: V5FakeBackend | None,
     ) -> dict[str, Any]:
         """Recover one interrupted action without duplicating a request or dispatch."""
 
@@ -1193,6 +1246,14 @@ class V5Runner:
             if event.step_index == step_index
         ]
         by_kind = {event.kind: event for event in events}
+        external_intent = self._recover_external_intent(
+            trial_id=trial_id,
+            step_index=step_index,
+            events=events,
+            by_kind=by_kind,
+        )
+        if external_intent is not None:
+            return external_intent
         if "dispatch_committed" in by_kind:
             event = by_kind["dispatch_committed"]
             self._validate_committed_dispatch_evidence(event)
@@ -1208,6 +1269,8 @@ class V5Runner:
                 "redispatched": False,
             }
         if "sealed_action_intent" in by_kind:
+            if task is None or backend is None:
+                raise RuntimeError("environment recovery requires a task and backend")
             intent = by_kind["sealed_action_intent"]
             candidate_event = by_kind["parsed_action_candidate"]
             post_parse_state = self.journal.get_object(
@@ -1242,6 +1305,15 @@ class V5Runner:
             outcome["redispatched"] = True
             return outcome
         if "parsed_action_candidate" in by_kind:
+            external_candidate = self._recover_external_candidate(
+                trial_id=trial_id,
+                step_index=step_index,
+                candidate_event=by_kind["parsed_action_candidate"],
+            )
+            if external_candidate is not None:
+                return external_candidate
+            if task is None or backend is None:
+                raise RuntimeError("environment recovery requires a task and backend")
             self._restore_current_environment(
                 trial_id=trial_id,
                 step_index=step_index,
@@ -1276,33 +1348,17 @@ class V5Runner:
                 candidate_event.payload["post_parse_checkpoint_digest"],
                 expected_kind="policy_checkpoint",
             )
-            checkpoint = backend.checkpoint()
-            checkpoint_digest = self.journal.put_object("environment_checkpoint", checkpoint)
-            resume_record = backend.environment_resume_record(step_count=step_index)
-            resume_digest = self.journal.put_object(
-                "environment_resume_record", canonical_json_bytes(resume_record.to_dict())
-            )
-            action_digest = self.journal.put_object("sealed_action", canonical_json_bytes(action))
-            payload = {
-                "candidate_digest": candidate_event.payload["candidate_digest"],
-                "action_digest": action_digest,
-                "environment_resume_digest": resume_digest,
-                "environment_checkpoint_digest": checkpoint_digest,
-            }
-            intent_digest = content_digest(payload)
-            self.journal.append_event(
-                event_key=f"{trial_id}/step-{step_index:04d}/sealed_action_intent",
-                kind="sealed_action_intent",
+            outcome = self._seal_validated_action(
                 trial_id=trial_id,
                 step_index=step_index,
-                payload={**payload, "sealed_intent_digest": intent_digest},
-            )
-            return self.recover_step(
-                trial_id=trial_id,
-                step_index=step_index,
-                task=task,
+                env=env,
                 backend=backend,
+                action=action,
+                candidate_digest=candidate_event.payload["candidate_digest"],
+                post_parse_state=post_parse_state,
             )
+            outcome["redispatched"] = True
+            return outcome
         canonical_event = by_kind.get("canonical_response_persisted")
         started_events = [
             event for event in events if event.kind == "attempt_started"
