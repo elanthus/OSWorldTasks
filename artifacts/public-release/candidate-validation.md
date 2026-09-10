@@ -6,7 +6,7 @@ These changes are proposed in dependent review-ready PRs; they are not yet merge
 The owner must review and merge the stack in that order, then recheck any changed final candidate.
 
 The [command records](candidate-command-records.json) retain source revision, clean-clone/ref scope,
-Python version, commands, exit status, raw stdout/stderr, and elapsed time. Results are measurements,
+Python version, commands, exit status, stdout/stderr with disclosed path placeholders and original stream hashes, and elapsed time. Results are measurements,
 not a human gate verdict. The evidence-recording commit necessarily follows the measured source
 revision; it changes only the recorded outputs and tracked inventory, not the tested implementation.
 
@@ -23,7 +23,7 @@ publication, change visibility, execute models or a VM, or declare any milestone
 
 ## Recorded commands
 
-Source revision: `79ef2a03f40a256d94f080fcc76570898b868453`. Full output is in the linked command records.
+Source revision: `79ef2a03f40a256d94f080fcc76570898b868453`. Full output with path placeholders is in the linked command records.
 
 | Command | Exit status | Elapsed seconds |
 |---|---:|---:|
