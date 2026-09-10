@@ -66,7 +66,9 @@ output directly.
   Historical operator-path acceptance applies only to its matched fingerprints and ancestor commits;
   it does not approve hosted records or new identifying disclosures. The owner-authorized current
   comment redactions are recorded in the [follow-up evidence](../artifacts/public-release/hosted-redaction-followup.json).
-  Media retention is unchanged; the owner has not declared exhaustive media review or publication approval.
+  On 2026-09-10 the owner accepted the documented coverage limits; media retention is unchanged.
+  The [final refresh](../artifacts/public-release/final-privacy-review.md) records updated scans and
+  acceptance without claiming exhaustive inspection or approving publication.
 - [ ] Confirm zero unreviewed actual credential findings within the approved publication scope.
   Distinguish acknowledged synthetic test vectors from actual credentials; retain accepted historical
   path findings visibly. If an actual credential is established, approve concrete rotation/revocation
