@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from types import MappingProxyType
@@ -12,6 +13,63 @@ from urllib.parse import urlsplit
 from pixelgym.actions import KEY_ALLOWLIST_VERSION
 from pixelgym.backends import base as _backend_base
 from pixelgym.serialization import canonical_json_bytes
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyVisibleResult:
+    """Exact post-dispatch fields an evaluated policy is allowed to observe."""
+
+    screenshot_digest: str
+    reward: float
+    terminated: bool
+    truncated: bool
+    step_index: int
+
+    def __post_init__(self) -> None:
+        if type(self.screenshot_digest) is not str:
+            raise TypeError("policy-visible screenshot digest must be a string")
+        prefix = "sha256:"
+        hexadecimal = self.screenshot_digest.removeprefix(prefix)
+        if (
+            not self.screenshot_digest.startswith(prefix)
+            or len(hexadecimal) != 64
+            or any(character not in "0123456789abcdef" for character in hexadecimal)
+        ):
+            raise ValueError("policy-visible screenshot digest must be canonical SHA-256")
+        if type(self.reward) is not float:
+            raise TypeError("policy-visible reward must be a float")
+        if type(self.terminated) is not bool or type(self.truncated) is not bool:
+            raise TypeError("policy-visible episode flags must be booleans")
+        if type(self.step_index) is not int or self.step_index < 0:
+            raise TypeError("policy-visible step index must be a non-negative integer")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "screenshot_digest": self.screenshot_digest,
+            "reward": self.reward,
+            "terminated": self.terminated,
+            "truncated": self.truncated,
+            "step_index": self.step_index,
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> PolicyVisibleResult:
+        allowed = {
+            "screenshot_digest",
+            "reward",
+            "terminated",
+            "truncated",
+            "step_index",
+        }
+        if set(value) != allowed:
+            raise ValueError("policy-visible result fields do not match the allowed schema")
+        return cls(
+            screenshot_digest=value["screenshot_digest"],
+            reward=value["reward"],
+            terminated=value["terminated"],
+            truncated=value["truncated"],
+            step_index=value["step_index"],
+        )
 
 EnvironmentResumeRecord = _backend_base.EnvironmentResumeRecord
 content_digest = _backend_base.content_digest

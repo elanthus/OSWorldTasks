@@ -1,9 +1,10 @@
 # PixelGym v5 Policy Serving — Stateful Episode API on the Platform
 
 **Status:** S1 approved by the owner on 2026-09-09; S2 (frozen contracts), S3 (durable
-episode host with no-cost fake-policy coverage), and S4 (isolated `/api/v2` HTTP adapter with
-immutable operational records) delivered. This document authorizes no model calls. Each later
-stage starts only in the order of the delivery table.
+episode host with no-cost fake-policy coverage), S4 (isolated `/api/v2` HTTP adapter with
+immutable operational records), and S5 (credential-free policy subprocess with real local
+egress-denial proof) delivered. This document authorizes no model calls. Each later stage starts
+only in the order of the delivery table.
 
 **Primary reader:** the project owner deciding whether the Milestone 4 platform should serve v5
 stateful policy systems, and under which contracts
@@ -144,6 +145,16 @@ runner uses; the serving app process holds the journal, the transport, and the c
 exchanges only canonical bytes with the subprocess. This matches the existing separation in the
 benchmark harness and keeps the serving app outside the sandbox.
 
+S5 implements this boundary in `pixelgym/platform/policy_subprocess.py`: a serialized canonical
+JSON/base64 RPC worker, a fixed environment that inherits no credential, and a deny-by-default
+Darwin `sandbox-exec` launcher whose profile digest is observable by the host. The real integration
+test pre-verifies a denied loopback listener from the serving process, proves the worker cannot
+reach it, and proves the serving-side transport can reach its separately allowlisted fake endpoint
+with a credential that is absent from the worker. Darwin SBPL accepts exact port filtering only for
+`localhost`; the launcher therefore refuses non-loopback provider endpoints instead of widening
+egress. Real-provider support remains blocked pending an OS mechanism that can enforce the frozen
+non-loopback endpoint exactly and the separate traffic approval required below.
+
 ### Evidence and operational records
 
 Each `act` writes one immutable operational record with the existing v1 fields plus episode id,
@@ -196,7 +207,7 @@ evidence class it evaluated.
 | S2 | **AGENT · high** | Freeze schemas: package kind v3, session API request/response contracts, operational-record and session-store schemas, registry `stateful-v5` record | Delivered: `config/stateful-policy-package.schema.json`, `config/stateful-serving.schema.json`, `pixelgym/platform/stateful_contracts.py`; interface review before S3 code |
 | S3 | **AGENT · high** | `ServingEpisodeHost` over the v5 transaction with a fake policy and scripted transport; restart-recovery, sealed-failure, intent-reference, and cap tests. Delivered: `pixelgym/platform/serving_episode.py`, with the v5 runner transaction shared through external-dispatch recovery hooks | Stop if a v5 checkpoint or resume rule would need to change |
 | S4 | **AGENT · medium** | `/api/v2` routes, bounds, error mapping, identity headers, operational records. Delivered: `pixelgym/platform/stateful_service.py`, mounted through the existing service's optional router boundary and tested with a fake-policy host factory and in-memory session registry | Contract tests before provider code |
-| S5 | **AGENT · high** | Policy subprocess under OS sandbox enforcement inside the serving process; credential injection at the transport only; egress-denial integration test | Stop if isolation cannot be proven without network |
+| S5 | **AGENT · high** | Policy subprocess under OS sandbox enforcement inside the serving process; credential injection at the transport only; egress-denial integration test. Delivered: `pixelgym/platform/policy_subprocess.py` and an opt-in real Darwin worker test with allowed and denied local listeners | Stop if isolation cannot be proven without network |
 | S6 | **AGENT · high** | Control-plane wiring: package verification, deploy, readiness smoke with a fake policy, rollback, and kind-aware `PolicyRuntime` | Stop if v1 behaviour changes |
 | S7 | **PAIR** | Freeze the v5 gate policy and the first approved package and deployment attempt cap | Explicit approval; still no real call |
 | S8 | **YOU** | Rehearse deploy, serve one fake-policy episode end to end, roll back, verify hashes; declare the gate | Agent reports raw output only |
@@ -278,7 +289,7 @@ Decided by the owner on 2026-09-09, before S1 approval of the whole note:
   provider call.
 - [ ] Every sealed-failure class has a test that proves exactly one terminal record and no
   further attempt.
-- [ ] The policy subprocess is denied unauthorized egress in a real OS-level test.
+- [x] The policy subprocess is denied unauthorized egress in a real OS-level test.
 - [ ] Deploy, readiness, and rollback of a `stateful-v5` package are audited in the control store,
   and the v1 path is unchanged under its existing tests.
 - [ ] The fast suite passes without network, browser, OSWorld, credentials, or model calls.
