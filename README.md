@@ -9,6 +9,13 @@ local scripted evaluation-platform rehearsal—not broad desktop generalization 
 The strongest visual claim is bitwise repeatability at 1024×768 on one local host; portability,
 the frozen v1 allocation, model aliases, synthetic platform metrics, and human gates remain limited.
 
+The narrow workload makes exact expected state, reproducible resets, and adversarial reward checks
+tractable. That lets the project test environment contracts and evaluator boundaries directly,
+then rehearse evidence retention, promotion, and rollback against a fixed workload.
+
+Start with the three claims below, [reproduce the checks](#quick-reproduction-without-osworld), or
+open the [evidence index](docs/evidence-index.md) for the full audit trail.
+
 ## Architecture
 
 ```mermaid
@@ -79,60 +86,17 @@ on 2026-09-09 against the evidence at revision `4c4a7fb`
 
 ## Grounding benchmark
 
-The frozen benchmark contains 100 examples: 20 task seeds across five screen states and ten control
-targets. Raw-coordinate and set-of-marks conditions use the same target instruction. Candidate
-generation is target-agnostic, overlays are deterministic, and proposal coverage is reported
-separately from conditional mark-selection accuracy
-([frozen dataset](artifacts/grounding-dataset.jsonl)).
-
-The frozen v1 allocation perfectly aliases target identity with screen state: every target appears
-in only one state. Control-type breakdowns for the stored v1 result are therefore descriptive
-compositions, not independently identified control-type effects. Benchmark v2 fixes that design
-for future evaluation with a separate 100-example crossed allocation: every target appears in every
-screen state with two seed replicates per target-by-state cell. V2 reuses the target-neutral v1
-captures and overlays, has not been run against a model, and does not change the reported v1 result
-([v2 protocol](artifacts/grounding-v2-protocol.md),
-[v2 manifest](artifacts/grounding-v2-manifest.json)).
-
-Using Codex CLI with `gpt-5.4-mini` on 2026-08-10, raw-coordinate accuracy was **56/100
-(56.0%)** and set-of-marks accuracy was **100/100 (100.0%)**. The paired difference was **+44.0
-percentage points**, with a fixed-seed paired-bootstrap 95% CI of **[+35.0, +54.0]** and a
-two-sided exact McNemar p-value of **1.137×10⁻¹³**. Proposal coverage was **100/100**; conditional
-mark-selection accuracy was also **100/100**
-([grounding results](artifacts/grounding-results.json)).
+The frozen raw-coordinate and set-of-marks experiment uses the same target instruction in each
+condition, deterministic target-agnostic proposals, and separate coverage and conditional-selection
+metrics ([structured results](artifacts/grounding-results.json)).
 
 ![Raw-coordinate versus set-of-marks accuracy](artifacts/grounding/figures/raw-vs-marks-accuracy.png)
 
-This is a measured result for one model alias, synthetic task family, prompt, layout, and screen
-size. It supports the paired effect of adding these frozen overlays in this setup; it does not
-establish why predictions changed or generalize to other GUI tasks. The manually reviewed 44 raw
-errors included 31 wrong-semantic-element labels, 6 just-outside labels, and 7 coordinate-scaling
-labels treated explicitly as reviewer inference. Labels are non-exclusive
-([review decisions](artifacts/grounding-error-review-decisions.json)).
-
-After the [default development setup](#quick-reproduction-without-osworld), offline reproduction
-makes no model or network calls:
-
-```bash
-.venv/bin/python scripts/generate_grounding_report.py
-```
-
-The recorded run used the Codex CLI provider and current Codex login. An implemented but unused
-OpenRouter alternative reads configuration only from the process environment:
-
-```bash
-export OPENROUTER_API_KEY="..."
-export OPENROUTER_MODEL="provider/model-id"
-
-.venv/bin/python scripts/run_grounding_evaluation.py \
-  --provider openrouter --full --max-new-calls 0 --plan-only
-```
-
-`OPENROUTER_MODEL` must select an image-capable route with structured-output support. The adapter
-uses strict JSON Schema, requires routed parameter support, and enables neither response healing nor
-hidden retries. See OpenRouter's official
-[image-input](https://openrouter.ai/docs/guides/overview/multimodal/image-understanding) and
-[structured-output](https://openrouter.ai/docs/guides/features/structured-outputs) documentation.
+**Frozen v1 confounds target identity with screen state:** each target occurs in only one state,
+so control-type slices cannot identify independent control-type effects. The crossed v2 allocation
+is available but has not been run against a model. See the [paired analysis](artifacts/grounding-report.md),
+[v2 protocol](artifacts/grounding-v2-protocol.md), and [v2 manifest](artifacts/grounding-v2-manifest.json).
+The moving model alias and this single layout limit interpretation of the measured improvement.
 
 ## Platform milestone
 
@@ -175,181 +139,52 @@ Compose/Playwright test commands, their prerequisites, cleanup scope, and expect
 The same integration suite is wired as a manually dispatched GitHub Actions workflow
 (`.github/workflows/platform-integration.yml`); it is not scheduled.
 
-The recorded lifecycle, generated API transcript, immutable-artifact verification, and known
-limitations are available in the [demo script](artifacts/platform/demo-script.md),
-[API transcript](artifacts/platform/demo-api-transcript.jsonl),
-[integrity evidence](artifacts/platform/immutable-artifact-verification.json), and
-[platform limitations](artifacts/platform/known-limitations.md). The D4.11 lifecycle was
-re-rehearsed at revision `78c801c` with owner confirmations
-([refreshed bundle](artifacts/platform/d4.11/78c801c514a83d74111da14ffef89714427570ec/EVIDENCE_REVIEW.md)).
-The D4.12 milestone gate was declared `PASS` by the project owner
-([gate record](artifacts/platform/human-gate.json)); the scripted-provider caveats above still apply.
+The [lifecycle demo](artifacts/platform/demo-script.md),
+[API transcript](artifacts/platform/demo-api-transcript.jsonl), and
+[platform limitations](artifacts/platform/known-limitations.md) document the rehearsal. Reliability
+and other residual work remain tracked in [#166](https://github.com/elanthus/OSWorldTasks/issues/166),
+[#165](https://github.com/elanthus/OSWorldTasks/issues/165), and
+[#167](https://github.com/elanthus/OSWorldTasks/issues/167).
 
 ## v5 agent benchmark (in progress)
 
-V5 is a separate protocol that evaluates a complete versioned policy system — model, prompt,
-memory, harness, parser, and coordinate adapter — end to end on stateful workflows, after the v4c
-pilot saturated at the episode level. It preserves the pixel-only observation, bounded action,
-privileged evaluator, and sparse reward contracts described below
-([v5 plan](plans/grounding-v5-agent-benchmark.md)).
+V5 evaluates a versioned model, prompt, memory, harness, parser, and coordinate adapter together
+on stateful workflows. **The confirmatory benchmark and v5 serving work remain unfinished; no v5
+gate is declared.** See the [benchmark plan](plans/grounding-v5-agent-benchmark.md) and
+[serving plan](plans/v5-policy-serving.md).
 
-**Completed calibration results are now published, but no v5 result is a benchmark score or a
-milestone-gate verdict.** Every retained D5.6 full-calibration run that completed its 50 assigned
-tasks and passed the committed-evidence checks appears below. Attempted tasks and every terminal
-classification remain separate:
+Retained descriptive calibration includes Gemini v3 with 35/50 exact successes and Qwen v3 with
+0/50. These are different policy systems and runtime configurations, not a controlled model
+comparison ([structured derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json)).
+The [generated calibration report](artifacts/grounding-v5-d56-completed-calibrations-report.md)
+retains every terminal classification, incomplete run, spend reservation, and historical taxonomy.
 
-| Policy slot | Provider / model alias | Assigned | Attempted | Exact success | Invalid output | Request failure | Infrastructure failure | Policy violation | Truncation | Unknown-charge reservation |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `A-gemini-stateful-v3` | `openrouter/google-vertex/global` / `google/gemini-3.7-flash` | 50 | 50 | 35 (70.0%) | 1 | 1 | 0 | 0 | 13 | $1.990656000 (20 outcomes) |
-| `B-qwen-stateful-v3` | `openrouter/alibaba` / `qwen/qwen3-vl-8b-instruct` | 50 | 50 | 0 (0.0%) | 3 | 0 | 0 | 0 | 47 | $0.000000000 (0 outcomes) |
-
-These are descriptive calibration results, not confirmatory results or controlled model
-comparisons. Both runs reached their assigned denominator without tripping a hard-stop guard.
-Both runs bind the same prompt, memory, parser, response-schema, coordinate-adapter, retry-policy,
-and calibration-partition manifest (`sha256:41034ec1…`). Their approved stop conditions, spend
-reconciliation, and evidence bindings are recorded in the
-[generated report](artifacts/grounding-v5-d56-completed-calibrations-report.md) and
-[response-content-free derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json).
-They are not controlled comparisons: policy-manifest digests, code revisions, and runtime digests
-differ; Qwen v3 records temperature 0 while Gemini v3b records no temperature; and Gemini v3b
-records strict upstream `json_schema` response validation while Qwen v3 has no
-`response_validation` block.
-The approved endpoint records were observed on 2026-08-28 and the retained evidence was committed
-with author dates on 2026-09-02 (committed-history dates, not execution timestamps); the run
-execution dates were not recorded in the committed plans or summaries.
-
-Two other retained runs were inventoried and audited but not promoted into this completed table.
-Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked and failed
-`completed_assigned_denominator` and `publication_relation_verified`. The older
-`B-qwen-stateful-v2` run stopped after 13 of 50 assignments at the first invalid output, as its
-approved plan required, and failed `completed_assigned_denominator`; its historical
-[partial report](artifacts/grounding-v5-d56-qwen-full-calibration-report.md) remains available.
-
-The earlier `A-gemini-stateful-v2` calibration remains **withdrawn**. Its evidence and reports were
-removed rather than corrected in place because its stored plan and summaries contained absolute
-operator paths whose removal would invalidate their recorded SHA-256 values. It is not repaired or
-included in the published result. The producer-side path defect is fixed in
-`pixelgym/grounding/v5/evidence.py`.
-
-PR #155 changed the taxonomy for CLI process failures. All four retained runs used HTTP/OpenRouter
-transports, and no episode or transport row carries a `cli_fault` key, so the number of
-`invalid_output` rows that could be former-taxonomy CLI process failures is bounded at zero;
-historical labels are not rewritten. Qwen v3's separate frozen predecessor records one attempted
-pair terminated by an HTTP 429 `unknown_outcome_infrastructure_failure`; that predecessor is not
-part of Qwen v3's 50-assignment row, whose infrastructure-failure count remains zero. Restricted
-attempt journals still hold raw provider responses, screenshots, and private checkpoints. They are
-declared `must_not_commit` in the
-[publication relation](artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json),
-and the [integrity audit](artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json)
-discloses that their file hashes and row-level contents are unavailable from a public clone.
-
-The superseded v3/v4 calibration apps and v5 D5.6 experiment drivers that produced this evidence
-were removed from the tree; the code remains reproducible at git tag `legacy-grounding-final`.
+The earlier Gemini v2 calibration is **withdrawn**, not repaired or included: removing absolute
+operator paths from its digest-bound evidence would invalidate the recorded hashes. Restricted
+journals remain unpublished; a public clone cannot verify their file hashes or row-level contents.
+See the [evidence index](docs/evidence-index.md) for withdrawal, provenance, and verification limits.
 
 ## Quick reproduction without OSWorld
 
-Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
-does not need a VM, browser, network, or provider credentials.
+Python 3.12 is required. The default development setup installs no OSWorld; the fast suite needs
+no VM, browser, network, or provider credentials after installation.
 
 ```bash
 python3.12 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
-
 .venv/bin/ruff check .
 .venv/bin/mypy pixelgym
 .venv/bin/pytest -q -n auto tests/unit
 .venv/bin/python scripts/golden_trajectory.py check
-.venv/bin/python scripts/demo_fake_backend.py --seed 7
+.venv/bin/python scripts/generate_grounding_report.py
 ```
 
-The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
-run independent tests in parallel; targeting well under a minute under typical load (see the measured
-ranges below for observed run-to-run variance). Serial execution remains supported but is slower and
-not the parallel timing target. The editable install is sufficient for the fast suite, lint, and
-strict static type check of the complete `pixelgym` package.
-
-Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
-The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
-`pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
-of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
-hard to cover); optional OSWorld, browser, grounding, and platform modules remain included, along
-with the project's 12 pre-existing `# pragma: no cover` lines. CI publishes the terminal report in
-the job summary and uploads `coverage.xml` as the `fast-suite-coverage` artifact. The measured report
-that produced the 80% baseline is checked in at
-[`artifacts/ci-coverage-baseline-issue-114.md`](artifacts/ci-coverage-baseline-issue-114.md). Run the
-identical coverage gate locally with:
-
-```bash
-.venv/bin/pytest -q -n 4 --dist worksteal --hypothesis-profile=ci \
-  --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit
-```
-
-The [CI workflow](.github/workflows/ci.yml) gives the fast-suite job a **20-minute timeout**;
-lint and type checking each have a 10-minute timeout. Hosted coverage runtime includes runner,
-setup, instrumentation, and reporting costs and is a different measurement from a local plain
-suite. Historical local measurements in the README at revision `06d695a` ranged 54.6–69.5s for
-the plain suite and 66.9–82.2s with coverage. These are historical observations, not current timing
-guarantees or evidence that a hosted job should finish in a minute. See the
-[status source record](artifacts/public-release/status-sources.json) for the checked configuration,
-visibility, and owner-gate sources.
-
-Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
-installed once with:
-
-```bash
-.venv/bin/python -m playwright install chromium
-.venv/bin/python scripts/validate_vendor_form_browser_boundary.py \
-  --output artifacts/local/browser-boundary.json
-.venv/bin/python scripts/capture_grounding_dataset.py
-```
-
-To revalidate the checked-in dataset, candidate records, image hashes, allocation summary, and
-known design limitations without launching a browser or rewriting capture assets, run:
-
-```bash
-.venv/bin/python scripts/capture_grounding_dataset.py --summary-only
-```
-
-To deterministically rebuild the balanced v2 metadata and audit sheets from the checked-in,
-target-neutral v1 capture assets without any model calls, run:
-
-```bash
-.venv/bin/python scripts/build_grounding_benchmark_v2.py
-```
-
-The scripted incomplete-submit demo stays at reward `0.0`. The separate golden trajectory checks
-that all preceding rewards are zero, the exact valid submission pays `1.0` once, and the episode
-terminates rather than truncates.
-
-## Real OSWorld-V2 integration
-
-The integration is pinned to OSWorld-V2 tag `v2026.06.24` at commit
-`2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6`. The historical Day 2 run used Python 3.12.13 and
-1920×1080 screenshots. The 2026-09-06 revision used Python 3.12.14 and 1024×768 observations; both
-used a digest-pinned native ARM64 QEMU host around the release's unchanged x86-64 guest. Full
-provider and image metadata are recorded in the historical
-[validation artifact](artifacts/validation-report.json) and the
-[current revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json).
-Start with the [default development setup](#quick-reproduction-without-osworld), then install the
-optional integration dependency and run:
-
-```bash
-.venv/bin/pip install -e ".[osworld]"
-.venv/bin/python scripts/prepare_osworld_docker.py
-.venv/bin/python scripts/validate_vendor_form_browser_boundary.py \
-  --output artifacts/local/browser-boundary.json
-.venv/bin/python scripts/smoke_osworld_reset.py
-.venv/bin/python scripts/osworld_space_smoke.py
-.venv/bin/python scripts/osworld_golden_trajectory.py check
-.venv/bin/python scripts/validate_day2.py real-resets
-.venv/bin/python scripts/validate_day2.py audit
-.venv/bin/python scripts/validate_day2.py assemble
-.venv/bin/python scripts/generate_validation_report.py
-```
-
-Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
-the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds
-([validation evidence](artifacts/validation-report.json)).
+The golden trajectory replays the reward and episode-end contract. The report command reads stored
+evidence without model calls. See the [reproduction guide](docs/reproduction.md) for coverage,
+historical timing, browser capture, and the optional pinned OSWorld integration. The
+[CI workflow](.github/workflows/ci.yml) gives the hosted coverage job a 20-minute timeout;
+local plain-suite timings are a separate measurement
+([source record](artifacts/public-release/status-sources.json)).
 
 ## Environment contract
 
@@ -376,41 +211,19 @@ known limitation, with the underlying evidence retained
 
 ## Limitations
 
-- This is one deterministic synthetic form, not a broad desktop-task distribution.
-- The current app-mode reset evidence records five mutually bitwise-identical 1024×768 frames,
-  without a mask or tolerance. That single local-Docker run does not establish bitwise portability
-  across hosts. The retained `04b` navigation-boundary frame was captured before page
-  initialization completed because the prior launch/readiness path did not prevent an intermediate
-  paint from becoming the observation. The launch now requires two consecutive page-ready
-  acknowledgements; the evidence probe independently verifies `ready: true` after reset and then
-  captures a fresh stable frame. The replacement `04c` frame is bitwise-identical to all five reset
-  frames: 0 differing pixels and maximum per-channel delta 0 before the separately reported SSIM.
-  The immutable historical evidence also retains its earlier live-clock differences
-  ([current comparison](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
-- The historical 1920×1080 OSWorld run established semantic task-state determinism and measured
-  155 differing pixels with a maximum per-channel delta of 222 before its unmasked perceptual
-  visual-stability result (minimum SSIM 0.999863); it did not establish bitwise visual determinism.
-  The 2026-09-06 1024×768 revision measured bitwise visual determinism only on one local host; the
-  owner re-graded D2.11 `PASS` on that revision on 2026-09-07.
-- The Apple Silicon path uses software emulation for the released x86-64 guest and is slow.
-- OSWorld is an optional dependency that downloads a 14.2 GB compressed guest artifact and requires
-  Docker; the default fast suite uses neither OSWorld nor a VM.
-- Digest pinning mitigates mutable runtime tags; it does not eliminate third-party publisher risk.
-- The privileged state endpoint exists inside the guest. The guest Chromium app-mode contract removes
-  address-bar, tab, and desktop navigation affordances from the tested bounded-click observation;
-  containment against a browser or guest OS exploit remains outside the threat model.
-- The grounding model identifier may be a moving alias rather than an immutable snapshot.
-- Target identity is perfectly aliased with screen state in the frozen v1 grounding dataset, so
-  v1 control-type slices cannot separate control-type and screen-state effects. The unrun v2
-  allocation crosses every target with every state, with only two seed replicates per cell.
-- The grounding experiment covers one model, prompt, resolution, synthetic application layout, and
-  target-agnostic candidate generator; its result should not be generalized beyond that scope.
-- Platform demo and seed-by-policy fan-out metrics use deterministic scripted providers on one
-  local host. They are synthetic governance and orchestration fixtures, not model-quality,
-  production-throughput, or external-deployment evidence.
-- The D4.12 verdict grades governance and orchestration behaviour on a scripted provider; it is
-  not a model-quality claim. V5 calibration results are descriptive and remain neither benchmark
-  scores nor a milestone-gate verdict.
+- One deterministic synthetic workload supports contract and governance tests, not broad GUI
+  generalization. Model aliases can move; the frozen v1 target/state confounding remains material.
+- Bitwise visual evidence comes from one local host. The historical OSWorld run showed semantic
+  determinism and perceptual stability, not bitwise equality. Raw differences and the intermediate
+  readiness frame remain in the [visual evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json).
+- The privileged state endpoint exists inside the guest. App-mode navigation containment was tested;
+  browser and guest OS exploits remain outside the threat model. Digest pinning cannot remove
+  third-party publisher risk. Apple Silicon software emulation is slow.
+- Platform metrics are synthetic scripted-provider governance measurements on one host, not model
+  quality, production throughput, or external-deployment evidence. D4.12 grades its recorded revision.
+- V5 calibration is descriptive. Negative results, incomplete runs, the withdrawn Gemini v2 run,
+  unknown charges, and unavailable private-journal verification remain disclosed in the
+  [evidence index](docs/evidence-index.md) and linked reports. No v5 completion is claimed.
 
 ## Project evidence
 
