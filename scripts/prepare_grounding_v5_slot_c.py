@@ -14,7 +14,7 @@ from pixelgym.grounding.v5.slot_c import build_slot_c_plan
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--phase", choices=("smoke", "calibration"), required=True)
+    parser.add_argument("--phase", choices=("smoke", "diagnostic"), required=True)
     parser.add_argument("--maximum-spend-usd", required=True)
     parser.add_argument("--run-output", required=True)
     parser.add_argument("--output", type=Path, required=True)

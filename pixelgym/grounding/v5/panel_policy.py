@@ -286,6 +286,11 @@ LLAMA_STATEFUL_VERTEX_SMOKE = replace(
     max_rate_limit_retries_per_action=0,
     max_bounded_retries_per_action=0,
 )
+LLAMA_STATEFUL_VERTEX_DIAGNOSTIC = replace(
+    LLAMA_STATEFUL_VERTEX_SMOKE,
+    slot="C-llama-stateful-vertex-v1-routing-diagnostic",
+    router_metadata=True,
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",
@@ -654,6 +659,9 @@ class SpendLedger:
 
     def _replay_journal(self, journal: V5AttemptJournal) -> None:
         for event in journal.events():
+            if event.kind == "spend_ledger_blocked":
+                self.blocked = True
+                continue
             reservation_id = event.payload.get("reservation_id")
             if not isinstance(reservation_id, str):
                 continue
@@ -773,11 +781,11 @@ class SpendLedger:
             prior = self._settlements.get(reservation_id)
             if prior is not None and prior[0] == "known":
                 if prior[1] != cost:
-                    self.blocked = True
+                    self.block()
                     return False
                 return not self.blocked
             if prior is not None and prior[0] == "released":
-                self.blocked = True
+                self.block()
                 return False
             hold = self._in_flight.get(reservation_id)
             if hold is None and (prior is None or prior[0] != "unknown"):
@@ -802,7 +810,7 @@ class SpendLedger:
                 or cost > request_maximum_usd
                 or self.budget_accounted_spend_usd > self.maximum_spend_usd
             ):
-                self.blocked = True
+                self.block()
                 return False
             return True
 
@@ -865,7 +873,7 @@ class SpendLedger:
             if hold != request_maximum_usd or (
                 self.budget_accounted_spend_usd > self.maximum_spend_usd
             ):
-                self.blocked = True
+                self.block()
             return reservation
 
     def release_wire(self, idempotency_key: str, *, reason: str) -> bool:
@@ -896,7 +904,17 @@ class SpendLedger:
             return True
 
     def block(self) -> None:
+        """Durably stop new sends; replay must preserve this terminal state."""
+
         with self._lock:
+            if self.journal is not None:
+                self.journal.append_event(
+                    event_key="spend/blocked",
+                    kind="spend_ledger_blocked",
+                    trial_id="__spend_ledger__",
+                    step_index=0,
+                    payload={"blocked": True},
+                )
             self.blocked = True
 
 

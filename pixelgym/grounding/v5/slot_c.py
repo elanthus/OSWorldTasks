@@ -8,7 +8,7 @@ from typing import Literal
 
 from pixelgym.grounding.v5.contracts import Partition, content_digest
 from pixelgym.grounding.v5.panel_policy import (
-    LLAMA_STATEFUL_VERTEX,
+    LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
     build_panel_policy_manifest,
 )
@@ -20,31 +20,30 @@ def build_slot_c_plan(
     root: Path,
     *,
     code_revision: str,
-    phase: Literal["smoke", "calibration"],
+    phase: Literal["smoke", "diagnostic"],
     maximum_spend_usd: str,
     output_directory: str,
 ) -> CalibrationPlan:
-    """Allocate ten two-action development probes or fifty full calibration tasks."""
+    """Allocate development probes; calibration awaits successful smoke review."""
 
-    if phase not in {"smoke", "calibration"}:
-        raise ValueError("only smoke and calibration phases are supported")
+    if phase not in {"smoke", "diagnostic"}:
+        raise ValueError("only smoke and diagnostic phases are supported; calibration is blocked")
     smoke = phase == "smoke"
-    config = LLAMA_STATEFUL_VERTEX_SMOKE if smoke else LLAMA_STATEFUL_VERTEX
-    partition = Partition.DEVELOPMENT if smoke else Partition.CALIBRATION
-    filename = "development.json" if smoke else "calibration-d56.json"
+    config = LLAMA_STATEFUL_VERTEX_SMOKE if smoke else LLAMA_STATEFUL_VERTEX_DIAGNOSTIC
+    partition = Partition.DEVELOPMENT
+    filename = "development.json"
     manifest_path = Path("artifacts/grounding-v5-manifests/v2") / filename
     manifest = json.loads((root / manifest_path).read_text(encoding="utf-8"))
     records = _validated_records(manifest, partition=partition)
-    if smoke:
-        families = sorted({record["seed_record"]["family"] for record in records})
-        groups = [[r for r in records if r["seed_record"]["family"] == f] for f in families]
-        records = tuple(
-            group[index]
-            for index in range(max(map(len, groups)))
-            for group in groups
-            if index < len(group)
-        )[:10]
-    if len(records) != (10 if smoke else 50):
+    families = sorted({record["seed_record"]["family"] for record in records})
+    groups = [[r for r in records if r["seed_record"]["family"] == f] for f in families]
+    records = tuple(
+        group[index]
+        for index in range(max(map(len, groups)))
+        for group in groups
+        if index < len(group)
+    )[:10 if smoke else 1]
+    if len(records) != (10 if smoke else 1):
         raise ValueError("unexpected Slot C partition size")
     assignments = [
         {
@@ -53,7 +52,7 @@ def build_slot_c_plan(
             "seed": record["seed_record"]["seed"],
             "task_id": record["task_id"],
             "family": record["seed_record"]["family"],
-            "action_limit": 2 if smoke else record["max_episode_steps"],
+            "action_limit": 2 if smoke else 1,
         }
         for index, record in enumerate(records)
     ]
@@ -108,6 +107,7 @@ def build_slot_c_plan(
                 "stop on an infrastructure failure, request failure, or policy violation",
                 "retain invalid output without retry; stop after three consecutive failures",
                 "smoke approval does not authorize calibration or confirmatory calls",
+                "diagnostic approval authorizes one development request only, not another smoke",
             ],
             "outputs": {
                 "directory": output_directory,

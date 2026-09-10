@@ -1,17 +1,22 @@
-"""Slot C route identity and bounded, disjoint smoke/calibration allocations."""
+"""Slot C route identity and bounded development-only diagnostic allocations."""
 
-import json
+import io
+import urllib.error
 from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
+from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import (
     LLAMA_STATEFUL_RETRY_SUCCESSOR,
     LLAMA_STATEFUL_VERTEX,
+    LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
     OpenRouterPanelPolicy,
+    OpenRouterPanelTransport,
+    SpendLedger,
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.provider_adapters import OpenRouterHttpAdapter
@@ -82,16 +87,16 @@ def test_vertex_parser_accepts_only_the_selected_response_provider(provider):
             policy.parse(response, state)
 
 
-def test_vertex_smoke_has_twenty_calls_without_retries_and_full_run_keeps_fifty_tasks():
-    smoke, calibration = [
+def test_vertex_development_plans_bound_calls_and_register_exact_identities():
+    smoke, diagnostic = [
         build_slot_c_plan(
             ROOT,
             code_revision="a" * 40,
             phase=phase,
-            maximum_spend_usd="1" if phase == "smoke" else "5",
+            maximum_spend_usd="1" if phase == "smoke" else "0.05",
             output_directory=f"artifacts/slot-c-test-unused-{phase}",
         )
-        for phase in ("smoke", "calibration")
+        for phase in ("smoke", "diagnostic")
     ]
     assert len(smoke.assignments) == 10
     assert len({a.family for a in smoke.assignments}) == 6
@@ -100,17 +105,19 @@ def test_vertex_smoke_has_twenty_calls_without_retries_and_full_run_keeps_fifty_
     assert smoke.budgets.caps.provider_wire_request_cap == 20
     assert smoke.retry_breaker.max_bounded_retries_per_action == 0
     assert smoke.policies[0].policy_manifest["max_model_attempts_per_action"] == 1
-    assert len(calibration.assignments) == 50
-    assert calibration.budgets.caps.environment_action_cap == 1431
-    assert calibration.budgets.caps.model_attempt_cap == 5724
-    assert calibration.budgets.caps.provider_wire_request_cap == 5724
-    assert calibration.retry_breaker.max_bounded_retries_per_action == 3
-    assert not {a.seed for a in smoke.assignments} & {a.seed for a in calibration.assignments}
-    source = json.loads((ROOT / calibration.manifest_path).read_text())
-    assert [(a.seed, a.task_id, a.action_limit) for a in calibration.assignments] == [
-        (r["seed_record"]["seed"], r["task_id"], r["max_episode_steps"]) for r in source["records"]
-    ]
-    for plan in (smoke, calibration):
+    assert len(diagnostic.assignments) == 1
+    assert diagnostic.assignments[0].seed == smoke.assignments[0].seed
+    assert diagnostic.budgets.caps.environment_action_cap == 1
+    assert diagnostic.budgets.caps.model_attempt_cap == 1
+    assert diagnostic.budgets.caps.provider_wire_request_cap == 1
+    assert diagnostic.retry_breaker.max_bounded_retries_per_action == 0
+    assert LLAMA_STATEFUL_VERTEX_DIAGNOSTIC == replace(
+        LLAMA_STATEFUL_VERTEX_SMOKE,
+        slot="C-llama-stateful-vertex-v1-routing-diagnostic",
+        router_metadata=True,
+    )
+    assert LLAMA_STATEFUL_VERTEX_SMOKE.router_metadata is False
+    for plan in (smoke, diagnostic):
         assert plan.budgets.caps.provider_control_request_cap == 0
         assert plan.outputs.resume_mode == "forbid"
         assert plan.raw["approval_required"]["owner"] == "human"
@@ -124,12 +131,79 @@ def test_vertex_smoke_has_twenty_calls_without_retries_and_full_run_keeps_fifty_
             adapter.close()
 
 
-def test_slot_c_rejects_confirmatory_phase():
-    with pytest.raises(ValueError, match="only smoke and calibration"):
+@pytest.mark.parametrize("phase", ["calibration", "confirmatory"])
+def test_slot_c_rejects_later_phases_without_successful_smoke_review(phase):
+    with pytest.raises(ValueError, match="calibration is blocked"):
         build_slot_c_plan(
             ROOT,
             code_revision="a" * 40,
-            phase="confirmatory",
+            phase=phase,
             maximum_spend_usd="5",
             output_directory="artifacts/slot-c-test-unused",
         )
+
+
+def test_vertex_http_failure_keeps_block_and_reservation_after_journal_reopen(tmp_path):
+    sent = []
+
+    def urlopen(request, **kwargs):
+        sent.append(request)
+        assert request.headers["X-openrouter-metadata"] == "enabled"
+        raise urllib.error.HTTPError(
+            request.full_url, 404, "Not Found", None,
+            io.BytesIO(b'{"error":{"code":404,"message":"private"}}'),
+        )
+
+    path = tmp_path / "vertex-http-failure.sqlite"
+    journal = V5AttemptJournal(path)
+    ledger = SpendLedger(Decimal("0.05"), Decimal(0), journal=journal)
+    policy = OpenRouterPanelPolicy(LLAMA_STATEFUL_VERTEX_DIAGNOSTIC)
+    request = policy.build_request(policy.reset("instruction"), bytes(1024 * 768 * 3))
+    transport = OpenRouterPanelTransport(
+        LLAMA_STATEFUL_VERTEX_DIAGNOSTIC, ledger=ledger,
+        environment={"OPENROUTER_API_KEY": "fixture-key"}, urlopen=urlopen,
+    )
+    result = transport.send(request, idempotency_key="first", deadline_seconds=1)
+    assert result.status == "unknown"
+    assert ledger.blocked
+    assert ledger.unknown_reservation_usd == LLAMA_STATEFUL_VERTEX_DIAGNOSTIC.request_maximum_usd
+    before = ledger.to_dict()
+    ledger.block()  # A repeated stop must be idempotent.
+    assert sum(e.kind == "spend_ledger_blocked" for e in journal.events()) == 1
+    journal.close()
+
+    replay = V5AttemptJournal(path)
+    try:
+        resumed = SpendLedger(Decimal("0.05"), Decimal(0), journal=replay)
+        assert resumed.to_dict() == before
+        assert not resumed.reserve_wire("second", Decimal("0.001"))
+        assert len(sent) == 1
+        assert "private" not in str([e.payload for e in replay.events()])
+    finally:
+        replay.close()
+
+
+@pytest.mark.parametrize("failure", ["conflicting_charge", "released_charge", "hold_mismatch"])
+def test_spend_accounting_violation_remains_blocked_after_reopen(tmp_path, failure):
+    path = tmp_path / "accounting-violation.sqlite"
+    journal = V5AttemptJournal(path)
+    ledger = SpendLedger(Decimal("1"), Decimal(0), journal=journal)
+    assert ledger.reserve_wire("request", Decimal("0.1"))
+    if failure == "conflicting_charge":
+        assert ledger.record_cost("request", Decimal("0.01"), Decimal("0.1"))
+        assert not ledger.record_cost("request", Decimal("0.02"), Decimal("0.1"))
+    elif failure == "released_charge":
+        assert ledger.release_wire("request", reason="fixture-proven-zero-charge")
+        assert not ledger.record_cost("request", Decimal("0.01"), Decimal("0.1"))
+    else:
+        ledger.reserve_unknown_charge("request", Decimal("0.2"))
+    assert ledger.blocked
+    before = ledger.to_dict()
+    journal.close()
+    replay = V5AttemptJournal(path)
+    try:
+        resumed = SpendLedger(Decimal("1"), Decimal(0), journal=replay)
+        assert resumed.to_dict() == before
+        assert not resumed.reserve_wire("next", Decimal("0.1"))
+    finally:
+        replay.close()

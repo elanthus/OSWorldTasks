@@ -1,8 +1,8 @@
 # Complete Slot C through a fixed Google Vertex route
 
 The owner selected Llama Scout through Google Vertex on 2026-09-10 after two local DeepInfra
-runs stopped on rate-limit retry exhaustion. This approves preparation of a successor, not paid
-execution. The operator must preserve the predecessor runs and obtain an exact plan approval
+runs stopped on rate-limit retry exhaustion. The owner subsequently approved only the exact
+smoke plan described below. The operator must preserve the predecessor runs and obtain an exact plan approval
 before each new phase. Slot C and the full calibration panel remain incomplete.
 
 ## Frozen successor
@@ -49,23 +49,57 @@ without retry and stop after three consecutive failures. Audit the stored summar
 restricted journal; check model/provider identity, parse results, spend, and the second request's
 action history. A `pilot_action_limit` outcome is expected and is not a success claim.
 
-## Prepare full calibration after smoke review
+## Frozen smoke outcome and next diagnostic
 
-Only after review of the smoke, prepare a fresh plan:
+The approved smoke plan digest was
+`sha256:534ba1ac11d8f303b531196fe9f057f2987af10f1fc4c96d17f376994f4d91c0`,
+prepared at revision `2e8268d5107571bbe25d838162e96411a2f0b38f`. It stopped on its first
+request with HTTP 404 before dispatching an action. The runner retained a $0.03461120
+unknown-charge reservation and closed the provider adapter and journal. This is neither a
+known charge nor model-quality evidence. The response body was not retained; its bounded
+metadata does not establish the cause of the 404. The approval is consumed.
+
+The frozen run is local at `artifacts/grounding-v5-slot-c-vertex-smoke-run/`, alongside its
+plan, execution record, and separate audit. Its journal integrity and spend amounts agree
+with the summary, but full summary validation fails: the historical ledger did not journal
+its explicit block, so replay reports `blocked: false` while the summary has `blocked: true`.
+The transport now journals explicit blocks for future runs. Do not patch the frozen journal
+or summary, infer a historical block during replay, or resume this stopped run.
+
+Account-scoped read-only catalog checks still list Scout and the fixed Vertex route. They do
+not establish why the request failed. A distinct diagnostic policy,
+`C-llama-stateful-vertex-v1-routing-diagnostic`, preserves the smoke request and enables
+[OpenRouter routing metadata](https://openrouter.ai/docs/guides/features/router-metadata).
+Only the existing bounded metadata allowlist is retained; provider message content is excluded.
+Routing metadata may distinguish a pre-provider routing failure from an upstream attempt, but
+it is not guaranteed to appear or to explain every filter.
+
+Prepare a fresh, separately approved one-call diagnostic:
 
 ```bash
 .venv/bin/python scripts/prepare_grounding_v5_slot_c.py \
-  --phase calibration --maximum-spend-usd 5.00 \
-  --run-output artifacts/grounding-v5-slot-c-vertex-calibration-run \
-  --output artifacts/grounding-v5-slot-c-vertex-calibration-plan.json
+  --phase diagnostic --maximum-spend-usd 0.05 \
+  --run-output artifacts/grounding-v5-slot-c-vertex-routing-diagnostic-run \
+  --output artifacts/grounding-v5-slot-c-vertex-routing-diagnostic-plan.json
+.venv/bin/python scripts/run_grounding_v5_calibration.py --validate-only \
+  --plan artifacts/grounding-v5-slot-c-vertex-routing-diagnostic-plan.json
 ```
 
-This proposes fifty fresh assignments from the unchanged D5.6 calibration manifest, 1,431
-environment actions, at most 5,724 model/wire requests, zero control requests, and a fresh $5
-ceiling. The dollar ceiling is independent of the call cap and does not guarantee all assignments
-finish. Obtain a second exact approval before execution. Never fill predecessor gaps, resume a
-stopped run, or pool its outcomes with the successor. Preserve every failure and unattempted task.
+This allocates the first smoke development task, one action, one model/wire request, zero
+control requests, no retries, and a fresh $0.05 ceiling including unknown-charge reservations.
+It does not authorize another smoke or calibration. Audit the result before proposing any
+next phase. Every subsequent paid phase requires its own exact approval.
+
+## Full calibration remains blocked
+
+The planner rejects calibration and confirmatory phases while there is no reviewed successful
+smoke. Reintroducing calibration planning requires validated smoke review evidence tied to the
+smoke plan and journal, followed by separate exact execution approval. The intended full
+allocation remains fifty unchanged D5.6 calibration tasks, 1,431 environment actions, at most
+5,724 model/wire requests with bounded retries, zero control requests, and a proposed fresh $5
+ceiling. This is a design target, not a runnable approved plan.
 
 Completion requires a journal-verified full denominator and the item/family diagnostics required
-by the [v5 benchmark plan](grounding-v5-agent-benchmark.md#paid-calibration-panel). This route
-successor alone does not complete the panel, authorize confirmatory calls, or declare a human gate.
+by the [v5 benchmark plan](grounding-v5-agent-benchmark.md#paid-calibration-panel). Never fill
+predecessor gaps, resume a stopped run, or pool its outcomes with a successor. Slot C and the
+full panel remain incomplete; no confirmatory calls or human gate verdict are authorized here.
