@@ -187,7 +187,7 @@ def test_vertex_http_failure_keeps_block_and_reservation_after_journal_reopen(tm
 def test_spend_accounting_violation_remains_blocked_after_reopen(tmp_path, failure):
     path = tmp_path / "accounting-violation.sqlite"
     journal = V5AttemptJournal(path)
-    ledger = SpendLedger(Decimal("1"), Decimal(0), journal=journal)
+    ledger = SpendLedger(Decimal(1), Decimal(0), journal=journal)
     assert ledger.reserve_wire("request", Decimal("0.1"))
     if failure == "conflicting_charge":
         assert ledger.record_cost("request", Decimal("0.01"), Decimal("0.1"))
@@ -202,7 +202,7 @@ def test_spend_accounting_violation_remains_blocked_after_reopen(tmp_path, failu
     journal.close()
     replay = V5AttemptJournal(path)
     try:
-        resumed = SpendLedger(Decimal("1"), Decimal(0), journal=replay)
+        resumed = SpendLedger(Decimal(1), Decimal(0), journal=replay)
         assert resumed.to_dict() == before
         assert not resumed.reserve_wire("next", Decimal("0.1"))
     finally:
