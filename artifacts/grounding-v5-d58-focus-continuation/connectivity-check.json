@@ -1,0 +1,81 @@
+{
+  "authenticated": false,
+  "limitation": "Public small GET requests exercise DNS/TLS and response reads, not authenticated large screenshot POSTs or upstream model generation. Historical errors retained only their exception class, so their precise TLS reason is unavailable.",
+  "observations": [
+    {
+      "elapsed_seconds": 0.155,
+      "index": 0,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.09,
+      "index": 1,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.097,
+      "index": 2,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.076,
+      "index": 3,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.082,
+      "index": 4,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.078,
+      "index": 5,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.084,
+      "index": 6,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.088,
+      "index": 7,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.077,
+      "index": 8,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    },
+    {
+      "elapsed_seconds": 0.082,
+      "index": 9,
+      "response_bytes": 6812,
+      "status": 200,
+      "valid_json": true
+    }
+  ],
+  "observed_at": "2026-09-11T22:25:04.947348+00:00",
+  "provider_model_calls": 0,
+  "python_ssl_version": "OpenSSL 3.6.4 25 Aug 2026",
+  "request_method": "GET",
+  "url": "https://openrouter.ai/api/v1/models/google/gemini-3.8-flash/endpoints"
+}
