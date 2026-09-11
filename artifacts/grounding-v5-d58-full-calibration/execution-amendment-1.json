@@ -1,0 +1,10 @@
+{
+  "amendment_digest": "sha256:1b24e7860f91924f82957a23dd049d484c39e56af1132a349029cdcd5a17b8ed",
+  "approval_scope": "implementation repair within the owner's approved full run; no change to model policies, task assignments, retry rules or shared USD 5 cap",
+  "driver_code_revision": "c3025bc7f9a907fefe5182100fdbdcd1c48467f6",
+  "driver_source_digest": "sha256:20952b8f535995bddffdd583c9a3bdf88077eb4487725217ecb1965246cd0c95",
+  "original_driver_source_digest": "sha256:e50dff068f3dcf504047e72fff92a35d7be33d8fc894a987399f117af5d9b73f",
+  "original_execution_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+  "reason": "Correct the canonical_provider_response object-role check in post-episode auditing; preserve every request, outcome and unknown-charge hold already recorded",
+  "schema_version": "pixelgym-d58-execution-amendment-v1"
+}
