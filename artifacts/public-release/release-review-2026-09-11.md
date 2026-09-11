@@ -47,6 +47,20 @@ external linked content, and unchanged historical media remain outside exhaustiv
 earlier owner acceptance of those limits is preserved; it does not relabel uninspected content as
 inspected.
 
+PR #198 was then opened at head `84203268b8491f0e99c30ffcf51d96e663a382db`. Its Lint, Type
+check, Fast suite, and preflight review jobs completed successfully; the fast suite took 14m45s
+and uploaded its coverage artifact. CodeRabbit returned a successful status with a rate-limit note
+and no review content. A second hosted delta through 2026-09-11 21:01:41 UTC scanned 49 new or
+changed texts, 23 new or changed log archives, 16 new artifacts, and 199 UTF-8 archive members. It
+reused 1,291 unchanged text hashes, 407 unchanged run identities, and 39 immutable artifact IDs.
+Only 1,786 ordinary GitHub-hosted runner-path occurrences were found; there was no unresolved
+finding, established actual credential, collection failure, non-text archive member, release,
+release asset, or recognized GitHub attachment link. Raw bodies and archives were not committed.
+
+The evidence-update commit and CI for the resulting PR head necessarily postdate this committed
+snapshot. A final read-only delta must cover that terminal head, and must be repeated if the PR or
+hosted state changes again before publication.
+
 ## Verification
 
 Python 3.12.14 created the documented virtual environment and installed `.[dev]`. Ruff exited 0;
@@ -65,8 +79,9 @@ called out for the bounded post-submission delta rather than being implied to fa
 ## Remaining owner actions
 
 The owner must still review the public wording and linked claims, review the exact accepted history
-scope, accept or narrow the disclosed privacy limits, and perform the bounded final delta for this
-PR and its CI. If those reviews are satisfactory, the owner may separately change visibility and
+scope, accept or narrow the disclosed privacy limits, and review the bounded post-submission and
+final read-only delta results. The final delta must be repeated if hosted state changes again before
+publication. If those reviews are satisfactory, the owner may separately change visibility and
 then verify the public repository from a logged-out browser. No visibility change, merge, history
 rewrite, credential rotation, hosted-record removal, paid model call, or milestone decision was
 performed here.

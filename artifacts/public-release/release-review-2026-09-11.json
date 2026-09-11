@@ -172,7 +172,50 @@
     "collection_failures": [],
     "method": "Exact content hashes justify unchanged text reuse. Immutable artifact IDs justify artifact reuse. Log reuse requires the same run ID, head SHA, updated_at, run attempt, and prior successful archive scan. All other returned texts and archives were fetched and scanned; bodies and matched values were not retained.",
     "coverage_limits": "REST-visible snapshot only. Hidden refs, deleted records, edit histories, commit metadata identities, check annotations and summaries beyond logs, external linked content, and unchanged historical media remain outside exhaustive coverage. The prior owner acceptance of those limits is preserved without treating them as inspected.",
-    "post_scan_changes_requiring_delta": "The release-review PR, its commits, comments, reviews, Actions logs, and artifacts did not exist in this window and require a bounded post-submission refresh."
+    "post_submission_delta": {
+      "pull_request": 198,
+      "reviewed_head": "84203268b8491f0e99c30ffcf51d96e663a382db",
+      "started_at": "2026-09-11T20:59:33.994419+00:00",
+      "completed_at": "2026-09-11T21:01:41.387245+00:00",
+      "counts": {
+        "issue_or_pr_body": 197,
+        "issue_or_pr_comment": 338,
+        "pr_review_comment": 458,
+        "pr_review_body": 347,
+        "actions_logs": 430,
+        "actions_artifacts": 55,
+        "releases": 0,
+        "release_assets": 0,
+        "recognized_github_attachment_links": 0
+      },
+      "review_counts": {
+        "new_or_changed_text_scanned": 49,
+        "unchanged_text_hash_reuses_baseline": 1291,
+        "new_or_changed_run_archives_reviewed": 23,
+        "unchanged_run_metadata_reuses_baseline": 407,
+        "new_artifact_archives_reviewed": 16,
+        "immutable_artifact_id_reuses_baseline": 39,
+        "archive_text_members_scanned": 199,
+        "archive_non_text_members": 0
+      },
+      "finding_occurrences_by_disposition": {
+        "github_hosted_runner_path": 1786
+      },
+      "new_unresolved_findings": 0,
+      "actual_credentials_established": 0,
+      "redacted_comments_match_verified_followup": true,
+      "collection_failures": [],
+      "private_result_sha256": "sha256:fd523c8fa92663e23d50176d7f3a67ec4dc535816f13dfb619cceaceb84d3ee6",
+      "hosted_checks": [
+        {"name": "Lint", "state": "SUCCESS", "started_at": "2026-09-11T20:44:09Z", "completed_at": "2026-09-11T20:44:56Z", "run_id": 34645744042, "job_id": 103415976269},
+        {"name": "Type check", "state": "SUCCESS", "started_at": "2026-09-11T20:44:14Z", "completed_at": "2026-09-11T20:44:58Z", "run_id": 34645744042, "job_id": 103415976515},
+        {"name": "Fast suite", "state": "SUCCESS", "started_at": "2026-09-11T20:44:07Z", "completed_at": "2026-09-11T20:58:52Z", "run_id": 34645744042, "job_id": 103415976519},
+        {"name": "review", "state": "SUCCESS", "started_at": "2026-09-11T20:43:51Z", "completed_at": "2026-09-11T20:45:26Z", "run_id": 34645744026, "job_id": 103415976409},
+        {"name": "CodeRabbit", "state": "SUCCESS", "note": "Review rate limited; no review content was returned."}
+      ],
+      "method_and_limits": "The same fingerprint-only scanner, immutable/hash reuse rules, and coverage limits as the initial delta apply. Raw bodies and archives were not committed."
+    },
+    "post_scan_changes_requiring_delta": "This evidence-update commit and CI for the resulting PR head necessarily postdate the committed snapshot. A final read-only delta must cover that head and terminal CI; repeat it if hosted state changes again before publication."
   },
   "clean_environment_verification": {
     "setup": [
@@ -195,7 +238,7 @@
     "Review and approve or edit the public README wording and the three evidence-linked claims.",
     "Review the exact 49 accepted historical path records and confirm the prior seven-ancestor acceptance remains suitable for this publication candidate.",
     "Accept or narrow the still-disclosed privacy coverage limits; unchanged media was not exhaustively re-reviewed.",
-    "Perform the bounded final delta review for changes after the recorded hosted window, including this PR and its CI.",
+    "Review the bounded post-submission and final read-only delta results; repeat the final delta if the PR or hosted state changes again before publication.",
     "If satisfied, change repository visibility; then verify README, links, license files, and media from a logged-out browser."
   ],
   "prohibited_actions_performed": []
