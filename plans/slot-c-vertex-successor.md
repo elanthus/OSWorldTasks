@@ -95,8 +95,8 @@ next phase. Every subsequent paid phase requires its own exact approval.
 
 ## Full calibration remains blocked
 
-The planner rejects calibration and confirmatory phases while there is no reviewed successful
-smoke. Reintroducing calibration planning requires validated smoke review evidence tied to the
+The planner rejects Vertex calibration and all confirmatory phases. Reintroducing Vertex
+calibration planning requires validated smoke review evidence tied to the
 smoke plan and journal, followed by separate exact execution approval. The intended full
 allocation remains fifty unchanged D5.6 calibration tasks, 1,431 environment actions, at most
 5,724 model/wire requests with bounded retries, zero control requests, and a proposed fresh $5

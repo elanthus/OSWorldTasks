@@ -4,6 +4,8 @@ The owner selected Mistral Small 4 on 2026-09-10 after the Llama Scout DeepInfra
 on rate limits and both Vertex probes returned HTTP 404. This replaces the planned Slot C
 model; it does not complete Slot C or approve paid execution. Keep all predecessor evidence
 separate. The [Vertex procedure](slot-c-vertex-successor.md) records its historical configuration.
+The separately approved Mistral smoke is now complete and technically audited. The owner requested
+full calibration; the full run still needs approval of its exact plan and spend ceiling.
 
 ## Frozen smoke configuration
 
@@ -60,5 +62,42 @@ Never resume or overwrite a stopped run. Close the provider adapter and journal 
 
 Audit the summary against the journal, including spend replay, response model/provider identity,
 parsing, and action-history carryover. Two actions per task test compatibility, not episode
-success accuracy. Calibration and confirmatory planning remain blocked until successful smoke
-evidence is reviewed; any subsequent paid run requires a fresh exact plan and approval.
+success accuracy. Any subsequent paid run requires a fresh exact plan and approval.
+
+## Reviewed smoke and full calibration
+
+The [versioned technical review](slot-c-mistral-smoke-review.json) binds the completed smoke's
+plan, summary, and restricted journal hashes. Its full summary/journal audit validated twenty
+responses and reconstructed request digests, with history carryover in all ten episodes.
+Known spend was $0.00548670 with zero unknown reservations. Every outcome was `pilot_action_limit`;
+these results establish compatibility only. The source evidence remains local and unchanged.
+
+Calibration preparation verifies all three source-file hashes against that receipt, checks complete
+smoke outcomes, and compares the declared policy contract with the smoke's manifest. A missing or
+changed source, incomplete review, different model/route/settings, or failed smoke prevents planning.
+The receipt represents the previously performed technical audit; checking its hashes does not rerun
+inference or treat an arbitrary success flag as a new review. The new code revision and runtime
+digest account for calibration registration and preparation changes; other policy fields retain
+the tested contract. The receipt digest is included in the exact calibration plan's stop conditions.
+
+`C-mistral-small-4-stateful-v1-calibration` keeps the smoke's request configuration and no-retry
+policy. It allocates all fifty tasks in the unchanged `calibration-d56.json` order, at each task's
+full action limit: at most 1,431 actions and model/wire calls, with zero control requests.
+The proposed fresh $2.00 hard cap includes all unknown-charge reservations. It may stop the run
+before all tasks finish; allocating calls is not a guarantee of completing the denominator.
+
+From a clean committed checkout with the reviewed local source files intact:
+
+```bash
+.venv/bin/python scripts/prepare_grounding_v5_slot_c.py \
+  --candidate mistral --phase calibration --maximum-spend-usd 2.00 \
+  --run-output artifacts/grounding-v5-slot-c-mistral-calibration-run \
+  --output artifacts/grounding-v5-slot-c-mistral-calibration-plan.json
+.venv/bin/python scripts/run_grounding_v5_calibration.py --validate-only \
+  --plan artifacts/grounding-v5-slot-c-mistral-calibration-plan.json
+```
+
+Obtain the owner's exact plan-digest approval before execution. The consumed smoke approval is
+not reusable. Preserve failures and invalid outputs, stop under the plan's hard breakers, close
+the adapter and journal, and audit stored evidence before reporting the full denominator and
+item/family diagnostics. Vertex calibration and all confirmatory planning remain unavailable.

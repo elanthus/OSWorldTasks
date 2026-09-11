@@ -135,7 +135,7 @@ def test_mistral_parser_rejects_other_model_or_provider(model, provider, accepte
 
 
 @pytest.mark.parametrize("candidate,phase", [
-    ("mistral", "diagnostic"), ("mistral", "calibration"),
+    ("mistral", "diagnostic"),
     ("mistral", "confirmatory"), ("unknown", "smoke"),
 ])
 def test_slot_c_rejects_unprepared_candidate_phases(candidate, phase):

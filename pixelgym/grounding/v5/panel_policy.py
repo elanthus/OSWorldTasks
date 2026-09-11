@@ -311,6 +311,10 @@ MISTRAL_STATEFUL_SMOKE = replace(
     enforce_provider_price_cap=True,
     router_metadata=True,
 )
+MISTRAL_STATEFUL_CALIBRATION = replace(
+    MISTRAL_STATEFUL_SMOKE,
+    slot="C-mistral-small-4-stateful-v1-calibration",
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",
