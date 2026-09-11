@@ -1,6 +1,24 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: the fresh focus-repaired calibration closed at 5/100 episodes under its five-failure stop rule. The USD 20 aggregate ceiling was not reached. Final evaluation freeze pending.**
+**Status: the owner raised aggregate authorization to USD 28 and approved the 95 untouched assignments. That continuation also stopped at five consecutive infrastructure failures. The focus-repaired cohort now has 10/100 attempted assignments; final evaluation freeze remains pending.**
+
+The [continuation report](../artifacts/grounding-v5-d58-focus-continuation/report.md)
+retains the original five failures and adds five newly attempted episodes. Each mode
+has five attempted episodes, all infrastructure failures, and 45 unrun assignments.
+Three stateless episodes reached both memory consumers and made six valid first
+choices, four correct; history supplied no memory observations. Neither mode had a
+terminal success. These outcomes remain insufficient to assess a memory effect.
+
+The continuation made 67 new calls with USD 0.302328000 in known charges and
+USD 0.17013825 in new unknown holds. Current aggregate known charges are
+USD 6.233601525, with USD 1.69356555 in unresolved holds and nothing in flight:
+USD 7.927167075 accounted against the USD 28 authorization. The cap did not stop
+execution. New diagnostics identify three TLS bad-record-MAC alerts, one broken
+pipe, and one provider-body error 429 with a confirmed zero charge. No retry or
+runner timeout occurred. The [verification receipt](../artifacts/grounding-v5-d58-focus-continuation/verification.json)
+remeasures all ten episodes, reconstructs all 120 cohort requests, and verifies the
+five preserved results plus the preceding 10,904-event journal prefix. Transport
+reliability and rate-limit handling must be addressed before another paid continuation.
 
 The owner approved [fresh end-to-end calibration](grounding-v5-d58-focus-calibration.md)
 after the diagnostic. Its [stored report](../artifacts/grounding-v5-d58-focus-calibration/report.md)

@@ -1,0 +1,16 @@
+{
+  "authenticated": false,
+  "cipher": [
+    "TLS_AES_256_GCM_SHA384",
+    "TLSv1.3",
+    256
+  ],
+  "limitation": "A separate successful public GET, not the failed model connection; it cannot identify the root cause of the intermittent TLS alert.",
+  "method": "GET",
+  "negotiated_protocol": "TLSv1.3",
+  "observed_at": "2026-09-11T22:41:36.240332+00:00",
+  "provider_model_calls": 0,
+  "python_ssl_version": "OpenSSL 3.6.4 25 Aug 2026",
+  "status": 200,
+  "url": "https://openrouter.ai/api/v1/models/google/gemini-3.8-flash/endpoints"
+}
