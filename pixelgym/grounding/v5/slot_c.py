@@ -12,6 +12,7 @@ from pixelgym.grounding.v5.panel_policy import (
     LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
     MISTRAL_STATEFUL_CALIBRATION,
+    MISTRAL_STATEFUL_CALIBRATION_CONTINUE,
     MISTRAL_STATEFUL_CALIBRATION_RETRY,
     MISTRAL_STATEFUL_SMOKE,
     build_panel_policy_manifest,
@@ -28,13 +29,13 @@ def build_slot_c_plan(
     maximum_spend_usd: str,
     output_directory: str,
     candidate: Literal["vertex", "mistral"] = "vertex",
-    generation: Literal["v1", "v2"] = "v1",
+    generation: Literal["v1", "v2", "v3"] = "v1",
 ) -> CalibrationPlan:
     """Allocate probes or Mistral calibration after verifying reviewed smoke evidence."""
 
     calibration = phase == "calibration" and candidate == "mistral"
-    if generation not in {"v1", "v2"} or (generation == "v2" and not calibration):
-        raise ValueError("v2 is available only for Mistral calibration")
+    if generation not in {"v1", "v2", "v3"} or (generation != "v1" and not calibration):
+        raise ValueError("v2/v3 are available only for Mistral calibration")
     if phase not in {"smoke", "diagnostic"} and not calibration:
         raise ValueError("only smoke and diagnostic phases are supported; calibration is blocked")
     smoke = phase == "smoke"
@@ -46,6 +47,8 @@ def build_slot_c_plan(
         config = MISTRAL_STATEFUL_CALIBRATION if calibration else MISTRAL_STATEFUL_SMOKE
         if generation == "v2":
             config = MISTRAL_STATEFUL_CALIBRATION_RETRY
+        if generation == "v3":
+            config = MISTRAL_STATEFUL_CALIBRATION_CONTINUE
         label = "Mistral Small 4 Mistral"
     elif candidate != "vertex":
         raise ValueError("unknown Slot C candidate")
@@ -108,6 +111,7 @@ def build_slot_c_plan(
                 "unknown_reservation_rule": "retain every unknown reservation",
             },
             "retry_breaker": {
+                **({"continue_on_transport_retry_exhaustion": True} if generation == "v3" else {}),
                 "max_bounded_retries_per_action": config.bounded_retry_budget,
                 "consecutive_failure_limit": 3,
                 "continue_classifications": [
@@ -130,7 +134,10 @@ def build_slot_c_plan(
                 ),
                 "stop before any send exceeding the fresh run's approved spend or call cap",
                 "retain every failure and unknown-charge reservation; never reuse old approval",
-                "stop on an infrastructure failure, request failure, or policy violation",
+                ("after bounded transport retries are exhausted, record the task as failed and "
+                 "continue; other infrastructure failures, request failures and policy violations stop"
+                 if generation == "v3" else
+                 "stop on an infrastructure failure, request failure, or policy violation"),
                 "retain invalid output without retry; stop after three consecutive failures",
                 "smoke approval does not authorize calibration or confirmatory calls",
                 "diagnostic approval authorizes one development request only, not another smoke",

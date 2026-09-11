@@ -85,6 +85,7 @@ class RetryBreakerPlan:
     consecutive_failure_limit: int
     continue_classifications: tuple[str, ...]
     hard_stop_classifications: tuple[str, ...]
+    continue_on_transport_retry_exhaustion: bool = False
 
 
 @dataclass(frozen=True)
@@ -167,6 +168,9 @@ class CalibrationPlan:
             ),
             hard_stop_classifications=tuple(
                 cast(Sequence[str], breaker_value["hard_stop_classifications"])
+            ),
+            continue_on_transport_retry_exhaustion=bool(
+                breaker_value.get("continue_on_transport_retry_exhaustion", False)
             ),
         )
         if set(breaker.continue_classifications) & set(breaker.hard_stop_classifications):

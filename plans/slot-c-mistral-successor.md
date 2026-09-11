@@ -142,3 +142,15 @@ resumes the interrupted v1 task, and never combines v1 outcomes into its denomin
 
 Only the exact v2 approval may authorize this successor. The first calibration's approval is
 consumed; neither approval covers confirmatory calls.
+
+
+### v3: continue after exhausted transport retries
+
+The owner approved retrying transport errors, recording an exhausted task as failed,
+and continuing calibration. The fresh v3 plan keeps the proposed v2 model request,
+50-task allocation, four attempts per action, 1,431-action/5,724-call limits, and $2 cap.
+Only a journal-sealed `transport_fault_retry_exhausted` infrastructure outcome bypasses
+campaign stopping and the consecutive-failure breaker. It remains a failed episode in
+all denominators. Other infrastructure failures, request failures, policy violations,
+and spend stops retain their prior behavior. The unexecuted v2 plan and stopped v1
+artifacts are preserved; v3 uses a new output directory and exact plan digest.

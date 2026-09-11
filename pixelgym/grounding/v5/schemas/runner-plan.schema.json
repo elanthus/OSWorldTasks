@@ -113,6 +113,7 @@
         "hard_stop_classifications"
       ],
       "properties": {
+        "continue_on_transport_retry_exhaustion": {"type": "boolean"},
         "max_bounded_retries_per_action": {"type": "integer", "minimum": 0},
         "consecutive_failure_limit": {"type": "integer", "minimum": 1},
         "continue_classifications": {

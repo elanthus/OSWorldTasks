@@ -323,6 +323,10 @@ MISTRAL_STATEFUL_CALIBRATION_RETRY = replace(
     max_bounded_retries_per_action=3,
     request_deadline_seconds=210.0,
 )
+MISTRAL_STATEFUL_CALIBRATION_CONTINUE = replace(
+    MISTRAL_STATEFUL_CALIBRATION_RETRY,
+    slot="C-mistral-small-4-stateful-v3-calibration",
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",

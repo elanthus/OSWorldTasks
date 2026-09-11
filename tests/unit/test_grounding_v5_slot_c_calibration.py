@@ -227,3 +227,14 @@ def test_mistral_ssl_retry_preserves_spend_and_attempt_limits(reviewed_root, tmp
     finally:
         adapter.close()
         journal.close()
+
+
+def test_v3_continues_only_exhausted_transport_failures(reviewed_root):
+    plan = build_slot_c_plan(
+        reviewed_root, code_revision='b' * 40, candidate='mistral', phase='calibration',
+        generation='v3', maximum_spend_usd='2.00', output_directory='artifacts/v3',
+    )
+    assert plan.retry_breaker.continue_on_transport_retry_exhaustion is True
+    assert "infrastructure_failure" in plan.retry_breaker.hard_stop_classifications
+    assert plan.budgets.caps.model_attempt_cap == 5724
+    assert len(plan.assignments) == 50

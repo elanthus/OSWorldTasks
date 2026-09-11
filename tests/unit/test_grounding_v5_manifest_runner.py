@@ -709,3 +709,42 @@ def test_resume_forbid_and_replayed_episode_identity_fail_closed(tmp_path: Path)
             approved_plan_sha256=replay_plan.digest,
             adapter=FakeAdapter(["success_termination"]),
         )
+
+
+@pytest.mark.parametrize("enabled,code,blocked,expected", [
+    (True, "transport_fault_retry_exhausted", False, 4),
+    (False, "transport_fault_retry_exhausted", False, 1),
+    (True, "different_infrastructure_failure", False, 1),
+    (True, "transport_fault_retry_exhausted", True, 1),
+])
+def test_transport_exhaustion_continuation_is_narrow_and_preserves_failures(
+    tmp_path, enabled, code, blocked, expected,
+):
+    classifications = ["infrastructure_failure"] * 3 + ["success_termination"]
+    _, value = _plan_value(tmp_path, classifications)
+    value["retry_breaker"]["continue_on_transport_retry_exhaustion"] = enabled
+    value["retry_breaker"]["continue_classifications"].remove("infrastructure_failure")
+    value["retry_breaker"]["hard_stop_classifications"] = ["infrastructure_failure"]
+    value["retry_breaker"]["consecutive_failure_limit"] = 1
+    plan = CalibrationPlan.from_dict(value)
+
+    class ExhaustedAdapter(FakeAdapter):
+        def execute(self, assignment, *, journal, approved_caps):
+            result = super().execute(assignment, journal=journal, approved_caps=approved_caps)
+            if result.classification == "infrastructure_failure":
+                journal.append_event(
+                    event_key=f"{result.trial_id}/exhausted", kind="sealed_unsuccessful_result",
+                    trial_id=result.trial_id, step_index=0, payload={"failure_code": code},
+                )
+            return result
+
+    summary = run_calibration_plan(
+        tmp_path, plan=plan, approved_plan_sha256=plan.digest,
+        adapter=ExhaustedAdapter(classifications, spend=SpendSnapshot(
+            Decimal("0.1"), Decimal("0.2"), Decimal("0.3"), blocked=blocked,
+        )),
+    )
+    assert summary["attempted_policy_task_pairs"] == expected
+    assert summary["classifications"]["infrastructure_failure"] == min(expected, 3)
+    assert summary["completed_all_assigned_pairs"] == (expected == 4)
+    assert summary["spend"]["unknown_reservation_usd"] == "0.2"
