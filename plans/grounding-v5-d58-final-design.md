@@ -1,10 +1,10 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: bounded repairs approved; USD 5 total new-spend ceiling. Final evaluation freeze pending.**
+**Status: bounded memory pilot completed; USD 0.19008750 spent against the shared USD 5 ceiling. Final evaluation freeze pending.**
 
 **Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
 inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
-two deferred facts and a matched screenshot-history intervention. Fresh calibration is still needed
+two deferred facts and a matched screenshot-history intervention. End-to-end calibration is still needed
 before signing the executable D5.8 manifest. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.
@@ -12,9 +12,34 @@ owner and requires a separate explicit approval for confirmatory calls.
 The owner approved the bounded repair scope with the response “approved, 5 dollars”, then selected
 deferred correctness feedback until final submission. The
 [approval record](../artifacts/grounding-v5-d58-design/repair-approval.json) preserves both decisions.
-This approval covers implementation and a USD 5 aggregate planning ceiling; exact paid execution
-plans and the final confirmatory freeze remain pending. It does not declare a milestone verdict or
-change historical results.
+That initial approval covered implementation and a USD 5 aggregate planning ceiling. The owner
+subsequently approved the presented ten-example pilot with “OK, unit tests passed. Lets do the
+calbration”; its [execution record](../artifacts/grounding-v5-d58-calibration-pilot/execution-plan.json)
+binds the exact cases, policy manifests, driver revision and caps. Full episode calibration and
+the final confirmatory freeze remain pending. Neither approval declares a milestone verdict or
+changes historical results.
+
+## Completed bounded calibration pilot
+
+The [stored report](../artifacts/grounding-v5-d58-calibration-pilot/report.md) records **9/10 correct
+first choices with screenshot history and 6/10 with the current screenshot alone**. All twenty
+assigned requests completed. One history click missed the consumer controls and remains a failure;
+the other nineteen actions selected a consumer choice. There were no retries, provider control
+requests, unknown charges or in-flight reservations. Total new spend was **USD 0.19008750**, leaving
+**USD 4.80991250** within the existing aggregate ceiling; that balance is not an additional phase
+approval.
+
+The [paired analysis](../artifacts/grounding-v5-d58-calibration-pilot/analysis.json), generated only
+from the stored summary, records five pairs correct in both conditions, four correct only with
+history, and one correct only without history. Its exploratory two-sided exact McNemar p-value is
+0.375. These ten diagnostic pairs do not establish a memory benefit. They do show that the policy
+can select the repaired memory choices when supplied with the relevant screenshots.
+
+Keep the admitted generator, policies and seed allocation frozen. Scripted prefixes supplied the
+lead-in to every tested consumer, so this pilot cannot establish end-to-end reachability, terminal
+success, item difficulty bands, or the power of the proposed final terminal-success comparison.
+The next paid stage requires a concrete end-to-end calibration plan using the same aggregate ledger
+and a further explicit approval. No confirmatory task was evaluated.
 
 ## Why the current bank is insufficient
 
@@ -228,11 +253,15 @@ twenty requests incurred that maximum. These are conservative bounds, not predic
 The USD 5 ceiling can accommodate three such unresolved reservations; a fourth must stop.
 Actual settled costs may release enough room for more requests, up to the twenty-call cap.
 
-The plan is explicitly non-executable. Before requesting paid execution approval, implement and
-validate a driver that binds this plan to one durable aggregate ledger across both arms and all
-subsequent phases. Existing ledger tests confirm that unknown charges survive a fresh process and
-cannot become a new allowance for the other arm. Prices and endpoint bounds must be rechecked
-before a paid freeze; any changed manifest requires the owner's exact-plan approval.
+The historical candidate plan remains explicitly non-executable. The separately approved
+[execution plan](../artifacts/grounding-v5-d58-calibration-pilot/execution-plan.json) enabled only
+the now-completed twenty-call pilot. Its driver binds both arms to one durable aggregate ledger,
+rejects a missing ledger, and never resends an uncertain request. Recovery and shared-budget tests
+cover interruption boundaries and unknown charges surviving a fresh process. The
+[endpoint recheck](../artifacts/grounding-v5-d58-calibration-pilot/price-recheck.json) matched the
+candidate bounds before execution. Preserve the ignored authoritative ledger at
+`.cache/d58-memory-calibration/aggregate.sqlite`; a subsequent approved phase must carry forward
+its settled spend and reservations. Any changed manifest requires the owner's exact-plan approval.
 
 The final freeze must bind the actual generator and source digests, canonical tasks and seed lists,
 admission evidence, exact candidate policy manifests, primary comparison, power calculation,
@@ -248,6 +277,8 @@ From the repository root:
 .venv/bin/python -m artifacts.grounding-v5-d58-design.audit
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
 .venv/bin/python -m scripts.prepare_grounding_v5_memory --verify
+.venv/bin/python -m scripts.run_grounding_v5_memory_pilot report
+.venv/bin/python -m artifacts.grounding-v5-d58-calibration-pilot.analyze
 ```
 
 The audit reads committed response-free calibration receipts and current generator code, produces

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from contextlib import closing
 from decimal import Decimal
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -257,3 +258,37 @@ def test_unrun_assignments_remain_in_budget_stopped_report(tmp_path: Path) -> No
         )
         assert summary["model_attempt_reservations"] == 0
         assert "aggregate_budget_or_call_cap_stop" in render_report(summary)
+
+
+@pytest.mark.parametrize(
+    "swap,incomplete,expected_p", [(False, False, 0.375), (True, False, 0.375), (False, True, None)]
+)
+def test_descriptive_exact_paired_analysis(
+    swap: bool, incomplete: bool, expected_p: float | None
+) -> None:
+    analyze = import_module("artifacts.grounding-v5-d58-calibration-pilot.analyze").analyze
+    pairs = [(True, True)] * 5 + [(True, False)] * 4 + [(False, True)]
+    rows = []
+    for seed, pair in enumerate(pairs):
+        for mode, correct in zip(("history", "stateless"), reversed(pair) if swap else pair):
+            rows.append(
+                {
+                    "seed": seed,
+                    "mode": mode,
+                    "first_attempt_correct": correct,
+                    "model_attempted": not (incomplete and seed == 9),
+                    "valid_consumer_choice": True,
+                }
+            )
+    result = analyze(
+        {
+            "conditions": rows,
+            "execution_plan_digest": PLAN_DIGEST,
+            "maximum_aggregate_spend_usd": "5.00",
+            "spend": {"budget_accounted_spend_usd": "0.19"},
+        }
+    )
+    assert result["exploratory_exact_mcnemar_two_sided_p"] == expected_p
+    assert result["paired_counts"]["both_correct"] == 5
+    assert result["paired_counts"]["incomplete_pair"] == int(incomplete)
+    assert result["remaining_aggregate_ceiling_usd"] == "4.81"
