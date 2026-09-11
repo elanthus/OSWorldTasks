@@ -1,0 +1,335 @@
+{
+  "caps": {
+    "environment_action_cap": 340,
+    "model_attempt_cap": 20,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 20
+  },
+  "cases": [
+    {
+      "consumer_index": 5,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 15,
+      "scripted_prefix_actions_digest": "sha256:7ee377b7e06c3ec77388e33f98515078a707bdb7ea134ba696529ab615bcbde6",
+      "seed": 5000,
+      "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+      "task_id": "v5m-dc8952119f67c0134d64e11b"
+    },
+    {
+      "consumer_index": 7,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 17,
+      "scripted_prefix_actions_digest": "sha256:864fd7ca1bb107aabc0c67e8cd2caa42730570818327301a0fb5ad16a101eb40",
+      "seed": 5004,
+      "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+      "task_id": "v5m-96b06d4889d7fda349e208c4"
+    },
+    {
+      "consumer_index": 5,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 15,
+      "scripted_prefix_actions_digest": "sha256:20fa9258b22dcbde9a6c4ca223d4bbc0539421c119c4c96cf8f4c798636e2ccc",
+      "seed": 5008,
+      "task_digest": "sha256:c8aeb6521513e5bf7717e50ea24b18dab5c1b5ff1ae7a3f0c0116efd95529512",
+      "task_id": "v5m-785bd71c49b26542e8559997"
+    },
+    {
+      "consumer_index": 7,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 17,
+      "scripted_prefix_actions_digest": "sha256:77ba27b1df6e874ff7abe8336ff8eb8887e228ca419ea7fe73f2908e52796ca1",
+      "seed": 5012,
+      "task_digest": "sha256:2ac4692ebb2eeabe58bc5480341c3de1cb74812d1a86de93ec8fa033dc572a92",
+      "task_id": "v5m-027a1833e45f69f7fb0758ef"
+    },
+    {
+      "consumer_index": 5,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 15,
+      "scripted_prefix_actions_digest": "sha256:0989db39c8a038c494452371d82c9d17ffcb50c297bb990c15517ec7174d67d7",
+      "seed": 5016,
+      "task_digest": "sha256:83c2ba78a67230c0525668fb04432086d3b25190764e551085ce9be527dbf9af",
+      "task_id": "v5m-484c11e10eb7f754a2c81db4"
+    },
+    {
+      "consumer_index": 7,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 17,
+      "scripted_prefix_actions_digest": "sha256:22c62dadc942c1c2f55928e72b548889c6bae341ee6284f39560324772d8afed",
+      "seed": 5020,
+      "task_digest": "sha256:2833c5470f9080c092338535b882029bc876858787cef53702eea25b9ed8801a",
+      "task_id": "v5m-a08731bf8291246b58a41df1"
+    },
+    {
+      "consumer_index": 5,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 15,
+      "scripted_prefix_actions_digest": "sha256:521b4b30e52b43bd3bc048d1b398b59fe737822b8ba0e75981599d70adb1166e",
+      "seed": 5001,
+      "task_digest": "sha256:5f2e8582c640e23e74ecf5f2b4f0ab950fa98f2bbe70fdebfc6ab8014c62469d",
+      "task_id": "v5m-2ec36095d25f20f4dd364de8"
+    },
+    {
+      "consumer_index": 7,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 17,
+      "scripted_prefix_actions_digest": "sha256:6a97ea30b8e2452a705ca8c0682d6a76f96f4ba766654e75032b03d1b23a085b",
+      "seed": 5005,
+      "task_digest": "sha256:1f0669fcaa51e4eb5f322ddce284906c9a22e6c12c863695cc0ca31f1677290b",
+      "task_id": "v5m-1ee1f449c722d6489b3ef36c"
+    },
+    {
+      "consumer_index": 5,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 15,
+      "scripted_prefix_actions_digest": "sha256:c32c3f2db90ef3ddb93ff22b7467d61ea8d031d8cbd70a4344a7097cda7603dd",
+      "seed": 5009,
+      "task_digest": "sha256:ed8213d1e9ea473a83e8a73970ae058ef2a91c35dff9fa7cfe32c9a1eba8d8e2",
+      "task_id": "v5m-3f7c85cf6c8c4ab93e7cd8ea"
+    },
+    {
+      "consumer_index": 7,
+      "prefix": "scripted_golden_actions_only; retained as diagnostic context",
+      "scripted_prefix_action_count": 17,
+      "scripted_prefix_actions_digest": "sha256:d9daca33446df0017274d99c4e8bfb1e5438503352e4c02772936df7c9ef8a1e",
+      "seed": 5013,
+      "task_digest": "sha256:e37aeb4eb48fd62649d74751ffa78429d18cf7eae0e75d58fa38c7ef83bfe960",
+      "task_id": "v5m-78785c7329aeb9b939ff6993"
+    }
+  ],
+  "confirmatory_request_cap": 0,
+  "execution_enabled": false,
+  "model_selected_environment_action_cap": 20,
+  "plan_digest": "sha256:e332f40fc60e67b6611dc26dd7d4840092898b1f76fb25142bcc3e24f18de696",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "disabled",
+      "code_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "context_limit": 1048576,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 6.75, \"prompt\": 1.35}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-history-v1",
+      "model": "google/gemini-3.7-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-224dd346160e7226d34e",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    },
+    "stateless": {
+      "cancellation_mode": "disabled",
+      "code_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "context_limit": 1048576,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 6.75, \"prompt\": 1.35}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-stateless-v1",
+      "model": "google/gemini-3.7-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-644881b6ba14ca7ae9f5",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    }
+  },
+  "price_snapshot_digest": "sha256:ecfdac84b83fb334a700f714ac73acdf15b5c437d2013383b006abbb908a5ceb",
+  "provider_calls_made": 0,
+  "purpose": "scripted-prefix first-attempt memory diagnostic; not an end-to-end calibration score",
+  "schema_version": "pixelgym-v5-d58-memory-diagnostic-plan-v1",
+  "scripted_environment_action_cap": 320,
+  "scripted_prefix_actions_count_as_model_calls": false,
+  "source_binding_digest": "sha256:9210e4a644159455341a0d78fcfbf936f8f784d97974b830cf19d2df27c9a2d5",
+  "spend": {
+    "aggregate_successor_ceiling_usd": "5.00",
+    "all_requests_guaranteed_to_fit": false,
+    "known_additional_spend_usd": "0",
+    "ledger_scope": "one durable ledger shared across both arms and every subsequent D5.8 phase",
+    "per_request_reservation_usd": "1.44322560",
+    "stop_rule": "reserve full request bound before send; stop before a reservation exceeds USD 5; retain unknown charges at the full bound; never start a new per-arm or per-phase allowance",
+    "uncapped_twenty_request_bound_usd": "28.86451200"
+  },
+  "status": "plan_only_requires_exact_execution_approval"
+}
