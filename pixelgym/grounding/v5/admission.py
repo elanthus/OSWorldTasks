@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -49,8 +50,9 @@ def replay_actions(
     actions: tuple[Action, ...],
     *,
     stale_submission: bool = False,
+    backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
 ) -> ReplayOutcome:
-    backend = V5FakeBackend()
+    backend = backend_factory()
     env = PixelGuiEnv(
         backend,
         instruction=task.instruction,
@@ -107,8 +109,10 @@ def replay_actions(
     )
 
 
-def recovery_actions(task: V5Task) -> tuple[Action, ...]:
-    planner = V5FakeBackend()
+def recovery_actions(
+    task: V5Task, *, backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
+) -> tuple[Action, ...]:
+    planner = backend_factory()
     planner.reset(task.seed)
     actions: list[Action] = []
     first = task.stages[0]
@@ -161,8 +165,10 @@ def random_floor_actions(task: V5Task, *, seed: int) -> tuple[Action, ...]:
     return tuple(actions)
 
 
-def validate_task_admission(task: V5Task) -> dict[str, Any]:
-    backend = V5FakeBackend()
+def validate_task_admission(
+    task: V5Task, *, backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
+) -> dict[str, Any]:
+    backend = backend_factory()
     first_record = backend.reset(task.seed)
     first_frame = backend.screenshot()
     backend.install_submission({"workflow_result": task.expected_result})
@@ -176,28 +182,30 @@ def validate_task_admission(task: V5Task) -> dict[str, Any]:
     backend.close()
     if len(golden) != task.optimal_low_level_actions:
         raise ValueError("golden trace does not match the frozen optimal horizon")
-    golden_first = replay_actions(task, golden)
-    golden_second = replay_actions(task, golden)
+    golden_first = replay_actions(task, golden, backend_factory=backend_factory)
+    golden_second = replay_actions(task, golden, backend_factory=backend_factory)
     if not golden_first.success or golden_first != golden_second:
         raise ValueError("golden replay is unsuccessful or nondeterministic")
-    recovery = recovery_actions(task)
-    recovery_first = replay_actions(task, recovery)
-    recovery_second = replay_actions(task, recovery)
+    recovery = recovery_actions(task, backend_factory=backend_factory)
+    recovery_first = replay_actions(task, recovery, backend_factory=backend_factory)
+    recovery_second = replay_actions(task, recovery, backend_factory=backend_factory)
     if not recovery_first.success or recovery_first != recovery_second:
         raise ValueError("declared recovery replay is unsuccessful or nondeterministic")
     mutations: dict[str, Any] = {}
     for mutation in Mutation:
-        trace = mutation_trace(task, mutation)
+        trace = mutation_trace(task, mutation, backend_factory=backend_factory)
         stale_submission = mutation is Mutation.STALE_TASK_SUBMISSION
         first = replay_actions(
             task,
             trace.actions,
             stale_submission=stale_submission,
+            backend_factory=backend_factory,
         )
         second = replay_actions(
             task,
             trace.actions,
             stale_submission=stale_submission,
+            backend_factory=backend_factory,
         )
         if first != second:
             raise ValueError(f"mutation {mutation.value} is nondeterministic")
@@ -236,7 +244,8 @@ def validate_task_admission(task: V5Task) -> dict[str, Any]:
                 }
             ),
         }
-    floor = replay_actions(task, random_floor_actions(task, seed=task.seed ^ 0x5A5A))
+    floor = replay_actions(task, random_floor_actions(task, seed=task.seed ^ 0x5A5A),
+                           backend_factory=backend_factory)
     if any(floor.rewards):
         raise ValueError("frozen random-action floor unexpectedly succeeded")
     return {
