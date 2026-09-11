@@ -36,6 +36,8 @@ def memory_system_prompt(config: PanelPolicyConfig) -> str:
     ) + (
         " Screenshots are in chronological order, with your intervening actions when available."
         " The last screenshot is current. Earlier screenshots may be absent."
+        " Recorded CLICK actions use native 1024x768 screenshot pixels;"
+        " generate the next action using the output coordinate convention above."
     )
 
 
@@ -127,13 +129,13 @@ class ScreenshotMemoryRunner(V5Runner):
         super().__init__(**kwargs)
         if not isinstance(self.policy, ScreenshotMemoryPolicy):
             raise TypeError("screenshot runner requires the frozen screenshot policy")
-        mode = "history" if self.policy.retain_screenshots else "stateless"
-        if (
-            self.manifest.memory_policy_version != f"pixelgym-agent-v5-screenshot-{mode}-v1"
-            or self.manifest.system_prompt_digest
-            != content_digest(memory_system_prompt(self.policy.config))
-            or self.manifest.model != self.policy.config.model
-        ):
+        expected = build_screenshot_policy_manifest(
+            Path(__file__).resolve().parents[3],
+            config=self.policy.config,
+            code_revision=self.manifest.code_revision,
+            retain_screenshots=self.policy.retain_screenshots,
+        )
+        if self.manifest != expected:
             raise ValueError("screenshot policy does not match its frozen manifest")
 
     def _preflight(self, task: Any, backend: V5FakeBackend, *, required_action_limit: int) -> None:
@@ -196,5 +198,6 @@ def build_screenshot_policy_manifest(
             *base.inference_parameters,
             ("max_observed_frames", str(MAX_OBSERVED_FRAMES)),
         ),
+        context_limit=getattr(config, "upstream_context_length", base.context_limit),
     )
     return PolicyManifest.build(**fields)

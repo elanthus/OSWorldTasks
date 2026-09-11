@@ -41,13 +41,22 @@ class ScreenshotPriceConfig(PanelPolicyConfig):
 
 def config_from_price_snapshot(snapshot: dict[str, Any]) -> ScreenshotPriceConfig:
     endpoints = snapshot["endpoints"]
-    if not endpoints or any(not row["tag"].startswith("google-vertex/global") for row in endpoints):
+    if not endpoints or any(
+        row["tag"] != "google-vertex/global" and not row["tag"].startswith("google-vertex/global/")
+        for row in endpoints
+    ):
         raise ValueError("price snapshot must cover the declared Vertex route")
     if not any(row["tag"] == "google-vertex/global" for row in endpoints):
         raise ValueError("the approved base route is missing from the price snapshot")
     rates = [Decimal(row["pricing"][key]) for row in endpoints for key in ("prompt", "completion")]
     if any(not rate.is_finite() or rate <= 0 for rate in rates):
         raise ValueError("endpoint prices must be finite positive amounts")
+    for row in endpoints:
+        prices = row["pricing"]
+        for auxiliary, ceiling in (("image", "prompt"), ("internal_reasoning", "completion")):
+            rate = Decimal(prices[auxiliary])
+            if not rate.is_finite() or rate < 0 or rate > Decimal(prices[ceiling]):
+                raise ValueError("image and reasoning prices must fit the reserved token rates")
     contexts = [row["context_length"] for row in endpoints]
     if any(type(value) is not int or value <= 0 for value in contexts):
         raise ValueError("endpoint context bounds must be positive integers")
@@ -98,10 +107,6 @@ def pilot_plan(root: Path, *, snapshot: dict[str, Any], code_revision: str) -> d
         manifest = build_screenshot_policy_manifest(
             root, config=config, code_revision=code_revision, retain_screenshots=retain
         )
-        # Bind the actual upstream bound used in the conservative price reservation.
-        fields = {key: value for key, value in vars(manifest).items() if key != "policy_id"}
-        fields["context_limit"] = config.upstream_context_length
-        manifest = type(manifest).build(**fields)
         manifests["history" if retain else "stateless"] = manifest.to_dict()
     requests = 2 * len(cases)
     prefix_actions_count = 2 * sum(case["scripted_prefix_action_count"] for case in cases)

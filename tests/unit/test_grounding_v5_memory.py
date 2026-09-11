@@ -433,3 +433,48 @@ def test_stored_evidence_report_survives_json_key_sorting() -> None:
         },
     }
     assert render_report(value) == render_report(json.loads(json.dumps(value, sort_keys=True)))
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    (
+        ("provider", "openrouter/other"),
+        ("parser_version", "other"),
+        ("context_limit", 100),
+        ("memory_policy_version", "other"),
+    ),
+)
+def test_screenshot_runner_rejects_changed_frozen_policy_fields(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    manifest = build_screenshot_policy_manifest(
+        ROOT, config=GEMINI_STATEFUL, code_revision="test", retain_screenshots=True
+    )
+    fields = {key: item for key, item in vars(manifest).items() if key != "policy_id"}
+    fields[field] = value
+    mismatched = type(manifest).build(**fields)
+    with (
+        closing(V5AttemptJournal(tmp_path / "mismatch.sqlite")) as journal,
+        pytest.raises(ValueError, match="frozen manifest"),
+    ):
+        ScreenshotMemoryRunner(
+            journal=journal,
+            manifest=mismatched,
+            policy=ScreenshotMemoryPolicy(GEMINI_STATEFUL, retain_screenshots=True),
+            transport=ScriptedTransport(),
+            approved_caps=CallCaps(1, 1, 0, 1),
+        )
+
+
+def test_native_action_history_coordinates_are_declared_and_price_auxiliaries_bounded() -> None:
+    from pixelgym.grounding.v5.screenshot_memory import memory_system_prompt
+
+    assert "Recorded CLICK actions use native 1024x768 screenshot pixels" in memory_system_prompt(
+        GEMINI_STATEFUL
+    )
+    snapshot = json.loads(
+        (ROOT / "artifacts/grounding-v5-d58-design/gemini-price-snapshot.json").read_text()
+    )
+    snapshot["endpoints"][0]["pricing"]["image"] = "1.0"
+    with pytest.raises(ValueError, match="image and reasoning"):
+        config_from_price_snapshot(snapshot)
