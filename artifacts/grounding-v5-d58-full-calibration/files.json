@@ -1,0 +1,13 @@
+{
+  "admission.json": "sha256:6a6f623690b4b4b5f8a3c7c9bc4ff7ad1b0117a02fc530f556cb18326c6e924e",
+  "analysis.json": "sha256:90b4cbbdd1efc1c88a78e3b450a1a71e72d82deaf37dd6b5d2dfa52e4c982832",
+  "analyze.py": "sha256:082809f10a4ddc59f85efa53489bd782ecd5e4c5b738f1b3c959b57a203e686a",
+  "execution-amendment-1.json": "sha256:2a71ffe65213f366637b1215c7f8fa17ddf8bfbf394b5ea626996e1d1684dd38",
+  "execution-plan.json": "sha256:3154d61cd7e6bd80bb066d2fc57c7ec92f40d695d9b1a1ad6e9b44fbb7d7000c",
+  "interruption-1-summary.json": "sha256:4c9b763cec1bf8898c698482cadabe71ac47c908e0ccd2babe7e74f27619c110",
+  "price-recheck.json": "sha256:27ddde44758f7779824bb52e236093607c6f2572817dd1fc37a7351bfa8f1ac4",
+  "report.md": "sha256:61fbe8fd3892425ab5e6ce22cd7c2ba9de32669066bc5a03ec3bdd3625fcc123",
+  "summary.json": "sha256:d1fff9b9887c3ec33dab91fe058b3c59753430f3fd1d43c71fc9d4a8094a2b62",
+  "verification.json": "sha256:0a1e24843a7ca627f4f72db8783f4682615ea13da09c6c3ea101c08679632942",
+  "verify.py": "sha256:1535f679bad7172608d0f8afa0464b4ca1ae02b7d55bde6e46e4a89a14cdbaa9"
+}

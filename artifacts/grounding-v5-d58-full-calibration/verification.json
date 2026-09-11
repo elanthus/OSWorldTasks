@@ -1,0 +1,30 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "3.72952845",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "0.84307725",
+    "unknown_charge_outcomes": 2,
+    "unknown_reservation_usd": "2.88645120",
+    "wire_requests_sent": 126
+  },
+  "effective_driver_code_revision": "c3025bc7f9a907fefe5182100fdbdcd1c48467f6",
+  "execution_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+  "frozen_policies_and_task_admission_verified": true,
+  "full_phase_model_attempts": 106,
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:ea478b2a3f98fc49378a18f36804fe3e8f1cba50897ff8692a2b1a5475942887",
+    "event_count": 1332,
+    "object_count": 777,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "no_retried_steps_or_scripted_prefixes": true,
+  "phase_closed": true,
+  "pilot_prefix_unchanged": true,
+  "provider_calls_by_verifier": 0,
+  "provider_identity_and_price_guards_verified": true,
+  "schema_version": "pixelgym-d58-full-memory-evidence-verification-v1",
+  "summary_digest": "sha256:8d919819530a5f149b7659c2b4d7cbda89b70682414e2c52b27850582882c585",
+  "summary_reconstructed_from_journal": true
+}

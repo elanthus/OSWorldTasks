@@ -1,11 +1,11 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: bounded memory pilot completed; USD 0.19008750 spent against the shared USD 5 ceiling. Final evaluation freeze pending.**
+**Status: approved full calibration stopped at its aggregate budget guard after 5/100 episodes. Known spend USD 0.84307725; unknown-charge reservations USD 2.88645120. Final evaluation freeze pending.**
 
 **Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
 inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
-two deferred facts and a matched screenshot-history intervention. End-to-end calibration is still needed
-before signing the executable D5.8 manifest. The
+two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete;
+the available evidence cannot support signing the executable D5.8 manifest. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.
 
@@ -15,9 +15,57 @@ deferred correctness feedback until final submission. The
 That initial approval covered implementation and a USD 5 aggregate planning ceiling. The owner
 subsequently approved the presented ten-example pilot with “OK, unit tests passed. Lets do the
 calbration”; its [execution record](../artifacts/grounding-v5-d58-calibration-pilot/execution-plan.json)
-binds the exact cases, policy manifests, driver revision and caps. Full episode calibration and
-the final confirmatory freeze remain pending. Neither approval declares a milestone verdict or
-changes historical results.
+binds the exact cases, policy manifests, driver revision and caps. The owner then approved the full
+matched calibration with “ok, please proceed with the full run”, within the same aggregate ceiling.
+The [full execution plan](../artifacts/grounding-v5-d58-full-calibration/execution-plan.json) records
+that approval. The final confirmatory freeze remains pending. These approvals declare no milestone
+verdict and do not change historical results.
+
+## Approved full calibration outcome
+
+The [full report](../artifacts/grounding-v5-d58-full-calibration/report.md) retains all 100
+assignments: fifty repaired tasks in each matched Gemini condition, representing 44 logical tasks
+per arm. The fixed order cycles through families and alternates the first condition. Both arms
+start from reset and use only model-selected actions, with no scripted prefix.
+
+Only **five episodes were attempted** before the shared budget guard stopped execution:
+
+| Condition | Attempted / assigned | Terminal successes | Reached both memory consumers | Correct first memory attempts / attempted |
+|---|---:|---:|---:|---:|
+| Screenshot history | 3 / 50 | 1 | 1 | 3 / 3 |
+| Current screenshot only | 2 / 50 | 0 | 0 | 0 / 0 |
+
+The history arm has two infrastructure failures. Both stateless episodes exhausted their action
+limits at stage 1, before either memory consumer. The remaining **95 assignments were not run**;
+they are missing coverage, not observed model failures. The [descriptive analysis](../artifacts/grounding-v5-d58-full-calibration/analysis.json)
+contains two completed pairs: one history-only terminal success and one pair with neither arm
+successful. Forty-eight pairs are incomplete. No significance test or confirmatory power estimate
+is computed from this stopped campaign. One successful episode demonstrates end-to-end feasibility;
+it does not establish the proposed exposure threshold, difficulty range, or a memory benefit.
+
+The full phase issued **106 new requests** with **USD 0.65298975 in known charges**. Including the
+twenty-call pilot, aggregate known spend is **USD 0.84307725**. Two requests have unknown charges,
+each held at the full **USD 1.44322560** bound. Accounted spend is therefore **USD 3.72952845**,
+leaving **USD 1.27047155** unreserved. Another full request reservation would exceed USD 5, so the
+driver closed the phase. There are no in-flight requests, retries, provider control requests, or
+confirmatory calls. Unknown-charge holds remain in the original durable ledger.
+
+Before execution, the full-run ledger wrapper corrected an inherited behavior that reduced unknown
+holds after observing cheap responses. This phase always retains the full approved request bound;
+the completed pilot had no unknown charges and its stored results remain unchanged. The first
+full-run process then encountered a bookkeeping error in its post-episode response-object audit.
+The [interruption snapshot](../artifacts/grounding-v5-d58-full-calibration/interruption-1-summary.json)
+and [execution amendment](../artifacts/grounding-v5-d58-full-calibration/execution-amendment-1.json)
+preserve that history. The correction changed only the execution wrapper; every existing request,
+failure, charge and reservation was retained. Continuation skipped the recorded first episode and
+made no retry. Generator, tasks, policies, provider settings, seed order and dollar cap stayed frozen.
+
+The [verification receipt](../artifacts/grounding-v5-d58-full-calibration/verification.json) reconstructs
+the summary from the closed aggregate journal and verifies the original pilot prefix, frozen source
+and policy bindings, provider identity, request counts, and budget stop. Keep the current design
+frozen. Completing calibration now requires a separately approved budget or execution-plan revision;
+confirmation remains disabled. The original Qwen floor result and this incomplete successor run
+cannot justify final D5.8 approval.
 
 ## Completed bounded calibration pilot
 
@@ -26,8 +74,8 @@ first choices with screenshot history and 6/10 with the current screenshot alone
 assigned requests completed. One history click missed the consumer controls and remains a failure;
 the other nineteen actions selected a consumer choice. There were no retries, provider control
 requests, unknown charges or in-flight reservations. Total new spend was **USD 0.19008750**, leaving
-**USD 4.80991250** within the existing aggregate ceiling; that balance is not an additional phase
-approval.
+**USD 4.80991250** within the existing aggregate ceiling at pilot completion. The full phase above
+subsequently drew on that same balance.
 
 The [paired analysis](../artifacts/grounding-v5-d58-calibration-pilot/analysis.json), generated only
 from the stored summary, records five pairs correct in both conditions, four correct only with
@@ -38,8 +86,8 @@ can select the repaired memory choices when supplied with the relevant screensho
 Keep the admitted generator, policies and seed allocation frozen. Scripted prefixes supplied the
 lead-in to every tested consumer, so this pilot cannot establish end-to-end reachability, terminal
 success, item difficulty bands, or the power of the proposed final terminal-success comparison.
-The next paid stage requires a concrete end-to-end calibration plan using the same aggregate ledger
-and a further explicit approval. No confirmatory task was evaluated.
+The subsequently approved full phase above used that same aggregate ledger. Its incomplete results
+do not close those evidence gaps. No confirmatory task was evaluated.
 
 ## Why the current bank is insufficient
 
@@ -157,10 +205,9 @@ model or provider is permitted. The reference harness retains all legitimately o
 up to the existing episode limit; it does not use evaluator annotations to select frames. If those
 requests cannot fit the model context and spend bounds, stop and revise the design before calls.
 
-First run a separately approved, bounded calibration pilot on revised development/calibration
-seeds. Keep confirmatory seeds unused. Its initial paid slice remains limited to ten examples and
-twenty condition calls; completing longer episodes or the four-policy calibration requires an
-explicit further approval under the repository's paid-call rule.
+The approved pilot completed ten examples and twenty condition calls on development seeds. The
+subsequently approved full Gemini phase stopped at its budget guard. Keep confirmatory seeds unused;
+Qwen, Mistral, reliability and confirmatory runs remain outside the executable allowance.
 
 After a complete approved calibration, report consumer exposure, first-attempt retention, paired
 terminal outcomes, failure routes, discordance, and costs for the matched Gemini pair. Require
@@ -243,7 +290,12 @@ zero provider control requests, and 20 wire requests**, with no retries. Its **3
 cap** includes 320 scripted prefix actions and 20 model-selected consumer actions. The same prefix
 is supplied chronologically to the history arm and omitted from the stateless arm. This deliberately
 isolates first-attempt recall; it cannot supply end-to-end calibration success rates or paired power.
-Qwen, Mistral, end-to-end calibration, reliability and confirmation receive no executable call allowance.
+That pilot plan supplies no allowance for other phases. The separate full plan added only the
+matched Gemini end-to-end phase: at most 2,862 model/wire requests and 2,862 environment actions,
+zero control requests, and no retries. Its aggregate caps carry the pilot forward to 2,882
+model/wire requests and 3,202 environment actions, still within the same USD 5 ceiling. The dollar
+guard stopped execution before those count caps were reached. Qwen, Mistral, reliability and
+confirmation remain disabled.
 
 The public [OpenRouter endpoint snapshot](../artifacts/grounding-v5-d58-design/gemini-price-snapshot.json)
 records the matching Vertex routes, model display name and prices. The provider uses an alias, not
@@ -251,7 +303,7 @@ an immutable snapshot. Planning reserves its full 1,048,576-token input bound pl
 at the highest matching route rates: **USD 1.44322560 per request**, or **USD 28.86451200** if all
 twenty requests incurred that maximum. These are conservative bounds, not predicted charges.
 The USD 5 ceiling can accommodate three such unresolved reservations; a fourth must stop.
-Actual settled costs may release enough room for more requests, up to the twenty-call cap.
+Actual settled costs may release enough room for more requests within the approved phase caps.
 
 The historical candidate plan remains explicitly non-executable. The separately approved
 [execution plan](../artifacts/grounding-v5-d58-calibration-pilot/execution-plan.json) enabled only
@@ -279,7 +331,14 @@ From the repository root:
 .venv/bin/python -m scripts.prepare_grounding_v5_memory --verify
 .venv/bin/python -m scripts.run_grounding_v5_memory_pilot report
 .venv/bin/python -m artifacts.grounding-v5-d58-calibration-pilot.analyze
+.venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.verify
+.venv/bin/python -m scripts.run_grounding_v5_memory_calibration report
+.venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.analyze
 ```
+
+The full evidence verifier checks the public file hashes and stored report without a provider call.
+Add `--journal` only on the original machine with the preserved ignored aggregate journal to repeat
+the deeper provenance audit. The report and analysis commands use stored structured results only.
 
 The audit reads committed response-free calibration receipts and current generator code, produces
 the linked structured JSON, and runs five independent mathematical checks. It does not reread
