@@ -1,0 +1,2013 @@
+{
+  "admission_digest": "sha256:ee0b3768cccd3c3ba94268ac623866f7f5f58864916f4bf65fd249af657f389e",
+  "aggregate_caps": {
+    "environment_action_cap": 6064,
+    "model_attempt_cap": 2988,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 2988
+  },
+  "aggregate_ceiling_usd": "20.00",
+  "analysis_rule": "standalone Gemini 3.8 cohort; never pool terminal results with Gemini 3.7 or its scripted-prefix pilot; retain all failures and unrun assignments",
+  "approval_scope": "fresh matched Gemini 3.8 full calibration; USD 20 aggregate including all previous D5.8 charges and bounded unknown outcomes; no confirmatory calls",
+  "assigned_episodes": 100,
+  "assignment_approval": "All 50 tasks, 100 episodes (recommended)",
+  "budget_assumptions": "4096 tokens per unchanged 1024x768 PNG (Google documents 2240 at ultra-high), UTF-8 byte count of remaining request metadata, 8192 framing tokens, at most 163840 input allowance and 4096 output; cached-input discounts ignored; only declared Vertex route and explicit max-price cap; stop on a returned charge above its reservation",
+  "budget_rule": "gemini-png-request-budget-v1",
+  "budget_source": "https://ai.google.dev/gemini-api/docs/media-resolution",
+  "completion_within_budget_guaranteed": false,
+  "confirmatory_call_cap": 0,
+  "driver_code_revision": "3913bc3849207f8ed3987c8daa4cd84ef7ec8796",
+  "driver_source_digest": "sha256:88e935d027cc002d34befbaa2f484633edb4fb7295a9227739083bb1c2379b49",
+  "execution_enabled": true,
+  "execution_plan_digest": "sha256:93a80704ca8f4804823a045796876c0189daf4767f77aa646477096a1f158f9b",
+  "interruption_rule": "retain terminal committed outcomes; classify other interrupted episodes as failed without restarting or resending; retain unknown/in-flight holds",
+  "jobs": [
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5112,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 2,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5112,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:415bf53b1acf8bce189255dec59e9d6e18ead3c6a8be43b17d02e85678ed9029",
+      "task_id": "v5m-ddb09cb8c04068399c57624e",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5112-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5112,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 2,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5112,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:415bf53b1acf8bce189255dec59e9d6e18ead3c6a8be43b17d02e85678ed9029",
+      "task_id": "v5m-ddb09cb8c04068399c57624e",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5112-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5122,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 2,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5122,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:4af52d9efe22107edb0e7f2d914cb792f0c6994f344f974b865fa560277155a1",
+      "task_id": "v5m-b815cf961825babd22c85d13",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5122-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5122,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 2,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5122,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:4af52d9efe22107edb0e7f2d914cb792f0c6994f344f974b865fa560277155a1",
+      "task_id": "v5m-b815cf961825babd22c85d13",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5122-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5132,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 2,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5132,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:594d26b93aa87239ca70f290cee28efb5e98130a220e826a95396669ecf5739d",
+      "task_id": "v5m-b7c26480d34115ad2319b983",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5132-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5132,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 2,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5132,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:594d26b93aa87239ca70f290cee28efb5e98130a220e826a95396669ecf5739d",
+      "task_id": "v5m-b7c26480d34115ad2319b983",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5132-stateless"
+    },
+    {
+      "action_limit": 27,
+      "mode": "stateless",
+      "seed": 5141,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "visible_error_recovery",
+        "family_index": 1,
+        "logical_id": "calibration-visible_error_recovery-logical-00",
+        "partition": "calibration",
+        "seed": 5141,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:26403e72be4d8d64880409632f5d553d956bc64d21bff923db808acf622905ba",
+      "task_id": "v5m-d840c31b987f87019efa3629",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5141-stateless"
+    },
+    {
+      "action_limit": 27,
+      "mode": "history",
+      "seed": 5141,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "visible_error_recovery",
+        "family_index": 1,
+        "logical_id": "calibration-visible_error_recovery-logical-00",
+        "partition": "calibration",
+        "seed": 5141,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:26403e72be4d8d64880409632f5d553d956bc64d21bff923db808acf622905ba",
+      "task_id": "v5m-d840c31b987f87019efa3629",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5141-history"
+    },
+    {
+      "action_limit": 26,
+      "mode": "history",
+      "seed": 5151,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "review_and_commit",
+        "family_index": 1,
+        "logical_id": "calibration-review_and_commit-logical-00",
+        "partition": "calibration",
+        "seed": 5151,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:2a85d9d64988e1f71aa83182d3eef79d1808230e11ca95e5edebb50cbfed9374",
+      "task_id": "v5m-aef5f47dd38f311c31bc3a50",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5151-history"
+    },
+    {
+      "action_limit": 26,
+      "mode": "stateless",
+      "seed": 5151,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "review_and_commit",
+        "family_index": 1,
+        "logical_id": "calibration-review_and_commit-logical-00",
+        "partition": "calibration",
+        "seed": 5151,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:2a85d9d64988e1f71aa83182d3eef79d1808230e11ca95e5edebb50cbfed9374",
+      "task_id": "v5m-aef5f47dd38f311c31bc3a50",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5151-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5160,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 10,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5160,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:b202e044e74b74b14eecab5e0d171836e8e980808a9e4b5ac028e7eeab706a54",
+      "task_id": "v5m-526574dcbd4a8c3241092147",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5160-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5160,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 10,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5160,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:b202e044e74b74b14eecab5e0d171836e8e980808a9e4b5ac028e7eeab706a54",
+      "task_id": "v5m-526574dcbd4a8c3241092147",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5160-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5113,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 3,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5113,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:a1c505b68fd60d56046d028dc3f4a1f4b0794ab1e8c6a7946481e4ade8fed242",
+      "task_id": "v5m-c5dee28403c112accca77d13",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5113-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5113,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 3,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5113,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:a1c505b68fd60d56046d028dc3f4a1f4b0794ab1e8c6a7946481e4ade8fed242",
+      "task_id": "v5m-c5dee28403c112accca77d13",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5113-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5123,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 3,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5123,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:37a0a945b57ab28fe53d2859fcf95840eea993b0093b4ff99b1b53e76d89d163",
+      "task_id": "v5m-8559e94feb4cba514f429ace",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5123-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5123,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 3,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5123,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:37a0a945b57ab28fe53d2859fcf95840eea993b0093b4ff99b1b53e76d89d163",
+      "task_id": "v5m-8559e94feb4cba514f429ace",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5123-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5133,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 3,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5133,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:d39cc1eb64eeef0b31315be3392b59c4dcf97403dd0fdfbbb667a4989c660d1d",
+      "task_id": "v5m-010414927e76ddbd0a7f5943",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5133-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5133,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 3,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5133,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:d39cc1eb64eeef0b31315be3392b59c4dcf97403dd0fdfbbb667a4989c660d1d",
+      "task_id": "v5m-010414927e76ddbd0a7f5943",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5133-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5142,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 2,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5142,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:e99796788b1efa6bfc649c8af2ccf537e896ea3b2bb62a18627cae71d9c298c1",
+      "task_id": "v5m-03bd6d15025a86986aa5da6d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5142-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5142,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 2,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5142,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:e99796788b1efa6bfc649c8af2ccf537e896ea3b2bb62a18627cae71d9c298c1",
+      "task_id": "v5m-03bd6d15025a86986aa5da6d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5142-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5152,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 2,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5152,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:f5d51486bd37e7ad0fbe9c29c218255fd550482cb7ce9189039ddeca14e533a4",
+      "task_id": "v5m-9fd67fe6e9af0693ea01db3e",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5152-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5152,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 2,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5152,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:f5d51486bd37e7ad0fbe9c29c218255fd550482cb7ce9189039ddeca14e533a4",
+      "task_id": "v5m-9fd67fe6e9af0693ea01db3e",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5152-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5161,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 11,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5161,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:5ac69bc5aa6711b6407d149084acf373120baec73f628bfe9f054bb42d745bed",
+      "task_id": "v5m-1ef6097f666a87dd4873c134",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5161-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5161,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 11,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5161,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:5ac69bc5aa6711b6407d149084acf373120baec73f628bfe9f054bb42d745bed",
+      "task_id": "v5m-1ef6097f666a87dd4873c134",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5161-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5114,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 4,
+        "logical_id": "calibration-deferred_join-logical-02",
+        "partition": "calibration",
+        "seed": 5114,
+        "variant": "base"
+      },
+      "task_digest": "sha256:2a2400ae812288ddfb4ee03bb3b44f9c899d673662916bd93e80a69e3a4709a8",
+      "task_id": "v5m-7e1619961efd9078402c8b68",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5114-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5114,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 4,
+        "logical_id": "calibration-deferred_join-logical-02",
+        "partition": "calibration",
+        "seed": 5114,
+        "variant": "base"
+      },
+      "task_digest": "sha256:2a2400ae812288ddfb4ee03bb3b44f9c899d673662916bd93e80a69e3a4709a8",
+      "task_id": "v5m-7e1619961efd9078402c8b68",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5114-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5124,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 4,
+        "logical_id": "calibration-conditional_precedence-logical-02",
+        "partition": "calibration",
+        "seed": 5124,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1048835a10567bc1c63ce6d780688aeeef196790a16c52d81e92c6bba4710439",
+      "task_id": "v5m-da9f495f6b28d525dc9e0318",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5124-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5124,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 4,
+        "logical_id": "calibration-conditional_precedence-logical-02",
+        "partition": "calibration",
+        "seed": 5124,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1048835a10567bc1c63ce6d780688aeeef196790a16c52d81e92c6bba4710439",
+      "task_id": "v5m-da9f495f6b28d525dc9e0318",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5124-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5134,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 4,
+        "logical_id": "calibration-revision_after_reveal-logical-02",
+        "partition": "calibration",
+        "seed": 5134,
+        "variant": "base"
+      },
+      "task_digest": "sha256:602d35e2a4c312ac6da1871cf64b0373e2dbe2cb83178b5bc0466ad6683ee43a",
+      "task_id": "v5m-8a60861676460a306d2450b0",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5134-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5134,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 4,
+        "logical_id": "calibration-revision_after_reveal-logical-02",
+        "partition": "calibration",
+        "seed": 5134,
+        "variant": "base"
+      },
+      "task_digest": "sha256:602d35e2a4c312ac6da1871cf64b0373e2dbe2cb83178b5bc0466ad6683ee43a",
+      "task_id": "v5m-8a60861676460a306d2450b0",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5134-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5143-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5143-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5153-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5153-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5162-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5162-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5115-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5115-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5125-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5125-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5135-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5135-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5144-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5144-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5154-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5154-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5163-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5163-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5116-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5116-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5126-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5126-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5136-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5136-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5145-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5145-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5155-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5155-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5164-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5164-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5117-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5117-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5127-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5127-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5137-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5137-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5146-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5146-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5156-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5156-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5165-stateless"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5165-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5118-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5118-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5128-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5128-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5138-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5138-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5147-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5147-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5157-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5157-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5166-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5166-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5119-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5119-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5129-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5129-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5139-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5139-stateless"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5148-stateless"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5148-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5158-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5158-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5167-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5167-history"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5149-history"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5149-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5159-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-gemini38-memory-calibration-v1-5159-history"
+    }
+  ],
+  "maximum_request_reservation_usd": "0.13824000",
+  "ordering": "round-robin families from the previous fifty-seed calibration; alternate first policy by task index; sequential requests",
+  "owner_approval": "switch to gemini 3.8, increase the budget up to 20 dollars",
+  "phase_caps": {
+    "environment_action_cap": 2862,
+    "model_attempt_cap": 2862,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 2862
+  },
+  "phase_id": "d58-gemini38-memory-calibration-v1",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "disabled",
+      "code_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "context_limit": 163840,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 3.75, \"prompt\": 0.75}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-history-v1",
+      "model": "google/gemini-3.8-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-b5bff45f6ef9c9804535",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    },
+    "stateless": {
+      "cancellation_mode": "disabled",
+      "code_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "context_limit": 163840,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 3.75, \"prompt\": 0.75}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-stateless-v1",
+      "model": "google/gemini-3.8-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-223b97b22cde201d9da7",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    }
+  },
+  "previous_execution_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+  "previous_summary_digest": "sha256:8d919819530a5f149b7659c2b4d7cbda89b70682414e2c52b27850582882c585",
+  "price_recheck_digest": "sha256:dca0aeec6ecf562c647a42039c6ec8faa45dbd199d4c5cbd754dc9240c0addc2",
+  "prior_event_count": 1332,
+  "prior_event_prefix_digest": "sha256:ea478b2a3f98fc49378a18f36804fe3e8f1cba50897ff8692a2b1a5475942887",
+  "prior_pilot_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "3.72952845",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "0.84307725",
+    "unknown_charge_outcomes": 2,
+    "unknown_reservation_usd": "2.88645120",
+    "wire_requests_sent": 126
+  },
+  "prior_unknown_bound_revisions": [
+    {
+      "cost_knowledge": "unknown",
+      "new_bound_usd": "0.09947205",
+      "old_bound_usd": "1.44322560",
+      "original_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+      "provider_response_id_available": false,
+      "request_bound": {
+        "images": 10,
+        "input_units_bound": 53203,
+        "metadata_bytes": 4051,
+        "output_units_limit": 4096,
+        "request_digest": "sha256:74eee8fd07dfd640ebba8a3da6f92d2160518731ff911b372054922aaef15db4",
+        "request_maximum_usd": "0.09947205",
+        "version": "gemini-png-request-budget-v1"
+      },
+      "reservation_id": "sha256:50c33c67d966a2f5e654a8820bc23eba903ea0b6ce562e9a39d99fa9ebcb194f",
+      "trial_id": "d58-full-memory-calibration-v1-5112-history"
+    },
+    {
+      "cost_knowledge": "unknown",
+      "new_bound_usd": "0.13955625",
+      "old_bound_usd": "1.44322560",
+      "original_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+      "provider_response_id_available": false,
+      "request_bound": {
+        "images": 17,
+        "input_units_bound": 82895,
+        "metadata_bytes": 5071,
+        "output_units_limit": 4096,
+        "request_digest": "sha256:68b3a61c8c29c3eae531aa957807d157216946a581d289cb058c7ce4dbbae24e",
+        "request_maximum_usd": "0.13955625",
+        "version": "gemini-png-request-budget-v1"
+      },
+      "reservation_id": "sha256:306699aa127694f6b584b1ec70db1713a66e066f1bd974e16e37fe579f45dc23",
+      "trial_id": "d58-full-memory-calibration-v1-5132-history"
+    }
+  ],
+  "provider_control_call_cap": 0,
+  "provider_retries": 0,
+  "schema_version": "pixelgym-d58-gemini38-calibration-plan-v1",
+  "stop_rules": [
+    "phase call/action caps",
+    "five consecutive non-normal episode results",
+    "provider identity or price guard mismatch",
+    "evidence integrity failure",
+    "before the next worst-case workload reservation exceeds USD 20 total"
+  ],
+  "unknown_charge_rule": "retain each request-sized reservation unless a confirmed charge replaces it; no assumption that a failed request costs zero"
+}
