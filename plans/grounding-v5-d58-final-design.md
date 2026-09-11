@@ -1,8 +1,28 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: Gemini 3.8 calibration closed at 51/100 episodes under its five-failure stop rule. The USD 20 aggregate ceiling was not reached. Final evaluation freeze pending.**
+**Status: the fresh focus-repaired calibration closed at 5/100 episodes under its five-failure stop rule. The USD 20 aggregate ceiling was not reached. Final evaluation freeze pending.**
 
-The subsequent [focus and timeout repair diagnostic](grounding-v5-d58-focus-diagnostic.md)
+The owner approved [fresh end-to-end calibration](grounding-v5-d58-focus-calibration.md)
+after the diagnostic. Its [stored report](../artifacts/grounding-v5-d58-focus-calibration/report.md)
+records three history and two stateless episodes, all ended by infrastructure failures;
+95 assignments remain unrun. One stateless episode reached both memory consumers and
+made two valid first choices, one correct. No history episode reached either consumer,
+and neither mode had a terminal success. The focus repair has therefore produced an
+end-to-end stateless memory observation, but this sample cannot establish calibration
+rates, a memory effect, or confirmatory power.
+
+The phase made 53 calls: 48 positive charges, one confirmed zero-charge empty response,
+and four unresolved transport outcomes (three SSL errors and one URL error). New known
+charges were USD 0.278438250; new request-sized unknown holds were USD 0.18923100.
+Aggregate known charges are USD 5.931273525, with USD 1.52342730 in unresolved holds,
+zero in flight, and USD 7.454700825 accounted against the USD 20 cap. No runner deadline
+or transport retirement occurred. The [verification](../artifacts/grounding-v5-d58-focus-calibration/verification.json)
+reconstructed all 53 requests and remeasured all five attempted episodes against the
+private journal while preserving the preceding 10,323-event prefix. No confirmatory
+calls were made. Provider reliability remains the next limitation to diagnose before
+another calibration is authorized.
+
+The preceding [focus and timeout repair diagnostic](grounding-v5-d58-focus-diagnostic.md)
 completed all twenty assigned calls: both modes made 6/6 desired text-entry transitions
 and 3/4 correct memory choices, retaining one zero-charge empty response in the history
 denominator. New known spend was USD 0.144682500. Scripted prefixes supplied those
@@ -11,7 +31,7 @@ states, so the end-to-end exposure requirement below remains unresolved.
 **Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
 inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
 two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete,
-and the remaining assignments cannot bring consumer exposure to the proposed threshold. The
+and the older cohort's remaining assignments cannot bring consumer exposure to the proposed threshold. The
 available evidence cannot support signing the executable D5.8 manifest. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.

@@ -1,0 +1,125 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "7.454700825",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "5.931273525",
+    "unknown_charge_outcomes": 31,
+    "unknown_reservation_usd": "1.52342730",
+    "wire_requests_sent": 988
+  },
+  "calibration_threshold_scope": "Compare history consumer exposure with 40/50 and history terminal success with 10..40/50; these are planning thresholds, not a milestone verdict. Missing episodes do not count as observed model failures.",
+  "complete": false,
+  "confirmatory_power_estimate": null,
+  "execution_plan_digest": "sha256:ba18d81a153e09736681a2f8f323dc00c6f78aafd4555440914678f245603947",
+  "first_attempt_and_exposure_counts": {
+    "history": {
+      "assigned": 50,
+      "attempted_episodes": 3,
+      "classifications": {
+        "infrastructure_failure": 3,
+        "not_run": 47
+      },
+      "correct_first_memory_attempts": 0,
+      "first_memory_attempts": 0,
+      "reached_both_consumers": 0,
+      "terminal_successes": 0
+    },
+    "stateless": {
+      "assigned": 50,
+      "attempted_episodes": 2,
+      "classifications": {
+        "infrastructure_failure": 2,
+        "not_run": 48
+      },
+      "correct_first_memory_attempts": 1,
+      "first_memory_attempts": 2,
+      "reached_both_consumers": 1,
+      "terminal_successes": 0
+    }
+  },
+  "history_exposure_upper_bound_including_missing": 47,
+  "inferential_test": null,
+  "interpretation": "Descriptive focus-repaired Gemini 3.8 cohort only; do not pool with earlier cohorts or scripted-prefix diagnostics. Infrastructure failures are retained. Final confirmation remains unapproved.",
+  "logical_clusters": 44,
+  "new_phase_known_spend_usd": "0.278438250",
+  "new_phase_wire_requests": 53,
+  "paired_terminal_outcomes": {
+    "both_success": 0,
+    "history_only": 0,
+    "incomplete": 48,
+    "neither_success": 2,
+    "stateless_only": 0
+  },
+  "planned_exposure_threshold_count": 40,
+  "planned_mixed_terminal_outcome_range": [
+    10,
+    40
+  ],
+  "provider_calls": 0,
+  "representative_seeds": [
+    5112,
+    5114,
+    5115,
+    5116,
+    5117,
+    5118,
+    5119,
+    5122,
+    5124,
+    5125,
+    5126,
+    5127,
+    5128,
+    5129,
+    5132,
+    5134,
+    5135,
+    5136,
+    5137,
+    5138,
+    5139,
+    5141,
+    5142,
+    5144,
+    5145,
+    5146,
+    5147,
+    5148,
+    5149,
+    5151,
+    5152,
+    5154,
+    5155,
+    5156,
+    5157,
+    5158,
+    5159,
+    5160,
+    5162,
+    5163,
+    5164,
+    5165,
+    5166,
+    5167
+  ],
+  "representative_terminal_outcomes": {
+    "both_success": 0,
+    "history_only": 0,
+    "incomplete": 42,
+    "neither_success": 2,
+    "stateless_only": 0
+  },
+  "schema_version": "pixelgym-d58-focus-descriptive-analysis-v1",
+  "started_final_stages": {
+    "history": {
+      "3": 1,
+      "4": 2
+    },
+    "stateless": {
+      "1": 1,
+      "10": 1
+    }
+  },
+  "summary_digest": "sha256:37e0944e614a507f20c13737170660978e05842bcef5612f44e5d6248496a59f"
+}

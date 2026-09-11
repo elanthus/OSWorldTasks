@@ -60,3 +60,35 @@ and terminal success. Proposed calibration criteria remain history exposure of a
 least 40/50 and history terminal success between 20% and 80%; a positive or significant
 memory effect is not required. Stateless exposure must be inspected to determine
 whether a memory comparison is informative. Confirmatory seeds remain unused.
+
+## Recorded outcome
+
+The [stored report](../artifacts/grounding-v5-d58-focus-calibration/report.md) records
+five attempted episodes: three history and two stateless. All ended in infrastructure
+failure, triggering the five-consecutive-failure stop; 95 assignments remain unrun.
+One stateless episode reached both consumers and made two valid first choices, one
+correct. Neither mode recorded a terminal success. The small sample does not establish
+end-to-end calibration rates or a memory effect.
+
+The 53 wire calls produced 48 positive charges, one confirmed zero-charge empty
+response, and four unresolved outcomes: three SSL errors and one URL error. Known
+new charges were USD 0.278438250, with USD 0.18923100 in new unknown holds. Aggregate
+known charges are USD 5.931273525 and unknown holds USD 1.52342730, with nothing in
+flight. The budget was not the stopping condition. No runner deadline or transport
+retirement occurred, and no calls were retried.
+
+The [verification receipt](../artifacts/grounding-v5-d58-focus-calibration/verification.json)
+binds the 10,904-event journal prefix, reconstructs all 53 submitted requests, remeasures
+all five attempted episodes, and matches reservation and settlement bounds. It preserves
+the earlier 10,323-event prefix. A negative check that changed a memory score was rejected
+against the journal. The preceding diagnostic also still verifies after journal extension.
+
+```bash
+PYTHONPATH=. .venv/bin/python artifacts/grounding-v5-d58-focus-calibration/analyze.py
+PYTHONPATH=. .venv/bin/python artifacts/grounding-v5-d58-focus-calibration/analyze.py --journal .cache/d58-memory-calibration/aggregate.sqlite
+```
+
+The [cost projection](../artifacts/grounding-v5-d58-focus-calibration/cost-projection.json)
+retains the prior completed-episode samples and arithmetic. This stopped phase's small
+charge must not be extrapolated as the price of 100 completed episodes. Provider
+reliability still needs diagnosis before another approved calibration phase.

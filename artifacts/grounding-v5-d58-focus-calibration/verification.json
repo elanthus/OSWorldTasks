@@ -1,0 +1,28 @@
+{
+  "assigned_episodes_verified": 100,
+  "episodes_remeasured": 5,
+  "execution_plan_digest": "sha256:ba18d81a153e09736681a2f8f323dc00c6f78aafd4555440914678f245603947",
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "recorded_failure_codes": {
+    "attempt_completed:None": 49,
+    "retryable_provider_response:zero_completion_error": 1,
+    "retryable_transport_fault:SSLError": 3,
+    "retryable_transport_fault:URLError": 1,
+    "sealed_unsuccessful_result:retryable_response_exhausted": 1,
+    "sealed_unsuccessful_result:transport_fault_retry_exhausted": 4,
+    "unknown_outcome_infrastructure_failure:SSLError": 3,
+    "unknown_outcome_infrastructure_failure:URLError": 1
+  },
+  "request_bodies_reconstructed": 53,
+  "request_reservations_and_settlements_match": true,
+  "schema_version": "pixelgym-d58-focus-calibration-verification-v1",
+  "settlement_counts": {
+    "confirmed_positive": 48,
+    "confirmed_zero": 1,
+    "unknown": 4
+  },
+  "summary_digest": "sha256:37e0944e614a507f20c13737170660978e05842bcef5612f44e5d6248496a59f",
+  "wire_reservations_verified": 53
+}
