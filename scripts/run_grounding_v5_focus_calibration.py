@@ -16,6 +16,7 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_calibration import summarize
 from pixelgym.grounding.v5.memory_focus_backend import FocusMemoryBackend
 from pixelgym.grounding.v5.memory_focus_calibration import run_episode
+from pixelgym.grounding.v5.memory_plan import ScreenshotPriceConfig
 from pixelgym.grounding.v5.request_budget import ReboundedMemoryLedger
 from pixelgym.grounding.v5.request_budget_v2 import TRANSPORT_VERSION, IsolatedRequestBoundTransport
 from pixelgym.grounding.v5.screenshot_memory import (
@@ -23,7 +24,7 @@ from pixelgym.grounding.v5.screenshot_memory import (
     build_screenshot_policy_manifest,
 )
 from scripts.run_grounding_v5_focus_diagnostic import source_binding as previous_source_binding
-from scripts.run_grounding_v5_gemini38_calibration import config_from_snapshot
+from scripts.run_grounding_v5_gemini38_calibration import config_from_snapshot as vertex_config
 from scripts.run_grounding_v5_memory_calibration import (
     JOURNAL,
     PRIVATE,
@@ -44,6 +45,13 @@ NEW_SOURCES = (
     "pixelgym/grounding/v5/memory_focus_calibration.py",
     "scripts/run_grounding_v5_focus_calibration.py",
 )
+
+
+def config_from_snapshot(snapshot: dict[str, Any]) -> ScreenshotPriceConfig:
+    selected = [row for row in snapshot["endpoints"] if row["tag"] == "google-vertex/global"]
+    if len(selected) != 1:
+        raise ValueError("exactly one approved standard Vertex endpoint required")
+    return vertex_config({**snapshot, "endpoints": selected})
 
 
 def source_binding() -> dict[str, str]:

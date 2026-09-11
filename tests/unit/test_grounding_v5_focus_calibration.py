@@ -19,6 +19,24 @@ from pixelgym.grounding.v5.screenshot_memory import (
 from tests.unit.test_grounding_v5_memory_calibration import CONFIG, PLAN, ROOT, GoldenTransport, job
 
 
+def test_only_unique_approved_vertex_route_is_selected():
+    from scripts.run_grounding_v5_focus_calibration import config_from_snapshot
+    from tests.unit.test_grounding_v5_request_budget import CONFIG as approved
+    from tests.unit.test_grounding_v5_request_budget import SNAPSHOT
+
+    mixed = {
+        **SNAPSHOT,
+        "endpoints": [
+            {**SNAPSHOT["endpoints"][0], "tag": "google-ai-studio"},
+            *SNAPSHOT["endpoints"],
+        ],
+    }
+    assert config_from_snapshot(mixed) == approved
+    for endpoints in ([], mixed["endpoints"] + SNAPSHOT["endpoints"]):
+        with pytest.raises(ValueError, match="exactly one approved"):
+            config_from_snapshot({**SNAPSHOT, "endpoints": endpoints})
+
+
 def execute(journal, transport, *, mode="history", **kwargs):
     return run_episode(
         journal,
