@@ -79,7 +79,29 @@ evidence without model calls.
 
 ## Limits and next decision
 
-Execution is pending. The diagnostic can show whether an agent selects an appropriate
-action from these supplied states. It cannot establish end-to-end memory exposure,
-terminal success rates, an isolated memory effect, or confirmatory power. Those
-remain requirements for the separate full calibration and the owner's final D5.8 decision.
+The [completed diagnostic](../artifacts/grounding-v5-d58-focus-diagnostic/report.md)
+attempted all twenty assigned calls. Both modes made the desired text transition
+in all six assigned states. History made three valid memory choices, all correct;
+its fourth call returned an empty provider response with a confirmed zero charge.
+Stateless made four valid memory choices, three correct. The failure remains in
+the history denominator: both modes score 3/4 on the assigned memory checks.
+
+New known spend was USD 0.144682500, bringing aggregate known spend to
+USD 5.652835275. Unknown holds remained USD 1.33419630; no new unknown hold or
+in-flight reservation remained. No runner deadline occurred in this diagnostic.
+Timeout retirement and late-response behavior were exercised in the offline fixtures.
+
+The [journal verification](../artifacts/grounding-v5-d58-focus-diagnostic/verification.json)
+reconstructed all twenty submitted requests and nineteen dispatched actions, matched
+every request's reservation and settlement bound, and verified that the preceding
+10,044-event cohort prefix is unchanged. It made zero provider calls. To verify:
+
+```bash
+PYTHONPATH=. .venv/bin/python artifacts/grounding-v5-d58-focus-diagnostic/analyze.py
+PYTHONPATH=. .venv/bin/python artifacts/grounding-v5-d58-focus-diagnostic/analyze.py --journal .cache/d58-memory-calibration/aggregate.sqlite
+```
+
+The supplied-state results support trying a fresh end-to-end calibration with the
+revised focus cue. They do not establish end-to-end memory exposure, terminal success
+rates, an isolated memory effect, or confirmatory power. Those remain requirements
+for the separate full calibration and the owner's final D5.8 decision.

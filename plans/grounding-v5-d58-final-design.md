@@ -2,6 +2,12 @@
 
 **Status: Gemini 3.8 calibration closed at 51/100 episodes under its five-failure stop rule. The USD 20 aggregate ceiling was not reached. Final evaluation freeze pending.**
 
+The subsequent [focus and timeout repair diagnostic](grounding-v5-d58-focus-diagnostic.md)
+completed all twenty assigned calls: both modes made 6/6 desired text-entry transitions
+and 3/4 correct memory choices, retaining one zero-charge empty response in the history
+denominator. New known spend was USD 0.144682500. Scripted prefixes supplied those
+states, so the end-to-end exposure requirement below remains unresolved.
+
 **Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
 inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
 two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete,

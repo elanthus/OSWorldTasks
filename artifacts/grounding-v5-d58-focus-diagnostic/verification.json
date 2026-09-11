@@ -1,0 +1,22 @@
+{
+  "conditions_verified": 20,
+  "execution_plan_digest": "sha256:6c4bde99c9a6dbfd576816a95568845d94e7e5430fcb546d28233c8b73d231dd",
+  "failure_receipts": [
+    {
+      "failure_codes": [
+        "retryable_response_exhausted",
+        "zero_completion_error"
+      ],
+      "known_charge_usd": "0",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-08-history"
+    }
+  ],
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "request_bodies_reconstructed": 20,
+  "request_reservations_and_settlements_match": true,
+  "schema_version": "pixelgym-d58-focus-verification-v1",
+  "stored_dispatches_reconstructed": 19,
+  "summary_digest": "sha256:0dc152ec1a7281d464cc847426ce0e6972c52717d2aff13b763a3e557cf24635"
+}
