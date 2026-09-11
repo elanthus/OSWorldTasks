@@ -27,6 +27,11 @@ Open the control plane at <http://localhost:5800> and MLflow at <http://localhos
 ports are configurable in `.env.example`; the PostgreSQL and MinIO API loopback ports are also
 configurable for isolated integration runs.
 
+Both UIs are local-demo surfaces. The control plane has CSRF protection but no caller
+authentication, and neither UI should be exposed or proxied onto a shared network. Before any
+shared deployment, add authentication and authorization in front of both the control plane and
+MLflow.
+
 ### Control-plane session cookie
 
 The control-plane bootstrap derives the `pixelgym_session` cookie's `Secure` attribute from its
@@ -103,6 +108,10 @@ uses temporary local state and real `run`/`resume` commands, but it does not pro
 .venv/bin/pip install -e ".[dev,platform]"
 .venv/bin/python -m pytest -q -m platform_integration tests/integration/platform/test_metaflow_runtime.py tests/integration/platform/test_mlflow_tracking.py
 ```
+
+The manually dispatched [platform workflow](../.github/workflows/platform-integration.yml) runs
+this Metaflow/MLflow command only. It does not run the fresh-stack Docker/Playwright lifecycle
+suite below.
 
 The fresh-stack suite additionally requires a running Docker daemon and Playwright Chromium. It
 creates a unique Compose project, binds dynamically selected loopback ports, uses new project-scoped

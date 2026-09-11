@@ -392,11 +392,13 @@ def test_redaction_scan_rejects_payloads_paths_and_credentials() -> None:
     assert _redaction_is_safe({"safe": True}, {"value": "Bearer abcdefghijklmnop"}) is False
 
 
-def test_readme_numbers_trace_to_generated_derivative() -> None:
+def test_readme_v5_status_links_to_generated_derivative() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("## v5 agent benchmark (in progress)", 1)[1].split(
-        "## Architecture", 1
+    section = readme.split("### Supporting platform work and status", 1)[1].split(
+        "## Reproduction", 1
     )[0]
+    section = " ".join(section.split())
+    evidence_index = (ROOT / "docs/evidence-index.md").read_text(encoding="utf-8")
 
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
     report_path = Path("artifacts/grounding-v5-d56-completed-calibrations-report.md")
@@ -404,7 +406,6 @@ def test_readme_numbers_trace_to_generated_derivative() -> None:
     for run in derivative["runs"]:
         counts = run["classification_counts"]
         percentage = 100 * counts["success"] / counts["attempted"]
-        assert f"{counts['success']}/{run['assigned_tasks']}" in section
         # The linked report still carries all terminal classifications, including negative results.
         expected = (
             f"| `{run['slot']}` | {run['assigned_tasks']} | {counts['attempted']} | "
@@ -413,12 +414,15 @@ def test_readme_numbers_trace_to_generated_derivative() -> None:
             f"{counts['policy_violation']} | {counts['truncation']} |"
         )
         assert expected in report
-    assert "Retained descriptive calibration" in section
-    assert "confirmatory benchmark and v5 serving work remain unfinished" in section
-    assert "Gemini v2 calibration is **withdrawn**" in section
-    assert "public clone cannot verify" in section
-    assert DERIVATIVE_PATH.as_posix() in section
-    assert report_path.as_posix() in section
+    assert "v5 confirmatory benchmark and v5 milestone gate remain incomplete" in section
+    assert "plans/grounding-v5-agent-benchmark.md" in section
+    assert "docs/evidence-index.md" in section
+    assert "35/50" not in readme
+    assert "0/50" not in readme
+    assert "remains withdrawn" in evidence_index
+    assert "cannot be verified from a public clone" in evidence_index
+    assert DERIVATIVE_PATH.name in evidence_index
+    assert report_path.name in evidence_index
 
 
 def test_retained_development_runs_are_digest_only_entries() -> None:

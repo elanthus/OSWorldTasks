@@ -4,8 +4,8 @@ Commands and historical timing moved from the README; start with the default set
 
 ## Quick reproduction without OSWorld
 
-Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
-does not need a VM, browser, network, or provider credentials.
+Python 3.12 is required. The default development setup does not install OSWorld. The unit suite
+does not need a VM, browser, socket, network, external service, or provider credential.
 
 ```bash
 python3.12 -m venv .venv
@@ -24,7 +24,9 @@ ranges below for observed run-to-run variance). Serial execution remains support
 not the parallel timing target. The editable install is sufficient for the fast suite, lint, and
 strict static type check of the complete `pixelgym` package.
 
-Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
+Pull-request CI also runs the offline unit suite with deterministic Hypothesis settings and branch
+coverage. Real-loopback HTTP contract tests run in their own CI job and are not included in this
+coverage command.
 The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
 `pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
 of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
@@ -48,6 +50,22 @@ the plain suite and 66.9–82.2s with coverage. These are historical observation
 guarantees or evidence that a hosted job should finish in a minute. See the
 [status source record](../artifacts/public-release/status-sources.json) for the checked configuration,
 visibility, and owner-gate sources.
+
+## Local loopback HTTP contract
+
+The vendor-form server contract group starts the bundled guest HTTP server on an ephemeral IPv4
+loopback port and compares it with FastAPI's in-process test client. It makes no external request
+and requires no browser, Docker service, OSWorld image, or optional dependency beyond the default
+`dev` install. The host must permit binding a local `127.0.0.1` socket:
+
+```bash
+.venv/bin/python -m pytest -q -m local_http_integration \
+  tests/integration/test_vendor_form_server_contract.py
+```
+
+This group is separate so a socket-restricted sandbox can run every unit test without weakening or
+skipping the real-loopback assertions. Pull-request CI exercises it through the explicitly named
+`Local HTTP contract` job in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
 installed once with:
@@ -106,4 +124,3 @@ optional integration dependency and run:
 Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
 the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds
 ([validation evidence](../artifacts/validation-report.json)).
-

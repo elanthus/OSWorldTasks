@@ -1,8 +1,11 @@
-"""Shared HTTP contract tests for the local and OSWorld guest task servers.
+"""Real-loopback HTTP contract tests for the local and OSWorld guest task servers.
 
 The guest is deliberately a single-task appliance, so two lifecycle behaviors differ:
 before reset its bundled task is available while FastAPI has no active task, and it
 rejects reset seeds other than the bundled seed while FastAPI generates a new task.
+
+Every test starts the guest server on an ephemeral 127.0.0.1 socket. Keep this module
+outside the network-free unit suite even though it requires no external service.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from pixelgym.tasks.vendor_form.app.server import create_app
 
 _SEED = 7
 _PUBLIC_TASK_KEYS = {"task_id", "schema_version", "fields", "options"}
+pytestmark = pytest.mark.local_http_integration
 
 
 class _Response(Protocol):
