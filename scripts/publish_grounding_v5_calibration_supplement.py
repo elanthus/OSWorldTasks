@@ -64,17 +64,20 @@ def build(directory: Path) -> tuple[dict, str]:
              '| Policy | Tasks | Success | Action-limit failures |', '|---|---:|---:|---:|']
     for row in rows:
         lines.append(f"| `{row['slot']}` | {row['assigned']} | {row['success']} | {row['classifications'].get('step_limit_truncation', 0)} |")
-    lines += ['', 'All three policies attempted the same fifty task IDs. The two Qwen arms are a matched memory comparison; both scored zero, so they do not establish a memory benefit. Mistral is a separate model/provider/runtime run and is not a controlled comparison with Qwen or historical Gemini.', '',
+    qwen_rows = [row for row in rows if row['slot'].startswith('qwen-controlled-')]
+    memory_note = (' Both Qwen arms scored zero, so this comparison does not establish a memory benefit.'
+                   if len(qwen_rows) == 2 and all(row['success'] == 0 for row in qwen_rows) else '')
+    lines += ['', f'All {len(rows)} published policies attempted the same fifty task IDs. The Qwen arms are a matched memory comparison.{memory_note} Mistral is a separate model/provider/runtime run and is not a controlled comparison with Qwen or historical Gemini.', '',
               '## Spend and reliability', '', '| Run | Calls | Unknown outcomes | Known USD | Reserved USD | Accounted USD |', '|---|---:|---:|---:|---:|---:|']
     for run in runs:
         a, s = run['provider_accounting'], run['spend']
         lines.append(f"| {run['source']} | {a['provider_calls_made']} | {a['unknown_charge_outcomes']} | {s['known_spend_usd']} | {s['unknown_reservation_usd']} | {s['budget_accounted_spend_usd']} |")
-    lines += ['', 'Spend for Qwen covers both arms; it is not a per-arm estimate. Mistral retained fifteen unknown-charge reservations and completed every task. Its bounded retries recovered all transport failures; no task exhausted them. Older stopped runs are not pooled into these results.', '',
+    lines += ['', 'Spend for Qwen covers its published arms; it is not a per-arm estimate. Unknown outcomes above are counts reported by the source summaries. Transport rows are excluded, so this public verifier does not establish which failures recovered or exhausted retries. Older stopped runs are not pooled into these results.', '',
               '## Provenance and reproduction', '',
               'The snapshots retain exact approved plans, summaries with transport rows removed, per-task outcomes, and selected local audit receipts. Their original-source hashes bind the restricted originals. The public verifier checks snapshot hashes, plan identity, allocation, classifications, spend, and deterministic report generation. It does not independently repeat the journal audit or verify source files absent from a public clone.', '',
               'Restricted journals, raw responses, screenshots, checkpoints, credentials, and operator paths are excluded. Historical Gemini/Qwen evidence remains in the [earlier report](../grounding-v5-d56-completed-calibrations-report.md).', '',
               'From the repository root:', '', '```sh', '.venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify', '```', '',
-              'The local audit receipts report immutable source bytes and completed journal validation. Mistral diagnostics show no critical decision entered; unentered decisions are not observed incorrect decisions. No new paid calls are authorized by publication.']
+              'The local audit receipts report immutable source bytes and completed journal validation. Selected local diagnostic receipts are retained as audit data, not independently recomputed by this public verifier. No new paid calls are authorized by publication.']
     return result, '\n'.join(lines) + '\n'
 
 
