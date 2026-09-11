@@ -173,6 +173,6 @@ The owner initially selected a fixed Google Vertex route for Llama Scout. See th
 calibration plans. That selection does not authorize new paid calls or retire the frozen
 DeepInfra evidence.
 
-After both Vertex probes stopped on HTTP 404, the owner selected Mistral Small 4 on 2026-09-10.
+After the documented Vertex smoke stopped on HTTP 404, the owner selected Mistral Small 4 on 2026-09-10.
 Use the [Mistral successor procedure](slot-c-mistral-successor.md) for the current preparation.
 Its smoke and any full calibration each require fresh exact approval.
