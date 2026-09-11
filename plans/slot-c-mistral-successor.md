@@ -1,12 +1,21 @@
 # Prepare Slot C with Mistral Small 4
 
+Current outcome: v3 completed all fifty calibration assignments at revision
+`77196d9facc57a053edb5d9933eec4e2fcb63137`: zero successes, fifty action-limit failures.
+The [generated supplement](../artifacts/grounding-v5-calibration-supplement/report.md) contains
+response-free results and source bindings. Fifteen transport errors recovered within the retry
+allowance. The v1 stopped run and unexecuted v2 proposal below remain historical evidence.
+No further model call is authorized by this publication.
+
+## Historical preparation
+
 The owner selected Mistral Small 4 on 2026-09-10 after the Llama Scout DeepInfra runs stopped
 on rate limits and both Vertex probes returned HTTP 404. This replaces the planned Slot C
-model; it does not complete Slot C or approve paid execution. Keep all predecessor evidence
+model; that selection alone did not authorize execution. All predecessor evidence remains
 separate. The [Vertex procedure](slot-c-vertex-successor.md) records its historical configuration.
 The separately approved Mistral smoke is complete and technically audited. The approved first
 full calibration stopped on an SSL transport error. A fresh successor with bounded retries is
-prepared below; its exact plan and spend ceiling require new approval.
+documented below. The later v3 run used the owner-approved continuation change and is now complete.
 
 ## Frozen smoke configuration
 
