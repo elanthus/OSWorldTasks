@@ -78,6 +78,10 @@ closed cohort's executed source, and version and fix the wrapper before another 
 
 ## Approved Gemini 3.8 comparison and revised reservations
 
+The owner has since approved a [versioned focus and timeout repair diagnostic](grounding-v5-d58-focus-diagnostic.md).
+That successor preserves this stopped cohort and uses the same aggregate USD 20 cap.
+Its scripted-prefix checks cannot replace the missing end-to-end calibration evidence.
+
 The owner subsequently requested “switch to gemini 3.8, increase the budget up to 20 dollars” and
 selected “All 50 tasks, 100 episodes (recommended)”. This supersedes the USD 5 ceiling for subsequent
 execution. The [Gemini 3.8 plan](../artifacts/grounding-v5-d58-gemini38-calibration/execution-plan.json)
