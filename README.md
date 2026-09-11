@@ -1,20 +1,24 @@
 # PixelGym-OSWorld
 
-PixelGym-OSWorld is a pixel-only Gymnasium environment and GUI-grounding benchmark for one
-deterministic synthetic vendor-onboarding form, with an optional pinned OSWorld-V2 backend.
-It tests whether bounded screenshot-only interaction, privileged exact-state reward, and seeded
-reset behavior can be implemented and audited without leaking task answers to the agent.
-Committed evidence measures that single workload, a 100-example grounding experiment, and a
-local scripted evaluation-platform rehearsal—not broad desktop generalization or production scale.
-The strongest visual claim is bitwise repeatability at 1024×768 on one local host; portability,
-the frozen v1 allocation, model aliases, synthetic platform metrics, and human gates remain limited.
+PixelGym-OSWorld combines a pixel-only Gymnasium environment with a GUI-grounding benchmark for
+one deterministic synthetic vendor-onboarding form and an optional backend pinned to OSWorld-V2.
+It is built to make environment contracts, reward timing, reset behavior, and grounding evidence
+inspectable—not to claim broad desktop-agent performance.
 
-The narrow workload makes exact expected state, reproducible resets, and adversarial reward checks
-tractable. That lets the project test environment contracts and evaluator boundaries directly,
-then rehearse evidence retention, promotion, and rollback against a fixed workload.
+## Problem
 
-Start with the three claims below, [reproduce the checks](#quick-reproduction-without-osworld), or
-open the [evidence index](docs/evidence-index.md) for the full audit trail.
+GUI-agent evaluations can look successful while leaking privileged state, accepting invalid
+actions, paying reward at the wrong time, or hiding failures in aggregate metrics. Broad desktop
+benchmarks also make those boundaries expensive to isolate. This project narrows the workload to
+one fixed form so each behavior can be specified, tested, and tied to stored evidence.
+
+The main questions are:
+
+- Can an agent interact through screenshots and a small, validated action vocabulary while a
+  separate host-side evaluator controls reward?
+- Does the same seed reproduce the same task and application state?
+- On this fixed layout, how does raw coordinate prediction compare with a deterministic
+  set-of-marks condition when proposal provenance and scoring are disclosed?
 
 ## Architecture
 
@@ -22,157 +26,98 @@ open the [evidence index](docs/evidence-index.md) for the full audit trail.
 flowchart LR
     A["Agent"] -->|"NOOP / bounded CLICK / allowlisted KEY"| E["PixelGuiEnv"]
     E --> B["Backend protocol"]
-    B --> F["Fast deterministic backend"]
+    B --> F["Deterministic fake backend"]
     B --> O["Pinned OSWorld-V2 adapter"]
-    F --> P["RGB screenshot"]
-    O --> P
-    P --> A
+    F --> S["RGB screenshot"]
+    O --> S
+    S --> A
     F --> V["Privileged host-side evaluator"]
     O --> V
-    V -->|"0 until exact submitted state; then 1 once"| E
-    D["Build-time bounding boxes"] --> G["Frozen grounding dataset"]
-    G --> R["Raw vs set-of-marks paired analysis"]
+    V -->|"0 until exact submission; then 1 once"| E
+    D["Offline browser capture<br/>DOM-derived control boxes"] --> M["Target-agnostic marks"]
+    M --> G["Frozen paired grounding experiment"]
 ```
 
-The observation is only an RGB screenshot. The evaluator reads privileged task state outside the
-agent interface; expected values and bounding boxes never enter the environment observation or
-`info`. Build-time grounding instrumentation is separate from the evaluation adapter.
+At runtime, the environment exposes only an RGB screenshot. The agent can issue `NOOP`, bounded
+integer `CLICK(x, y)`, or `KEY(index)` actions from a versioned allowlist. Expected answers,
+bounding boxes, DOM data, and evaluator diagnostics do not enter the observation or `info`.
+Invalid actions are rejected before backend execution, and the privileged evaluator is the only
+source of success ([environment](pixelgym/env.py), [actions](pixelgym/actions.py),
+[evaluator](pixelgym/evaluator.py)).
 
-## Evidence-backed claims
+The grounding dataset has a separate, offline build path. Browser instrumentation records control
+geometry while constructing frozen evaluation assets; that instrumentation is not reachable from
+the environment adapter ([capture](pixelgym/grounding/capture.py),
+[protocol](artifacts/grounding-protocol.md)).
 
-- Built and audited one seeded synthetic vendor-form environment with no learned model: for seed 7,
-  five OSWorld resets were semantically and bitwise identical at 1024×768 on one local Apple
-  Silicon Docker/QEMU host, and all 14 reward-hacking surfaces had evidence and a classified
-  disposition. This does not establish cross-host bitwise portability; the historical 1920×1080
-  OSWorld run established semantic task-state determinism and only perceptual visual stability
-  ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json),
-  [audit evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json),
-  [revision environment](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json),
-  [historical evidence](artifacts/day-2/raw/real-reset.json)).
-- Evaluated 100 paired targets from the same synthetic form at 1024×768 with the Codex CLI provider
-  and the moving `gpt-5.4-mini` alias: raw coordinates scored 56/100 and deterministic
-  set-of-marks overlays scored 100/100, a +44.0-point paired difference with a fixed-seed bootstrap
-  95% CI of [+35.0, +54.0]. This is one model alias, prompt, layout, and target-agnostic proposal
-  generator—not evidence about other models or GUI workloads
-  ([structured results](artifacts/grounding-results.json),
-  [canonical report](artifacts/grounding-report.md),
-  [cross-run analysis](artifacts/grounding-set-of-marks-analysis.md),
-  [historical Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md),
-  [report provenance](artifacts/grounding-report-provenance-v1.json),
-  [dataset](artifacts/grounding-dataset.jsonl)).
-- Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across
-  4 seeds × 4 deterministic scripted-policy aliases: 16 branches and 80 scripted calls, with a
-  maximum of 4 branches observed concurrently; it retained 4 invalid assignments and 4
-  request-failure assignments containing 20 failed requests. The provider was the no-cost
-  `scripted-demo` fixture on one local host; these are orchestration fixtures, not model quality or
-  production-throughput measurements
-  ([fan-out evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json),
-  [versioned plan](artifacts/platform/seed-policy-plan-v1.json),
-  [frozen dataset](artifacts/grounding-dataset.jsonl)).
+## Completed result
+
+### Pixel-only environment and validation
+
+The implemented environment supports the fake backend for fast contract tests and the pinned
+OSWorld-V2 adapter for real episodes. For seed 7, **five real OSWorld resets were semantically and
+bitwise identical at 1024×768 on one local Apple Silicon Docker/QEMU host**
+([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json),
+[revision environment](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)). The
+reward-hacking audit records a disposition and evidence for **14 tested surfaces**
+([audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)). The historical
+1920×1080 run established semantic task-state determinism and perceptual visual stability, not
+bitwise equality ([historical reset evidence](artifacts/day-2/raw/real-reset.json)).
+
+The environment contract is sparse and explicit: reward remains `0.0` until an exact valid
+submission, becomes `1.0` exactly once, and terminates the episode; a step-limit ends by
+truncation, and stepping after either ending raises an error
+([validation report](artifacts/validation-report.json)).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
-**Status.** This is a personal portfolio project prepared for review. Sprints 1–3 are complete and
-gated by the owner ([D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2/raw/human-gate.json),
-[D3.11](artifacts/day-3/raw/human-gate.json), [D4.12](artifacts/platform/human-gate.json)); the v5 agent
-benchmark and v5 serving work remain in progress and no v5 gate is declared. The recorded
-D4.12 decision applies to its reviewed revision and scripted-provider scope, not to later v5 work. Every number below links to a
-checked-in artifact. Pull requests run lint, strict type checking, and the fast suite in CI; the
-Docker-based platform integration suite runs only on manual dispatch.
+### Frozen grounding experiment
 
-The project owner declared the [historical Day 2 gate](artifacts/day-2/raw/human-gate.json) `PASS`.
-The [2026-09-06 evidence revision](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)
-was re-graded by the project owner on 2026-09-07 and declared `PASS`
-([re-grade record](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json)); the historical
-record is retained unchanged. The project owner declared the platform milestone gate D4.12 `PASS`
-on 2026-09-09 against the evidence at revision `4c4a7fb`
-([gate record](artifacts/platform/human-gate.json), [evidence index](artifacts/platform/d4.12/4c4a7fb2fcb983e81084542365abc0ec2d7df538/REPORT.md)).
+On **100 paired targets** from the same 1024×768 synthetic form, the Codex CLI provider using the
+moving `gpt-5.4-mini` alias scored **56/100 with raw coordinates and 100/100 with marks**. The
+paired difference was **+44.0 percentage points**, with a fixed-seed percentile-bootstrap **95% CI
+of [+35.0, +54.0]** ([canonical report](artifacts/grounding-report.md),
+[structured results](artifacts/grounding-results.json),
+[provenance](artifacts/grounding-report-provenance-v1.json)). Proposal coverage was **100/100** and
+conditional mark-selection accuracy was **100/100**; the two quantities are reported separately
+in the same evidence.
 
-## Grounding benchmark
-
-The frozen raw-coordinate and set-of-marks experiment uses the same target instruction in each
-condition, deterministic target-agnostic proposals, and separate coverage and conditional-selection
-metrics ([structured results](artifacts/grounding-results.json)).
+The marks condition is not an end-to-end pixel-only proposal system. During offline dataset
+construction, Playwright evaluates `getBoundingClientRect()` for every actionable control and
+stores those DOM-derived locations before the requested target is joined. The overlay generator
+marks all candidates without consulting the target. The model sees the marked screenshot and
+instruction, returns a `mark_id`, and the evaluation adapter supplies the center coordinates of
+that candidate's stored box ([capture implementation](pixelgym/grounding/capture.py),
+[adapter implementation](pixelgym/grounding/evaluation.py),
+[leakage controls](artifacts/grounding-protocol.md#set-of-marks-leakage-controls)). This offline
+proposal provenance is distinct from the screenshot-only environment interface described above.
 
 ![Raw-coordinate versus set-of-marks accuracy](artifacts/grounding/figures/raw-vs-marks-accuracy.png)
 
-**Frozen v1 confounds target identity with screen state:** each target occurs in only one state,
-so control-type slices cannot identify independent control-type effects. The crossed v2 allocation
-is available but has not been run against a model. See the [paired analysis](artifacts/grounding-report.md),
-[v2 protocol](artifacts/grounding-v2-protocol.md), and [v2 manifest](artifacts/grounding-v2-manifest.json).
-The moving model alias and this single layout limit interpretation of the measured improvement.
+### Supporting platform work and status
 
-## Platform milestone
+A local-first evaluation and policy-delivery layer rehearses resumable execution, evidence
+retention, mechanical promotion gates, explicit approval, exact-version serving, and rollback on
+the frozen workload. Its measurements use a deterministic `scripted-demo` provider and are
+synthetic orchestration fixtures—not model-quality, production-throughput, or deployment evidence
+([platform architecture](artifacts/platform/architecture.md),
+[platform evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json)). The control plane has
+no caller authentication; it and the MLflow demo UI must remain on loopback and must not be exposed
+or proxied onto a shared network ([deployment warning](deploy/README.md)).
 
-The local-first platform wraps the frozen grounding workload with resumable evaluation, immutable
-evidence storage, mechanical promotion gates, explicit human approval, exact-version serving, and
-audited rollback. Its architecture keeps the control plane separate from MLflow metadata and the
-authoritative immutable artifact store. See the [platform architecture](artifacts/platform/architecture.md)
-and the [platform milestone plan](plans/grounding-evaluation-platform.md) for boundaries and
-current scope.
+The owner-recorded [D1.8](artifacts/day-1/human-gate.json),
+[D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json),
+[D3.11](artifacts/day-3/raw/human-gate.json), and
+[D4.12](artifacts/platform/human-gate.json) decisions remain in the audit trail. D4.12 applies only
+to its reviewed revision and scripted-provider scope. The v5 confirmatory benchmark and v5
+milestone gate remain incomplete; retained calibration, negative results, and unfinished work are
+documented without being promoted to a headline result
+([v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md)).
 
-### Local no-cost platform reproduction
+## Reproduction
 
-The scripted lifecycle demo uses local services and a deterministic provider; its metrics are
-synthetic governance fixtures, not model-quality evidence. It requires Docker and Python 3.12 but
-does not require the project virtual environment or make network model/provider calls. Run from the
-repository root:
-
-```bash
-python3.12 scripts/platform_compose.py up --build --wait
-```
-
-Open the control plane at <http://localhost:5800> and MLflow at <http://localhost:5500>. Stop the
-stack while retaining its local evidence with:
-
-```bash
-python3.12 scripts/platform_compose.py down
-```
-
-Both UI ports are bound to host loopback for this local demo. The control plane has CSRF
-protection but no caller authentication; it must not be exposed or proxied onto a shared network.
-Add authentication and authorization in front of both the control plane and MLflow before any
-shared deployment.
-
-Use this wrapper rather than invoking `docker compose` against `deploy/compose.yaml` directly: it
-derives and bind-mounts the source-provenance file required to verify the packaged source. If a
-previous direct invocation created a directory at `.cache/platform/source-provenance.json`, follow
-the safe recovery steps in the [deployment guide](deploy/README.md#recover-a-directory-created-by-a-direct-compose-invocation).
-The deployment guide also documents the separate fast, local-runtime, and isolated
-Compose/Playwright test commands, their prerequisites, cleanup scope, and expected cold-run time.
-The same integration suite is wired as a manually dispatched GitHub Actions workflow
-(`.github/workflows/platform-integration.yml`); it is not scheduled.
-
-The [lifecycle demo](artifacts/platform/demo-script.md),
-[API transcript](artifacts/platform/demo-api-transcript.jsonl), and
-[platform limitations](artifacts/platform/known-limitations.md) document the rehearsal. Reliability
-and other residual work remain tracked in [#166](https://github.com/elanthus/OSWorldTasks/issues/166),
-[#165](https://github.com/elanthus/OSWorldTasks/issues/165), and
-[#167](https://github.com/elanthus/OSWorldTasks/issues/167).
-
-## v5 agent benchmark (in progress)
-
-V5 evaluates a versioned model, prompt, memory, harness, parser, and coordinate adapter together
-on stateful workflows. **The confirmatory benchmark and v5 serving work remain unfinished; no v5
-gate is declared.** See the [benchmark plan](plans/grounding-v5-agent-benchmark.md) and
-[serving plan](plans/v5-policy-serving.md).
-
-Retained descriptive calibration includes Gemini v3 with 35/50 exact successes and Qwen v3 with
-0/50. These are different policy systems and runtime configurations, not a controlled model
-comparison ([structured derivative](artifacts/grounding-v5-d56-completed-calibrations-publishable.json)).
-The [generated calibration report](artifacts/grounding-v5-d56-completed-calibrations-report.md)
-retains assigned and attempted denominators, every terminal classification, incomplete runs,
-spend reservations, and historical taxonomy.
-
-The earlier Gemini v2 calibration is **withdrawn**, not repaired or included: removing absolute
-operator paths from its digest-bound evidence would invalidate the recorded hashes. Restricted
-journals remain unpublished; a public clone cannot verify their file hashes or row-level contents.
-See the [evidence index](docs/evidence-index.md) for withdrawal, provenance, and verification limits.
-
-## Quick reproduction without OSWorld
-
-Python 3.12 is required. The default development setup installs no OSWorld; the fast suite needs
-no VM, browser, network, or provider credentials after installation.
+Python 3.12 is required. The default development install excludes OSWorld. From the repository
+root:
 
 ```bash
 python3.12 -m venv .venv
@@ -184,85 +129,95 @@ python3.12 -m venv .venv
 .venv/bin/python scripts/verify_grounding_report.py
 ```
 
-The golden trajectory replays the reward and episode-end contract. The grounding verification
-command reads frozen evidence without model calls or file writes; intentional report generation is
-a separate operation. See the [grounding verification guide](docs/grounding-verification.md) for
-the supported numerical and rendered-image comparisons, and the
-[reproduction guide](docs/reproduction.md) for coverage, historical timing, browser capture, and
-the optional pinned OSWorld integration. The
-[CI workflow](.github/workflows/ci.yml) gives the hosted coverage job a 20-minute timeout;
-local plain-suite timings are a separate measurement
-([source record](artifacts/public-release/status-sources.json)).
+The unit suite is offline: it does not bind sockets or require a browser, Docker, OSWorld, provider
+credentials, or external services. The grounding verifier reads frozen evidence, recomputes the
+headline, verifies stored hashes, and leaves tracked files unchanged. Numerical recomputation is
+supported; cross-platform byte-for-byte PNG regeneration is not claimed
+([verification guide](docs/grounding-verification.md)).
 
-## Environment contract
-
-- Observation: an RGB `uint8` screenshot only.
-- Actions: `NOOP`, bounded integer `CLICK(x, y)`, or `KEY(index)` into a versioned allowlist.
-- Invalid actions: rejected before backend execution; coordinates are never clipped.
-- Reward: `0.0` until one exact host-evaluated submission, then `1.0` exactly once.
-- Episode end: success sets `terminated=True`; step limit sets `truncated=True`.
-- Post-episode step: raises a clear error.
-- Reset: same seed produces the same canonical task, task hash, and initial application state and
-  clears prior submissions.
-
-These behaviors are exercised by the stored
-[validation report](artifacts/validation-report.json) and fast test suite.
-
-## Reward-hacking audit
-
-The stored audit covers 14 surfaces, including self-declared completion, incomplete submission,
-visible fake success text, stale task identity, repeated submission, coordinate violations,
-post-episode calls, modifier/devtools access, direct navigation, action mutation after validation,
-and termination/truncation confusion. Each is classified as `blocked`, `tested`, `mitigated`, or a
-known limitation, with the underlying evidence retained
-([reward-hacking evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)).
+The real-loopback HTTP contract tests are a separate local integration group. Optional OSWorld,
+browser capture, local Metaflow/MLflow runtime, and Docker/Playwright lifecycle commands are also
+documented separately with their prerequisites ([reproduction guide](docs/reproduction.md),
+[deployment guide](deploy/README.md#test-suite-boundaries)). Pull-request CI runs the offline unit
+suite and the loopback HTTP group in separate jobs; the branch-protected `Fast suite` result
+requires both. The manually dispatched platform workflow runs only the Metaflow/MLflow runtime
+tests; it does **not** run the Docker/Playwright lifecycle suite
+([CI](.github/workflows/ci.yml), [manual workflow](.github/workflows/platform-integration.yml)).
 
 ## Limitations
 
-- One deterministic synthetic workload supports contract and governance tests, not broad GUI
-  generalization. Model aliases can move; the frozen v1 target/state confounding remains material.
-- Bitwise visual evidence comes from one local host. The historical OSWorld run showed semantic
-  determinism and perceptual stability, not bitwise equality. Raw differences and the intermediate
-  readiness frame remain in the [visual evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json).
-- The privileged state endpoint exists inside the guest. App-mode navigation containment was tested;
-  browser and guest OS exploits remain outside the threat model. Digest pinning cannot remove
-  third-party publisher risk. Apple Silicon software emulation is slow.
-- Platform metrics are synthetic scripted-provider governance measurements on one host, not model
-  quality, production throughput, or external-deployment evidence. D4.12 grades its recorded revision.
-- V5 calibration is descriptive. Negative results, incomplete runs, the withdrawn Gemini v2 run,
-  unknown charges, and unavailable private-journal verification remain disclosed in the
-  [evidence index](docs/evidence-index.md) and linked reports. No v5 completion is claimed.
+- The environment and grounding result cover one deterministic synthetic form at one 1024×768
+  layout. They do not establish broad GUI or cross-application generalization
+  ([grounding report](artifacts/grounding-report.md#limitations)).
+- `gpt-5.4-mini` was a moving provider alias, not an immutable model snapshot. The result is bound
+  to the recorded provider, prompt, data, and collection window
+  ([provenance](artifacts/grounding-report-provenance-v1.json)).
+- The frozen v1 allocation perfectly aliases target identity with screen state. Control-type
+  slices are descriptive; the crossed v2 allocation has not been run against a model
+  ([v2 protocol](artifacts/grounding-v2-protocol.md),
+  [v2 manifest](artifacts/grounding-v2-manifest.json)).
+- Marks rely on target-agnostic but DOM-derived offline proposals and fixed-layout center mapping.
+  The result measures selection given that proposal mechanism, not proposal generation from pixels
+  or end-to-end task completion ([protocol](artifacts/grounding-protocol.md)).
+- Bitwise visual repeatability was observed on one host. Cross-host portability is not established;
+  the historical run supports only semantic determinism and perceptual visual stability
+  ([visual differences](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json)).
+- The privileged state endpoint exists inside the guest. App-mode navigation containment was
+  tested, while browser and guest-OS exploits remain outside the threat model. Digest pinning does
+  not remove third-party publisher risk ([reward-hacking audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)).
+- Platform metrics are synthetic, local scripted-provider measurements. V5 calibration is
+  descriptive, the confirmatory benchmark is unfinished, and no v5 gate is declared
+  ([evidence index](docs/evidence-index.md)).
 
-## Project evidence
+## Related work and demonstrated contribution
 
-| Check | Stored result | Evidence |
-|---|---|---|
-| Fake reset repeatability | 10/10 semantically and bitwise identical; 0 differing pixels | [`validation-report.json`](artifacts/validation-report.json) |
-| Reward timing | 122/122 stored trajectories met their expected reward/termination outcome | [`reward-timing.json`](artifacts/day-2/raw/reward-timing.json) |
-| Space integrity | Gymnasium checker; 500 sampled actions; 14 invalid and 4 boundary probes | [`space-integrity.json`](artifacts/day-2/raw/space-integrity.json) |
+[OSWorld](https://proceedings.neurips.cc/paper_files/paper/2024/hash/5d413e48f84dc61244b6be550f1cd8f5-Abstract-Datasets_and_Benchmarks_Track.html)
+introduced a real-computer environment with task setup and execution-based evaluation across
+desktop operating systems. This project uses the pinned OSWorld-V2 release as an optional backend;
+it does not claim to originate OSWorld or reproduce the breadth of its benchmark. Its demonstrated
+environment contribution is a narrow Gymnasium-compatible, screenshot-only interface, a custom
+deterministic task, a privileged evaluator boundary, and stored validation evidence for the
+contracts above.
 
-- [`artifacts/validation-report.md`](artifacts/validation-report.md) — generated Day 2 report
-- [`artifacts/day-2/real-golden/contact-sheet.png`](artifacts/day-2/real-golden/contact-sheet.png) — real episode frames
-- [`artifacts/grounding-protocol.md`](artifacts/grounding-protocol.md) — frozen experiment protocol
-- [`artifacts/grounding-dataset.jsonl`](artifacts/grounding-dataset.jsonl) — frozen 100-example dataset
-- [`artifacts/grounding-report.md`](artifacts/grounding-report.md) — reproducible paired analysis
-- [`artifacts/grounding-v2-protocol.md`](artifacts/grounding-v2-protocol.md) — crossed v2 design
-- [`artifacts/grounding-v2-manifest.json`](artifacts/grounding-v2-manifest.json) — validated v2 allocation and input/output hashes
-- [`artifacts/platform/seed-policy-fanout-evidence-v1.json`](artifacts/platform/seed-policy-fanout-evidence-v1.json) — local scripted fan-out evidence
-- [`artifacts/public-release-inventory.json`](artifacts/public-release-inventory.json) — public-path, redaction, restricted-asset, and raw-payload inventory
-- Incomplete v5 calibration reports, response-content-free derivatives, and stored-evidence
-  integrity audits are linked from
-  [v5 agent benchmark (in progress)](#v5-agent-benchmark-in-progress) above, with their coverage
-  limits stated there.
+[Set-of-Mark Prompting](https://arxiv.org/abs/2310.11441) introduced the visual-prompting pattern of
+overlaying regions with referable marks. This project adapts that pattern to a fixed synthetic GUI
+using offline DOM-derived control boxes instead of the paper's segmentation-based proposal path.
+Its demonstrated research-engineering contribution is the frozen paired comparison, explicit
+target-agnostic proposal controls, separate proposal/selection metrics, retained failures, and a
+non-mutating evidence verifier. It is not a new foundation model, a general GUI-proposal method, or
+a broad agent benchmark.
 
-## Sprint plans
+Repository work used a bounded agent-assisted branch-and-PR process: agents could implement,
+test, and prepare evidence, while deterministic checks, independent review, and owner-held scope,
+spend, scientific, and publication gates remained separate. The
+[workflow ADR](plans/adr-agent-assisted-workflow.md) records both useful findings and defects that
+escaped automation; it is a process audit, not an authorship claim or a substitute for human
+review.
 
-- [`plans/sprint-1-environment-core.md`](plans/sprint-1-environment-core.md)
-- [`plans/sprint-2-osworld-integration-and-validation.md`](plans/sprint-2-osworld-integration-and-validation.md)
-- [`plans/sprint-3-grounding-and-portfolio.md`](plans/sprint-3-grounding-and-portfolio.md)
-- [`plans/grounding-evaluation-platform.md`](plans/grounding-evaluation-platform.md)
-- [`plans/grounding-v5-agent-benchmark.md`](plans/grounding-v5-agent-benchmark.md)
-- [`plans/public-release-checklist.md`](plans/public-release-checklist.md) — unticked human release gate
+## Evidence and project history
+
+- [Evidence index](docs/evidence-index.md) — canonical claims, historical records, withdrawals,
+  and public-verification limits.
+- [Reproduction guide](docs/reproduction.md) — offline, loopback, browser, and OSWorld commands.
+- [Sprint 1 environment plan](plans/sprint-1-environment-core.md),
+  [Sprint 2 integration plan](plans/sprint-2-osworld-integration-and-validation.md), and
+  [Sprint 3 grounding plan](plans/sprint-3-grounding-and-portfolio.md) — completed core sequence.
+- [Platform milestone plan](plans/grounding-evaluation-platform.md) and
+  [v5 benchmark plan](plans/grounding-v5-agent-benchmark.md) — supporting platform detail and
+  unfinished work.
+- [Qualified resume-bullet review candidate](artifacts/resume-bullets-v2-review.md) — proposed
+  wording with the current scope qualifications. The digest-bound historical approved artifact is
+  retained unchanged at [artifacts/resume-bullets.md](artifacts/resume-bullets.md).
+- [Public release checklist](plans/public-release-checklist.md) — unticked human release gate; its
+  inventory refresh remains separate from this change.
+
+## Contributing
+
+Read [AGENTS.md](AGENTS.md) before changing code or evidence. Preserve the screenshot-only,
+host-evaluated reward, determinism, and build-time-instrumentation boundaries; keep OSWorld optional
+for the fast path; version corrections to frozen evidence instead of silently rewriting history;
+and report only checks actually run. Open review-ready pull requests by default. Human-owned gates
+remain human decisions.
 
 ## License
 

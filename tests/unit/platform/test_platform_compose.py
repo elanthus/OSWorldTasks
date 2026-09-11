@@ -37,7 +37,8 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
     def documented_wrapper_commands(text: str) -> list[str]:
         return re.findall(r"^python3\.12 scripts/platform_compose\.py .+$", text, re.MULTILINE)
 
-    assert documented_wrapper_commands(root_readme) == expected
+    assert documented_wrapper_commands(root_readme) == []
+    assert "deploy/README.md#test-suite-boundaries" in root_readme
     assert documented_wrapper_commands(deploy_readme) == [expected[0], expected[1], *expected[::-1]]
     assert "docker compose --env-file deploy/.env.example -f deploy/compose.yaml up" not in root_readme
     assert "Do not invoke `docker compose`" in deploy_readme
@@ -46,6 +47,7 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
 def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
     compose = (REPOSITORY_ROOT / "deploy/compose.yaml").read_text()
     root_readme = (REPOSITORY_ROOT / "README.md").read_text()
+    deploy_readme = (REPOSITORY_ROOT / "deploy/README.md").read_text()
 
     def service_ports(service: str) -> list[str]:
         lines = compose.splitlines()
@@ -63,12 +65,44 @@ def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
     assert service_ports("platform") == [
         "127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"
     ]
-    warning = next(
-        paragraph for paragraph in root_readme.split("\n\n") if "shared deployment" in paragraph
+    warnings = [
+        next(
+            " ".join(paragraph.split())
+            for paragraph in text.split("\n\n")
+            if "no caller authentication" in " ".join(paragraph.split())
+        )
+        for text in (root_readme, deploy_readme)
+    ]
+    for warning in warnings:
+        assert "shared network" in warning
+        assert "control plane" in warning and "MLflow" in warning
+
+
+def test_manual_platform_workflow_excludes_compose_lifecycle_suite() -> None:
+    workflow = (REPOSITORY_ROOT / ".github/workflows/platform-integration.yml").read_text()
+    root_readme = (REPOSITORY_ROOT / "README.md").read_text()
+    deploy_readme = (REPOSITORY_ROOT / "deploy/README.md").read_text()
+
+    assert "tests/integration/platform/test_metaflow_runtime.py" in workflow
+    assert "tests/integration/platform/test_mlflow_tracking.py" in workflow
+    assert "test_compose_lifecycle.py" not in workflow
+    assert "does **not** run the Docker/Playwright lifecycle suite" in " ".join(
+        root_readme.split()
     )
-    assert "no caller authentication" in warning
-    assert "shared network" in warning
-    assert "control plane" in warning and "MLflow" in warning
+    assert "does not run the fresh-stack Docker/Playwright lifecycle" in " ".join(
+        deploy_readme.split()
+    )
+
+
+def test_required_fast_suite_aggregates_loopback_and_unit_jobs() -> None:
+    workflow = (REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text()
+
+    assert "unit-suite:\n    name: Unit suite with coverage" in workflow
+    assert "release-integration:\n    name: Release integration" in workflow
+    assert "fast-suite:\n    name: Fast suite" in workflow
+    assert "if: ${{ always() }}" in workflow
+    assert "needs: [unit-suite, release-integration]" in workflow
+    assert "python -m pytest -q -m local_http_integration" in workflow
 
 
 def test_prepare_source_provenance_creates_a_missing_file(script, tmp_path, monkeypatch) -> None:

@@ -4,8 +4,8 @@ Commands and historical timing moved from the README; start with the default set
 
 ## Quick reproduction without OSWorld
 
-Python 3.12 is required. The default development setup does not install OSWorld and the fast suite
-does not need a VM, browser, network, or provider credentials.
+Python 3.12 is required. The default development setup does not install OSWorld. The unit suite
+does not need a VM, browser, socket, network, external service, or provider credential.
 
 ```bash
 python3.12 -m venv .venv
@@ -32,18 +32,23 @@ report without reading private journals or making provider calls:
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
 ```
 
-Two heavier checks are kept outside the fast unit target and run together in the pull-request
-`Release integration` job. The first opens a loopback listener to
-compare the FastAPI and OSWorld guest HTTP contracts. The second builds and installs the wheel in
-temporary directories, then checks packaged application assets, schemas, license material, and
-imports outside the source checkout. Neither command needs OSWorld or provider access:
+Two heavier checks are kept outside the fast unit target and run as explicit steps in the
+pull-request `Release integration` job. The first opens a loopback listener to compare the FastAPI
+and OSWorld guest HTTP contracts. The second builds and installs the wheel in temporary directories,
+then checks packaged application assets, schemas, license material, and imports outside the source
+checkout. Neither command needs OSWorld or provider access:
 
 ```bash
-.venv/bin/pytest -q tests/integration/test_vendor_form_server_contract.py
+.venv/bin/pytest -q -m local_http_integration \
+  tests/integration/test_vendor_form_server_contract.py
 .venv/bin/pytest -q tests/integration/test_wheel_packaging.py
 ```
 
 Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
+Real-loopback HTTP contract tests are not included in this coverage command. The branch-protected
+`Fast suite` result aggregates the unit-coverage and `Release integration` job results, so either
+failure blocks that required context.
+
 The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
 `pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
 of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
@@ -59,14 +64,32 @@ identical coverage gate locally with:
   --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit
 ```
 
-The [CI workflow](../.github/workflows/ci.yml) gives the fast-suite job a **20-minute timeout**;
-lint and type checking each have a 10-minute timeout. Hosted coverage runtime includes runner,
-setup, instrumentation, and reporting costs and is a different measurement from a local plain
-suite. Historical local measurements in the README at revision `06d695a` ranged 54.6–69.5s for
-the plain suite and 66.9–82.2s with coverage. These are historical observations, not current timing
-guarantees or evidence that a hosted job should finish in a minute. See the
-[status source record](../artifacts/public-release/status-sources.json) for the checked configuration,
-visibility, and owner-gate sources.
+The [CI workflow](../.github/workflows/ci.yml) gives the unit-coverage job a **20-minute timeout**;
+lint, type checking, and release integration each have a 10-minute timeout. Hosted coverage runtime
+includes runner, setup, instrumentation, and reporting costs and is a different measurement from a
+local plain suite. Historical local measurements in the README at revision `06d695a` ranged
+54.6–69.5s for the plain suite and 66.9–82.2s with coverage. These are historical observations, not
+current timing guarantees or evidence that a hosted job should finish in a minute. The
+[revision-pinned status source record](../artifacts/public-release/status-sources.json) captures the
+configuration, visibility, and owner-gate sources at its recorded `source_revision`; it is historical
+evidence, not an inventory of the current workflow.
+
+## Local loopback HTTP contract
+
+The vendor-form server contract group starts the bundled guest HTTP server on an ephemeral IPv4
+loopback port and compares it with FastAPI's in-process test client. It makes no external request
+and requires no browser, Docker service, OSWorld image, or optional dependency beyond the default
+`dev` install. The host must permit binding a local `127.0.0.1` socket:
+
+```bash
+.venv/bin/python -m pytest -q -m local_http_integration \
+  tests/integration/test_vendor_form_server_contract.py
+```
+
+This group is separate so a socket-restricted sandbox can run every unit test without weakening or
+skipping the real-loopback assertions. Pull-request CI exercises it through the explicitly named
+loopback step in the `Release integration` job; the required `Fast suite` result depends on that job
+in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
 installed once with:

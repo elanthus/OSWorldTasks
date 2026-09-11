@@ -77,14 +77,18 @@ jobs:
       - name: Install development dependencies
         run: python -m pip install -e ".[dev]"
 
-      - name: Run release integration checks
+      - name: Run loopback server contract tests
+        run: >-
+          python -m pytest -q -m local_http_integration
+          tests/integration/test_vendor_form_server_contract.py
+
+      - name: Run wheel packaging tests
         run: >-
           python -m pytest -q
-          tests/integration/test_vendor_form_server_contract.py
           tests/integration/test_wheel_packaging.py
 
-  fast-suite:
-    name: Fast suite
+  unit-suite:
+    name: Unit suite with coverage
     runs-on: ubuntu-latest
     # Current hosted coverage runs take about fourteen minutes; retain enough runner variance
     # for assertions, the coverage summary, and artifact upload to complete.
@@ -139,3 +143,19 @@ jobs:
           name: fast-suite-coverage
           path: coverage.xml
           if-no-files-found: warn
+
+  fast-suite:
+    name: Fast suite
+    if: ${{ always() }}
+    needs: [unit-suite, release-integration]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Require offline unit and release-integration suites
+        env:
+          UNIT_SUITE_RESULT: ${{ needs.unit-suite.result }}
+          RELEASE_INTEGRATION_RESULT: ${{ needs.release-integration.result }}
+        run: |
+          test "$UNIT_SUITE_RESULT" = success
+          test "$RELEASE_INTEGRATION_RESULT" = success

@@ -73,6 +73,7 @@ pythonpath = ["."]
 # `pytest tests/unit` run and the CI run generate identical examples.
 addopts = "--hypothesis-profile=ci"
 markers = [
+    "local_http_integration: binds a real loopback socket without external network or services",
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
     "platform_compose_integration: provisions an isolated Docker Compose platform stack",
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
