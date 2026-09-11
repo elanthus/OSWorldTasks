@@ -7,7 +7,8 @@ Reports summarize stored evidence; reading or regenerating them does not authori
 |---|---|
 | What establishes the environment contract? | [Validation JSON](../artifacts/validation-report.json), [generated report](../artifacts/validation-report.md), and [reward-hacking audit](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json). |
 | What changed in the visual evidence? | [Revision report](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json) and [raw renderer comparisons](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json) retain intermediate-readiness and historical differences. One-host bitwise evidence does not establish portability. |
-| What does the grounding improvement measure? | [Frozen results](../artifacts/grounding-results.json) and [analysis](../artifacts/grounding-report.md). V1 aliases target with state; [unrun v2](../artifacts/grounding-v2-manifest.json) crosses them. The moving model alias is not an immutable model snapshot. |
+| What does the grounding improvement measure? | [Frozen results](../artifacts/grounding-results.json), [canonical analysis](../artifacts/grounding-report.md), and [report provenance](../artifacts/grounding-report-provenance-v1.json). V1 aliases target with state; [unrun v2](../artifacts/grounding-v2-manifest.json) crosses them. The moving model alias is not an immutable model snapshot. |
+| What are the separate Haiku/Gemini results? | The [historical v3 report](../artifacts/grounding-v3-haiku-gemini-report.md) retains the prompt-v2 experiments, transport confound, calibration coverage limits, and original-revision provenance. It is not evidence for the canonical `gpt-5.4-mini` headline. |
 | What did the platform demonstrate? | [Scripted fan-out](../artifacts/platform/seed-policy-fanout-evidence-v1.json), [D4.11 rehearsal](../artifacts/platform/d4.11/78c801c514a83d74111da14ffef89714427570ec/EVIDENCE_REVIEW.md), and [owner D4.12 record](../artifacts/platform/human-gate.json). Synthetic orchestration evidence, not production or model-quality evidence. |
 | What happened in the latest calibration? | [D5.8 Gemini 3.8 report](../artifacts/grounding-v5-d58-gemini38-calibration/report.md), [verification receipt](../artifacts/grounding-v5-d58-gemini38-calibration/verification.json), and [decision package](../plans/grounding-v5-d58-final-design.md) retain the cohort closed by its infrastructure-failure stop rule, missing assignments, account reconciliation, and remaining approval boundaries. No final evaluation approval is claimed. |
 | What happened in the D5.6 supplemental calibration? | [Generated supplement](../artifacts/grounding-v5-calibration-supplement/report.md) publishes Mistral and the matched Qwen stateful/stateless pair, with task outcomes, accounting, source hashes, and local audit receipts. Public verification reproduces the derivative without restricted journals. |
@@ -34,6 +35,7 @@ evidence or turn calibration into a benchmark score.
 
 ## Reproduce and review
 
+Use the [grounding verification guide](grounding-verification.md) for the read-only headline check.
 Follow the [reproduction guide](reproduction.md) for local checks, capture, and optional OSWorld.
 Use the [public release checklist](../plans/public-release-checklist.md) for inventory and privacy
 review. Public wording, publication approval, and any new milestone verdict remain owner decisions.
