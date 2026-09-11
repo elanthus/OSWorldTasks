@@ -12,6 +12,7 @@ from typing import Any
 import pytest
 
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
+from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_calibration import MemoryCalibrationLedger, run_episode, summarize
@@ -278,6 +279,7 @@ def test_execution_amendment_cannot_change_paid_scope() -> None:
         "driver_code_revision": "new-revision",
     }
     amendment = execution_amendment(original, current)
+    validate_credential_free(amendment)
     assert amendment["original_execution_plan_digest"] == PLAN
     assert amendment["driver_source_digest"] == "new-source"
     for field, value in (("aggregate_ceiling_usd", "10.00"), ("jobs", [5113])):

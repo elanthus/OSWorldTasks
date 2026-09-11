@@ -324,7 +324,7 @@ def execution_amendment(original: dict[str, Any], current: dict[str, Any]) -> di
         "driver_source_digest": current["driver_source_digest"],
         "driver_code_revision": current["driver_code_revision"],
         "reason": "Correct the canonical_provider_response object-role check in post-episode auditing; preserve every request, outcome and unknown-charge hold already recorded",
-        "authorization_scope": "implementation repair within the owner's approved full run; no change to model policies, task assignments, retry rules or shared USD 5 cap",
+        "approval_scope": "implementation repair within the owner's approved full run; no change to model policies, task assignments, retry rules or shared USD 5 cap",
     }
     return {**value, "amendment_digest": content_digest(value)}
 
