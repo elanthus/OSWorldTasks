@@ -315,6 +315,14 @@ MISTRAL_STATEFUL_CALIBRATION = replace(
     MISTRAL_STATEFUL_SMOKE,
     slot="C-mistral-small-4-stateful-v1-calibration",
 )
+MISTRAL_STATEFUL_CALIBRATION_RETRY = replace(
+    MISTRAL_STATEFUL_CALIBRATION,
+    slot="C-mistral-small-4-stateful-v2-calibration",
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
+    request_deadline_seconds=210.0,
+)
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
     model="z-ai/glm-5.3-flash",

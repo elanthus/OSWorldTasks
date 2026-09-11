@@ -12,6 +12,7 @@ from pixelgym.grounding.v5.panel_policy import (
     LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
     MISTRAL_STATEFUL_CALIBRATION,
+    MISTRAL_STATEFUL_CALIBRATION_RETRY,
     MISTRAL_STATEFUL_SMOKE,
     build_panel_policy_manifest,
 )
@@ -27,10 +28,13 @@ def build_slot_c_plan(
     maximum_spend_usd: str,
     output_directory: str,
     candidate: Literal["vertex", "mistral"] = "vertex",
+    generation: Literal["v1", "v2"] = "v1",
 ) -> CalibrationPlan:
     """Allocate probes or Mistral calibration after verifying reviewed smoke evidence."""
 
     calibration = phase == "calibration" and candidate == "mistral"
+    if generation not in {"v1", "v2"} or (generation == "v2" and not calibration):
+        raise ValueError("v2 is available only for Mistral calibration")
     if phase not in {"smoke", "diagnostic"} and not calibration:
         raise ValueError("only smoke and diagnostic phases are supported; calibration is blocked")
     smoke = phase == "smoke"
@@ -40,6 +44,8 @@ def build_slot_c_plan(
         if not smoke and not calibration:
             raise ValueError("Mistral supports only smoke and reviewed calibration")
         config = MISTRAL_STATEFUL_CALIBRATION if calibration else MISTRAL_STATEFUL_SMOKE
+        if generation == "v2":
+            config = MISTRAL_STATEFUL_CALIBRATION_RETRY
         label = "Mistral Small 4 Mistral"
     elif candidate != "vertex":
         raise ValueError("unknown Slot C candidate")

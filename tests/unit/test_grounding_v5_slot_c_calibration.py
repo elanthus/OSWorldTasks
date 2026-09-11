@@ -138,3 +138,92 @@ def test_changed_policy_requires_another_smoke(reviewed_root, monkeypatch):
     )
     with pytest.raises(ValueError, match='policy contract differs'):
         verify_mistral_smoke_review(reviewed_root)
+
+
+def test_v2_plan_preserves_request_and_bounds_retries(reviewed_root):
+    from pixelgym.grounding.v5.panel_policy import (
+        MISTRAL_STATEFUL_CALIBRATION_RETRY,
+        OpenRouterPanelPolicy,
+    )
+    old = MISTRAL_STATEFUL_CALIBRATION
+    new = MISTRAL_STATEFUL_CALIBRATION_RETRY
+    assert old.max_model_attempts_per_action == 1
+    assert new.max_model_attempts_per_action == 4
+    assert new.bounded_retry_budget == 3
+    assert new.request_deadline_seconds == 210
+    requests = [OpenRouterPanelPolicy(c).build_request(
+        OpenRouterPanelPolicy(c).reset('task'), bytes(1024 * 768 * 3),
+    ) for c in (old, new)]
+    assert requests[0] == requests[1]
+    p = build_slot_c_plan(
+        reviewed_root, code_revision='b' * 40, candidate='mistral', phase='calibration',
+        generation='v2', maximum_spend_usd='2', output_directory='artifacts/v2-fixture',
+    )
+    assert p.budgets.caps.environment_action_cap == 1431
+    assert p.budgets.caps.provider_wire_request_cap == 5724
+    assert p.retry_breaker.max_bounded_retries_per_action == 3
+    assert {a.slot for a in p.assignments} == {new.slot}
+    assert p.outputs.resume_mode == 'forbid'
+
+
+@pytest.mark.parametrize('failures', [1, 4])
+def test_mistral_ssl_retry_preserves_spend_and_attempt_limits(reviewed_root, tmp_path, failures):
+    import io
+    import ssl
+    from decimal import Decimal
+
+    from pixelgym.grounding.v5.journal import V5AttemptJournal
+    from pixelgym.grounding.v5.panel_policy import (
+        MISTRAL_STATEFUL_CALIBRATION_RETRY,
+        OpenRouterPanelTransport,
+    )
+    from pixelgym.grounding.v5.provider_adapters import OpenRouterHttpAdapter
+
+    p = build_slot_c_plan(
+        reviewed_root, code_revision='b' * 40, candidate='mistral', phase='calibration',
+        generation='v2', maximum_spend_usd='2', output_directory='artifacts/v2-fixture',
+    )
+    calls = []
+    clock = [0.0]
+    sleeps = []
+
+    def urlopen(request, **kwargs):
+        calls.append(request)
+        if len(calls) <= failures:
+            raise ssl.SSLError('fixture transport interruption')
+        return io.BytesIO(json.dumps({
+            'id': 'fixture', 'model': MISTRAL_STATEFUL_CALIBRATION_RETRY.model,
+            'provider': 'Mistral',
+            'choices': [{'message': {'content': '{"action_type":0,"x":0,"y":0,"key":0}'},
+                         'finish_reason': 'stop'}],
+            'usage': {'prompt_tokens': 100, 'completion_tokens': 10, 'cost': 0.000021},
+        }).encode())
+
+    def sleep(seconds):
+        sleeps.append(seconds)
+        clock[0] += seconds
+
+    adapter = OpenRouterHttpAdapter(reviewed_root, p)
+    config = MISTRAL_STATEFUL_CALIBRATION_RETRY
+    adapter._transports[config.slot] = OpenRouterPanelTransport(
+        config, ledger=adapter.ledger, environment={'OPENROUTER_API_KEY': 'fixture'},
+        urlopen=urlopen, monotonic=lambda: clock[0], sleep=sleep,
+    )
+    journal = V5AttemptJournal(tmp_path / 'retry.sqlite')
+    try:
+        adapter.bind_journal(journal)
+        result = adapter.execute(
+            replace(p.assignments[0], action_limit=1), journal=journal, approved_caps=p.budgets.caps,
+        )
+        recovered = failures == 1
+        assert result.classification == ('pilot_action_limit' if recovered else 'infrastructure_failure')
+        assert result.model_attempts == (2 if recovered else 4)
+        assert result.environment_actions == int(recovered)
+        assert len(calls) == (2 if recovered else 4)
+        assert sleeps == ([15.0] if recovered else [15.0, 30.0, 60.0])
+        assert adapter.ledger.unknown_reservation_usd == config.request_maximum_usd * failures
+        assert adapter.ledger.spent_usd == (Decimal('0.000021') if recovered else Decimal(0))
+        assert sum(e.kind == 'dispatch_committed' for e in journal.events()) == int(recovered)
+    finally:
+        adapter.close()
+        journal.close()

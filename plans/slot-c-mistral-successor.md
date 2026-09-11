@@ -4,8 +4,9 @@ The owner selected Mistral Small 4 on 2026-09-10 after the Llama Scout DeepInfra
 on rate limits and both Vertex probes returned HTTP 404. This replaces the planned Slot C
 model; it does not complete Slot C or approve paid execution. Keep all predecessor evidence
 separate. The [Vertex procedure](slot-c-vertex-successor.md) records its historical configuration.
-The separately approved Mistral smoke is now complete and technically audited. The owner requested
-full calibration; the full run still needs approval of its exact plan and spend ceiling.
+The separately approved Mistral smoke is complete and technically audited. The approved first
+full calibration stopped on an SSL transport error. A fresh successor with bounded retries is
+prepared below; its exact plan and spend ceiling require new approval.
 
 ## Frozen smoke configuration
 
@@ -101,3 +102,43 @@ Obtain the owner's exact plan-digest approval before execution. The consumed smo
 not reusable. Preserve failures and invalid outputs, stop under the plan's hard breakers, close
 the adapter and journal, and audit stored evidence before reporting the full denominator and
 item/family diagnostics. Vertex calibration and all confirmatory planning remain unavailable.
+
+## Stopped v1 calibration and bounded-retry successor
+
+The approved v1 plan `sha256:7ffc25e9831bb3ace0ca5f7b557cf5adde2b8e367dcaa04a84616a2ac6bd1f45`
+ran at revision `3168deca036177d0df12477d14a0b3b581c3692e`. It stopped on call forty with
+`SSLError`: one task reached its action limit, one was interrupted, and forty-eight were not
+attempted. Thirty-nine responses parsed and dispatched valid actions. Known spend was
+$0.01480707, with $0.00225810 reserved for the uncertain call. The full summary-to-journal audit
+validated 402 events and 267 objects; all forty reconstructed request digests matched. The
+adapter and journal closed. Its local evidence prefix is
+`artifacts/grounding-v5-slot-c-mistral-calibration-`; keep these files immutable and separate.
+The retained error class does not establish the SSL failure's underlying cause.
+
+The proposed `C-mistral-small-4-stateful-v2-calibration` keeps the same model, provider, prompts,
+reasoning setting, schema, and request-price ceiling. It changes the retry policy to at most four
+attempts per action, sharing three retries across the existing eligible rate-limit, zero-completion,
+and transient transport-fault classifications. Default backoff is 15/30/60 seconds, with bounded
+provider hints retaining precedence. Invalid actions and terminal provider errors are not retried.
+Its 210-second runner deadline leaves margin above the transport's 180-second timeout.
+
+This is an explicit retry/deadline intervention, not a matched comparison with v1. It reuses the
+reviewed smoke's model/request compatibility evidence; fixture tests separately exercise recovery
+from an SSL fault, retained unknown-charge accounting, single action dispatch, and exhaustion at
+four attempts. No new paid calls are made during that testing.
+
+The fresh fifty-task run permits at most 1,431 actions, 5,724 model/wire calls, zero control calls,
+and a proposed new $2.00 cap including unknown reservations. It starts every task fresh, never
+resumes the interrupted v1 task, and never combines v1 outcomes into its denominator.
+
+```bash
+.venv/bin/python scripts/prepare_grounding_v5_slot_c.py \
+  --candidate mistral --phase calibration --generation v2 --maximum-spend-usd 2.00 \
+  --run-output artifacts/grounding-v5-slot-c-mistral-calibration-v2-run \
+  --output artifacts/grounding-v5-slot-c-mistral-calibration-v2-plan.json
+.venv/bin/python scripts/run_grounding_v5_calibration.py --validate-only \
+  --plan artifacts/grounding-v5-slot-c-mistral-calibration-v2-plan.json
+```
+
+Only the exact v2 approval may authorize this successor. The first calibration's approval is
+consumed; neither approval covers confirmatory calls.

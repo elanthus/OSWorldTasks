@@ -16,6 +16,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("smoke", "diagnostic", "calibration"), required=True)
     parser.add_argument("--candidate", choices=("vertex", "mistral"), default="vertex")
+    parser.add_argument("--generation", choices=("v1", "v2"), default="v1")
     parser.add_argument("--maximum-spend-usd", required=True)
     parser.add_argument("--run-output", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -36,6 +37,7 @@ def main() -> None:
         maximum_spend_usd=args.maximum_spend_usd,
         output_directory=args.run_output,
         candidate=args.candidate,
+        generation=args.generation,
     )
     if (root / plan.outputs.directory).exists():
         raise FileExistsError("Slot C plans require a fresh run output directory")
