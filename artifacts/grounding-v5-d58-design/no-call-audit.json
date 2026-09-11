@@ -1,0 +1,1754 @@
+{
+  "confirmatory_tasks_generated_or_evaluated": 0,
+  "existing_confirmatory_manifest": {
+    "bands": {
+      "ceiling_probe": 18,
+      "frontier": 60,
+      "regression_canary": 18
+    },
+    "manifest_digest": "sha256:bad1d5034badddad0ee8019ab3e149c76acfdadd41caf642ee371d21c6f66813",
+    "subsets": {
+      "primary": {
+        "environment_action_cap_one_trial": 2707,
+        "episodes": 96,
+        "logical_clusters": 72,
+        "seeds": [
+          6000,
+          6001,
+          6002,
+          6003,
+          6004,
+          6005,
+          6006,
+          6007,
+          6008,
+          6009,
+          6010,
+          6011,
+          6012,
+          6013,
+          6014,
+          6015,
+          6016,
+          6017,
+          6018,
+          6019,
+          6020,
+          6021,
+          6022,
+          6023,
+          6024,
+          6025,
+          6026,
+          6027,
+          6028,
+          6029,
+          6030,
+          6031,
+          6032,
+          6033,
+          6034,
+          6035,
+          6036,
+          6037,
+          6038,
+          6039,
+          6040,
+          6041,
+          6042,
+          6043,
+          6044,
+          6045,
+          6046,
+          6047,
+          6048,
+          6049,
+          6050,
+          6051,
+          6052,
+          6053,
+          6054,
+          6055,
+          6056,
+          6057,
+          6058,
+          6059,
+          6060,
+          6061,
+          6062,
+          6063,
+          6064,
+          6065,
+          6066,
+          6067,
+          6068,
+          6069,
+          6070,
+          6071,
+          6072,
+          6073,
+          6074,
+          6075,
+          6076,
+          6077,
+          6078,
+          6079,
+          6080,
+          6081,
+          6082,
+          6083,
+          6084,
+          6085,
+          6086,
+          6087,
+          6088,
+          6089,
+          6090,
+          6091,
+          6092,
+          6093,
+          6094,
+          6095
+        ]
+      },
+      "reliability_subset": {
+        "environment_action_cap_one_trial": 314,
+        "episodes": 12,
+        "logical_clusters": 6,
+        "seeds": [
+          6000,
+          6001,
+          6016,
+          6017,
+          6032,
+          6033,
+          6048,
+          6049,
+          6064,
+          6065,
+          6080,
+          6081
+        ]
+      },
+      "stateless_ablation": {
+        "environment_action_cap_one_trial": 652,
+        "episodes": 24,
+        "logical_clusters": 12,
+        "seeds": [
+          6000,
+          6001,
+          6002,
+          6003,
+          6016,
+          6017,
+          6018,
+          6019,
+          6032,
+          6033,
+          6034,
+          6035,
+          6048,
+          6049,
+          6050,
+          6051,
+          6064,
+          6065,
+          6066,
+          6067,
+          6080,
+          6081,
+          6082,
+          6083
+        ]
+      }
+    }
+  },
+  "power_method": {
+    "alpha": 0.05,
+    "assumption": "Independent paired logical-task outcomes; q is hypothetical, not estimated from Qwen.",
+    "minimum_relevant_absolute_difference": 0.2,
+    "not_established": "Power for episode-weighted estimates with correlated twins, new policies, or a revised generator.",
+    "target_power": 0.8,
+    "test": "two-sided exact conditional McNemar; prospective unconditional power"
+  },
+  "power_scenarios": [
+    {
+      "discordance": 0.2,
+      "first_n_with_80_percent_power_in_6_to_180": 39,
+      "power_by_independent_units": {
+        "12": 0.019405279232000014,
+        "120": 0.9999994761226124,
+        "24": 0.34410756771518364,
+        "72": 0.9980208710391907,
+        "96": 0.9999625961328986
+      }
+    },
+    {
+      "discordance": 0.3,
+      "first_n_with_80_percent_power_in_6_to_180": 61,
+      "power_by_independent_units": {
+        "12": 0.037385045028882305,
+        "120": 0.9851313578759684,
+        "24": 0.28346842109907483,
+        "72": 0.8735684311982724,
+        "96": 0.9537907835613144
+      }
+    },
+    {
+      "discordance": 0.4,
+      "first_n_with_80_percent_power_in_6_to_180": 84,
+      "power_by_independent_units": {
+        "12": 0.053571854926000056,
+        "120": 0.934352173786965,
+        "24": 0.2287709581096534,
+        "72": 0.7272169323030272,
+        "96": 0.862108067687633
+      }
+    },
+    {
+      "discordance": 0.5,
+      "first_n_with_80_percent_power_in_6_to_180": 103,
+      "power_by_independent_units": {
+        "12": 0.06299721947961667,
+        "120": 0.8622340365098167,
+        "24": 0.19014374208821833,
+        "72": 0.6226947122589862,
+        "96": 0.7706918224492763
+      }
+    }
+  ],
+  "power_self_checks": 5,
+  "provider_calls": 0,
+  "qwen_published_receipt": {
+    "attempted": 100,
+    "decision_exposure": [
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-325495ed3572932e13e71595"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-325495ed3572932e13e71595"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-321776e3a5121a93c5651938"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-321776e3a5121a93c5651938"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-33b66723d47aace8c622a202"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-33b66723d47aace8c622a202"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+      }
+    ],
+    "limitation": "Stored audit receipt; restricted journal was not independently reaudited.",
+    "successful": 0
+  },
+  "schema_version": "pixelgym-v5-d58-design-audit-v1",
+  "source_sha256": {
+    "artifacts/grounding-v5-calibration-supplement/qwen-pair.json": "sha256:07b3d9374d7035cac00bcd3bb77e0ff3b9b5dc623c4c74178314a3bb8e46fda8",
+    "artifacts/grounding-v5-d58-design/audit.py": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0",
+    "artifacts/grounding-v5-manifests/v2/calibration-d56.json": "sha256:a972f9bd8f628e18664ba0ebdc04c3fa7971a52e7236489bcca9fa854f72df0c",
+    "artifacts/grounding-v5-manifests/v2/confirmatory.json": "sha256:28ac00143c6149e13cbc3ce90ea7fa5e043724885561df592b7ee872d8c2fd97",
+    "pixelgym/grounding/v5/contracts.py": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+    "pixelgym/grounding/v5/generator.py": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+    "pixelgym/grounding/v5/panel_policy.py": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6",
+    "pixelgym/grounding/v5/planning.py": "sha256:9e7fd21203a9488f4cd826aa80f07eb4d2d735e371b8b01edd58152c442a557a",
+    "pixelgym/grounding/v5/policies.py": "sha256:91ea1f05670ae54205637fa09a32579f870f082e9f75d5a4f626bef8e7cce7e4",
+    "pixelgym/grounding/v5/seeds.py": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d"
+  },
+  "status": "decision_support_only_not_a_human_gate_or_execution_plan",
+  "structural_audit": {
+    "correct_control_zero_based_positions": {
+      "base": {
+        "0": 688
+      },
+      "twin_a": {
+        "0": 118
+      },
+      "twin_b": {
+        "1": 118
+      }
+    },
+    "duplicate_label_seeds_in_current_d56": [
+      5119,
+      5126,
+      5129,
+      5144,
+      5145,
+      5146
+    ],
+    "duplicate_visible_control_labels": [
+      {
+        "seed": 5119,
+        "stage": "stage-05"
+      },
+      {
+        "seed": 5126,
+        "stage": "stage-05"
+      },
+      {
+        "seed": 5129,
+        "stage": "stage-05"
+      },
+      {
+        "seed": 5144,
+        "stage": "stage-05"
+      },
+      {
+        "seed": 5145,
+        "stage": "stage-05"
+      },
+      {
+        "seed": 5146,
+        "stage": "stage-05"
+      }
+    ],
+    "limitation": "Privileged structural inspection; not a pixel-only policy rollout.",
+    "task_count": 92,
+    "tasks": [
+      {
+        "seed": 5000,
+        "task_id": "v5-c707ae8a64e33f631d6fb210",
+        "variant": "base"
+      },
+      {
+        "seed": 5001,
+        "task_id": "v5-52e2feb5840167aacea7f806",
+        "variant": "base"
+      },
+      {
+        "seed": 5002,
+        "task_id": "v5-64ba7d452b3c8d3e43d1d30e",
+        "variant": "base"
+      },
+      {
+        "seed": 5003,
+        "task_id": "v5-e30f697186a358a1dfda14e7",
+        "variant": "base"
+      },
+      {
+        "seed": 5004,
+        "task_id": "v5-8fae6712750a2c76f9639709",
+        "variant": "base"
+      },
+      {
+        "seed": 5005,
+        "task_id": "v5-2671abd9524b2b359e43ba5b",
+        "variant": "base"
+      },
+      {
+        "seed": 5006,
+        "task_id": "v5-3d8efbe34dec1b95afc98079",
+        "variant": "base"
+      },
+      {
+        "seed": 5007,
+        "task_id": "v5-696a6c775c00bddf1e9c19bd",
+        "variant": "base"
+      },
+      {
+        "seed": 5008,
+        "task_id": "v5-170947ccfd1c11252dcd4434",
+        "variant": "base"
+      },
+      {
+        "seed": 5009,
+        "task_id": "v5-1a195e9db7342d96f758b045",
+        "variant": "base"
+      },
+      {
+        "seed": 5010,
+        "task_id": "v5-bf8d93604c1ba0da75b32ca8",
+        "variant": "base"
+      },
+      {
+        "seed": 5011,
+        "task_id": "v5-7efa3d763209becdeab73ecf",
+        "variant": "base"
+      },
+      {
+        "seed": 5012,
+        "task_id": "v5-61a28982248bdf76ded018a4",
+        "variant": "base"
+      },
+      {
+        "seed": 5013,
+        "task_id": "v5-0b29479df7182380c9baeddd",
+        "variant": "base"
+      },
+      {
+        "seed": 5014,
+        "task_id": "v5-649a932c5b9fd0a99c5f0ff3",
+        "variant": "base"
+      },
+      {
+        "seed": 5015,
+        "task_id": "v5-9327827d272817a185d6f5c5",
+        "variant": "base"
+      },
+      {
+        "seed": 5016,
+        "task_id": "v5-5df6a259e994116cc84b799d",
+        "variant": "base"
+      },
+      {
+        "seed": 5017,
+        "task_id": "v5-8325102fca2a892a2e3e61d1",
+        "variant": "base"
+      },
+      {
+        "seed": 5018,
+        "task_id": "v5-69df97b8e47727553d145737",
+        "variant": "base"
+      },
+      {
+        "seed": 5019,
+        "task_id": "v5-d330b1ca23bb709c2ffcd5e4",
+        "variant": "base"
+      },
+      {
+        "seed": 5020,
+        "task_id": "v5-e507cedbb4f7968f78b53e79",
+        "variant": "base"
+      },
+      {
+        "seed": 5021,
+        "task_id": "v5-170e217a9e71ab5fa1009b69",
+        "variant": "base"
+      },
+      {
+        "seed": 5022,
+        "task_id": "v5-57e381c75b79ae8985dbbcdb",
+        "variant": "base"
+      },
+      {
+        "seed": 5023,
+        "task_id": "v5-608818ecd1effc9b1e53ae6b",
+        "variant": "base"
+      },
+      {
+        "seed": 5100,
+        "task_id": "v5-4824abc5a01d909661fc2943",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5101,
+        "task_id": "v5-c73a8c6f526806dd0108fd56",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5102,
+        "task_id": "v5-b73306ab8214ef62079807e9",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5103,
+        "task_id": "v5-cdd002542e6961e463e4a22f",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5104,
+        "task_id": "v5-5bc4b1ad7d6e4b2765cea217",
+        "variant": "base"
+      },
+      {
+        "seed": 5105,
+        "task_id": "v5-f7a46ffc516effdec1ed0225",
+        "variant": "base"
+      },
+      {
+        "seed": 5106,
+        "task_id": "v5-748a1881fa7a31d4eb3b9c8b",
+        "variant": "base"
+      },
+      {
+        "seed": 5107,
+        "task_id": "v5-1ffd5dfc3a1b15ce6c96d1d3",
+        "variant": "base"
+      },
+      {
+        "seed": 5108,
+        "task_id": "v5-ee25bfd4a0ba4318bb52e6f6",
+        "variant": "base"
+      },
+      {
+        "seed": 5109,
+        "task_id": "v5-aed9a966354eac13d2b9c95b",
+        "variant": "base"
+      },
+      {
+        "seed": 5110,
+        "task_id": "v5-d6e956af18afbb1a00091f4c",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5111,
+        "task_id": "v5-844bc5a6365a1090f815c575",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5112,
+        "task_id": "v5-bfe5707f6b44202a0e7f493e",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5113,
+        "task_id": "v5-bd12a958c63d3d4a642f2388",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5114,
+        "task_id": "v5-d988bea3daaaee44bd4a66dd",
+        "variant": "base"
+      },
+      {
+        "seed": 5115,
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac",
+        "variant": "base"
+      },
+      {
+        "seed": 5116,
+        "task_id": "v5-2dd66e920cec66fc7baa0340",
+        "variant": "base"
+      },
+      {
+        "seed": 5117,
+        "task_id": "v5-c8f7b5bf10a2be15e395f872",
+        "variant": "base"
+      },
+      {
+        "seed": 5118,
+        "task_id": "v5-f30e93f386d30cede2b72ce0",
+        "variant": "base"
+      },
+      {
+        "seed": 5119,
+        "task_id": "v5-0aafe18062befe07f24d8cab",
+        "variant": "base"
+      },
+      {
+        "seed": 5120,
+        "task_id": "v5-0c003edeb6d5f8e17aaa6444",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5121,
+        "task_id": "v5-218f23867c9546478a3c4108",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5122,
+        "task_id": "v5-8b44ff7f55397462e532374f",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5123,
+        "task_id": "v5-a3b213b43f485af0c0e40c16",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5124,
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463",
+        "variant": "base"
+      },
+      {
+        "seed": 5125,
+        "task_id": "v5-cad52e15b441cb87019ae777",
+        "variant": "base"
+      },
+      {
+        "seed": 5126,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384",
+        "variant": "base"
+      },
+      {
+        "seed": 5127,
+        "task_id": "v5-29efce8f49cbc9384485d87b",
+        "variant": "base"
+      },
+      {
+        "seed": 5128,
+        "task_id": "v5-7e64b6bc5406e56f2c674749",
+        "variant": "base"
+      },
+      {
+        "seed": 5129,
+        "task_id": "v5-da795237a0d228c30efffdfa",
+        "variant": "base"
+      },
+      {
+        "seed": 5130,
+        "task_id": "v5-ef0ce7557279ac795012f4ac",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5131,
+        "task_id": "v5-737e9770eae31f2a8bb62ec2",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5132,
+        "task_id": "v5-988e5eb5bd2f5d95773297ba",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5133,
+        "task_id": "v5-3d7d660ccc1f9499de3def52",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5134,
+        "task_id": "v5-f7334ee5d914b46715d56299",
+        "variant": "base"
+      },
+      {
+        "seed": 5135,
+        "task_id": "v5-325495ed3572932e13e71595",
+        "variant": "base"
+      },
+      {
+        "seed": 5136,
+        "task_id": "v5-6f12521c75f36647ae21ba6a",
+        "variant": "base"
+      },
+      {
+        "seed": 5137,
+        "task_id": "v5-1a8a343b209ef6849bca6d5e",
+        "variant": "base"
+      },
+      {
+        "seed": 5138,
+        "task_id": "v5-7c84fe9903d32bc16a62075a",
+        "variant": "base"
+      },
+      {
+        "seed": 5139,
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8",
+        "variant": "base"
+      },
+      {
+        "seed": 5140,
+        "task_id": "v5-9fdc730327302d08e2e94fcd",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5141,
+        "task_id": "v5-321776e3a5121a93c5651938",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5142,
+        "task_id": "v5-d439dd1631040477ef5a907b",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5143,
+        "task_id": "v5-5852db880cf4dbdcaaf254bf",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5144,
+        "task_id": "v5-5044beb30209bdf36a0a2d12",
+        "variant": "base"
+      },
+      {
+        "seed": 5145,
+        "task_id": "v5-260bef26ef62a0d66cae0449",
+        "variant": "base"
+      },
+      {
+        "seed": 5146,
+        "task_id": "v5-d98bd8f9f5ba030ec79201db",
+        "variant": "base"
+      },
+      {
+        "seed": 5147,
+        "task_id": "v5-ae6332844ec7190db0b9bd18",
+        "variant": "base"
+      },
+      {
+        "seed": 5148,
+        "task_id": "v5-dd7009a65e1bff896173378a",
+        "variant": "base"
+      },
+      {
+        "seed": 5149,
+        "task_id": "v5-48860ad9b285908aa000a26b",
+        "variant": "base"
+      },
+      {
+        "seed": 5150,
+        "task_id": "v5-0f4e94641ed16f0c4fdc80e1",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5151,
+        "task_id": "v5-25572b1551ed10079d842b8b",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5152,
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5153,
+        "task_id": "v5-e2e262766fce6bc662d505ff",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5154,
+        "task_id": "v5-b9c743e4f89345b3397ffa1e",
+        "variant": "base"
+      },
+      {
+        "seed": 5155,
+        "task_id": "v5-12d672051d0ecd6ff95c89ce",
+        "variant": "base"
+      },
+      {
+        "seed": 5156,
+        "task_id": "v5-ebcf125c0c5332c245a09f0e",
+        "variant": "base"
+      },
+      {
+        "seed": 5157,
+        "task_id": "v5-46c7d567496ada92c96cee32",
+        "variant": "base"
+      },
+      {
+        "seed": 5158,
+        "task_id": "v5-af3926afbbb9f3ad94f668a0",
+        "variant": "base"
+      },
+      {
+        "seed": 5159,
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec",
+        "variant": "base"
+      },
+      {
+        "seed": 5160,
+        "task_id": "v5-5eb145d169ebee7b66c83a99",
+        "variant": "twin_a"
+      },
+      {
+        "seed": 5161,
+        "task_id": "v5-87b2f8109114f0dbf237649e",
+        "variant": "twin_b"
+      },
+      {
+        "seed": 5162,
+        "task_id": "v5-33b66723d47aace8c622a202",
+        "variant": "base"
+      },
+      {
+        "seed": 5163,
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a",
+        "variant": "base"
+      },
+      {
+        "seed": 5164,
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a",
+        "variant": "base"
+      },
+      {
+        "seed": 5165,
+        "task_id": "v5-2efb29a2ca94ec51c81c5018",
+        "variant": "base"
+      },
+      {
+        "seed": 5166,
+        "task_id": "v5-289ad343e824d3ed28d36cbd",
+        "variant": "base"
+      },
+      {
+        "seed": 5167,
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26",
+        "variant": "base"
+      }
+    ]
+  }
+}
