@@ -82,6 +82,7 @@ jobs:
           python -m pytest -q
           tests/integration/test_vendor_form_server_contract.py
           tests/integration/test_wheel_packaging.py
+          tests/integration/test_grounding_v5_curl_wire.py
 
   fast-suite:
     name: Fast suite

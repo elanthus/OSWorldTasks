@@ -1,6 +1,13 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: the owner raised aggregate authorization to USD 28 and approved the 95 untouched assignments. That continuation also stopped at five consecutive infrastructure failures. The focus-repaired cohort now has 10/100 attempted assignments; final evaluation freeze remains pending.**
+**Status: the curl transport and bounded-retry repair completed its live diagnostic at 10/10 logical actions with no network failures. The focus-repaired calibration remains at 10/100 attempted assignments and 90 unrun under the USD 28 cap; final evaluation freeze remains pending.**
+
+The [transport repair and diagnostic](grounding-v5-d58-reliable-transport.md) adds
+request-local curl processes, complete server-directed cooldowns, and up to two
+observable retries for transient failures. Its ten calls cost USD 0.099531750 and
+added no unresolved holds. Aggregate confirmed charges are USD 6.333133275 plus
+USD 1.69356555 in carried unknown holds. No model call remains in flight. The
+diagnostic used supplied states; it adds no end-to-end calibration observations.
 
 The [continuation report](../artifacts/grounding-v5-d58-focus-continuation/report.md)
 retains the original five failures and adds five newly attempted episodes. Each mode

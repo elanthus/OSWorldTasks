@@ -1,0 +1,240 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "8.026698825",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "6.333133275",
+    "unknown_charge_outcomes": 35,
+    "unknown_reservation_usd": "1.69356555",
+    "wire_requests_sent": 1065
+  },
+  "conditions": [
+    {
+      "action_dispatched": true,
+      "case_id": "case-00",
+      "classification": "dispatched",
+      "mode": "history",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-00-history"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-00",
+      "classification": "dispatched",
+      "mode": "stateless",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-00-stateless"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-02",
+      "classification": "dispatched",
+      "mode": "stateless",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-02-stateless"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-02",
+      "classification": "dispatched",
+      "mode": "history",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-02-history"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-06",
+      "classification": "dispatched",
+      "mode": "history",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-06-history"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-06",
+      "classification": "dispatched",
+      "mode": "stateless",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-06-stateless"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-07",
+      "classification": "dispatched",
+      "mode": "stateless",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-07-stateless"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-07",
+      "classification": "dispatched",
+      "mode": "history",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-07-history"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-09",
+      "classification": "dispatched",
+      "mode": "history",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-09-history"
+    },
+    {
+      "action_dispatched": true,
+      "case_id": "case-09",
+      "classification": "dispatched",
+      "mode": "stateless",
+      "model_attempts": 1,
+      "trial_id": "d58-curl-reliability-diagnostic-v1-case-09-stateless"
+    }
+  ],
+  "dispatched": 10,
+  "execution_plan_digest": "sha256:a78efe4f8394b9c97ce9e8d32b64e2ec0b5ba7f8ba791c37578208f7f2817b7b",
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:cc25b5a8953bb552d345655500511f25cdcc5b179298f711c41f750ef9d30a7f",
+    "event_count": 11806,
+    "object_count": 4180,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "new_known_spend_usd": "0.099531750",
+  "new_unknown_holds_usd": "0E-8",
+  "new_wire_requests": 10,
+  "schema_version": "pixelgym-d58-reliable-diagnostic-summary-v1",
+  "stop_reason": "all_conditions_recorded",
+  "transport_idle_at_close": true,
+  "transport_receipts": [
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.042345,
+        "http_code": 200,
+        "tls_seconds": 0.062532,
+        "total_seconds": 21.483862,
+        "uploaded_bytes": 101055
+      },
+      "reservation_id": "sha256:3d90752f64d7a22439b1dc508c9a9e89480b7e61dc6dcb7c3a8060790fa72c56",
+      "response_envelope_digest": "sha256:dc4565e8440b5a15c6a4144ea90a8661d005a37cb7df89ab4efe247e0a935c87"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.019155,
+        "http_code": 200,
+        "tls_seconds": 0.039612,
+        "total_seconds": 5.357217,
+        "uploaded_bytes": 48306
+      },
+      "reservation_id": "sha256:bf6ec9e9db60a69de283d8347291e77d9a0af121c7cc2b78873ea39a61686185",
+      "response_envelope_digest": "sha256:de5a032e03686ceb060eb80c51a2edd973d746b0b167f5e62cc5de79aa6b5190"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.014367,
+        "http_code": 200,
+        "tls_seconds": 0.041509,
+        "total_seconds": 4.555638,
+        "uploaded_bytes": 50038
+      },
+      "reservation_id": "sha256:64dcf613dde099b2deb8a27513ae38d59484971b3492c9ace9f97c8e3c5002d0",
+      "response_envelope_digest": "sha256:1c8188700a5bb9b6f993358eb9ceb4a567a0ca7caebc00d2f54c8851fad98c08"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.022824,
+        "http_code": 200,
+        "tls_seconds": 0.038422,
+        "total_seconds": 3.801763,
+        "uploaded_bytes": 148588
+      },
+      "reservation_id": "sha256:59fc9861eedfadd14bf281d64b59d4cbcea44ee0ac637aea0bb5e9499fad7a41",
+      "response_envelope_digest": "sha256:171835bb713749ee61b30bda7882fddfcebb88b1c18ae10997b941a64dc411f1"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.013398,
+        "http_code": 200,
+        "tls_seconds": 0.037526,
+        "total_seconds": 7.878911,
+        "uploaded_bytes": 769025
+      },
+      "reservation_id": "sha256:40e3a761009707dd331d33e430375b2e9d04e9c797175623df235056b2b777ee",
+      "response_envelope_digest": "sha256:3066b2f33c3365ec92ff76e26e1e8a0c3a3c08e2a5146b370f9511b393b233a5"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.020982,
+        "http_code": 200,
+        "tls_seconds": 0.03771,
+        "total_seconds": 8.131808,
+        "uploaded_bytes": 55498
+      },
+      "reservation_id": "sha256:da7cc828d15d46aeeee0fdcf4d4ffa5489631943555391aa10354d6aebfa5375",
+      "response_envelope_digest": "sha256:1c7447d2b26f1e428fc9d957f73db713c248611a88644502f4065bec9d60dce7"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.015336,
+        "http_code": 200,
+        "tls_seconds": 0.040638,
+        "total_seconds": 11.053234,
+        "uploaded_bytes": 53596
+      },
+      "reservation_id": "sha256:dd28a36e2f2eff8860c1d12fac2dc03cdcaa248eaaa17e8c946a5b8a3fc9f3fd",
+      "response_envelope_digest": "sha256:97f7f1e5c5edfb8b4ec448fc023a50d9ba808e571a9ec8408df666f2cada4ada"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.015568,
+        "http_code": 200,
+        "tls_seconds": 0.037117,
+        "total_seconds": 12.03912,
+        "uploaded_bytes": 848557
+      },
+      "reservation_id": "sha256:e141a7d8ba5f278f4b4df57ac85791bd1a29d0426472e1bb598b8bc7202c972f",
+      "response_envelope_digest": "sha256:d1ecd8f11034678fa802a9d3d0e84feed339708f71119110b6ef4d6eecf15afe"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.026037,
+        "http_code": 200,
+        "tls_seconds": 0.044993,
+        "total_seconds": 11.641343,
+        "uploaded_bytes": 856919
+      },
+      "reservation_id": "sha256:aacf29711fc34e1bbeaf073d75af5e9b3644b09f6b4c07af5dafedcbab29ff84",
+      "response_envelope_digest": "sha256:b2cec71567ff7d49642185fbb944dcc7080fc0bd9c7d63394495093a15a74484"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.016118,
+        "http_code": 200,
+        "tls_seconds": 0.051755,
+        "total_seconds": 8.729136,
+        "uploaded_bytes": 54202
+      },
+      "reservation_id": "sha256:5293c565166ca382262a24b790fb62e6bb1d6567bc4fefdbe0fd9f30fe799a55",
+      "response_envelope_digest": "sha256:f296c0c98f7a323e7d6f71d5113efb9d136762193a95b94b9d6b88d06398cdff"
+    }
+  ]
+}

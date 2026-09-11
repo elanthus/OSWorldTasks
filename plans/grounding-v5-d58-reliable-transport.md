@@ -87,3 +87,33 @@ digests, the previous journal prefix, current prices, and curl identity. An
 interrupted or closed diagnostic cannot restart. Raw results determine whether
 all ten logical actions dispatched once within the caps; a small successful
 diagnostic would not guarantee reliability across the full calibration.
+
+## Recorded diagnostic outcome
+
+The [live diagnostic](../artifacts/grounding-v5-d58-reliable-diagnostic/report.md)
+completed all ten logical actions in ten sends. Every request returned a priced
+response and dispatched exactly one action. No TLS, rate-limit, or retry event
+occurred; fault-recovery behavior is covered by the offline fixtures. Request
+histories ranged from one to 18 screenshots. New confirmed charges were
+USD 0.099531750, with no new unknown holds. The transport was idle at closure and
+no request remained in flight.
+
+Aggregate confirmed charges are now USD 6.333133275, with USD 1.69356555 in carried
+unknown holds: USD 8.026698825 accounted against USD 28. The ten previous failed
+calibration assignments are unchanged and 90 remain unrun. The
+[read-only verifier](../artifacts/grounding-v5-d58-reliable-diagnostic/verification.json)
+reconstructed all ten requests, checked their individual bounds and settlements,
+and preserved the preceding 11,643-event journal prefix. The result supports using
+the repaired client in a versioned continuation; it does not locate the original
+TLS cause or establish full-calibration reliability.
+
+Closed packages retain their executed source revisions. To verify them after the
+working tree changes, this helper extracts those sources into a temporary tree,
+copies the stored public evidence, removes the model credential from the verifier
+environment, and invokes the read-only analysis there. It makes no provider calls
+and leaves the current checkout unchanged:
+
+```bash
+.venv/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-diagnostic
+.venv/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-diagnostic --journal .cache/d58-memory-calibration/aggregate.sqlite
+```

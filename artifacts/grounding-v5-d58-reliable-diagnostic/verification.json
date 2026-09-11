@@ -1,0 +1,28 @@
+{
+  "curl_error_counts": {},
+  "exactly_one_dispatch_per_completed_condition": true,
+  "execution_plan_digest": "sha256:a78efe4f8394b9c97ce9e8d32b64e2ec0b5ba7f8ba791c37578208f7f2817b7b",
+  "logical_conditions_verified": 10,
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "request_bodies_reconstructed": 10,
+  "request_image_counts": [
+    2,
+    1,
+    1,
+    3,
+    16,
+    1,
+    1,
+    18,
+    18,
+    1
+  ],
+  "schema_version": "pixelgym-d58-reliable-diagnostic-verification-v1",
+  "settlement_counts": {
+    "confirmed_positive": 10
+  },
+  "summary_digest": "sha256:ebe6494e845f3be4990d2a2d4963b2aa07bc7950569af3f1dcae6fea647fc348",
+  "wire_reservations_verified": 10
+}
