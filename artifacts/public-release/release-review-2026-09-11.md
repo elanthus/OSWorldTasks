@@ -2,11 +2,12 @@
 
 This is a release-review record, not a publication decision or milestone verdict. It preserves the
 owner's earlier decisions and limits without broadening them. The checked `origin/main` revision is
-`695fc4c75149579dde962dd3cf2f817b2c9ffdda` (tree
-`ff4b39b7877c8c25e7bcd43b55a62af6300618c7`), from a fresh, non-shallow GitHub clone of all
-advertised branch heads and tags. Hidden PR refs were not fetched. Prerequisite PRs #189 and #190
-were merged at `5f15e79f2ec27fad2308a1ff87aeed6ad7312054` and
-`dde7983b46eecc8ff31aa547881ba7f24bf112e2` respectively.
+`d3c13af1b12cf031cde1ab8021f385b804248bd8` (tree
+`04f232d367c4a29a135b4589ee58e80da3aaa2f8`), fetched and merged without rewriting the history of
+the fresh, non-shallow clone. Hidden PR refs were not fetched. Prerequisite PRs #189 and #190 were
+merged at `5f15e79f2ec27fad2308a1ff87aeed6ad7312054` and
+`dde7983b46eecc8ff31aa547881ba7f24bf112e2`; PR #197 subsequently merged at
+`d3c13af1b12cf031cde1ab8021f385b804248bd8` and is included in this refresh.
 
 The [structured record](release-review-2026-09-11.json) contains commands, exit statuses, counts,
 timings, output hashes, the ref inventory, the historical fingerprint occurrence table, hosted
@@ -15,20 +16,31 @@ published.
 
 ## Repository findings
 
-Before refresh, links and tracked-tree redaction exited 0, history exited 1 with the retained
-findings, and inventory comparison exited 1 with 29 tracked-section differences. Inspection mapped
-the drift to 21 added tracked files, one new acknowledged placeholder test vector, ordering shifts,
-and file counts. It introduced zero tracked-tree review-required findings. No scanner rule or
-allowlist changed. After refresh, the same four commands exited 0, 0, 1, and 0 respectively;
-inventory comparison reported zero tracked-section differences, and its informational history
-comparison also matched.
+The initial refresh correctly omitted two blobs that were never reachable from GitHub refs, but it
+failed to disclose the provenance correction. Blob `848ef0c2…`, reachable only from `refs/stash` in
+the earlier working clone, contributed eight acknowledged placeholder-path rows and two
+acknowledged synthetic-email rows. Blob `417d8c21…`, reachable only from an agent checkpoint ref,
+contributed one acknowledged bearer-token test-vector row. Published history added one placeholder
+row and two synthetic-email rows relative to the stale baseline, producing net category changes of
+-7 private paths, 0 e-mail addresses, and -1 credential shape. No review-required row was added or
+removed.
 
-All 49 review-required history path records match the latest accepted baseline as an exact multiset
-of blob, path, line, classification, fingerprint, and boundary commits. All 19 fingerprint
-occurrence counts also match. No new or removed review-required history record was found. The
-2026-09-07 owner acceptance remains limited to these exact records and seven ancestor boundaries;
-it does not cover hosted content, commit metadata identities, or future disclosures. The history
-command remains nonzero so the accepted findings stay visible.
+The scanner now enumerates only `origin` remote-tracking branches and tags, emits that exact scope,
+and fails closed when it is unavailable. Local-only stash and agent refs are structurally excluded.
+Each history row has a stable identity over category, blob, line, classification, value fingerprint,
+and token shape; all observed paths and boundary commits remain separate provenance. This also
+corrects the first refresh's unstable one-path map, which re-pathed nine otherwise stable
+synthetic-email rows and changed two boundary-commit lists. No allowlist changed.
+
+All 49 review-required history rows match the latest accepted baseline by the stable identity, and
+all 19 fingerprint occurrence counts match. The 2026-09-07 owner acceptance remains limited to
+those exact records and seven ancestor boundaries; it does not cover hosted content, commit
+metadata identities, or future disclosures. The history command remains nonzero so the accepted
+findings stay visible.
+
+After incorporating PR #197, the final commands exited 0, 0, 1, and 0 for links, tracked redaction,
+history, and comparison. They reported 73 links (70 local), 2,765 files (956 text), zero tracked-tree
+review-required findings, 49 unchanged review-required history rows, and zero inventory difference.
 
 ## Hosted delta
 
@@ -72,16 +84,25 @@ backend demo both exited 0. The loopback suite required the unchanged command to
 restricted sandbox that denied local bind. Full command-level timing and hashes are in the
 structured record.
 
-The verification commands left no unstaged tracked-file change. The release record and refreshed
-inventory were written after the measured candidate scan, so their commit and the PR/CI surfaces are
-called out for the bounded post-submission delta rather than being implied to fall inside it.
+After current main and the review corrections were incorporated, a second fresh environment was
+created. Its first install attempt exited 1 because the restricted sandbox denied PyPI DNS; the
+unchanged command exited 0 with network permission. In that environment Ruff exited 0, mypy found
+no issues in 109 source files, 1,885 unit tests passed with 56 dependency warnings, both frozen
+evidence verifiers exited 0, and the new combined release-integration command reported 18 passed
+with one dependency warning. Pull-request CI now runs that combined loopback-contract and wheel
+smoke command as a dedicated `Release integration` job.
+
+The two release-review files existed as drafts and were included in the measured file and text
+counts. Measured outputs were then inserted into those drafts and the generated inventory was
+mechanically replaced. Those final content edits, their commit, and the PR/CI surfaces therefore
+postdate the measured candidate tree and remain called out for the bounded post-submission delta.
 
 ## Remaining owner actions
 
 The owner must still review the public wording and linked claims, review the exact accepted history
-scope, accept or narrow the disclosed privacy limits, and review the bounded post-submission and
-final read-only delta results. The final delta must be repeated if hosted state changes again before
-publication. If those reviews are satisfactory, the owner may separately change visibility and
-then verify the public repository from a logged-out browser. No visibility change, merge, history
-rewrite, credential rotation, hosted-record removal, paid model call, or milestone decision was
-performed here.
+identities and path provenance, accept or narrow the disclosed privacy limits, and review the
+bounded post-submission and final read-only delta results. The final delta must be repeated if
+hosted state changes again before publication. If those reviews are satisfactory, the owner may
+separately change visibility and then verify the public repository from a logged-out browser. No
+visibility change, merge, history rewrite, credential rotation, hosted-record removal, paid model
+call, or milestone decision was performed here.

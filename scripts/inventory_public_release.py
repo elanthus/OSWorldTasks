@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-SCHEMA_VERSION = "pixelgym-public-release-inventory-v2"
+SCHEMA_VERSION = "pixelgym-public-release-inventory-v3"
 TEXT_SIZE_LIMIT = 8 * 1024 * 1024
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 MARKDOWN_REFERENCE = re.compile(r"^[ \t]{0,3}\[[^\]]+\]:[ \t]*(?:<([^>\n]+)>|(\S+))", re.MULTILINE)
@@ -396,8 +396,30 @@ def scan_release_surface(root: Path, files: Iterable[Path]) -> dict[str, object]
     }
 
 
-def _history_objects(root: Path) -> list[tuple[str, str | None]]:
-    result = _run_git(root, "rev-list", "--objects", "--all")
+def _public_history_refs(root: Path) -> list[str]:
+    result = _run_git(
+        root,
+        "for-each-ref",
+        "--format=%(refname)",
+        "refs/remotes/origin",
+        "refs/tags",
+    )
+    if result.returncode != 0:
+        raise HistoryScanError("git_public_refs_list_failed")
+    refs = sorted(
+        {
+            ref
+            for ref in result.stdout.splitlines()
+            if ref and not ref.endswith("/HEAD")
+        }
+    )
+    if not refs:
+        raise HistoryScanError("git_public_refs_missing")
+    return refs
+
+
+def _history_objects(root: Path, refs: list[str]) -> list[tuple[str, str | None]]:
+    result = _run_git(root, "rev-list", "--objects", *refs)
     if result.returncode != 0:
         raise HistoryScanError("git_rev_list_failed")
     objects: list[tuple[str, str | None]] = []
@@ -407,11 +429,41 @@ def _history_objects(root: Path) -> list[tuple[str, str | None]]:
     return objects
 
 
-def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
-    objects = _history_objects(root)
+def _history_blob_paths(root: Path, refs: list[str]) -> dict[str, set[str]]:
+    result = _run_git(
+        root,
+        "log",
+        "--format=",
+        "--raw",
+        "--no-abbrev",
+        "--no-renames",
+        "--root",
+        *refs,
+    )
+    if result.returncode != 0:
+        raise HistoryScanError("git_log_raw_scan_failed")
+    paths: dict[str, set[str]] = {}
+    for line in result.stdout.splitlines():
+        if not line.startswith(":"):
+            continue
+        metadata, separator, path = line.partition("\t")
+        fields = metadata.split()
+        if not separator or len(fields) != 5:
+            continue
+        for object_id in (fields[2], fields[3]):
+            if set(object_id) == {"0"}:
+                continue
+            paths.setdefault(object_id, set()).add(path)
+    return paths
+
+
+def _reachable_text_blobs(
+    root: Path, refs: list[str]
+) -> Iterable[tuple[str, list[str], str]]:
+    objects = _history_objects(root, refs)
     if not objects:
         return
-    object_ids = [object_id for object_id, _ in objects]
+    object_ids = list(dict.fromkeys(object_id for object_id, _ in objects))
     checked = subprocess.run(
         ["git", "cat-file", "--batch-check=%(objectname) %(objecttype) %(objectsize)"],
         cwd=root,
@@ -422,7 +474,10 @@ def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
     )
     if checked.returncode != 0:
         raise HistoryScanError("git_cat_file_batch_check_failed")
-    paths = {object_id: path for object_id, path in objects}
+    paths = _history_blob_paths(root, refs)
+    for object_id, path in objects:
+        if path:
+            paths.setdefault(object_id, set()).add(path)
     blob_ids: list[str] = []
     for line in checked.stdout.splitlines():
         object_id, object_type, size_text = line.split()
@@ -458,18 +513,19 @@ def _reachable_text_blobs(root: Path) -> Iterable[tuple[str, str | None, str]]:
             text = raw.decode("utf-8")
         except UnicodeDecodeError:
             continue
-        yield object_id, paths.get(object_id), text
+        yield object_id, sorted(paths.get(object_id, set())), text
 
 
-def _history_boundary_commits(root: Path) -> dict[str, list[str]]:
+def _history_boundary_commits(root: Path, refs: list[str]) -> dict[str, list[str]]:
     result = _run_git(
         root,
         "log",
-        "--all",
         "--format=@@PIXELGYM_COMMIT %H",
         "--no-ext-diff",
         "--unified=0",
         "--patch",
+        "--root",
+        *refs,
     )
     if result.returncode != 0:
         raise HistoryScanError("git_log_patch_scan_failed")
@@ -489,7 +545,7 @@ def _history_boundary_commits(root: Path) -> dict[str, list[str]]:
 
 
 def scan_history(root: Path) -> dict[str, object]:
-    """Scan every reachable text blob without reproducing sensitive values."""
+    """Scan text blobs reachable from the recorded public Git ref scope."""
 
     categories: dict[str, list[dict[str, object]]] = {
         "private_paths": [],
@@ -497,8 +553,10 @@ def scan_history(root: Path) -> dict[str, object]:
         "credential_or_token_shapes": [],
     }
     failures: list[str] = []
+    refs: list[str] = []
     try:
-        commits_by_fingerprint = _history_boundary_commits(root)
+        refs = _public_history_refs(root)
+        commits_by_fingerprint = _history_boundary_commits(root, refs)
     except HistoryScanError as error:
         commits_by_fingerprint = {}
         failures.append(str(error))
@@ -507,7 +565,7 @@ def scan_history(root: Path) -> dict[str, object]:
         category: str,
         *,
         object_id: str,
-        path: str | None,
+        paths: list[str],
         line: int,
         value: str,
         classification: str,
@@ -519,16 +577,27 @@ def scan_history(root: Path) -> dict[str, object]:
             "boundary_commits": commits_by_fingerprint.get(fingerprint, []),
             "classification": classification,
             "line": line,
-            "path": path,
+            "path": paths[0] if paths else None,
+            "paths": paths,
             "value_fingerprint": fingerprint,
         }
         finding.update(extra)
+        identity_fields = {
+            "blob_oid": object_id,
+            "category": category,
+            "classification": classification,
+            "line": line,
+            "shape": extra.get("shape"),
+            "value_fingerprint": fingerprint,
+        }
+        finding["finding_identity"] = _fingerprint(
+            json.dumps(identity_fields, sort_keys=True, separators=(",", ":"))
+        )
         categories[category].append(finding)
 
     if not failures:
         try:
-            for object_id, path, text in _reachable_text_blobs(root):
-                relative = path or "<unknown>"
+            for object_id, paths, text in _reachable_text_blobs(root, refs):
                 for match in PRIVATE_PATH.finditer(text):
                     user = match.group("user") or match.group("windows_user") or ""
                     source_line = text.splitlines()[_line_number(text, match.start()) - 1]
@@ -536,14 +605,18 @@ def scan_history(root: Path) -> dict[str, object]:
                         "acknowledged_placeholder"
                         if (
                             user.lower() in SAFE_PATH_USERS
-                            or (relative.startswith("scripts/") and "re.compile" in source_line)
+                            or (
+                                paths
+                                and all(path.startswith("scripts/") for path in paths)
+                                and "re.compile" in source_line
+                            )
                         )
                         else "review_required_operator_path"
                     )
                     record(
                         "private_paths",
                         object_id=object_id,
-                        path=path,
+                        paths=paths,
                         line=_line_number(text, match.start()),
                         value=match.group("path"),
                         classification=classification,
@@ -558,7 +631,7 @@ def scan_history(root: Path) -> dict[str, object]:
                     record(
                         "email_addresses",
                         object_id=object_id,
-                        path=path,
+                        paths=paths,
                         line=_line_number(text, match.start()),
                         value=match.group(0),
                         classification=classification,
@@ -567,14 +640,15 @@ def scan_history(root: Path) -> dict[str, object]:
                     for match in pattern.finditer(text):
                         classification = (
                             "acknowledged_test_vector"
-                            if relative.startswith("tests/")
+                            if paths
+                            and all(path.startswith("tests/") for path in paths)
                             and _fingerprint(match.group(0)) in SAFE_TOKEN_TEST_FINGERPRINTS
                             else "review_required_credential_shape"
                         )
                         record(
                             "credential_or_token_shapes",
                             object_id=object_id,
-                            path=path,
+                            paths=paths,
                             line=_line_number(text, match.start()),
                             value=match.group(0),
                             classification=classification,
@@ -583,13 +657,20 @@ def scan_history(root: Path) -> dict[str, object]:
         except HistoryScanError as error:
             failures.append(str(error))
 
+    for findings in categories.values():
+        findings.sort(key=lambda finding: str(finding["finding_identity"]))
+
     review_required = sum(
         item["classification"].startswith("review_required")
         for findings in categories.values()
         for item in findings
     )
     return {
-        "source": "all objects reachable from git rev-list --objects --all",
+        "source": (
+            "objects reachable from origin remote-tracking branches and tags; "
+            "local-only refs are excluded"
+        ),
+        "ref_scope": refs,
         "sensitive_values": "represented only by SHA-256 fingerprints",
         "failure_count": len(failures),
         "failures": failures,

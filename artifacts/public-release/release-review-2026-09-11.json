@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "recorded_at": "2026-09-11T20:32:16Z",
+  "corrected_at": "2026-09-11T21:49:40Z",
   "repository": "elanthus/OSWorldTasks",
   "purpose": "Public-release evidence refresh; no publication or milestone verdict.",
   "prerequisites": [
@@ -15,33 +16,42 @@
       "title": "Shorten the portfolio README while retaining evidence and caveats",
       "merged_at": "2026-09-10T17:59:41Z",
       "merge_commit": "dde7983b46eecc8ff31aa547881ba7f24bf112e2"
+    },
+    {
+      "number": 197,
+      "title": "Make grounding headline independently verifiable",
+      "merged_at": "2026-09-11T21:25:41Z",
+      "merge_commit": "d3c13af1b12cf031cde1ab8021f385b804248bd8"
     }
   ],
   "release_candidate": {
-    "source_revision": "695fc4c75149579dde962dd3cf2f817b2c9ffdda",
-    "source_tree": "ff4b39b7877c8c25e7bcd43b55a62af6300618c7",
-    "validated_candidate_tree_before_this_record": "faedd02aa3499ea36a2bfec5344772ede5d70440",
-    "clone": "Fresh, non-shallow GitHub clone of current origin/main; all advertised branch heads and tags; hidden PR refs not fetched.",
+    "source_revision": "d3c13af1b12cf031cde1ab8021f385b804248bd8",
+    "source_tree": "04f232d367c4a29a135b4589ee58e80da3aaa2f8",
+    "validated_candidate_tree_before_final_record_edits": "a7ceacc27d863f43d5dc4bbcd6c88ef8f528625e",
+    "clone": "Fresh, non-shallow GitHub clone; current origin/main was fetched and merged without history rewriting; hidden PR refs were not fetched.",
     "shallow": false,
     "refs": [
-      "refs/remotes/origin/HEAD 695fc4c75149579dde962dd3cf2f817b2c9ffdda",
+      "refs/remotes/origin/HEAD d3c13af1b12cf031cde1ab8021f385b804248bd8",
       "refs/remotes/origin/agent/approved-provider-adapter-164 8059f367e4d1886c487b8c5e0fb49ba110c9d725",
-      "refs/remotes/origin/docs/d58-memory-design-review 6c595bffcfe4f8bcbe043b23e2b69eec6611abeb",
+      "refs/remotes/origin/docs/d58-memory-design-review c6f75fb7ed91b64e4893267ea7352e380bcac65c",
       "refs/remotes/origin/feat/calibration-controlled-comparison 989f3cf286ed80dd08258f18b079aa8f9817df8d",
-      "refs/remotes/origin/main 695fc4c75149579dde962dd3cf2f817b2c9ffdda",
+      "refs/remotes/origin/grounding-consistency-report dbd907494df8ba8dfbb3784efe73bae7df9b69ba",
+      "refs/remotes/origin/main d3c13af1b12cf031cde1ab8021f385b804248bd8",
+      "refs/remotes/origin/review/public-release-evidence-20260911 3044be56c77ddfc7f46fe42ec3fdc7fc0822c236",
       "refs/remotes/origin/v5-calibration-network-robustness-and-per-run-budgets 7032f8e98f322ab56774bfe03bd0af4023f44b6f",
       "refs/tags/legacy-grounding-final 0e87bca9774aaa35a4603fe147fe611d2e417aa0"
     ],
     "changes_since_latest_repository_review_revision": {
       "baseline_revision": "81c7acdaba723978904407c5bb42665d3690e1f4",
-      "commit_count": 3,
-      "tracked_file_count": 35,
-      "insertions": 10198,
-      "deletions": 32,
+      "commit_count": 4,
+      "tracked_file_count": 46,
+      "insertions": 11411,
+      "deletions": 216,
       "commits": [
         "f1dfe5deb6ceab8ce7fca35489b9037aee46f6de Add controlled calibration comparison and exploratory panel diagnostics (#184)",
         "4f86d09bf3d3097eeb627c17dea91df007f8d5fd Record final privacy scans and accepted coverage limits (#194)",
-        "695fc4c75149579dde962dd3cf2f817b2c9ffdda Continue Mistral calibration after bounded transport retries (#195)"
+        "695fc4c75149579dde962dd3cf2f817b2c9ffdda Continue Mistral calibration after bounded transport retries (#195)",
+        "d3c13af1b12cf031cde1ab8021f385b804248bd8 Make grounding headline independently verifiable (#197)"
       ]
     }
   },
@@ -85,13 +95,34 @@
         "result": "29 tracked-section differences before refresh; no truncation. Differences were one new acknowledged placeholder path/username pair plus ordering shifts and file/text counts from 21 added tracked files."
       }
     ],
+    "inventory_scope_correction": {
+      "reason": "The earlier committed inventory was produced in a working clone where git rev-list --objects --all included local-only refs. The first PR refresh used a clean clone and therefore omitted those objects, but did not disclose why the counts changed.",
+      "excluded_local_only_blobs": [
+        {
+          "blob_oid": "848ef0c2c540e2dbcefb66bff3206e45e66c5aa5",
+          "provenance": "reachable only from refs/stash in the earlier working clone",
+          "excluded_rows": {"acknowledged_placeholder_private_paths": 8, "acknowledged_synthetic_email_addresses": 2}
+        },
+        {
+          "blob_oid": "417d8c216867962a56b6966b414e5b93a655fb34",
+          "provenance": "reachable only from refs/codex/turn-diffs/checkpoints in the earlier working clone",
+          "excluded_rows": {"acknowledged_test_vector_bearer_tokens": 1}
+        }
+      ],
+      "published_history_rows_added_since_stale_baseline": {"acknowledged_placeholder_private_paths": 1, "acknowledged_synthetic_email_addresses": 2},
+      "net_category_count_changes_from_695fc4c_inventory": {"private_paths": -7, "email_addresses": 0, "credential_or_token_shapes": -1},
+      "review_required_rows_removed": 0,
+      "review_required_rows_added": 0,
+      "structural_fix": "Inventory schema v3 history enumeration now fails closed without refs/remotes/origin or refs/tags, scans only those public refs, emits the exact ref_scope, assigns each finding a path-independent identity, and retains every observed repository path as informational provenance. No allowlist changed.",
+      "initial_refresh_path_instability": "Against the 695fc4c inventory, the first refresh re-pathed nine otherwise stable synthetic-email rows and changed two boundary-commit lists. Path and boundary commits are provenance, not finding identity."
+    },
     "history_comparison": {
-      "method": "Exact multiset comparison against the latest recorded scan using blob OID, repository-relative path, line, classification, fingerprint, and boundary-commit list; fingerprint occurrence counts compared separately.",
+      "method": "Stable multiset identity uses category, blob OID, line, classification, value fingerprint, and token shape. Repository paths and boundary commits are recorded separately as provenance and are not identity fields; fingerprint occurrence counts are compared separately.",
       "baseline_review_required_path_records": 49,
       "matched_unchanged_accepted_path_records": 49,
       "new_review_required_path_records": 0,
       "removed_review_required_path_records": 0,
-      "full_record_multiset_equal": true,
+      "stable_identity_multiset_equal": true,
       "accepted_boundary_commit_count": 7,
       "acceptance_scope": "Only the exact 49 matched records and their seven recorded ancestor boundaries retain the 2026-09-07 owner acceptance. Hosted content, commit metadata identities, and new disclosures are not accepted by reuse.",
       "fingerprint_occurrence_counts": [
@@ -119,23 +150,26 @@
     "inventory_refresh": {
       "command": ".venv/bin/python scripts/inventory_public_release.py --mode inventory --tracked-only",
       "exit_status": 1,
-      "elapsed_seconds": 11.97,
-      "output_sha256": "sha256:663a7516f7248a4f62ecbb92644384e27d35adddfbe6dd46ab741d847808ae4b",
+      "elapsed_seconds": 11.77,
+      "output_sha256": "sha256:de617cc0bf095db71decf959efe8114c6c478cea74c391149aa06520e51c8aba",
       "reason_for_nonzero": "The exact 49 accepted historical path records remain visible.",
-      "scanner_rules_or_allowlists_changed": false
+      "scanner_rules_changed": true,
+      "allowlists_changed": false,
+      "rule_change_reason": "Exclude non-public local refs and make history identity/path provenance reproducible; not to reclassify or suppress a review-required finding."
     },
     "final_scan": {
-      "candidate_tree": "c4f869c134f4e2bce387e0fbc6128287569de6da",
+      "candidate_tree_before_final_record_edits": "a7ceacc27d863f43d5dc4bbcd6c88ef8f528625e",
       "commands": [
-        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode links", "exit_status": 0, "elapsed_seconds": 0.10, "stdout_sha256": "sha256:1ed3eb6fd0f4fcfae35b5689d17f089e146c7e396dcc239e2a6027ea60ff3dd7", "result": "68 links; 0 failures."},
-        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode redaction", "exit_status": 0, "elapsed_seconds": 2.73, "stdout_sha256": "sha256:e461c1ddf9c81eb0159b6ccfe8dc9e4cf0098e2f4466f7dcf33a9dea1790ad28", "result": "2,759 files; 950 text; 1,809 binary or large; 0 review-required findings; 0 license failures."},
-        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode history", "exit_status": 1, "elapsed_seconds": 9.44, "stdout_sha256": "sha256:fe1f69be5829248c3514924a9f56ec11129e851c1a67105c9b3cf98bec25f21c", "result": "49 unchanged accepted operator-path records; no new review-required finding."},
-        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode check", "exit_status": 0, "elapsed_seconds": 11.76, "stdout_sha256": "sha256:d31e37faef1069c2ae0e33520f5a77433cdaf982392897ceef61fd0017738199", "result": "0 tracked-section differences; informational history comparison also matched."}
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode links", "exit_status": 0, "elapsed_seconds": 0.11, "stdout_sha256": "sha256:e3c820fade6823c12c3fbc7a5dd83696e7e8b7fe4d053a1cfc08179ee914bfc8", "result": "73 links; 70 local; 3 external-not-fetched; 0 failures."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode redaction", "exit_status": 0, "elapsed_seconds": 2.74, "stdout_sha256": "sha256:60d55d01c45685c0c7c01ce6f7375464f4cf245b691d599297888c3a882d4f5e", "result": "2,765 files; 956 text; 1,809 binary or large; 0 review-required findings; 0 license failures."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode history", "exit_status": 1, "elapsed_seconds": 9.64, "stdout_sha256": "sha256:10fca5b32c1cb010299a940f92ec5d826423ab4c959fd50de2aa3024aafb11db", "result": "49 unchanged accepted operator-path records; 13 acknowledged credential-shaped records; 91 acknowledged synthetic-email records; no new review-required finding."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode check", "exit_status": 0, "elapsed_seconds": 12.25, "stdout_sha256": "sha256:d31e37faef1069c2ae0e33520f5a77433cdaf982392897ceef61fd0017738199", "result": "0 tracked-section differences; informational history comparison also matched."}
       ],
       "verification_left_tracked_worktree_unchanged": true,
       "check": "git diff --exit-code",
       "check_exit_status": 0,
-      "remaining_delta": "This record and the refreshed inventory are written after the candidate scan. Their commit, the PR, and hosted CI require the bounded post-submission delta described in hosted_delta_review.post_scan_changes_requiring_delta."
+      "scan_sequence": "The two release-review files already existed and were included in the 2,765-file/956-text counts. The measured outputs were then inserted into those drafts and the inventory was mechanically replaced with the generated JSON. Those final content edits and their commit postdate the measured candidate tree.",
+      "remaining_delta": "The final evidence edits, their commit, the updated PR text, and hosted CI require the bounded post-submission delta described in hosted_delta_review.post_scan_changes_requiring_delta. New origin/main commits also require a repository and hosted delta."
     }
   },
   "hosted_delta_review": {
@@ -232,11 +266,25 @@
       {"command": ".venv/bin/python scripts/golden_trajectory.py check", "exit_status": 0, "elapsed_seconds": 4.40, "stdout_sha256": "sha256:18383f31c68b6170af06085249b09b3b510d51da96ddff2d62889fbb13301787", "result": "Seed-7 golden trajectory verified twice with identical timelines and observation hashes."},
       {"command": ".venv/bin/python scripts/demo_fake_backend.py --seed 7", "exit_status": 0, "elapsed_seconds": 0.45, "stdout_sha256": "sha256:c67a8721a4bddfb07f020299c26fd28d5ffe586e97bc782f98dbbf0539785afd", "result": "Incomplete submission retained reward 0.0 and one recorded submission."}
     ],
+    "current_main_correction_setup": [
+      {"command": "python3.12 -m venv <fresh-temporary-environment>", "exit_status": 0, "elapsed_seconds": 1.21},
+      {"command": "<fresh-environment>/bin/pip install -e \".[dev]\"", "exit_status": 1, "elapsed_seconds": 8.34, "result": "Restricted sandbox denied PyPI DNS while installing isolated build dependencies."},
+      {"command": "<fresh-environment>/bin/pip install -e \".[dev]\"", "exit_status": 0, "elapsed_seconds": 11.72, "result": "Unchanged command rerun with network permission; editable package and declared development dependencies installed."}
+    ],
+    "current_main_correction_commands": [
+      {"command": ".venv/bin/ruff check .", "exit_status": 0, "elapsed_seconds": 0.38, "result": "All checks passed."},
+      {"command": ".venv/bin/mypy pixelgym", "exit_status": 0, "elapsed_seconds": 4.65, "result": "No issues in 109 source files."},
+      {"command": ".venv/bin/pytest -q -n auto tests/unit", "exit_status": 0, "elapsed_seconds": 56.53, "result": "1,885 passed; 56 dependency deprecation warnings."},
+      {"command": ".venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify", "exit_status": 0, "elapsed_seconds": 6.94, "result": "3 policies verified; 0 provider calls."},
+      {"command": ".venv/bin/python scripts/verify_grounding_report.py", "exit_status": 0, "elapsed_seconds": 7.11, "result": "212 files checked; frozen headline recomputed; wrote_files=false."},
+      {"command": ".venv/bin/pytest -q tests/integration/test_vendor_form_server_contract.py tests/integration/test_wheel_packaging.py", "exit_status": 0, "elapsed_seconds": 4.19, "result": "18 passed; 1 dependency deprecation warning."}
+    ],
+    "current_main_correction_added_tracked_changes": false,
     "raw_logs": "Unpublished outside the repository; no raw provider journal was read or committed."
   },
   "owner_actions_remaining": [
     "Review and approve or edit the public README wording and the three evidence-linked claims.",
-    "Review the exact 49 accepted historical path records and confirm the prior seven-ancestor acceptance remains suitable for this publication candidate.",
+    "Review the exact 49 accepted historical stable identities and their path provenance, and confirm the prior seven-ancestor acceptance remains suitable for this publication candidate.",
     "Accept or narrow the still-disclosed privacy coverage limits; unchanged media was not exhaustively re-reviewed.",
     "Review the bounded post-submission and final read-only delta results; repeat the final delta if the PR or hosted state changes again before publication.",
     "If satisfied, change repository visibility; then verify README, links, license files, and media from a logged-out browser."
