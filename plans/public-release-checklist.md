@@ -34,8 +34,10 @@ output directly.
   category, including acknowledged synthetic test vectors and structured model outputs. This mode
   intentionally includes non-ignored, untracked working-tree files.
 - [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode history` and inspect every
-  fingerprinted finding from blobs reachable through all Git refs. Do not paste matched values into
-  an issue, pull request, or release record.
+  fingerprinted finding from blobs reachable through the recorded public ref scope: `origin`
+  remote-tracking branches and tags. Confirm the emitted `ref_scope`; local-only refs such as
+  `refs/stash` and agent checkpoint refs are deliberately excluded. Do not paste matched values
+  into an issue, pull request, or release record.
 - [ ] Run `.venv/bin/python scripts/inventory_public_release.py --mode check`. This rebuilds the
   inventory from tracked files only and compares its links, license, and redaction sections with
   `artifacts/public-release-inventory.json`; investigate any difference in those sections before

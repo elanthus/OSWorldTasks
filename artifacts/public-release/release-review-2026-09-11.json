@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-11T20:32:16Z",
+  "corrected_at": "2026-09-11T21:49:40Z",
+  "repository": "elanthus/OSWorldTasks",
+  "purpose": "Public-release evidence refresh; no publication or milestone verdict.",
+  "prerequisites": [
+    {
+      "number": 189,
+      "title": "Correct release status, CI timing, and recorded D4.12 scope",
+      "merged_at": "2026-09-10T17:59:18Z",
+      "merge_commit": "5f15e79f2ec27fad2308a1ff87aeed6ad7312054"
+    },
+    {
+      "number": 190,
+      "title": "Shorten the portfolio README while retaining evidence and caveats",
+      "merged_at": "2026-09-10T17:59:41Z",
+      "merge_commit": "dde7983b46eecc8ff31aa547881ba7f24bf112e2"
+    },
+    {
+      "number": 197,
+      "title": "Make grounding headline independently verifiable",
+      "merged_at": "2026-09-11T21:25:41Z",
+      "merge_commit": "d3c13af1b12cf031cde1ab8021f385b804248bd8"
+    }
+  ],
+  "release_candidate": {
+    "source_revision": "d3c13af1b12cf031cde1ab8021f385b804248bd8",
+    "source_tree": "04f232d367c4a29a135b4589ee58e80da3aaa2f8",
+    "validated_candidate_tree_before_final_record_edits": "a7ceacc27d863f43d5dc4bbcd6c88ef8f528625e",
+    "clone": "Fresh, non-shallow GitHub clone; current origin/main was fetched and merged without history rewriting; hidden PR refs were not fetched.",
+    "shallow": false,
+    "refs": [
+      "refs/remotes/origin/HEAD d3c13af1b12cf031cde1ab8021f385b804248bd8",
+      "refs/remotes/origin/agent/approved-provider-adapter-164 8059f367e4d1886c487b8c5e0fb49ba110c9d725",
+      "refs/remotes/origin/docs/d58-memory-design-review c6f75fb7ed91b64e4893267ea7352e380bcac65c",
+      "refs/remotes/origin/feat/calibration-controlled-comparison 989f3cf286ed80dd08258f18b079aa8f9817df8d",
+      "refs/remotes/origin/grounding-consistency-report dbd907494df8ba8dfbb3784efe73bae7df9b69ba",
+      "refs/remotes/origin/main d3c13af1b12cf031cde1ab8021f385b804248bd8",
+      "refs/remotes/origin/review/public-release-evidence-20260911 3044be56c77ddfc7f46fe42ec3fdc7fc0822c236",
+      "refs/remotes/origin/v5-calibration-network-robustness-and-per-run-budgets 7032f8e98f322ab56774bfe03bd0af4023f44b6f",
+      "refs/tags/legacy-grounding-final 0e87bca9774aaa35a4603fe147fe611d2e417aa0"
+    ],
+    "changes_since_latest_repository_review_revision": {
+      "baseline_revision": "81c7acdaba723978904407c5bb42665d3690e1f4",
+      "commit_count": 4,
+      "tracked_file_count": 46,
+      "insertions": 11411,
+      "deletions": 216,
+      "commits": [
+        "f1dfe5deb6ceab8ce7fca35489b9037aee46f6de Add controlled calibration comparison and exploratory panel diagnostics (#184)",
+        "4f86d09bf3d3097eeb627c17dea91df007f8d5fd Record final privacy scans and accepted coverage limits (#194)",
+        "695fc4c75149579dde962dd3cf2f817b2c9ffdda Continue Mistral calibration after bounded transport retries (#195)",
+        "d3c13af1b12cf031cde1ab8021f385b804248bd8 Make grounding headline independently verifiable (#197)"
+      ]
+    }
+  },
+  "repository_review": {
+    "python": "Python 3.12.14",
+    "baseline_records": {
+      "repository_scan": "artifacts/public-release/final-repository-scan.json",
+      "repository_scan_sha256": "sha256:563d23e9244bd989eabc1176f1576befe39728ff4878a6c8168e8ecced64b16c",
+      "hosted_review": "artifacts/public-release/final-hosted-review.json",
+      "hosted_review_sha256": "sha256:689c1bde90623ac1cbbec18610f7152fe1fc3612092d145fc4f66ba7a4f40c6a",
+      "redaction_followup": "artifacts/public-release/hosted-redaction-followup.json",
+      "redaction_followup_sha256": "sha256:50345594c2a9690538bff20a289c73524ed1f4663148bf1cc29871aa26e7213f"
+    },
+    "pre_refresh_commands": [
+      {
+        "command": ".venv/bin/python scripts/inventory_public_release.py --mode links",
+        "exit_status": 0,
+        "elapsed_seconds": 0.09,
+        "stdout_sha256": "sha256:1ed3eb6fd0f4fcfae35b5689d17f089e146c7e396dcc239e2a6027ea60ff3dd7",
+        "result": "68 links; 65 local; 3 external-not-fetched; 0 failures."
+      },
+      {
+        "command": ".venv/bin/python scripts/inventory_public_release.py --mode redaction",
+        "exit_status": 0,
+        "elapsed_seconds": 2.93,
+        "stdout_sha256": "sha256:d41b6808282ca6eef7e01d080c7e717b51302d896e5add7fe74621bbdb8db2c2",
+        "result": "2,757 files; 948 text; 1,809 binary or large; 0 tracked-tree review-required findings; 0 license failures."
+      },
+      {
+        "command": ".venv/bin/python scripts/inventory_public_release.py --mode history",
+        "exit_status": 1,
+        "elapsed_seconds": 9.28,
+        "stdout_sha256": "sha256:fe1f69be5829248c3514924a9f56ec11129e851c1a67105c9b3cf98bec25f21c",
+        "result": "49 review-required operator-path records retained; 13 credential-shaped records are acknowledged test vectors; 0 review-required credential or e-mail records."
+      },
+      {
+        "command": ".venv/bin/python scripts/inventory_public_release.py --mode check",
+        "exit_status": 1,
+        "elapsed_seconds": 12.11,
+        "stdout_sha256": "sha256:cce09face0e82836ca2815856304c169607bd480f4a81e07332e82d7ac62f16a",
+        "result": "29 tracked-section differences before refresh; no truncation. Differences were one new acknowledged placeholder path/username pair plus ordering shifts and file/text counts from 21 added tracked files."
+      }
+    ],
+    "inventory_scope_correction": {
+      "reason": "The earlier committed inventory was produced in a working clone where git rev-list --objects --all included local-only refs. The first PR refresh used a clean clone and therefore omitted those objects, but did not disclose why the counts changed.",
+      "excluded_local_only_blobs": [
+        {
+          "blob_oid": "848ef0c2c540e2dbcefb66bff3206e45e66c5aa5",
+          "provenance": "reachable only from refs/stash in the earlier working clone",
+          "excluded_rows": {"acknowledged_placeholder_private_paths": 8, "acknowledged_synthetic_email_addresses": 2}
+        },
+        {
+          "blob_oid": "417d8c216867962a56b6966b414e5b93a655fb34",
+          "provenance": "reachable only from refs/codex/turn-diffs/checkpoints in the earlier working clone",
+          "excluded_rows": {"acknowledged_test_vector_bearer_tokens": 1}
+        }
+      ],
+      "published_history_rows_added_since_stale_baseline": {"acknowledged_placeholder_private_paths": 1, "acknowledged_synthetic_email_addresses": 2},
+      "net_category_count_changes_from_695fc4c_inventory": {"private_paths": -7, "email_addresses": 0, "credential_or_token_shapes": -1},
+      "review_required_rows_removed": 0,
+      "review_required_rows_added": 0,
+      "structural_fix": "Inventory schema v3 history enumeration now fails closed without refs/remotes/origin or refs/tags, scans only those public refs, emits the exact ref_scope, assigns each finding a path-independent identity, and retains every observed repository path as informational provenance. No allowlist changed.",
+      "initial_refresh_path_instability": "Against the 695fc4c inventory, the first refresh re-pathed nine otherwise stable synthetic-email rows and changed two boundary-commit lists. Path and boundary commits are provenance, not finding identity."
+    },
+    "history_comparison": {
+      "method": "Stable multiset identity uses category, blob OID, line, classification, value fingerprint, and token shape. Repository paths and boundary commits are recorded separately as provenance and are not identity fields; fingerprint occurrence counts are compared separately.",
+      "baseline_review_required_path_records": 49,
+      "matched_unchanged_accepted_path_records": 49,
+      "new_review_required_path_records": 0,
+      "removed_review_required_path_records": 0,
+      "stable_identity_multiset_equal": true,
+      "accepted_boundary_commit_count": 7,
+      "acceptance_scope": "Only the exact 49 matched records and their seven recorded ancestor boundaries retain the 2026-09-07 owner acceptance. Hosted content, commit metadata identities, and new disclosures are not accepted by reuse.",
+      "fingerprint_occurrence_counts": [
+        {"fingerprint": "sha256:21450632f8cbb2dbdac58444450d21d66d841e86be295b0a8f8d620a6a98ecbe", "occurrences": 2},
+        {"fingerprint": "sha256:245dff91d0d02c6ad057e9114d2be3b857056d67c753ed9c4a337a5d55d26f30", "occurrences": 2},
+        {"fingerprint": "sha256:2d7c9aa95eb1042e5e8a3cf59075909ce5d16e9e169e0a8566a425cc0f9f6f9d", "occurrences": 2},
+        {"fingerprint": "sha256:2ecab6104e4909eee2c34aa037539d5d828fe3d256073a95b8bbc0df958684f2", "occurrences": 2},
+        {"fingerprint": "sha256:419d633463f4ad4a9b3c4b085903b1eb7b12fc14703f1af81b1a83ca83b828d8", "occurrences": 4},
+        {"fingerprint": "sha256:47bdfcbbdee8543ffb758814bea2dd645ef235a60f333239cc01a97a0cad0074", "occurrences": 2},
+        {"fingerprint": "sha256:4e4e95493912e4cd10d6161ff05e04a07b251b479faf2278f4f2d1b5baaddc97", "occurrences": 4},
+        {"fingerprint": "sha256:538373814c2029c1e570fab83a2b143ea6323c151bce6667f8918fbab827580d", "occurrences": 1},
+        {"fingerprint": "sha256:576efefeddb4e42c0c9b981e10df1afc7558b6cee14521d909be2e1f5cd0bacb", "occurrences": 3},
+        {"fingerprint": "sha256:7b54245cbc99fa56b8b3a16c6a8e489a461fdabbf318f2834052efa7496c138a", "occurrences": 4},
+        {"fingerprint": "sha256:80074f7d885aa8eb2b3c671c33fe95f0fbd3ba5bebe8b3b45fe83575b28ef525", "occurrences": 2},
+        {"fingerprint": "sha256:93a7b70794cf89e9b02eee7d465099d3e98d382d1472cda458355224e9a03192", "occurrences": 2},
+        {"fingerprint": "sha256:b8be7e38ef294bc7475d96cd733a377ffc9c3cd4eb91a14a0017ed840f5ac508", "occurrences": 2},
+        {"fingerprint": "sha256:ca518a0809e34753b4bfe12a54ed0d1d0a42f7ed8d40cc49736fa57c01617e97", "occurrences": 3},
+        {"fingerprint": "sha256:e575a8632a533dbeb7f8081f7f88652a09d9e01a5d8b7336da5a028a2506595c", "occurrences": 2},
+        {"fingerprint": "sha256:e865566b79df3cf0a905be012710ed06960bfd7b9ad09edb4024d96134a1e20a", "occurrences": 2},
+        {"fingerprint": "sha256:e8aaa81d17b2f2f58ca0f375cebd1ec0ed5956b63a4e53fff3ce0434e6687e05", "occurrences": 7},
+        {"fingerprint": "sha256:eb3204dc6bb2910be07df73cd013793b99c5e0134a4ed5e33dfd94bf18330e8c", "occurrences": 2},
+        {"fingerprint": "sha256:f7d1cc60a027015f6e11cf1cd7b656970a823d0efe0c201478751bb73b09b11c", "occurrences": 1}
+      ]
+    },
+    "inventory_refresh": {
+      "command": ".venv/bin/python scripts/inventory_public_release.py --mode inventory --tracked-only",
+      "exit_status": 1,
+      "elapsed_seconds": 11.77,
+      "output_sha256": "sha256:de617cc0bf095db71decf959efe8114c6c478cea74c391149aa06520e51c8aba",
+      "reason_for_nonzero": "The exact 49 accepted historical path records remain visible.",
+      "scanner_rules_changed": true,
+      "allowlists_changed": false,
+      "rule_change_reason": "Exclude non-public local refs and make history identity/path provenance reproducible; not to reclassify or suppress a review-required finding."
+    },
+    "final_scan": {
+      "candidate_tree_before_final_record_edits": "a7ceacc27d863f43d5dc4bbcd6c88ef8f528625e",
+      "commands": [
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode links", "exit_status": 0, "elapsed_seconds": 0.11, "stdout_sha256": "sha256:e3c820fade6823c12c3fbc7a5dd83696e7e8b7fe4d053a1cfc08179ee914bfc8", "result": "73 links; 70 local; 3 external-not-fetched; 0 failures."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode redaction", "exit_status": 0, "elapsed_seconds": 2.74, "stdout_sha256": "sha256:60d55d01c45685c0c7c01ce6f7375464f4cf245b691d599297888c3a882d4f5e", "result": "2,765 files; 956 text; 1,809 binary or large; 0 review-required findings; 0 license failures."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode history", "exit_status": 1, "elapsed_seconds": 9.64, "stdout_sha256": "sha256:10fca5b32c1cb010299a940f92ec5d826423ab4c959fd50de2aa3024aafb11db", "result": "49 unchanged accepted operator-path records; 13 acknowledged credential-shaped records; 91 acknowledged synthetic-email records; no new review-required finding."},
+        {"command": ".venv/bin/python scripts/inventory_public_release.py --mode check", "exit_status": 0, "elapsed_seconds": 12.25, "stdout_sha256": "sha256:d31e37faef1069c2ae0e33520f5a77433cdaf982392897ceef61fd0017738199", "result": "0 tracked-section differences; informational history comparison also matched."}
+      ],
+      "verification_left_tracked_worktree_unchanged": true,
+      "check": "git diff --exit-code",
+      "check_exit_status": 0,
+      "scan_sequence": "The two release-review files already existed and were included in the 2,765-file/956-text counts. The measured outputs were then inserted into those drafts and the inventory was mechanically replaced with the generated JSON. Those final content edits and their commit postdate the measured candidate tree.",
+      "remaining_delta": "The final evidence edits, their commit, the updated PR text, and hosted CI require the bounded post-submission delta described in hosted_delta_review.post_scan_changes_requiring_delta. New origin/main commits also require a repository and hosted delta."
+    }
+  },
+  "hosted_delta_review": {
+    "baseline_completed_at": "2026-09-10T19:42:02.584225+00:00",
+    "started_at": "2026-09-11T20:24:13.014955+00:00",
+    "completed_at": "2026-09-11T20:26:20.668261+00:00",
+    "counts": {
+      "issue_or_pr_body": 195,
+      "issue_or_pr_comment": 334,
+      "pr_review_comment": 458,
+      "pr_review_body": 347,
+      "actions_logs": 426,
+      "actions_artifacts": 53,
+      "releases": 0,
+      "release_assets": 0,
+      "recognized_github_attachment_links": 0
+    },
+    "review_counts": {
+      "new_or_changed_text_scanned": 43,
+      "unchanged_text_hash_reuses_baseline": 1291,
+      "new_or_changed_run_archives_reviewed": 19,
+      "unchanged_run_metadata_reuses_baseline": 407,
+      "new_artifact_archives_reviewed": 14,
+      "immutable_artifact_id_reuses_baseline": 39,
+      "archive_text_members_scanned": 116,
+      "archive_non_text_members": 0
+    },
+    "finding_occurrences_by_disposition": {
+      "github_hosted_runner_path": 1352
+    },
+    "new_unresolved_findings": 0,
+    "actual_credentials_established": 0,
+    "redacted_comments_match_verified_followup": true,
+    "collection_failures": [],
+    "method": "Exact content hashes justify unchanged text reuse. Immutable artifact IDs justify artifact reuse. Log reuse requires the same run ID, head SHA, updated_at, run attempt, and prior successful archive scan. All other returned texts and archives were fetched and scanned; bodies and matched values were not retained.",
+    "coverage_limits": "REST-visible snapshot only. Hidden refs, deleted records, edit histories, commit metadata identities, check annotations and summaries beyond logs, external linked content, and unchanged historical media remain outside exhaustive coverage. The prior owner acceptance of those limits is preserved without treating them as inspected.",
+    "post_submission_delta": {
+      "pull_request": 198,
+      "reviewed_head": "84203268b8491f0e99c30ffcf51d96e663a382db",
+      "started_at": "2026-09-11T20:59:33.994419+00:00",
+      "completed_at": "2026-09-11T21:01:41.387245+00:00",
+      "counts": {
+        "issue_or_pr_body": 197,
+        "issue_or_pr_comment": 338,
+        "pr_review_comment": 458,
+        "pr_review_body": 347,
+        "actions_logs": 430,
+        "actions_artifacts": 55,
+        "releases": 0,
+        "release_assets": 0,
+        "recognized_github_attachment_links": 0
+      },
+      "review_counts": {
+        "new_or_changed_text_scanned": 49,
+        "unchanged_text_hash_reuses_baseline": 1291,
+        "new_or_changed_run_archives_reviewed": 23,
+        "unchanged_run_metadata_reuses_baseline": 407,
+        "new_artifact_archives_reviewed": 16,
+        "immutable_artifact_id_reuses_baseline": 39,
+        "archive_text_members_scanned": 199,
+        "archive_non_text_members": 0
+      },
+      "finding_occurrences_by_disposition": {
+        "github_hosted_runner_path": 1786
+      },
+      "new_unresolved_findings": 0,
+      "actual_credentials_established": 0,
+      "redacted_comments_match_verified_followup": true,
+      "collection_failures": [],
+      "private_result_sha256": "sha256:fd523c8fa92663e23d50176d7f3a67ec4dc535816f13dfb619cceaceb84d3ee6",
+      "hosted_checks": [
+        {"name": "Lint", "state": "SUCCESS", "started_at": "2026-09-11T20:44:09Z", "completed_at": "2026-09-11T20:44:56Z", "run_id": 34645744042, "job_id": 103415976269},
+        {"name": "Type check", "state": "SUCCESS", "started_at": "2026-09-11T20:44:14Z", "completed_at": "2026-09-11T20:44:58Z", "run_id": 34645744042, "job_id": 103415976515},
+        {"name": "Fast suite", "state": "SUCCESS", "started_at": "2026-09-11T20:44:07Z", "completed_at": "2026-09-11T20:58:52Z", "run_id": 34645744042, "job_id": 103415976519},
+        {"name": "review", "state": "SUCCESS", "started_at": "2026-09-11T20:43:51Z", "completed_at": "2026-09-11T20:45:26Z", "run_id": 34645744026, "job_id": 103415976409},
+        {"name": "CodeRabbit", "state": "SUCCESS", "note": "Review rate limited; no review content was returned."}
+      ],
+      "method_and_limits": "The same fingerprint-only scanner, immutable/hash reuse rules, and coverage limits as the initial delta apply. Raw bodies and archives were not committed."
+    },
+    "post_scan_changes_requiring_delta": "This evidence-update commit and CI for the resulting PR head necessarily postdate the committed snapshot. A final read-only delta must cover that head and terminal CI; repeat it if hosted state changes again before publication."
+  },
+  "clean_environment_verification": {
+    "setup": [
+      {"command": "python3.12 -m venv .venv", "exit_status": 0, "elapsed_seconds": 1.33},
+      {"command": ".venv/bin/pip install -e \".[dev]\"", "exit_status": 0, "elapsed_seconds": 13.05}
+    ],
+    "commands": [
+      {"command": ".venv/bin/ruff check .", "exit_status": 0, "elapsed_seconds": 0.53, "stdout_sha256": "sha256:82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18", "result": "All checks passed."},
+      {"command": ".venv/bin/mypy pixelgym", "exit_status": 0, "elapsed_seconds": 5.40, "stdout_sha256": "sha256:06ad9491f22f2b933115a2edf580ad42e4e206075e3323e32f6e9d3a750916c2", "result": "No issues in 108 source files."},
+      {"command": ".venv/bin/pytest -q -n auto tests/unit", "exit_status": 0, "elapsed_seconds": 60.97, "stdout_sha256": "sha256:08367c702a455f28bafb3303ece807ffdc8a534bfd31b2326c1db0d5bc9797cc", "result": "1,877 passed; 56 dependency deprecation warnings; pytest 60.42s."},
+      {"command": ".venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify", "exit_status": 0, "elapsed_seconds": 2.27, "stdout_sha256": "sha256:842defde1b24cc0a272f56edfc95155ca2554302aac3e3fd6389f678471cd8e9", "result": "3 policies verified; 0 provider calls."},
+      {"command": ".venv/bin/pytest -q tests/integration/test_vendor_form_server_contract.py", "exit_status": 0, "elapsed_seconds": 0.81, "stdout_sha256": "sha256:955d234d847f8b6761081eaf64de725f2bc38a000f79614e946e4c3a2b186a5d", "result": "10 passed; 1 dependency deprecation warning; pytest 0.44s.", "execution_note": "An initial restricted-sandbox attempt exited 1 with 10 setup errors in 1.65s because loopback bind was denied; the recorded result is the unchanged command rerun with loopback permission."},
+      {"command": ".venv/bin/pytest -q tests/integration/test_wheel_packaging.py", "exit_status": 0, "elapsed_seconds": 2.81, "stdout_sha256": "sha256:d9e3a2f4a2d60e1bdbcef4c74dde1972c1c534ef69e08906cc710dc10797ed84", "result": "8 passed; pytest 2.48s."},
+      {"command": ".venv/bin/python scripts/golden_trajectory.py check", "exit_status": 0, "elapsed_seconds": 4.40, "stdout_sha256": "sha256:18383f31c68b6170af06085249b09b3b510d51da96ddff2d62889fbb13301787", "result": "Seed-7 golden trajectory verified twice with identical timelines and observation hashes."},
+      {"command": ".venv/bin/python scripts/demo_fake_backend.py --seed 7", "exit_status": 0, "elapsed_seconds": 0.45, "stdout_sha256": "sha256:c67a8721a4bddfb07f020299c26fd28d5ffe586e97bc782f98dbbf0539785afd", "result": "Incomplete submission retained reward 0.0 and one recorded submission."}
+    ],
+    "current_main_correction_setup": [
+      {"command": "python3.12 -m venv <fresh-temporary-environment>", "exit_status": 0, "elapsed_seconds": 1.21},
+      {"command": "<fresh-environment>/bin/pip install -e \".[dev]\"", "exit_status": 1, "elapsed_seconds": 8.34, "result": "Restricted sandbox denied PyPI DNS while installing isolated build dependencies."},
+      {"command": "<fresh-environment>/bin/pip install -e \".[dev]\"", "exit_status": 0, "elapsed_seconds": 11.72, "result": "Unchanged command rerun with network permission; editable package and declared development dependencies installed."}
+    ],
+    "current_main_correction_commands": [
+      {"command": ".venv/bin/ruff check .", "exit_status": 0, "elapsed_seconds": 0.38, "result": "All checks passed."},
+      {"command": ".venv/bin/mypy pixelgym", "exit_status": 0, "elapsed_seconds": 4.65, "result": "No issues in 109 source files."},
+      {"command": ".venv/bin/pytest -q -n auto tests/unit", "exit_status": 0, "elapsed_seconds": 56.53, "result": "1,885 passed; 56 dependency deprecation warnings."},
+      {"command": ".venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify", "exit_status": 0, "elapsed_seconds": 6.94, "result": "3 policies verified; 0 provider calls."},
+      {"command": ".venv/bin/python scripts/verify_grounding_report.py", "exit_status": 0, "elapsed_seconds": 7.11, "result": "212 files checked; frozen headline recomputed; wrote_files=false."},
+      {"command": ".venv/bin/pytest -q tests/integration/test_vendor_form_server_contract.py tests/integration/test_wheel_packaging.py", "exit_status": 0, "elapsed_seconds": 4.19, "result": "18 passed; 1 dependency deprecation warning."}
+    ],
+    "current_main_correction_added_tracked_changes": false,
+    "raw_logs": "Unpublished outside the repository; no raw provider journal was read or committed."
+  },
+  "owner_actions_remaining": [
+    "Review and approve or edit the public README wording and the three evidence-linked claims.",
+    "Review the exact 49 accepted historical stable identities and their path provenance, and confirm the prior seven-ancestor acceptance remains suitable for this publication candidate.",
+    "Accept or narrow the still-disclosed privacy coverage limits; unchanged media was not exhaustively re-reviewed.",
+    "Review the bounded post-submission and final read-only delta results; repeat the final delta if the PR or hosted state changes again before publication.",
+    "If satisfied, change repository visibility; then verify README, links, license files, and media from a logged-out browser."
+  ],
+  "prohibited_actions_performed": []
+}
