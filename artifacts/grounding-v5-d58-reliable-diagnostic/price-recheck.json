@@ -119,5 +119,5 @@
   "observed_at": "2026-09-11T23:11:31.256038+00:00",
   "response_digest": "sha256:15c043c7375712272b8bb8766e2408dde846b67bbd95ab9130fa015ed7cd67ed",
   "schema_version": "pixelgym-d58-price-recheck-v1",
-  "source": "https://openrouter.ai/api/v1/models/google/gemini-3.8-flash/endpoints"
+  "source_url": "https://openrouter.ai/api/v1/models/google/gemini-3.8-flash/endpoints"
 }
