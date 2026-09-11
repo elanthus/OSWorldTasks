@@ -69,6 +69,13 @@ Keep the admitted generator and policies frozen. Provider reliability and the st
 text-entry floor remain unresolved calibration limitations. This stopped cohort does not justify
 confirmatory execution or final D5.8 approval.
 
+The publication review also found a limitation in the executed wrapper: a provider thread can
+outlive the runner deadline, and reusing its transport before it exits can mix mutable request
+budget settings. A local two-send fixture reproduced a false budget stop and inconsistent charged
+bounds without a provider call. This cohort's only runner deadline was its final request, with no
+later request; all 789 recorded wire reservations matched their request bounds. Preserve this
+closed cohort's executed source, and version and fix the wrapper before another execution uses it.
+
 ## Approved Gemini 3.8 comparison and revised reservations
 
 The owner subsequently requested “switch to gemini 3.8, increase the budget up to 20 dollars” and
