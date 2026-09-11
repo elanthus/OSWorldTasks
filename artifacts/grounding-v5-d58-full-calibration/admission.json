@@ -1,0 +1,4360 @@
+{
+  "admission_digest": "sha256:ee0b3768cccd3c3ba94268ac623866f7f5f58864916f4bf65fd249af657f389e",
+  "confirmatory_tasks_generated": 0,
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-full-memory-admission-v1",
+  "seed_source_digest": "sha256:140750707956aacd90cadce44c7a1638a5cc566fe28c440465f142f680b6f37c",
+  "source_binding_digest": "sha256:9210e4a644159455341a0d78fcfbf936f8f784d97974b830cf19d2df27c9a2d5",
+  "tasks": [
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:e2222a66c7f55ff201816c6edd5ef4215ea3a08e39493cefa33b64a17026db7a",
+          "trace_digest": "sha256:39bdbaa4344dfafe1387a33ef65d38dfa76ed4c4c179d50778aff78ccee362f4"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:fe45180ca6c26a503de3f8a00870b83d38f9bf6e02e19c856aff83232455d9c5"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9d50eab7b53156c8290e1f4b19f372c05821cec4ece2e38bde1f673f2cc600dd"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3c9638b81815c034fc8eaa6a38d10584f515d562fef12332ad2b68337f18728c"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1a8dbd39d8ef1f76d0c60035fd684af72edf725e01082215cb8b8a292fe92924"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:91591f8a2667b004568beb7b2056760761083522a0249b96047ac9b1103fde0e"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f0f919ecb294dba0ba6bcf6443487c38419aa2185b90e3fcdb7e8021bf3587b1"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:5a6c266c94d496c57c12ae88592ccc5e0605a2503a5a8d5ecb536b544e821fd4"
+        },
+        "seed": 5112,
+        "task_id": "v5m-ddb09cb8c04068399c57624e"
+      },
+      "seed": 5112,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 2,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5112,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:415bf53b1acf8bce189255dec59e9d6e18ead3c6a8be43b17d02e85678ed9029",
+      "task_id": "v5m-ddb09cb8c04068399c57624e"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:662f41311917e76c1e1ecdac47fe93db35b4e3e5a9163696277d70cb2e5882e7",
+          "trace_digest": "sha256:3ae868f974389f831ea4bae4b97de2bd501ee93ce6a2499a20bad1c29bbf8e1e"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:648a986172b67a1f30557085c0b0d8991e87bd4d80df76ba444db345fe353969"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:55516a153c00d950f8a2ae29811a7622b54b1cd15d81983cf2663190755b0cd4"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d3028f87168a3c3f1d7984646c7d30a0c220339f562d9946789c6aeb831dcf74"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:70c92eed60767636d0eaf66d24c3724ef72e77faf84af24fb996d2ff8fde16f9"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b073ced553b31549506d583783391b270520f3e886ae19b850968aec466f294f"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:af91f6e636e59986382adfc282415c88f783dcd97a58b3b8d98362e69067a4d1"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:0bdc5198e918af92e27162d5e19cd78437a3b63a809eb434057727df08867b79"
+        },
+        "seed": 5122,
+        "task_id": "v5m-b815cf961825babd22c85d13"
+      },
+      "seed": 5122,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 2,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5122,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:4af52d9efe22107edb0e7f2d914cb792f0c6994f344f974b865fa560277155a1",
+      "task_id": "v5m-b815cf961825babd22c85d13"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:b25cb031c016d333d296151f1f0e648d0406b861b50a3c42ebbdbb258a171efb",
+          "trace_digest": "sha256:f44ce2b073ee79ffd3d0c03f9601b57e20c6a69d65354ca4839b7c7f7dc89427"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:09aed80f0c9c2897930dbfa827e7d5b6180b170589b8678eb86b180405ba2ef7"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:03e0651cb11218d15d648a11b549750c6b4f4994e8126aa1815e852f9f5d0414"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f9fad5b439fb8f47714ecac5eb7807569992b1a4f4336fe6aa7ab94e8d9548b6"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7b874d07d30b6eb558edf88de0fd7cd59f05f78a225f1eb88960f4b6b52a89e9"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f40d38811fdc4557754a396ec107797d6d72820707e205203f87ca9b5642e11b"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:176c10c1acc87f7fdf5dc93ff7b7c750afdfde852901200f592da12fae1f8f72"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:a1731eafecfe138c5da474086af96c70a5716623fc051ac1b50d73d1ef77dd97"
+        },
+        "seed": 5132,
+        "task_id": "v5m-b7c26480d34115ad2319b983"
+      },
+      "seed": 5132,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 2,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5132,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:594d26b93aa87239ca70f290cee28efb5e98130a220e826a95396669ecf5739d",
+      "task_id": "v5m-b7c26480d34115ad2319b983"
+    },
+    {
+      "action_limit": 27,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 21,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:1006512c780ead10e69a1d04bbce8d3bfa0e03cea24a54ed7ac52cee6a60addc",
+          "trace_digest": "sha256:88d7ac9ba02507646b113c00800d4519710bde62115ec508e25a6450429a88ac"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 27,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0c8e785ce6e38e499996af420a42efdc150d728a7f44ce9279e53efcff3cc23c"
+          },
+          "premature_commit": {
+            "action_count": 27,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:26aca07a81f1bed1cbd42609620bc010c039f5909ddc0f66add60c38c3a1738a"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 27,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:76d48a628294c674c448e6432584b0ac63bde7b2689b60f27b47f8cdf17e6ba4"
+          },
+          "skipped_revision": {
+            "action_count": 27,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3481fec14cb3005d40cbbca7d97b40944812af805551e718870cfb32d0dbbf0e"
+          },
+          "stale_task_submission": {
+            "action_count": 27,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b70f4e215f1510da465ca6332c73afb39b76478c04d55f02448b1030edfa17c3"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 27,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ced80afe5c707d73d4f287e6d5099d711621a07b0146454bd020e24ddc3a8c03"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:171b2e6f3140c7bcac8f2f3df226daf1b6405488d996848921facf5dd0efd52b"
+        },
+        "seed": 5141,
+        "task_id": "v5m-d840c31b987f87019efa3629"
+      },
+      "seed": 5141,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "visible_error_recovery",
+        "family_index": 1,
+        "logical_id": "calibration-visible_error_recovery-logical-00",
+        "partition": "calibration",
+        "seed": 5141,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:26403e72be4d8d64880409632f5d553d956bc64d21bff923db808acf622905ba",
+      "task_id": "v5m-d840c31b987f87019efa3629"
+    },
+    {
+      "action_limit": 26,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 20,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:8b591fafd58c589fc4cf04189f40c55121e5d8da9559fbf9743de9faa328baf7",
+          "trace_digest": "sha256:817537530890c99c0cbaea6bee23f863ccd707dfcd289032c16a0c3d3856261f"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 26,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:80a90f3f8c91ee5f58c5e9358a287b4fdbf5ae4147b5b172afdf211178a0085f"
+          },
+          "premature_commit": {
+            "action_count": 26,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d8a496281bc538de97842b71ca82044ae73e37265b720693bc8969e94e5430ac"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 26,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2a56b8f14e36819b6910b94a0d190175c1dc25157611a2591a5f01591ce8b2ac"
+          },
+          "skipped_revision": {
+            "action_count": 26,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:75af583f86c35cc55f0b387f448077382edf49f3c6e3490b3dc5800363997012"
+          },
+          "stale_task_submission": {
+            "action_count": 26,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7f9e2505651a570ad0a523a27b3190f86e633d9b14afaba9617ce8075da642d3"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 26,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:49794e50be626e21c5a20b397828a68cb9fec71cc12e4f0088c184eea9587408"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 21,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c40a80f080fc0ba41aed2e8756a621cc198f6a236ab78f9e639d89eee97ef3dc"
+        },
+        "seed": 5151,
+        "task_id": "v5m-aef5f47dd38f311c31bc3a50"
+      },
+      "seed": 5151,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "review_and_commit",
+        "family_index": 1,
+        "logical_id": "calibration-review_and_commit-logical-00",
+        "partition": "calibration",
+        "seed": 5151,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:2a85d9d64988e1f71aa83182d3eef79d1808230e11ca95e5edebb50cbfed9374",
+      "task_id": "v5m-aef5f47dd38f311c31bc3a50"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:03598d459d0fffa9b64ff4cf53e691bb8b4a68efbd9591e3c331060fe6ffa285",
+          "trace_digest": "sha256:27a064207e4186763dda1ca6490f5f620140aae92cd564e8e8ef318149e4587e"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:249496af405d25c142b22e1c9c8366660ff7ea55d05be2700142347414df96f4"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:983d834391703c4dc87f8546ec45a4bfbaf88186b4829dd619e8efa4d6bbe5be"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:235996775e66d935d614cea84dc8d4a8b9998f0ed9af479c7e72db81a7cce29c"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6be923f6087b16d5d13537c5ee613bfec8ca7fef7ca70e5d04fa3d3e5f6313da"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f51d55639e83e4d382928cb57faf817911a640d9493941b500e7af00583d26c1"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:cb0f8af43a098e1c5959700bc7b10f60a2074ff7bc9ddf140e59139f6aafb219"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:acc10e70e2ad3beff49c538330ce557a31ad65486f6343bafb5a4902ca1c6681"
+        },
+        "seed": 5160,
+        "task_id": "v5m-526574dcbd4a8c3241092147"
+      },
+      "seed": 5160,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 10,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5160,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:b202e044e74b74b14eecab5e0d171836e8e980808a9e4b5ac028e7eeab706a54",
+      "task_id": "v5m-526574dcbd4a8c3241092147"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:3ce687dfbf1b78af12c0fec728c0927e363cfe89215789d21b5770e59937a9e5",
+          "trace_digest": "sha256:a66239b67269dd00ae65b7c63fd7393c332d407c8fb2c307548472fbb16cbbc2"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a63555568f16e0d82fd2626229a437cbdb27ac1d83ee8643f939af713cbb43a6"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9e0f1f1b2a49f00e3d87f83f8433bce1ffefc546c91cdf8fa8d2a58a5cc765b4"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4aee7e28ae8eb82ab99f93033fd033c3446706c4a23716ffd9a36023d938a329"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8d465259b844db69d278452a9e0b32955734f9505eddac7e204a25c06f50b768"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:aff83b953dfc52706a7465a031bc1ad4eec94bbc43f21dedcee9d00b8cdc0411"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e983b9b444058b41a4517d045ab71b43906aa41ec2bab634c0f709641902a5c5"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:5429b84f0655f0f1be18ee8d813afb75f6e4d40b4de0b6480131d08c5fc3db38"
+        },
+        "seed": 5113,
+        "task_id": "v5m-c5dee28403c112accca77d13"
+      },
+      "seed": 5113,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 3,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5113,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:a1c505b68fd60d56046d028dc3f4a1f4b0794ab1e8c6a7946481e4ade8fed242",
+      "task_id": "v5m-c5dee28403c112accca77d13"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:75a926ce19939c04ed77a23d9460a7e8ab76355327a26fce70f9ef39dd72549a",
+          "trace_digest": "sha256:35dd8f7d5416cb6cbc1e374a5041d8d65b4ba914bac07f715dfc32939e93d243"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7bb330fb5a39d123660642f45e3bdad081a9aa3bc9ff862c663c0a831c664a28"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ad47438e3440f511b566e76ee8e7ecf8b08957d0054324c5ce4a90cfeb463223"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:060b2af8fa06ad5530e412a7cde95210b247d7163ed9d6a850699b553fa74357"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:281d140015ca4ad4b7051a87bb435d054b4e115912428e0335e81a41ead09126"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1326c20312f66e0c3e4a9a6480936a8aca47e33da17f31ee0149dcb6aa23f558"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f27124e0d4bc0af3b15e35c653d203ccae6639322d292137459f9cbd08fbb6f5"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:254805e034d64ceda92d7017a17d1067a8c1f2a151e8c94e8d4f5298ec1d16d9"
+        },
+        "seed": 5123,
+        "task_id": "v5m-8559e94feb4cba514f429ace"
+      },
+      "seed": 5123,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 3,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5123,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:37a0a945b57ab28fe53d2859fcf95840eea993b0093b4ff99b1b53e76d89d163",
+      "task_id": "v5m-8559e94feb4cba514f429ace"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:1b862b36b7f64d2d6794e2a00cf2ed2b7631f8dab911ee06e5b7544c284fe248",
+          "trace_digest": "sha256:df4dc2607589b4b93f78e82e40f776841dae81617abaa429fb5c46626b73a43e"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:645ffd3b2531fef3f0922227d7323e94f587d67b1e4ff02b0d09b65b2c9c9646"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:99f4a71b026cdb141dbf0407c2f084f08b475570958fd1ba46ee2d86ba6bd452"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:41b9c7c37319c967be013ede3a9d565f69b8ae2e42a8b3d04c3d88b9df3ce2a9"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:994ec84187af68690b77a9427d4fb58ba25ec8a6cba674815749ecb95c566d20"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9efc0aa63bc7b2df210db2d6599ed286a8bce97a099cd6bd4d54912d107462df"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:94eb846fd1991cb05b68eb07f44be6e63f2809ab3890e51678a0116650873181"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:8b780868ce89c1b78f6e512faba57e80bab9e0ff7fa381b2ade28d1258797a67"
+        },
+        "seed": 5133,
+        "task_id": "v5m-010414927e76ddbd0a7f5943"
+      },
+      "seed": 5133,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 3,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5133,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:d39cc1eb64eeef0b31315be3392b59c4dcf97403dd0fdfbbb667a4989c660d1d",
+      "task_id": "v5m-010414927e76ddbd0a7f5943"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:22dba5e377a3b4411afc396b845886db782fb3106241bbd23a135a3dcf458f31",
+          "trace_digest": "sha256:70f23e7def3d8b5bc55c0c8351013ddc53678ad7b5d10c1fe0c6ead994b56900"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:236e9ca04402aa820e051af1355dbcadb8e9e178a2bd1118c954e8a78dc23c2a"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:638f867b51fe8a8465e3aaf46406f54796e91e6ba1fd30823a96029ec44df216"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:140b3fa8dba5058394ef601f045a5a8b26d2a6018f0963b863b6224fc14dde8d"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:308eb687cb141513bbea6d5ddcec89beda3ed8d67c728eda895cdb5f0ad4c4f5"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0291cd44123144c65af28ff0455340763f8bfb31ead07338834b83d0c1eb6586"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2f9430dff2cf599026d2bb520e9ffc88c2a26cdf8d4c333dd36104226652dcaa"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:7326c91e60c32b5756eb9bbf7cc736b40b8f7e555410f33ef2cffa40fcc31e30"
+        },
+        "seed": 5142,
+        "task_id": "v5m-03bd6d15025a86986aa5da6d"
+      },
+      "seed": 5142,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 2,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5142,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:e99796788b1efa6bfc649c8af2ccf537e896ea3b2bb62a18627cae71d9c298c1",
+      "task_id": "v5m-03bd6d15025a86986aa5da6d"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:4a938380bd0b55cd02046c07892b32a129a3c331c8461d12c0d0b8504625c7fa",
+          "trace_digest": "sha256:5171b7b47290e4f7fa6f62aee987d28d1f963edbbd1c2cf9b4e6f4c5cf13b17b"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a38b57d305bfee25428ed8f7738b7d74191a0d916f2cc6b1ed6e0f3693b2ba3d"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4a89f335bca3cb9b2af5dec8300dc77214346a9de09d4236aaeba85eba2f4bca"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:376443ddbe4f1080e93daeccb0dd00edff93208da6853e0d5c8a34c74a38774c"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b7f2af5c444c4f2b069e1966c3dc8c9a612369510a88da74cfc215d29f1b7723"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:72e211fcb6497045030055475a37a9eeeb5362d43308dbd09ec71517bcfcf106"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:23507045f0275a1f4156099686c6314a1faeea16e113913512953478c2eba006"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:8de845105d4f22cf56b92edadfda7d224cf9c774fc862f9525b12605aa77a0f8"
+        },
+        "seed": 5152,
+        "task_id": "v5m-9fd67fe6e9af0693ea01db3e"
+      },
+      "seed": 5152,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 2,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5152,
+        "variant": "twin_a"
+      },
+      "task_digest": "sha256:f5d51486bd37e7ad0fbe9c29c218255fd550482cb7ce9189039ddeca14e533a4",
+      "task_id": "v5m-9fd67fe6e9af0693ea01db3e"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:605eb5bf4004a00266cad6173f915f4a62bf3613f0ff6e274301f2afbfe5c353",
+          "trace_digest": "sha256:3fd4ee66361002872c4fb2c7b6cb8d9af34a2fc853b1af92bfc68288b18e3cfa"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b0798757e49f7fafc759a3b9abc7b02b11e47577d48cba451e94de409edbfff9"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9492fb92902fbd277ac6d044fb4eeb8cc3d74f6f579e843fb06fc716591f68e6"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1325b55722bad18d1bfa2291bf5b3b33477128db23bdb82e7fe7b5346187f0fc"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c4569b869d838cc531feca79498528c064d4629758d53c8254508555b5e9ed37"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f8fe901f4c6a2f08c3271eab39f9f1cf92aa9b67910ca02128be6a27f1d59bde"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8862b6724260a7b51ac8cd7d357d9679510deec70be8e5b2da45c4d3139c1f58"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:a43662aac94e4144dc9f8ec973447a3cf6e1fe479831296152f5a1dce98dd518"
+        },
+        "seed": 5161,
+        "task_id": "v5m-1ef6097f666a87dd4873c134"
+      },
+      "seed": 5161,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 11,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5161,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:5ac69bc5aa6711b6407d149084acf373120baec73f628bfe9f054bb42d745bed",
+      "task_id": "v5m-1ef6097f666a87dd4873c134"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:d03d9739546178a520bbf59defd51faad1e2bbf0991c416908412e7738e83a07",
+          "trace_digest": "sha256:9745bdf1dae958661132e34aaf08e47001ea59d8d117cb152b719265e87c5385"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ba2c371e4bbb85e9d1e22f1d6461590b7287dbf258a91e47badd0716beebba84"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:bd47514993044ef182d98e32449a04c3a0e35da992e76b12f25bae93799a5763"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:751b18c81e05fb1a4fbd4d965f60c2e76138e71228e066142e8db10987f826a0"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:01dbae0124674f3b942833af89df24b56726ca1707e9065455d83129a6b9340a"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:bb26d0b33fab47521ecba0d7f019343dd14245eff2a10163db85fa2ce9d24042"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c658c2a7a87e905b6b297ca89ef00809637b7766975e60f1da238cd7647e2d2f"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:778d24b3e1ef9876f3e8b0888d101a3a8614048d2db37dc6bdcee9da58e41f67"
+        },
+        "seed": 5114,
+        "task_id": "v5m-7e1619961efd9078402c8b68"
+      },
+      "seed": 5114,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 4,
+        "logical_id": "calibration-deferred_join-logical-02",
+        "partition": "calibration",
+        "seed": 5114,
+        "variant": "base"
+      },
+      "task_digest": "sha256:2a2400ae812288ddfb4ee03bb3b44f9c899d673662916bd93e80a69e3a4709a8",
+      "task_id": "v5m-7e1619961efd9078402c8b68"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:4016bac3c43f0959767412241e0e77cf6cc7bd659e66e828454a877a4e3cd977",
+          "trace_digest": "sha256:5b622d7396795eccf38575ee3a5f9343897afa58a96b291de79536f08745cb53"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9c35f2599cd0dc790276a452717c0081333a838ba2281d6227379234edd9a77f"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4390923705a1b1ea72c4b593318dcd27a9313c72818dbc74eee2c1ced35172dd"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:db87e7c43feabc2623e4f7bc88d2b235995218525b01184ba51c7ce6fcc94d05"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:5d4e87806515ce9b4b27c6e1258a2759f4f22ba4f37e536f1956b7e195b1d4e1"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:585e94e3f23724dddcb839e1724638c7c83c72f48a7dec647a014d307733fc69"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:607f635127a00c391a25fb8d31f5277e8b5693f049064896f57a3f9476ebb0d9"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:ec6432cecd57344c1bdf30cd74e976299bd463f98850e3db5d93f97cbd6eae60"
+        },
+        "seed": 5124,
+        "task_id": "v5m-da9f495f6b28d525dc9e0318"
+      },
+      "seed": 5124,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 4,
+        "logical_id": "calibration-conditional_precedence-logical-02",
+        "partition": "calibration",
+        "seed": 5124,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1048835a10567bc1c63ce6d780688aeeef196790a16c52d81e92c6bba4710439",
+      "task_id": "v5m-da9f495f6b28d525dc9e0318"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:ddec7347be38365758eb101deb19ca70ab5421997326360ee9a5072644cf91a7",
+          "trace_digest": "sha256:989320585bc215d3c0fbe9022675487d93713cdcf13129cee92a7fc0d4456b46"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:28348e02074d7dcea8b8f00ec2c63fb0224748437af5be3e4d2acec4b89b4a88"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:dd74d72f1e9878597f21340ac3041d90d8af448fb50fddb9a5945bf0ff1e5ac0"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a37e70f5c497b3669e0d9b1c72d43dec9d13fd62afa8676385e94b6bc1ef35b3"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8c507645d1fab2cdd707632233303155b5399cb00b3b923d9a85fa6fd6c4d2de"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:73444f70ff2489808022070149da3a0cd66dcf8bf92af8f4c65a92a4e0c96db0"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:04abb6cde5feacb083f361f052b7ccae54b4686bc12cf385c1a7acf1a708e552"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:1c1b78f4b3873edefdd3c72bc55ab944ae5b52e934feaa6be061e93977190c07"
+        },
+        "seed": 5134,
+        "task_id": "v5m-8a60861676460a306d2450b0"
+      },
+      "seed": 5134,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 4,
+        "logical_id": "calibration-revision_after_reveal-logical-02",
+        "partition": "calibration",
+        "seed": 5134,
+        "variant": "base"
+      },
+      "task_digest": "sha256:602d35e2a4c312ac6da1871cf64b0373e2dbe2cb83178b5bc0466ad6683ee43a",
+      "task_id": "v5m-8a60861676460a306d2450b0"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:73aaf8f152de2f7749cb50c24cb84a103819e8f0aeb2b66450d30757ceeaac05",
+          "trace_digest": "sha256:d5c6bf0305668cc814f85956ed0fe9d721ddaf2da6543513d92997f69fb5dae2"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:70a68779c7c57ae063f89785b3ab74fb18454fb06b8e610be31bb12d5127f5cf"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:cde2db5e025eac644ef6d545f371f9d9fc4517128ca51397edafb3631664278c"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:962cf22df9f1c4a7edecbe0f2ff4b5049eb5310b85b4fb9e01c56bb573f2eb84"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0ecf1ae0bb34ff8bb606dcdedf4a9ee4f50d18a081de08e28627c682d8e6a3fb"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3dca842df16b4a749cbe07a953d512fa43f97011882763d3e2ec25c1afa12744"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6baa1801366f927d2c68c429a1fe3506b9931cb9f1caea8fdfa9ebd43bfe51e9"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c8b7cb5160184c717424f6fc6063bd95126ad787c55c5b2950d9b3810cb60104"
+        },
+        "seed": 5143,
+        "task_id": "v5m-3b10f86e80e9c029a4fc0c96"
+      },
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:2759ebc9dbcfc43d0ae8923206fa11703175d8904c74c7d24314be602d956eb1",
+          "trace_digest": "sha256:2de02c7cf54e062a8341407ae3c76f14b8055bed7ce7d5a4c1e9fb99477408a2"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:87690b72a752c0101c5ed2852d2343b5c540c6cf5cb5b97dbaad57576d5f72d8"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:41d5aa3be8f45a89327406765b89c954ce8433f31a99cb6e3262d5c1dc69858a"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c3ce324fd37e9fb7bf4221b84bcfb9face934b0107568fd39ac9138a9157c291"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b26133ec9578c65bbc53ef0cb3b96a348fb158532a599fe77911d00de2049f50"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2c8b7eaa7cac6c8e08bb53a89eac114efd469078dc1adac1baf3e3be009d5225"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:43d18c7257a2db2019b98043583299d159e38087b7cdfef53817b51cb33f8a5c"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:3371147c907e21004339e20dcdec6a03630afc098fdc0411ce973fc17881a47d"
+        },
+        "seed": 5153,
+        "task_id": "v5m-d1536379214ae2ac2e12c331"
+      },
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:8a26fd66c6193707190506fb1129eb948c19af400c35744b97166b6400f08e21",
+          "trace_digest": "sha256:5890591e0f4d2f73a24d7a8bbceb57a009cf3160cbe0fa8dc199214045e91494"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0d939da417f2e9b6800fd5d892c7fd8052e014948e79617308bf4324e98f1bec"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c296425863bf7698279b70ef814a6d358f00e005f50ed970bf16f5c9cf082ab0"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6c42038cf12c382aa0dae9c4d0106ef7b3c7bcf1bdae2ce900bb4e3ca5303013"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6a0c34e74cf4aa1da462d9d1a07847c79ee47e2ffe283bbf4621f62284c09e09"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7f8f47117ea287bd0b7b94c2851de553d1d34ff2eee56c73c3bf72a1bf915988"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d3fa417e5b5dc35b8350e9c4ff7c120660c8ba0008fdb1733ad6a202ac8c04bd"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:50b43c601db90b2b6dbb2a5cfff3b9da8a90ea595ffd009b66e1f4a132d205e4"
+        },
+        "seed": 5162,
+        "task_id": "v5m-d2fd38dbdd759959c725b8c7"
+      },
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:0f4741b8255d8810ba78fefcfd2c26ccf127d932e4dd415c0576a630a3e0f62f",
+          "trace_digest": "sha256:234a98a5528a7b8db14a5241f2eb5e84094c58ad381654dd5a61d727c827e937"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:125cc3a30e429a972870ff4faec6ce76435bd56a914659ebce52d7cf3758da34"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:846d97b4a4a995bb105de2fcf53fcbfbb2c17f52910a6717cd0659bee5bc73f8"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:94c54601503fbadeb20c59fc12a6fb7d2cf88bfa08658cdf40c0f6fac0dd91c4"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0aae63df84eae9b05eae3040a55976cf8817843e697a98e77f814687b8ab7636"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:56bd830388177634730fd513698d4ffc31ccf5d68894f2a21b8e5137505ce0bd"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:763d2403f3cbe4facf0330424921652c48c6c2e2762e9c0ea3804347ac51d480"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:d3a2cc9722430c80d1dde4850b1c1ea6d2e6077a8f5479d90a661e7973f877e0"
+        },
+        "seed": 5115,
+        "task_id": "v5m-5adef258b652c069c8e9de7c"
+      },
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:5630b154e75d597224286b6f8b40fa2660f9a0b685adb84bb73cc45355f63953",
+          "trace_digest": "sha256:083757edcfa298da19c94e9abb09403654e0633f0a3fc367634f923877e45958"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:79fd71c1ce76e60b7b3a05e20187c23ff26a346b2782cc037ae736ffc0e4462d"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0ba9d09f29929790131f40534ed32181a735cfdec26d874f57f691f97cd3b76f"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b1a0d01ca9752485aedb3e2e9055159c110b851cc664375faa627b2f8d068d91"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:84c16085c6b131e52c941b5094ad593a672fab67f366693a46ef6977d49acc9a"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7f16122667a0e1ab4fd39bf89fa6ac8c8677a819539ab049721b1ac822cfb774"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:40a932791c568b64fcbb7d7f627a0277a2210abd9c2c9aef60767c5d2d13adaa"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:56cd4e2ec1d007760406799184f7814ecd9bcc63a5c6f114d451e86db29a14c9"
+        },
+        "seed": 5125,
+        "task_id": "v5m-bb17f8b584bd5c6f59f39a91"
+      },
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:964f176302a43c3a0c10be3f3513dbb445a4021d3d7e38105ab13c55f5a9356f",
+          "trace_digest": "sha256:0561096210a9c59ac8e11759354769b211dec9e9750db27b1339c8dbd4b6e0f5"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:30461962a2ab15d2091056682cb4a2f4a07eba17136c4886a1d667f8d18fd1f9"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:99d19271ef731ba99d4643b08fd2656433c97eea96466c9909c35f0ab74d129f"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:95fd09543ca9d3fd6928e6ffad8160f354558df548b7437646e396edf9b6bd0a"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3f3c2c33601470cbad33608b7765abe096f0d2c5cdf2d3e5f5814bce4fd5e561"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:85c69875ff4c8b7c31032e474dd73c8a8ed84529cd2431a33ae4a49848689b32"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a547b2b8e1843765ccc9ec06ed3ca22e882e2c49dcda173368091103f24aa321"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:16b903fabc6681bb3a66187e261fbf8aa70b40fdfd8ee1ab35d7a11933d6a2b6"
+        },
+        "seed": 5135,
+        "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d"
+      },
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:7cb5909e5c9c4b435edf777c6dde0cf1c7a62cb6a756d4891e83f74b22e74c08",
+          "trace_digest": "sha256:5e04a1fed2d0f8e00ad885222b1c9035cb53a2f67a802d47f204d9db19574cfe"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:72e4407821e944fc35c57412cb9d79c0bb44c464d281bdead671695c90f87bb7"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3b071b371e208fb0a439a2ded44b96fdab047ec224e7dd462085ca59cf5653a3"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a84bf930f1567020d8c3303086f832f3647dbe8e6cb44d0264739653d633e117"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:95d676af23640854a6b3b46ab9f47dbb3cb593beb960924b82c4d3778c2f8eef"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4827e789f30ddea592449efbd6eb373898d7ebc47d73ca7eae6f64a00a876cab"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b2c35f2ebf73d511e9318940d842aace93a1b0502f988f8a9e6a3bdd9d473d2f"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:844c9670991403233960ed60789fad8370e4f74b7f61bfd64f559d410816bf59"
+        },
+        "seed": 5144,
+        "task_id": "v5m-f53e204bd780f0cebcfd8775"
+      },
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:aa52b5a22357331fed30c4aa78ff2b544c1d7a235cd0fe3b5f75c802bf0576df",
+          "trace_digest": "sha256:5195b20e3ecb75f3e145c9ddea930723a4faf1db036b31492bca6739b4959799"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a474eb2a7a509f8192941bfc45455cb6bbbc25aa550550b7e5351acfc6ec8144"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:bc2cde1caecd22d8f1e71a259b1901c2399b4212d7277a6fd22ef70fd8d12f11"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:54d3be241afaf84bf50d0a4c2c2250c26678cfb3b47c8315ab1d42737cf4afdd"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9fc0f24d665166df97473b22933a9ac369a249a5255c69357b7eb80a3d58de85"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:5bc4be8e71a45f16376ec7a5207c300d95a8d5de4dbb3f8ce148662211d69cd9"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4850be9eb8dffda8aa6e518ea6f2404b59ab16a5ac48897891f0989f2b2f5b05"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:7ac87574b42c7339995a2b1dd179fdaa67650fe169cfbb5622985a7c05cef8b7"
+        },
+        "seed": 5154,
+        "task_id": "v5m-bd393b734e463cd9ec3f9de3"
+      },
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:d83634acd3f04dedc72bae402b222e8f18d8a10a10511bf3b4c3a79bf6290a8d",
+          "trace_digest": "sha256:3f308dcc72415d153ea17d57b7e396bb9190d9f8250a385b5682affd31fed0ab"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:20d79903862d4fd93cde773e17c87f03cb665a713f2881d8f0a2620507c15c58"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:44da0a218466146707b67ccbaed0312de444442621d49f1d3c80d711f0a46cda"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7e2eb65d55781a304ce22e2c7bacbdbb2a9cea11ee26f40c3118ef47488e04a5"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e744bf411d635aabe54875abc98ff794c4d716ae9fb112341d316f30ee0de8ac"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c065c787b72fe54061efe99eb97487dc6d355936429c5ca8df07ffc3ab303deb"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:77538600fdb28cd337b23e68b925d349e8e16fdc666828c19a9a31d1e8572c43"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:af7c03af9bb4d1e41b545d0a09c8967420fd11772b651d4d1836981689e996fe"
+        },
+        "seed": 5163,
+        "task_id": "v5m-110d80d0ef0912b18d944f0d"
+      },
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:24cb984cdf598b30a15d0209a5394a43ab5c1de86596a1f858ad64b616311d51",
+          "trace_digest": "sha256:f0b6b37740244d9e502575743f1d068afb46e83bc9c67c0893ef4781bcc2f4c8"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:db4612a0be501f8779443bb1497c399e51917b8947b7ca722bc6f952c8a7866b"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6aec7d7740f2c53cec0eaa05838d34856e9d158c3e5a90337f6ca41a2057084b"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a889725f40e55c79bd74503d35406e8fa36977dab54fd87d32b1332f9dd74b78"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:78889c52b867bb334ea13265bb9facbf28851fd4509131cc252dc2e289ccf248"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2d1bd2f63ce73873c47af6871c4b6f731bff82e99f4393674cf5d89c1200134c"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:fb47d20c53340d6b492e3bda49e8e82170dfb060bb4463b6526967cca21ed17d"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:95e1d819704691ad1fbd3f80350aaebd2264426c03a03776dab96a91b3c1c366"
+        },
+        "seed": 5116,
+        "task_id": "v5m-a00964962dd2c5a0918eb650"
+      },
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:7fed0b7da33504db30444a22bf3ed472b9b3bf12768bd957546861b15b4a0ed7",
+          "trace_digest": "sha256:b10c53147d77b0f57696ced07f6013ab7df0dfe019f3f05988d0f37a65b22a9c"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:aa99f597b53becaaa1fb80315086d8a27b99d9d04dc326444c9705e0503c2264"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:30b0520ceb4c65afc12fd7d26bb5ab88870216a3430d3850f2ad59995ede4993"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:12cf4c602c3f8ac0443472155da6dca90eb64fd2216665a073b295f6a4e02042"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:68b02542364417f4a490cb33555a4dc2613b29c4ae85d5795599ba8d3468258f"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:18ff723ddf6f36904e689c6c43b987ed4198d4fde5485ddea772be7a515d8f12"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:bd0d71ac22a2266d3fa38a8e1973c836debfecff2fce479f5b7a905a7f1e8ab3"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:d15d8ffa5794aae9164a95e6f8c740399371c1e39c16aa96c48447522833d7ce"
+        },
+        "seed": 5126,
+        "task_id": "v5m-8095c86e47a5927859596eb5"
+      },
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:79dad1aeba9ca7cc97cbe7cf958132224b266d6464e593cf51fc4f98c952be37",
+          "trace_digest": "sha256:408abd93268167d7379de19832bc141c609c1c3ce39a1b14f5cde2d6faf4acd3"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:40a1bc0e00708964b0b4270e9dec3d36d07e673be73d50bfd46fca7551bbdd3d"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:fbee67d49510f22e79693b973c768bffb637010599258dbe06c53f11ced6560d"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:5ce96d8150f06519e34534ddb95e9fe53ec2823992a40695f342ccc8cbfa9f81"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ef3f1806ba1ef792a8c5abe9e6316b214a6926517752cb3e0f9c4385a2d0ed7b"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4487cb443df3d7fa1f1035b8f79572dd635be168605f44a7a3ea70ad5c8a5333"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b9638d4b2817b46504b6bb730fabdb22193fd219fcaea9c8a9c60e414bae5527"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:60692000f3e975f38e9bb699f7fcc47277036472bfeb088d905698ec313884bc"
+        },
+        "seed": 5136,
+        "task_id": "v5m-f9e0771b06763bd2a7bb77c1"
+      },
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:69f46f5a57fc2145ea6e096aba8a575ba71fb0acf0eb619493d39dbcf582402a",
+          "trace_digest": "sha256:60d47c807b1fc534647d2562aeaf6dee14ef9485d740876aa95d4dfa9b4934fa"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0dff398cccfdd50ce178b59474be43bc68cdf8d02e84897edc8586687ff4631a"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3a990733068c050f389179cc74b21ef23c068ae788bff35e7b18d4e6abe6c59d"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a2403435c5bd46eb3e27e7fd083786f60134a67bc4195e463f554b464e0eb94b"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d93a166fad3181006f09ab0adf0f9f9852708e75f4347a795fd147d32f37f3c9"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d6fea27e5d0bb1bcda9d69213225ac5525ebaa9237a601c7b09a8ad51abdcc2c"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e2a5c59b5d793d257ac50435997c7c8fedc3006ebaa7cfbba7cf3b9784c1b405"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:06f3193c574e0fffe3cfdd7199052e2030f81e789678c3d1358ef468552be5a3"
+        },
+        "seed": 5145,
+        "task_id": "v5m-95ef80d2f05b31dee8852080"
+      },
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:0777abbe19af7566f7ffc34a8016eb42c48f4bf07ddbbabe4ad4b2beb6bcdcbf",
+          "trace_digest": "sha256:ab6a37b6b30340bdf79cd7f6935a6d91959174a036bcffa8e539ee263f7d927c"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:08420f85269094e2cfc64f9c908ff3fb048ab2bb5e45d7f475207c14ddf2d32b"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:332be6f16741e49bda23dead976833b7cb93d617195464f7a0c29f44578530b1"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ecac7387e1a20712f27ecaf572a812e3a18f334cb3d4c67d193be89605de37d9"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1079289b4583942c8573969f1a0700e82590bb9145f5438a88e8a688f165ee00"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a32809fa9fe3496a6c5959d270a56ea437153a56c5d60d8023c65c145d1421f0"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1bef03abac957379b54a3f3dba00c1856dff12d467bff5b983e6bcc87d3d8531"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c3ed8193cf5be1c3ba3f8dcbb847f1fcb40bd926d20803c1abef1ebc539417f6"
+        },
+        "seed": 5155,
+        "task_id": "v5m-b6db1d36302f21842fbbc5b7"
+      },
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:9e041ee15f9ad8bfb637b10fb2816ee0a80fcec409b056c863158e59b8220b77",
+          "trace_digest": "sha256:34242ef48b906a4165fa56e0b169709c7adb177f4457ac71a58071f5ac22b9c7"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:125700f67612a931c4fd3f2202d5d3f37d8f1923eab858cfede884e0bfcaf4cf"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f70fe5a6f0998a8650f5aab65a8aec27da308d0f9fc8d4f10183b286fa04547a"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7f8351a9a7e5c7bd2b80e42cabd15b122845044b4d0d931c7b512f3bdfae129f"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:52f8ecf139741c02545da3e387517221691e1c504b112ecbc7b0136eab7c63fe"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6a88642e6cebc564582a03cd44edb69f11abd0aace1ef80b42369f3ca73a3a64"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4f1059d29f5656adb89493d81b30ac19f07d0afe8816df3efc511d864919ced2"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:40536a3511076e8fef2e8e739e80189cd85a427b34397fdc26a0573fbd56b2cb"
+        },
+        "seed": 5164,
+        "task_id": "v5m-183db2c2369a623f54aa34fe"
+      },
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:8b889734fe3318a4d1716cd7def7d80c8f05ee3d386c217865ea0662af846c35",
+          "trace_digest": "sha256:567c23d4f5715213a3311bfbf60348b2d970f20f65635e27831503920d5e2b82"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:23c915328d3415ef08995f06813a1a8523c0d2588d3e0dc9df0860ae80e43450"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4abe4d1cd98c8189c29722f53adedeee95bc8fc2a08aeeeb72902273771cba75"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e10d9f1b837645caaa366f7a0b289ee28ba5c07bf109877f0ba1331912cdc743"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4d8b368292b06bbe28c51541ff2b1f560217e07cb8cec4273000d0919fca6966"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f58aa33744dd2c4f77d597a0d68ea13b11483fb57b70ab2fb40bfacb8c01e99c"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c615dc1645c056c8899339d2a38b5727be139267dbebd8ac1a4f21cabea41a43"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c833dcdd021e605484012003521da8b673e7ac2b758a5415acf139c939a79d4c"
+        },
+        "seed": 5117,
+        "task_id": "v5m-6d0de88d6cbf288f2d43e826"
+      },
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:2a1daa876d14e253b2e78e7bee9454737363aef87b3586c2dc398a2f0e45c5c5",
+          "trace_digest": "sha256:4ca72c9170be1ed400fea764cf19931e6441403dbd157495cd4b3feae678bd75"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:bf04fc61857d678cc7b0fa299cc283752746768a52a8550f9104976a5f3d6d2b"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:394b1b3c082fc4ce1f459f590a289ae66c154f4dd9aeb3089089193d1f45caf0"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d11a6c0848b8d401c5df000a26eb8b75a97c857d48bae0b9efffe079487169c2"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:eecaadb919119aa6a6683c4e8066829adafb33b8dad9cd8120c2182317d04749"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8edd4763a06d5db7da68cda143a17736f871b76e7480b5b6d615845a0338c35c"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:47b775406de2e2966c9fa0fdc5a3bf032f3154d7c67128f8bc6ea612182a308f"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:bb111d4c458df57f80f8a6f227e46ca2201ee83369d6efcb9f593b9fd3a8a81c"
+        },
+        "seed": 5127,
+        "task_id": "v5m-925ae87c1aba0f01a4290055"
+      },
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:42eb79a102898d3964e99615f37a0b9fdc7a7fc8d8ae777f274dce115433e384",
+          "trace_digest": "sha256:770b1a23cc4571266d9f0fb49ab1a99249ab54dd771e29990e22cbd7ab419909"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3e2085f2f6af877c2f922f2e9d90e95264d76ce695e231e3e44efe2cb20e577c"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:821111f80bc7661040b751d4ba1c9b6e24b6302b1a9297a51058a1dcc412dc72"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7ea88efea6824eb819b0c031dae51a95c06e9ca0896b07dfa3be7b6905f636b5"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b7f067bf1f6f5aac1c78d42aa5f24566017ad3492dd97a6ecffdecd00720d10d"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f65f24f9ac868c49fdb771b862dbd4ccfa738c70d4287d3323126a7ac7835159"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6e1da4c9b0e68fcaffdc6b53348c62d67c714a0ccb5123cebd0349fe5a036b9d"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:76c06b0207e70dc45005e8d373dbdd000aa29c0b680b2e296a1579e3bff31cec"
+        },
+        "seed": 5137,
+        "task_id": "v5m-f60b69f4594ce1bdf5e065a2"
+      },
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:20398890d616a50413a68207b791fea63b37386e37ae4189e6b11d6381222522",
+          "trace_digest": "sha256:1af629a7a09dd5833bd73ee73b615488e996c2257b6fbefd4f564a376edd38c6"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b4684d061194925429277067a99f9be7eb571c4c57a26261aedcddd4216c472d"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:862e26cd542ab45fbd83477f96505464f7af40fbe19b4c3b86f284812faab0cb"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:666b0206869219d7a4688e1e6994f51aadb31a8f609f0ffbad6570f4537e2934"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ca10dfb5d1220f32ea081734cd1af9c9f8f6074b55ea37b1bfade80268c2883c"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:daefcae80e9bda60b42e0098da958d5a9d8de7bf318d19b25b9a34126fb62f8d"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ba09a8cc051f4d5c7f9e7aca4b59d0503c1c197f214bc20444f9f4fd481ac90b"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:90c4a43a955e546efad018d64d36dbc785330bfd6a747960162f550fbafacd72"
+        },
+        "seed": 5146,
+        "task_id": "v5m-fe338eab3423cf7af8cae834"
+      },
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:192c9fe8ff43acc994e8d17a7ea2abb6a1e985de1f73fee3e44924aa2bbd165e",
+          "trace_digest": "sha256:90ee957757a7a85fa5e8f882287f59c3f30962873f4623e1eb5f76a258079453"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:33e7b680292ffd06045f2059c1e2054719cccdb8b02fd866dfe5a0998670121c"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8d24f013b0a0f0fec0a4cda3869f0e0c5487dba18d3b8e25a76f054d3e9a1c1c"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b9efe388b1024091e5e396d86c9395900d2eb44b77af3c1684927d5c86a0434d"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9990777d8b67d7baf97cc7a9603ba3a08d4c5043faa25556a6b64e4cf7bf05bd"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9acc5c2eee08da5e152100ef7470e57df68ee3a924015e094e8d5186afcb0aea"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:392ceb39c97846b4d7ade5abecfad461c71e4cb41129337e75d11497f112450b"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:0180ce123cf96c4bebc6eb6815cb8915821f9adde79f227bd4b42a39894aaf15"
+        },
+        "seed": 5156,
+        "task_id": "v5m-dde153abb43dc6cfffb335c0"
+      },
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:50522d9ad579f6cde7cd7a531a5eadbf8502dd161c989f3a0734978b799f0f1e",
+          "trace_digest": "sha256:fe5aa9d8cae1ccdce72fafa6c0719c382c0a963e3139f4b7122bb30bc97aebc2"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d273eafd9b5e78cbe29c9148c1c7869c7451a833c16c45ac9ff49595a4398a80"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:cbdf5a0d454e5b1858a5e72df4915e67af8aa649227d610469d466185c4f273d"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:dbc45f4eb3067ab5c7b947f2e73967e75c7ec5031eabe71a5aa1eb3714950fa2"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d579a12ea3843887b8183aa346b48131436a7db4c65528b35c7ab7b1fa0f28c9"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:37c80d8732235bf2b626405ea5535cc1c7ea149332dacf6e32036817340e7a8b"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d2c1bfac169f10ed574e0a47926ef829135abd5b972dc00bd6258841331f07e0"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c8c0c610a794a2ac5c2582bf49979bdd5fef0ca8439228de353cf620a80be8f7"
+        },
+        "seed": 5165,
+        "task_id": "v5m-21d56a7fad21eeaf7ce485e3"
+      },
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:54761aa931a7fc77965ede27bda34c43a2280c0f0e0eea54b0229b3bf9683e3f",
+          "trace_digest": "sha256:675c20337dc74a8d22d46ab20edf22008eac6f958a133591f71a45f9db459cb5"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6b724fe7b28cb194ef49133066086085e419272a157120976fc6ccc7736daef2"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:23f977be5a8a8a07f7bf65bef70669b494979a75f5d5446289b082c84bec924c"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1d8598bd7240a96bbde85c2f56f93abf5cf815a0f0d16453f472c291598f5b23"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ba4eb8a9d00165cfc8aab448314e83649fa5b6bf8409826a8410a19497ce40c3"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:80b6783a964a791f1d5ab58bbab07fbbdf5ef768714a42efd4e46717af625aab"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2e30ddd688888f639e7c98cd550abb4ce746c774f286755cf5135190d5bfcea7"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:c026bbd32ce165915c2cc9b742261fd08d81cd3ea84c9e8c8f427de6466388f1"
+        },
+        "seed": 5118,
+        "task_id": "v5m-c67dc1f6113406c8a46c90d9"
+      },
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:b9a9bcd8275dd3a967d8b106bc4a9da113802904a00a5e19a5b0eed9eeb1094e",
+          "trace_digest": "sha256:3decec974f3eafbace050de6e75ba3d2fff5f2ec37efac074fce9c574b7287fa"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2632e673f6aa9844d759616297097e2404c963ec0b1c68b2e5787ad0ca9b7ca7"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7ef10c2736e92d9e1310b4acdb5c2db3613478d88efd9c43786483829a9fc4bd"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ba6b3991b834ef7556d909ae227b38577f45f6c9359378515149a98a8b68aa05"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:999088eeb00134fc65e96ee6feec200be10c42cf99ca3163b3c6a246e601eb88"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:95729d5f33b3d553fff2a35193d6f0f301073b83c767c9a192d689da7aad6ae1"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:77efbe5555e92400d6c679dbe07973107efe026c86c5aa9f66e4d2029b59d90b"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:63ec9e3ae3b39fc02654fd26186cd3ccf12170a46735bbacc37341edc68d8097"
+        },
+        "seed": 5128,
+        "task_id": "v5m-3d1ca05819cb03f88be82347"
+      },
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:9d856893e6f2b1c739cad278906fa8b47a4ee134f545a2bf001ecb3ea107aa59",
+          "trace_digest": "sha256:4b00adcdeab415af5dc579078e2b3300005da2b8c7d7f9ac43d6c05991798e94"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:1d48e44388bf1632a0dfa9e5d2c5d7a5daadac379200ed52e8da4b778140d212"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b2a56c21117b7a2051257b74ecdd8ac68c860575057cef27e4e8ed3591752900"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6fdcdd3873cd49b1b1fced46d7ef479bd10765efd385eabbc8806cbba89b2a70"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b239f4cfb5c58b1ee343000b992679e780e59f5642d86a59aed55502a20cde91"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:372a99939b24f2e423f8471ee513ebd9f949df9c15f544d744e0db640ed49f55"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:47ceb160b6e54c831f5cc6b1e90051b12e52f0d64499b8c5593083edb1a39672"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:b61eedd45df581d5ef84d05b04e93f460877d1eeb5cecd68e576cc2b54d1ca78"
+        },
+        "seed": 5138,
+        "task_id": "v5m-b34b342cee91d60b94462c66"
+      },
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66"
+    },
+    {
+      "action_limit": 29,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:68ded9a3ebdf52e68c62045ef5088bbd16aa8e0c24f861d574b5d9a551a429c1",
+          "trace_digest": "sha256:37dd061d9b5572a36180b95cf20964cef2d763b3bfa1c1901e06343bc91f0dc6"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 29,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ad1d8066b74b2e6210b0e5984e1f674bb7792dc98469c193f13e556ea6db65d9"
+          },
+          "premature_commit": {
+            "action_count": 29,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:31f5ae0cbaf04241a62ea31f927127fe385721b9b70b2eda7dd240ec2189437b"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 29,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:403590132d6cb00ad28670a997aa04d38a2e75bb0913693ab19772eaad287b06"
+          },
+          "skipped_revision": {
+            "action_count": 29,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e136e1f0fb4c75b3ad31dc8d5c0c80078322e544631849c1f6d2404616456ea8"
+          },
+          "stale_task_submission": {
+            "action_count": 29,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:83ed5843351a4b623b6593fb5b79ec28eed3cc29fa3242badb72780b3e3e3797"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 29,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:dccb38e07377f830a6a45a7ebcdf14dec38cc93c9ddf26eaa91f5f62202776d6"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:1a989beaa9eb5243acd0dadcd9f0301b1cfed7e576b33b6fbe8696c1bba9568e"
+        },
+        "seed": 5147,
+        "task_id": "v5m-c1f3cc5e91447055adcd7e43"
+      },
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43"
+    },
+    {
+      "action_limit": 28,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 22,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:48f1987b4f2f9b5a1f243b92237db979e6da94a7779d9f40002fe38111a73bd8",
+          "trace_digest": "sha256:2198e585ebfa81554202f3d9e423f5ab2301830b4d4a08a108a52623fd2a3644"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 28,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:959d2540a9de4a13ddb7747ed3e9e1415737442f9ed0c358d63e54741faf9aed"
+          },
+          "premature_commit": {
+            "action_count": 28,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c54c27a6a9da4ce6f01c71110af3255c897600119e6c856b983ac841b1b290ae"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 28,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:acd154dfa68170e0d45d0b87f74c4e71ff8572daa80170f008d4e46b8b1e7d3f"
+          },
+          "skipped_revision": {
+            "action_count": 28,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2193a5ec49cd0c19c50fda65dcb27f2d691a2fb450014c994d729a56696e4fcd"
+          },
+          "stale_task_submission": {
+            "action_count": 28,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c70ba59c849eb81bcdefbea9da3c12cd9333a89643b2d7b215a589b165654866"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 28,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:f505ee44334aca4c74a73a6829fdceb41e4fb1b7804a3734d96de8ae018e9cc8"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 23,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:8154a12c48d6071f1039a42516aa7cd829b1ef37b382b68ebdea9a9fd5e07a61"
+        },
+        "seed": 5157,
+        "task_id": "v5m-d9b26d9ef5a9d91741a2a88f"
+      },
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:83baab2ce29a1ffd052e1fc9a8936cfa64b566703581f6c578f0aec99785cfdb",
+          "trace_digest": "sha256:34c17b452aef9553bbdca40d802526242d5bf97d3d6da6ed05f95f3c70e178c8"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:95b88f1752c5d258413c5b8949192dfa5f7839547ac6c1e189e1c0626af87f5f"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9f101abf6ad4671207c02619cf92829ec2add5b34114db24ff27d37daf1e8a91"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:3c2e7938c34add58cdfb5fdc6d5ec60a68363a4e36a572dff3e412189b4a4724"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7029f94bea9ecb5b3b7794d0dc5ed2f87344aa479de2bbcd1bc4b05bbca5cc40"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:8118040147f258def741ab3147eac743f87ea2c0c18578bdf547413beaf864ed"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ee2e72e9d1d40e28535e0fecf3597ce5e57d375f5b68d5a61a9c12bb08c2cce1"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:9375048d197414dafa07c82b3156ce6fcb72e7901cc947f7159659356b7546bf"
+        },
+        "seed": 5166,
+        "task_id": "v5m-6f71ddd6d13320d321cae7a8"
+      },
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "deferred_join",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:9d88726c8c2b999ba8d1b137e24ea4f36d62f0097e97acdbc453e07c8ff9cbd9",
+          "trace_digest": "sha256:b4fbb75abf7b3cf10bd2f809d909ac314f1098fc38bfde4e31ef7f2f53950720"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d3745f1f684b40e77cfc4ed4c5ce9c23a125b9272c0268b5d63f666cbc37f061"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:dbc2ea6f855fba1df92a28a0ab3de2a34badad8d5ad45f151b1041f75e7d5c51"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:de3ef4c92df39439aebfb12c0bd246c4d1b81b67c7a89d983b033aafa9330231"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9e7bb69400d4665d75f0e7c594217c92e465df43f41d7c8f0e35bc706c7f0b8a"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:56bf0ce34c392326470d357e6f8ce86a2fef7beef7bec0c913712f963c70f092"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a635cc51963d352e8e0ebf6b981e8c60ca6aa577881d0f6ad768526f9841876c"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:76db6d794a54c43157cc111382a015152728b8615153eabaf26209ea5d154f02"
+        },
+        "seed": 5119,
+        "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd"
+      },
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "conditional_precedence",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:744592c304696fe071d86d4a41d151564ed23275d798a4eb9725815c9f3bc07e",
+          "trace_digest": "sha256:3de8f5e283eeff03a73bfbfbc3cf92cc349f8df38562af67faa27d86bc42eccb"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:fb2f8ce03441dcdd8624a75fdebdc8cf77b04712df0e24d9e387c9f9fe3a3755"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:5f4182de680c05e99bc8edbe81c71b3936c35cf9d0cd55605527ed971e36d088"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0b8dc07e6d945decd6d8ee7c75172f07aa84b9bf2a04d974fd034fdf14f1f42f"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c1103461a79badc3797d2caf88d4ae8ab74b137fe0b6b5cbd5860c5e96b44783"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a91f9851f49bc79ee3ab4af1acf078f1eece4517951530a9b1dafdfbecb9dcee"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:062472054e9bde91595f15f2e08b33d3c6843836d06897a71b77f5a09f80ed4b"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:8072cf74193627d1d9f4dd44737cbacfe6c465531016aa1877ac0414e4873e0f"
+        },
+        "seed": 5129,
+        "task_id": "v5m-1685670c4faf0e71cc0405c6"
+      },
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "revision_after_reveal",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:9741731da125fa2e8889ecfff9a1f36153c65113134fb789fc171dceaec2a8c5",
+          "trace_digest": "sha256:6b50e5b5255fb81da4fe23d356fe15e4295a384d83ec31642527770c6c9ddabe"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:27e8971fc93598e6b60b358468c39c16dec14cae4f640fe1e341ebe71a089ab7"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ee8fff6fa653d156536a8472ac96a73834b5ecb3bba5b491428ce17219538791"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:362a6ff85748ac2411d7831cdc84727e891b67746782cd94f74edeb3caaf5ab1"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:63e252d4e36f46d19b87950074427ba474f2e915b4d272088176e4118e5fc992"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2c6c88ce2da951001b7a703d9537ba2fa2b3eb60f356f20fde49a838c874b7c2"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:c8eb9f84490131177b86af579dd5f96f1a038e7d0b840907a4e67311e8c10f39"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:afbb8020b03ffabb3b0376d2a7b5030c2736600a51c6326e3f42b89cee612b60"
+        },
+        "seed": 5139,
+        "task_id": "v5m-49ac36b7a7b5babf250ead6f"
+      },
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f"
+    },
+    {
+      "action_limit": 32,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:806132497ee27f7548355c33043ea03eef8d34f5f086afd61f0678f58f1a821c",
+          "trace_digest": "sha256:f4828fc030c5c50b56f8fa5df5339b87153f7fdafc8d1d9a6ad96fba59998c35"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 32,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:eea0e1019d536a6b9feca616fdf0aaf8a499b75b21a1bc0ab773795dd63eb6cc"
+          },
+          "premature_commit": {
+            "action_count": 32,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:69275e3c8c92a36ea38b6b5baac468f681905487225dd8aea528a2a64464c6a5"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 32,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:5f692bdf4fb401b5460ddaad9dda23bd6d74ddb48fb8f66cde1afb4ea71a55b6"
+          },
+          "skipped_revision": {
+            "action_count": 32,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:b3e243a48f1b89499848bc10b23c8ddc1b832c6f6b293143831e868689e3e447"
+          },
+          "stale_task_submission": {
+            "action_count": 32,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:ad393c88d94a52fac561a793d447be1ea7c419dc3ac606d1379d4690de883cb7"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 32,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:0a73dd15bdf7f42322aa3b8c4c4d28730c50f908a8de189d866b783e8c4ad19a"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 26,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:dc18949b521e7983557f6857eadc670a03b24e8b3d9b407586f2f0ca4e7866c1"
+        },
+        "seed": 5148,
+        "task_id": "v5m-f69347ee579664546c6e6981"
+      },
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:22df594d01ac98bb91a0d4dd8844391a439e27f699d402463c88bd1471bd80f1",
+          "trace_digest": "sha256:4fc7ed6a2569274b4ac409d3fbf2b3ad240fbb658476a074bf487f592f7dbfb5"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:292281448701f314c840eb36e1dcd75ba1b4495e60908072c92ec41ec8cee394"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e0758e127b85bebb1db5da1344187bd555b35c0a2881b50bd152c2f99e1bbeef"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:731dc4ee290fd6504168cb36c7a22ccb75d45fc79f0c34a81c1ce3824dfe1995"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6b546f9b9a468564332a781720d3f88535d4b87cf5c65ad32d3275b64dee8d4b"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:16f6847e94de194e03a1b4bfd3869cfc7b5551faad91f3174c7bfe39dd1ce168"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:6f22c6d13543d27001397317b7540c8c332428e6705d928fd36090dab1d84572"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:73b2f68be1617bd58da269a8cac800860c38e74f4843d1f6b307914ec07d4140"
+        },
+        "seed": 5158,
+        "task_id": "v5m-5c11377903f1fd64abe4b1f7"
+      },
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "evidence_aggregation",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:b5ff891c0325484d85055812b93eaadd81519b3380a8fcbaf2e9d2bb37ed84be",
+          "trace_digest": "sha256:d5096f89c9158ec5d4a34dbe831313e785ef06ef8c67bc41eb83d0ff629b360e"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:30b90de270198e20f39869e34a7dfe79e489d4279225d01f757242200cb86d19"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:01015ac6e2eb048f54dc56099b8c67835cf19bda6f56e1a1d511e2c61830d3aa"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:623f0bca09e3e8d7f4380e4aef03fe9742a57ebd58fc4698884318a5e4ee6ef5"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:44b2fc31cd2aa85c9de95729f80bd40bb2f7d95cb996222a2539cb89f3bddfcb"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a8aba9d5aa5ef596881eed1b4d6f9af31ff08793510163d0974369d48e0f7aca"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:9145a356f01c1b0de3de736800658fdac8ba2238b62e5b5c6209150f0e017ee5"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:d0fa5626b8a7ef3e116a0cbff752008ca06554b1efa85d10e3105e41d4a64433"
+        },
+        "seed": 5167,
+        "task_id": "v5m-3a727b4ea11c7d0d1c85cf30"
+      },
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30"
+    },
+    {
+      "action_limit": 32,
+      "admission": {
+        "family": "visible_error_recovery",
+        "golden": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:2c754e8a96d729a9fe6631ff06584c254e58f86610e6a90674548b346aa6b1cf",
+          "trace_digest": "sha256:753ceca6130bf4839e17759889767f8fffec3fc1f7b108d574f568f0f50f777e"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 32,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:4c3ca1585f088c23a551905b0769ea5fac8dc7fbe7bc468c0fdb7006e598cde9"
+          },
+          "premature_commit": {
+            "action_count": 32,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:a38b00b21615d76aadbcb91deebdffa890f13092df2dc8ecaa0f3fab33681220"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 32,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:e209e1de31aea11556215df3c7d6eb96019e52182aa702b22eabbd9ecc4e3ae5"
+          },
+          "skipped_revision": {
+            "action_count": 32,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:56717dea3623a12f7dafecfadc5699acb2e64441ecf82b50513be034800ab2b4"
+          },
+          "stale_task_submission": {
+            "action_count": 32,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:14f797266d34ce8009a865f3a76cd0d4ea6000e9aa51d3464760fcf3a0cabdc8"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 32,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:7bc3a8ff7e3d2f37cae71e052764cd43b201255b0fcc85ff102db54b43143e33"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 26,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:7bd7ffc2a374d77952e591e989f9b668292895b0223cd08272d7ae6abecf248d"
+        },
+        "seed": 5149,
+        "task_id": "v5m-b4784d0976abe05e27413ca6"
+      },
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6"
+    },
+    {
+      "action_limit": 30,
+      "admission": {
+        "family": "review_and_commit",
+        "golden": {
+          "action_count": 24,
+          "reward_sum": 1.0,
+          "screenshot_chain_digest": "sha256:9c1986609ccd9a03522c3d0844b5cf154ec4ca9cc7f956bcb3a5fd5ff7e975bd",
+          "trace_digest": "sha256:4b257d63971a95b9cc06dacf9a9f30d1407a924796cda2be1e1386d16dade9cd"
+        },
+        "mutations": {
+          "memoryless_deferred_fact": {
+            "action_count": 30,
+            "expected_route": "memoryless_deferred_fact",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:2af72e985a7bf84ea8dcfa474db5455bc330dd6fc16f5980471741eb6a273243"
+          },
+          "premature_commit": {
+            "action_count": 30,
+            "expected_route": "premature_commit",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:66dbc0fa421baa6c017fc14cc10b70a1857a2bb179faca20fdaf9127a864d995"
+          },
+          "repeated_invalid_repair": {
+            "action_count": 30,
+            "expected_route": "repeated_invalid_repair",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:32368e80edc2265e0c3b150971c0f22fb9e8799880794d01fb952435ef56c01e"
+          },
+          "skipped_revision": {
+            "action_count": 30,
+            "expected_route": "skipped_revision",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:231f8934e4ce61235017500b301a94676413f916a5b23131c222c3786596c12d"
+          },
+          "stale_task_submission": {
+            "action_count": 30,
+            "expected_route": "stale_task_submission",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": {
+              "rejected": true,
+              "submitted": true,
+              "success": false,
+              "task_id_matches": false
+            },
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:258d3a10e44b292d1e3e7bb0553b4b9f94be8dd71e2b6be344589958794870ec"
+          },
+          "step_budget_exhaustion": {
+            "action_count": 30,
+            "expected_route": "step_budget_exhaustion",
+            "last_diagnostic_event": "non_progressing_noop",
+            "stale_submission_validation": null,
+            "terminal_classification": "step_limit_truncation",
+            "trace_digest": "sha256:d144b8fd8b323411019470ca9aade0ec528c3d86dcbb57f15f25c9edaaf510a9"
+          }
+        },
+        "random_floor_reward_sum": 0.0,
+        "recovery": {
+          "action_count": 25,
+          "reward_sum": 1.0,
+          "trace_digest": "sha256:09c25fe77c2aa6f02acb61a2c56fbd74e9c126b5182100d5240b6d8a61aad45e"
+        },
+        "seed": 5159,
+        "task_id": "v5m-f7cf58101c23dae46ad1ce94"
+      },
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94"
+    }
+  ]
+}
