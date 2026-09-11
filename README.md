@@ -56,6 +56,8 @@ agent interface; expected values and bounding boxes never enter the environment 
   generator—not evidence about other models or GUI workloads
   ([structured results](artifacts/grounding-results.json),
   [canonical report](artifacts/grounding-report.md),
+  [cross-run analysis](artifacts/grounding-set-of-marks-analysis.md),
+  [historical Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md),
   [report provenance](artifacts/grounding-report-provenance-v1.json),
   [dataset](artifacts/grounding-dataset.jsonl)).
 - Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across

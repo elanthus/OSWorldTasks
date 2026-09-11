@@ -10,7 +10,6 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.analysis import analyze_predictions
-from pixelgym.grounding.schema import PROTOCOL_VERSION
 from pixelgym.serialization import load_jsonl, resolve_repository_output
 from pixelgym.tasks.vendor_form.render import BOLD_FONT, REGULAR_FONT
 
@@ -342,7 +341,7 @@ def render_report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]
     lines = [
         "# PixelGym Grounding Experiment",
         "",
-        f"- Protocol: `{PROTOCOL_VERSION}`",
+        f"- Protocol: `{results['protocol_version']}`",
         f"- Prompt: `{results['prompt_version']}`",
         f"- Provider/model: `{results['provider']}` / `{results['model']}`",
         (

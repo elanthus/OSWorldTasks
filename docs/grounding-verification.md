@@ -16,7 +16,9 @@ does not generate intermediate artifacts.
 The verifier checks three distinct properties:
 
 1. It recomputes the sample counts, raw and marks accuracy, paired difference, fixed-seed bootstrap
-   interval, and exact McNemar value from the frozen dataset, predictions, and error reviews.
+   interval, exact McNemar value, proposal coverage, conditional mark-selection accuracy,
+   invalid-output and request-failure counts, slices, error taxonomy, latency, and every stored
+   per-example outcome from the frozen dataset, predictions, and error reviews.
 2. It checks that the canonical report and results identify the same protocol, prompt, provider,
    model, and experiment recorded in the versioned provenance file.
 3. It verifies the recorded SHA-256 digest of every frozen input image and the checked-in report,
@@ -34,6 +36,10 @@ Report generation is a separate, write-producing maintenance operation:
 ```bash
 .venv/bin/python scripts/generate_grounding_report.py
 ```
+
+The canonical report's embedded "Offline reproduction" block predates this verify/generate split
+and therefore names the writing command. Reviewers should use the verification command at the top
+of this guide.
 
 That command writes the results JSON, Markdown report, figures, gallery images, and gallery
 manifest under `artifacts/`. It is not the reviewer verification path. Because analysis code and

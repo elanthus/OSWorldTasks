@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from difflib import unified_diff
 from pathlib import Path
 from typing import Any, cast
 
@@ -119,6 +120,41 @@ def _expect(actual: Any, expected: Any, label: str) -> None:
         )
 
 
+def _expect_text(actual: str, expected: str, label: str) -> None:
+    if actual == expected:
+        return
+    difference = "".join(
+        unified_diff(
+            expected.splitlines(keepends=True),
+            actual.splitlines(keepends=True),
+            fromfile="expected",
+            tofile="actual",
+            lineterm="\n",
+        )
+    )
+    raise GroundingVerificationError(f"{label} mismatch:\n{difference}")
+
+
+def _verify_recomputed_value(recomputed: Any, frozen: Any, label: str) -> None:
+    """Compare every frozen field while allowing newer analysis fields."""
+    if isinstance(frozen, dict):
+        recomputed_object = _object(recomputed, f"recomputed {label}")
+        missing = sorted(set(frozen) - set(recomputed_object))
+        if missing:
+            raise GroundingVerificationError(f"recomputed {label} omits frozen fields: {missing!r}")
+        for key, value in frozen.items():
+            _verify_recomputed_value(recomputed_object[key], value, f"{label}.{key}")
+        return
+    if isinstance(frozen, list):
+        if not isinstance(recomputed, list):
+            raise GroundingVerificationError(f"recomputed {label} must be a JSON array")
+        _expect(len(recomputed), len(frozen), f"recomputed {label} length")
+        for index, (recomputed_item, frozen_item) in enumerate(zip(recomputed, frozen)):
+            _verify_recomputed_value(recomputed_item, frozen_item, f"{label}[{index}]")
+        return
+    _expect(recomputed, frozen, f"recomputed {label}")
+
+
 def _repository_path(repository_root: Path, relative_path: str, label: str) -> Path:
     candidate = repository_root / relative_path
     resolved_root = repository_root.resolve()
@@ -186,7 +222,7 @@ def _verify_report_text(
     if sample_line not in report_text:
         raise GroundingVerificationError(
             "canonical report sample size does not match frozen provenance"
-    )
+        )
     headline_fragments = (
         (
             f"**{headline['raw_correct_count']}/{example_count} "
@@ -280,9 +316,7 @@ def verify_grounding_report(
     )
 
     results_record = _object(canonical.get("results"), "provenance.canonical.results")
-    _expect(
-        results_record.get("sha256"), CANONICAL_RESULTS_SHA256, "canonical results digest"
-    )
+    _expect(results_record.get("sha256"), CANONICAL_RESULTS_SHA256, "canonical results digest")
     _expect(
         results_record.get("source_revision"),
         CANONICAL_SOURCE_REVISION,
@@ -407,38 +441,26 @@ def verify_grounding_report(
             "analysis_config.paired_bootstrap_seed",
         ),
     )
-    recomputed_identity = {key: recomputed.get(key) for key in CANONICAL_IDENTITY}
-    _verify_identity(recomputed_identity, "recomputed evidence")
-    recomputed_collection = _object(recomputed.get("collection"), "recomputed.collection")
-    for field in ("example_count", "condition_record_count", "excluded_example_count"):
-        _expect(recomputed_collection.get(field), headline.get(field), f"recomputed {field}")
-    recomputed_conditions = _object(recomputed.get("conditions"), "recomputed.conditions")
-    recomputed_raw = _object(recomputed_conditions.get("raw"), "recomputed.conditions.raw")
-    recomputed_marks = _object(recomputed_conditions.get("marks"), "recomputed.conditions.marks")
-    recomputed_paired = _object(recomputed.get("paired"), "recomputed.paired")
-    _expect(
-        recomputed_raw.get("correct_count"), headline.get("raw_correct_count"), "recomputed raw"
+    analysis_result_keys = (
+        "protocol_version",
+        "prompt_version",
+        "analysis_config",
+        "provider",
+        "model",
+        "parameters",
+        "collection",
+        "conditions",
+        "paired",
+        "set_of_marks",
+        "slices",
+        "latency",
+        "usage_totals",
+        "error_taxonomy",
+        "per_example",
     )
-    _expect(
-        recomputed_marks.get("correct_count"),
-        headline.get("marks_correct_count"),
-        "recomputed marks",
-    )
-    _expect(
-        recomputed_paired.get("delta_percentage_points"),
-        headline.get("paired_delta_percentage_points"),
-        "recomputed paired difference",
-    )
-    _expect(
-        recomputed_paired.get("bootstrap_95_ci_percentage_points"),
-        headline.get("bootstrap_95_ci_percentage_points"),
-        "recomputed bootstrap interval",
-    )
-    _expect(
-        recomputed_paired.get("mcnemar_exact_p_value"),
-        headline.get("mcnemar_exact_p_value"),
-        "recomputed McNemar p-value",
-    )
+    for key in analysis_result_keys:
+        frozen_value = results.get(key)
+        _verify_recomputed_value(recomputed.get(key), frozen_value, f"results.{key}")
 
     outputs = _object(results.get("outputs"), "results.outputs")
     gallery_rows: list[dict[str, Any]] | None = None
@@ -462,7 +484,7 @@ def verify_grounding_report(
                     raise GroundingVerificationError(f"missing gallery image: {image_path}")
     if gallery_rows is None:
         raise GroundingVerificationError("results outputs omit the gallery manifest")
-    _expect(
+    _expect_text(
         report_text,
         render_report_markdown(results, gallery_rows),
         "canonical report content",
@@ -528,12 +550,8 @@ def verify_grounding_report(
         "headline": {
             "raw_correct_count": headline["raw_correct_count"],
             "marks_correct_count": headline["marks_correct_count"],
-            "paired_delta_percentage_points": headline[
-                "paired_delta_percentage_points"
-            ],
-            "bootstrap_95_ci_percentage_points": headline[
-                "bootstrap_95_ci_percentage_points"
-            ],
+            "paired_delta_percentage_points": headline["paired_delta_percentage_points"],
+            "bootstrap_95_ci_percentage_points": headline["bootstrap_95_ci_percentage_points"],
             "mcnemar_exact_p_value": headline["mcnemar_exact_p_value"],
         },
         "checked_file_count": len(digest_cache),
