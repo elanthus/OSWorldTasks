@@ -28,17 +28,33 @@ def _init_repository(root: Path) -> None:
     )
 
 
+def _publish_head(root: Path) -> None:
+    subprocess.run(
+        ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
+        cwd=root,
+        check=True,
+    )
+
+
 def test_inventory_detects_public_release_regressions(tmp_path: Path) -> None:
     module = _load_script()
     root = tmp_path / "repository"
     shutil.copytree(FIXTURE, root)
     (root / ".gitignore").write_text("ignored/\n")
     _init_repository(root)
+    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
+        cwd=root,
+        check=True,
+    )
     subprocess.run(
         ["git", "add", "README.md", "evidence.json", "LICENSE", "NOTICE", ".gitignore"],
         cwd=root,
         check=True,
     )
+    subprocess.run(["git", "commit", "-qm", "add public fixture"], cwd=root, check=True)
+    _publish_head(root)
 
     clean = module.build_inventory(root)
     assert clean["summary"]["passed"] is True
@@ -106,6 +122,7 @@ def test_history_inventory_finds_sensitive_values_removed_from_head(tmp_path: Pa
     historical.unlink()
     subprocess.run(["git", "add", "-u"], cwd=root, check=True)
     subprocess.run(["git", "commit", "-qm", "remove historical fixture"], cwd=root, check=True)
+    _publish_head(root)
 
     history = module.scan_history(root)
 
@@ -127,7 +144,36 @@ def test_history_inventory_fails_closed_outside_git(tmp_path: Path) -> None:
 
     assert history["passed"] is False
     assert history["failure_count"] == 1
-    assert history["failures"] == ["git_log_patch_scan_failed"]
+    assert history["failures"] == ["git_public_refs_list_failed"]
+
+
+def test_history_inventory_fails_closed_without_public_refs(tmp_path: Path) -> None:
+    module = _load_script()
+    root = tmp_path / "repository"
+    root.mkdir()
+    _init_repository(root)
+    (root / "local-only.txt").write_text("local\n")
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Release Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            "local-only history",
+        ],
+        cwd=root,
+        check=True,
+    )
+
+    history = module.scan_history(root)
+
+    assert history["passed"] is False
+    assert history["failure_count"] == 1
+    assert history["failures"] == ["git_public_refs_missing"]
 
 
 def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
@@ -145,6 +191,14 @@ def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
         cwd=root,
         check=True,
     )
+    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(["git", "commit", "-qm", "add release fixture"], cwd=root, check=True)
+    _publish_head(root)
     artifact.write_text(
         json.dumps(module.build_inventory(root, tracked_only=True), indent=2, sort_keys=True) + "\n"
     )
@@ -155,14 +209,8 @@ def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
     assert check["passed"] is True
     assert check["history_comparison"]["matched"] is True
 
-    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
-    subprocess.run(
-        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
-        cwd=root,
-        check=True,
-    )
     subprocess.run(["git", "add", "-u"], cwd=root, check=True)
-    subprocess.run(["git", "commit", "-qm", "add release fixture"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "refresh release fixture"], cwd=root, check=True)
     historical = root / "historical.txt"
     historical.write_text("/" + "home" + "/release-auditor/private-run\n")
     subprocess.run(["git", "add", "historical.txt"], cwd=root, check=True)
@@ -170,6 +218,7 @@ def test_check_mode_ignores_untracked_files_and_reports_tracked_differences(
     historical.unlink()
     subprocess.run(["git", "add", "-u"], cwd=root, check=True)
     subprocess.run(["git", "commit", "-qm", "remove historical fixture"], cwd=root, check=True)
+    _publish_head(root)
 
     history_mismatch = module.check_committed_inventory(root)
     assert history_mismatch["passed"] is True
@@ -227,9 +276,100 @@ def test_policy_transport_fixture_is_acknowledged_only_as_exact_test_vector(tmp_
         ["git", "-c", "user.name=Release Fixture", "-c", "user.email=fixture@example.invalid",
          "commit", "-qm", "remove test fixture"], cwd=root, check=True,
     )
+    _publish_head(root)
     history = module.scan_history(root)["categories"]["credential_or_token_shapes"]
     assert history["finding_count"] == 3
     assert history["review_required_count"] == 2
     assert any(row["classification"] == "acknowledged_test_vector" for row in history["findings"])
     assert value not in json.dumps(result)
     assert value not in json.dumps(history)
+
+
+def test_history_inventory_excludes_local_only_refs(tmp_path: Path) -> None:
+    module = _load_script()
+    root = tmp_path / "repository"
+    root.mkdir()
+    _init_repository(root)
+    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
+        cwd=root,
+        check=True,
+    )
+    (root / "public.txt").write_text("public\n")
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "public history"], cwd=root, check=True)
+    _publish_head(root)
+    public_branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+    stash_value = "/" + "home" + "/stash-only/private-run"
+    (root / "stash-only.txt").write_text(stash_value + "\n")
+    subprocess.run(["git", "add", "stash-only.txt"], cwd=root, check=True)
+    subprocess.run(["git", "stash", "push", "-qm", "local-only"], cwd=root, check=True)
+
+    checkpoint_value = "/" + "home" + "/checkpoint-only/private-run"
+    subprocess.run(["git", "switch", "-qc", "scratch"], cwd=root, check=True)
+    (root / "checkpoint-only.txt").write_text(checkpoint_value + "\n")
+    subprocess.run(["git", "add", "checkpoint-only.txt"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "checkpoint-only history"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "update-ref", "refs/codex/turn-diffs/checkpoints/test", "HEAD"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(["git", "switch", "-q", public_branch], cwd=root, check=True)
+    subprocess.run(["git", "branch", "-D", "scratch"], cwd=root, check=True)
+
+    history = module.scan_history(root)
+
+    assert history["failure_count"] == 0
+    assert history["ref_scope"] == ["refs/remotes/origin/main"]
+    assert module._fingerprint(stash_value) not in json.dumps(history)
+    assert module._fingerprint(checkpoint_value) not in json.dumps(history)
+
+
+def test_history_finding_identity_is_path_independent_and_paths_are_complete(
+    tmp_path: Path,
+) -> None:
+    module = _load_script()
+    root = tmp_path / "repository"
+    (root / "pixelgym").mkdir(parents=True)
+    _init_repository(root)
+    subprocess.run(["git", "config", "user.name", "Release Fixture"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release-fixture" + "@example.invalid"],
+        cwd=root,
+        check=True,
+    )
+    value = "/" + "home" + "/operator/private-run"
+    original = root / "pixelgym" / "fixture.txt"
+    original.write_text(value + "\n")
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "add fixture"], cwd=root, check=True)
+    _publish_head(root)
+    initial_findings = module.scan_history(root)["categories"]["private_paths"]["findings"]
+    initial = next(
+        row for row in initial_findings if row["value_fingerprint"] == module._fingerprint(value)
+    )
+
+    (root / "legacy").mkdir()
+    subprocess.run(
+        ["git", "mv", "pixelgym/fixture.txt", "legacy/fixture.txt"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(["git", "commit", "-qm", "move fixture"], cwd=root, check=True)
+    _publish_head(root)
+
+    findings = module.scan_history(root)["categories"]["private_paths"]["findings"]
+    finding = next(row for row in findings if row["value_fingerprint"] == module._fingerprint(value))
+
+    assert finding["path"] == "legacy/fixture.txt"
+    assert finding["paths"] == ["legacy/fixture.txt", "pixelgym/fixture.txt"]
+    assert finding["finding_identity"] == initial["finding_identity"]
