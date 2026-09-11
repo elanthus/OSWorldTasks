@@ -1,18 +1,16 @@
 # Complete the calibration panel: matched memory comparison
 
-Status: Qwen comparison implementation prepared; new provider calls require exact owner approval.
-Reader: the project owner reviewing the remaining D5.6/D5.7 work and the operator executing it.
+Status: the matched Qwen v2 pair completed all 100 assignments with zero successes;
+Mistral Slot C subsequently completed all 50 assignments with zero successes. The
+[calibration supplement](../artifacts/grounding-v5-calibration-supplement/report.md) preserves
+these distinct runs, their per-task outcomes, spend, and local audit receipts.
 
-The [completed calibration report](../artifacts/grounding-v5-d56-completed-calibrations-report.md)
-contains completed Gemini and Qwen stateful runs. The original four-slot panel still lacks completed
-Slot C and Qwen stateless evidence. Running only a stateless successor against historical Qwen
-would confound memory with prompt, runtime, revision, and retry changes. Prepare and run both Qwen
-arms together on the current revision. Preserve every historical run.
-
-This implementation prepares that pair. It does **not** complete Slot C, certify a four-system
-panel, or declare D5.6, D5.7, or a human milestone gate complete. Slot C still needs a current route
-and price check, an exact successor approval, and a completed run. A replacement model requires
-the owner's panel decision under the [benchmark plan](grounding-v5-agent-benchmark.md).
+Reader: the project owner reviewing D5.6/D5.7 evidence. This runbook retains the preparation
+procedures used for those runs; it does not authorize repeating consumed paid approvals.
+The historical Gemini and Qwen stateful results remain in the
+[earlier report](../artifacts/grounding-v5-d56-completed-calibrations-report.md).
+The matched Qwen pair is inconclusive about memory benefit because both arms scored zero.
+Panel admission and D5.8 design decisions remain subject to owner review; no human gate is declared.
 
 ## Frozen intervention
 
@@ -169,3 +167,12 @@ exact owner approval. Fifty fresh calibration assignments imply 1,431 environmen
 most 5,724 model attempts/wire requests, with zero control requests. A proposed fresh $2 ceiling
 remains binding; longer backoff does not guarantee completion. Preserve stopped predecessor rows
 as incomplete evidence, never fill them with a successor, and never reuse their paid-call approval.
+
+The owner initially selected a fixed Google Vertex route for Llama Scout. See the
+[Slot C Vertex successor procedure](slot-c-vertex-successor.md) for its separate smoke and
+calibration plans. That selection does not authorize new paid calls or retire the frozen
+DeepInfra evidence.
+
+After the documented Vertex smoke stopped on HTTP 404, the owner selected Mistral Small 4 on 2026-09-10.
+Use the [Mistral successor procedure](slot-c-mistral-successor.md) for the current preparation.
+Its smoke and any full calibration each require fresh exact approval.

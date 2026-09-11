@@ -96,6 +96,8 @@ class PanelPolicyConfig:
     rate_limit_backoff_max_seconds: float = 60.0
     request_deadline_seconds: float = 180.0
     controlled_history_prompt: bool = False
+    reasoning_effort: Literal["none", "high"] | None = None
+    enforce_provider_price_cap: bool = False
 
     def __post_init__(self) -> None:
         if not 0 <= self.max_rate_limit_retries_per_action < self.max_model_attempts_per_action:
@@ -158,6 +160,11 @@ class PanelPolicyConfig:
         }
         if self.quantizations:
             parameters["quantizations"] = list(self.quantizations)
+        if self.enforce_provider_price_cap:
+            parameters["max_price"] = {
+                "prompt": float(self.prompt_price_per_token_usd * 1_000_000),
+                "completion": float(self.completion_price_per_token_usd * 1_000_000),
+            }
         return parameters
 
 
@@ -268,6 +275,57 @@ LLAMA_STATEFUL_RETRY_SUCCESSOR = replace(
     max_rate_limit_retries_per_action=3,
     max_bounded_retries_per_action=3,
     rate_limit_backoff_base_seconds=15.0,
+)
+LLAMA_STATEFUL_VERTEX = replace(
+    LLAMA_STATEFUL_RETRY_SUCCESSOR,
+    slot="C-llama-stateful-vertex-v1",
+    provider_route="google-vertex/us-east5",
+    response_provider="Google",
+    prompt_price_per_token_usd=Decimal("0.00000025"),
+    completion_price_per_token_usd=Decimal("0.0000007"),
+    # The route catalog does not specify quantization; do not claim FP8 parity.
+    quantizations=(),
+)
+LLAMA_STATEFUL_VERTEX_SMOKE = replace(
+    LLAMA_STATEFUL_VERTEX,
+    slot="C-llama-stateful-vertex-v1-smoke",
+    max_model_attempts_per_action=1,
+    max_rate_limit_retries_per_action=0,
+    max_bounded_retries_per_action=0,
+)
+LLAMA_STATEFUL_VERTEX_DIAGNOSTIC = replace(
+    LLAMA_STATEFUL_VERTEX_SMOKE,
+    slot="C-llama-stateful-vertex-v1-routing-diagnostic",
+    router_metadata=True,
+)
+MISTRAL_STATEFUL_SMOKE = replace(
+    LLAMA_STATEFUL_VERTEX_SMOKE,
+    slot="C-mistral-small-4-stateful-v1-smoke",
+    model="mistralai/mistral-small-2603",
+    provider_route="mistral",
+    response_provider="Mistral",
+    prompt_price_per_token_usd=Decimal("0.00000015"),
+    completion_price_per_token_usd=Decimal("0.0000006"),
+    price_source="https://openrouter.ai/api/v1/models/mistralai/mistral-small-2603/endpoints",
+    reasoning_effort="none",
+    enforce_provider_price_cap=True,
+    router_metadata=True,
+)
+MISTRAL_STATEFUL_CALIBRATION = replace(
+    MISTRAL_STATEFUL_SMOKE,
+    slot="C-mistral-small-4-stateful-v1-calibration",
+)
+MISTRAL_STATEFUL_CALIBRATION_RETRY = replace(
+    MISTRAL_STATEFUL_CALIBRATION,
+    slot="C-mistral-small-4-stateful-v2-calibration",
+    max_model_attempts_per_action=4,
+    max_rate_limit_retries_per_action=3,
+    max_bounded_retries_per_action=3,
+    request_deadline_seconds=210.0,
+)
+MISTRAL_STATEFUL_CALIBRATION_CONTINUE = replace(
+    MISTRAL_STATEFUL_CALIBRATION_RETRY,
+    slot="C-mistral-small-4-stateful-v3-calibration",
 )
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
     slot="C-glm-stateful-candidate",
@@ -430,6 +488,8 @@ class OpenRouterPanelPolicy:
         }
         if self.config.temperature is not None:
             request["temperature"] = self.config.temperature
+        if self.config.reasoning_effort is not None:
+            request["reasoning"] = {"effort": self.config.reasoning_effort}
         return request
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
@@ -637,6 +697,9 @@ class SpendLedger:
 
     def _replay_journal(self, journal: V5AttemptJournal) -> None:
         for event in journal.events():
+            if event.kind == "spend_ledger_blocked":
+                self.blocked = True
+                continue
             reservation_id = event.payload.get("reservation_id")
             if not isinstance(reservation_id, str):
                 continue
@@ -756,15 +819,26 @@ class SpendLedger:
             prior = self._settlements.get(reservation_id)
             if prior is not None and prior[0] == "known":
                 if prior[1] != cost:
-                    self.blocked = True
+                    self.block()
                     return False
                 return not self.blocked
             if prior is not None and prior[0] == "released":
-                self.blocked = True
+                self.block()
                 return False
             hold = self._in_flight.get(reservation_id)
             if hold is None and (prior is None or prior[0] != "unknown"):
                 raise RuntimeError("known charge has no matching spend reservation")
+            projected = self.budget_accounted_spend_usd - (hold or Decimal(0)) + cost
+            if prior is not None and prior[0] == "unknown":
+                projected -= prior[1]
+            violation = (
+                hold is not None and hold != request_maximum_usd
+                or cost > request_maximum_usd
+                or projected > self.maximum_spend_usd
+            )
+            if violation:
+                # Commit the stop before releasing a hold, including on interruption.
+                self.block()
             self._append_spend_event(
                 reservation_id=reservation_id,
                 suffix="charged",
@@ -780,14 +854,7 @@ class SpendLedger:
             self.spent_usd += cost
             self._settlements[reservation_id] = ("known", cost)
             self.max_observed_cost_usd = max(self.max_observed_cost_usd, cost)
-            if (
-                hold is not None and hold != request_maximum_usd
-                or cost > request_maximum_usd
-                or self.budget_accounted_spend_usd > self.maximum_spend_usd
-            ):
-                self.blocked = True
-                return False
-            return True
+            return not violation and not self.blocked
 
     def unknown_charge_reservation_usd(self, request_maximum_usd: Decimal) -> Decimal:
         """What to hold for one send whose charge cannot be read."""
@@ -835,6 +902,9 @@ class SpendLedger:
             if hold is None:
                 raise RuntimeError("unknown charge has no matching spend reservation")
             reservation = self._unknown_charge_reservation(request_maximum_usd)
+            projected = self.budget_accounted_spend_usd - hold + reservation
+            if hold != request_maximum_usd or projected > self.maximum_spend_usd:
+                self.block()
             self._append_spend_event(
                 reservation_id=reservation_id,
                 suffix="unknown",
@@ -845,10 +915,6 @@ class SpendLedger:
             self._settlements[reservation_id] = ("unknown", reservation)
             self.unknown_reservation_usd += reservation
             self.unknown_charge_outcomes += 1
-            if hold != request_maximum_usd or (
-                self.budget_accounted_spend_usd > self.maximum_spend_usd
-            ):
-                self.blocked = True
             return reservation
 
     def release_wire(self, idempotency_key: str, *, reason: str) -> bool:
@@ -879,7 +945,17 @@ class SpendLedger:
             return True
 
     def block(self) -> None:
+        """Durably stop new sends; replay must preserve this terminal state."""
+
         with self._lock:
+            if self.journal is not None:
+                self.journal.append_event(
+                    event_key="spend/blocked",
+                    kind="spend_ledger_blocked",
+                    trial_id="__spend_ledger__",
+                    step_index=0,
+                    payload={"blocked": True},
+                )
             self.blocked = True
 
 
@@ -1405,6 +1481,12 @@ def build_panel_policy_manifest(
         inference_parameters.append(("response_format_type", config.response_format_type))
     if config.router_metadata:
         inference_parameters.append(("router_metadata", "enabled"))
+    if config.reasoning_effort is not None:
+        inference_parameters.append(("reasoning_effort", config.reasoning_effort))
+    if config.enforce_provider_price_cap:
+        inference_parameters.append(
+            ("provider_max_price", json.dumps(config.provider_parameters()["max_price"], sort_keys=True))
+        )
     return PolicyManifest.build(
         provider=f"openrouter/{config.provider_route}",
         model=config.model,

@@ -1,0 +1,3933 @@
+{
+  "local_audit_receipt": {
+    "actual_initial_pair_controls": [
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-325495ed3572932e13e71595"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-321776e3a5121a93c5651938"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-33b66723d47aace8c622a202"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "both_attempted": true,
+        "initial_requests_match": true,
+        "initial_screenshots_match": true,
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+      }
+    ],
+    "decision_exposure": [
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "deferred_join",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "critical_decisions_declared": 6,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "critical_decisions_declared": 8,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "conditional_precedence",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-325495ed3572932e13e71595"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-325495ed3572932e13e71595"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "revision_after_reveal",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-321776e3a5121a93c5651938"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-321776e3a5121a93c5651938"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "visible_error_recovery",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "review_and_commit",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-33b66723d47aace8c622a202"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-33b66723d47aace8c622a202"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateless-v2",
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+      },
+      {
+        "critical_decisions_declared": 4,
+        "critical_decisions_entered": 0,
+        "deferred_consumers_declared": 2,
+        "deferred_consumers_entered": 0,
+        "episode_observed": true,
+        "family": "evidence_aggregation",
+        "slot": "qwen-controlled-stateful-v2",
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+      }
+    ],
+    "failure_codes": [],
+    "family_outcomes": [
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "conditional_precedence",
+        "model_attempts": 233,
+        "observed": 8,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "deferred_join",
+        "model_attempts": 231,
+        "observed": 8,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "evidence_aggregation",
+        "model_attempts": 232,
+        "observed": 8,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 9,
+        "classifications": {
+          "step_limit_truncation": 9
+        },
+        "environment_actions": 254,
+        "family": "review_and_commit",
+        "model_attempts": 259,
+        "observed": 9,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "revision_after_reveal",
+        "model_attempts": 235,
+        "observed": 8,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 9,
+        "classifications": {
+          "step_limit_truncation": 9
+        },
+        "environment_actions": 265,
+        "family": "visible_error_recovery",
+        "model_attempts": 268,
+        "observed": 9,
+        "slot": "qwen-controlled-stateful-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "conditional_precedence",
+        "model_attempts": 230,
+        "observed": 8,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "deferred_join",
+        "model_attempts": 230,
+        "observed": 8,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "evidence_aggregation",
+        "model_attempts": 229,
+        "observed": 8,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 9,
+        "classifications": {
+          "step_limit_truncation": 9
+        },
+        "environment_actions": 254,
+        "family": "review_and_commit",
+        "model_attempts": 256,
+        "observed": 9,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 8,
+        "classifications": {
+          "step_limit_truncation": 8
+        },
+        "environment_actions": 228,
+        "family": "revision_after_reveal",
+        "model_attempts": 232,
+        "observed": 8,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      },
+      {
+        "assigned": 9,
+        "classifications": {
+          "step_limit_truncation": 9
+        },
+        "environment_actions": 265,
+        "family": "visible_error_recovery",
+        "model_attempts": 268,
+        "observed": 9,
+        "slot": "qwen-controlled-stateless-v2",
+        "successes": 0
+      }
+    ],
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:3072a4e5b077d7df8f0fa41579f0ec021ca735df72b5a998f34f07b440af668a",
+      "event_count": 29125,
+      "object_count": 11520,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "retry_event_counts": {
+      "retryable_rate_limit": 1,
+      "retryable_transport_fault": 40,
+      "spend_reservation_unknown": 40,
+      "unknown_outcome_infrastructure_failure": 40
+    },
+    "robustness_pairs": [
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-8b44ff7f55397462e532374f",
+          "v5-a3b213b43f485af0c0e40c16"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-bfe5707f6b44202a0e7f493e",
+          "v5-bd12a958c63d3d4a642f2388"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-5eb145d169ebee7b66c83a99",
+          "v5-87b2f8109114f0dbf237649e"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-8ed6a65fd1b37ddfb1390872",
+          "v5-e2e262766fce6bc662d505ff"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-988e5eb5bd2f5d95773297ba",
+          "v5-3d7d660ccc1f9499de3def52"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateful-v2",
+        "task_ids": [
+          "v5-d439dd1631040477ef5a907b",
+          "v5-5852db880cf4dbdcaaf254bf"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-8b44ff7f55397462e532374f",
+          "v5-a3b213b43f485af0c0e40c16"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-bfe5707f6b44202a0e7f493e",
+          "v5-bd12a958c63d3d4a642f2388"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-5eb145d169ebee7b66c83a99",
+          "v5-87b2f8109114f0dbf237649e"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-8ed6a65fd1b37ddfb1390872",
+          "v5-e2e262766fce6bc662d505ff"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-988e5eb5bd2f5d95773297ba",
+          "v5-3d7d660ccc1f9499de3def52"
+        ]
+      },
+      {
+        "both_observed": true,
+        "both_success": false,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "same_success_outcome": true,
+        "slot": "qwen-controlled-stateless-v2",
+        "task_ids": [
+          "v5-d439dd1631040477ef5a907b",
+          "v5-5852db880cf4dbdcaaf254bf"
+        ]
+      }
+    ],
+    "source_journal_unchanged_by_audit": true,
+    "stateful_attempts_with_verified_visible_action_history": 1458,
+    "stateful_trials_with_carried_actions": 50,
+    "stateless_episodes_with_constant_instruction_only_checkpoints": 50,
+    "summary_matches_recomputed_journal": true
+  },
+  "original_source_sha256": {
+    "artifacts/grounding-v5-controlled-qwen-calibration-v2-audit.json": "sha256:085cb30e30854656f56cd5e13fab8d28e66891be2560a91666ccc1898861c31b",
+    "artifacts/grounding-v5-controlled-qwen-calibration-v2-plan.json": "sha256:c7c9d44dd603a1f7f0da5e2b25d37047e285bb9f3944525909e39c0d8e0b5dca",
+    "artifacts/grounding-v5-controlled-qwen-calibration-v2-run/attempts.sqlite": "sha256:f54c89ed1dfda14cc8e08535d71f3e1b055d6fa4cee16fc3484f3d4e32c87674",
+    "artifacts/grounding-v5-controlled-qwen-calibration-v2-run/summary.json": "sha256:682c2a2de59484a1fc9ef3e8068ad0259bb372d0b08ad90461d4cee6b643bf86"
+  },
+  "plan": {
+    "approval_required": {
+      "exact_plan_sha256": "sha256 of canonical plan bytes",
+      "owner": "human"
+    },
+    "budgets": {
+      "environment_action_cap": 2862,
+      "maximum_spend_usd": "9.70",
+      "model_attempt_cap": 11448,
+      "per_request_theoretical_maximum_usd": "0.016719872",
+      "provider_control_request_cap": 0,
+      "provider_wire_request_cap": 11448,
+      "unknown_reservation_rule": "retain every unknown reservation"
+    },
+    "code_revision": "54e845b00ef2582bcabb67158da15ae5db13f7ed",
+    "outputs": {
+      "directory": "artifacts/grounding-v5-controlled-qwen-calibration-v2-run",
+      "journal": "attempts.sqlite",
+      "resume_mode": "forbid",
+      "summary": "summary.json"
+    },
+    "policy_panel": [
+      {
+        "policy_manifest": {
+          "cancellation_mode": "disabled",
+          "code_revision": "54e845b00ef2582bcabb67158da15ae5db13f7ed",
+          "context_limit": 131072,
+          "coordinate_adapter": "normalized-1000x1000",
+          "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+          "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+          "cross_episode_cache": "disabled",
+          "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+          "dirty_worktree_policy": "reject-tracked-changes",
+          "exact_snapshot": false,
+          "harness_digest": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+          "inference_parameters": [
+            [
+              "allow_fallbacks",
+              "false"
+            ],
+            [
+              "data_collection",
+              "deny"
+            ],
+            [
+              "max_tokens",
+              "4096"
+            ],
+            [
+              "provider",
+              "alibaba"
+            ],
+            [
+              "require_parameters",
+              "true"
+            ],
+            [
+              "response_schema_strict",
+              "true"
+            ],
+            [
+              "seed",
+              "20260809"
+            ],
+            [
+              "max_rate_limit_retries_per_action",
+              "3"
+            ],
+            [
+              "rate_limit_backoff_base_seconds",
+              "15.0"
+            ],
+            [
+              "rate_limit_backoff_max_seconds",
+              "60.0"
+            ],
+            [
+              "runner_deadline_safety_margin_seconds",
+              "1.0"
+            ],
+            [
+              "max_bounded_retries_per_action",
+              "3"
+            ],
+            [
+              "temperature",
+              "0"
+            ]
+          ],
+          "max_cancellation_requests_per_attempt": 0,
+          "max_model_attempts_per_action": 4,
+          "max_reconciliation_requests_per_attempt": 0,
+          "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+          "model": "qwen/qwen3-vl-8b-instruct",
+          "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+          "policy_id": "policy-4560a26d635eabdcf954",
+          "provider": "openrouter/alibaba",
+          "provider_sdk_auto_retries": false,
+          "proxy_auto_retries": false,
+          "reconciliation_deadline_seconds": 1.0,
+          "request_deadline_seconds": 210.0,
+          "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+          "sandbox": {
+            "denied_capabilities": [
+              "browser_dom",
+              "cross_policy_channel",
+              "external_search",
+              "inbound_listener",
+              "shared_storage",
+              "shell"
+            ],
+            "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+            "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+            "provider_endpoint": "https://openrouter.ai",
+            "runtime_digest": "sha256:ea37057cc4d89eb1bcdd1c3b0e94b704f67f4cfa8b2caaa847fd7c2ef5643314"
+          },
+          "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+          "system_prompt_digest": "sha256:93ed2efc90fc2723f6307efbeb9ccff492947b97559cdffdc65101812a8d6d22",
+          "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+          "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+        },
+        "policy_manifest_digest": "sha256:944701c31327ae982bbc103ce2eb77824c02e6c7603ca124d1665be984779524",
+        "slot": "qwen-controlled-stateful-v2"
+      },
+      {
+        "policy_manifest": {
+          "cancellation_mode": "disabled",
+          "code_revision": "54e845b00ef2582bcabb67158da15ae5db13f7ed",
+          "context_limit": 131072,
+          "coordinate_adapter": "normalized-1000x1000",
+          "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+          "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+          "cross_episode_cache": "disabled",
+          "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+          "dirty_worktree_policy": "reject-tracked-changes",
+          "exact_snapshot": false,
+          "harness_digest": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+          "inference_parameters": [
+            [
+              "allow_fallbacks",
+              "false"
+            ],
+            [
+              "data_collection",
+              "deny"
+            ],
+            [
+              "max_tokens",
+              "4096"
+            ],
+            [
+              "provider",
+              "alibaba"
+            ],
+            [
+              "require_parameters",
+              "true"
+            ],
+            [
+              "response_schema_strict",
+              "true"
+            ],
+            [
+              "seed",
+              "20260809"
+            ],
+            [
+              "max_rate_limit_retries_per_action",
+              "3"
+            ],
+            [
+              "rate_limit_backoff_base_seconds",
+              "15.0"
+            ],
+            [
+              "rate_limit_backoff_max_seconds",
+              "60.0"
+            ],
+            [
+              "runner_deadline_safety_margin_seconds",
+              "1.0"
+            ],
+            [
+              "max_bounded_retries_per_action",
+              "3"
+            ],
+            [
+              "temperature",
+              "0"
+            ]
+          ],
+          "max_cancellation_requests_per_attempt": 0,
+          "max_model_attempts_per_action": 4,
+          "max_reconciliation_requests_per_attempt": 0,
+          "memory_policy_version": "pixelgym-agent-v5-stateless-within-episode-v1",
+          "model": "qwen/qwen3-vl-8b-instruct",
+          "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+          "policy_id": "policy-92f17e714d39931e19e1",
+          "provider": "openrouter/alibaba",
+          "provider_sdk_auto_retries": false,
+          "proxy_auto_retries": false,
+          "reconciliation_deadline_seconds": 1.0,
+          "request_deadline_seconds": 210.0,
+          "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+          "sandbox": {
+            "denied_capabilities": [
+              "browser_dom",
+              "cross_policy_channel",
+              "external_search",
+              "inbound_listener",
+              "shared_storage",
+              "shell"
+            ],
+            "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+            "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+            "provider_endpoint": "https://openrouter.ai",
+            "runtime_digest": "sha256:ea37057cc4d89eb1bcdd1c3b0e94b704f67f4cfa8b2caaa847fd7c2ef5643314"
+          },
+          "state_reducer_version": "pixelgym-agent-v5-stateless-state-reducer-v1",
+          "system_prompt_digest": "sha256:93ed2efc90fc2723f6307efbeb9ccff492947b97559cdffdc65101812a8d6d22",
+          "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+          "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+        },
+        "policy_manifest_digest": "sha256:c36b069141ee63c9598b363644668af3e40196ea1cab692779723860666e7654",
+        "slot": "qwen-controlled-stateless-v2"
+      }
+    ],
+    "provider": {
+      "adapter": "openrouter_http",
+      "config": {},
+      "transport": "http"
+    },
+    "provider_calls_made_while_planning": 0,
+    "purpose": "controlled Qwen visible-action-history comparison: calibration",
+    "requires_clean_tracked_worktree": true,
+    "retry_breaker": {
+      "consecutive_failure_limit": 3,
+      "continue_classifications": [
+        "success_termination",
+        "step_limit_truncation",
+        "pilot_action_limit",
+        "invalid_output"
+      ],
+      "hard_stop_classifications": [
+        "infrastructure_failure",
+        "request_failure",
+        "policy_violation"
+      ],
+      "max_bounded_retries_per_action": 3
+    },
+    "schema_version": "pixelgym-agent-v5-runner-plan-v1",
+    "stop_conditions": [
+      "stop before any send exceeding the fresh run's approved spend or call cap",
+      "retain every failure and unknown-charge reservation; never reuse old approval",
+      "stop on an infrastructure failure, request failure, or policy violation",
+      "retain invalid output without retry; stop after three consecutive failures",
+      "smoke approval does not authorize calibration or confirmatory calls"
+    ],
+    "task_allocation": {
+      "assignments": [
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 0,
+          "seed": 5112,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-bfe5707f6b44202a0e7f493e"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 1,
+          "seed": 5112,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-bfe5707f6b44202a0e7f493e"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 2,
+          "seed": 5113,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-bd12a958c63d3d4a642f2388"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 3,
+          "seed": 5113,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-bd12a958c63d3d4a642f2388"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 4,
+          "seed": 5114,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-d988bea3daaaee44bd4a66dd"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 5,
+          "seed": 5114,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-d988bea3daaaee44bd4a66dd"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 6,
+          "seed": 5115,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 7,
+          "seed": 5115,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 8,
+          "seed": 5116,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-2dd66e920cec66fc7baa0340"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 9,
+          "seed": 5116,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-2dd66e920cec66fc7baa0340"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 10,
+          "seed": 5117,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-c8f7b5bf10a2be15e395f872"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 11,
+          "seed": 5117,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-c8f7b5bf10a2be15e395f872"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 12,
+          "seed": 5118,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-f30e93f386d30cede2b72ce0"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 13,
+          "seed": 5118,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-f30e93f386d30cede2b72ce0"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 14,
+          "seed": 5119,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-0aafe18062befe07f24d8cab"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 15,
+          "seed": 5119,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-0aafe18062befe07f24d8cab"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 16,
+          "seed": 5122,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-8b44ff7f55397462e532374f"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 17,
+          "seed": 5122,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-8b44ff7f55397462e532374f"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 18,
+          "seed": 5123,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-a3b213b43f485af0c0e40c16"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 19,
+          "seed": 5123,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-a3b213b43f485af0c0e40c16"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 20,
+          "seed": 5124,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 21,
+          "seed": 5124,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 22,
+          "seed": 5125,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-cad52e15b441cb87019ae777"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 23,
+          "seed": 5125,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-cad52e15b441cb87019ae777"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 24,
+          "seed": 5126,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-2d305fda4e9ebe2d9075a384"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 25,
+          "seed": 5126,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-2d305fda4e9ebe2d9075a384"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 26,
+          "seed": 5127,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-29efce8f49cbc9384485d87b"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 27,
+          "seed": 5127,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-29efce8f49cbc9384485d87b"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 28,
+          "seed": 5128,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-7e64b6bc5406e56f2c674749"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 29,
+          "seed": 5128,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-7e64b6bc5406e56f2c674749"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 30,
+          "seed": 5129,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-da795237a0d228c30efffdfa"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 31,
+          "seed": 5129,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-da795237a0d228c30efffdfa"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 32,
+          "seed": 5132,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-988e5eb5bd2f5d95773297ba"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 33,
+          "seed": 5132,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-988e5eb5bd2f5d95773297ba"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 34,
+          "seed": 5133,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-3d7d660ccc1f9499de3def52"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 35,
+          "seed": 5133,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-3d7d660ccc1f9499de3def52"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 36,
+          "seed": 5134,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-f7334ee5d914b46715d56299"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 37,
+          "seed": 5134,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-f7334ee5d914b46715d56299"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 38,
+          "seed": 5135,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-325495ed3572932e13e71595"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 39,
+          "seed": 5135,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-325495ed3572932e13e71595"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 40,
+          "seed": 5136,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-6f12521c75f36647ae21ba6a"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 41,
+          "seed": 5136,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-6f12521c75f36647ae21ba6a"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 42,
+          "seed": 5137,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-1a8a343b209ef6849bca6d5e"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 43,
+          "seed": 5137,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-1a8a343b209ef6849bca6d5e"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 44,
+          "seed": 5138,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-7c84fe9903d32bc16a62075a"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 45,
+          "seed": 5138,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-7c84fe9903d32bc16a62075a"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 46,
+          "seed": 5139,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 47,
+          "seed": 5139,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+        },
+        {
+          "action_limit": 27,
+          "family": "visible_error_recovery",
+          "ordinal": 48,
+          "seed": 5141,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-321776e3a5121a93c5651938"
+        },
+        {
+          "action_limit": 27,
+          "family": "visible_error_recovery",
+          "ordinal": 49,
+          "seed": 5141,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-321776e3a5121a93c5651938"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 50,
+          "seed": 5142,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-d439dd1631040477ef5a907b"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 51,
+          "seed": 5142,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-d439dd1631040477ef5a907b"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 52,
+          "seed": 5143,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-5852db880cf4dbdcaaf254bf"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 53,
+          "seed": 5143,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-5852db880cf4dbdcaaf254bf"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 54,
+          "seed": 5144,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-5044beb30209bdf36a0a2d12"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 55,
+          "seed": 5144,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-5044beb30209bdf36a0a2d12"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 56,
+          "seed": 5145,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-260bef26ef62a0d66cae0449"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 57,
+          "seed": 5145,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-260bef26ef62a0d66cae0449"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 58,
+          "seed": 5146,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-d98bd8f9f5ba030ec79201db"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 59,
+          "seed": 5146,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-d98bd8f9f5ba030ec79201db"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 60,
+          "seed": 5147,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-ae6332844ec7190db0b9bd18"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 61,
+          "seed": 5147,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-ae6332844ec7190db0b9bd18"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 62,
+          "seed": 5148,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-dd7009a65e1bff896173378a"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 63,
+          "seed": 5148,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-dd7009a65e1bff896173378a"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 64,
+          "seed": 5149,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-48860ad9b285908aa000a26b"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 65,
+          "seed": 5149,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-48860ad9b285908aa000a26b"
+        },
+        {
+          "action_limit": 26,
+          "family": "review_and_commit",
+          "ordinal": 66,
+          "seed": 5151,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-25572b1551ed10079d842b8b"
+        },
+        {
+          "action_limit": 26,
+          "family": "review_and_commit",
+          "ordinal": 67,
+          "seed": 5151,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-25572b1551ed10079d842b8b"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 68,
+          "seed": 5152,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 69,
+          "seed": 5152,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 70,
+          "seed": 5153,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-e2e262766fce6bc662d505ff"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 71,
+          "seed": 5153,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-e2e262766fce6bc662d505ff"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 72,
+          "seed": 5154,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-b9c743e4f89345b3397ffa1e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 73,
+          "seed": 5154,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-b9c743e4f89345b3397ffa1e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 74,
+          "seed": 5155,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-12d672051d0ecd6ff95c89ce"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 75,
+          "seed": 5155,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-12d672051d0ecd6ff95c89ce"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 76,
+          "seed": 5156,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-ebcf125c0c5332c245a09f0e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 77,
+          "seed": 5156,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-ebcf125c0c5332c245a09f0e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 78,
+          "seed": 5157,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-46c7d567496ada92c96cee32"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 79,
+          "seed": 5157,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-46c7d567496ada92c96cee32"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 80,
+          "seed": 5158,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-af3926afbbb9f3ad94f668a0"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 81,
+          "seed": 5158,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-af3926afbbb9f3ad94f668a0"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 82,
+          "seed": 5159,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 83,
+          "seed": 5159,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 84,
+          "seed": 5160,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-5eb145d169ebee7b66c83a99"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 85,
+          "seed": 5160,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-5eb145d169ebee7b66c83a99"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 86,
+          "seed": 5161,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-87b2f8109114f0dbf237649e"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 87,
+          "seed": 5161,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-87b2f8109114f0dbf237649e"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 88,
+          "seed": 5162,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-33b66723d47aace8c622a202"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 89,
+          "seed": 5162,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-33b66723d47aace8c622a202"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 90,
+          "seed": 5163,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 91,
+          "seed": 5163,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 92,
+          "seed": 5164,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 93,
+          "seed": 5164,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 94,
+          "seed": 5165,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-2efb29a2ca94ec51c81c5018"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 95,
+          "seed": 5165,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-2efb29a2ca94ec51c81c5018"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 96,
+          "seed": 5166,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-289ad343e824d3ed28d36cbd"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 97,
+          "seed": 5166,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-289ad343e824d3ed28d36cbd"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 98,
+          "seed": 5167,
+          "slot": "qwen-controlled-stateless-v2",
+          "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 99,
+          "seed": 5167,
+          "slot": "qwen-controlled-stateful-v2",
+          "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+        }
+      ],
+      "manifest_digest": "sha256:a99f5f3ee46566304c77d1ac0c9d13199c5265c5fa6dee67b80fd86ba52a25e1",
+      "manifest_path": "artifacts/grounding-v5-manifests/v2/calibration-d56.json"
+    }
+  },
+  "summary_without_transport_records": {
+    "approved_plan_sha256": "sha256:e09583fb5509dbb36fc96b10c297739f2de52a616ef59e7478f334942802ee76",
+    "assigned_policy_task_pairs": 100,
+    "attempted_policy_task_pairs": 100,
+    "classifications": {
+      "step_limit_truncation": 100
+    },
+    "cleanup": {
+      "journal_closed": true,
+      "provider_adapter_closed": true
+    },
+    "code_revision": "54e845b00ef2582bcabb67158da15ae5db13f7ed",
+    "completed_all_assigned_pairs": true,
+    "episode_results": [
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:bd53ccb861e22bdcd708795dd48b35a71f88f223df4486e2d7312ea430de4015",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-bfe5707f6b44202a0e7f493e",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0000-v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-bfe5707f6b44202a0e7f493e",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0001-v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-bd12a958c63d3d4a642f2388",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0002-v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:05b79a1e1caf20ff3c113b9f9d51c0e30a39f052dc7a60ed4f919f7f6c68b609",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-bd12a958c63d3d4a642f2388",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0003-v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:f2f7fbd068e1c79129eab0af28c3b039dccc24086e31092fbc5c89378b9a96b2",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-d988bea3daaaee44bd4a66dd",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0004-v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-d988bea3daaaee44bd4a66dd",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0005-v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0006-v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:60dfe3870403e29127f54216226132f02fc5748133898d4e4b371f442e905700",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0007-v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:845729ab0b0b86d1bc72a1a5324169eeca7c4f5a614e99e8a7c1994de57e1c50",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-2dd66e920cec66fc7baa0340",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0008-v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-2dd66e920cec66fc7baa0340",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0009-v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-c8f7b5bf10a2be15e395f872",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0010-v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:b114cacf1ad6f0eaa14d8c4fd87dfb310f3d1424bfb8f93d5bc0fa68a18e526e",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-c8f7b5bf10a2be15e395f872",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0011-v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:d1906144a7bacbeef7b9ec57cbc9941177dea81007e56d9826e723da87a712ed",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-f30e93f386d30cede2b72ce0",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0012-v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-f30e93f386d30cede2b72ce0",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0013-v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:2c57b1b5be4ff7fa43404289b2c852c3fd8a37615ea8eaabffbe752e4e0037c5",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-0aafe18062befe07f24d8cab",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0014-v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:820b9c1740411c7eb403ce4f948124f8c017dbd149abcdc8e36dd844bb3e3126",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-0aafe18062befe07f24d8cab",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0015-v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:cb4f66e85bef2e056eaaa64123639ac3a307458efa1af761b5fc83798cce6d32",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-8b44ff7f55397462e532374f",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0016-v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-8b44ff7f55397462e532374f",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0017-v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-a3b213b43f485af0c0e40c16",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0018-v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:1dd9249185640fa75e740195c366d704095b1c281ef539e6875f1ea97c1f5697",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-a3b213b43f485af0c0e40c16",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0019-v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:730bc0bad9cdc6fabb3c56c236c33424d131877aad75f34a6dfdcdc43cd93be6",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0020-v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0021-v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-cad52e15b441cb87019ae777",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0022-v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:fd50be69eb1237986c6a58e9ca30b6f077cf35a955c73bb5dff64f98a59ea02f",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-cad52e15b441cb87019ae777",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0023-v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:da7237f4b0c48fc5a6e8c36055032060b35a6f8ccc6cf260132720e80e39ddbd",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0024-v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0025-v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-29efce8f49cbc9384485d87b",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0026-v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:14b31f0c1e0040683e3af77a987df5411877948fc7803497d4b62de0963a8be3",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-29efce8f49cbc9384485d87b",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0027-v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:4b75e3cc1f795a077b1080960024048fc0c9a55250180b729cc8d33cc2ce2706",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-7e64b6bc5406e56f2c674749",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0028-v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-7e64b6bc5406e56f2c674749",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0029-v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:c8a2a460ffb23464dba58c783f4f759db6fb602513a71149b6da7b0290dd3c39",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-da795237a0d228c30efffdfa",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0030-v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:443e72c6ae1f8f5ecfe0ea65644853236932a0d88b5dc4deed29a0f4276ab325",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-da795237a0d228c30efffdfa",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0031-v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:f725e91d79d14ec3586020996843471d083df3b170a60d209a78cf85c421f396",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-988e5eb5bd2f5d95773297ba",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0032-v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-988e5eb5bd2f5d95773297ba",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0033-v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-3d7d660ccc1f9499de3def52",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0034-v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a67ee963180d59ce3f78aa6dd88e5c6b36fd4fa77c6bbdbadf23a01e0150e5af",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-3d7d660ccc1f9499de3def52",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0035-v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:7560b2f42f1435e26717edec893bd30fc22a7ebd736007fe79c9df618b18db81",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-f7334ee5d914b46715d56299",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0036-v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-f7334ee5d914b46715d56299",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0037-v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-325495ed3572932e13e71595",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0038-v5-325495ed3572932e13e71595"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:fec13a6d37f5d4786e60d932ea2921a4f384c1666748b15e0177b3acdccbfe4d",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-325495ed3572932e13e71595",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0039-v5-325495ed3572932e13e71595"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:999bf9d1e0c6561c3b78e5d8c419e545bb3a99416ffc674f2b09bef23a271573",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-6f12521c75f36647ae21ba6a",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0040-v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-6f12521c75f36647ae21ba6a",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0041-v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-1a8a343b209ef6849bca6d5e",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0042-v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:03e50d855615ac02d1e01949edfe756425445fa9030291677e49d37b04c61dbc",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-1a8a343b209ef6849bca6d5e",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0043-v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:0f9fbced9857a86de31ee2f4eec533ca3ea0711c5fe1b5df06a133823c441850",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-7c84fe9903d32bc16a62075a",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0044-v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-7c84fe9903d32bc16a62075a",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0045-v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:a16a7b8b65a8aefa3dee398c874584016046aab6d7f1c4ebc4dd9331203dc42a",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0046-v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:ea0bb9c7350891dbf76944ad86e75f9f1349bf833751a04f4a9d7da2957d648d",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0047-v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 27,
+        "final_policy_checkpoint_digest": "sha256:bb86578d76b3bf529edff1b4eba98c243d30ff7fd9942bdf58319ffa9d08c5d3",
+        "model_attempts": 27,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 27,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-321776e3a5121a93c5651938",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0048-v5-321776e3a5121a93c5651938"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 27,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-321776e3a5121a93c5651938",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0049-v5-321776e3a5121a93c5651938"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-d439dd1631040477ef5a907b",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0050-v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:bdb7d1f8190b6ec0c6678d03aa7928d4fc97308745727027c5319ab06d827c86",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-d439dd1631040477ef5a907b",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0051-v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:96f7d5046c0d40ecdd6e7c8aa12d77e7ab1c24270def061530d4c07bb183beaa",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-5852db880cf4dbdcaaf254bf",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0052-v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-5852db880cf4dbdcaaf254bf",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0053-v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-5044beb30209bdf36a0a2d12",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0054-v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:6c0c903e860feb92ee849ad09aeab947ec61eaaa448453663ddeb105569beea6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-5044beb30209bdf36a0a2d12",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0055-v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:78d9880d4148782b12e5c7a398913bde3d9fb6e75e372777c409bf5ab6d0b80e",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-260bef26ef62a0d66cae0449",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0056-v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-260bef26ef62a0d66cae0449",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0057-v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-d98bd8f9f5ba030ec79201db",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0058-v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:86992faaf84f7387b71ea7cd0289005b657add31775408e66433d65f626cd567",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-d98bd8f9f5ba030ec79201db",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0059-v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:fee19b03c35d0cc5f30db6808d9d0ed402f8b0aa666648b0ca2337308a7813cf",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-ae6332844ec7190db0b9bd18",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0060-v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-ae6332844ec7190db0b9bd18",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0061-v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-dd7009a65e1bff896173378a",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0062-v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:0eda8c90d067de209c422b2d6652b3ce7a54c0835196c3da824c3e668ed86cd1",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-dd7009a65e1bff896173378a",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0063-v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:252ff8908bf0087d67f277ac13406462d7a8513c496bc300c21f79d147af0f62",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-48860ad9b285908aa000a26b",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0064-v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:0c954cf54d339099d291dd90d1450d4e4fb535b817a8ba218118876fa54a36e6",
+        "model_attempts": 33,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 33,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-48860ad9b285908aa000a26b",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0065-v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 26,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 26,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 26,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-25572b1551ed10079d842b8b",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0066-v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 26,
+        "final_policy_checkpoint_digest": "sha256:caf5bf20bbb98160abcb7c5bbed47328635b4c7f5da9bd2e934dd5bf24f50a42",
+        "model_attempts": 27,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 27,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-25572b1551ed10079d842b8b",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0067-v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2fccb50599b08e9274fb07ac18b6366a2743079e353d0ba8a302ce82ffc49b75",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0068-v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0069-v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-e2e262766fce6bc662d505ff",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0070-v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:abfea5f9dda38cb22438300ec89dac02562614a062a00b6070f11ad887ce3b55",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-e2e262766fce6bc662d505ff",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0071-v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:9298d433dfd39e8a8bd3fef47b62718886bb97f24e23a16ee702dcf16ae30f83",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-b9c743e4f89345b3397ffa1e",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0072-v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-b9c743e4f89345b3397ffa1e",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0073-v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-12d672051d0ecd6ff95c89ce",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0074-v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:8f2aa4da760604a9202092272f88fc7eb0508396b3d32cd0a041c6345f14f6ac",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-12d672051d0ecd6ff95c89ce",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0075-v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:306479a1cf3419fd9280200dde788fe59192eba25ce0c5214ee235bc4a436090",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-ebcf125c0c5332c245a09f0e",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0076-v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-ebcf125c0c5332c245a09f0e",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0077-v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-46c7d567496ada92c96cee32",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0078-v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:0a69f2d57956253793b9e3ad188b4d35688a2371a6b191e5b4559df355e4869f",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-46c7d567496ada92c96cee32",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0079-v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:a1159429cdbbf378c23b7637eb254474084f91bbeecfc8159d0e1a16f84678cc",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-af3926afbbb9f3ad94f668a0",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0080-v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-af3926afbbb9f3ad94f668a0",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0081-v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:98b5667539a149d28f2701d24ae7b9a94f70a510e18dae2c69d92efea4256245",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0082-v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:a13c149f2ac1a73bb75eb567d7a4465f82aa05a668c5a8b06957a5d098966320",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0083-v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a5f510b0d0e4bf23c5a79cb56269694bd64064c4d0eb88c11e17219683c2cf85",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-5eb145d169ebee7b66c83a99",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0084-v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-5eb145d169ebee7b66c83a99",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0085-v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-87b2f8109114f0dbf237649e",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0086-v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:4d23ff82fa6b9f97b38d2267bd84966708967833d02aa6761c1fecef7555a175",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-87b2f8109114f0dbf237649e",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0087-v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:03cf3f98f0e483700d6868cdb759d9c329292c4e62582c864cd0d20bee77a01a",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-33b66723d47aace8c622a202",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0088-v5-33b66723d47aace8c622a202"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-33b66723d47aace8c622a202",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0089-v5-33b66723d47aace8c622a202"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0090-v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:53f1d86e5d3e9e39b21aca3a4c734f8dc6bb58c55a579cd46b31e320c76591b7",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0091-v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a55bb25af760f9691ad710384bcf199b2216a344cb95d747cffe5e9621e79743",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0092-v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0093-v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-2efb29a2ca94ec51c81c5018",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0094-v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:8d56a23f20bbd2f2ae0f4f05e35df6f378abd3f6e74a0a87248ecf4cc02621fa",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-2efb29a2ca94ec51c81c5018",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0095-v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:d03032a35e3d215bb4b4ecf8cc29cb6ac3b698874f0e5ccf55db51aa8e1a5658",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-289ad343e824d3ed28d36cbd",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0096-v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-289ad343e824d3ed28d36cbd",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0097-v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:149d5c59aa99aa93d8717aa8461d271991d5727d8fd7ad872d6141bfe5021c33",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "qwen-controlled-stateless-v2",
+        "success": false,
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26",
+        "trial_id": "manifest-qwen-controlled-stateless-v2-0098-v5-e4ba1dcff8d6223bcb69aa26"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:a01eb2f6d163b7e2b20d3d7dcf3ef10ead91f8a5419d13c30f2626a4b17e6e34",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "qwen-controlled-stateful-v2",
+        "success": false,
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26",
+        "trial_id": "manifest-qwen-controlled-stateful-v2-0099-v5-e4ba1dcff8d6223bcb69aa26"
+      }
+    ],
+    "execution_error": null,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:3072a4e5b077d7df8f0fa41579f0ec021ca735df72b5a998f34f07b440af668a",
+      "event_count": 29125,
+      "object_count": 11520,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "model_attempt_reservations": 2903,
+    "outcome_denominators": {
+      "attempted": 100,
+      "infrastructure_failure": 0,
+      "invalid_output": 0,
+      "policy_violation": 0
+    },
+    "provider_accounting": {
+      "provider_calls_made": 2903,
+      "unknown_charge_outcomes": 40
+    },
+    "provider_control_requests": 0,
+    "provider_wire_request_reservations": 2903,
+    "purpose": "controlled Qwen visible-action-history comparison: calibration",
+    "run_state": "complete",
+    "schema_version": "pixelgym-agent-v5-runner-result-v1",
+    "spend": {
+      "blocked": false,
+      "budget_accounted_spend_usd": "0.865224724",
+      "known_spend_usd": "0.798249790",
+      "unknown_reservation_usd": "0.066974934"
+    },
+    "stop_conditions": [
+      "stop before any send exceeding the fresh run's approved spend or call cap",
+      "retain every failure and unknown-charge reservation; never reuse old approval",
+      "stop on an infrastructure failure, request failure, or policy violation",
+      "retain invalid output without retry; stop after three consecutive failures",
+      "smoke approval does not authorize calibration or confirmatory calls"
+    ],
+    "stop_reason": "completed_all_assignments",
+    "successful_policy_task_pairs": 0
+  }
+}

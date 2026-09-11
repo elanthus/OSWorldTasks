@@ -1,0 +1,8 @@
+{
+  "schema_version": "pixelgym-calibration-supplement-sources-v1",
+  "scope": "Response-free derivatives and local audit receipts. Original journals and transport rows are excluded; public verification does not repeat the restricted journal audit.",
+  "snapshot_sha256": {
+    "mistral.json": "sha256:6fa628e3d948fe2d9511b30a3b966a6782cdb352198e1447a0a5ef0d78422aae",
+    "qwen-pair.json": "sha256:07b3d9374d7035cac00bcd3bb77e0ff3b9b5dc623c4c74178314a3bb8e46fda8"
+  }
+}

@@ -173,6 +173,19 @@ def run_calibration_plan(
                 stop_reason = "spend_ledger_blocked"
                 break
             classification = result.classification
+            if (
+                plan.retry_breaker.continue_on_transport_retry_exhaustion
+                and classification == "infrastructure_failure"
+                and any(
+                    event.kind == "sealed_unsuccessful_result"
+                    and event.trial_id == result.trial_id
+                    and event.payload.get("failure_code") == "transport_fault_retry_exhausted"
+                    for event in journal.events()
+                )
+            ):
+                # Preserve the failed episode in the denominator, but an exhausted
+                # transport error does not trip the campaign's failure breaker.
+                continue
             if classification in plan.retry_breaker.hard_stop_classifications:
                 stop_reason = f"hard_stop_classification:{classification}"
                 break

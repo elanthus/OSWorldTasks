@@ -1,0 +1,1366 @@
+{
+  "local_audit_receipt": {
+    "approved_plan_sha256": "sha256:37e52a68bf0d4a795f4a40e51342efa870f06266e64fcd5f8d85545465345781",
+    "assigned_tasks": 50,
+    "attempted_tasks": 50,
+    "classifications": {
+      "step_limit_truncation": 50
+    },
+    "cleanup": {
+      "journal_closed": true,
+      "provider_adapter_closed": true
+    },
+    "completed_full_denominator": true,
+    "decision_diagnostics": {
+      "assigned_episodes": 50,
+      "consumer_exclusions_not_entered": 100,
+      "consumers_declared_in_observed_episodes": 100,
+      "consumers_entered": 0,
+      "consumers_resolved": 0,
+      "critical_accuracy_conditional_on_observed_first_decision": null,
+      "critical_correct_fraction_of_declared_in_observed_episodes": 0.0,
+      "critical_declared_in_observed_episodes": 220,
+      "critical_entered": 0,
+      "critical_exclusions": {
+        "not_entered": 220
+      },
+      "critical_first_decisions_correct": 0,
+      "critical_first_decisions_observed": 0,
+      "missing_episodes": 0,
+      "observed_episodes": 50,
+      "recovery_entries": 50,
+      "recovery_entries_followed_by_terminal_success": 0,
+      "retained_before_any_visible_error": 0,
+      "retained_before_declared_repair": 0,
+      "retention_any_error_conditional_on_entry": null,
+      "retention_declared_repair_conditional_on_entry": null,
+      "successful_path_overheads": [],
+      "unsuccessful_path_overheads": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        7,
+        7,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "wrong_irreversible_commit_episodes": 0
+    },
+    "environment_actions": 1431,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:54ac717e4a1c9f00b3efd2247fb833b831aa672ee664dc5bb70ccb37994c59a2",
+      "event_count": 14535,
+      "object_count": 9085,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "not_attempted_tasks": 0,
+    "original_files_unchanged": true,
+    "provider_calls_made_by_audit": 0,
+    "reconstructed_requests_matching_journal": 1446,
+    "source_code_revision": "77196d9facc57a053edb5d9933eec4e2fcb63137",
+    "source_file_sha256": {
+      "artifacts/grounding-v5-slot-c-mistral-calibration-v3-plan.json": "sha256:e2c048b25edf100fa0fedc09b9a31eca1c808e4f7dfc81367db4cde50be7c9b1",
+      "artifacts/grounding-v5-slot-c-mistral-calibration-v3-run/attempts.sqlite": "sha256:6fe4d3434bd32038167854c0114d95fd82ed52e6104635ec54b7b2bbdd97b6e2",
+      "artifacts/grounding-v5-slot-c-mistral-calibration-v3-run/summary.json": "sha256:9033d6b10dc14ecf1d4681b1ad2afd4d9e7382101ebcf3d111bd4488f062ffd1"
+    },
+    "spend": {
+      "blocked": false,
+      "budget_accounted_spend_usd": "0.23096517",
+      "known_spend_usd": "0.19692492",
+      "unknown_reservation_usd": "0.03404025"
+    },
+    "stop_reason": "completed_all_assignments",
+    "summary_validation": "valid",
+    "transport_failure_counts": {
+      "transport_fault": 15
+    },
+    "validated_responses": 1431
+  },
+  "original_source_sha256": {
+    "artifacts/grounding-v5-slot-c-mistral-calibration-v3-audit.json": "sha256:616a71ec043524dda55b23e160b6a443ffbc8d3e734bdb45bf89b8d5ab1dd7fb",
+    "artifacts/grounding-v5-slot-c-mistral-calibration-v3-plan.json": "sha256:e2c048b25edf100fa0fedc09b9a31eca1c808e4f7dfc81367db4cde50be7c9b1",
+    "artifacts/grounding-v5-slot-c-mistral-calibration-v3-run/attempts.sqlite": "sha256:6fe4d3434bd32038167854c0114d95fd82ed52e6104635ec54b7b2bbdd97b6e2",
+    "artifacts/grounding-v5-slot-c-mistral-calibration-v3-run/summary.json": "sha256:9033d6b10dc14ecf1d4681b1ad2afd4d9e7382101ebcf3d111bd4488f062ffd1"
+  },
+  "plan": {
+    "approval_required": {
+      "exact_plan_sha256": "sha256 of canonical plan bytes",
+      "owner": "human"
+    },
+    "budgets": {
+      "environment_action_cap": 1431,
+      "maximum_spend_usd": "2.00",
+      "model_attempt_cap": 5724,
+      "per_request_theoretical_maximum_usd": "0.02150400",
+      "provider_control_request_cap": 0,
+      "provider_wire_request_cap": 5724,
+      "unknown_reservation_rule": "retain every unknown reservation"
+    },
+    "code_revision": "77196d9facc57a053edb5d9933eec4e2fcb63137",
+    "outputs": {
+      "directory": "artifacts/grounding-v5-slot-c-mistral-calibration-v3-run",
+      "journal": "attempts.sqlite",
+      "resume_mode": "forbid",
+      "summary": "summary.json"
+    },
+    "policy_panel": [
+      {
+        "policy_manifest": {
+          "cancellation_mode": "disabled",
+          "code_revision": "77196d9facc57a053edb5d9933eec4e2fcb63137",
+          "context_limit": 131072,
+          "coordinate_adapter": "normalized-1000x1000",
+          "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+          "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+          "cross_episode_cache": "disabled",
+          "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+          "dirty_worktree_policy": "reject-tracked-changes",
+          "exact_snapshot": false,
+          "harness_digest": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+          "inference_parameters": [
+            [
+              "allow_fallbacks",
+              "false"
+            ],
+            [
+              "data_collection",
+              "deny"
+            ],
+            [
+              "max_tokens",
+              "4096"
+            ],
+            [
+              "provider",
+              "mistral"
+            ],
+            [
+              "require_parameters",
+              "true"
+            ],
+            [
+              "response_schema_strict",
+              "true"
+            ],
+            [
+              "seed",
+              "20260809"
+            ],
+            [
+              "max_rate_limit_retries_per_action",
+              "3"
+            ],
+            [
+              "rate_limit_backoff_base_seconds",
+              "15.0"
+            ],
+            [
+              "rate_limit_backoff_max_seconds",
+              "60.0"
+            ],
+            [
+              "runner_deadline_safety_margin_seconds",
+              "1.0"
+            ],
+            [
+              "max_bounded_retries_per_action",
+              "3"
+            ],
+            [
+              "temperature",
+              "0"
+            ],
+            [
+              "router_metadata",
+              "enabled"
+            ],
+            [
+              "reasoning_effort",
+              "none"
+            ],
+            [
+              "provider_max_price",
+              "{\"completion\": 0.6, \"prompt\": 0.15}"
+            ]
+          ],
+          "max_cancellation_requests_per_attempt": 0,
+          "max_model_attempts_per_action": 4,
+          "max_reconciliation_requests_per_attempt": 0,
+          "memory_policy_version": "pixelgym-agent-v5-visible-action-history-v1",
+          "model": "mistralai/mistral-small-2603",
+          "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+          "policy_id": "policy-63de371196395f3faad2",
+          "provider": "openrouter/mistral",
+          "provider_sdk_auto_retries": false,
+          "proxy_auto_retries": false,
+          "reconciliation_deadline_seconds": 1.0,
+          "request_deadline_seconds": 210.0,
+          "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+          "sandbox": {
+            "denied_capabilities": [
+              "browser_dom",
+              "cross_policy_channel",
+              "external_search",
+              "inbound_listener",
+              "shared_storage",
+              "shell"
+            ],
+            "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+            "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+            "provider_endpoint": "https://openrouter.ai",
+            "runtime_digest": "sha256:a2ff5b17280358f202e40a219f95392a2cea02155072530a4e8227b9e28e29e8"
+          },
+          "state_reducer_version": "pixelgym-agent-v5-visible-action-state-reducer-v1",
+          "system_prompt_digest": "sha256:e749173bb13d9c54487fcd3e353effe073cc1308c4c82d27169b9ea7405209be",
+          "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+          "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+        },
+        "policy_manifest_digest": "sha256:68eafa3895ed391fcf48feb8af74279b08063fc9ef5148dfe80dcc491507ad5b",
+        "slot": "C-mistral-small-4-stateful-v3-calibration"
+      }
+    ],
+    "provider": {
+      "adapter": "openrouter_http",
+      "config": {},
+      "transport": "http"
+    },
+    "provider_calls_made_while_planning": 0,
+    "purpose": "fresh Slot C Mistral Small 4 Mistral calibration; no predecessor pooling",
+    "requires_clean_tracked_worktree": true,
+    "retry_breaker": {
+      "consecutive_failure_limit": 3,
+      "continue_classifications": [
+        "success_termination",
+        "step_limit_truncation",
+        "pilot_action_limit",
+        "invalid_output"
+      ],
+      "continue_on_transport_retry_exhaustion": true,
+      "hard_stop_classifications": [
+        "infrastructure_failure",
+        "request_failure",
+        "policy_violation"
+      ],
+      "max_bounded_retries_per_action": 3
+    },
+    "schema_version": "pixelgym-agent-v5-runner-plan-v1",
+    "stop_conditions": [
+      "calibration prerequisite: reviewed Mistral smoke evidence sha256:ff91a8ce33d0f5173c218e9a5772118d1bbbc15d164d2df5efdbc1a46d3ffc76",
+      "calibration approval does not authorize confirmatory calls",
+      "stop before any send exceeding the fresh run's approved spend or call cap",
+      "retain every failure and unknown-charge reservation; never reuse old approval",
+      "after bounded transport retries are exhausted, record the task as failed and continue; other infrastructure failures, request failures and policy violations stop",
+      "retain invalid output without retry; stop after three consecutive failures",
+      "smoke approval does not authorize calibration or confirmatory calls",
+      "diagnostic approval authorizes one development request only, not another smoke"
+    ],
+    "task_allocation": {
+      "assignments": [
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 0,
+          "seed": 5112,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-bfe5707f6b44202a0e7f493e"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 1,
+          "seed": 5113,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-bd12a958c63d3d4a642f2388"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 2,
+          "seed": 5114,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-d988bea3daaaee44bd4a66dd"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 3,
+          "seed": 5115,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-40c9c8dad25c35d18fcab3ac"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 4,
+          "seed": 5116,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-2dd66e920cec66fc7baa0340"
+        },
+        {
+          "action_limit": 28,
+          "family": "deferred_join",
+          "ordinal": 5,
+          "seed": 5117,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-c8f7b5bf10a2be15e395f872"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 6,
+          "seed": 5118,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-f30e93f386d30cede2b72ce0"
+        },
+        {
+          "action_limit": 30,
+          "family": "deferred_join",
+          "ordinal": 7,
+          "seed": 5119,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-0aafe18062befe07f24d8cab"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 8,
+          "seed": 5122,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-8b44ff7f55397462e532374f"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 9,
+          "seed": 5123,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-a3b213b43f485af0c0e40c16"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 10,
+          "seed": 5124,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-d0b04b9c0ddb6c2c020e0463"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 11,
+          "seed": 5125,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-cad52e15b441cb87019ae777"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 12,
+          "seed": 5126,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-2d305fda4e9ebe2d9075a384"
+        },
+        {
+          "action_limit": 28,
+          "family": "conditional_precedence",
+          "ordinal": 13,
+          "seed": 5127,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-29efce8f49cbc9384485d87b"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 14,
+          "seed": 5128,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-7e64b6bc5406e56f2c674749"
+        },
+        {
+          "action_limit": 30,
+          "family": "conditional_precedence",
+          "ordinal": 15,
+          "seed": 5129,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-da795237a0d228c30efffdfa"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 16,
+          "seed": 5132,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-988e5eb5bd2f5d95773297ba"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 17,
+          "seed": 5133,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-3d7d660ccc1f9499de3def52"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 18,
+          "seed": 5134,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-f7334ee5d914b46715d56299"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 19,
+          "seed": 5135,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-325495ed3572932e13e71595"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 20,
+          "seed": 5136,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-6f12521c75f36647ae21ba6a"
+        },
+        {
+          "action_limit": 28,
+          "family": "revision_after_reveal",
+          "ordinal": 21,
+          "seed": 5137,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-1a8a343b209ef6849bca6d5e"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 22,
+          "seed": 5138,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-7c84fe9903d32bc16a62075a"
+        },
+        {
+          "action_limit": 30,
+          "family": "revision_after_reveal",
+          "ordinal": 23,
+          "seed": 5139,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-7a5342a6b8bc0ccc70df72e8"
+        },
+        {
+          "action_limit": 27,
+          "family": "visible_error_recovery",
+          "ordinal": 24,
+          "seed": 5141,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-321776e3a5121a93c5651938"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 25,
+          "seed": 5142,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-d439dd1631040477ef5a907b"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 26,
+          "seed": 5143,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-5852db880cf4dbdcaaf254bf"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 27,
+          "seed": 5144,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-5044beb30209bdf36a0a2d12"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 28,
+          "seed": 5145,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-260bef26ef62a0d66cae0449"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 29,
+          "seed": 5146,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-d98bd8f9f5ba030ec79201db"
+        },
+        {
+          "action_limit": 29,
+          "family": "visible_error_recovery",
+          "ordinal": 30,
+          "seed": 5147,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-ae6332844ec7190db0b9bd18"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 31,
+          "seed": 5148,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-dd7009a65e1bff896173378a"
+        },
+        {
+          "action_limit": 32,
+          "family": "visible_error_recovery",
+          "ordinal": 32,
+          "seed": 5149,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-48860ad9b285908aa000a26b"
+        },
+        {
+          "action_limit": 26,
+          "family": "review_and_commit",
+          "ordinal": 33,
+          "seed": 5151,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-25572b1551ed10079d842b8b"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 34,
+          "seed": 5152,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-8ed6a65fd1b37ddfb1390872"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 35,
+          "seed": 5153,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-e2e262766fce6bc662d505ff"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 36,
+          "seed": 5154,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-b9c743e4f89345b3397ffa1e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 37,
+          "seed": 5155,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-12d672051d0ecd6ff95c89ce"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 38,
+          "seed": 5156,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-ebcf125c0c5332c245a09f0e"
+        },
+        {
+          "action_limit": 28,
+          "family": "review_and_commit",
+          "ordinal": 39,
+          "seed": 5157,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-46c7d567496ada92c96cee32"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 40,
+          "seed": 5158,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-af3926afbbb9f3ad94f668a0"
+        },
+        {
+          "action_limit": 30,
+          "family": "review_and_commit",
+          "ordinal": 41,
+          "seed": 5159,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-c1e3ad39ecbaa0beb626a8ec"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 42,
+          "seed": 5160,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-5eb145d169ebee7b66c83a99"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 43,
+          "seed": 5161,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-87b2f8109114f0dbf237649e"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 44,
+          "seed": 5162,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-33b66723d47aace8c622a202"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 45,
+          "seed": 5163,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-ee24ce36d84d9fd23e9a997a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 46,
+          "seed": 5164,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-ac0f8e633af1f60a2646fd1a"
+        },
+        {
+          "action_limit": 28,
+          "family": "evidence_aggregation",
+          "ordinal": 47,
+          "seed": 5165,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-2efb29a2ca94ec51c81c5018"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 48,
+          "seed": 5166,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-289ad343e824d3ed28d36cbd"
+        },
+        {
+          "action_limit": 30,
+          "family": "evidence_aggregation",
+          "ordinal": 49,
+          "seed": 5167,
+          "slot": "C-mistral-small-4-stateful-v3-calibration",
+          "task_id": "v5-e4ba1dcff8d6223bcb69aa26"
+        }
+      ],
+      "manifest_digest": "sha256:a99f5f3ee46566304c77d1ac0c9d13199c5265c5fa6dee67b80fd86ba52a25e1",
+      "manifest_path": "artifacts/grounding-v5-manifests/v2/calibration-d56.json"
+    }
+  },
+  "summary_without_transport_records": {
+    "approved_plan_sha256": "sha256:37e52a68bf0d4a795f4a40e51342efa870f06266e64fcd5f8d85545465345781",
+    "assigned_policy_task_pairs": 50,
+    "attempted_policy_task_pairs": 50,
+    "classifications": {
+      "step_limit_truncation": 50
+    },
+    "cleanup": {
+      "journal_closed": true,
+      "provider_adapter_closed": true
+    },
+    "code_revision": "77196d9facc57a053edb5d9933eec4e2fcb63137",
+    "completed_all_assigned_pairs": true,
+    "episode_results": [
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:8d8b502d77396f89f1d9f778de8c3a74590ffd3c34c001e6d9ee54627bd2e7d5",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-bfe5707f6b44202a0e7f493e",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0000-v5-bfe5707f6b44202a0e7f493e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:3c7a6470fc8bfa09fe67d59b9f8b421d5d9eab1d2e7d632cdb2537bcd4240e5c",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-bd12a958c63d3d4a642f2388",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0001-v5-bd12a958c63d3d4a642f2388"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:b83a39f85202487cc7460b62e6ac6efa6c81b198499b7705f6e7fb1da48c95ce",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-d988bea3daaaee44bd4a66dd",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0002-v5-d988bea3daaaee44bd4a66dd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:b10019b7c7ac99a9e514b7b3ecdaf008c153fdedb0d5d031aa344893f0527a93",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-40c9c8dad25c35d18fcab3ac",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0003-v5-40c9c8dad25c35d18fcab3ac"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:2f159f66970c547db7fbb51c4a4d5ae63b6a942af89a42b528f57dc1c9d2ebdc",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-2dd66e920cec66fc7baa0340",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0004-v5-2dd66e920cec66fc7baa0340"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a8acca6639c938be190ecbe62abe13d46ae863550fcb1862133e1e22424e413a",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-c8f7b5bf10a2be15e395f872",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0005-v5-c8f7b5bf10a2be15e395f872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:ae9e5a6d2257b3591d39ac659b124d894299b18685d370db3cd075b7feccf1f5",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-f30e93f386d30cede2b72ce0",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0006-v5-f30e93f386d30cede2b72ce0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:f6a921c0a3231864444b267ebc74fab928944bb08157b4eef3a8d950c8875df9",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-0aafe18062befe07f24d8cab",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0007-v5-0aafe18062befe07f24d8cab"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:64dd2fb039b3ac196e6d4dfe7191e63939b1dd53f766943387a73f8aa6fee3f3",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-8b44ff7f55397462e532374f",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0008-v5-8b44ff7f55397462e532374f"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:60cbd8938f7b385e93a251890fbd337ebb664af047bb1b9388ad3e23da9170f8",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-a3b213b43f485af0c0e40c16",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0009-v5-a3b213b43f485af0c0e40c16"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a9379b71bf2cd22ea2b38c12af6b9ed01c24c2f41b9501ffa265780675dbb4ba",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-d0b04b9c0ddb6c2c020e0463",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0010-v5-d0b04b9c0ddb6c2c020e0463"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:54732457f5be4d560cac717007e62ed329a88b9a3794592496f36a2adaa7cc30",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-cad52e15b441cb87019ae777",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0011-v5-cad52e15b441cb87019ae777"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:9695d2104466d1d28589462fdd31483837902bc34f410fac127d33e4f0f42f78",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-2d305fda4e9ebe2d9075a384",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0012-v5-2d305fda4e9ebe2d9075a384"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:433e65ef5ac400154d762590897d4e7b0ffa2445ad8b173f39d16196a7334e41",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-29efce8f49cbc9384485d87b",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0013-v5-29efce8f49cbc9384485d87b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:00e937cbe20ae33ba0f63b99cabcc3400f79e7b356c2a8884592dc82c5c395ef",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-7e64b6bc5406e56f2c674749",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0014-v5-7e64b6bc5406e56f2c674749"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:ee10f8a65d1da0d3b6a47c81dbdabef25abc6c88df789345d27b934f11039c35",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-da795237a0d228c30efffdfa",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0015-v5-da795237a0d228c30efffdfa"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:4bcc577db2df862f509a4d4d270485481ddacfada684d522206ddbaaeea7a184",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-988e5eb5bd2f5d95773297ba",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0016-v5-988e5eb5bd2f5d95773297ba"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:8136cb3eb81dbd15991be418d75bcf427f95c130bb4fa2244115df367ef19e24",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-3d7d660ccc1f9499de3def52",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0017-v5-3d7d660ccc1f9499de3def52"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:1ad2fc36573bb6a71136d81c55ef7bcd2b5de53aec2dde1bb906e03b93366d24",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-f7334ee5d914b46715d56299",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0018-v5-f7334ee5d914b46715d56299"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:14063bbc4a0e4a3edeecb2650ca6afd189aec7bc84c039e7502b6c54eb27793c",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-325495ed3572932e13e71595",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0019-v5-325495ed3572932e13e71595"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:04b3181df95dc1e003bdf527054606bd1f19305d98714b2ca537659b38b17056",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-6f12521c75f36647ae21ba6a",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0020-v5-6f12521c75f36647ae21ba6a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:ca5303d298f1c229a6e5bbf8ec0011327594b3647344ed848fb3acea396cefcb",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-1a8a343b209ef6849bca6d5e",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0021-v5-1a8a343b209ef6849bca6d5e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:c46f33d4a6b7c3501f1dd940bc41523ab83e5b3c7e76fb15f492772f294765de",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-7c84fe9903d32bc16a62075a",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0022-v5-7c84fe9903d32bc16a62075a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:bc0fdff1253c956b895f278b66a3b8a83c48b0f4f5d6f3517aeb9fdfe19251bf",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-7a5342a6b8bc0ccc70df72e8",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0023-v5-7a5342a6b8bc0ccc70df72e8"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 27,
+        "final_policy_checkpoint_digest": "sha256:71ae831988911104610b3d4c6af8055483486db8ccd743c9580103072c505196",
+        "model_attempts": 27,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 27,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-321776e3a5121a93c5651938",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0024-v5-321776e3a5121a93c5651938"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:148fe2e29e7d7490fc3be723e1ca4f3f034b6847072a60bf22820c3b352f93db",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-d439dd1631040477ef5a907b",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0025-v5-d439dd1631040477ef5a907b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:87156f5d69d55aaa6b18e3de2207364192422a1f52edccd98a7201ede552526c",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-5852db880cf4dbdcaaf254bf",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0026-v5-5852db880cf4dbdcaaf254bf"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:05e3124becf223977230260f886108499657760472e5cb298058ca5078e353c2",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-5044beb30209bdf36a0a2d12",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0027-v5-5044beb30209bdf36a0a2d12"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:0f50243886dce708cfb2d9e278391da134f499afbd83267e7c565428c6eadd2f",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-260bef26ef62a0d66cae0449",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0028-v5-260bef26ef62a0d66cae0449"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:881310112b67aeb8ee330b83a2ee5529d8c5b9fa82dd131ec62f20958d4d397b",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-d98bd8f9f5ba030ec79201db",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0029-v5-d98bd8f9f5ba030ec79201db"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 29,
+        "final_policy_checkpoint_digest": "sha256:cbc132f18e1e1ef5c085b17161291e6ae0ce719afe329eebe14325baed8385ce",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-ae6332844ec7190db0b9bd18",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0030-v5-ae6332844ec7190db0b9bd18"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:098cb88e8369c8e932c4c0249272d1086062c3042b30832e06d88d613d6707f0",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-dd7009a65e1bff896173378a",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0031-v5-dd7009a65e1bff896173378a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 32,
+        "final_policy_checkpoint_digest": "sha256:f71cc081135631f0c458962a7dceef35dab6fa255cc9f7de1b15e85b527df447",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-48860ad9b285908aa000a26b",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0032-v5-48860ad9b285908aa000a26b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 26,
+        "final_policy_checkpoint_digest": "sha256:f1eee1e1bd57451823eba6ba4b9936df207b617e5dbcea733f150d8b22ed558e",
+        "model_attempts": 26,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 26,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-25572b1551ed10079d842b8b",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0033-v5-25572b1551ed10079d842b8b"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:e1a30af1cd8336551b48c73daefadf0b7568b60ebdcdb5a551868b4466c29d47",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-8ed6a65fd1b37ddfb1390872",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0034-v5-8ed6a65fd1b37ddfb1390872"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:bb851d0f4c633880f0be2fc96129455af585e1525f1a2d8624816a633a7b92fa",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-e2e262766fce6bc662d505ff",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0035-v5-e2e262766fce6bc662d505ff"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:ebd286fa93a8831234924f4748d2a47e750ab0621f78a3ebdc83c13fd09ad8ff",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-b9c743e4f89345b3397ffa1e",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0036-v5-b9c743e4f89345b3397ffa1e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:57e4e079c7ecd4b4833e05cc9ae804399376a77ba54367b6c7f34b3550df3412",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-12d672051d0ecd6ff95c89ce",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0037-v5-12d672051d0ecd6ff95c89ce"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:c608dfc5132c85005e357cfc00e88d4c8b74e027f47db82f49df5627a5ff5b03",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-ebcf125c0c5332c245a09f0e",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0038-v5-ebcf125c0c5332c245a09f0e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:51fbd2026e8ba20cd0bd99719c3908b93fbfd7a249c18f9e0cead44c56539218",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-46c7d567496ada92c96cee32",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0039-v5-46c7d567496ada92c96cee32"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:c45caa1c7cba4a24c425ca61296d7f059708bbf18575afe6b63e2770066ff57d",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-af3926afbbb9f3ad94f668a0",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0040-v5-af3926afbbb9f3ad94f668a0"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:40fd1a3d4aace75488787494005946029523584b2d91a8031be1c6111027bcbe",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-c1e3ad39ecbaa0beb626a8ec",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0041-v5-c1e3ad39ecbaa0beb626a8ec"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:8f398d0ad56d71ca0c646244282a8fca0cc3b533d0167b708c0ed3bbda3ba363",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-5eb145d169ebee7b66c83a99",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0042-v5-5eb145d169ebee7b66c83a99"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:66ebf6d757e6df768756620a6f92c9d497310efb022e76bb45d26e7539b43e39",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-87b2f8109114f0dbf237649e",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0043-v5-87b2f8109114f0dbf237649e"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:a72e0625f1339f045fbe16c5aa37b02fa159626c8d4b13eecce389f4f2b22a89",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-33b66723d47aace8c622a202",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0044-v5-33b66723d47aace8c622a202"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:7b97f3213a7bd7cd5e6e194a1fe385f996bb54cbb4f93e86aef2332e88d9ac36",
+        "model_attempts": 30,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 30,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-ee24ce36d84d9fd23e9a997a",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0045-v5-ee24ce36d84d9fd23e9a997a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:f50976a01b42ec244f1347c84f73e8fe5bf82e1d187ffb91207d589d5378a48b",
+        "model_attempts": 28,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 28,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-ac0f8e633af1f60a2646fd1a",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0046-v5-ac0f8e633af1f60a2646fd1a"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 28,
+        "final_policy_checkpoint_digest": "sha256:5dab894ecaf1d7c3380b6c6863d27a6ee8890c8fa44a7e4df80fc6506317b3e0",
+        "model_attempts": 29,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 29,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-2efb29a2ca94ec51c81c5018",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0047-v5-2efb29a2ca94ec51c81c5018"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:1157f7d36acd2e5cfdb7384a1c177b94bb550a54441b774e5a812123ab575bee",
+        "model_attempts": 31,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 31,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-289ad343e824d3ed28d36cbd",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0048-v5-289ad343e824d3ed28d36cbd"
+      },
+      {
+        "classification": "step_limit_truncation",
+        "environment_actions": 30,
+        "final_policy_checkpoint_digest": "sha256:272cb0f7ddab0494f278d7cfcd121e324aacce704a810ce59b68f95fbfe4f272",
+        "model_attempts": 32,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 32,
+        "slot": "C-mistral-small-4-stateful-v3-calibration",
+        "success": false,
+        "task_id": "v5-e4ba1dcff8d6223bcb69aa26",
+        "trial_id": "manifest-C-mistral-small-4-stateful-v3-calibration-0049-v5-e4ba1dcff8d6223bcb69aa26"
+      }
+    ],
+    "execution_error": null,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:54ac717e4a1c9f00b3efd2247fb833b831aa672ee664dc5bb70ccb37994c59a2",
+      "event_count": 14535,
+      "object_count": 9085,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "model_attempt_reservations": 1446,
+    "outcome_denominators": {
+      "attempted": 50,
+      "infrastructure_failure": 0,
+      "invalid_output": 0,
+      "policy_violation": 0
+    },
+    "provider_accounting": {
+      "provider_calls_made": 1446,
+      "unknown_charge_outcomes": 15
+    },
+    "provider_control_requests": 0,
+    "provider_wire_request_reservations": 1446,
+    "purpose": "fresh Slot C Mistral Small 4 Mistral calibration; no predecessor pooling",
+    "run_state": "complete",
+    "schema_version": "pixelgym-agent-v5-runner-result-v1",
+    "spend": {
+      "blocked": false,
+      "budget_accounted_spend_usd": "0.23096517",
+      "known_spend_usd": "0.19692492",
+      "unknown_reservation_usd": "0.03404025"
+    },
+    "stop_conditions": [
+      "calibration prerequisite: reviewed Mistral smoke evidence sha256:ff91a8ce33d0f5173c218e9a5772118d1bbbc15d164d2df5efdbc1a46d3ffc76",
+      "calibration approval does not authorize confirmatory calls",
+      "stop before any send exceeding the fresh run's approved spend or call cap",
+      "retain every failure and unknown-charge reservation; never reuse old approval",
+      "after bounded transport retries are exhausted, record the task as failed and continue; other infrastructure failures, request failures and policy violations stop",
+      "retain invalid output without retry; stop after three consecutive failures",
+      "smoke approval does not authorize calibration or confirmatory calls",
+      "diagnostic approval authorizes one development request only, not another smoke"
+    ],
+    "stop_reason": "completed_all_assignments",
+    "successful_policy_task_pairs": 0
+  }
+}

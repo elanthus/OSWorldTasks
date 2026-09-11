@@ -1,0 +1,33 @@
+{
+  "approved_plan_sha256": "sha256:6e15c02d5afe60ad3209e5ed00fbc0ffff25daf1b78137f77d7fbee5b178c515",
+  "classifications": {
+    "pilot_action_limit": 10
+  },
+  "environment_actions": 20,
+  "episodes_with_verified_history_carryover": 10,
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:8c2a485a964ab480cac8953e9ec3edfec9533ee0d9a41f647feb4b093ea50f94",
+    "event_count": 230,
+    "object_count": 173,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "model_quality_assessment": "Not measured: every task stopped at the two-action pilot limit.",
+  "original_files_unchanged": true,
+  "provider_calls_made_by_audit": 0,
+  "reconstructed_requests_matching_journal": 20,
+  "source_code_revision": "b7569566e4357b4f7acbd3ac08ef844c05de55e1",
+  "source_file_sha256": {
+    "artifacts/grounding-v5-slot-c-mistral-smoke-plan.json": "sha256:fb4b03ed42c235f8338d44080410f1de6680b8691965c585a3121eb13bf0314b",
+    "artifacts/grounding-v5-slot-c-mistral-smoke-run/attempts.sqlite": "sha256:b625b0302c23b42654fb12466b8defc9b5053fe28e12c518cfd08183b7d2b0d9",
+    "artifacts/grounding-v5-slot-c-mistral-smoke-run/summary.json": "sha256:62c18ac45d1c8db63356a268b3ed3b8e3ce5174d04b4bd7fe03c0aaacd7e6734"
+  },
+  "spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "0.00548670",
+    "known_spend_usd": "0.00548670",
+    "unknown_reservation_usd": "0"
+  },
+  "summary_validation": "valid",
+  "validated_responses": 20
+}
