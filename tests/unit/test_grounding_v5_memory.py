@@ -415,3 +415,21 @@ def test_five_dollar_shared_ledger_keeps_unknown_charges_across_arms_and_resume(
         assert ledger.reserve_wire("history/two", bound)
         assert not ledger.reserve_wire("stateless/two", bound)
         assert ledger.wire_requests_sent == 3
+
+
+def test_stored_evidence_report_survives_json_key_sorting() -> None:
+    from scripts.prepare_grounding_v5_memory import render_report
+
+    value = {
+        "generator_version": MEMORY_GENERATOR_VERSION,
+        "summary": {
+            "admitted_task_count": 72,
+            "counterfactual_pair_count": 48,
+            "memory_target_positions": {"2": 12, "0": 19, "1": 17},
+            "baselines": {
+                "position-0": {"first_attempt_correct": 19, "successes": 4},
+                "label-min": {"first_attempt_correct": 11, "successes": 0},
+            },
+        },
+    }
+    assert render_report(value) == render_report(json.loads(json.dumps(value, sort_keys=True)))

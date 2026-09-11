@@ -1,15 +1,20 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: proposed; human decision pending. No implementation or paid calls authorized.**
+**Status: bounded repairs approved; USD 5 total new-spend ceiling. Final evaluation freeze pending.**
 
-**Recommendation:** defer the final evaluation freeze. The current bank does not yet support a
-credible test of memory. Approve a bounded generator and policy revision first, validate it without
-provider calls, and obtain fresh calibration before signing the executable D5.8 manifest. The
+**Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
+inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
+two deferred facts and a matched screenshot-history intervention. Fresh calibration is still needed
+before signing the executable D5.8 manifest. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.
 
-This package records the evidence, proposed choices, and conditions needed to finish D5.8. It does
-not record the owner's approval, declare a milestone verdict, or change historical results.
+The owner approved the bounded repair scope with the response “approved, 5 dollars”, then selected
+deferred correctness feedback until final submission. The
+[approval record](../artifacts/grounding-v5-d58-design/repair-approval.json) preserves both decisions.
+This approval covers implementation and a USD 5 aggregate planning ceiling; exact paid execution
+plans and the final confirmatory freeze remain pending. It does not declare a milestone verdict or
+change historical results.
 
 ## Why the current bank is insufficient
 
@@ -47,13 +52,14 @@ The [supplement](../artifacts/grounding-v5-calibration-supplement/report.md) ret
 and both Qwen nulls. Different routes, versions, and harnesses must not be pooled into a controlled
 model comparison.
 
-## Proposed generator and admission freeze
+## Approved generator repair scope
 
-Create a new generator version; preserve the current version and all historical evidence. Limit
-changes to the following rules, applied across each family rather than to individual failed items:
+The opt-in `pixelgym-agent-v5-generator-memory-v2` implements the following rules across all six
+families. Historical generator, contracts, and seed files remain unchanged. The default backend
+still uses the historical generator; successor evaluation explicitly requires `MemoryBackend`.
 
 1. Derive a per-stage permutation from a separate deterministic layout stream that does not read
-   the requested target or correct control. Balance target positions in a no-call audit and test
+   the requested target or correct control. Audit target positions without selecting favorable seeds, and test
    policies based on position and superficial labels.
 2. Give all alternatives at a deferred consumer the same grammatical and source-role form.
    Use distinct candidate values and vary which earlier fact is correct. Remove duplicate labels.
@@ -67,6 +73,12 @@ changes to the following rules, applied across each family rather than to indivi
 5. Add a no-call baseline that makes locally competent choices while losing deferred facts.
    Report its first consumer choices and any later recovery separately. A golden prefix is
    permitted only in a labelled construct-validation diagnostic, never a model benchmark score.
+6. Record each deferred choice and advance without revealing its correctness. Check both recorded
+   choices at final submission. Wrong choices cannot be tried again on the same consumer, and a
+   wrong deferred choice cannot earn success by selecting the correct final commit control.
+   Any declared visible recovery branch must behave identically for correct and incorrect choices.
+   This closes the immediate-feedback shortcut: trying every option previously cost at most four
+   extra actions, within the existing six-action minimum correction allowance.
 
 Repeat the existing admission, reset, replay, reward-hacking, coordinate, and human usability checks
 on the revised development bank. Counterfactual consumer pixels must match bitwise while the
@@ -76,7 +88,32 @@ the answer, and retain all first-attempt errors.
 
 The design principle is consistent with memory evaluation under partial observability in
 [POPGym, ICLR 2023](https://openreview.net/pdf?id=chDrutUTs0K). The counterfactual check above is a
-proposed admission test for this repository, not a claimed result from that paper.
+repository-specific admission test, not a claimed result from that paper.
+
+## Implemented repair and review evidence
+
+The [development report](../artifacts/grounding-v5-d58-design/memory-repair/report.md) and
+[source binding](../artifacts/grounding-v5-d58-design/memory-repair/sources.json) identify the
+reviewable successor. Source or generator changes after this binding require a new version and
+fresh admission evidence before paid execution. No change may be selected using confirmatory results.
+
+The new policy retains every observed lossless PNG and its own dispatched actions within one
+episode, up to 32 observations. It adds the current screenshot through a pure reducer before the
+existing runner persists the pre-call checkpoint. A new process can therefore replay the same
+history without a hidden image cache. The matched control gets only the current screenshot.
+Both arms share the system prompt, parser, coordinate adapter, provider settings and retry rules.
+Neither gets private diagnostics, reward metadata, expected answers, or target annotations as
+policy context. Interruption tests cover both the first and a later action boundary.
+
+The schema and backend are versioned separately from historical evidence. The declared recovery
+at the verification consumer asks every choice to be confirmed; it never reports whether the
+reference was correct. An incorrect recorded choice seals an unsuccessful submission at final
+commit and cannot earn evaluator reward. The environment still truncates unsuccessful episodes
+at the action limit and terminates only on exact success.
+
+This implementation uses the deterministic in-process pixel renderer. The linked source and
+consumer PNGs are available for owner usability review. No browser/OSWorld integration or human
+usability verdict is claimed by the automated checks.
 
 ## Proposed policy candidates and calibration routing
 
@@ -87,7 +124,7 @@ proposed admission test for this repository, not a claimed result from that pape
 | Lower-ability calibration reference | Qwen3-VL-8B-Instruct through the previously calibrated route | The same revised screenshot-history harness |
 | Additional calibration reference | Mistral Small 4 through the previously calibrated route | The same revised screenshot-history harness |
 
-These are candidate roles, not frozen executable policy IDs or current availability guarantees.
+These remain candidate roles, not approved final executable policy IDs or availability guarantees.
 Freeze exact route, model alias or snapshot, inference parameters, dependency/runtime digests,
 prompt, parser, normalized-coordinate adapter, context limit, state reducer, response schema,
 retry classification and deadlines before any calibration approval. No silent fallback to another
@@ -119,8 +156,8 @@ many independent memory tests.
 
 For a confirmatory memory comparison, propose **144 episodes and 120 logical tasks per arm**:
 retain the original seed roles and add 48 singleton tasks, with seeds **6096–6143**, eight per
-family in the existing family order. These additional seeds are proposals and are not installed in
-the generator. Give each family two additional regression canaries, four frontier items, and two
+family in the existing family order. The successor implements this reserved seed metadata; its
+confirmatory tasks have not been generated or inspected. Give each family two additional regression canaries, four frontier items, and two
 ceiling probes. The total allocation becomes 30/84/30 (approximately 20%/60%/20%). Existing seed
 roles remain unchanged; generator revisions necessarily create new canonical task IDs and hashes.
 
@@ -163,18 +200,39 @@ No confirmatory generator output or policy response may influence selection.
 
 ## Spend and the remaining approval boundary
 
-**New authorized spend in this package: USD 0. Confirmatory execution cap: zero requests.**
-The request to prepare D5.8 does not approve numeric paid-call caps or a revised provider package.
-The owner has been asked for a total new-spend ceiling; no answer is assumed here.
+**Approved total new-spend ceiling: USD 5.00 across all successor phases.** This includes actual
+charges and reservations for unknown outcomes. The approval is not a separate USD 5 allowance per
+policy or per run. Confirmatory execution remains disabled until its exact plan is approved.
 
-USD 25 can be a proposed initial planning ceiling, but completion of the proposed design within it
-has not been established. Historical per-episode spend does not price an all-screenshot history
+Completion of the proposed design within USD 5 has not been established. Historical per-episode spend does not price an all-screenshot history
 policy. Before paid approval, calculate exact phase caps from the revised task and policy manifests
 and a checked price catalog: environment actions, model attempts, provider control requests, and
 total wire requests. Show conservative per-request reservations and projected phase costs. Count
 unknown outcomes against the cap until reconciled; do not move unused budget between phases without
 approval. If the bounded design cannot fit the owner's ceiling, present the sensitivity/cost
 tradeoff before launching anything.
+
+The [diagnostic plan](../artifacts/grounding-v5-d58-design/memory-repair/pilot-plan.json) binds two
+candidate Gemini policy manifests to ten development cases. It permits at most **20 model attempts,
+zero provider control requests, and 20 wire requests**, with no retries. Its **340 environment-action
+cap** includes 320 scripted prefix actions and 20 model-selected consumer actions. The same prefix
+is supplied chronologically to the history arm and omitted from the stateless arm. This deliberately
+isolates first-attempt recall; it cannot supply end-to-end calibration success rates or paired power.
+Qwen, Mistral, end-to-end calibration, reliability and confirmation receive no executable call allowance.
+
+The public [OpenRouter endpoint snapshot](../artifacts/grounding-v5-d58-design/gemini-price-snapshot.json)
+records the matching Vertex routes, model display name and prices. The provider uses an alias, not
+an immutable snapshot. Planning reserves its full 1,048,576-token input bound plus 4,096 output tokens
+at the highest matching route rates: **USD 1.44322560 per request**, or **USD 28.86451200** if all
+twenty requests incurred that maximum. These are conservative bounds, not predicted charges.
+The USD 5 ceiling can accommodate three such unresolved reservations; a fourth must stop.
+Actual settled costs may release enough room for more requests, up to the twenty-call cap.
+
+The plan is explicitly non-executable. Before requesting paid execution approval, implement and
+validate a driver that binds this plan to one durable aggregate ledger across both arms and all
+subsequent phases. Existing ledger tests confirm that unknown charges survive a fresh process and
+cannot become a new allowance for the other arm. Prices and endpoint bounds must be rechecked
+before a paid freeze; any changed manifest requires the owner's exact-plan approval.
 
 The final freeze must bind the actual generator and source digests, canonical tasks and seed lists,
 admission evidence, exact candidate policy manifests, primary comparison, power calculation,
@@ -189,8 +247,12 @@ From the repository root:
 ```sh
 .venv/bin/python -m artifacts.grounding-v5-d58-design.audit
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
+.venv/bin/python -m scripts.prepare_grounding_v5_memory --verify
 ```
 
 The audit reads committed response-free calibration receipts and current generator code, produces
 the linked structured JSON, and runs five independent mathematical checks. It does not reread
-restricted journals, rerun a model, or establish the unimplemented revised generator's validity.
+restricted journals or rerun a model. The successor command verifies artifact bytes, current source
+digests, and the report against stored structured evidence. Its build mode refuses to overwrite an
+existing evidence directory. To reproduce a fresh build, use a separate checkout at the recorded
+code revision before the evidence commit and run it without `--verify`.

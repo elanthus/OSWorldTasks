@@ -160,7 +160,7 @@ def render_report(value: dict[str, Any]) -> str:
         "| Consumer rule | First choices correct / 48 | Terminal successes / 24 |",
         "|---|---:|---:|",
     ]
-    for rule, row in summary["baselines"].items():
+    for rule, row in sorted(summary["baselines"].items()):
         lines.append(f"| {rule} | {row['first_attempt_correct']} | {row['successes']} |")
     lines += [
         "",
