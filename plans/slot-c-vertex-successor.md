@@ -1,5 +1,8 @@
 # Complete Slot C through a fixed Google Vertex route
 
+Status: superseded by the owner's [Mistral Small 4 selection](slot-c-mistral-successor.md)
+on 2026-09-10. Preserve this procedure and its stopped evidence as historical context.
+
 The owner selected Llama Scout through Google Vertex on 2026-09-10 after two local DeepInfra
 runs stopped on rate-limit retry exhaustion. The owner subsequently approved only the exact
 smoke plan described below. The operator must preserve the predecessor runs and obtain an exact plan approval

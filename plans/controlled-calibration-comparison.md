@@ -170,7 +170,11 @@ most 5,724 model attempts/wire requests, with zero control requests. A proposed 
 remains binding; longer backoff does not guarantee completion. Preserve stopped predecessor rows
 as incomplete evidence, never fill them with a successor, and never reuse their paid-call approval.
 
-The owner subsequently selected a fixed Google Vertex route for Llama Scout. See the
+The owner initially selected a fixed Google Vertex route for Llama Scout. See the
 [Slot C Vertex successor procedure](slot-c-vertex-successor.md) for its separate smoke and
 calibration plans. That selection does not authorize new paid calls or retire the frozen
 DeepInfra evidence.
+
+After both Vertex probes stopped on HTTP 404, the owner selected Mistral Small 4 on 2026-09-10.
+Use the [Mistral successor procedure](slot-c-mistral-successor.md) for the current preparation.
+Its smoke and any full calibration each require fresh exact approval.

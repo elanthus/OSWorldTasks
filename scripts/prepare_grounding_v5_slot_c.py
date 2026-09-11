@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare a fresh Slot C Vertex plan without credentials or provider calls."""
+"""Prepare a fresh Slot C plan without credentials or provider calls."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from pixelgym.grounding.v5.slot_c import build_slot_c_plan
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("smoke", "diagnostic"), required=True)
+    parser.add_argument("--candidate", choices=("vertex", "mistral"), default="vertex")
     parser.add_argument("--maximum-spend-usd", required=True)
     parser.add_argument("--run-output", required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -34,6 +35,7 @@ def main() -> None:
         phase=args.phase,
         maximum_spend_usd=args.maximum_spend_usd,
         output_directory=args.run_output,
+        candidate=args.candidate,
     )
     if (root / plan.outputs.directory).exists():
         raise FileExistsError("Slot C plans require a fresh run output directory")

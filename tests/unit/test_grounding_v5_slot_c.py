@@ -14,6 +14,7 @@ from pixelgym.grounding.v5.panel_policy import (
     LLAMA_STATEFUL_VERTEX,
     LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
+    MISTRAL_STATEFUL_SMOKE,
     OpenRouterPanelPolicy,
     OpenRouterPanelTransport,
     SpendLedger,
@@ -65,6 +66,84 @@ def test_vertex_request_pins_route_and_strict_schema_without_claiming_quantizati
     assert request["model"] == "meta-llama/llama-4-scout"
     assert request["response_format"]["type"] == "json_schema"
     assert request["response_format"]["json_schema"]["strict"] is True
+    assert "reasoning" not in request
+
+
+def test_mistral_smoke_binds_reasoning_route_budget_and_registered_manifest():
+    config = MISTRAL_STATEFUL_SMOKE
+    policy = OpenRouterPanelPolicy(config)
+    request = policy.build_request(policy.reset("instruction"), bytes(1024 * 768 * 3))
+    assert request["model"] == "mistralai/mistral-small-2603"
+    assert request["provider"] == {
+        "only": ["mistral"], "allow_fallbacks": False,
+        "data_collection": "deny", "require_parameters": True,
+        "max_price": {"prompt": 0.15, "completion": 0.6},
+    }
+    assert request["reasoning"] == {"effort": "none"}
+    assert request["response_format"]["json_schema"]["strict"] is True
+    assert config.router_metadata
+    assert config.request_maximum_usd == Decimal("0.02150400")
+    plan = build_slot_c_plan(
+        ROOT, code_revision="a" * 40, phase="smoke", candidate="mistral",
+        maximum_spend_usd="1.00", output_directory="artifacts/mistral-test-unused",
+    )
+    assert len(plan.assignments) == 10
+    assert len({a.family for a in plan.assignments}) == 6
+    assert {a.action_limit for a in plan.assignments} == {2}
+    assert plan.budgets.caps.model_attempt_cap == 20
+    assert plan.budgets.caps.provider_wire_request_cap == 20
+    assert plan.budgets.caps.provider_control_request_cap == 0
+    assert plan.retry_breaker.max_bounded_retries_per_action == 0
+    assert plan.outputs.resume_mode == "forbid"
+    assert {a.slot for a in plan.assignments} == {config.slot}
+    manifest = build_panel_policy_manifest(ROOT, config=config, code_revision="a" * 40)
+    assert ("reasoning_effort", "none") in manifest.inference_parameters
+    changed = build_panel_policy_manifest(
+        ROOT, config=replace(config, reasoning_effort="high"), code_revision="a" * 40,
+    )
+    assert manifest.policy_id != changed.policy_id
+    uncapped = build_panel_policy_manifest(
+        ROOT, config=replace(config, enforce_provider_price_cap=False), code_revision="a" * 40,
+    )
+    assert manifest.policy_id != uncapped.policy_id
+    adapter = OpenRouterHttpAdapter(ROOT, plan)
+    try:
+        assert adapter._manifest(config.slot).to_dict() == manifest.to_dict()
+        assert adapter.provider_accounting()["provider_calls_made"] == 0
+    finally:
+        adapter.close()
+
+
+@pytest.mark.parametrize("model,provider,accepted", [
+    ("mistralai/mistral-small-2603", "Mistral", True),
+    ("mistralai/mistral-small-2603", "Venice", False),
+    ("meta-llama/llama-4-scout", "Mistral", False),
+])
+def test_mistral_parser_rejects_other_model_or_provider(model, provider, accepted):
+    policy = OpenRouterPanelPolicy(MISTRAL_STATEFUL_SMOKE)
+    response = canonical_json_bytes({
+        "response_id": "fixture", "model": model,
+        "content": '{"action_type":0,"x":0,"y":0,"key":0}',
+        "finish_reason": "stop",
+        "usage": {"upstream_provider": provider, "price_guard": "ok", "cost": "0.0001"},
+    })
+    if accepted:
+        assert policy.parse(response, policy.reset("instruction"))["action_type"] == 0
+    else:
+        with pytest.raises(ValueError, match="provider response"):
+            policy.parse(response, policy.reset("instruction"))
+
+
+@pytest.mark.parametrize("candidate,phase", [
+    ("mistral", "diagnostic"), ("mistral", "calibration"),
+    ("mistral", "confirmatory"), ("unknown", "smoke"),
+])
+def test_slot_c_rejects_unprepared_candidate_phases(candidate, phase):
+    with pytest.raises(ValueError):
+        build_slot_c_plan(
+            ROOT, code_revision="a" * 40, phase=phase, candidate=candidate,
+            maximum_spend_usd="1", output_directory="artifacts/unprepared-test-unused",
+        )
 
 
 @pytest.mark.parametrize("provider", ["Google", "DeepInfra"])

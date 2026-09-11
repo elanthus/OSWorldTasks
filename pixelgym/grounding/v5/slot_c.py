@@ -1,4 +1,4 @@
-"""No-call plans for the separately approved Slot C Google Vertex successor."""
+"""No-call plans for separately approved Slot C successors."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from pixelgym.grounding.v5.contracts import Partition, content_digest
 from pixelgym.grounding.v5.panel_policy import (
     LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
     LLAMA_STATEFUL_VERTEX_SMOKE,
+    MISTRAL_STATEFUL_SMOKE,
     build_panel_policy_manifest,
 )
 from pixelgym.grounding.v5.plan import CalibrationPlan
@@ -23,6 +24,7 @@ def build_slot_c_plan(
     phase: Literal["smoke", "diagnostic"],
     maximum_spend_usd: str,
     output_directory: str,
+    candidate: Literal["vertex", "mistral"] = "vertex",
 ) -> CalibrationPlan:
     """Allocate development probes; calibration awaits successful smoke review."""
 
@@ -30,6 +32,14 @@ def build_slot_c_plan(
         raise ValueError("only smoke and diagnostic phases are supported; calibration is blocked")
     smoke = phase == "smoke"
     config = LLAMA_STATEFUL_VERTEX_SMOKE if smoke else LLAMA_STATEFUL_VERTEX_DIAGNOSTIC
+    label = "Llama Scout Google Vertex"
+    if candidate == "mistral":
+        if not smoke:
+            raise ValueError("Mistral supports only the smoke phase")
+        config = MISTRAL_STATEFUL_SMOKE
+        label = "Mistral Small 4 Mistral"
+    elif candidate != "vertex":
+        raise ValueError("unknown Slot C candidate")
     partition = Partition.DEVELOPMENT
     filename = "development.json"
     manifest_path = Path("artifacts/grounding-v5-manifests/v2") / filename
@@ -62,7 +72,7 @@ def build_slot_c_plan(
     return CalibrationPlan.from_dict(
         {
             "schema_version": "pixelgym-agent-v5-runner-plan-v1",
-            "purpose": f"fresh Slot C Llama Scout Google Vertex {phase}; no predecessor pooling",
+            "purpose": f"fresh Slot C {label} {phase}; no predecessor pooling",
             "code_revision": code_revision,
             "policy_panel": [
                 {

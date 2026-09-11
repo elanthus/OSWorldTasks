@@ -96,6 +96,8 @@ class PanelPolicyConfig:
     rate_limit_backoff_max_seconds: float = 60.0
     request_deadline_seconds: float = 180.0
     controlled_history_prompt: bool = False
+    reasoning_effort: Literal["none", "high"] | None = None
+    enforce_provider_price_cap: bool = False
 
     def __post_init__(self) -> None:
         if not 0 <= self.max_rate_limit_retries_per_action < self.max_model_attempts_per_action:
@@ -158,6 +160,11 @@ class PanelPolicyConfig:
         }
         if self.quantizations:
             parameters["quantizations"] = list(self.quantizations)
+        if self.enforce_provider_price_cap:
+            parameters["max_price"] = {
+                "prompt": float(self.prompt_price_per_token_usd * 1_000_000),
+                "completion": float(self.completion_price_per_token_usd * 1_000_000),
+            }
         return parameters
 
 
@@ -289,6 +296,19 @@ LLAMA_STATEFUL_VERTEX_SMOKE = replace(
 LLAMA_STATEFUL_VERTEX_DIAGNOSTIC = replace(
     LLAMA_STATEFUL_VERTEX_SMOKE,
     slot="C-llama-stateful-vertex-v1-routing-diagnostic",
+    router_metadata=True,
+)
+MISTRAL_STATEFUL_SMOKE = replace(
+    LLAMA_STATEFUL_VERTEX_SMOKE,
+    slot="C-mistral-small-4-stateful-v1-smoke",
+    model="mistralai/mistral-small-2603",
+    provider_route="mistral",
+    response_provider="Mistral",
+    prompt_price_per_token_usd=Decimal("0.00000015"),
+    completion_price_per_token_usd=Decimal("0.0000006"),
+    price_source="https://openrouter.ai/api/v1/models/mistralai/mistral-small-2603/endpoints",
+    reasoning_effort="none",
+    enforce_provider_price_cap=True,
     router_metadata=True,
 )
 GLM_STATEFUL_CANDIDATE = PanelPolicyConfig(
@@ -452,6 +472,8 @@ class OpenRouterPanelPolicy:
         }
         if self.config.temperature is not None:
             request["temperature"] = self.config.temperature
+        if self.config.reasoning_effort is not None:
+            request["reasoning"] = {"effort": self.config.reasoning_effort}
         return request
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
@@ -1440,6 +1462,12 @@ def build_panel_policy_manifest(
         inference_parameters.append(("response_format_type", config.response_format_type))
     if config.router_metadata:
         inference_parameters.append(("router_metadata", "enabled"))
+    if config.reasoning_effort is not None:
+        inference_parameters.append(("reasoning_effort", config.reasoning_effort))
+    if config.enforce_provider_price_cap:
+        inference_parameters.append(
+            ("provider_max_price", json.dumps(config.provider_parameters()["max_price"], sort_keys=True))
+        )
     return PolicyManifest.build(
         provider=f"openrouter/{config.provider_route}",
         model=config.model,
