@@ -9,6 +9,8 @@ added no unresolved holds. Aggregate confirmed charges are USD 6.333133275 plus
 USD 1.69356555 in carried unknown holds. No model call remains in flight. The
 diagnostic used supplied states; it adds no end-to-end calibration observations.
 
+## Calibration before the transport repair
+
 The [continuation report](../artifacts/grounding-v5-d58-focus-continuation/report.md)
 retains the original five failures and adds five newly attempted episodes. Each mode
 has five attempted episodes, all infrastructure failures, and 45 unrun assignments.
@@ -17,7 +19,7 @@ choices, four correct; history supplied no memory observations. Neither mode had
 terminal success. These outcomes remain insufficient to assess a memory effect.
 
 The continuation made 67 new calls with USD 0.302328000 in known charges and
-USD 0.17013825 in new unknown holds. Current aggregate known charges are
+USD 0.17013825 in new unknown holds. At that phase's closure, aggregate known charges were
 USD 6.233601525, with USD 1.69356555 in unresolved holds and nothing in flight:
 USD 7.927167075 accounted against the USD 28 authorization. The cap did not stop
 execution. New diagnostics identify three TLS bad-record-MAC alerts, one broken
@@ -25,12 +27,12 @@ pipe, and one provider-body error 429 with a confirmed zero charge. No retry or
 runner timeout occurred. The [verification receipt](../artifacts/grounding-v5-d58-focus-continuation/verification.json)
 remeasures all ten episodes, reconstructs all 120 cohort requests, and verifies the
 five preserved results plus the preceding 10,904-event journal prefix. Transport
-reliability and rate-limit handling must be addressed before another paid continuation.
+reliability and rate-limit handling stopped that phase and motivated the completed repair above.
 
 The owner approved [fresh end-to-end calibration](grounding-v5-d58-focus-calibration.md)
 after the diagnostic. Its [stored report](../artifacts/grounding-v5-d58-focus-calibration/report.md)
 records three history and two stateless episodes, all ended by infrastructure failures;
-95 assignments remain unrun. One stateless episode reached both memory consumers and
+95 assignments were then unrun. One stateless episode reached both memory consumers and
 made two valid first choices, one correct. No history episode reached either consumer,
 and neither mode had a terminal success. The focus repair has therefore produced an
 end-to-end stateless memory observation, but this sample cannot establish calibration
@@ -39,13 +41,13 @@ rates, a memory effect, or confirmatory power.
 The phase made 53 calls: 48 positive charges, one confirmed zero-charge empty response,
 and four unresolved transport outcomes (three SSL errors and one URL error). New known
 charges were USD 0.278438250; new request-sized unknown holds were USD 0.18923100.
-Aggregate known charges are USD 5.931273525, with USD 1.52342730 in unresolved holds,
+At that phase's closure, aggregate known charges were USD 5.931273525, with USD 1.52342730 in unresolved holds,
 zero in flight, and USD 7.454700825 accounted against the USD 20 cap. No runner deadline
 or transport retirement occurred. The [verification](../artifacts/grounding-v5-d58-focus-calibration/verification.json)
 reconstructed all 53 requests and remeasured all five attempted episodes against the
 private journal while preserving the preceding 10,323-event prefix. No confirmatory
-calls were made. Provider reliability remains the next limitation to diagnose before
-another calibration is authorized.
+calls were made. Provider reliability was the next limitation investigated in the
+subsequent continuation and repair.
 
 The preceding [focus and timeout repair diagnostic](grounding-v5-d58-focus-diagnostic.md)
 completed all twenty assigned calls: both modes made 6/6 desired text-entry transitions
