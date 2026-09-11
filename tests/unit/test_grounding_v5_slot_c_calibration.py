@@ -238,3 +238,20 @@ def test_v3_continues_only_exhausted_transport_failures(reviewed_root):
     assert "infrastructure_failure" in plan.retry_breaker.hard_stop_classifications
     assert plan.budgets.caps.model_attempt_cap == 5724
     assert len(plan.assignments) == 50
+
+
+@pytest.mark.parametrize('filename', [
+    'pixelgym/grounding/v5/panel_policy.py',
+    'pixelgym/grounding/v5/openrouter_policy.py',
+    'pyproject.toml', 'requirements/platform-py312.lock',
+])
+def test_smoke_review_rejects_changed_runtime_component(reviewed_root, monkeypatch, filename):
+    from pixelgym.grounding.v5 import panel_policy
+    original = panel_policy._file_digest
+
+    def changed_digest(path):
+        return 'sha256:' + 'f' * 64 if path == reviewed_root / filename else original(path)
+
+    monkeypatch.setattr(panel_policy, '_file_digest', changed_digest)
+    with pytest.raises(ValueError, match='policy contract differs'):
+        verify_mistral_smoke_review(reviewed_root)

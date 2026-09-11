@@ -209,12 +209,10 @@ def verify_mistral_smoke_review(root: Path) -> str:
     current = build_panel_policy_manifest(
         root, config=MISTRAL_STATEFUL_SMOKE, code_revision=smoke.code_revision,
     ).to_dict()
-    # Preparation/registration changes require a new revision and runtime digest.
-    # Every other declared policy field must retain the smoke's tested contract.
+    # A new revision may identify preparation changes outside the bound runtime.
+    # Runtime changes require new reviewed smoke evidence, even for registration edits.
     for value in (old, current):
         value.pop("policy_id")
-        value["sandbox"] = dict(value["sandbox"])
-        value["sandbox"].pop("runtime_digest")
     if old != current:
         raise ValueError("Mistral policy contract differs from reviewed smoke")
     return content_digest(review)

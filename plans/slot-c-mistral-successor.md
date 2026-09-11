@@ -10,7 +10,7 @@ No further model call is authorized by this publication.
 ## Historical preparation
 
 The owner selected Mistral Small 4 on 2026-09-10 after the Llama Scout DeepInfra runs stopped
-on rate limits and both Vertex probes returned HTTP 404. This replaces the planned Slot C
+on rate limits and the documented Vertex smoke returned HTTP 404. This replaces the planned Slot C
 model; that selection alone did not authorize execution. All predecessor evidence remains
 separate. The [Vertex procedure](slot-c-vertex-successor.md) records its historical configuration.
 The separately approved Mistral smoke is complete and technically audited. The approved first
@@ -86,9 +86,9 @@ Calibration preparation verifies all three source-file hashes against that recei
 smoke outcomes, and compares the declared policy contract with the smoke's manifest. A missing or
 changed source, incomplete review, different model/route/settings, or failed smoke prevents planning.
 The receipt represents the previously performed technical audit; checking its hashes does not rerun
-inference or treat an arbitrary success flag as a new review. The new code revision and runtime
-digest account for calibration registration and preparation changes; other policy fields retain
-the tested contract. The receipt digest is included in the exact calibration plan's stop conditions.
+inference or treat an arbitrary success flag as a new review. The historical planner ignored runtime-digest changes for calibration registration. The current
+planner preserves that binding: any change to a bound runtime component requires fresh reviewed
+smoke evidence. Existing completed artifacts retain their original policy identities. The receipt digest is included in the exact calibration plan's stop conditions.
 
 `C-mistral-small-4-stateful-v1-calibration` keeps the smoke's request configuration and no-retry
 policy. It allocates all fifty tasks in the unchanged `calibration-d56.json` order, at each task's
@@ -163,3 +163,8 @@ campaign stopping and the consecutive-failure breaker. It remains a failed episo
 all denominators. Other infrastructure failures, request failures, policy violations,
 and spend stops retain their prior behavior. The unexecuted v2 plan and stopped v1
 artifacts are preserved; v3 uses a new output directory and exact plan digest.
+
+Runtime compatibility now requires an exact smoke runtime digest. Preparation changes outside
+the bound runtime may reuse the receipt, but changes to the policy/transport module, project
+dependencies, or dependency lock require a fresh reviewed smoke. Existing run evidence is
+immutable; this stricter check governs future plan preparation and authorizes no new calls.

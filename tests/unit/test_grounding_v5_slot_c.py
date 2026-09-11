@@ -286,3 +286,48 @@ def test_spend_accounting_violation_remains_blocked_after_reopen(tmp_path, failu
         assert not resumed.reserve_wire("next", Decimal("0.1"))
     finally:
         replay.close()
+
+
+@pytest.mark.parametrize('settlement', ['charged', 'unknown'])
+@pytest.mark.parametrize('boundary', ['spend_ledger_blocked', 'settlement'])
+@pytest.mark.parametrize('violation', ['hold_mismatch', 'budget_overrun'])
+def test_spend_stop_precedes_settlement_at_crash_boundaries(
+    tmp_path, monkeypatch, settlement, boundary, violation,
+):
+    path = tmp_path / 'interrupted.sqlite'
+    journal = V5AttemptJournal(path)
+    cap = Decimal(1)
+    ledger = SpendLedger(cap, Decimal(0), journal=journal)
+    assert ledger.reserve_wire('request', Decimal('0.1'))
+    append = journal.append_event
+    target = f'spend_reservation_{settlement}' if boundary == 'settlement' else boundary
+
+    def interrupt(**kwargs):
+        result = append(**kwargs)
+        if kwargs['kind'] == target:
+            raise InterruptedError('fixture crash after durable commit')
+        return result
+
+    monkeypatch.setattr(journal, 'append_event', interrupt)
+    maximum = Decimal('0.2') if violation == 'hold_mismatch' else Decimal(2)
+    with pytest.raises(InterruptedError):
+        if settlement == 'charged':
+            ledger.record_cost('request', maximum, maximum)
+        else:
+            ledger.reserve_unknown_charge('request', maximum)
+    journal.close()
+    replay = V5AttemptJournal(path)
+    try:
+        kinds = [e.kind for e in replay.events()]
+        assert 'spend_ledger_blocked' in kinds
+        if target != 'spend_ledger_blocked':
+            assert kinds.index('spend_ledger_blocked') < kinds.index(target)
+        if violation == 'budget_overrun' and boundary == 'settlement':
+            with pytest.raises(ValueError, match='exceed'):
+                SpendLedger(cap, Decimal(0), journal=replay)
+        else:
+            restored = SpendLedger(cap, Decimal(0), journal=replay)
+            assert restored.blocked
+            assert not restored.reserve_wire('next', Decimal('0.1'))
+    finally:
+        replay.close()

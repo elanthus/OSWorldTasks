@@ -828,6 +828,17 @@ class SpendLedger:
             hold = self._in_flight.get(reservation_id)
             if hold is None and (prior is None or prior[0] != "unknown"):
                 raise RuntimeError("known charge has no matching spend reservation")
+            projected = self.budget_accounted_spend_usd - (hold or Decimal(0)) + cost
+            if prior is not None and prior[0] == "unknown":
+                projected -= prior[1]
+            violation = (
+                hold is not None and hold != request_maximum_usd
+                or cost > request_maximum_usd
+                or projected > self.maximum_spend_usd
+            )
+            if violation:
+                # Commit the stop before releasing a hold, including on interruption.
+                self.block()
             self._append_spend_event(
                 reservation_id=reservation_id,
                 suffix="charged",
@@ -843,14 +854,7 @@ class SpendLedger:
             self.spent_usd += cost
             self._settlements[reservation_id] = ("known", cost)
             self.max_observed_cost_usd = max(self.max_observed_cost_usd, cost)
-            if (
-                hold is not None and hold != request_maximum_usd
-                or cost > request_maximum_usd
-                or self.budget_accounted_spend_usd > self.maximum_spend_usd
-            ):
-                self.block()
-                return False
-            return True
+            return not violation and not self.blocked
 
     def unknown_charge_reservation_usd(self, request_maximum_usd: Decimal) -> Decimal:
         """What to hold for one send whose charge cannot be read."""
@@ -898,6 +902,9 @@ class SpendLedger:
             if hold is None:
                 raise RuntimeError("unknown charge has no matching spend reservation")
             reservation = self._unknown_charge_reservation(request_maximum_usd)
+            projected = self.budget_accounted_spend_usd - hold + reservation
+            if hold != request_maximum_usd or projected > self.maximum_spend_usd:
+                self.block()
             self._append_spend_event(
                 reservation_id=reservation_id,
                 suffix="unknown",
@@ -908,10 +915,6 @@ class SpendLedger:
             self._settlements[reservation_id] = ("unknown", reservation)
             self.unknown_reservation_usd += reservation
             self.unknown_charge_outcomes += 1
-            if hold != request_maximum_usd or (
-                self.budget_accounted_spend_usd > self.maximum_spend_usd
-            ):
-                self.block()
             return reservation
 
     def release_wire(self, idempotency_key: str, *, reason: str) -> bool:
