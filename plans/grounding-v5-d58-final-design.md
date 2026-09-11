@@ -1,11 +1,12 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: approved full calibration stopped at its aggregate budget guard after 5/100 episodes. Known spend USD 0.84307725; unknown-charge reservations USD 2.88645120. Final evaluation freeze pending.**
+**Status: Gemini 3.8 calibration closed at 51/100 episodes under its five-failure stop rule. The USD 20 aggregate ceiling was not reached. Final evaluation freeze pending.**
 
 **Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
 inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
-two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete;
-the available evidence cannot support signing the executable D5.8 manifest. The
+two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete,
+and the remaining assignments cannot bring consumer exposure to the proposed threshold. The
+available evidence cannot support signing the executable D5.8 manifest. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.
 
@@ -21,7 +22,99 @@ The [full execution plan](../artifacts/grounding-v5-d58-full-calibration/executi
 that approval. The final confirmatory freeze remains pending. These approvals declare no milestone
 verdict and do not change historical results.
 
-## Approved full calibration outcome
+## Gemini 3.8 calibration outcome
+
+The [Gemini 3.8 report](../artifacts/grounding-v5-d58-gemini38-calibration/report.md) records
+**51 attempted episodes out of 100 assignments**. Five consecutive infrastructure failures closed
+the phase under the frozen stop rule. The remaining **49 assignments were not run** and are not
+observed model failures. Both conditions started from reset without scripted prefixes.
+
+| Condition | Attempted / assigned | Terminal successes | Reached both memory consumers | Correct first memory attempts / attempted |
+|---|---:|---:|---:|---:|
+| Screenshot history | 25 / 50 | 5 | 7 | 14 / 16 |
+| Current screenshot only | 26 / 50 | 0 | 0 | 0 / 0 |
+
+The history arm has nineteen infrastructure failures and one request failure. The stateless arm
+has eleven infrastructure failures, one request failure and fourteen action-limit truncations.
+All fourteen truncations ended at the first text-entry stage, before either memory consumer.
+The [stored summary](../artifacts/grounding-v5-d58-gemini38-calibration/summary.json) records fourteen
+valid first memory choices, all correct, and two first attempts with no valid choice because an
+infrastructure failure ended the episode. Both remain in the 16-attempt denominator.
+
+The [descriptive analysis](../artifacts/grounding-v5-d58-gemini38-calibration/analysis.json) records
+25 completed pairs: five history-only terminal successes and twenty pairs with neither arm
+successful. Twenty-five pairs are incomplete. Even if all 25 missing history assignments reached
+both consumers, exposure would be **32/50**, below the proposed **40/50** threshold. The stateless
+arm supplied no first-attempt memory observations. These results do not establish an isolated
+retention effect or an adequately calibrated difficulty range. No significance test or
+confirmatory power estimate is computed, and no confirmatory task was evaluated.
+
+The phase issued **789 new requests** with **USD 4.665075525 in known charges**. Aggregate known
+D5.8 charges are **USD 5.508152775**. The [verification receipt](../artifacts/grounding-v5-d58-gemini38-calibration/verification.json)
+distinguishes 757 positive charges, five confirmed zero-charge error responses, two zero-charge
+HTTP 429 responses and 25 requests without confirmed individual charges. The latter comprise
+thirteen TLS errors, eleven URL/transport errors and one runner deadline. These are retained as
+failures, with no retries. The largest request reservation actually used was **USD 0.09662925**;
+the largest confirmed charge was **USD 0.029244**.
+
+At closure, the unchanged executable guard accounted for **USD 1.33419630** in modelled unknown
+holds, including the two older requests, and zero in-flight reservations. Its total was therefore
+**USD 6.842349075** against the USD 20 cap. This is conservative budget accounting, not a billed
+balance. The owner's earlier USD 0.08 reconciliation is preserved separately below and does not
+cover later calls. The verifier reconstructed the summary from all **10,044 events and 3,677
+objects**, checked the original 1,332-event prefix, and matched all 789 new wire reservations to
+their recorded request bounds without making a provider call.
+
+Keep the admitted generator and policies frozen. Provider reliability and the stateless
+text-entry floor remain unresolved calibration limitations. This stopped cohort does not justify
+confirmatory execution or final D5.8 approval.
+
+## Approved Gemini 3.8 comparison and revised reservations
+
+The owner subsequently requested “switch to gemini 3.8, increase the budget up to 20 dollars” and
+selected “All 50 tasks, 100 episodes (recommended)”. This supersedes the USD 5 ceiling for subsequent
+execution. The [Gemini 3.8 plan](../artifacts/grounding-v5-d58-gemini38-calibration/execution-plan.json)
+freezes a fresh matched cohort on the same fifty tasks and order. All Gemini 3.7 results remain
+separate. Generator, prompts, action schema, deferred feedback, history retention and zero-retry
+rules are unchanged. The [new endpoint snapshot](../artifacts/grounding-v5-d58-gemini38-calibration/price-recheck.json)
+binds `google/gemini-3.8-flash` to the existing standard Vertex route at USD 0.75/million input and
+USD 3.75/million output tokens, with an explicit provider price ceiling.
+
+The original unknown holds were disproportionate to the submitted workload. The successor budgets
+each unchanged 1024×768 PNG at 4,096 input tokens, adds the UTF-8 byte count of non-image request
+metadata and 8,192 framing tokens, and retains the 4,096 output cap. Google's
+[media-resolution reference](https://ai.google.dev/gemini-api/docs/media-resolution) documents 2,240
+image tokens at the highest Gemini 3 resolution; the larger allowance supplies margin without
+changing the screenshots or requesting a lower resolution. This is a conservative workload estimate,
+not a tokenizer receipt or provider billing guarantee. Unsupported media/features and requests
+above the declared workload allowance are rejected before transmission. Any returned charge above
+its own reservation stops further spending.
+
+The new maximum request reservation is **USD 0.13824000**; ordinary requests reserve less according
+to their content. The old failures' pre-call checkpoints reconstruct the original requests exactly,
+including their recorded digests: ten and seventeen images respectively. Append-only ledger
+revisions reduce their unknown holds to **USD 0.09947205** and **USD 0.13955625**, using their original
+price bounds. Their combined hold becomes **USD 0.23902830**, while prior known spend stays
+**USD 0.84307725**. Their response IDs and confirmed costs are unavailable, so neither is relabelled
+as a zero-charge request. The previous 1,332-event journal prefix and published evidence remain intact.
+
+The **USD 20 total** includes all prior D5.8 known charges, revised unknown holds, new settled costs
+and in-flight reservations. The new phase permits at most 2,862 model/wire requests and environment
+actions, with zero retries, zero provider control calls and zero confirmatory calls. It stops before
+the next maximum workload reservation would exceed the total ceiling, after five consecutive
+non-normal episode results, or on an identity, price or integrity failure. Completion within the
+ceiling is not guaranteed. The final D5.8 manifest remains an owner decision after reviewing the
+stored calibration results.
+
+During execution, the owner reconciled the account dashboard and clarified that no more than
+**USD 0.08** of the then-reported **USD 0.51332805** unknown hold needed withholding. The
+[owner reconciliation](../artifacts/grounding-v5-d58-gemini38-calibration/owner-spend-reconciliation.json)
+preserves that statement and the displayed model totals. The larger figure is the driver's sum of
+conservative request bounds, not billed charges or a reconciled estimate of money owed. The
+dashboard snapshot does not identify individual failed-request costs or cover subsequent calls;
+the original journal remains intact and the owner's reconciliation is reported separately.
+
+## Historical Gemini 3.7 full calibration outcome
 
 The [full report](../artifacts/grounding-v5-d58-full-calibration/report.md) retains all 100
 assignments: fifty repaired tasks in each matched Gemini condition, representing 44 logical tasks
@@ -47,8 +140,9 @@ The full phase issued **106 new requests** with **USD 0.65298975 in known charge
 twenty-call pilot, aggregate known spend is **USD 0.84307725**. Two requests have unknown charges,
 each held at the full **USD 1.44322560** bound. Accounted spend is therefore **USD 3.72952845**,
 leaving **USD 1.27047155** unreserved. Another full request reservation would exceed USD 5, so the
-driver closed the phase. There are no in-flight requests, retries, provider control requests, or
-confirmatory calls. Unknown-charge holds remain in the original durable ledger.
+driver closed the phase. At that closure there were no in-flight requests, retries, provider control
+requests, or confirmatory calls. The successor above revises the two hold amounts with request
+evidence; it does not alter this historical closure snapshot.
 
 Before execution, the full-run ledger wrapper corrected an inherited behavior that reduced unknown
 holds after observing cheap responses. This phase always retains the full approved request bound;
@@ -63,8 +157,8 @@ made no retry. Generator, tasks, policies, provider settings, seed order and dol
 The [verification receipt](../artifacts/grounding-v5-d58-full-calibration/verification.json) reconstructs
 the summary from the closed aggregate journal and verifies the original pilot prefix, frozen source
 and policy bindings, provider identity, request counts, and budget stop. Keep the current design
-frozen. Completing calibration now requires a separately approved budget or execution-plan revision;
-confirmation remains disabled. The original Qwen floor result and this incomplete successor run
+frozen. The subsequent Gemini 3.8 approval above supplies a new calibration plan and ceiling;
+confirmation remains disabled. The original Qwen floor result and this incomplete Gemini 3.7 run
 cannot justify final D5.8 approval.
 
 ## Completed bounded calibration pilot
@@ -192,7 +286,7 @@ usability verdict is claimed by the automated checks.
 
 | Role | Proposed candidate | Required change or qualification |
 |---|---|---|
-| Capable memory arm | Gemini 3.7 Flash through the previously calibrated OpenRouter/Vertex route | New policy retaining all screenshots and its own dispatched actions within an episode |
+| Capable memory arm | Gemini 3.8 Flash through the existing OpenRouter/Vertex route | Policy retaining all screenshots and its own dispatched actions within an episode |
 | Matched control | The same Gemini route and inference settings | Current screenshot only; empty history; otherwise the same prompt, parser, adapter, retry rule, and action budget |
 | Lower-ability calibration reference | Qwen3-VL-8B-Instruct through the previously calibrated route | The same revised screenshot-history harness |
 | Additional calibration reference | Mistral Small 4 through the previously calibrated route | The same revised screenshot-history harness |
@@ -206,7 +300,8 @@ up to the existing episode limit; it does not use evaluator annotations to selec
 requests cannot fit the model context and spend bounds, stop and revise the design before calls.
 
 The approved pilot completed ten examples and twenty condition calls on development seeds. The
-subsequently approved full Gemini phase stopped at its budget guard. Keep confirmatory seeds unused;
+subsequently approved full Gemini 3.7 phase stopped at its budget guard; the fresh Gemini 3.8 phase
+has separate approval under the increased ceiling. Keep confirmatory seeds unused;
 Qwen, Mistral, reliability and confirmatory runs remain outside the executable allowance.
 
 After a complete approved calibration, report consumer exposure, first-attempt retention, paired
@@ -272,11 +367,11 @@ No confirmatory generator output or policy response may influence selection.
 
 ## Spend and the remaining approval boundary
 
-**Approved total new-spend ceiling: USD 5.00 across all successor phases.** This includes actual
-charges and reservations for unknown outcomes. The approval is not a separate USD 5 allowance per
+**Current approved aggregate ceiling: USD 20.00 across all successor phases, superseding USD 5.00.**
+This includes actual charges and reservations for unknown outcomes. The approval is not a separate allowance per
 policy or per run. Confirmatory execution remains disabled until its exact plan is approved.
 
-Completion of the proposed design within USD 5 has not been established. Historical per-episode spend does not price an all-screenshot history
+Completion of the proposed design within the current ceiling has not been established. Historical per-episode spend does not price an all-screenshot history
 policy. Before paid approval, calculate exact phase caps from the revised task and policy manifests
 and a checked price catalog: environment actions, model attempts, provider control requests, and
 total wire requests. Show conservative per-request reservations and projected phase costs. Count
@@ -297,13 +392,14 @@ model/wire requests and 3,202 environment actions, still within the same USD 5 c
 guard stopped execution before those count caps were reached. Qwen, Mistral, reliability and
 confirmation remain disabled.
 
-The public [OpenRouter endpoint snapshot](../artifacts/grounding-v5-d58-design/gemini-price-snapshot.json)
-records the matching Vertex routes, model display name and prices. The provider uses an alias, not
-an immutable snapshot. Planning reserves its full 1,048,576-token input bound plus 4,096 output tokens
+The historical [OpenRouter endpoint snapshot](../artifacts/grounding-v5-d58-design/gemini-price-snapshot.json)
+records the Gemini 3.7 Vertex routes, model display name and prices. The provider uses an alias, not
+an immutable snapshot. That plan reserved its full 1,048,576-token input bound plus 4,096 output tokens
 at the highest matching route rates: **USD 1.44322560 per request**, or **USD 28.86451200** if all
 twenty requests incurred that maximum. These are conservative bounds, not predicted charges.
-The USD 5 ceiling can accommodate three such unresolved reservations; a fourth must stop.
-Actual settled costs may release enough room for more requests within the approved phase caps.
+The original USD 5 ceiling could accommodate three such unresolved reservations; a fourth had to
+stop. The approved Gemini 3.8 plan above replaces this context-window reservation rule with
+request-sized holds and carries prior charges forward under the USD 20 total ceiling.
 
 The historical candidate plan remains explicitly non-executable. The separately approved
 [execution plan](../artifacts/grounding-v5-d58-calibration-pilot/execution-plan.json) enabled only
@@ -334,11 +430,16 @@ From the repository root:
 .venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.verify
 .venv/bin/python -m scripts.run_grounding_v5_memory_calibration report
 .venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.analyze
+.venv/bin/python -m scripts.run_grounding_v5_gemini38_calibration report
+.venv/bin/python -m artifacts.grounding-v5-d58-gemini38-calibration.analyze
 ```
 
 The full evidence verifier checks the public file hashes and stored report without a provider call.
 Add `--journal` only on the original machine with the preserved ignored aggregate journal to repeat
-the deeper provenance audit. The report and analysis commands use stored structured results only.
+the deeper provenance audit at that phase's original closure. After a subsequent phase extends the
+ledger, use the latest phase analyzer with `--journal` for journal reconstruction and the old public
+hash verifier for frozen historical evidence. The report and analysis commands use stored structured
+results only. The Gemini 3.8 commands require its closed-run summary and verification artifacts.
 
 The audit reads committed response-free calibration receipts and current generator code, produces
 the linked structured JSON, and runs five independent mathematical checks. It does not reread

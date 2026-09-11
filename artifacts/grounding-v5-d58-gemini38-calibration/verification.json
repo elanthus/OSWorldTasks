@@ -1,0 +1,54 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "6.842349075",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "5.508152775",
+    "unknown_charge_outcomes": 27,
+    "unknown_reservation_usd": "1.33419630",
+    "wire_requests_sent": 915
+  },
+  "execution_plan_digest": "sha256:93a80704ca8f4804823a045796876c0189daf4767f77aa646477096a1f158f9b",
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:246a87401b1ddf6a3f9e41b5aa68a392ab6093291784c324c4476b8f087b807f",
+    "event_count": 10044,
+    "object_count": 3677,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "largest_confirmed_charge_usd": "0.029244",
+  "largest_request_reservation_usd": "0.09662925",
+  "model_attempt_count": 789,
+  "new_phase_charge_status_counts": {
+    "confirmed_positive": 757,
+    "confirmed_zero": 5,
+    "released_zero_charge": 2,
+    "unknown": 25
+  },
+  "new_phase_known_spend_usd": "4.665075525",
+  "no_retried_steps": true,
+  "phase_closed": true,
+  "previous_event_prefix_unchanged": true,
+  "provider_calls": 0,
+  "recorded_failure_codes": {
+    "retryable_provider_response": {
+      "zero_completion_error": 5
+    },
+    "sealed_unsuccessful_result": {
+      "rate_limit_retry_exhausted": 2,
+      "retryable_response_exhausted": 5,
+      "runner_request_deadline": 1,
+      "transport_fault_retry_exhausted": 24
+    },
+    "unknown_outcome_infrastructure_failure": {
+      "SSLError": 13,
+      "URLError": 11,
+      "runner_request_deadline": 1
+    }
+  },
+  "request_bound_count": 789,
+  "request_bounds_match_wire_reservations": true,
+  "schema_version": "pixelgym-d58-gemini38-evidence-verification-v1",
+  "summary_digest": "sha256:1442c0ee2b491c68d05fa40b48630c6d20a8dce71b27a37c4a527f20c030a3bd",
+  "summary_reconstructed_from_journal": true
+}

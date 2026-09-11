@@ -1,0 +1,17 @@
+{
+  "schema_version": "pixelgym-d58-owner-spend-reconciliation-v1",
+  "source": "Owner's account-dashboard screenshot and subsequent clarification in the approval task on 2026-09-11",
+  "owner_statement": "I'm just pointing out that, at most, $0.08 of the $0.513 should actually be withheld here.",
+  "dashboard_display_usd": {
+    "Gemini 3.8 Flash": "1.53",
+    "Gemini 3.7 Flash": "0.843",
+    "Other": "0.216"
+  },
+  "referenced_aggregate_request_count": 394,
+  "referenced_known_spend_usd": "2.436888825",
+  "referenced_modelled_unknown_hold_usd": "0.51332805",
+  "owner_reported_unexplained_amount_at_most_usd": "0.08",
+  "individual_failed_request_charges_confirmed": false,
+  "runtime_guard_modified": false,
+  "interpretation": "The owner reconciles no more than USD 0.08 of unexplained charges at this snapshot. The USD 0.51332805 figure is the driver's sum of conservative request bounds, not actual withholding, billed charges, or a reconciled estimate of money owed. Displayed dashboard values are rounded and not synchronized to the subsequent ledger poll. This observation does not identify individual failed-request charges or cover later requests. Preserve the original ledger and report the owner reconciliation separately."
+}
