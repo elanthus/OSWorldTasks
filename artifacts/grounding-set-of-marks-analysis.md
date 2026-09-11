@@ -38,7 +38,7 @@ parse failures, and zero invalid actions (per-episode `failures` lists are all e
 the routing thresholds fixed in advance it records the same `design_longer_horizon_successor`
 decision as the Luna run.
 
-**Flash confound (disclosed in `grounding-report.md`):** all 9 Flash raw failures are HTTP
+**Flash confound (disclosed in `grounding-v3-haiku-gemini-report.md`):** all 9 Flash raw failures are HTTP
 request failures clustered in a single ~10-second burst during the sequential raw pass,
 consistent with a transient provider outage; the marks pass ran outside that window. On
 completed requests Flash scored 91/91 raw. The +9.0pp delta measures API availability, not a

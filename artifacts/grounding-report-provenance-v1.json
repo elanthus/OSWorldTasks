@@ -1,0 +1,60 @@
+{
+  "canonical": {
+    "experiment_id": "pixelgym-grounding-v1-gpt-5.4-mini-2026-08-10",
+    "headline": {
+      "bootstrap_95_ci_percentage_points": [
+        35.0,
+        54.0
+      ],
+      "condition_record_count": 200,
+      "example_count": 100,
+      "excluded_example_count": 0,
+      "marks_correct_count": 100,
+      "mcnemar_exact_p_value": 1.1368683772161603e-13,
+      "paired_delta_percentage_points": 44.0,
+      "raw_correct_count": 56
+    },
+    "identity": {
+      "model": "gpt-5.4-mini",
+      "prompt_version": "pixelgym-grounding-prompt-v1",
+      "protocol_version": "pixelgym-grounding-v1",
+      "provider": "codex-cli"
+    },
+    "report": {
+      "path": "artifacts/grounding-report.md",
+      "sha256": "a761eab5ebb3c397f9a752181b644f81622752346037c0a12b9e0cb1b3e39f87",
+      "size_bytes": 5716,
+      "source_revision": "68e66b078c03c13e78ec224d7243c804d36f1a9c"
+    },
+    "results": {
+      "path": "artifacts/grounding-results.json",
+      "sha256": "0d65ee6da145762904cc8ba57c204c2e39acd384af8b0796a1c752a79072850a",
+      "size_bytes": 138906,
+      "source_revision": "68e66b078c03c13e78ec224d7243c804d36f1a9c"
+    }
+  },
+  "historical": {
+    "experiment_id": "pixelgym-grounding-v3a-haiku-gemini-2026-08-21",
+    "limitations": [
+      "This report does not support the canonical gpt-5.4-mini headline result.",
+      "The Gemini raw/marks difference is confounded by nine raw-condition request failures.",
+      "The v3a and v3b calibration allocations each omitted two declared targets.",
+      "The scored conditions ran sequentially, so provider availability is temporally confounded."
+    ],
+    "original_report": {
+      "last_revision": "de412357fa081eb0a89059f3bb15fd8d80d80ffa",
+      "sha256": "885d14d6247451b3b4ef7811311c0a9c5c92a4a4c661649e6b3ebcfc59e0db97"
+    },
+    "preserved_report": {
+      "path": "artifacts/grounding-v3-haiku-gemini-report.md",
+      "sha256": "62723fd7eb6337ca8012ce6c12856ea19936897ddc0fd2a3b4d31bef51ce75c4",
+      "size_bytes": 12259
+    }
+  },
+  "rendering_reproducibility": {
+    "byte_level_regeneration_guarantee": false,
+    "reason": "Pillow, FreeType, and platform rendering inputs are not fully pinned for cross-environment byte-identical PNG regeneration.",
+    "supported_comparison": "The verifier checks the SHA-256 digests of the checked-in rendered outputs recorded in grounding-results.json; it does not claim that a fresh render has identical bytes."
+  },
+  "schema_version": "pixelgym-grounding-report-provenance-v1"
+}
