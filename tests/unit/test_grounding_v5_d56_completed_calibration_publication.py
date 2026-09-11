@@ -414,15 +414,14 @@ def test_readme_v5_status_links_to_generated_derivative() -> None:
             f"{counts['policy_violation']} | {counts['truncation']} |"
         )
         assert expected in report
+        assert f"{counts['success']}/{run['assigned_tasks']}" not in readme
     assert "v5 confirmatory benchmark and v5 milestone gate remain incomplete" in section
     assert "plans/grounding-v5-agent-benchmark.md" in section
     assert "docs/evidence-index.md" in section
-    assert "35/50" not in readme
-    assert "0/50" not in readme
     assert "remains withdrawn" in evidence_index
     assert "cannot be verified from a public clone" in evidence_index
-    assert DERIVATIVE_PATH.name in evidence_index
-    assert report_path.name in evidence_index
+    assert DERIVATIVE_PATH.as_posix() in evidence_index
+    assert report_path.as_posix() in evidence_index
 
 
 def test_retained_development_runs_are_digest_only_entries() -> None:

@@ -46,6 +46,7 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
 
 def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
     compose = (REPOSITORY_ROOT / "deploy/compose.yaml").read_text()
+    root_readme = (REPOSITORY_ROOT / "README.md").read_text()
     deploy_readme = (REPOSITORY_ROOT / "deploy/README.md").read_text()
 
     def service_ports(service: str) -> list[str]:
@@ -64,13 +65,17 @@ def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
     assert service_ports("platform") == [
         "127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"
     ]
-    warning = next(
-        paragraph for paragraph in deploy_readme.split("\n\n") if "shared deployment" in paragraph
-    )
-    warning = " ".join(warning.split())
-    assert "no caller authentication" in warning
-    assert "shared network" in warning
-    assert "control plane" in warning and "MLflow" in warning
+    warnings = [
+        next(
+            " ".join(paragraph.split())
+            for paragraph in text.split("\n\n")
+            if "no caller authentication" in " ".join(paragraph.split())
+        )
+        for text in (root_readme, deploy_readme)
+    ]
+    for warning in warnings:
+        assert "shared network" in warning
+        assert "control plane" in warning and "MLflow" in warning
 
 
 def test_manual_platform_workflow_excludes_compose_lifecycle_suite() -> None:
@@ -87,6 +92,17 @@ def test_manual_platform_workflow_excludes_compose_lifecycle_suite() -> None:
     assert "does not run the fresh-stack Docker/Playwright lifecycle" in " ".join(
         deploy_readme.split()
     )
+
+
+def test_required_fast_suite_aggregates_loopback_and_unit_jobs() -> None:
+    workflow = (REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text()
+
+    assert "unit-suite:\n    name: Unit suite with coverage" in workflow
+    assert "release-integration:\n    name: Release integration" in workflow
+    assert "fast-suite:\n    name: Fast suite" in workflow
+    assert "if: ${{ always() }}" in workflow
+    assert "needs: [unit-suite, release-integration]" in workflow
+    assert "python -m pytest -q -m local_http_integration" in workflow
 
 
 def test_prepare_source_provenance_creates_a_missing_file(script, tmp_path, monkeypatch) -> None:

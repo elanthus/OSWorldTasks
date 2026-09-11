@@ -34,7 +34,7 @@ flowchart LR
     F --> V["Privileged host-side evaluator"]
     O --> V
     V -->|"0 until exact submission; then 1 once"| E
-    D["Offline browser capture\nDOM-derived control boxes"] --> M["Target-agnostic marks"]
+    D["Offline browser capture<br/>DOM-derived control boxes"] --> M["Target-agnostic marks"]
     M --> G["Frozen paired grounding experiment"]
 ```
 
@@ -101,7 +101,9 @@ retention, mechanical promotion gates, explicit approval, exact-version serving,
 the frozen workload. Its measurements use a deterministic `scripted-demo` provider and are
 synthetic orchestration fixtures—not model-quality, production-throughput, or deployment evidence
 ([platform architecture](artifacts/platform/architecture.md),
-[platform evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json)).
+[platform evidence](artifacts/platform/seed-policy-fanout-evidence-v1.json)). The control plane has
+no caller authentication; it and the MLflow demo UI must remain on loopback and must not be exposed
+or proxied onto a shared network ([deployment warning](deploy/README.md)).
 
 The owner-recorded [D1.8](artifacts/day-1/human-gate.json),
 [D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json),
@@ -137,8 +139,9 @@ The real-loopback HTTP contract tests are a separate local integration group. Op
 browser capture, local Metaflow/MLflow runtime, and Docker/Playwright lifecycle commands are also
 documented separately with their prerequisites ([reproduction guide](docs/reproduction.md),
 [deployment guide](deploy/README.md#test-suite-boundaries)). Pull-request CI runs the offline unit
-suite and the loopback HTTP group as separate jobs. The manually dispatched platform workflow runs
-only the Metaflow/MLflow runtime tests; it does **not** run the Docker/Playwright lifecycle suite
+suite and the loopback HTTP group in separate jobs; the branch-protected `Fast suite` result
+requires both. The manually dispatched platform workflow runs only the Metaflow/MLflow runtime
+tests; it does **not** run the Docker/Playwright lifecycle suite
 ([CI](.github/workflows/ci.yml), [manual workflow](.github/workflows/platform-integration.yml)).
 
 ## Limitations
