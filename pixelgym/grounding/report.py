@@ -319,7 +319,7 @@ def write_gallery(
     return manifest
 
 
-def _report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> str:
+def render_report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]]) -> str:
     raw = results["conditions"]["raw"]
     marks = results["conditions"]["marks"]
     paired = results["paired"]
@@ -608,5 +608,5 @@ def generate_results_package(
     }
     results_path.parent.mkdir(parents=True, exist_ok=True)
     results_path.write_text(_json_text(results))
-    report_path.write_text(_report_markdown(results, gallery))
+    report_path.write_text(render_report_markdown(results, gallery))
     return results

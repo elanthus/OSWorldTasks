@@ -55,6 +55,8 @@ agent interface; expected values and bounding boxes never enter the environment 
   95% CI of [+35.0, +54.0]. This is one model alias, prompt, layout, and target-agnostic proposal
   generator—not evidence about other models or GUI workloads
   ([structured results](artifacts/grounding-results.json),
+  [canonical report](artifacts/grounding-report.md),
+  [report provenance](artifacts/grounding-report-provenance-v1.json),
   [dataset](artifacts/grounding-dataset.jsonl)).
 - Exercised the local-first evaluation fan-out on that 1024×768 frozen vendor-form dataset across
   4 seeds × 4 deterministic scripted-policy aliases: 16 branches and 80 scripted calls, with a
@@ -177,12 +179,15 @@ python3.12 -m venv .venv
 .venv/bin/mypy pixelgym
 .venv/bin/pytest -q -n auto tests/unit
 .venv/bin/python scripts/golden_trajectory.py check
-.venv/bin/python scripts/generate_grounding_report.py
+.venv/bin/python scripts/verify_grounding_report.py
 ```
 
-The golden trajectory replays the reward and episode-end contract. The report command reads stored
-evidence without model calls. See the [reproduction guide](docs/reproduction.md) for coverage,
-historical timing, browser capture, and the optional pinned OSWorld integration. The
+The golden trajectory replays the reward and episode-end contract. The grounding verification
+command reads frozen evidence without model calls or file writes; intentional report generation is
+a separate operation. See the [grounding verification guide](docs/grounding-verification.md) for
+the supported numerical and rendered-image comparisons, and the
+[reproduction guide](docs/reproduction.md) for coverage, historical timing, browser capture, and
+the optional pinned OSWorld integration. The
 [CI workflow](.github/workflows/ci.yml) gives the hosted coverage job a 20-minute timeout;
 local plain-suite timings are a separate measurement
 ([source record](artifacts/public-release/status-sources.json)).
