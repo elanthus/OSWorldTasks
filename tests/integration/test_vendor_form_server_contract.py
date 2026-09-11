@@ -1,8 +1,11 @@
-"""Shared HTTP contract tests for the local and OSWorld guest task servers.
+"""Shared local-HTTP contract tests for the local and OSWorld guest task servers.
 
 The guest is deliberately a single-task appliance, so two lifecycle behaviors differ:
 before reset its bundled task is available while FastAPI has no active task, and it
 rejects reset seeds other than the bundled seed while FastAPI generates a new task.
+
+This suite opens a loopback listener, so it belongs in the explicit integration path rather
+than the socket-free fast unit suite.
 """
 
 from __future__ import annotations

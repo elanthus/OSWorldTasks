@@ -24,6 +24,24 @@ ranges below for observed run-to-run variance). Serial execution remains support
 not the parallel timing target. The editable install is sufficient for the fast suite, lint, and
 strict static type check of the complete `pixelgym` package.
 
+The public, response-free calibration supplement has a canonical verifier that checks its
+snapshot hashes, plan binding, denominators, classifications, spend accounting, and generated
+report without reading private journals or making provider calls:
+
+```bash
+.venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
+```
+
+Two heavier checks are kept outside the fast unit target. The first opens a loopback listener to
+compare the FastAPI and OSWorld guest HTTP contracts. The second builds and installs the wheel in
+temporary directories, then checks packaged application assets, schemas, license material, and
+imports outside the source checkout. Neither command needs OSWorld or provider access:
+
+```bash
+.venv/bin/pytest -q tests/integration/test_vendor_form_server_contract.py
+.venv/bin/pytest -q tests/integration/test_wheel_packaging.py
+```
+
 Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.
 The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
 `pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
@@ -106,4 +124,3 @@ optional integration dependency and run:
 Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
 the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds
 ([validation evidence](../artifacts/validation-report.json)).
-
