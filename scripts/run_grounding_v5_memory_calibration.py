@@ -264,7 +264,8 @@ def identity_failure(journal: V5AttemptJournal, trial_id: str, config: Any) -> b
             continue
         response = json.loads(
             journal.get_object(
-                event.payload["canonical_response_digest"], expected_kind="canonical_response"
+                event.payload["canonical_response_digest"],
+                expected_kind="canonical_provider_response",
             )
         )
         usage = response.get("usage", {})
@@ -310,10 +311,34 @@ def publish(summary: dict[str, Any]) -> None:
     (PUBLIC / "report.md").write_text(render_report(read(PUBLIC / "summary.json")))
 
 
+def execution_amendment(original: dict[str, Any], current: dict[str, Any]) -> dict[str, Any]:
+    mutable = {"driver_source_digest", "driver_code_revision", "execution_plan_digest"}
+    if {k: v for k, v in original.items() if k not in mutable} != {
+        k: v for k, v in current.items() if k not in mutable
+    }:
+        raise ValueError("an execution amendment cannot change tasks, policies, prices or caps")
+    value = {
+        "schema_version": "pixelgym-d58-execution-amendment-v1",
+        "original_execution_plan_digest": original["execution_plan_digest"],
+        "original_driver_source_digest": original["driver_source_digest"],
+        "driver_source_digest": current["driver_source_digest"],
+        "driver_code_revision": current["driver_code_revision"],
+        "reason": "Correct the canonical_provider_response object-role check in post-episode auditing; preserve every request, outcome and unknown-charge hold already recorded",
+        "authorization_scope": "implementation repair within the owner's approved full run; no change to model policies, task assignments, retry rules or shared USD 5 cap",
+    }
+    return {**value, "amendment_digest": content_digest(value)}
+
+
 def execute(digest: str) -> None:
     plan = read(PUBLIC / "execution-plan.json")
-    if digest != plan["execution_plan_digest"] or plan != canonical_plan():
+    current = canonical_plan()
+    if digest != plan["execution_plan_digest"]:
         raise ValueError("full execution plan differs from its approval")
+    amendment = None
+    if current != plan:
+        amendment = execution_amendment(plan, current)
+        if read(PUBLIC / "execution-amendment-1.json") != amendment:
+            raise ValueError("runtime driver differs from its recorded execution amendment")
     if git("status", "--porcelain", "--untracked-files=no"):
         raise ValueError("tracked worktree must be clean before requests")
     for name in (*DRIVERS, "artifacts/grounding-v5-d58-full-calibration/execution-plan.json"):
@@ -331,6 +356,14 @@ def execute(digest: str) -> None:
         with closing(V5AttemptJournal(JOURNAL)) as journal:
             ledger = MemoryCalibrationLedger(TOTAL_REPAIR_BUDGET_USD, Decimal(0), journal=journal)
             verify_ledger(journal, ledger, plan)
+            if amendment is not None:
+                journal.append_event(
+                    event_key=f"{PHASE}/execution-amendment-1",
+                    kind="memory_execution_amendment",
+                    trial_id=PHASE,
+                    step_index=0,
+                    payload=amendment,
+                )
             caps = CallCaps(**plan["aggregate_caps"])
             config = config_from_price_snapshot(read(PUBLIC / "price-recheck.json"))
             closed = journal.event(f"{PHASE}/closed")
@@ -433,6 +466,8 @@ def execute(digest: str) -> None:
                 raise
             finally:
                 summary = summarize(journal, ledger, plan, stop_reason=stop)
+                summary["execution_amendments"] = [] if amendment is None else [amendment]
+                summary["effective_driver_code_revision"] = current["driver_code_revision"]
                 publish(summary)
                 print(
                     json.dumps(
@@ -448,7 +483,9 @@ def execute(digest: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("admit", "prepare", "execute", "report"))
+    parser.add_argument(
+        "command", choices=("admit", "prepare", "prepare-amendment", "execute", "report")
+    )
     parser.add_argument("--approved-plan-digest")
     args = parser.parse_args()
     if args.command == "admit":
@@ -473,6 +510,13 @@ def main() -> None:
                 }
             )
         )
+    elif args.command == "prepare-amendment":
+        amendment = execution_amendment(read(PUBLIC / "execution-plan.json"), canonical_plan())
+        path = PUBLIC / "execution-amendment-1.json"
+        if path.exists() and read(path) != amendment:
+            raise ValueError("refusing to replace the recorded execution amendment")
+        write(path, amendment)
+        print(json.dumps(amendment))
     elif args.command == "report":
         publish(read(PUBLIC / "summary.json"))
     elif args.approved_plan_digest:

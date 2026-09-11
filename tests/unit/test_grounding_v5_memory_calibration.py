@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from contextlib import closing
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -26,6 +26,8 @@ from pixelgym.grounding.v5.screenshot_memory import (
 )
 from scripts.run_grounding_v5_memory_calibration import (
     PHASE,
+    execution_amendment,
+    identity_failure,
     ordered_seeds,
     prefix_digest,
     render_report,
@@ -140,6 +142,8 @@ def test_full_episode_uses_only_model_actions_and_measures_wrong_memory(tmp_path
             row["model_attempts"] == row["environment_actions_dispatched"] for row in (good, bad)
         )
         assert not any(e.kind == "memory_prefix_started" for e in journal.events())
+        assert not identity_failure(journal, "history", CONFIG)
+        assert identity_failure(journal, "history", replace(CONFIG, response_provider="different"))
         plan = {
             "jobs": [job(), job("stateless")],
             "execution_plan_digest": PLAN,
@@ -257,3 +261,25 @@ def test_full_phase_keeps_prior_spend_and_unknown_holds_on_restart(tmp_path: Pat
             verify_ledger(
                 journal, ledger, {**plan, "pilot_ledger_prefix_digest": "sha256:" + "c" * 64}
             )
+
+
+def test_execution_amendment_cannot_change_paid_scope() -> None:
+    original = {
+        "execution_plan_digest": PLAN,
+        "driver_source_digest": "old-source",
+        "driver_code_revision": "old-revision",
+        "jobs": [5112],
+        "aggregate_ceiling_usd": "5.00",
+    }
+    current = {
+        **original,
+        "execution_plan_digest": "new-plan",
+        "driver_source_digest": "new-source",
+        "driver_code_revision": "new-revision",
+    }
+    amendment = execution_amendment(original, current)
+    assert amendment["original_execution_plan_digest"] == PLAN
+    assert amendment["driver_source_digest"] == "new-source"
+    for field, value in (("aggregate_ceiling_usd", "10.00"), ("jobs", [5113])):
+        with pytest.raises(ValueError, match="cannot change"):
+            execution_amendment(original, {**current, field: value})
