@@ -39,6 +39,8 @@ evidence or turn calibration into a benchmark score.
 
 ## Reproduce and review
 
+- Use the [artifacts map](../artifacts/README.md) to locate a file by claim area.
+
 Use the [grounding verification guide](grounding-verification.md) for the read-only headline check.
 Follow the [reproduction guide](reproduction.md) for local checks, capture, and optional OSWorld.
 Use the [public release checklist](../plans/public-release-checklist.md) for inventory and privacy
