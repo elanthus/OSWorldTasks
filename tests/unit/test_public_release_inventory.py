@@ -246,6 +246,12 @@ def test_policy_transport_fixture_is_acknowledged_only_as_exact_test_vector(tmp_
     assert module._fingerprint(value) == (
         "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c"
     )
+    _assert_test_vector_is_exact_and_tests_only(module, tmp_path, value)
+
+
+def _assert_test_vector_is_exact_and_tests_only(
+    module: ModuleType, tmp_path: Path, value: str
+) -> None:
     root = tmp_path / "repository"
     (root / "tests").mkdir(parents=True)
     fixture = root / "tests" / "fixture.py"
@@ -283,6 +289,16 @@ def test_policy_transport_fixture_is_acknowledged_only_as_exact_test_vector(tmp_
     assert any(row["classification"] == "acknowledged_test_vector" for row in history["findings"])
     assert value not in json.dumps(result)
     assert value not in json.dumps(history)
+
+
+def test_historical_curl_fixture_is_acknowledged_only_as_exact_test_vector(tmp_path: Path) -> None:
+    module = _load_script()
+    # Synthetic loopback TLS fixture; split so this source adds no token-shape occurrence.
+    value = 'Bearer ' + 'integration-fixture'
+    assert module._fingerprint(value) == (
+        "sha256:be14d3c75c6571ab2f0474ab8a80c9e4ac8e3700ec2cd202712ee50a07d25a36"
+    )
+    _assert_test_vector_is_exact_and_tests_only(module, tmp_path, value)
 
 
 def test_history_inventory_excludes_local_only_refs(tmp_path: Path) -> None:
