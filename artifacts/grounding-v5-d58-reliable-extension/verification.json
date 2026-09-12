@@ -1,0 +1,38 @@
+{
+  "additional_retry_attempts": 41,
+  "assigned_episodes_verified": 100,
+  "episodes_remeasured": 96,
+  "execution_plan_digest": "sha256:d60e7390fb91bfded91e26b127b7bb9e521c048e41e8e7d407294367c2d49ba9",
+  "identical_requests_within_retries": true,
+  "new_request_bodies_reconstructed": 1653,
+  "preserved_conditions_verified": 32,
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "recorded_failure_codes": {
+    "confirmed_no_response_timeout:phase_cap_stop": 1,
+    "confirmed_no_response_timeout:provider_rate_limit": 8,
+    "retryable_rate_limit:provider_rate_limit": 8,
+    "retryable_transport_fault:curl_52": 3,
+    "retryable_transport_fault:curl_56": 13,
+    "retryable_transport_fault:provider_rate_limit": 17,
+    "sealed_unsuccessful_result:phase_cap_stop": 1,
+    "sealed_unsuccessful_result:policy_violation": 1,
+    "unknown_outcome_infrastructure_failure:curl_52": 3,
+    "unknown_outcome_infrastructure_failure:curl_56": 13,
+    "unknown_outcome_infrastructure_failure:provider_rate_limit": 17
+  },
+  "retried_logical_actions": 39,
+  "schema_version": "pixelgym-d58-reliable-extension-verification-v1",
+  "settlement_counts": {
+    "confirmed_positive": 1610,
+    "confirmed_zero": 9,
+    "unknown": 33
+  },
+  "summary_digest": "sha256:b2eb8014b0a84b9c0a8e0df4c25bed2d996637a0a6b67d6774c6469c0edc2eb0",
+  "transport_fault_counts": {
+    "curl_52": 3,
+    "curl_56": 13
+  },
+  "wire_reservations_verified": 1652
+}
