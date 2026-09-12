@@ -68,7 +68,7 @@ Counts are top-level entries before this map was added; status phrases are copie
 
 ## Release and process records
 
-- [public-release/](public-release/) — release-review records.
+- [public-release/](public-release/) — release-review records; [latest inventory and privacy refresh](public-release/release-review-2026-09-12.md).
 - [public-release-inventory.json](public-release-inventory.json) — revision-bound tracked-file, link, licensing, redaction, and reachable-history inventory.
 - [agent-assisted-workflow-history.json](agent-assisted-workflow-history.json) — agent-assisted workflow history.
 - [ci-coverage-baseline-issue-114.md](ci-coverage-baseline-issue-114.md) — CI coverage baseline record.

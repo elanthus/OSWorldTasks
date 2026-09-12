@@ -71,6 +71,8 @@ output directly.
   On 2026-09-10 the owner accepted the documented coverage limits; media retention is unchanged.
   The [final refresh](../artifacts/public-release/final-privacy-review.md) records updated scans and
   acceptance without claiming exhaustive inspection or approving publication.
+  The [2026-09-12 refresh](../artifacts/public-release/release-review-2026-09-12.md) records the
+  subsequent release-readiness changes, exact fixture review, and bounded hosted delta.
 - [ ] Confirm zero unreviewed actual credential findings within the approved publication scope.
   Distinguish acknowledged synthetic test vectors from actual credentials; retain accepted historical
   path findings visibly. If an actual credential is established, approve concrete rotation/revocation

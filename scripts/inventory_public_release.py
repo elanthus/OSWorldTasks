@@ -59,9 +59,13 @@ SAFE_EMAIL_DOMAINS = {
 # tests/unit/test_grounding_v5_d56_completed_calibration_publication.py, and
 # tests/unit/platform/test_policy_subprocess.py::test_policy_request_cannot_carry_transport_credentials.
 # The latter writes a literal into a temporary LeakingPolicy and expects rejection before transport.
-# Acknowledge a new test
-# vector only after confirming it is synthetic, then add its SHA-256 fingerprint and source here.
+# The local HTTPS fixture in tests/integration/test_grounding_v5_curl_wire.py
+# (historical blob 2328db232ab70c096d4a5fbcee7d499a741a9fea, lines 54 and 91)
+# sends a synthetic bearer value only to its loopback TLS server.
+# Acknowledge a new test vector only after confirming it is synthetic, then add its
+# SHA-256 fingerprint and source here.
 SAFE_TOKEN_TEST_FINGERPRINTS = {
+    "sha256:be14d3c75c6571ab2f0474ab8a80c9e4ac8e3700ec2cd202712ee50a07d25a36",
     "sha256:9cc60315c6941fa80e3f712444dfb15039e3699777982d92d40a0d8eae4d0f1c",
     "sha256:2e6ad69016f66d4b5a95aa38017878b0b4a537bc138b2a374e4e69ae1af59c33",
     "sha256:32f4cf588c77f0941514cadc1cb18fa0e186716c93e067c22d9ef4e27718f506",
