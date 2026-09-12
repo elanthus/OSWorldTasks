@@ -21,6 +21,7 @@ ARTIFACTS = (
     "grounding-v5-d58-reliable-diagnostic",
     "grounding-v5-d58-reliable-continuation",
     "grounding-v5-d58-reliable-extension",
+    "grounding-v5-d58-owner-budget-continuation",
 )
 
 
@@ -41,7 +42,7 @@ def verify(name: str, journal: Path | None) -> dict[str, object]:
         tree = Path(directory)
         with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
             bundle.extractall(tree, filter="data")
-        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment"):
+        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment", "grounding-v5-d58-owner-budget"):
             source = ROOT / "artifacts" / artifact
             if source.is_dir():
                 shutil.copytree(source, tree / "artifacts" / artifact)

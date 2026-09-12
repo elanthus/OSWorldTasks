@@ -84,3 +84,10 @@ later source changes:
 
 This command requires the closed summary and verification files. It makes no
 provider calls and leaves the checkout unchanged.
+
+During the extension, the owner checked OpenRouter activity and directed that
+unresolved holds count as USD 0. The
+[owner accounting amendment](grounding-v5-d58-owner-budget.md) records that
+decision and prepares an append-only adjustment after the active phase closes.
+The ceiling remains USD 28 and the original six-hour deadline remains in force.
+Historical phase summaries above retain their original accounting.

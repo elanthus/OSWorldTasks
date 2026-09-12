@@ -116,7 +116,9 @@ def test_stops_and_interruption_never_resend_a_started_episode(tmp_path, stop):
             assert not transport.model_requests
 
 
-@pytest.mark.parametrize("driver_name", ["reliable_continuation", "reliable_extension"])
+@pytest.mark.parametrize(
+    "driver_name", ["reliable_continuation", "reliable_extension", "owner_budget_continuation"]
+)
 def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_stop(
     tmp_path, monkeypatch, driver_name
 ):
@@ -137,10 +139,23 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
         read(PREVIOUS / "execution-plan.json"), read(PREVIOUS / "summary.json")
     )
     with closing(V5AttemptJournal(journal_path)) as journal:
-        ledger = driver.ReboundedMemoryLedger(Decimal(28), Decimal(0), journal=journal)
+        if driver_name == "owner_budget_continuation":
+            journal.append_event(
+                event_key=driver.OWNER_AUTHORIZATION_KEY,
+                kind="owner_zero_hold_budget_authorized",
+                trial_id="__spend_ledger__",
+                step_index=0,
+                payload={"approval_digest": PLAN, "rule": driver.OWNER_BUDGET_RULE},
+            )
+            ledger = driver.OwnerZeroHoldLedger(
+                Decimal(28), Decimal(0), journal=journal, approval_digest=PLAN
+            )
+        else:
+            ledger = driver.ReboundedMemoryLedger(Decimal(28), Decimal(0), journal=journal)
         prior, integrity = ledger.to_dict(), journal.integrity_report()
     plan = {
         "execution_plan_digest": PLAN,
+        "owner_budget_approval_digest": PLAN,
         "curl_identity": {},
         "prior_pilot_spend": prior,
         "prior_integrity": integrity,
@@ -184,7 +199,7 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
     monkeypatch.setattr(driver, "run_episode", failed_episode)
     monkeypatch.setattr(driver, "phase_summary", lambda *args: {"scores": {}})
     monkeypatch.setattr(driver, "publish", lambda value: None)
-    if driver_name == "reliable_extension":
+    if driver_name != "reliable_continuation":
         deadline = plan["runtime_deadline"]
         plan["runtime_deadline"] = 1
         driver.write(public / "execution-plan.json", plan)
@@ -202,7 +217,7 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
         )
         assert Decimal(binding["phase_spend_limit"]) == 28
         assert binding["phase_wire_limit"] == 8640
-        if driver_name == "reliable_extension":
+        if driver_name != "reliable_continuation":
             assert binding["phase_deadline"] == plan["runtime_deadline"]
         assert journal.event(f"{driver.PHASE}/closed").payload == {
             "stop_reason": "all_assignments_completed",
