@@ -109,6 +109,36 @@ def owner_approval() -> dict[str, Any]:
     return value
 
 
+def inherited_schedule(journal: V5AttemptJournal, previous_phase: str) -> dict[str, Any] | None:
+    prefix = f"reliable/{content_digest(previous_phase)}"
+    schedules = [e for e in journal.events(prefix) if e.kind == "reliable_transport_schedule"]
+    if not schedules:
+        return None
+    event = schedules[-1]
+    return {"phase_id": previous_phase, "event_key": event.event_key, "payload": event.payload}
+
+
+def carry_forward_schedule(transport: ReliableTransport, source: dict[str, Any] | None) -> None:
+    """Keep the previous provider wait and backoff streak across a phase boundary."""
+    if source is None:
+        return
+    if inherited_schedule(transport.journal, source["phase_id"]) != source:
+        raise ValueError("preceding provider schedule differs from the frozen carry-forward")
+    payload = {**source["payload"], "inherited_from_event_key": source["event_key"]}
+    with transport._lock:
+        if transport._active is not None or not transport.wire.idle:
+            raise ValueError("schedule carry-forward requires an idle transport")
+        transport.journal.append_event(
+            event_key=f"{transport._prefix}/inherited-schedule",
+            kind="reliable_transport_schedule",
+            trial_id=transport._prefix,
+            step_index=0,
+            payload=payload,
+        )
+        transport._cooldown_until = payload["cooldown_until"]
+        transport._failures = payload["consecutive_failures"]
+
+
 def reconcile_owner_budget() -> dict[str, Any]:
     """Apply the owner's accounting decision after the active phase is idle."""
     approval = owner_approval()
@@ -259,6 +289,7 @@ def canonical_plan() -> dict[str, Any]:
             raise ValueError("original runtime clock missing")
         runtime_start = origin.payload["started_at"]
         events = journal.events()[:count]
+        schedule = inherited_schedule(journal, previous["phase_id"])
         prior_actions = sum(e.kind == "dispatch_started" for e in events)
         prior_attempts = sum(e.kind == "attempt_started" for e in events)
     jobs, execution, preserved = continuation_assignments(old, previous)
@@ -315,6 +346,7 @@ def canonical_plan() -> dict[str, Any]:
         "backend_identity": FocusMemoryBackend.backend_identity,
         "transport_version": TRANSPORT_VERSION,
         "retry_rule": RETRY_RULE,
+        "inherited_transport_schedule": schedule,
         "price_snapshot_digest": content_digest(snapshot),
         "curl_identity": read(PUBLIC / "curl-identity.json"),
         "phase_caps": CallCaps(actions, 3 * actions, 0, 3 * actions).to_dict(),
@@ -458,6 +490,7 @@ def execute(digest: str) -> None:
                 ),
                 phase_wire_limit=plan["phase_caps"]["provider_wire_request_cap"],
             )
+            carry_forward_schedule(transport, plan["inherited_transport_schedule"])
             stop = "interrupted"
             try:
                 for job in plan["execution_jobs"]:

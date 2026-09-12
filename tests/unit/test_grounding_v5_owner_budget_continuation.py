@@ -139,3 +139,57 @@ def test_reconciliation_refuses_active_or_changed_state(reconciliation, changed)
     with closing(V5AttemptJournal(journal_path)) as journal:
         assert journal.events() == prefix
         assert journal.event(driver.OWNER_AUTHORIZATION_KEY) is None
+
+
+@pytest.mark.parametrize("until,ready", [(150.0, True), (50.0, True), (400.0, False)])
+def test_new_phase_carries_cooldown_and_failure_streak_without_network_or_sleep(
+    tmp_path, until, ready
+):
+    from types import SimpleNamespace
+
+    clock = [100.0]
+    sleeps = []
+
+    def advance(seconds):
+        sleeps.append(seconds)
+        clock[0] += seconds
+
+    with closing(V5AttemptJournal(tmp_path / "handoff.sqlite")) as journal:
+        previous = "previous"
+        prefix = f"reliable/{driver.content_digest(previous)}"
+        journal.append_event(
+            event_key=f"{prefix}/last/schedule",
+            kind="reliable_transport_schedule",
+            trial_id=prefix,
+            step_index=0,
+            payload={
+                "cooldown_until": until,
+                "consecutive_failures": 2,
+                "retry_after_seconds": 70.0,
+                "backoff_source": "retry_after",
+            },
+        )
+        source = driver.inherited_schedule(journal, previous)
+        ledger = ReboundedMemoryLedger(Decimal(28), Decimal(0), journal=journal)
+        config = driver.reliable_config(
+            driver.config_from_snapshot(driver.read(driver.DIAGNOSTIC / "price-recheck.json"))
+        )
+        transport = driver.ReliableTransport(
+            config,
+            lifecycle_id="next",
+            ledger=ledger,
+            wire=SimpleNamespace(idle=True),
+            environment={"OPENROUTER_API_KEY": "fixture-secret"},
+            wall_time=lambda: clock[0],
+            monotonic=lambda: clock[0],
+            sleep=advance,
+            phase_deadline=300,
+        )
+        driver.carry_forward_schedule(transport, source)
+        assert transport.await_ready() is ready
+        assert sum(sleeps) == (50 if until == 150 else 0)
+        assert transport._failures == 2 and ledger.wire_requests_sent == 0
+        assert transport._schedule("next-failure", failed=True)[0] == 45
+        copied = next(e for e in journal.events() if e.event_key.endswith("/inherited-schedule"))
+        assert copied.payload["cooldown_until"] == until
+        assert copied.payload["inherited_from_event_key"] == source["event_key"]

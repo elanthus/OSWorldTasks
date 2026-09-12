@@ -21,6 +21,13 @@ unknown hold. It preserves all earlier events and known charges. Reconciliation
 can recover after interruption without duplicating waivers. It refuses to run
 while a request remains active or the operator lock is held.
 
+The continuation also binds the preceding transport's last schedule and carries
+its cooldown deadline and consecutive-failure count into the new lifecycle.
+Changing accounting cannot shorten a provider wait or reset the backoff streak.
+If that wait exceeds the remaining authorized time, no new episode starts.
+The earlier handoff into the active extension occurred after its predecessor's
+stored cooldown had expired, as checked against the original start event.
+
 If untouched assignments remain at a closed budget/time boundary, a separately
 frozen continuation uses the zero-hold ledger. Its model, route, prices, request
 bounds, retries, task bank, order, prompts, focus cue and deferred correctness
@@ -68,3 +75,6 @@ independently reproducible in that case:
 
 The additional source-provenance checks passed ten selected tests in 0.56
 seconds; Ruff and mypy for the three affected runtime/verification files passed.
+The cooldown-handoff checks passed six selected tests in 1.91 seconds, including
+an active wait, an expired wait, insufficient remaining time, and the driver
+loop. Their clock is simulated; they make no network calls or wall-clock sleeps.

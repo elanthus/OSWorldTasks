@@ -156,6 +156,7 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
     plan = {
         "execution_plan_digest": PLAN,
         "owner_budget_approval_digest": PLAN,
+        "inherited_transport_schedule": None,
         "curl_identity": {},
         "prior_pilot_spend": prior,
         "prior_integrity": integrity,

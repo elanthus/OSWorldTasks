@@ -367,6 +367,23 @@ def verify(journal_path=None):
             content_digest(events[: plan["prior_event_count"]]) == plan["prior_event_prefix_digest"]
         )
         by_key = {e["event_key"]: e for e in events}
+        inherited = plan["inherited_transport_schedule"]
+        if inherited:
+            source = by_key[inherited["event_key"]]
+            assert source["payload"] == inherited["payload"]
+            predecessor_prefix = f"reliable/{content_digest(inherited['phase_id'])}"
+            prior_schedules = [
+                e
+                for e in events[: plan["prior_event_count"]]
+                if e["trial_id"] == predecessor_prefix
+                and e["kind"] == "reliable_transport_schedule"
+            ]
+            assert source == prior_schedules[-1]
+            carried = by_key[f"reliable/{content_digest(PHASE)}/inherited-schedule"]
+            assert carried["payload"] == {
+                **inherited["payload"],
+                "inherited_from_event_key": inherited["event_key"],
+            }
         by_trial = defaultdict(list)
         for event in events:
             by_trial[event["trial_id"]].append(event)
