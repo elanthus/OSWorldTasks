@@ -32,6 +32,7 @@ def reconciliation(tmp_path, monkeypatch):
             payload={"stop_reason": "aggregate_budget_or_wire_stop", "transport_idle": True},
         )
         summary = {
+            "execution_plan_digest": "test-plan",
             "phase_id": "previous-phase",
             "transport_idle_at_close": True,
             "aggregate_spend": ledger.to_dict(),
@@ -39,11 +40,16 @@ def reconciliation(tmp_path, monkeypatch):
         }
         prefix = journal.events()
         driver.write(previous / "summary.json", summary)
+        driver.write(
+            previous / "execution-plan.json",
+            {"execution_plan_digest": "test-plan", "source_digests": {}},
+        )
     monkeypatch.setattr(driver, "PREVIOUS", previous)
     monkeypatch.setattr(driver, "PRIVATE", tmp_path)
     monkeypatch.setattr(driver, "JOURNAL", journal_path)
     monkeypatch.setattr(driver, "OWNER_APPROVAL", tmp_path / "approval.json")
     monkeypatch.setattr(driver, "RECONCILIATION", tmp_path / "reconciliation.json")
+    monkeypatch.setattr(driver, "git", lambda *args: "a" * 40 if args[0] == "log" else "")
     return journal_path, prefix
 
 

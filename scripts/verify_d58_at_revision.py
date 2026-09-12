@@ -22,13 +22,16 @@ ARTIFACTS = (
     "grounding-v5-d58-reliable-continuation",
     "grounding-v5-d58-reliable-extension",
     "grounding-v5-d58-owner-budget-continuation",
+    "grounding-v5-d58-owner-budget",
 )
 
 
 def verify(name: str, journal: Path | None) -> dict[str, object]:
     if name not in ARTIFACTS:
         raise ValueError("unsupported closed evidence package")
-    plan = json.loads((ROOT / "artifacts" / name / "execution-plan.json").read_text())
+    accounting_only = name == "grounding-v5-d58-owner-budget"
+    filename = "reconciliation.json" if accounting_only else "execution-plan.json"
+    plan = json.loads((ROOT / "artifacts" / name / filename).read_text())
     revision = plan["driver_code_revision"]
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("executed revision must be a complete commit ID")
@@ -42,16 +45,21 @@ def verify(name: str, journal: Path | None) -> dict[str, object]:
         tree = Path(directory)
         with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
             bundle.extractall(tree, filter="data")
-        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment", "grounding-v5-d58-owner-budget"):
+        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment"):
             source = ROOT / "artifacts" / artifact
             if source.is_dir():
                 shutil.copytree(source, tree / "artifacts" / artifact)
-        command = [sys.executable, str(tree / "artifacts" / name / "analyze.py")]
+        analyzer_package = "grounding-v5-d58-owner-budget-continuation" if accounting_only else name
+        command = [sys.executable, str(tree / "artifacts" / analyzer_package / "analyze.py")]
+        if accounting_only:
+            command.append("--verify-reconciliation")
         if journal:
             command += ["--journal", str(journal.resolve())]
         environment = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
         environment.update(PYTHONPATH=str(tree), PYTHONDONTWRITEBYTECODE="1")
-        result = subprocess.run(command, cwd=tree, env=environment, capture_output=True, text=True, check=False)
+        result = subprocess.run(
+            command, cwd=tree, env=environment, capture_output=True, text=True, check=False
+        )
         if result.returncode:
             raise RuntimeError(result.stderr)
         return {"executed_revision": revision, "verification": json.loads(result.stdout)}

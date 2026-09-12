@@ -57,3 +57,14 @@ committed runtime sources and the exact committed execution plan before paid
 execution. The reconciliation and its verifier make no provider calls. The
 closed continuation can later be verified at its recorded source revision with
 `scripts.verify_d58_at_revision`.
+
+Skip preparation of another paid phase if no untouched assignments remain. The
+reconciliation records its own source revision and hashes, so it remains
+independently reproducible in that case:
+
+```bash
+.venv/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-owner-budget --journal .cache/d58-memory-calibration/aggregate.sqlite
+```
+
+The additional source-provenance checks passed ten selected tests in 0.56
+seconds; Ruff and mypy for the three affected runtime/verification files passed.

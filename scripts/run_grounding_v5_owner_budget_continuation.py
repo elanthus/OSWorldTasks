@@ -114,6 +114,18 @@ def reconcile_owner_budget() -> dict[str, Any]:
     approval = owner_approval()
     approval_digest = content_digest(approval)
     previous = read(PREVIOUS / "summary.json")
+    previous_plan = read(PREVIOUS / "execution-plan.json")
+    if previous["execution_plan_digest"] != previous_plan["execution_plan_digest"]:
+        raise ValueError("closed accounting snapshot differs from its frozen plan")
+    revision = git("log", "-1", "--format=%H", "--", *NEW_SOURCES)
+    git("ls-files", "--error-unmatch", *NEW_SOURCES)
+    git("diff", "--exit-code", revision, "--", *NEW_SOURCES)
+    sources = {
+        name: "sha256:" + sha256_bytes((ROOT / name).read_bytes())
+        for name in (*previous_plan["source_digests"], *NEW_SOURCES)
+    }
+    if any(sources[name] != expected for name, expected in previous_plan["source_digests"].items()):
+        raise ValueError("executed predecessor source changed before owner reconciliation")
     with (PRIVATE / "operator.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         with closing(V5AttemptJournal(JOURNAL)) as journal:
@@ -144,6 +156,8 @@ def reconcile_owner_budget() -> dict[str, Any]:
                 "rule": OWNER_BUDGET_RULE,
                 "previous_summary_digest": content_digest(previous),
                 "before_integrity": integrity,
+                "driver_code_revision": revision,
+                "source_digests": sources,
             }
             existing = journal.event(OWNER_AUTHORIZATION_KEY)
             if existing is None:
@@ -180,6 +194,8 @@ def reconcile_owner_budget() -> dict[str, Any]:
                 "schema_version": "pixelgym-d58-owner-budget-reconciliation-v1",
                 "approval_digest": approval_digest,
                 "previous_summary_digest": content_digest(previous),
+                "driver_code_revision": revision,
+                "source_digests": sources,
                 "before_aggregate_spend": before,
                 "after_aggregate_spend": ledger.to_dict(),
                 "before_integrity": integrity,

@@ -44,6 +44,8 @@ def verify_reconciliation(journal_path=None):
     assert approval["unresolved_budget_hold_usd"] == "0"
     assert approval["aggregate_ceiling_usd"] == "28.00"
     assert content_digest(previous) == reconciliation["previous_summary_digest"]
+    for name, digest in reconciliation["source_digests"].items():
+        assert "sha256:" + sha256_bytes((ROOT / name).read_bytes()) == digest, name
     before, after = (
         reconciliation["before_aggregate_spend"],
         reconciliation["after_aggregate_spend"],
@@ -79,6 +81,7 @@ def verify_reconciliation(journal_path=None):
         "schema_version": "pixelgym-d58-owner-reconciliation-verification-v1",
         "approval_digest": approval_digest,
         "reconciliation_digest": content_digest(reconciliation),
+        "driver_code_revision": reconciliation["driver_code_revision"],
         "waivers_verified": len(waivers),
         "confirmed_charges_unchanged": True,
         "failed_outcome_count_unchanged": True,
@@ -113,6 +116,8 @@ def verify_reconciliation(journal_path=None):
             "rule": OWNER_BUDGET_RULE,
             "previous_summary_digest": content_digest(previous),
             "before_integrity": reconciliation["before_integrity"],
+            "driver_code_revision": reconciliation["driver_code_revision"],
+            "source_digests": reconciliation["source_digests"],
         }
         assert [e["payload"] for e in delta[1:]] == waivers
         assert all(e["kind"] == "spend_unknown_budget_waived" for e in delta[1:])
