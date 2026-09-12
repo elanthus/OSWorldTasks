@@ -41,7 +41,7 @@ def verify(name: str, journal: Path | None) -> dict[str, object]:
         tree = Path(directory)
         with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
             bundle.extractall(tree, filter="data")
-        for artifact in ARTIFACTS:
+        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment"):
             source = ROOT / "artifacts" / artifact
             if source.is_dir():
                 shutil.copytree(source, tree / "artifacts" / artifact)
