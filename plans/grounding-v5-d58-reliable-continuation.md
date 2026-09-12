@@ -42,6 +42,24 @@ the later `pyproject.toml` test-marker and frozen-analyzer style changes, and bi
 the new full-episode wrapper and driver. Prior executed source revisions and
 evidence remain intact.
 
+The first phase closed at its 90-minute limit with an idle transport and no
+in-flight reservations. Its [report](../artifacts/grounding-v5-d58-reliable-continuation/report.md)
+records 22 newly attempted episodes: 21 ended normally and one history episode
+was cut short by the phase deadline, stored as `request_failure`. Of the new
+assignments, history succeeded on 10/11 and stateless on 1/11; respectively 10/11
+and 11/11 reached both memory consumers. These counts exclude the ten preserved
+infrastructure failures. Sixty-eight assignments remain untouched.
+
+The phase made 570 wire requests, with USD 4.232186775 confirmed and
+USD 1.39394100 added as unresolved holds. The aggregate is USD 10.565320050
+confirmed plus USD 3.08750655 held, leaving USD 14.347173400 under the USD 28
+ceiling. The [private verification receipt](../artifacts/grounding-v5-d58-reliable-continuation/verification.json)
+reconstructs 571 request bodies, verifies all 570 reservations and settlements,
+and remeasures all 32 attempted episodes. Twenty-five logical actions were
+retried; 24 recovered and the last was stopped by the phase deadline. A public
+verification and a separate altered-wire-count rejection check also completed
+without provider calls.
+
 Analysis reports the complete 100-assignment cohort and the 90 assignments using
 the repaired transport separately. It preserves infrastructure failures and
 explicitly unrun assignments. Consumer exposure, first-choice correctness and

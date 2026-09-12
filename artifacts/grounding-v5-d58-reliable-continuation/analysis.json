@@ -1,0 +1,171 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "13.652826600",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "10.565320050",
+    "unknown_charge_outcomes": 57,
+    "unknown_reservation_usd": "3.08750655",
+    "wire_requests_sent": 1635
+  },
+  "calibration_threshold_scope": "Compare history consumer exposure with 40/50 and history terminal success with 10..40/50; these are planning thresholds, not a milestone verdict. Missing episodes do not count as observed model failures.",
+  "complete": false,
+  "confirmatory_power_estimate": null,
+  "execution_plan_digest": "sha256:61c029d3266c5f9cdfd68e5d989afa476ba4dd32e39c6ebcca3bdf1aba5aefed",
+  "first_attempt_and_exposure_counts": {
+    "history": {
+      "assigned": 50,
+      "attempted_episodes": 16,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "not_run": 34,
+        "request_failure": 1,
+        "success_termination": 10
+      },
+      "correct_first_memory_attempts": 19,
+      "first_memory_attempts": 20,
+      "reached_both_consumers": 10,
+      "terminal_successes": 10
+    },
+    "stateless": {
+      "assigned": 50,
+      "attempted_episodes": 16,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "not_run": 34,
+        "step_limit_truncation": 10,
+        "success_termination": 1
+      },
+      "correct_first_memory_attempts": 14,
+      "first_memory_attempts": 28,
+      "reached_both_consumers": 14,
+      "terminal_successes": 1
+    }
+  },
+  "history_exposure_upper_bound_including_missing": 44,
+  "inferential_test": null,
+  "interpretation": "Continued focus-repaired Gemini 3.8 cohort including ten preserved failures and an explicit transport-version boundary; do not pool with earlier renderers or scripted-prefix diagnostics. Infrastructure failures are retained. Final confirmation remains unapproved.",
+  "logical_clusters": 44,
+  "new_phase_known_spend_usd": "4.232186775",
+  "new_phase_wire_requests": 570,
+  "paired_terminal_outcomes": {
+    "both_success": 1,
+    "history_only": 9,
+    "incomplete": 34,
+    "neither_success": 6,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "planned_exposure_threshold_count": 40,
+  "planned_mixed_terminal_outcome_range": [
+    10,
+    40
+  ],
+  "provider_calls": 0,
+  "repaired_transport_paired_outcomes": {
+    "both_success": 1,
+    "history_only": 9,
+    "incomplete": 34,
+    "neither_success": 1,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "repaired_transport_subset": {
+    "history": {
+      "assigned": 45,
+      "attempted_episodes": 11,
+      "classifications": {
+        "not_run": 34,
+        "request_failure": 1,
+        "success_termination": 10
+      },
+      "correct_first_memory_attempts": 19,
+      "first_memory_attempts": 20,
+      "reached_both_consumers": 10,
+      "terminal_successes": 10
+    },
+    "stateless": {
+      "assigned": 45,
+      "attempted_episodes": 11,
+      "classifications": {
+        "not_run": 34,
+        "step_limit_truncation": 10,
+        "success_termination": 1
+      },
+      "correct_first_memory_attempts": 10,
+      "first_memory_attempts": 22,
+      "reached_both_consumers": 11,
+      "terminal_successes": 1
+    }
+  },
+  "representative_seeds": [
+    5112,
+    5114,
+    5115,
+    5116,
+    5117,
+    5118,
+    5119,
+    5122,
+    5124,
+    5125,
+    5126,
+    5127,
+    5128,
+    5129,
+    5132,
+    5134,
+    5135,
+    5136,
+    5137,
+    5138,
+    5139,
+    5141,
+    5142,
+    5144,
+    5145,
+    5146,
+    5147,
+    5148,
+    5149,
+    5151,
+    5152,
+    5154,
+    5155,
+    5156,
+    5157,
+    5158,
+    5159,
+    5160,
+    5162,
+    5163,
+    5164,
+    5165,
+    5166,
+    5167
+  ],
+  "representative_terminal_outcomes": {
+    "both_success": 1,
+    "history_only": 5,
+    "incomplete": 33,
+    "neither_success": 5,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "schema_version": "pixelgym-d58-reliable-continuation-analysis-v1",
+  "started_final_stages": {
+    "history": {
+      "12": 10,
+      "3": 1,
+      "4": 5
+    },
+    "stateless": {
+      "1": 2,
+      "10": 1,
+      "11": 11,
+      "12": 1,
+      "8": 1
+    }
+  },
+  "summary_digest": "sha256:b3596820dea0f2f478d88758abdf15f927100e1b4f1b73d0b5e961e434bf40eb"
+}
