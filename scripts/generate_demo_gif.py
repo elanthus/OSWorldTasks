@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pixelgym.portfolio import generate_episode_gif
+from pixelgym.demo_media import generate_episode_gif
 
 
 def main() -> None:

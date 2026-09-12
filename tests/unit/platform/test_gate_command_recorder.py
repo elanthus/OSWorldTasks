@@ -18,7 +18,7 @@ def _record(
     return subprocess.run(
         [
             sys.executable,
-            str(repository_root / "scripts/record_d412_command.py"),
+            str(repository_root / "scripts/record_gate_command.py"),
             "--output",
             str(tmp_path / "record.json"),
             "--cwd",

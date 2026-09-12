@@ -1,4 +1,4 @@
-"""Offline portfolio artifact helpers backed by stored validation evidence."""
+"""Demo GIF and review-media helpers backed by stored validation evidence."""
 
 from __future__ import annotations
 

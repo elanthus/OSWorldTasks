@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from pixelgym.portfolio import generate_episode_gif
+from pixelgym.demo_media import generate_episode_gif
 
 
 def _evidence(rewards: list[float]) -> dict:
