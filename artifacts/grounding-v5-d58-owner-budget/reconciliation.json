@@ -1,0 +1,813 @@
+{
+  "after_aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "23.275649025",
+    "in_flight_reservation_usd": "0",
+    "owner_budget_approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+    "spent_usd": "23.275649025",
+    "unknown_budget_rule": "owner-authorized-zero-unpriced-holds-v1",
+    "unknown_charge_outcomes": 90,
+    "unknown_reservation_usd": "0",
+    "wire_requests_sent": 3287
+  },
+  "after_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:3ae7c2902986b531c44c35046b76a856682ed5869ef94c38395cc1a7e60dabd7",
+    "event_count": 40714,
+    "object_count": 14030,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+  "basis": "Owner checked OpenRouter activity and reports failed calls are not billed. This is owner-supplied evidence, not an independently retrieved per-request provider receipt.",
+  "before_aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "27.922679325",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "23.275649025",
+    "unknown_charge_outcomes": 90,
+    "unknown_reservation_usd": "4.64703030",
+    "wire_requests_sent": 3287
+  },
+  "before_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:b5c19b9d5642fc8f948bd3ea8354efa64a224c113df48e6a70402296494efac8",
+    "event_count": 40623,
+    "object_count": 14030,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "driver_code_revision": "85adb9b9000dea7860a6097a20b54f0e90158951",
+  "previous_summary_digest": "sha256:b2eb8014b0a84b9c0a8e0df4c25bed2d996637a0a6b67d6774c6469c0edc2eb0",
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-owner-budget-reconciliation-v1",
+  "source_digests": {
+    "pixelgym/actions.py": "sha256:c060674623681123ebbdbf54c52a7e4eca72d3cc9805cd2f0c4519c00ecc9912",
+    "pixelgym/env.py": "sha256:36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+    "pixelgym/evaluator.py": "sha256:35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+    "pixelgym/grounding/v5/admission.py": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+    "pixelgym/grounding/v5/backend.py": "sha256:a8916ca84f5617030044fd2c22d0a30dcbd826aeb4fb431cec6085945e005a58",
+    "pixelgym/grounding/v5/contracts.py": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+    "pixelgym/grounding/v5/coordinates.py": "sha256:4640011e9a93891490be020f5ab6a784ba8080b0a1a92d86a0f88b8d95947540",
+    "pixelgym/grounding/v5/curl_wire.py": "sha256:fcd0eaa019a6ff24bd228473722de0d352439fc49ee1c36f7bce96cc7d5b49eb",
+    "pixelgym/grounding/v5/generator.py": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+    "pixelgym/grounding/v5/journal.py": "sha256:71a50c9d58e2237cbaacf74dd237a0e1337f3239dd78660d3716a8ecf61e2929",
+    "pixelgym/grounding/v5/memory_backend.py": "sha256:b0454540ef27368e2fa7aa0b3254f4e8f58cc1890845daa525f4c6e89237f8de",
+    "pixelgym/grounding/v5/memory_calibration.py": "sha256:b9f6dcf27a1c8d02374b55d9c1cae538ba4e3c2690f1e63b17119f3dbbdf7c43",
+    "pixelgym/grounding/v5/memory_focus_backend.py": "sha256:d8ce6bf73fed8be10c70ef22c9eac67f0cefd595418b8a64e5c0e4c0b3c95f24",
+    "pixelgym/grounding/v5/memory_focus_calibration.py": "sha256:4a298cff2601964101682a8ffd0cc2e6772f8c9208a00759ac71552104100282",
+    "pixelgym/grounding/v5/memory_focus_diagnostic.py": "sha256:6519cda039be93f80b5b1440497a4fcfd02aa1bf0476d6396a3b2623eeb104f7",
+    "pixelgym/grounding/v5/memory_generator.py": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+    "pixelgym/grounding/v5/memory_pilot.py": "sha256:8644490fef5550a7237b2f4674c2503dd0b0e81864efaa445281471952ba029d",
+    "pixelgym/grounding/v5/memory_plan.py": "sha256:f06e2b007911f27e3b794cf594063a6920296a2cf5e505da07e74a81f19eedc6",
+    "pixelgym/grounding/v5/openrouter_policy.py": "sha256:009bf8e5827a55ea314dc3ea75946213f3818b954fdef9af3c41cf86c879c37f",
+    "pixelgym/grounding/v5/owner_budget.py": "sha256:5fb29489e0bdf94460bd2f06028a125e5a900889316f32eb798cce2565259371",
+    "pixelgym/grounding/v5/panel_policy.py": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6",
+    "pixelgym/grounding/v5/policies.py": "sha256:9ceb6583cd8bee0be90d0e4ad425c160f08f436212b21d1f1e37716264fbabb2",
+    "pixelgym/grounding/v5/reliable_calibration.py": "sha256:16b6aa53b977f7c68464df5d864cb72500fd74c86e07fe119938b1f9b68dd28c",
+    "pixelgym/grounding/v5/reliable_diagnostic.py": "sha256:be4846f4c5b55c9232050999ad48fc02a4da1f22860b74b50011ed50d2123a82",
+    "pixelgym/grounding/v5/reliable_memory.py": "sha256:caebfd7d4dd76cbcf07872591e777c7caba128543344ad36d2b5fe6ee8e72014",
+    "pixelgym/grounding/v5/reliable_transport.py": "sha256:fa341eb0bf969332810fa9ec81675220a4220c72c568cafbe5141979659a6cfd",
+    "pixelgym/grounding/v5/request_budget.py": "sha256:94729c0f64348c24451cc16d7cdf5b2a1979933841abc3366f8ffbe9c9fa6258",
+    "pixelgym/grounding/v5/request_budget_v2.py": "sha256:330a62ef927378fc4d80210a13a880192046aeb8c09f2474c4ca759a548049b5",
+    "pixelgym/grounding/v5/resume.py": "sha256:1042cdd70708acdc4439b7ac45eee2219c7a2a48dfa7347cb24d14e59d850f6e",
+    "pixelgym/grounding/v5/runner.py": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+    "pixelgym/grounding/v5/schemas/memory-task.schema.json": "sha256:acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+    "pixelgym/grounding/v5/screenshot_memory.py": "sha256:6ead1700ec16b2876aa21a8045061c5193b992dfe706db78310365270acef772",
+    "pixelgym/grounding/v5/seeds.py": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+    "pixelgym/grounding/v5/transport_diagnostics.py": "sha256:9a7411f600887bc61aa78668c426c8f2fb486477d430af4719f3ea035087b503",
+    "pyproject.toml": "sha256:1b2907b85983eab48ae1863291fde123874bdca682ffc1583d56ceb9dc1b151a",
+    "requirements/platform-py312.lock": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+    "scripts/prepare_grounding_v5_memory.py": "sha256:47f10261a45836211302e0657caf25a56406da5167db415143c9ea97eaa696b1",
+    "scripts/run_grounding_v5_focus_calibration.py": "sha256:9718558560aa0b25d3f48805caf47be634a119948d02ce18c3d8435ec42accdc",
+    "scripts/run_grounding_v5_focus_continuation.py": "sha256:ff4a4f59cec01e830468b667b6fad0e34748378f532ddd74b9ec72f13d25cc55",
+    "scripts/run_grounding_v5_focus_diagnostic.py": "sha256:813e9278133b9f65d9dc5d066809c2c7660fb8bf55a65a2a429207a441bcd3d6",
+    "scripts/run_grounding_v5_gemini38_calibration.py": "sha256:379765a4077af0d3c876a403b8bf582f70719fed42edd7884ceb531490a6e38d",
+    "scripts/run_grounding_v5_memory_calibration.py": "sha256:18d1aad7f717561896469bbfa4d2c21531388bbcb0ecb2b0fe4418da7f1e308f",
+    "scripts/run_grounding_v5_owner_budget_continuation.py": "sha256:b6aa1451ac34556f652d739844cfe9a4b4b2b467dae52148dd8ed6e99ede6a89",
+    "scripts/run_grounding_v5_reliable_continuation.py": "sha256:b4267bfca47cffca826b066799bb1842b6be9f8aa4d7cbe3cc56b6eb7b62e592",
+    "scripts/run_grounding_v5_reliable_diagnostic.py": "sha256:50da75fbb4afda2640fd91b8653d72c94ef966fc02e4af04429dab71da0bfd47",
+    "scripts/run_grounding_v5_reliable_extension.py": "sha256:cba2415f6729834856c801446e651acc1f735f75d215cb8f6688c35da2ec3ab3"
+  },
+  "waived_budget_holds_usd": "4.64703030",
+  "waivers": [
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:029849ab24523d3fe1135d545f9d3e12921027f4f786a93b3f8d347b81b5fdca",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02980875",
+      "reservation_id": "sha256:034d4371f791b17e86660a3a1045b704d68a64229ca3d08d11a059fb28c573d4",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05526000",
+      "reservation_id": "sha256:049c67f8ed1bba8e8da09c27e99a09fb23db2324c4b900313a27c105cb26919b",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08071425",
+      "reservation_id": "sha256:05edd748f1b741de093dd0acd470569ad99698d728ebd0e7cffc96cbc10e4452",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07434825",
+      "reservation_id": "sha256:09022ed96355314e2b94379ea65d5b8891b52f096779a77629a98c2c890458f1",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:0936c6e6a1700289312c550163b5dc7ae861c01c8e912405647bf32252a06d76",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:0978b8adc23d9f6ecff9ff85caf1ba7b688ef152c68a4c1c11f1c96f181d7101",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:0a0b4411ea4040bfd4a9762401571e34b36755349eac6cd034d6442163ff97be",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662350",
+      "reservation_id": "sha256:1351d51d0fa7268535d45eb26162001caed567cfcbb58da91636c3f48cfae205",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07435125",
+      "reservation_id": "sha256:13d046744bd184993aa890c8598f706d25b3be94244ed9512b3d1cb4f14871a5",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:1ae618b65a1e2cfabc9704975db6129687a8768f09888d097edbc5ad98debe6f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:1b6b75b62d631385b71c9a9f1e8d934bfd0dddd7dcdb9e69fc896e836490dc26",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:1c94becfd744d25019dfc3b7c943f13a125ffc57f7bb974b1b6f9a9ede38ad40",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:1e08f9641d3fcd59277d71b4376413d0007dfdfaa21961ceafcfd8c6f11f79df",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.03617250",
+      "reservation_id": "sha256:208e458ec6c9fec231f9db7fce2229c76cd1b7bc99837885194f8d7c67b1ae3a",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04889775",
+      "reservation_id": "sha256:24ef2dfa2c75e8fae4b61257e6a4a0bc2e684d3622554980a9bd1a9c203b78ab",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04889625",
+      "reservation_id": "sha256:26b347a68b1643156c6442d3861c1c1fa52daa51a2da563b93029d1b1ac0103f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.03935400",
+      "reservation_id": "sha256:2931809d1c5e8a3e384b26b86a3ae0e20013b8f2aef2c242b35af8e1b8a67751",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04889400",
+      "reservation_id": "sha256:29391c11a244c34c967b88dc580293aebd3f2588fcbf9654b86c9dbf6afba1ed",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662350",
+      "reservation_id": "sha256:2deaeaea535b119760d0a66252eaf421d949039abc0cc38070dd600d00f52b43",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:2f73a5fb8c3411b0bcfac6206bf259469d78819424609d5ee3411056f42c9d71",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.13955625",
+      "reservation_id": "sha256:306699aa127694f6b584b1ec70db1713a66e066f1bd974e16e37fe579f45dc23",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05526375",
+      "reservation_id": "sha256:3a44ab2761301cf54d1de3ea1ec782946325b7c92904c857b489e93b733eef2c",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08708025",
+      "reservation_id": "sha256:3abf7b37caadaff93b2dd730a32c23d8f1bb0b36c9059e61ce210edc72402cb4",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662350",
+      "reservation_id": "sha256:3f2a911a584dcbe40f9b995cdc4523794c79a00beaae5981d4b6790a767dd45b",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04889475",
+      "reservation_id": "sha256:404b4cde6f331258738cad2d879059738f353c5d7ac5ed3a11f7b748475316f5",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09981525",
+      "reservation_id": "sha256:4202ef021446ef140e5e0ed0ae871df32dd43d45279abaf3ff74a26ec1676288",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:432ba602f2cf49aa6c68125af3ff3cbcad8324da02942070722a69f01cc2ebc9",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06480750",
+      "reservation_id": "sha256:43af59e2c1be12e3e1787c5752efc31224df81567a4907bc161fe8b8e73d039f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662350",
+      "reservation_id": "sha256:4a5da552e4a09a3e2e720142b61a5e03215e668480d5b8786fbb5704e458a6a6",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09947205",
+      "reservation_id": "sha256:50c33c67d966a2f5e654a8820bc23eba903ea0b6ce562e9a39d99fa9ebcb194f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05207775",
+      "reservation_id": "sha256:522146b6f9dd3bd220207905754a0cd796a1121c23a418534477beb8defd9f19",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05207700",
+      "reservation_id": "sha256:54ea15e860167017117eddb956dbad72118834690ba5349dba2f0d2e6308942f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.03935400",
+      "reservation_id": "sha256:5919d2539791f91044825cbc3fbdcd81cd57826ca8eb1b7425b0e7d8a8e53714",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:5983a9c6eb96e3312de339020ddb36972e2f7ff065b74ca6d4f05c087d79c92a",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07753425",
+      "reservation_id": "sha256:5d3602874e513c0d88f7a12374a8b343760618177406390ae666965c6112ba2c",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09344775",
+      "reservation_id": "sha256:5ed00f5cb7a32606adb1ea33047ad2d59b991cec94987f8ce8bf8e71e742a687",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06162375",
+      "reservation_id": "sha256:623d3f5406352af58316e8cd1618254c044bdd62b3e5208e81c8cdd5a353e548",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09026325",
+      "reservation_id": "sha256:688cc6f948e197437a2caaa526c2bfffd2feae324a141c0bcc83cc18649020fc",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07753050",
+      "reservation_id": "sha256:6ab66cf9273a0cc5674fc3af5b089eb02bcacee8093f7ba3b2fde250821f9442",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:6e3414c104f6c0f65f49e57ebf88887c220c604aac5cc7e92122b3a8f664bef7",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09662850",
+      "reservation_id": "sha256:7169850748a9918957445b1ca7c1a94e3c0b6ad46fca7cc8c16f606351177783",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05526375",
+      "reservation_id": "sha256:7324ab00bcfdf9ed4d13de93989bf628d576e0a377fce3d6572d5d9f1529ba40",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06162750",
+      "reservation_id": "sha256:73ec294e4599ac504edf707d9c2bc182c4ce9aa57eecb78c6e4fece35d7cf4da",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07435125",
+      "reservation_id": "sha256:75df49d919f91fe60eeeb85f6c3f19e4b69373a51c2e3ca93a96713dfbd24658",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06480375",
+      "reservation_id": "sha256:79655c516ce84cc5dc48aef91e8028ba28b7b5907ba9a079b0509d05726e7cdd",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:84c43c58e36945d30abb97dea3c53bf27760e51e4314431f286654f3a4c64ac4",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04253175",
+      "reservation_id": "sha256:8e4b453e2283ce5d60e7afb02d8215c88feb7992f7a4befcacd16d96726bdd30",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07753275",
+      "reservation_id": "sha256:9126b1338a9cf168ca1a15437a898b742f66957c581fb00d7065a545001313bb",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:98c437574606554b96a45abfc02daf9ddbf02189bea616ee63905445389b0726",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07753125",
+      "reservation_id": "sha256:9d21de6903fb24ce32b19dbb81c2310f5aa1a522ab861acf19b4dd9f53e9e0d2",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:a6aab2af981d3e97219079c953d25426b51916b2c7d0b25ddf4fa211e2ad4937",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:a8f5dee3a23b000de383a87ae990b34060e86e83fe783c22415d11c204a46c74",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05844675",
+      "reservation_id": "sha256:a97c22d0eb82c4493a81c2c50c86115a0c5fcb456ad9ee064256e8f3bc42564a",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04253325",
+      "reservation_id": "sha256:aa22b2b1ff2937a53ef5480d96763dfbb272470af9d2ab370db0d60ad6e41b2b",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.03935025",
+      "reservation_id": "sha256:abf2af1651e53fbd0a5a4083bf67b8e007d30c76a4beb745f1187336458789c2",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08071425",
+      "reservation_id": "sha256:af37be130a3d21035819aafb196cc80e73dee245093cba1bf6bf6a4f39359740",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08389650",
+      "reservation_id": "sha256:b26ee161024db5a2765a17a0c3b0a2b1e4799cba3c9857673f2254c3d821d3f6",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02980725",
+      "reservation_id": "sha256:b6202a65b56444548a405b1fba46bbca7a22beb50de85590a2e36b6226f5027c",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08708325",
+      "reservation_id": "sha256:b662181f0516f500b702e48a5972325c4abe2feeaaff6dadc97cc77df3788dde",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05526225",
+      "reservation_id": "sha256:b836fc587d339adf9fadabca615fe722bad1b232390d6761385d4ed7cada36e8",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06798675",
+      "reservation_id": "sha256:b8e38314a40722c95472bbb2324bb89b6f7e7408b6310a2b28d626f46ab94f96",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:bbe0e4dc8c351aaf64035d85a9e00c2634d445e849afeae576a57c68bcb5a003",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06480450",
+      "reservation_id": "sha256:bbe4a1962d098b9d8d123eb30a56e288fd21147846a313989e0767f865aee217",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06162450",
+      "reservation_id": "sha256:bcb280d843ab8ba2dfdb4c86655ba8b61283fb84b63d321387041d74ffe1af91",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:bcda7a0dcaf3e327fb82256379222738571d8bf579be9f01e632d9d9fb4980e5",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04889400",
+      "reservation_id": "sha256:c6f773ae4b1d8d64d76f4883c38344334c4196f2ae335775a9fec19502c685d3",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:c799eff50df41160eefced7a685c0bed138800f6f3c4d3aa188eb4f2a731263c",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07434975",
+      "reservation_id": "sha256:c94c37e165babc68d9a96b5c42b3994849841bf9e563c084aedafc4783b65b9e",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:cdd8d5803f574f91ac9f451b4e257c9d1149d9e3ac477c985b16ec844eb233b4",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:cea032a1a327616f1510c6423f983ab7ec6ee2cfe1880f711d1ddc2757cf8c7a",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.07434825",
+      "reservation_id": "sha256:d1795efafac9435b6445abde09eb33a2e6310933bf1508f54c3fe0d779413475",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04253325",
+      "reservation_id": "sha256:d361013effdd363fd2fa38cbcb919f26dae6f45ca22e8dacce53651423d85e95",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662350",
+      "reservation_id": "sha256:d3dd7576fb1b11f6fb0d863b86e3ddc0e5eefc66aeb0f6aaedd04e5d8397637d",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:d556321182520d8529bba2bc181b89fca5b51da102a3a772fa257d4e8664ee0b",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:d914d94fe320c1118abe5ea6a7446acc456a45dd511cfe9da2b7133cf728f7ec",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08071425",
+      "reservation_id": "sha256:d9165ba3d5fc3e88e171ee546c677a4b0267f4ca80d7539bbcf914e04e22b4bf",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:deeac0fb07c9bb2d409fc43b6c429f3b63d48e53f8be9b1c2cd39c5238c4c52a",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:df1c4abf75c793d6180b5b81bb62aea9a7461390f37086813a3a955026090436",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.08071425",
+      "reservation_id": "sha256:e0fd7385c07f3205b7532f8bc7301be465e8d35229277222f2397e14e472522f",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09026625",
+      "reservation_id": "sha256:e36ef719b486e8b12dfe45d70e59b48bf04f04dc7e37293721b6272f2fba6f52",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09026325",
+      "reservation_id": "sha256:e5859c3507218800dc90734224c988f9638ffb73e8ae7859ad129ffaafe91c5b",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.09344550",
+      "reservation_id": "sha256:f0a28a7e824ead530967a09f9b0b45dfa3cdad7427a90abce5fc09b6182d60e7",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662575",
+      "reservation_id": "sha256:f25ddd8dd8f27c367e09f0c77cc662c39ce94699c5ecd99fdc83c077c5a32b06",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.04253175",
+      "reservation_id": "sha256:f648df42721016a8a447a78faa078f9ed86cf17a201ad36dba4604e0899d5aa5",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:f7cd5b68eaa7e1a51582f3cb3f839750984c6b046ee249ddd9360019bde8ae53",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.06798525",
+      "reservation_id": "sha256:f8f981cee51caa1b1af42684d4ffc1a9e985f574f656158b625cc2fd55481fbf",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.05844675",
+      "reservation_id": "sha256:f963e4d2ad2167524267d3c077354db48387551a6112a0db2aa97743af5eab42",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662425",
+      "reservation_id": "sha256:f99323a8ebbbcc12cc85d69c375d7a95b42ca1f7ffa00c212802d28c2d0e45f3",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    },
+    {
+      "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+      "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+      "budget_hold_usd": "0",
+      "previous_budget_hold_usd": "0.02662725",
+      "reservation_id": "sha256:fcb577ea4cceee89d5769be30b686c582e8123ce544a3d5dd1cddc7e153897cf",
+      "rule": "owner-authorized-zero-unpriced-holds-v1"
+    }
+  ]
+}
