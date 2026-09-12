@@ -19,6 +19,8 @@ ARTIFACTS = (
     "grounding-v5-d58-focus-calibration",
     "grounding-v5-d58-focus-continuation",
     "grounding-v5-d58-reliable-diagnostic",
+    "grounding-v5-d58-reliable-continuation",
+    "grounding-v5-d58-reliable-extension",
 )
 
 

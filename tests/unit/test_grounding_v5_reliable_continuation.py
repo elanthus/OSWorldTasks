@@ -116,10 +116,13 @@ def test_stops_and_interruption_never_resend_a_started_episode(tmp_path, stop):
             assert not transport.model_requests
 
 
+@pytest.mark.parametrize("driver_name", ["reliable_continuation", "reliable_extension"])
 def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_stop(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, driver_name
 ):
-    from scripts import run_grounding_v5_reliable_continuation as driver
+    from importlib import import_module
+
+    driver = import_module(f"scripts.run_grounding_v5_{driver_name}")
 
     public = tmp_path / "public"
     public.mkdir()
@@ -142,6 +145,7 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
         "prior_pilot_spend": prior,
         "prior_integrity": integrity,
         "phase_wall_clock_limit_seconds": 5400,
+        "runtime_deadline": datetime.now(UTC).timestamp() + 60,
         "phase_cap_usd": "28",
         "phase_caps": CallCaps(2880, 8640, 0, 8640).to_dict(),
         "aggregate_caps": CallCaps(2880, 8640, 0, 8640).to_dict(),
@@ -180,6 +184,16 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
     monkeypatch.setattr(driver, "run_episode", failed_episode)
     monkeypatch.setattr(driver, "phase_summary", lambda *args: {"scores": {}})
     monkeypatch.setattr(driver, "publish", lambda value: None)
+    if driver_name == "reliable_extension":
+        deadline = plan["runtime_deadline"]
+        plan["runtime_deadline"] = 1
+        driver.write(public / "execution-plan.json", plan)
+        with pytest.raises(ValueError, match="six-hour window is exhausted"):
+            driver.execute(PLAN)
+        with closing(V5AttemptJournal(journal_path)) as journal:
+            assert journal.event(f"{driver.PHASE}/started") is None
+        plan["runtime_deadline"] = deadline
+        driver.write(public / "execution-plan.json", plan)
     driver.execute(PLAN)
     assert recorded == jobs
     with closing(V5AttemptJournal(journal_path)) as journal:
@@ -188,6 +202,8 @@ def test_driver_records_all_ninety_failures_without_diagnostic_caps_or_streak_st
         )
         assert Decimal(binding["phase_spend_limit"]) == 28
         assert binding["phase_wire_limit"] == 8640
+        if driver_name == "reliable_extension":
+            assert binding["phase_deadline"] == plan["runtime_deadline"]
         assert journal.event(f"{driver.PHASE}/closed").payload == {
             "stop_reason": "all_assignments_completed",
             "transport_idle": True,
