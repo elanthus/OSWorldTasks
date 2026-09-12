@@ -79,4 +79,6 @@ Run `.venv/bin/python scripts/verify_grounding_report.py` from the repository ro
 headline and verify stored hashes without changing tracked files.
 
 `.venv/bin/python scripts/verify_immutable_artifacts.py` is the entry point for verifying pinned
-candidate artifacts without parsing, scoring, or calling a provider.
+candidate artifacts without parsing, scoring, or calling a provider; it requires `--database` and
+storage configuration (`--local-root` or `PIXELGYM_IMMUTABLE_BUCKET`), with invocation details
+available through `--help`.
