@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Capture raw clean-install command evidence without issuing a verdict."""
+"""Capture raw clean-install command evidence without issuing a verdict.
+
+Originally written for the Day 3 gate.
+"""
 
 from __future__ import annotations
 
