@@ -1,5 +1,18 @@
 # D5.8: run the remaining 90 calibration assignments
 
+All 90 newly assigned episodes are now recorded across three closed phases.
+The [final report](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md)
+retains the ten preceding infrastructure failures and the partial episodes at
+both time limits and the extension's reservation guard. The full cohort has
+42/50 history successes and 6/50 stateless successes. Final confirmed aggregate
+charges are USD 23.978227275, with zero in-flight reservations and zero unresolved
+budget holds under the owner's accounting amendment. The final history episode
+was cut short by the original six-hour deadline. The
+[decision package](grounding-v5-d58-final-design.md) separates memory exposure
+from the remaining difficulty and final-freeze decision.
+
+## Original phase and its continuation authority
+
 The owner approved this continuation with “please run the remaining 90” after the
 curl diagnostic completed all ten supplied-state actions. The
 [execution plan](../artifacts/grounding-v5-d58-reliable-continuation/execution-plan.json)
@@ -16,8 +29,8 @@ assignment. The old five-consecutive-episode-failure stop is removed. Provider
 identity or price violations, transport retirement, and the spend or time limits
 still stop the phase. Started episodes and closed phases cannot restart.
 
-The aggregate ceiling remains USD 28, including all earlier D5.8 charges and
-unknown holds. The starting ledger accounts for USD 8.026698825, leaving
+The original phase's aggregate ceiling was USD 28, including all earlier D5.8 charges and
+unknown holds. Its starting ledger accounted for USD 8.026698825, leaving
 USD 19.973301175 available. Each send checks its actual request-sized bound; the
 diagnostic's USD 1 and 20-call limits do not apply to this continuation. Its
 2,588 available environment actions permit at most 7,764 wire attempts, including
@@ -48,7 +61,7 @@ records 22 newly attempted episodes: 21 ended normally and one history episode
 was cut short by the phase deadline, stored as `request_failure`. Of the new
 assignments, history succeeded on 10/11 and stateless on 1/11; respectively 10/11
 and 11/11 reached both memory consumers. These counts exclude the ten preserved
-infrastructure failures. Sixty-eight assignments remain untouched.
+infrastructure failures. Sixty-eight assignments remained untouched at that closure.
 
 The phase made 570 wire requests, with USD 4.232186775 confirmed and
 USD 1.39394100 added as unresolved holds. The aggregate is USD 10.565320050
@@ -88,6 +101,8 @@ provider calls and leaves the checkout unchanged.
 During the extension, the owner checked OpenRouter activity and directed that
 unresolved holds count as USD 0. The
 [owner accounting amendment](grounding-v5-d58-owner-budget.md) records that
-decision and prepares an append-only adjustment after the active phase closes.
-The ceiling remains USD 28 and the original six-hour deadline remains in force.
+decision and the verified append-only adjustment after the extension closed idle.
+That extension recorded 64 more assignments; the final phase recorded the four
+remaining assignments. The ceiling stayed at USD 28 and the original six-hour
+deadline remained in force.
 Historical phase summaries above retain their original accounting.

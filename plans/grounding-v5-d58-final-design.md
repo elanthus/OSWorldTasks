@@ -1,12 +1,83 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: the curl transport and bounded-retry repair completed its live diagnostic at 10/10 logical actions with no network failures. The focus-repaired calibration remains at 10/100 attempted assignments and 90 unrun under the USD 28 cap; final evaluation freeze remains pending.**
+**Status: all 100 focus-repaired calibration assignments are recorded, including the ten earlier infrastructure failures. History has 42/50 terminal successes and stateless has 6/50. The six-hour deadline cut short the final history episode. Aggregate confirmed charges are USD 23.978227275, with zero active reservations and owner-authorized zero unresolved budget holds under the USD 28 cap. Final evaluation freeze remains pending.**
+
+## Completed continuation and remaining design decision
+
+The [final report](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md),
+[structured analysis](../artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json),
+and [private verification receipt](../artifacts/grounding-v5-d58-owner-budget-continuation/verification.json)
+retain every assignment. The 90 newly attempted episodes used the repaired curl transport
+and unchanged Gemini 3.8 Flash model, Google route, task bank, order, prompts, focus cue,
+and deferred correctness feedback. They began from reset with model actions only; no
+started episode was replayed. Supplied-state diagnostics and older renderer cohorts
+remain separate.
+
+| Measure over the full retained cohort | History | Stateless |
+|---|---:|---:|
+| Assigned and attempted episodes | 50 | 50 |
+| Terminal successes | 42 | 6 |
+| Reached both memory consumers | 43 | 45 |
+| Correct first memory choices / attempted choices | 85 / 86 | 36 / 90 |
+| Earlier infrastructure failures retained | 5 | 5 |
+| Request failures at phase limits | 3 | 0 |
+| Provider error with nonempty content | 0 | 1 |
+| Action-limit truncations | 0 | 38 |
+
+The three history request failures occurred at the original 90-minute deadline,
+the extension's reservation guard, and the final six-hour deadline. The stateless
+`policy_violation` retains a provider response with nonempty content, an error finish
+code, and a confirmed zero charge; the frozen transport did not retry that response.
+These outcomes remain in the denominator. All 90 new assignments are recorded, but
+recorded does not mean every episode reached a normal task ending.
+
+The paired episode counts are six successes in both modes, 36 history-only successes,
+zero stateless-only successes, and eight pairs with neither mode succeeding. The 50
+seed pairs represent 44 logical clusters, so they are not 50 independent memory tests.
+The predesignated representatives have six successes in both modes, 31 history-only
+successes, and seven pairs with neither mode succeeding. No significance test or
+confirmatory power estimate was produced.
+
+The earlier exposure floor is resolved in these recorded counts: history reaches both
+consumers on 43/50 assignments, above the proposed 40/50 threshold. Its 42/50 terminal
+successes exceed the proposed mixed-outcome upper bound of 40/50. First-choice accuracy
+and the matched outcome counts now provide memory observations, while the capable arm
+is near the ceiling. The owner must decide whether to accept that difficulty or revise
+it before a final executable freeze. This continuation makes no further generator
+change and supplies no D5.8 milestone verdict or confirmatory authorization. The proposed
+seeds and statistical target below remain proposals requiring final approval.
+
+| Execution phase | Newly recorded assignments | New wire requests | Confirmed new USD |
+|---|---:|---:|---:|
+| [Original 90-minute phase](../artifacts/grounding-v5-d58-reliable-continuation/report.md) | 22 | 570 | 4.232186775 |
+| [Extension within the original six-hour window](../artifacts/grounding-v5-d58-reliable-extension/report.md) | 64 | 1,652 | 12.710328975 |
+| [Owner-accounted final phase](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md) | 4 | 106 | 0.702578250 |
+
+The [owner reconciliation](../artifacts/grounding-v5-d58-owner-budget/reconciliation.json)
+appended zero budget weights for USD 4.64703030 in 90 existing unresolved holds after the
+extension closed idle. Its [verification](../artifacts/grounding-v5-d58-owner-budget/verification.json)
+checks unchanged confirmed charges, failed-outcome counts, wire counts and the preceding
+journal prefix. Five subsequent unpriced outcomes also carry zero budget weight. All
+95 original unknown outcomes remain recorded; the owner's OpenRouter activity check
+and instruction are the basis, not fabricated provider zero-cost receipts. Full active
+request bounds still counted against the cap. The absolute deadline remained six hours
+from the first continuation's durable start, including setup time.
+
+The final private audit remeasured all 100 attempted episodes and reconstructed the
+final phase's 107 planned requests, of which 106 reached the wire. It verified the 96
+preserved outcomes, identical retry bodies, carried provider cooldown, source provenance,
+and owner reconciliation. The preceding phase's audit reconstructed 1,653 planned
+requests and verified 1,652 wire reservations. The public verification commands also
+completed with exit status zero. These audits read stored evidence and made no provider
+calls; private response envelopes, screenshots and checkpoints remain uncommitted.
+
+## Transport repair diagnostic before the continuation
 
 The [transport repair and diagnostic](grounding-v5-d58-reliable-transport.md) adds
 request-local curl processes, complete server-directed cooldowns, and up to two
 observable retries for transient failures. Its ten calls cost USD 0.099531750 and
-added no unresolved holds. Aggregate confirmed charges are USD 6.333133275 plus
-USD 1.69356555 in carried unknown holds. No model call remains in flight. The
+added no unresolved holds. At that diagnostic's closure, aggregate confirmed charges were
+USD 6.333133275 plus USD 1.69356555 in carried unknown holds, with nothing in flight. The
 diagnostic used supplied states; it adds no end-to-end calibration observations.
 
 ## Calibration before the transport repair
@@ -55,11 +126,12 @@ and 3/4 correct memory choices, retaining one zero-charge empty response in the 
 denominator. New known spend was USD 0.144682500. Scripted prefixes supplied those
 states, so the end-to-end exposure requirement below remains unresolved.
 
-**Decision so far:** repair the original bank before a final evaluation. Its Qwen comparison is
-inconclusive, and its answer shortcuts undermine memory validity. The approved successor implements
-two deferred facts and a matched screenshot-history intervention. Its full calibration is incomplete,
-and the older cohort's remaining assignments cannot bring consumer exposure to the proposed threshold. The
-available evidence cannot support signing the executable D5.8 manifest. The
+**Decision before the latest continuation:** repair the original bank before a final evaluation.
+Its Qwen comparison was inconclusive, and its answer shortcuts undermined memory validity.
+The approved successor implemented two deferred facts and a matched screenshot-history
+intervention. At that point its full calibration was incomplete, and the older cohort's
+remaining assignments could not bring consumer exposure to the proposed threshold.
+The completed continuation above updates that assessment. The
 [parent protocol](grounding-v5-agent-benchmark.md#delivery-sequence) assigns this decision to the
 owner and requires a separate explicit approval for confirmatory calls.
 
