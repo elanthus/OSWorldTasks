@@ -1,0 +1,47 @@
+{
+  "additional_retry_attempts": 5,
+  "assigned_episodes_verified": 100,
+  "episodes_remeasured": 100,
+  "execution_plan_digest": "sha256:cf01761a3daac6d1b33e0e35dcb147a57ff1fddc33fbf8c8186303058546190c",
+  "identical_requests_within_retries": true,
+  "new_request_bodies_reconstructed": 107,
+  "owner_budget_reconciliation": {
+    "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+    "confirmed_charges_unchanged": true,
+    "driver_code_revision": "85adb9b9000dea7860a6097a20b54f0e90158951",
+    "failed_outcome_count_unchanged": true,
+    "prior_prefix_preserved": true,
+    "private_journal_verified": true,
+    "provider_calls": 0,
+    "reconciliation_digest": "sha256:30909b34d3ae7e323d20b559176e87e27876a3856ad606e23ed6b57858fce861",
+    "schema_version": "pixelgym-d58-owner-reconciliation-verification-v1",
+    "unresolved_budget_holds_usd": "0",
+    "waivers_verified": 90
+  },
+  "preserved_conditions_verified": 96,
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "recorded_failure_codes": {
+    "confirmed_no_response_timeout:phase_time_or_retirement_stop": 1,
+    "retryable_transport_fault:curl_28": 1,
+    "retryable_transport_fault:curl_52": 2,
+    "retryable_transport_fault:provider_rate_limit": 2,
+    "sealed_unsuccessful_result:phase_time_or_retirement_stop": 1,
+    "unknown_outcome_infrastructure_failure:curl_28": 1,
+    "unknown_outcome_infrastructure_failure:curl_52": 2,
+    "unknown_outcome_infrastructure_failure:provider_rate_limit": 2
+  },
+  "retried_logical_actions": 5,
+  "schema_version": "pixelgym-d58-owner-budget-continuation-verification-v1",
+  "settlement_counts": {
+    "confirmed_positive": 101,
+    "unknown": 5
+  },
+  "summary_digest": "sha256:a34cf83c3e10401f00216f02fbc23926da8d1d43aa677e71e95462c8fb84bf36",
+  "transport_fault_counts": {
+    "curl_28": 1,
+    "curl_52": 2
+  },
+  "wire_reservations_verified": 106
+}
