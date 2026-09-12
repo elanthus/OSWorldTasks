@@ -1,0 +1,113 @@
+{
+  "alpha": 0.05,
+  "calibration_discordant_representatives": 31,
+  "calibration_independent_representatives": 44,
+  "confirmatory_tasks_generated": 0,
+  "cost_basis": {
+    "confirmed_aggregate_usd": "23.978227275",
+    "confirmed_mean_usd_per_episode": "0.196056600",
+    "confirmed_repaired_usd": "17.645094000",
+    "limitations": "Linear projection at historical prices and observed task/arm mix; includes three shortened history episodes and unknown outcomes with owner-assigned zero weight. It is not a request bound, price guarantee, or execution authorization.",
+    "repaired_episode_count": 90,
+    "unknown_budget_weight_usd": "0"
+  },
+  "discordance_scenarios": {
+    "all_discordant_stress": 1.0,
+    "lower_sensitivity": 0.5577979987383977,
+    "observed_discordance": 0.7045454545454546,
+    "upper_sensitivity": 0.8184447088149512
+  },
+  "method": "Unconditional power: M~Bin(n,q), B|M~Bin(M,(q+delta)/(2q)); sum the two-sided exact McNemar rejection probability over M.",
+  "method_reference": "https://pubmed.ncbi.nlm.nih.gov/1509223/",
+  "minimum_relevant_absolute_difference": 0.2,
+  "options": [
+    {
+      "additional_reliability_episodes": 48,
+      "episodes_per_arm": 144,
+      "independent_pairs": 120,
+      "power": {
+        "all_discordant_stress": 0.5395507629305875,
+        "lower_sensitivity": 0.8199881847253612,
+        "observed_discordance": 0.7138348282236057,
+        "upper_sensitivity": 0.6493288185548817
+      },
+      "primary_episodes": 288,
+      "projected_aggregate_usd": "89.853244875",
+      "projected_primary_usd": "56.464300800",
+      "projected_reliability_usd": "9.410716800"
+    },
+    {
+      "additional_reliability_episodes": 48,
+      "episodes_per_arm": 168,
+      "independent_pairs": 144,
+      "power": {
+        "all_discordant_stress": 0.6285912938095707,
+        "lower_sensitivity": 0.8850305292705153,
+        "observed_discordance": 0.798083225908489,
+        "upper_sensitivity": 0.7330557800116035
+      },
+      "primary_episodes": 336,
+      "projected_aggregate_usd": "99.263961675",
+      "projected_primary_usd": "65.875017600",
+      "projected_reliability_usd": "9.410716800"
+    },
+    {
+      "additional_reliability_episodes": 48,
+      "episodes_per_arm": 174,
+      "independent_pairs": 150,
+      "power": {
+        "all_discordant_stress": 0.6631528819119802,
+        "lower_sensitivity": 0.8981472796132258,
+        "observed_discordance": 0.8144949179864247,
+        "upper_sensitivity": 0.7519712754228453
+      },
+      "primary_episodes": 348,
+      "projected_aggregate_usd": "101.616640875",
+      "projected_primary_usd": "68.227696800",
+      "projected_reliability_usd": "9.410716800"
+    },
+    {
+      "additional_reliability_episodes": 48,
+      "episodes_per_arm": 192,
+      "independent_pairs": 168,
+      "power": {
+        "all_discordant_stress": 0.6996369697382712,
+        "lower_sensitivity": 0.9307802559471592,
+        "observed_discordance": 0.8586959215830855,
+        "upper_sensitivity": 0.8033096346288485
+      },
+      "primary_episodes": 384,
+      "projected_aggregate_usd": "108.674678475",
+      "projected_primary_usd": "75.285734400",
+      "projected_reliability_usd": "9.410716800"
+    },
+    {
+      "additional_reliability_episodes": 48,
+      "episodes_per_arm": 228,
+      "independent_pairs": 204,
+      "power": {
+        "all_discordant_stress": 0.8008053564450761,
+        "lower_sensitivity": 0.9679948683176224,
+        "observed_discordance": 0.9206017783650147,
+        "upper_sensitivity": 0.8750761851691811
+      },
+      "primary_episodes": 456,
+      "projected_aggregate_usd": "122.790753675",
+      "projected_primary_usd": "89.401809600",
+      "projected_reliability_usd": "9.410716800"
+    }
+  ],
+  "paid_execution_authorized": false,
+  "power_target": 0.8,
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-prospective-planning-v1",
+  "selected_option": null,
+  "sensitivity_scope": "Wilson endpoints are a disclosed planning range, not a guarantee for the fixed family mix or a formal confidence bound on prospective power. No observed-effect power or calibration significance test is reported.",
+  "source_file_digests": {
+    "artifacts/grounding-v5-d58-design/audit.py": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0",
+    "artifacts/grounding-v5-d58-final-design/power.py": "sha256:f5c6137030e429cac4126925ee5b04a85e677b696819ce0ab559720d73b0208f",
+    "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
+    "artifacts/grounding-v5-d58-reliable-continuation/analysis.json": "sha256:28b95e9862ba6042c87fedc387597b83b7062d8df09014173539d09ac9b2e5c9",
+    "artifacts/grounding-v5-d58-reliable-extension/analysis.json": "sha256:492935f0a8250980b1c22424af446da8e6773637c89eb61a86fbbf7e84e1aa40"
+  }
+}

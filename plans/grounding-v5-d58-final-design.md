@@ -1,8 +1,65 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: all 100 focus-repaired calibration assignments are recorded, including the ten earlier infrastructure failures. History has 42/50 terminal successes and stateless has 6/50. The six-hour deadline cut short the final history episode. Aggregate confirmed charges are USD 23.978227275, with zero active reservations and owner-authorized zero unresolved budget holds under the USD 28 cap. Final evaluation freeze remains pending.**
+**Status: the owner has accepted the observed difficulty and requested a review-ready PR. All 100 calibration assignments are recorded: history succeeds on 42/50 and stateless on 6/50. The prospective power check gives 71.4% power for the reserved 120 independent pairs, below the 80% target. Final sample size and planning budget remain owner choices; confirmatory execution is disabled.**
 
-## Completed continuation and remaining design decision
+## Decision after calibration
+
+The owner's response, “go ahead. Then please create a PR”, is recorded in the
+[decision record](../artifacts/grounding-v5-d58-final-design/decision.json). As disclosed
+in the task, this accepts the observed difficulty: 42/50 history successes are an explicit
+exception to the earlier proposed 40/50 ceiling. Keep the calibrated task mechanics,
+deferred correctness feedback and visible focus cue. This acceptance does not turn the
+old threshold into a passing result or authorize post-calibration tuning.
+
+The selected candidate pair remains Gemini 3.8 Flash through
+`openrouter/google-vertex/global`, with screenshot history versus the matched current-frame
+control. The final calibration's [execution plan](../artifacts/grounding-v5-d58-owner-budget-continuation/execution-plan.json)
+binds the generator, renderer, exact policy manifests and transport source at revision
+`85adb9b9000dea7860a6097a20b54f0e90158951`. Its policy IDs are
+`policy-f3643833caa8b2e9a526` (history) and `policy-1c80069711f0cf37e792` (stateless).
+The model is an alias, not an immutable provider snapshot. Qwen and Mistral remain
+calibration references outside the final candidate pair; no fallback is allowed.
+
+The new [prospective calculation](../artifacts/grounding-v5-d58-final-design/power.md)
+uses 31 discordant outcomes among 44 designated independent representatives. It keeps
+the minimum relevant absolute difference at 20 percentage points, two-sided exact
+McNemar alpha at 0.05, and target power at 80%. It does not substitute the observed
+calibration effect for the minimum relevant effect.
+
+| Planning option | Episodes per arm | Power at observed discordance | Power at upper sensitivity | Projected aggregate USD, including reliability |
+|---|---:|---:|---:|---:|
+| Existing 120 independent pairs | 144 | 71.4% | 64.9% | 89.85 |
+| Proposed 168 independent pairs | 192 | 85.9% | 80.3% | 108.67 |
+
+The sensitivity endpoints are the conventional 95% Wilson limits for calibration
+discordance, 55.78%–81.84%. They are planning assumptions, not a guarantee for the fixed
+family mix. At 100% discordance, the 168-pair option has 70.0% power. The full structured
+calculation includes additional sample sizes and source hashes.
+
+The proposed expansion would retain seeds 6000–6143 and add 6144–6191 as eight
+singletons per family, preserving the existing family order and the proposed two/four/two
+regression/frontier/ceiling allocation for each added block. That yields 42/108/42
+episodes across the three bands, 168 independent representatives and 24 robustness
+twins. This extension has not been implemented or selected; no confirmatory tasks were
+generated or inspected for the power calculation. A versioned seed-registry extension
+and its source/admission binding must precede any executable freeze.
+
+Cost is a linear projection from USD 17.645094 across the 90 newly attempted episodes.
+The 168-pair comparison projects USD 75.29, the 48 additional reliability episodes
+USD 9.41, and historical aggregate charges are USD 23.978227275. The requested planning
+cap is USD 120 aggregate, not an additional USD 120. It remains unapproved. These
+estimates include shortened episodes and owner-zero-weight unknown outcomes, assume
+the historical prices, and do not guarantee completion.
+
+The owner was asked to choose sample size and planning cap because the
+[parent protocol](grounding-v5-agent-benchmark.md#statistical-analysis) requires a human
+choice when the sample misses the power target. The existing USD 28 aggregate cap and
+zero confirmatory-call allowance remain effective until those choices arrive. A planning
+decision will still require an exact execution plan, fresh price check, canonical task
+admission, phase caps and a new runtime window before paid-call approval. The completed
+six-hour calibration window has expired.
+
+## Completed continuation
 
 The [final report](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md),
 [structured analysis](../artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json),
@@ -35,17 +92,18 @@ The paired episode counts are six successes in both modes, 36 history-only succe
 zero stateless-only successes, and eight pairs with neither mode succeeding. The 50
 seed pairs represent 44 logical clusters, so they are not 50 independent memory tests.
 The predesignated representatives have six successes in both modes, 31 history-only
-successes, and seven pairs with neither mode succeeding. No significance test or
-confirmatory power estimate was produced.
+successes, and seven pairs with neither mode succeeding. The frozen calibration analysis
+contains no significance test or confirmatory power estimate. The separate prospective
+calculation above reads that stored evidence without changing it.
 
 The earlier exposure floor is resolved in these recorded counts: history reaches both
 consumers on 43/50 assignments, above the proposed 40/50 threshold. Its 42/50 terminal
 successes exceed the proposed mixed-outcome upper bound of 40/50. First-choice accuracy
 and the matched outcome counts now provide memory observations, while the capable arm
-is near the ceiling. The owner must decide whether to accept that difficulty or revise
-it before a final executable freeze. This continuation makes no further generator
-change and supplies no D5.8 milestone verdict or confirmatory authorization. The proposed
-seeds and statistical target below remain proposals requiring final approval.
+is near the ceiling. The owner has now accepted that difficulty as described above.
+This continuation makes no further generator change and supplies no D5.8 milestone
+verdict or confirmatory authorization. The reserved sample below remains a historical
+proposal; the new power check requires a sample-size decision before final approval.
 
 | Execution phase | Newly recorded assignments | New wire requests | Confirmed new USD |
 |---|---:|---:|---:|
@@ -418,7 +476,7 @@ This implementation uses the deterministic in-process pixel renderer. The linked
 consumer PNGs are available for owner usability review. No browser/OSWorld integration or human
 usability verdict is claimed by the automated checks.
 
-## Proposed policy candidates and calibration routing
+## Original policy proposal and calibration routing
 
 | Role | Proposed candidate | Required change or qualification |
 |---|---|---|
@@ -427,7 +485,9 @@ usability verdict is claimed by the automated checks.
 | Lower-ability calibration reference | Qwen3-VL-8B-Instruct through the previously calibrated route | The same revised screenshot-history harness |
 | Additional calibration reference | Mistral Small 4 through the previously calibrated route | The same revised screenshot-history harness |
 
-These remain candidate roles, not approved final executable policy IDs or availability guarantees.
+The completed calibration selected the matched Gemini pair identified above. The table
+preserves the original calibration-reference roles; it does not add final executable
+policies or provide availability guarantees.
 Freeze exact route, model alias or snapshot, inference parameters, dependency/runtime digests,
 prompt, parser, normalized-coordinate adapter, context limit, state reducer, response schema,
 retry classification and deadlines before any calibration approval. No silent fallback to another
@@ -449,7 +509,12 @@ If both arms stay at the floor or fail before the consumers, stop; do not spend 
 If the matched comparison is informative but null or negative, retain it and let the owner decide
 whether to freeze and test that null prospectively. Do not tune until memory appears beneficial.
 
-## Proposed seeds and statistical target
+## Original reserved seeds and statistical target
+
+The post-calibration power calculation above supersedes the planning assumptions in
+this section. The 120-independent-task reservation is not sufficient for the target
+under the observed discordance; the owner has been asked to select the expanded design
+or explicitly accept lower sensitivity. No automatic resizing has occurred.
 
 Retain the existing reserved confirmatory seeds **6000–6095**. The
 [current manifest](../artifacts/grounding-v5-manifests/v2/confirmatory.json) contains 96 episodes,
@@ -503,15 +568,20 @@ No confirmatory generator output or policy response may influence selection.
 
 ## Spend and the remaining approval boundary
 
-**Current approved aggregate ceiling: USD 20.00 across all successor phases, superseding USD 5.00.**
-This includes actual charges and reservations for unknown outcomes. The approval is not a separate allowance per
-policy or per run. Confirmatory execution remains disabled until its exact plan is approved.
+**Current approved aggregate ceiling: USD 28.00 across all successor phases, superseding
+USD 20.00 and USD 5.00.** Confirmed charges are USD 23.978227275. The owner assigned
+zero budget weight to unresolved outcomes after checking OpenRouter activity; retain
+those outcomes and count any later actual charges. Full active request bounds still
+count against the cap. This is not a separate allowance per policy or per run.
+The proposed USD 120 aggregate planning cap above is pending. Confirmatory execution
+remains disabled until its exact plan receives separate approval.
 
-Completion of the proposed design within the current ceiling has not been established. Historical per-episode spend does not price an all-screenshot history
-policy. Before paid approval, calculate exact phase caps from the revised task and policy manifests
+The complete design is not projected to fit within the current ceiling. The completed
+calibration now supplies an observed cost for the matched screenshot-history policy,
+as documented above. Before paid approval, calculate exact phase caps from the task and policy manifests
 and a checked price catalog: environment actions, model attempts, provider control requests, and
 total wire requests. Show conservative per-request reservations and projected phase costs. Count
-unknown outcomes against the cap until reconciled; do not move unused budget between phases without
+active request bounds against the cap and apply the owner's zero unresolved-hold rule; do not move unused budget between phases without
 approval. If the bounded design cannot fit the owner's ceiling, present the sensitivity/cost
 tradeoff before launching anything.
 
@@ -547,17 +617,20 @@ candidate bounds before execution. Preserve the ignored authoritative ledger at
 `.cache/d58-memory-calibration/aggregate.sqlite`; a subsequent approved phase must carry forward
 its settled spend and reservations. Any changed manifest requires the owner's exact-plan approval.
 
-The final freeze must bind the actual generator and source digests, canonical tasks and seed lists,
+The final executable freeze must bind the actual generator and source digests, canonical tasks and seed lists,
 admission evidence, exact candidate policy manifests, primary comparison, power calculation,
 reliability subset, prices, per-phase dollar/request caps, and owner approval. Those executable
-artifacts cannot honestly be signed before the bounded repairs and calibration exist. D5.8 remains
-open; D5.9 must not start from this document.
+artifacts still require the selected sample and cap, any seed-registry extension and its
+admission, and separate exact-plan approval. The repairs and full calibration are complete;
+the difficulty decision is recorded. D5.8's final executable freeze remains open, and
+D5.9 must not start from this document.
 
 ## Reproduction
 
 From the repository root:
 
 ```sh
+.venv/bin/python -m artifacts.grounding-v5-d58-final-design.power --verify
 .venv/bin/python -m artifacts.grounding-v5-d58-design.audit
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
 .venv/bin/python -m scripts.prepare_grounding_v5_memory --verify
