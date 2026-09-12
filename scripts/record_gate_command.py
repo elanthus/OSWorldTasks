@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Record one platform-gate command as redacted raw evidence without judging it."""
+"""Record one platform-gate command as redacted raw evidence without judging it.
+
+Originally written for the D4.12 gate.
+"""
 
 from __future__ import annotations
 

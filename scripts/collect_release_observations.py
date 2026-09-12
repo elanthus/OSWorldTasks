@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Print raw grounding-release evidence without declaring a verdict."""
+"""Print raw grounding-release evidence without declaring a verdict.
+
+Originally written for the Day 3 gate.
+"""
 
 from __future__ import annotations
 
