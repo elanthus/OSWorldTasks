@@ -6,6 +6,7 @@ import json
 import shutil
 import subprocess
 import sys
+import threading
 from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 from pixelgym.grounding.v5.contracts import CallCaps
-from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.journal import JournalEvent, V5AttemptJournal
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
 from pixelgym.grounding.v5.panel_policy import GEMINI_STATEFUL
@@ -31,6 +32,53 @@ from scripts.prepare_grounding_v5_review_corrections import (
 from tests.unit.test_grounding_v5_memory import advance
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_event_lookup_waits_for_another_threads_transaction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Rollback(Exception):
+        pass
+
+    reader_reached = threading.Event()
+    owner = threading.get_ident()
+    results: list[JournalEvent | None] = []
+    with closing(V5AttemptJournal(tmp_path / "isolation.sqlite")) as journal:
+        lock = journal._lock
+
+        class ObservedLock:
+            def __enter__(self):
+                if threading.get_ident() != owner:
+                    reader_reached.set()
+                lock.acquire()
+
+            def __exit__(self, *args):
+                lock.release()
+
+        monkeypatch.setattr(journal, "_lock", ObservedLock())
+
+        def read() -> None:
+            try:
+                results.append(journal.event("uncommitted"))
+            finally:
+                # Also release the writer if a broken reader skips the lock.
+                reader_reached.set()
+
+        worker = threading.Thread(target=read)
+        try:
+            with pytest.raises(Rollback), journal._write_transaction():
+                journal._connection.execute(
+                    "INSERT INTO events(event_key, kind, trial_id, step_index, payload) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    ("uncommitted", "fixture", "fixture", 0, b"{}"),
+                )
+                worker.start()
+                assert reader_reached.wait(5)
+                raise Rollback
+        finally:
+            worker.join(5)
+        assert not worker.is_alive()
+        assert results == [None]  # The other thread must never see the rolled-back row.
 
 
 @pytest.mark.parametrize("missing", ["seed", "stage_index", "repair_pending"])

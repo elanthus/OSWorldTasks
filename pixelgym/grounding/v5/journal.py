@@ -396,13 +396,16 @@ class V5AttemptJournal:
         )
 
     def event(self, event_key: str) -> JournalEvent | None:
-        row = self._connection.execute(
-            """
-            SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
-            FROM events WHERE event_key = ?
-            """,
-            (event_key,),
-        ).fetchone()
+        # The connection is shared by timeout settlement and late-response
+        # workers. Keyed reads must not overlap another thread's transaction.
+        with self._lock:
+            row = self._connection.execute(
+                """
+                SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
+                FROM events WHERE event_key = ?
+                """,
+                (event_key,),
+            ).fetchone()
         return None if row is None else self._event_from_row(row)
 
     def events(self, trial_id: str | None = None) -> tuple[JournalEvent, ...]:

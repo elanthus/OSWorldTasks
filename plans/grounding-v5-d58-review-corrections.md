@@ -3,6 +3,12 @@
 These corrections address PR #196's CodeRabbit review without replacing any frozen calibration
 bundle, changing task difficulty, or authorizing another model call.
 
+The full offline suite also exposed a concurrent journal-read failure in the existing timeout
+test. Keyed event reads now take the journal's transaction lock, so timeout settlement and a late
+response cannot query the shared connection during one another's writes. A coordinated two-thread
+regression demonstrates that a reader cannot observe a row rolled back by another thread; it
+failed before the fix. This changes no journal schema or stored evidence.
+
 | Finding | Correction | Verification |
 |---|---|---|
 | Missing checkpoint fields could raise `KeyError`; restore ignored an injected task factory. | Validate the fields used by memory-choice restoration first, then use the backend's configured factory. | Missing-field fixtures preserve backend state; a checkpoint with custom task controls restores exactly. |
