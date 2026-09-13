@@ -216,7 +216,11 @@ def execute(digest: str) -> None:
                 payload={"execution_plan_digest": digest, "started_at": time.time()},
             )
             transport = ReliableTransport(
-                config, lifecycle_id=PHASE, ledger=ledger, phase_deadline=time.time() + 5400
+                config,
+                lifecycle_id=PHASE,
+                ledger=ledger,
+                phase_deadline=time.time() + 5400,
+                phase_spend_limit=Decimal(plan["phase_cap_usd"]),
             )
             caps = CallCaps(**plan["aggregate_caps"])
             stop = "interrupted"
@@ -233,6 +237,12 @@ def execute(digest: str) -> None:
                     print(row, flush=True)
                     if transport.retired or ledger.blocked:
                         stop = "transport_or_identity_stop"
+                        break
+                    if (
+                        ledger.budget_accounted_spend_usd - transport.phase_start_accounted
+                        >= transport.phase_spend_limit
+                    ):
+                        stop = "phase_cap_stop"
                         break
                     if ledger.wire_requests_sent - plan["prior_spend"]["wire_requests_sent"] >= 20:
                         stop = "wire_cap_stop"

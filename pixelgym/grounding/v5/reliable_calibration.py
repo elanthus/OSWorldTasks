@@ -116,7 +116,6 @@ def run_episode(
             "policy_id": manifest.policy_id,
             **episode_measurements(journal, trial, job["seed"]),
         }
-        boundary("before_full_result")
         journal.append_event(
             event_key=f"{trial}/full_completed",
             kind="memory_full_completed",
@@ -124,6 +123,7 @@ def run_episode(
             step_index=row["environment_actions_dispatched"],
             payload=row,
         )
+        boundary("full_result_recorded")
         return row
     finally:
         policy.close()

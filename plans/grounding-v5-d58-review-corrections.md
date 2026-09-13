@@ -43,3 +43,37 @@ future execution; they do not retroactively alter the policies used for calibrat
 The final sample-size and spend-cap decisions remain open as recorded in the
 [final-design package](grounding-v5-d58-final-design.md). These repairs generate no confirmatory
 tasks and add no paid observations.
+
+## Second review: closed evidence and interruption recovery
+
+The second review's corrections preserve the original artifact files and their manifests.
+Use these successors for new verification:
+
+- `scripts.verify_d58_at_revision` copies the complete D5.8 artifact family, including historical
+  predecessor packages. It removes `PYTHONOPTIMIZE` from analyzer environments, uses the corrected
+  owner-budget and reliable-continuation analyzers, and continues to support standalone owner
+  reconciliation through its recorded `driver_code_revision` and `--verify-reconciliation`.
+- `scripts.verify_d58_owner_budget_continuation` and `scripts.verify_d58_reliable_continuation`
+  replace every verification assertion with an explicit exception and require an exact manifest
+  file set. Their journal checks still require the executed source and original journal.
+- `scripts.verify_d58_gemini38_calibration` replaces the frozen analyzer for future verification
+  or recording. Recording refuses an existing `analysis.json`, `verification.json`, or `files.json`
+  before writing anything. The historical analyzer remains reproduction-only.
+- The [corrected power report](../artifacts/grounding-v5-d58-review-corrections-v2/power-report-v2.md)
+  derives its numerical prose from stored `power.json`, including the smallest listed option that
+  meets the upper-sensitivity target. Reliability episode counts appear per option. Verify it with
+  `.venv/bin/python -m scripts.prepare_grounding_v5_power_report --verify`. This correction changes
+  neither the calculation nor the owner's outstanding decisions.
+
+Journal event lists, terminal lookups, digest-version reads, and the complete integrity report now
+share the transaction lock. The completed episode row is durable before the publication interruption
+boundary, preserving budget and time stops on recovery without replay. The focus diagnostic records
+measured renderer comparisons, enforces them under optimized Python, and reports an escaping exception
+as an interruption. The reliable diagnostic binds the declared phase cap to the transport and stops
+when that cap is reached.
+
+Regression fixtures cover transaction rollback, durable stop recovery, changed report inputs,
+partial recordings, extra/missing/corrupt manifest files, optimized-Python corruption rejection,
+renderer measurements, interrupted phase publication, phase-cap enforcement, and historical
+artifact dependencies. These are offline repairs; no new paid execution or milestone verdict is
+included. Current source identities require fresh admission before future execution.

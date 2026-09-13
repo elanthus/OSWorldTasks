@@ -152,8 +152,13 @@ def admission() -> dict[str, Any]:
             changed_states = 0
             differing_pixels = 0
             maximum_channel_delta = 0
+            outside_pixels = 0
+            checkpoints_equal = True
+            consumer_equal = True
             for action in actions:
-                assert old.checkpoint() == new.checkpoint()
+                checkpoints_equal &= old.checkpoint() == new.checkpoint()
+                if not checkpoints_equal:
+                    raise ValueError("state checkpoints diverged")
                 first, second = old.screenshot(), new.screenshot()
                 delta = np.abs(first.astype(np.int16) - second.astype(np.int16))
                 mask = np.any(delta != 0, axis=2)
@@ -162,18 +167,25 @@ def admission() -> dict[str, Any]:
                 if mask.any():
                     changed_states += 1
                     state = json.loads(old.checkpoint())
-                    assert state["focused"]
+                    if not state["focused"]:
+                        raise ValueError("renderer changed an unfocused state")
                     box = next(
                         c.bbox for c in old.visible_controls() if c.control_id == "text_input"
                     )
                     mask[box[1] : box[3] + 1, box[0] : box[2] + 1] = False
-                    assert not mask.any(), "renderer changed pixels outside the input"
+                    outside_pixels += int(mask.sum())
+                    if outside_pixels:
+                        raise ValueError("renderer changed pixels outside the input")
                 if old.stage_index in (5, 7):
-                    assert np.array_equal(first, second), "consumer pixels changed"
+                    consumer_equal &= np.array_equal(first, second)
+                    if not consumer_equal:
+                        raise ValueError("consumer pixels changed")
                 apply(old, action)
                 apply(new, action)
-            assert old.checkpoint() == new.checkpoint()
-            assert old.read_submissions() == new.read_submissions()
+            checkpoints_equal &= old.checkpoint() == new.checkpoint()
+            submissions_equal = old.read_submissions() == new.read_submissions()
+            if not checkpoints_equal or not submissions_equal:
+                raise ValueError("final state or submissions diverged")
             rows.append(
                 {
                     "seed": seed,
@@ -181,10 +193,10 @@ def admission() -> dict[str, Any]:
                     "changed_input_states": changed_states,
                     "summed_differing_pixels_before_confinement_check": differing_pixels,
                     "max_per_channel_delta_before_confinement_check": maximum_channel_delta,
-                    "differing_pixels_outside_focused_input": 0,
-                    "state_checkpoints_equal": True,
-                    "consumer_pixels_equal": True,
-                    "submissions_equal": True,
+                    "differing_pixels_outside_focused_input": outside_pixels,
+                    "state_checkpoints_equal": checkpoints_equal,
+                    "consumer_pixels_equal": consumer_equal,
+                    "submissions_equal": submissions_equal,
                 }
             )
         finally:
@@ -476,6 +488,9 @@ def execute(digest: str) -> None:
                         step_index=0,
                         payload={"stop_reason": stop},
                     )
+                except BaseException:
+                    stop = "interrupted"
+                    raise
                 finally:
                     # Never close a journal underneath a still-running worker.
                     # After a bounded drain, process exit terminates the daemon;

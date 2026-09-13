@@ -1,0 +1,8 @@
+{
+  "original_artifacts_replaced": false,
+  "provider_calls": 0,
+  "source_file_digests": {
+    "artifacts/grounding-v5-d58-final-design/power.json": "sha256:35f1292a7791c72841b3894479a1ec3a12ecb7488139ffd62a232dd0c7e638ba",
+    "scripts/prepare_grounding_v5_power_report.py": "sha256:d769462b9c5436062b566fcb55220a9ceddd7036a3e022e5d38def82fecb1012"
+  }
+}

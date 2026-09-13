@@ -45,17 +45,33 @@ def verify(name: str, journal: Path | None) -> dict[str, object]:
         tree = Path(directory)
         with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
             bundle.extractall(tree, filter="data")
-        for artifact in (*ARTIFACTS, "grounding-v5-d58-runtime-amendment"):
-            source = ROOT / "artifacts" / artifact
+        # Historical drivers can name predecessors different from today's source.
+        # Copy the complete D5.8 evidence family, including admission dependencies.
+        for source in sorted((ROOT / "artifacts").glob("grounding-v5-d58-*")):
             if source.is_dir():
-                shutil.copytree(source, tree / "artifacts" / artifact)
+                shutil.copytree(source, tree / "artifacts" / source.name)
         analyzer_package = "grounding-v5-d58-owner-budget-continuation" if accounting_only else name
-        command = [sys.executable, str(tree / "artifacts" / analyzer_package / "analyze.py")]
+        successor = (
+            ROOT
+            / "scripts"
+            / (
+                "verify_d58_"
+                + analyzer_package.removeprefix("grounding-v5-d58-").replace("-", "_")
+                + ".py"
+            )
+        )
+        analyzer = tree / "artifacts" / analyzer_package / "analyze.py"
+        if successor.is_file():
+            analyzer = tree / "scripts" / successor.name
+            shutil.copy2(successor, analyzer)
+        command = [sys.executable, str(analyzer)]
         if accounting_only:
             command.append("--verify-reconciliation")
         if journal:
             command += ["--journal", str(journal.resolve())]
-        environment = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
+        environment = {
+            k: v for k, v in os.environ.items() if k not in {"OPENROUTER_API_KEY", "PYTHONOPTIMIZE"}
+        }
         environment.update(PYTHONPATH=str(tree), PYTHONDONTWRITEBYTECODE="1")
         result = subprocess.run(
             command, cwd=tree, env=environment, capture_output=True, text=True, check=False
