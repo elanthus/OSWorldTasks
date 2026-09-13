@@ -200,7 +200,7 @@ def main():
                 policy=policy,
                 transport=transport,
                 approved_caps=caps,
-                time_exhausted=lambda: (
+                time_exhausted=lambda job=job: (
                     time.monotonic() - started
                     >= plan["maximum_elapsed_seconds"]
                     - manifests[job["mode"]].request_deadline_seconds
