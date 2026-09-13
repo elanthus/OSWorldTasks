@@ -83,3 +83,35 @@ def test_codex_history_digest_rejected_before_send(tmp_path):
     finally:
         transport.close()
         journal.close()
+
+
+def test_runner_rejects_manifest_mode_mismatch():
+    from types import SimpleNamespace
+
+    from pixelgym.grounding.v5.cli_memory_calibration import CliMemoryRunner
+    from pixelgym.grounding.v5.contracts import CallCaps
+
+    manifest = SimpleNamespace(
+        inference_parameters=(),
+        max_model_attempts_per_action=1,
+        memory_policy_version="pixelgym-cli-screenshot-stateless-v1",
+    )
+    with pytest.raises(ValueError, match="memory mode"):
+        CliMemoryRunner(
+            journal=object(),
+            manifest=manifest,
+            transport=object(),
+            policy=CliMemoryPolicy(codex.CodexCliPolicy(), retain_screenshots=True),
+            approved_caps=CallCaps(32, 32, 0, 32),
+        )
+
+
+def test_expired_phase_stops_before_screenshot_or_provider():
+    from pixelgym.grounding.v5.cli_memory_calibration import CliMemoryRunner
+
+    runner = object.__new__(CliMemoryRunner)
+    runner.time_exhausted = lambda: True
+    assert runner._act(state=b"checkpoint") == {
+        "classification": "phase_time_stop",
+        "state": b"checkpoint",
+    }

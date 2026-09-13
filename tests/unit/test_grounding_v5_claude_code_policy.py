@@ -97,7 +97,12 @@ def make_transport(
         ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
         invocation_journal=journal,
         runtime_identity=runtime_identity(),
-        environment={"PATH": "/bin", "HOME": "/private/auth-home", "USER": "calibration-user", "SECRET": "blocked"},
+        environment={
+            "PATH": "/bin",
+            "HOME": "/private/auth-home",
+            "USER": "calibration-user",
+            "SECRET": "blocked",
+        },
         process_factory=process_factory,
     )
     return transport, journal
@@ -277,3 +282,131 @@ def test_claude_invalid_history_fails_before_process_start(tmp_path: Path, fault
     finally:
         transport.close()
         journal.close()
+
+
+def extended_thinking_stream(
+    text: str = '{"action_type":1,"x":100,"y":100,"key":0}',
+) -> list[dict[str, Any]]:
+    # Sanitized structure of the retained Haiku v2 response: two assistant
+    # records share a single message/request identity and one final result.
+    original = [json.loads(line) for line in SuccessfulProcess().communicate()[0].splitlines()]
+    init = next(event for event in original if event["type"] == "system")
+    result = next(event for event in original if event["type"] == "result")
+    result["result"] = text
+    records = [
+        init,
+        {
+            "type": "system",
+            "subtype": "thinking_tokens",
+            "estimated_tokens": 1,
+            "estimated_tokens_delta": 1,
+        },
+        {
+            "type": "system",
+            "subtype": "thinking_tokens",
+            "estimated_tokens": 3,
+            "estimated_tokens_delta": 2,
+        },
+        {
+            "type": "assistant",
+            "request_id": "request-test",
+            "message": {
+                "id": "message-test",
+                "model": policy.MODEL,
+                "content": [{"type": "thinking", "thinking": "sanitized"}],
+            },
+        },
+        {
+            "type": "assistant",
+            "request_id": "request-test",
+            "message": {
+                "id": "message-test",
+                "model": policy.MODEL,
+                "content": [{"type": "text", "text": text}],
+            },
+        },
+        result,
+    ]
+    for index, event in enumerate(records):
+        event.update(session_id="session-test", uuid=f"event-{index}")
+    return records
+
+
+def parse_events(events: list[dict[str, Any]]) -> policy.ParsedClaudeStream:
+    return policy._parse_stream("\n".join(json.dumps(event) for event in events))
+
+
+def test_haiku_single_turn_thinking_telemetry_and_split_response_are_valid() -> None:
+    events = extended_thinking_stream()
+    parsed = parse_events(events)
+    assert parsed.policy_violations == ()
+    assert parsed.content == events[-1]["result"]
+    assert parsed.event_counts == {"assistant": 2, "result": 1, "system": 3}
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "session",
+        "message",
+        "request",
+        "uuid",
+        "negative",
+        "delta",
+        "extra_field",
+        "duplicate_text",
+        "duplicate_result",
+        "tool",
+        "unknown_system",
+        "changed_result",
+    ],
+)
+def test_haiku_extended_stream_rejects_incoherent_or_extra_records(fault: str) -> None:
+    events = extended_thinking_stream()
+    if fault == "session":
+        events[1]["session_id"] = "another-session"
+    elif fault == "message":
+        events[4]["message"]["id"] = "another-message"
+    elif fault == "request":
+        events[4]["request_id"] = "another-request"
+    elif fault == "uuid":
+        events[1]["uuid"] = events[0]["uuid"]
+    elif fault == "negative":
+        events[1]["estimated_tokens"] = -1
+    elif fault == "delta":
+        events[1]["estimated_tokens_delta"] = 2
+    elif fault == "extra_field":
+        events[1]["tools"] = ["Read"]
+    elif fault == "duplicate_text":
+        events[4]["message"]["content"] *= 2
+    elif fault == "duplicate_result":
+        events.append(events[-1])
+    elif fault == "tool":
+        events[3]["message"]["content"] = [{"type": "tool_use"}]
+    elif fault == "unknown_system":
+        events[1]["subtype"] = "unrecognized"
+    else:
+        events[-1]["result"] = "changed"
+    assert parse_events(events).policy_violations
+
+
+def test_haiku_fenced_json_remains_invalid_model_output_after_stream_parse() -> None:
+    text = '```json\n{"action_type":1,"x":100,"y":100,"key":0}\n```'
+    parsed = parse_events(extended_thinking_stream(text))
+    assert parsed.policy_violations == ()
+    assert parsed.content == text
+    response = {
+        "model": policy.MODEL,
+        "content": parsed.content,
+        "usage": {
+            "auth_method": policy.AUTH_METHOD,
+            "subscription_type": policy.SUBSCRIPTION_TYPE,
+            "cli_version": policy.CLAUDE_CLI_VERSION,
+            "command_contract_digest": policy.command_contract_digest(),
+            "experiment_charge_usd": "0.00",
+            "model_reasoning_effort": "default",
+            "policy_violation": "none",
+        },
+    }
+    with pytest.raises(json.JSONDecodeError):
+        policy.ClaudeCodePolicy().parse(json.dumps(response).encode(), b"{}")

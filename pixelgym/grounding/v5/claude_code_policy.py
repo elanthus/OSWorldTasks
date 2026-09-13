@@ -77,7 +77,7 @@ EXPERIMENT_CHARGE_USD = Decimal("0.00")
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 CONTEXT_LIMIT_TOKENS = 200_000
-PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v1"
+PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v2"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-claude-stream-json-response-v1"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
@@ -114,6 +114,11 @@ _MALFORMED_STREAM_VIOLATIONS = frozenset(
         "invalid_rate_limit_event",
         "invalid_assistant_message",
         "invalid_assistant_content",
+        "invalid_thinking_telemetry",
+        "invalid_extended_stream_identity",
+        "invalid_extended_stream_order",
+        "assistant_text_count_mismatch",
+        "assistant_result_text_mismatch",
     }
 )
 
@@ -603,9 +608,71 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
     required_events = {"system", "assistant", "result"}
     allowed_events = required_events | {"rate_limit_event"}
     event_counts = Counter(str(event["type"]) for event in events)
-    for event_type in required_events:
-        if event_counts[event_type] != 1:
-            violations.append(f"{event_type}_event_count_mismatch")
+    initial_events = [
+        event for event in events
+        if event["type"] == "system" and event.get("subtype") == "init"
+    ]
+    if len(initial_events) != 1:
+        violations.append("system_event_count_mismatch")
+    assistant_events = [event for event in events if event["type"] == "assistant"]
+    telemetry_events = [
+        event for event in events
+        if event["type"] == "system" and event.get("subtype") == "thinking_tokens"
+    ]
+    if len(assistant_events) not in (1, 2):
+        violations.append("assistant_event_count_mismatch")
+    if event_counts["result"] != 1:
+        violations.append("result_event_count_mismatch")
+    extended_stream = bool(telemetry_events) or len(assistant_events) == 2
+    if extended_stream:
+        sessions = [event.get("session_id") for event in events]
+        uuids = [event.get("uuid") for event in events]
+        if (
+            not all(isinstance(value, str) and value for value in sessions + uuids)
+            or len(set(sessions)) != 1
+            or len(set(uuids)) != len(uuids)
+        ):
+            violations.append("invalid_extended_stream_identity")
+        if not events or events[0] not in initial_events or events[-1]["type"] != "result":
+            violations.append("invalid_extended_stream_order")
+        previous_estimate = 0
+        for telemetry in telemetry_events:
+            if set(telemetry) != {
+                "type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"
+            }:
+                violations.append("invalid_thinking_telemetry")
+                continue
+            estimate = telemetry["estimated_tokens"]
+            delta = telemetry["estimated_tokens_delta"]
+            if (
+                type(estimate) is not int or type(delta) is not int
+                or estimate < 0 or delta < 0 or estimate != previous_estimate + delta
+            ):
+                violations.append("invalid_thinking_telemetry")
+            else:
+                previous_estimate = estimate
+    if len(assistant_events) == 2:
+        messages = [event.get("message") for event in assistant_events]
+        if not all(isinstance(message, dict) for message in messages):
+            violations.append("invalid_assistant_message")
+        else:
+            message_ids = [message.get("id") for message in messages]
+            request_ids = [event.get("request_id") for event in assistant_events]
+            if (
+                not all(isinstance(value, str) and value for value in message_ids + request_ids)
+                or len(set(message_ids)) != 1 or len(set(request_ids)) != 1
+            ):
+                violations.append("invalid_extended_stream_identity")
+            contents = [message.get("content") for message in messages]
+            if (
+                not all(isinstance(content, list) and content for content in contents)
+                or not all(isinstance(block, dict) and block.get("type") == "thinking" for block in contents[0])
+                or len(contents[1]) != 1
+                or not isinstance(contents[1][0], dict)
+                or contents[1][0].get("type") != "text"
+            ):
+                violations.append("invalid_assistant_content")
+    assistant_texts: list[str] = []
     result_events: list[dict[str, Any]] = []
     resolved_models: set[str] = set()
     for event in events:
@@ -623,6 +690,11 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             if rate_limit.get("isUsingOverage") not in (None, False):
                 violations.append("subscription_overage_active")
         elif event_type == "system":
+            if event.get("subtype") == "thinking_tokens":
+                continue
+            if event.get("subtype") != "init":
+                violations.append(f"unauthorized_system_event:{event.get('subtype')}")
+                continue
             tools = event.get("tools")
             if tools not in (None, []):
                 violations.append("system_advertised_tools")
@@ -647,6 +719,11 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
                 block_type = block.get("type") if isinstance(block, dict) else None
                 if block_type not in {"text", "thinking"}:
                     violations.append(f"unauthorized_content_block:{block_type}")
+                if block_type == "text":
+                    if not isinstance(block.get("text"), str):
+                        violations.append("invalid_assistant_content")
+                    else:
+                        assistant_texts.append(block["text"])
         else:
             result_events.append(event)
     if len(result_events) != 1:
@@ -674,6 +751,11 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         violations.append("unexpected_structured_output")
     result_text = result.get("result")
     content = result_text if isinstance(result_text, str) else ""
+    if len(assistant_texts) != 1:
+        if not any(value.startswith("unauthorized_content_block:") for value in violations):
+            violations.append("assistant_text_count_mismatch")
+    elif extended_stream and assistant_texts[0] != content:
+        violations.append("assistant_result_text_mismatch")
     raw_usage = result.get("usage")
     usage: dict[str, int] | None = None
     if isinstance(raw_usage, dict):
