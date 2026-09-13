@@ -59,7 +59,7 @@ from pixelgym.serialization import canonical_json_bytes
 
 RunningProcess = cli_transport.RunningProcess
 
-CODEX_CLI_VERSION = "codex-cli 0.150.1"
+CODEX_CLI_VERSION = "codex-cli 0.153.4"
 AUTH_MODE = "chatgpt_subscription"
 PROVIDER_IDENTITY = "codex-cli/chatgpt-subscription"
 PROVIDER_ORIGIN = "https://chatgpt.com"
@@ -1115,9 +1115,15 @@ class CodexCliTransport:
             image_path = input_directory / "current-screenshot.png"
             schema_path.write_bytes(canonical_json_bytes(ACTION_SCHEMA))
             image_path.write_bytes(base64.b64decode(request["image_png_base64"], validate=True))
+            image_paths = []
+            for index, frame in enumerate(request.get("image_history", [])):
+                prior_path = input_directory / f"history-{index:02d}.png"
+                prior_path.write_bytes(base64.b64decode(frame["image_png_base64"], validate=True))
+                image_paths.append(str(prior_path))
+            image_paths.append(str(image_path))
             command = _runtime_command(
                 schema_path=schema_path,
-                image_path=image_path,
+                image_path=Path(",".join(image_paths)),
                 working_directory=working_directory,
                 config=self.config,
             )
@@ -1380,7 +1386,7 @@ class CodexCliTransport:
             "action_schema_digest",
             "command_contract_digest",
         }
-        if set(request) != expected_keys:
+        if set(request) not in (expected_keys, expected_keys | {"image_history"}):
             return "request_shape_mismatch"
         if (
             request.get("provider") != PROVIDER_IDENTITY
@@ -1403,6 +1409,18 @@ class CodexCliTransport:
             return "image_encoding_invalid"
         if request.get("image_sha256") != "sha256:" + sha256_bytes(image):
             return "image_digest_mismatch"
+        history = request.get("image_history", [])
+        if not isinstance(history, list) or len(history) > 31:
+            return "image_history_invalid"
+        for frame in history:
+            if not isinstance(frame, dict) or set(frame) != {"image_png_base64", "image_sha256"}:
+                return "image_history_invalid"
+            try:
+                png = base64.b64decode(frame["image_png_base64"], validate=True)
+            except (TypeError, ValueError):
+                return "image_history_invalid"
+            if frame["image_sha256"] != "sha256:" + sha256_bytes(png):
+                return "image_history_digest_mismatch"
         return None
 
     def _record(

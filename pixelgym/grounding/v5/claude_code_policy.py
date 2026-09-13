@@ -1,4 +1,4 @@
-"""Fail-closed Claude Code Sonnet policy with inline screenshot input and zero tools."""
+"""Fail-closed Claude Code Haiku policy with inline screenshot input and zero tools."""
 
 from __future__ import annotations
 
@@ -61,8 +61,9 @@ from pixelgym.serialization import canonical_json_bytes
 RunningProcess = cli_transport.RunningProcess
 
 CLAUDE_CLI_VERSION = "2.1.236 (Claude Code)"
-MODEL = "claude-sonnet-5"
-MODEL_REASONING_EFFORT = "medium"
+MODEL = "claude-haiku-4-5-20251001"
+# Haiku 4.5 has no effort control; retain the field as truthful default metadata.
+MODEL_REASONING_EFFORT = "default"
 AUTH_METHOD = "claude.ai"
 SUBSCRIPTION_TYPE = "max"
 PROVIDER_IDENTITY = "claude-code-cli/claude-ai-max-subscription"
@@ -75,7 +76,7 @@ KILL_GRACE_SECONDS = 2.0
 EXPERIMENT_CHARGE_USD = Decimal("0.00")
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
-CONTEXT_LIMIT_TOKENS = 1_000_000
+CONTEXT_LIMIT_TOKENS = 200_000
 PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v1"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-claude-stream-json-response-v1"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
@@ -84,8 +85,9 @@ TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = "one-claude-cli-process-per-action-no-runner-retry-v1"
 INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-claude-cli-invocation-journal-v2"
 SYSTEM_PROMPT = (
-    "You are a stateless pixel-only GUI policy. Use only the user-provided task text and "
-    "inline screenshot. Do not use tools or request other context. Return exactly one action "
+    "You are a pixel-only GUI policy. Use only the user-provided task text and "
+    "inline screenshots, including any supplied history. The last screenshot is current. "
+    "Do not use tools or request other context. Return exactly one action "
     "as a bare JSON object matching the required action contract, with no markdown or prose."
 )
 
@@ -163,7 +165,6 @@ def probe_claude_runtime(
     required_flags = (
         "--print",
         "--model",
-        "--effort",
         "--output-format",
         "--input-format",
         "--tools",
@@ -198,8 +199,6 @@ def sanitized_command_contract() -> tuple[str, ...]:
         "--verbose",
         "--model",
         MODEL,
-        "--effort",
-        MODEL_REASONING_EFFORT,
         "--output-format",
         "stream-json",
         "--input-format",
@@ -297,12 +296,16 @@ class ClaudeCodePolicy:
     def reset(self, task_instruction: str) -> bytes:
         return canonical_json_bytes({"instruction": task_instruction})
 
-    def build_request(self, state: bytes, screenshot: bytes) -> dict[str, Any]:
+    def build_request(
+        self, state: bytes, screenshot: bytes, *, screenshot_history: Sequence[bytes] = ()
+    ) -> dict[str, Any]:
+        if len(screenshot_history) > 31:
+            raise ValueError("screenshot history exceeds 31 prior frames")
         value = json.loads(state)
         if not isinstance(value, dict) or set(value) != {"instruction"}:
             raise ValueError("Claude policy state is invalid")
         png = _png_bytes(screenshot)
-        return {
+        request: dict[str, Any] = {
             "provider": PROVIDER_IDENTITY,
             "model": MODEL,
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
@@ -312,6 +315,15 @@ class ClaudeCodePolicy:
             "action_schema_digest": content_digest(ACTION_SCHEMA),
             "command_contract_digest": command_contract_digest(),
         }
+        if screenshot_history:
+            request["image_history"] = [
+                {
+                    "image_png_base64": base64.b64encode(history_png).decode("ascii"),
+                    "image_sha256": "sha256:" + sha256_bytes(history_png),
+                }
+                for history_png in map(_png_bytes, screenshot_history)
+            ]
+        return request
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
         del canonical_response
@@ -655,7 +667,7 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         resolved_model = None
     else:
         resolved_model = next(iter(resolved_models))
-        if not resolved_model.startswith(MODEL):
+        if resolved_model != MODEL:
             violations.append("resolved_model_mismatch")
     if result.get("structured_output") is not None:
         violations.append("unexpected_structured_output")
@@ -803,21 +815,25 @@ class ClaudeCodeTransport:
                     self._record(idempotency_key, "pre_send_failure", outcome)
                 )
                 return transport_outcome
-            image_block = {
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": request["image_png_base64"],
-                },
-            }
+            image_blocks = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/png",
+                        "data": image["image_png_base64"],
+                    },
+                }
+                for image in [*request.get("image_history", []), request]
+            ]
             input_event = {
                 "type": "user",
                 "message": {
                     "role": "user",
-                    "content": [image_block, {"type": "text", "text": request["prompt"]}],
+                    "content": [*image_blocks, {"type": "text", "text": request["prompt"]}],
                 },
             }
+
             def mark_started(started: RunningProcess) -> None:
                 self.ledger.mark_process_started()
                 self.invocation_journal.mark_running(idempotency_key, started.pid)
@@ -1031,6 +1047,8 @@ class ClaudeCodeTransport:
             "action_schema_digest",
             "command_contract_digest",
         }
+        if "image_history" in request:
+            expected_keys.add("image_history")
         if set(request) != expected_keys:
             return "request_shape_mismatch"
         if request.get("provider") != PROVIDER_IDENTITY or request.get("model") != MODEL:
@@ -1043,12 +1061,20 @@ class ClaudeCodeTransport:
             return "command_contract_mismatch"
         if deadline_seconds < self.process_timeout_seconds:
             return "runner_deadline_below_process_timeout"
-        try:
-            image = base64.b64decode(request["image_png_base64"], validate=True)
-        except (TypeError, ValueError):
-            return "image_encoding_invalid"
-        if request.get("image_sha256") != "sha256:" + sha256_bytes(image):
-            return "image_digest_mismatch"
+        history = request.get("image_history", [])
+        if not isinstance(history, list) or len(history) > 31 or any(
+            not isinstance(item, dict)
+            or set(item) != {"image_png_base64", "image_sha256"}
+            for item in history
+        ):
+            return "image_history_shape_mismatch"
+        for item in [*history, request]:
+            try:
+                image = base64.b64decode(item["image_png_base64"], validate=True)
+            except (TypeError, ValueError):
+                return "image_encoding_invalid"
+            if item.get("image_sha256") != "sha256:" + sha256_bytes(image):
+                return "image_digest_mismatch"
         return None
 
     def _record(

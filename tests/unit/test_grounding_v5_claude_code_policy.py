@@ -36,7 +36,7 @@ class SuccessfulProcess:
             {
                 "type": "assistant",
                 "message": {
-                    "model": "claude-sonnet-5-20260801",
+                    "model": "claude-haiku-4-5-20251001",
                     "content": [{"type": "text", "text": "action"}],
                 },
             },
@@ -48,7 +48,7 @@ class SuccessfulProcess:
                 "result": '{"action_type":1,"x":100,"y":100,"key":0}',
                 "usage": {"input_tokens": 1000, "output_tokens": 50},
                 "modelUsage": {
-                    "claude-sonnet-5-20260801": {
+                    "claude-haiku-4-5-20251001": {
                         "inputTokens": 1000,
                         "outputTokens": 50,
                     }
@@ -108,7 +108,7 @@ def test_claude_policy_manifest_emits_declared_v3_sandbox_contract() -> None:
         ROOT,
         code_revision="revision-test",
         runtime_identity=runtime_identity(),
-        resolved_model="claude-sonnet-5-20260801",
+        resolved_model="claude-haiku-4-5-20251001",
     )
     sandbox = manifest.to_dict()["sandbox"]
 
@@ -192,6 +192,87 @@ def test_claude_missing_required_launch_flag_fails_before_process_start(
         assert enforcement["environment_allowlist_applied"] is True
         assert len(transport.records) == 1
         assert transport.records[0]["runtime_enforcement"] == enforcement
+    finally:
+        transport.close()
+        journal.close()
+
+
+def test_haiku_contract_pins_model_and_leaves_unsupported_effort_unset() -> None:
+    command = policy.sanitized_command_contract()
+    assert command[command.index("--model") + 1] == "claude-haiku-4-5-20251001"
+    assert "--effort" not in command
+    assert request()["model_reasoning_effort"] == "default"
+    manifest = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+        resolved_model="claude-haiku-4-5-20251001",
+    ).to_dict()
+    assert manifest["context_limit"] == 200_000
+    assert dict(manifest["inference_parameters"])["model_reasoning_effort"] == "default"
+
+
+@pytest.mark.parametrize(
+    "unexpected_model", ["claude-sonnet-5-20260801", "claude-haiku-4-5-20251001-other"]
+)
+def test_haiku_parser_rejects_a_different_model_snapshot(unexpected_model: str) -> None:
+    stdout, _ = SuccessfulProcess().communicate()
+    result = policy._parse_stream(stdout.replace("claude-haiku-4-5-20251001", unexpected_model))
+    assert "resolved_model_mismatch" in result.policy_violations
+
+
+def history_request() -> dict[str, Any]:
+    return policy.ClaudeCodePolicy().build_request(
+        policy.ClaudeCodePolicy().reset("Use the supplied chronological frames."),
+        bytes([2]) * (policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3),
+        screenshot_history=[bytes([1]) * (policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)],
+    )
+
+
+def test_claude_history_frames_are_sent_in_order_before_current(tmp_path: Path) -> None:
+    captured: dict[str, Any] = {}
+
+    class CapturingProcess(SuccessfulProcess):
+        def communicate(
+            self, input: str | None = None, timeout: float | None = None
+        ) -> tuple[str, str]:
+            captured["event"] = json.loads(input or "{}")
+            return super().communicate(input, timeout)
+
+    transport, journal = make_transport(tmp_path, lambda *_args, **_kwargs: CapturingProcess())
+    value = history_request()
+    try:
+        outcome = transport.send(value, idempotency_key="sha256:history", deadline_seconds=125)
+        assert outcome.status == "response"
+        blocks = captured["event"]["message"]["content"]
+        assert [block["source"]["data"] for block in blocks[:-1]] == [
+            value["image_history"][0]["image_png_base64"],
+            value["image_png_base64"],
+        ]
+        assert blocks[-1] == {"type": "text", "text": value["prompt"]}
+    finally:
+        transport.close()
+        journal.close()
+
+
+@pytest.mark.parametrize("fault", ["digest", "shape", "limit"])
+def test_claude_invalid_history_fails_before_process_start(tmp_path: Path, fault: str) -> None:
+    def forbidden_factory(*_args: Any, **_kwargs: Any) -> SuccessfulProcess:
+        pytest.fail("invalid history must not launch a provider process")
+
+    value = history_request()
+    if fault == "digest":
+        value["image_history"][0]["image_sha256"] = "sha256:wrong"
+    elif fault == "shape":
+        value["image_history"][0]["path"] = "/forbidden"
+    else:
+        value["image_history"] *= 32
+    transport, journal = make_transport(tmp_path, forbidden_factory)
+    try:
+        outcome = transport.send(
+            value, idempotency_key="sha256:invalid-history", deadline_seconds=125
+        )
+        assert outcome.status == "pre_send_failure"
     finally:
         transport.close()
         journal.close()
