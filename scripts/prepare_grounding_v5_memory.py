@@ -24,6 +24,8 @@ from pixelgym.grounding.v5.memory_generator import (
 )
 from pixelgym.grounding.v5.memory_plan import pilot_plan
 from pixelgym.grounding.v5.policies import _append_golden_stage, click_action, noop_action
+from pixelgym.grounding.v5.screenshot_memory import require_clean_tracked_worktree
+from pixelgym.grounding.v5.seeds import DEVELOPMENT_SEEDS
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "artifacts/grounding-v5-d58-design/memory-repair"
@@ -144,7 +146,8 @@ def render_report(value: dict[str, Any]) -> str:
         ),
         "",
         (
-            "Correct memory-choice positions in the 24 base development tasks (48 choices): "
+            f"Correct memory-choice positions in the {summary['base_task_count']} base development tasks "
+            f"({summary['base_choice_count']} choices): "
             f"`{json.dumps(summary['memory_target_positions'], sort_keys=True)}`. "
             "The layout uses a target-independent deterministic permutation; finite samples need not balance exactly."
         ),
@@ -157,11 +160,14 @@ def render_report(value: dict[str, Any]) -> str:
             "lexical ordering of the current labels. No retry or correctness feedback is available."
         ),
         "",
-        "| Consumer rule | First choices correct / 48 | Terminal successes / 24 |",
+        "| Consumer rule | First choices correct / attempted | Terminal successes / tasks |",
         "|---|---:|---:|",
     ]
     for rule, row in sorted(summary["baselines"].items()):
-        lines.append(f"| {rule} | {row['first_attempt_correct']} | {row['successes']} |")
+        lines.append(
+            f"| {rule} | {row['first_attempt_correct']} / {row['choice_count']} | "
+            f"{row['successes']} / {row['task_count']} |"
+        )
     lines += [
         "",
         (
@@ -201,19 +207,24 @@ def render_report(value: dict[str, Any]) -> str:
 def build() -> None:
     if OUTPUT.exists():
         raise FileExistsError("evidence already exists; use --verify or a new version")
+    require_clean_tracked_worktree(ROOT)
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     sources = source_digests()
+    base_tasks = tuple(generate_memory_task(seed) for seed in DEVELOPMENT_SEEDS)
     tasks = []
-    for seed in (*range(5000, 5024), *COUNTERFACTUAL_SEEDS):
-        task = generate_memory_task(seed)
+    for task in (*base_tasks, *(generate_memory_task(seed) for seed in COUNTERFACTUAL_SEEDS)):
         row = validate_task_admission(task, backend_factory=MemoryBackend)
         row["canonical_task_digest"] = content_digest(task.canonical_dict())
         tasks.append(row)
         if len(tasks) % 12 == 0:
-            print(f"admission completed: {len(tasks)}/72", flush=True)
+            print(
+                f"admission completed: {len(tasks)}/{len(base_tasks) + len(COUNTERFACTUAL_SEEDS)}",
+                flush=True,
+            )
     counterfactuals = []
     positions: Counter[int] = Counter()
-    for seed in range(5000, 5024):
-        base = generate_memory_task(seed)
+    for base in base_tasks:
+        seed = base.seed
         for index in (5, 7):
             stage = base.stages[index]
             positions.update(
@@ -254,11 +265,11 @@ def build() -> None:
                 }
             )
     baselines = {
-        rule: [baseline(seed, rule) for seed in range(5000, 5024)]
+        rule: [baseline(task.seed, rule) for task in base_tasks]
         for rule in ("position-0", "position-1", "position-2", "label-min", "label-max")
     }
     value = {
-        "schema_version": "pixelgym-v5-d58-memory-admission-v1",
+        "schema_version": "pixelgym-v5-d58-memory-admission-v2",
         "generator_version": MEMORY_GENERATOR_VERSION,
         "source_binding_digest": content_digest(sources),
         "tasks": tasks,
@@ -266,12 +277,16 @@ def build() -> None:
         "baselines": baselines,
         "summary": {
             "admitted_task_count": len(tasks),
+            "base_task_count": len(base_tasks),
+            "base_choice_count": sum(positions.values()),
             "counterfactual_pair_count": len(counterfactuals),
             "memory_target_positions": {
                 str(key): count for key, count in sorted(positions.items())
             },
             "baselines": {
                 rule: {
+                    "task_count": len(rows),
+                    "choice_count": sum(len(row["choices"]) for row in rows),
                     "successes": sum(row["success"] for row in rows),
                     "first_attempt_correct": sum(
                         choice["first_attempt_correct"] for row in rows for choice in row["choices"]
@@ -286,7 +301,6 @@ def build() -> None:
     }
     value["evidence_digest"] = content_digest(value)
     snapshot = json.loads((OUTPUT.parent / "gemini-price-snapshot.json").read_text())
-    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     plan = pilot_plan(ROOT, snapshot=snapshot, code_revision=revision)
     plan["source_binding_digest"] = content_digest(sources)
     plan["plan_digest"] = content_digest(
@@ -294,6 +308,12 @@ def build() -> None:
     )
     if source_digests() != sources:
         raise RuntimeError("source changed during admission")
+    require_clean_tracked_worktree(ROOT)
+    if (
+        subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        != revision
+    ):
+        raise RuntimeError("HEAD changed during admission")
     OUTPUT.mkdir()
     for name, data in (
         ("admission.json", value),

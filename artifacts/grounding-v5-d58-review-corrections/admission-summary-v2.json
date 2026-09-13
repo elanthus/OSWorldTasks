@@ -1,0 +1,49 @@
+{
+  "new_task_executions": 0,
+  "original_admission_digest": "sha256:341de22e42ae028845cfa181c0afe76da531770a8a91fa1f27f7b6ce8dd65d98",
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-admission-summary-correction-v1",
+  "summary": {
+    "admitted_task_count": 72,
+    "base_choice_count": 48,
+    "base_task_count": 24,
+    "baselines": {
+      "label-max": {
+        "choice_count": 48,
+        "first_attempt_correct": 19,
+        "successes": 4,
+        "task_count": 24
+      },
+      "label-min": {
+        "choice_count": 48,
+        "first_attempt_correct": 11,
+        "successes": 0,
+        "task_count": 24
+      },
+      "position-0": {
+        "choice_count": 48,
+        "first_attempt_correct": 19,
+        "successes": 4,
+        "task_count": 24
+      },
+      "position-1": {
+        "choice_count": 48,
+        "first_attempt_correct": 17,
+        "successes": 4,
+        "task_count": 24
+      },
+      "position-2": {
+        "choice_count": 48,
+        "first_attempt_correct": 12,
+        "successes": 0,
+        "task_count": 24
+      }
+    },
+    "counterfactual_pair_count": 48,
+    "memory_target_positions": {
+      "0": 19,
+      "1": 17,
+      "2": 12
+    }
+  }
+}

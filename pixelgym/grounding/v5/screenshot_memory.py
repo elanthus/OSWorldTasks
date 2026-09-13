@@ -7,6 +7,7 @@ persists the pre-call checkpoint. Recovery therefore needs no in-process cache.
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -27,6 +28,17 @@ from pixelgym.serialization import canonical_json_bytes
 
 OBSERVATION_REDUCER_VERSION = "pixelgym-agent-v5-observed-screenshots-v1"
 MAX_OBSERVED_FRAMES = 32
+
+
+def require_clean_tracked_worktree(repository_root: Path) -> None:
+    """Match the execution drivers' source guard before hashing a manifest."""
+    dirty = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=no"],
+        cwd=repository_root,
+        text=True,
+    )
+    if dirty.strip():
+        raise ValueError("tracked worktree must be clean before recording policy evidence")
 
 
 def memory_system_prompt(config: PanelPolicyConfig) -> str:
@@ -141,6 +153,10 @@ class ScreenshotMemoryRunner(V5Runner):
     def _preflight(self, task: Any, backend: V5FakeBackend, *, required_action_limit: int) -> None:
         if not isinstance(backend, MemoryBackend):
             raise TypeError("screenshot-memory evaluation requires the deferred-feedback backend")
+        # Both arms admit the same horizons. Reject before reset or any model
+        # request instead of letting only history fail at its 33rd observation.
+        if required_action_limit > MAX_OBSERVED_FRAMES:
+            raise ValueError("assigned action limit exceeds the frozen screenshot capacity")
         super()._preflight(task, backend, required_action_limit=required_action_limit)
 
     def _act(
@@ -176,6 +192,7 @@ def build_screenshot_policy_manifest(
     code_revision: str,
     retain_screenshots: bool,
 ) -> PolicyManifest:
+    require_clean_tracked_worktree(repository_root)
     config = replace(config, stateful=False, controlled_history_prompt=True)
     base = build_panel_policy_manifest(repository_root, config=config, code_revision=code_revision)
     fields = {key: value for key, value in vars(base).items() if key != "policy_id"}

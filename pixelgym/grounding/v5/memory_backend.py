@@ -88,10 +88,12 @@ class MemoryBackend(V5FakeBackend):
             or value.get("schema_version") != "pixelgym-v5-memory-checkpoint-v2"
         ):
             raise ValueError("unsupported memory checkpoint schema")
+        if not {"seed", "stage_index", "repair_pending"} <= value.keys():
+            raise ValueError("memory checkpoint is missing required fields")
         choices = value.get("deferred_choices")
         if not isinstance(choices, dict) or not set(choices) <= {"5", "7"}:
             raise ValueError("invalid deferred-choice checkpoint")
-        task = generate_memory_task(value["seed"])
+        task = self.task_factory(value["seed"])
         for index in (5, 7):
             selected = choices.get(str(index))
             visited = value["stage_index"] > index or (index == 7 and value["repair_pending"])

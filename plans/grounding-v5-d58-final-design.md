@@ -627,32 +627,30 @@ D5.9 must not start from this document.
 
 ## Reproduction
 
-From the repository root:
+From the repository root, these read-only checks work against the current tree:
 
 ```sh
 .venv/bin/python -m artifacts.grounding-v5-d58-final-design.power --verify
 .venv/bin/python -m artifacts.grounding-v5-d58-design.audit
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
-.venv/bin/python -m scripts.prepare_grounding_v5_memory --verify
-.venv/bin/python -m scripts.run_grounding_v5_memory_pilot report
-.venv/bin/python -m artifacts.grounding-v5-d58-calibration-pilot.analyze
-.venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.verify
-.venv/bin/python -m scripts.run_grounding_v5_memory_calibration report
-.venv/bin/python -m artifacts.grounding-v5-d58-full-calibration.analyze
-.venv/bin/python -m scripts.run_grounding_v5_gemini38_calibration report
-.venv/bin/python -m artifacts.grounding-v5-d58-gemini38-calibration.analyze
+.venv/bin/python -m scripts.prepare_grounding_v5_review_corrections --verify
+.venv/bin/python -O -m scripts.verify_grounding_v5_full_calibration
 ```
 
-The full evidence verifier checks the public file hashes and stored report without a provider call.
-Add `--journal` only on the original machine with the preserved ignored aggregate journal to repeat
-the deeper provenance audit at that phase's original closure. After a subsequent phase extends the
-ledger, use the latest phase analyzer with `--journal` for journal reconstruction and the old public
-hash verifier for frozen historical evidence. The report and analysis commands use stored structured
-results only. The Gemini 3.8 commands require its closed-run summary and verification artifacts.
+The successor full evidence verifier checks public file hashes and the stored report without a
+provider call. Its explicit checks remain active under `python -O`; the verifier inside the frozen
+bundle is reproduction-only. Add `--journal` only with the original runtime and preserved ignored
+aggregate journal at that phase's original closure. After a subsequent phase extends the ledger,
+use the latest phase analyzer with `--journal` for journal reconstruction. Public verification of
+the earlier bundle remains available without that journal. See the
+[review corrections](grounding-v5-d58-review-corrections.md) for corrected pilot call-count labels
+and admission denominators.
 
 The audit reads committed response-free calibration receipts and current generator code, produces
 the linked structured JSON, and runs five independent mathematical checks. It does not reread
-restricted journals or rerun a model. The successor command verifies artifact bytes, current source
-digests, and the report against stored structured evidence. Its build mode refuses to overwrite an
-existing evidence directory. To reproduce a fresh build, use a separate checkout at the recorded
-code revision before the evidence commit and run it without `--verify`.
+restricted journals or rerun a model. Historical admission verification
+(`scripts.prepare_grounding_v5_memory --verify`) binds source digests and must run at its recorded
+revision. Historical report/analyzer commands can write bundle files, so use a separate checkout
+when reproducing them. The admission builder refuses to overwrite an existing evidence directory;
+to reproduce a fresh build, use the recorded code revision before the evidence commit. Current
+source guards change manifest identities and do not update or approve any historical execution plan.

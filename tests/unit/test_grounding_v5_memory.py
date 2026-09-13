@@ -424,11 +424,23 @@ def test_stored_evidence_report_survives_json_key_sorting() -> None:
         "generator_version": MEMORY_GENERATOR_VERSION,
         "summary": {
             "admitted_task_count": 72,
+            "base_task_count": 24,
+            "base_choice_count": 48,
             "counterfactual_pair_count": 48,
             "memory_target_positions": {"2": 12, "0": 19, "1": 17},
             "baselines": {
-                "position-0": {"first_attempt_correct": 19, "successes": 4},
-                "label-min": {"first_attempt_correct": 11, "successes": 0},
+                "position-0": {
+                    "first_attempt_correct": 19,
+                    "successes": 4,
+                    "task_count": 24,
+                    "choice_count": 48,
+                },
+                "label-min": {
+                    "first_attempt_correct": 11,
+                    "successes": 0,
+                    "task_count": 24,
+                    "choice_count": 48,
+                },
             },
         },
     }
