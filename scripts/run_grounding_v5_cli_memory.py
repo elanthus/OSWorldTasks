@@ -40,6 +40,7 @@ def main():
     parser.add_argument("mode", choices=["prepare", "execute"])
     parser.add_argument("--model", choices=["luna-medium", "haiku-default"], required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--predecessor-summary", type=Path)
     args = parser.parse_args()
     require_clean_tracked_worktree(ROOT)
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
@@ -114,6 +115,17 @@ def main():
         "billing": "authenticated subscriptions only",
         "stop_rule": "stop on infrastructure/request/policy failures or unresolved invocations; retain invalid outputs; no silent retries",
     }
+    if args.predecessor_summary is not None:
+        predecessor = json.loads(args.predecessor_summary.read_text())
+        if predecessor.get("model") != args.model or predecessor.get("unresolved_invocations") != 0:
+            raise ValueError("predecessor model differs or invocations remain unresolved")
+        plan["predecessor"] = {
+            "summary_digest": content_digest(predecessor),
+            "plan_digest": predecessor["plan_digest"],
+            "completed": predecessor["completed"],
+            "stop_reason": predecessor["stop_reason"],
+            "rule": "preserve stopped predecessor separately; new full cohort; no pooling or hidden retry",
+        }
     output = args.output.resolve()
     if args.mode == "prepare":
         output.mkdir(parents=True, exist_ok=False)

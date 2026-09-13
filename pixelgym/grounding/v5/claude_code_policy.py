@@ -237,6 +237,7 @@ def _runtime_command() -> list[str]:
 _ALLOWED_ENVIRONMENT_VARIABLES = (
     "PATH",
     "HOME",
+    "USER",  # macOS Claude keychain account lookup requires this nonsecret identity.
     "TMPDIR",
     "LANG",
     "LC_ALL",

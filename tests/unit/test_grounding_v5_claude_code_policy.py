@@ -97,7 +97,7 @@ def make_transport(
         ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
         invocation_journal=journal,
         runtime_identity=runtime_identity(),
-        environment={"PATH": "/bin", "HOME": "/private/auth-home", "SECRET": "blocked"},
+        environment={"PATH": "/bin", "HOME": "/private/auth-home", "USER": "calibration-user", "SECRET": "blocked"},
         process_factory=process_factory,
     )
     return transport, journal
@@ -151,6 +151,7 @@ def test_claude_child_launch_metadata_matches_exact_argv_and_environment(
         )
         assert enforcement["environment_variable_names"] == sorted(captured["environment"])
         assert enforcement["os_sandbox_applied"] is False
+        assert captured["environment"]["USER"] == "calibration-user"
         assert "SECRET" not in captured["environment"]
     finally:
         transport.close()
