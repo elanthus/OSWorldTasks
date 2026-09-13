@@ -390,7 +390,7 @@ def test_haiku_extended_stream_rejects_incoherent_or_extra_records(fault: str) -
     assert parse_events(events).policy_violations
 
 
-def test_haiku_fenced_json_remains_invalid_model_output_after_stream_parse() -> None:
+def test_haiku_fenced_json_adapter_preserves_raw_model_output() -> None:
     text = '```json\n{"action_type":1,"x":100,"y":100,"key":0}\n```'
     parsed = parse_events(extended_thinking_stream(text))
     assert parsed.policy_violations == ()
@@ -408,5 +408,28 @@ def test_haiku_fenced_json_remains_invalid_model_output_after_stream_parse() -> 
             "policy_violation": "none",
         },
     }
-    with pytest.raises(json.JSONDecodeError):
-        policy.ClaudeCodePolicy().parse(json.dumps(response).encode(), b"{}")
+    assert policy.ClaudeCodePolicy().parse(json.dumps(response).encode(), b"{}") == {
+        "action_type": 1, "x": 100, "y": 100, "key": 0,
+    }
+    assert response["content"] == text
+
+
+@pytest.mark.parametrize("wrapper", ["{}", "```json\n{}\n```", "```\n{}\n```", " \n```json\r\n{}\r\n```\n"])
+def test_action_envelope_accepts_only_complete_json(wrapper: str) -> None:
+    text = '{"action_type":1,"x":100,"y":100,"key":0}'
+    assert policy._decode_action_content(wrapper.format(text)) == json.loads(text)
+
+
+@pytest.mark.parametrize("content", [
+    'Here is the action: ```json\n{}\n```',
+    '```json\n{}\n``` extra',
+    '```json\n{}\n```\n```json\n{}\n```',
+    '```python\n{}\n```',
+    '```json {} ```',
+    '{} {}',
+    '{"x":1,"x":2}',
+    '```json\n{"x":1,"x":2}\n```',
+])
+def test_action_envelope_rejects_prose_multiple_objects_and_duplicate_fields(content: str) -> None:
+    with pytest.raises(ValueError):
+        policy._decode_action_content(content)

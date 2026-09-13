@@ -108,7 +108,7 @@ def main():
         "jobs": jobs,
         "policy_manifests": {m: p.to_dict() for m, p in manifests.items()},
         "caps": caps.to_dict(),
-        "owner_authorization": "Run both CLI models in parallel; both conditions, 100 each; Haiku default effort; adapt separately from PR196.",
+        "owner_authorization": "User requested repair Haiku and rerun after the completed 100-invalid-output cohort; fresh 100 episodes, both history/stateless conditions, Haiku default effort, PR196 benchmark frozen.",
         "transport_retries": 0,
         "maximum_elapsed_seconds": 21600,
         "incremental_experiment_charge_usd": "0.00",
@@ -124,7 +124,7 @@ def main():
             "plan_digest": predecessor["plan_digest"],
             "completed": predecessor["completed"],
             "stop_reason": predecessor["stop_reason"],
-            "rule": "preserve stopped predecessor separately; new full cohort; no pooling or hidden retry",
+            "rule": "preserve predecessor separately; new full cohort; no pooling or hidden retry",
         }
     output = args.output.resolve()
     if args.mode == "prepare":

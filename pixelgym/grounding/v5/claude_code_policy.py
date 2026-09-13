@@ -6,6 +6,7 @@ import base64
 import io
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import tempfile
@@ -77,7 +78,7 @@ EXPERIMENT_CHARGE_USD = Decimal("0.00")
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 CONTEXT_LIMIT_TOKENS = 200_000
-PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v2"
+PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v3-json-envelope"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-claude-stream-json-response-v1"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
@@ -298,6 +299,32 @@ def _png_bytes(screenshot: bytes) -> bytes:
     return encoded.getvalue()
 
 
+def _decode_action_content(content: str) -> Any:
+    """Accept bare JSON or one complete JSON fence, never extract from prose.
+
+    This versioned envelope adapter leaves stored model output unchanged. Action
+    fields still undergo exact-shape/type validation and host-side bounds checks.
+    """
+    if not isinstance(content, str):
+        raise TypeError("Claude action content must be text")
+    text = content.strip()
+    if text.startswith("```"):
+        match = re.fullmatch(r"```(?:json)?[ \t]*\r?\n(.*?)\r?\n```", text, re.DOTALL)
+        if match is None:
+            raise ValueError("Claude action must be one complete JSON fence")
+        text = match.group(1)
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate action field")
+            result[key] = value
+        return result
+
+    return json.loads(text, object_pairs_hook=unique_object)
+
+
 class ClaudeCodePolicy:
     def reset(self, task_instruction: str) -> bytes:
         return canonical_json_bytes({"instruction": task_instruction})
@@ -362,7 +389,7 @@ class ClaudeCodePolicy:
             usage.get(key) != expected_value for key, expected_value in expected.items()
         ):
             raise ValueError("Claude identity, accounting, or policy boundary is invalid")
-        candidate = json.loads(response.get("content", ""))
+        candidate = _decode_action_content(response.get("content", ""))
         if not isinstance(candidate, dict) or set(candidate) != {
             "action_type",
             "x",
