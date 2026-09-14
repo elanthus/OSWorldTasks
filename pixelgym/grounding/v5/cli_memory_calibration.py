@@ -114,8 +114,12 @@ def build_memory_manifest(
         task_renderer_version=FocusMemoryBackend.backend_identity,
         memory_policy_version=f"pixelgym-cli-screenshot-{mode}-v1",
         state_reducer_version=f"pixelgym-agent-v5-observed-screenshots-v1-{mode}",
+        max_model_attempts_per_action=2,
+        transport_retry_rule="cli-one-confirmed-stopped-timeout-retry-v1",
         inference_parameters=(
-            *base.inference_parameters,
+            *((k, v) for k, v in base.inference_parameters if k != "runner_retries"),
+            ("runner_retries", "1-confirmed-stopped-timeout-only"),
+            ("max_bounded_retries_per_action", "1"),
             ("max_observed_frames", str(MAX_OBSERVED_FRAMES)),
         ),
     )

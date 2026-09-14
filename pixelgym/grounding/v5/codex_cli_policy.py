@@ -690,6 +690,18 @@ class SubscriptionExemptLedger:
             self.unresolved.discard(idempotency_key)
             return True
 
+    def retain_stopped_timeout(self, idempotency_key: str) -> None:
+        """Retain unknown provider outcome without blocking a confirmed-safe retry.
+
+        Subscription experiment charge remains zero; no inference is made about
+        server completion or usage. Only the stopped-process timeout path calls this.
+        """
+        with self._lock:
+            if idempotency_key not in self.experiment_charges:
+                self.blocked = True
+                return
+            self.unresolved.add(idempotency_key)
+
     def retain_unresolved_and_block(self, idempotency_key: str) -> None:
         with self._lock:
             if idempotency_key in self.experiment_charges:
@@ -1055,6 +1067,7 @@ class CodexCliTransport:
         environment: Mapping[str, str] = os.environ,
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
+        allow_timeout_retry: bool = False,
     ) -> None:
         CodexRuntimeIdentity(**runtime_identity.__dict__)
         self.config = CodexPolicyConfig(**config.__dict__)
@@ -1069,6 +1082,7 @@ class CodexCliTransport:
         self.environment = _minimal_environment(environment)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
+        self.allow_timeout_retry = allow_timeout_retry
         self.records: list[dict[str, Any]] = []
         self._lifecycle = CliSubprocessTransport(
             parser=lambda raw: _codex_parse_envelope(
@@ -1208,6 +1222,12 @@ class CodexCliTransport:
                 )
                 if execution_fault.phase == "pre_send":
                     self.ledger.release_pre_send(idempotency_key)
+                elif (
+                    self.allow_timeout_retry
+                    and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
+                    and execution.process_confirmed_stopped
+                ):
+                    self.ledger.retain_stopped_timeout(idempotency_key)
                 else:
                     self.ledger.retain_unresolved_and_block(idempotency_key)
                 if execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT:
@@ -1374,6 +1394,15 @@ class CodexCliTransport:
     def close(self) -> None:
         self._lifecycle.close()
         self._closed = True
+
+    def retry_allowed(self, outcome: TransportOutcome) -> bool:
+        return (
+            self.allow_timeout_retry
+            and outcome.fault is not None
+            and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+            and self.subprocesses_closed
+            and not self.ledger.blocked
+        )
 
     def _validate_request(self, request: dict[str, Any], *, deadline_seconds: float) -> str | None:
         expected_keys = {

@@ -853,6 +853,7 @@ class ClaudeCodeTransport:
         environment: Mapping[str, str] = os.environ,
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
+        allow_timeout_retry: bool = False,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
@@ -864,6 +865,7 @@ class ClaudeCodeTransport:
         self.environment = _minimal_environment(environment)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
+        self.allow_timeout_retry = allow_timeout_retry
         self.records: list[dict[str, Any]] = []
         self._lifecycle = CliSubprocessTransport(
             parser=_claude_parse_envelope,
@@ -991,6 +993,12 @@ class ClaudeCodeTransport:
                 )
                 if execution_fault.phase == "pre_send":
                     self.ledger.release_pre_send(idempotency_key)
+                elif (
+                    self.allow_timeout_retry
+                    and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
+                    and execution.process_confirmed_stopped
+                ):
+                    self.ledger.retain_stopped_timeout(idempotency_key)
                 else:
                     self.ledger.retain_unresolved_and_block(idempotency_key)
                 if execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT:
@@ -999,6 +1007,7 @@ class ClaudeCodeTransport:
                 outcome = {
                     "failure_code": execution_fault.code,
                     "type": execution.error_type,
+                    "process_confirmed_stopped": execution.process_confirmed_stopped,
                     "cli_fault": execution_fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
                     "transport_outcome": transport_outcome.to_dict(),
@@ -1145,6 +1154,15 @@ class ClaudeCodeTransport:
     def close(self) -> None:
         self._lifecycle.close()
         self._closed = True
+
+    def retry_allowed(self, outcome: TransportOutcome) -> bool:
+        return (
+            self.allow_timeout_retry
+            and outcome.fault is not None
+            and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+            and self.subprocesses_closed
+            and not self.ledger.blocked
+        )
 
     def _validate_request(self, request: dict[str, Any], deadline_seconds: float) -> str | None:
         expected_keys = {
