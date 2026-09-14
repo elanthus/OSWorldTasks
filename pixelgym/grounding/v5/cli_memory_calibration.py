@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import base64
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pixelgym.grounding.v5.codex_cli_policy import action_prompt
 from pixelgym.grounding.v5.contracts import PolicyManifest, content_digest, sha256_bytes
@@ -35,9 +36,9 @@ def memory_prompt(instruction: str, actions: list[dict[str, int]]) -> str:
 class CliMemoryPolicy:
     """Reuse the frozen episode-local screenshot reducer; delegate CLI parsing."""
 
-    reset = ScreenshotMemoryPolicy.reset
-    observe_screenshot = ScreenshotMemoryPolicy.observe_screenshot
-    post_dispatch_state = ScreenshotMemoryPolicy.post_dispatch_state
+    reset = cast(Any, ScreenshotMemoryPolicy.reset)
+    observe_screenshot = cast(Any, ScreenshotMemoryPolicy.observe_screenshot)
+    post_dispatch_state = cast(Any, ScreenshotMemoryPolicy.post_dispatch_state)
 
     def __init__(self, base: Any, *, retain_screenshots: bool) -> None:
         self.base = base
@@ -48,7 +49,7 @@ class CliMemoryPolicy:
         if self.observe_screenshot(state, screenshot) != state:
             raise ValueError("current screenshot must be checkpointed before request")
         value = json.loads(state)
-        request = self.base.build_request(
+        request: dict[str, Any] = self.base.build_request(
             canonical_json_bytes({"instruction": value["instruction"]}), screenshot
         )
         frames = value.get("frames", [])
@@ -76,7 +77,7 @@ class CliMemoryPolicy:
         return None
 
     def parse(self, canonical_response: bytes, state: bytes) -> dict[str, Any]:
-        return self.base.parse(canonical_response, state)
+        return cast(dict[str, Any], self.base.parse(canonical_response, state))
 
     def post_parse_state(self, state: bytes, candidate: dict[str, Any]) -> bytes:
         return state
@@ -127,10 +128,10 @@ def build_memory_manifest(
 
 
 class CliMemoryRunner(V5Runner):
-    def __init__(self, *, time_exhausted=lambda: False, **kwargs: Any) -> None:
+    def __init__(self, *, time_exhausted: Callable[[], bool] = lambda: False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.time_exhausted = time_exhausted
-        mode = "history" if self.policy.retain_screenshots else "stateless"
+        mode = "history" if cast(CliMemoryPolicy, self.policy).retain_screenshots else "stateless"
         if self.manifest.memory_policy_version != f"pixelgym-cli-screenshot-{mode}-v1":
             raise ValueError("manifest memory mode differs from executable policy")
 
@@ -146,7 +147,7 @@ class CliMemoryRunner(V5Runner):
     def _act(self, **kwargs: Any) -> dict[str, Any]:
         if self.time_exhausted():
             return {"classification": "phase_time_stop", "state": kwargs["state"]}
-        kwargs["state"] = self.policy.observe_screenshot(
+        kwargs["state"] = cast(CliMemoryPolicy, self.policy).observe_screenshot(
             kwargs["state"], kwargs["observation"].tobytes()
         )
         return super()._act(**kwargs)

@@ -87,7 +87,7 @@ class ReliableTransport:
         phase_start_accounted: Decimal | None = None,
         phase_wire_limit: int = 20,
         phase_start_wire: int | None = None,
-        request_bounder: Callable | None = None,
+        request_bounder: Callable[[dict[str, Any], ScreenshotPriceConfig], dict[str, Any]] | None = None,
     ) -> None:
         if ledger.journal is None:
             raise ValueError("reliable transport requires a durable journal")

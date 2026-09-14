@@ -16,7 +16,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from PIL import Image
 
@@ -683,14 +683,15 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         if not all(isinstance(message, dict) for message in messages):
             violations.append("invalid_assistant_message")
         else:
-            message_ids = [message.get("id") for message in messages]
+            validated_messages = cast(list[dict[str, Any]], messages)
+            message_ids = [message.get("id") for message in validated_messages]
             request_ids = [event.get("request_id") for event in assistant_events]
             if (
                 not all(isinstance(value, str) and value for value in message_ids + request_ids)
                 or len(set(message_ids)) != 1 or len(set(request_ids)) != 1
             ):
                 violations.append("invalid_extended_stream_identity")
-            contents = [message.get("content") for message in messages]
+            contents: list[Any] = [message.get("content") for message in validated_messages]
             if (
                 not all(isinstance(content, list) and content for content in contents)
                 or not all(isinstance(block, dict) and block.get("type") == "thinking" for block in contents[0])
