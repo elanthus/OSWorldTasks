@@ -11,9 +11,7 @@ inspectable—not to claim broad desktop-agent performance.
 
 - Pixel-only Gymnasium environment with a privileged evaluator; five bitwise identical real OSWorld resets at 1024×768 on one host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)).
 - 100 paired targets: 56/100 raw, 100/100 marks, +44.0 percentage points, 95% CI [+35.0, +54.0]; moving `gpt-5.4-mini` alias, DOM-derived offline marks ([canonical report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
-- Clean-clone reproducibility: ruff, strict mypy, offline unit suite, and non-mutating evidence verifier ([reproduction guide](docs/reproduction.md)). [owner to confirm]
-
-<!-- OWNER: confirm the requested clean-clone and strict-mypy summary; these qualifiers are documented in docs/reproduction.md but were not stated in the previous README. -->
+- Documented reproduction workflow: ruff, strict mypy, offline unit tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
@@ -55,18 +53,14 @@ tests; it does **not** run the Docker/Playwright lifecycle suite
 | --- | --- | --- |
 | Environment and validation | Done | [D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json) |
 | Grounding v1 experiment | Done, frozen | [D3.11](artifacts/day-3/raw/human-gate.json) |
-| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb [owner to confirm] | [D4.12](artifacts/platform/human-gate.json) |
+| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | [D4.12](artifacts/platform/human-gate.json) |
 | Grounding v2 crossed allocation | Designed, not run against a model | [v2 manifest](artifacts/grounding-v2-manifest.json) |
 | v5 agent benchmark and calibration | In progress, no gate declared | [v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md) |
-| v5 stateful serving | In progress [owner to confirm] | [v5 serving plan](plans/v5-policy-serving.md) |
-
-<!-- OWNER: confirm adding the graded revision 4c4a7fb from artifacts/platform/human-gate.json and the unfinished v5 stateful-serving status from plans/v5-policy-serving.md; neither fact was stated in the previous README. -->
+| v5 stateful serving | In progress | [v5 serving plan](plans/v5-policy-serving.md) |
 
 ## Owner-held decisions
 
-[AGENTS.md section 4](AGENTS.md#4-human-gates--stop-and-ask) reserves scope changes, sprint gates, provider and cloud spend, paid model calls, and public claims for the repository owner. [owner to confirm]
-
-<!-- OWNER: confirm the requested owner-gate summary; the categories come from AGENTS.md section 4 and were not enumerated in the previous README. -->
+[AGENTS.md section 4](AGENTS.md#4-human-gates--stop-and-ask) reserves scope changes, sprint gates, provider and cloud spend, paid model calls, and public claims for the repository owner.
 
 Repository work used a bounded agent-assisted branch-and-PR process: agents could implement,
 test, and prepare evidence, while deterministic checks, independent review, and owner-held scope,
@@ -74,9 +68,6 @@ spend, scientific, and publication gates remained separate. The
 [workflow ADR](plans/adr-agent-assisted-workflow.md) records both useful findings and defects that
 escaped automation; it is a process audit, not an authorship claim or a substitute for human
 review.
-
-<!-- OWNER: add two to four first-person bullets on design decisions you made and why; an agent must not write these -->
-[owner to confirm]
 
 ## Problem
 
