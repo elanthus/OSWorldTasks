@@ -87,10 +87,12 @@ class ReliableTransport:
         phase_start_accounted: Decimal | None = None,
         phase_wire_limit: int = 20,
         phase_start_wire: int | None = None,
+        request_bounder: Callable | None = None,
     ) -> None:
         if ledger.journal is None:
             raise ValueError("reliable transport requires a durable journal")
         self.config, self.ledger, self.journal = config, ledger, ledger.journal
+        self._request_bounder = request_bounder or request_bound
         self._key = (os.environ if environment is None else environment).get(
             "OPENROUTER_API_KEY", ""
         )
@@ -256,7 +258,7 @@ class ReliableTransport:
                     "pre_send_failure", failure_code="request_identity_mismatch"
                 )
             try:
-                proof = request_bound(request, self.config)
+                proof = self._request_bounder(request, self.config)
             except (ValueError, TypeError, KeyError):
                 return TransportOutcome("pre_send_failure", failure_code="request_bound_invalid")
             bound = Decimal(proof["request_maximum_usd"])
