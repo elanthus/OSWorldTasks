@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 
 from pixelgym.evidence_redaction import indexed_path_replacements, redact_evidence_text
-from scripts.run_day3_clean_install_check import REDACTION_LEGEND
+from scripts.run_clean_install_check import REDACTION_LEGEND
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 LOCAL_PATH_PATTERN = re.compile(

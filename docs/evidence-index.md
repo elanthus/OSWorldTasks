@@ -17,7 +17,7 @@ Reports summarize stored evidence; reading or regenerating them does not authori
 | What happened in the latest calibration? | [Generated supplement](../artifacts/grounding-v5-calibration-supplement/report.md) publishes Mistral and the matched Qwen stateful/stateless pair, with task outcomes, accounting, source hashes, and local audit receipts. Public verification reproduces the derivative without restricted journals. |
 | What happened in historical v5 calibration? | [Generated calibration report](../artifacts/grounding-v5-d56-completed-calibrations-report.md) and [structured derivative](../artifacts/grounding-v5-d56-completed-calibrations-publishable.json) retain completed and negative results, incomplete runs, policy identities, spend and unknown-charge reservations, dates, taxonomy, and predecessor disclosures. |
 | What can a public clone verify? | [Integrity audit](../artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json), [publication relation](../artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json), and [errata](../artifacts/grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json). Aggregate bindings are published; restricted journals, raw provider responses, screenshots, and private checkpoints remain `must_not_commit`. Journal file hashes and row-level contents cannot be verified from a public clone. |
-| What does the release inventory cover? | The revision-bound [public-release inventory](../artifacts/public-release-inventory.json) records tracked files, links, licensing, redaction, and reachable-history findings for its measured candidate. The [release-review record](../artifacts/public-release/release-review-2026-09-11.md) states its snapshot and post-submission limits; the [unticked checklist](../plans/public-release-checklist.md) retains the final owner review and refresh steps. |
+| What does the release inventory cover? | The revision-bound [public-release inventory](../artifacts/public-release-inventory.json) records tracked files, links, licensing, redaction, and reachable-history findings for its measured candidate. The [release-review record](../artifacts/public-release/release-review-2026-09-12.md) states its snapshot and post-submission limits; the [unticked checklist](../plans/public-release-checklist.md) retains the final owner review and refresh steps. |
 
 ## Withdrawn and historical work
 
@@ -38,6 +38,8 @@ Superseded v3/v4 calibration apps and v5 D5.6 experiment drivers remain reproduc
 evidence or turn calibration into a benchmark score.
 
 ## Reproduce and review
+
+- Use the [artifacts map](../artifacts/README.md) to locate a file by claim area.
 
 Use the [grounding verification guide](grounding-verification.md) for the read-only headline check.
 Follow the [reproduction guide](reproduction.md) for local checks, capture, and optional OSWorld.

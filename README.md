@@ -5,6 +5,70 @@ one deterministic synthetic vendor-onboarding form and an optional backend pinne
 It is built to make environment contracts, reward timing, reset behavior, and grounding evidence
 inspectable—not to claim broad desktop-agent performance.
 
+[![CI](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Python](https://img.shields.io/badge/python-3.12-blue)
+
+## At a glance
+
+- Pixel-only Gymnasium environment with a privileged evaluator; five bitwise identical real OSWorld resets at 1024×768 on one host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)).
+- 100 paired targets: 56/100 raw, 100/100 marks, +44.0 percentage points, 95% CI [+35.0, +54.0]; moving `gpt-5.4-mini` alias, DOM-derived offline marks ([canonical report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
+- Documented reproduction workflow: ruff, strict mypy, offline unit tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
+
+![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
+
+![Raw-coordinate versus set-of-marks accuracy](artifacts/grounding/figures/raw-vs-marks-accuracy.png)
+
+## Quickstart
+
+Python 3.12 is required. The default development install excludes OSWorld. From the repository
+root:
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/ruff check .
+.venv/bin/mypy pixelgym
+.venv/bin/pytest -q -n auto tests/unit
+.venv/bin/python scripts/golden_trajectory.py check
+.venv/bin/python scripts/verify_grounding_report.py
+```
+
+The unit suite is offline: it does not bind sockets or require a browser, Docker, OSWorld, provider
+credentials, or external services. The grounding verifier reads frozen evidence, recomputes the
+headline, verifies stored hashes, and leaves tracked files unchanged. Numerical recomputation is
+supported; cross-platform byte-for-byte PNG regeneration is not claimed
+([verification guide](docs/grounding-verification.md)).
+
+The real-loopback HTTP contract tests are a separate local integration group. Optional OSWorld,
+browser capture, local Metaflow/MLflow runtime, and Docker/Playwright lifecycle commands are also
+documented separately with their prerequisites ([reproduction guide](docs/reproduction.md),
+[deployment guide](deploy/README.md#test-suite-boundaries)). Pull-request CI runs the offline unit
+suite and the loopback HTTP group in separate jobs; the branch-protected `Fast suite` result
+requires both. The manually dispatched platform workflow runs only the Metaflow/MLflow runtime
+tests; it does **not** run the Docker/Playwright lifecycle suite
+([CI](.github/workflows/ci.yml), [manual workflow](.github/workflows/platform-integration.yml)).
+
+## Status
+
+| Area | State | Record |
+| --- | --- | --- |
+| Environment and validation | Done | [D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json) |
+| Grounding v1 experiment | Done, frozen | [D3.11](artifacts/day-3/raw/human-gate.json) |
+| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | [D4.12](artifacts/platform/human-gate.json) |
+| Grounding v2 crossed allocation | Designed, not run against a model | [v2 manifest](artifacts/grounding-v2-manifest.json) |
+| v5 agent benchmark and calibration | In progress, no gate declared | [v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md) |
+| v5 stateful serving | In progress | [v5 serving plan](plans/v5-policy-serving.md) |
+
+## Owner-held decisions
+
+[AGENTS.md section 4](AGENTS.md#4-human-gates--stop-and-ask) reserves scope changes, sprint gates, provider and cloud spend, paid model calls, and public claims for the repository owner.
+
+Repository work used a bounded agent-assisted branch-and-PR process: agents could implement,
+test, and prepare evidence, while deterministic checks, independent review, and owner-held scope,
+spend, scientific, and publication gates remained separate. The
+[workflow ADR](plans/adr-agent-assisted-workflow.md) records both useful findings and defects that
+escaped automation; it is a process audit, not an authorship claim or a substitute for human
+review.
+
 ## Problem
 
 GUI-agent evaluations can look successful while leaking privileged state, accepting invalid
@@ -69,8 +133,6 @@ submission, becomes `1.0` exactly once, and terminates the episode; a step-limit
 truncation, and stepping after either ending raises an error
 ([validation report](artifacts/validation-report.json)).
 
-![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
-
 ### Frozen grounding experiment
 
 On **100 paired targets** from the same 1024×768 synthetic form, the Codex CLI provider using the
@@ -92,8 +154,6 @@ that candidate's stored box ([capture implementation](pixelgym/grounding/capture
 [leakage controls](artifacts/grounding-protocol.md#set-of-marks-leakage-controls)). This offline
 proposal provenance is distinct from the screenshot-only environment interface described above.
 
-![Raw-coordinate versus set-of-marks accuracy](artifacts/grounding/figures/raw-vs-marks-accuracy.png)
-
 ### Supporting platform work and status
 
 A local-first evaluation and policy-delivery layer rehearses resumable execution, evidence
@@ -113,36 +173,6 @@ to its reviewed revision and scripted-provider scope. The v5 confirmatory benchm
 milestone gate remain incomplete; retained calibration, negative results, and unfinished work are
 documented without being promoted to a headline result
 ([v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md)).
-
-## Reproduction
-
-Python 3.12 is required. The default development install excludes OSWorld. From the repository
-root:
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
-.venv/bin/ruff check .
-.venv/bin/mypy pixelgym
-.venv/bin/pytest -q -n auto tests/unit
-.venv/bin/python scripts/golden_trajectory.py check
-.venv/bin/python scripts/verify_grounding_report.py
-```
-
-The unit suite is offline: it does not bind sockets or require a browser, Docker, OSWorld, provider
-credentials, or external services. The grounding verifier reads frozen evidence, recomputes the
-headline, verifies stored hashes, and leaves tracked files unchanged. Numerical recomputation is
-supported; cross-platform byte-for-byte PNG regeneration is not claimed
-([verification guide](docs/grounding-verification.md)).
-
-The real-loopback HTTP contract tests are a separate local integration group. Optional OSWorld,
-browser capture, local Metaflow/MLflow runtime, and Docker/Playwright lifecycle commands are also
-documented separately with their prerequisites ([reproduction guide](docs/reproduction.md),
-[deployment guide](deploy/README.md#test-suite-boundaries)). Pull-request CI runs the offline unit
-suite and the loopback HTTP group in separate jobs; the branch-protected `Fast suite` result
-requires both. The manually dispatched platform workflow runs only the Metaflow/MLflow runtime
-tests; it does **not** run the Docker/Playwright lifecycle suite
-([CI](.github/workflows/ci.yml), [manual workflow](.github/workflows/platform-integration.yml)).
 
 ## Limitations
 
@@ -186,13 +216,6 @@ Its demonstrated research-engineering contribution is the frozen paired comparis
 target-agnostic proposal controls, separate proposal/selection metrics, retained failures, and a
 non-mutating evidence verifier. It is not a new foundation model, a general GUI-proposal method, or
 a broad agent benchmark.
-
-Repository work used a bounded agent-assisted branch-and-PR process: agents could implement,
-test, and prepare evidence, while deterministic checks, independent review, and owner-held scope,
-spend, scientific, and publication gates remained separate. The
-[workflow ADR](plans/adr-agent-assisted-workflow.md) records both useful findings and defects that
-escaped automation; it is a process audit, not an authorship claim or a substitute for human
-review.
 
 ## Evidence and project history
 
