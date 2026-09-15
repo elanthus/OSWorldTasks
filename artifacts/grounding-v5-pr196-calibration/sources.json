@@ -1,0 +1,15 @@
+{
+  "benchmark_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+  "representatives_source": "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json",
+  "representatives_source_sha256": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
+  "snapshot_sha256": {
+    "haiku-cli-continuation": "sha256:843b348654091c6f5225137f4474284c58891036d9727d56c89a2c36ce641e7f",
+    "haiku-openrouter": "sha256:4fdb1e6d87b585c1d9047f859a131a27f251334f662422b878d63b68d37c7c80",
+    "haiku-v1": "sha256:b79b3ac0a8437fcd9aafefee4157b8cea983cd2bfca40d2f37514d24467c5f43",
+    "haiku-v2": "sha256:2ece5c06425c669f55f0d346571354bde5e4314d5b7d0ee09fcc9cadda80f56a",
+    "haiku-v3": "sha256:76836ca7d59026035cb74f16236801f8037ad933b8fb70946a4e0884b1cdd924",
+    "haiku-v4": "sha256:fb4937581b23b8d260b64b6313ef0ae3c478ca555516cf917890a2d8ff92b3b7",
+    "luna-continuation": "sha256:c17fb5ca9b1345b100423f6ee34653e631e0f8c72890c93103f55a1bdb324a7b",
+    "luna-original": "sha256:4c717a728915643dbb5d0a1208edb881f4bcc827ceb347ea78c95bbfd1285e43"
+  }
+}

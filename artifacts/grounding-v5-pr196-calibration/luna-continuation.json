@@ -1,0 +1,896 @@
+{
+  "accounting": {
+    "elapsed_seconds": 1771.327,
+    "event_counts": {
+      "attempt_completed": 283,
+      "attempt_started": 283,
+      "canonical_response_persisted": 283,
+      "cli_memory_assignment_completed": 10,
+      "cli_memory_assignment_started": 10,
+      "dispatch_committed": 283,
+      "dispatch_started": 283,
+      "initial_screenshot": 10,
+      "parsed_action_candidate": 283,
+      "privileged_dispatch_diagnostic": 283,
+      "sealed_action_intent": 283
+    },
+    "incremental_experiment_charge_usd": "0.00",
+    "invocation_integrity_digest": "sha256:ffa5177d53e6f9802df0a011e02829942415b13fbcbb0e38c64f942660b9c2e4",
+    "invocation_statuses": {
+      "response": 283
+    },
+    "unresolved_invocations": 0
+  },
+  "adapter_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+  "assigned": 10,
+  "benchmark_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+  "benchmark_source_hashes": {
+    "pixelgym/grounding/v5/memory_backend.py": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+    "pixelgym/grounding/v5/memory_focus_backend.py": "sha256:d8ce6bf73fed8be10c70ef22c9eac67f0cefd595418b8a64e5c0e4c0b3c95f24",
+    "pixelgym/grounding/v5/memory_generator.py": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+    "pixelgym/grounding/v5/screenshot_memory.py": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8"
+  },
+  "cohort": "luna-continuation",
+  "jobs": [
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-luna-medium-5148-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-luna-medium-5148-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-luna-medium-5158-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-luna-medium-5158-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-luna-medium-5167-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-luna-medium-5167-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-luna-medium-5149-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-luna-medium-5149-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-luna-medium-5159-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-luna-medium-5159-history-timeout-continuation-v1"
+    }
+  ],
+  "model": "luna-medium",
+  "original_plan_digest": "sha256:5787acf6283da4db7771c5d0e230ecc60898119183ae65ab5c2d1834255c3fda",
+  "original_summary_digest": "sha256:0acacf41fd39d4e57e2696238cb1e0eaee0689fdda77cc4eb8b925aad8122816",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+      "context_limit": 272000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:536a6d902f7591b39a531aa50df178f3b4ffa988f1a6b784c874534757089bd8",
+      "inference_parameters": [
+        [
+          "authentication_mode",
+          "chatgpt_subscription"
+        ],
+        [
+          "cli_version",
+          "codex-cli 0.153.4"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:c2807c40908707ef72e89ebedc05f85c863b7b9674c44fb3f8940cde00ae1ae0"
+        ],
+        [
+          "model_catalog_comp_hash",
+          "3000"
+        ],
+        [
+          "model_reasoning_effort",
+          "medium"
+        ],
+        [
+          "allowed_cli_diagnostic_message_sha256",
+          "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+        ],
+        [
+          "request_max_retries",
+          "0"
+        ],
+        [
+          "stream_max_retries",
+          "0"
+        ],
+        [
+          "rollout_budget_tokens",
+          "8192"
+        ],
+        [
+          "shell_tool",
+          "disabled"
+        ],
+        [
+          "web_search",
+          "disabled"
+        ],
+        [
+          "runner_retries",
+          "1-confirmed-stopped-timeout-only"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-history-v1",
+      "model": "gpt-5.6-luna",
+      "parser_version": "pixelgym-agent-v5-json-action-codex-cli-native-parser-v2",
+      "policy_id": "policy-1e65b286bbc54a527683",
+      "provider": "codex-cli/chatgpt-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 95.0,
+      "response_schema_version": "pixelgym-agent-v5-codex-cli-jsonl-response-v2",
+      "sandbox": {
+        "policy_claim": {
+          "declared_unavailable_capabilities": []
+        },
+        "probe_result": {
+          "applied_to_cli_launch": false,
+          "mechanism_name": "darwin_sandbox_exec_probe_only",
+          "profile_digest": null,
+          "status": "not_run"
+        },
+        "provider_endpoint": "https://chatgpt.com",
+        "provider_endpoint_allowlist_digest": "sha256:3d5290561ee62038aed2a82e8465d59ff963183020f10f08c6b2ca653a3537a9",
+        "runtime_digest": "sha256:f3c72584369b4953255742133de6ae785eb15a0bfea725dca9acaaf13978463b",
+        "runtime_enforcement": {
+          "argv_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cli_restrictions_applied": false,
+          "environment_allowlist_applied": false,
+          "environment_allowlist_digest": "sha256:858dc8bd43714315e6db442a959158da913d89ada981f8851224ff0ab7b6e590",
+          "environment_variable_names": [],
+          "mechanism_name": "not_bound_to_cli_launch",
+          "os_sandbox_applied": false
+        },
+        "schema_version": "pixelgym-agent-v5-sandbox-v3"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:8e6a389f77413cbab4374b0384f91b8819c4a0c2d73f189958e01e67dd9c9f1a",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "cli-one-confirmed-stopped-timeout-retry-v1"
+    },
+    "stateless": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+      "context_limit": 272000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:536a6d902f7591b39a531aa50df178f3b4ffa988f1a6b784c874534757089bd8",
+      "inference_parameters": [
+        [
+          "authentication_mode",
+          "chatgpt_subscription"
+        ],
+        [
+          "cli_version",
+          "codex-cli 0.153.4"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:c2807c40908707ef72e89ebedc05f85c863b7b9674c44fb3f8940cde00ae1ae0"
+        ],
+        [
+          "model_catalog_comp_hash",
+          "3000"
+        ],
+        [
+          "model_reasoning_effort",
+          "medium"
+        ],
+        [
+          "allowed_cli_diagnostic_message_sha256",
+          "sha256:098e801ebc95c9c7312a945849442846324dcf639365a297313248993822711b"
+        ],
+        [
+          "request_max_retries",
+          "0"
+        ],
+        [
+          "stream_max_retries",
+          "0"
+        ],
+        [
+          "rollout_budget_tokens",
+          "8192"
+        ],
+        [
+          "shell_tool",
+          "disabled"
+        ],
+        [
+          "web_search",
+          "disabled"
+        ],
+        [
+          "runner_retries",
+          "1-confirmed-stopped-timeout-only"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-stateless-v1",
+      "model": "gpt-5.6-luna",
+      "parser_version": "pixelgym-agent-v5-json-action-codex-cli-native-parser-v2",
+      "policy_id": "policy-c3f357855eb5876b28d1",
+      "provider": "codex-cli/chatgpt-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 95.0,
+      "response_schema_version": "pixelgym-agent-v5-codex-cli-jsonl-response-v2",
+      "sandbox": {
+        "policy_claim": {
+          "declared_unavailable_capabilities": []
+        },
+        "probe_result": {
+          "applied_to_cli_launch": false,
+          "mechanism_name": "darwin_sandbox_exec_probe_only",
+          "profile_digest": null,
+          "status": "not_run"
+        },
+        "provider_endpoint": "https://chatgpt.com",
+        "provider_endpoint_allowlist_digest": "sha256:3d5290561ee62038aed2a82e8465d59ff963183020f10f08c6b2ca653a3537a9",
+        "runtime_digest": "sha256:f3c72584369b4953255742133de6ae785eb15a0bfea725dca9acaaf13978463b",
+        "runtime_enforcement": {
+          "argv_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cli_restrictions_applied": false,
+          "environment_allowlist_applied": false,
+          "environment_allowlist_digest": "sha256:858dc8bd43714315e6db442a959158da913d89ada981f8851224ff0ab7b6e590",
+          "environment_variable_names": [],
+          "mechanism_name": "not_bound_to_cli_launch",
+          "os_sandbox_applied": false
+        },
+        "schema_version": "pixelgym-agent-v5-sandbox-v3"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:8e6a389f77413cbab4374b0384f91b8819c4a0c2d73f189958e01e67dd9c9f1a",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "cli-one-confirmed-stopped-timeout-retry-v1"
+    }
+  },
+  "private_audit": {
+    "host_success_and_measurements_match": true,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:1d737e7a2ab0b941defa485650d0ce83fa20bd68dc8c6b97918e30b10a5d1eb8",
+      "event_count": 2294,
+      "object_count": 1170,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "provider_calls_made": 0,
+    "read_only": true,
+    "result_events_match": true
+  },
+  "recorded": 10,
+  "results": [
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-luna-medium-5148-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:af54f3f9425ec68b48c656d371adb8d572041ac1e8ce6b3776c4fc4572ae4192",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-luna-medium-5148-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:09f759a86f4b3704120a1486d2f22df620ddaf4dfc560ee5caebbfcd47549a01",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-luna-medium-5158-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-luna-medium-5158-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-luna-medium-5167-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:07390be0762b330ee53b9997ecec903199b8cc8e36f7cbc0380af023c808ff40",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-luna-medium-5167-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_policy_checkpoint_digest": "sha256:cdb63070ab7294fc25e56eaafd171398a11f9a1640031585be739d56ae0eefd6",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-luna-medium-5149-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 20,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-luna-medium-5149-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-luna-medium-5159-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:f40f734f76e8d0db9e9b692aff6f6e2c127c9f0192a2c9aa104372fefc9fa566",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-luna-medium-5159-history-timeout-continuation-v1"
+    }
+  ],
+  "stop_reason": "completed_all_assignments"
+}

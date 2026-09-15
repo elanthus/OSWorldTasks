@@ -1,0 +1,1614 @@
+{
+  "accounting": {
+    "elapsed_seconds": 5282.616,
+    "event_counts": {
+      "attempt_completed": 662,
+      "attempt_started": 664,
+      "canonical_response_persisted": 662,
+      "cli_memory_assignment_completed": 23,
+      "cli_memory_assignment_started": 23,
+      "dispatch_committed": 662,
+      "dispatch_started": 662,
+      "initial_screenshot": 23,
+      "parsed_action_candidate": 662,
+      "privileged_dispatch_diagnostic": 662,
+      "reliable_transport_binding": 1,
+      "reliable_transport_receipt": 664,
+      "reliable_transport_schedule": 664,
+      "request_budget_bound": 664,
+      "retryable_transport_fault": 2,
+      "sealed_action_intent": 662,
+      "spend_reservation_acquired": 664,
+      "spend_reservation_charged": 662,
+      "spend_reservation_unknown": 2,
+      "transport_retired": 1,
+      "unknown_outcome_infrastructure_failure": 2
+    },
+    "spend": {
+      "blocked": false,
+      "budget_accounted_spend_usd": "7.899271",
+      "in_flight_reservation_usd": "0",
+      "spent_usd": "7.458311",
+      "unknown_charge_outcomes": 2,
+      "unknown_reservation_usd": "0.440960",
+      "wire_requests_sent": 664
+    }
+  },
+  "adapter_revision": "66e6a47a858051fe4f911661b98c3a00a5a1d836",
+  "assigned": 23,
+  "benchmark_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+  "benchmark_source_hashes": {
+    "pixelgym/grounding/v5/memory_backend.py": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+    "pixelgym/grounding/v5/memory_focus_backend.py": "sha256:d8ce6bf73fed8be10c70ef22c9eac67f0cefd595418b8a64e5c0e4c0b3c95f24",
+    "pixelgym/grounding/v5/memory_generator.py": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+    "pixelgym/grounding/v5/screenshot_memory.py": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8"
+  },
+  "cohort": "haiku-openrouter",
+  "jobs": [
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-openrouter-5138-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-openrouter-5147-stateless"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-openrouter-5147-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-openrouter-5157-history"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-openrouter-5157-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-openrouter-5166-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-openrouter-5166-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-openrouter-5119-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-openrouter-5119-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-openrouter-5129-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-openrouter-5129-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-openrouter-5139-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-openrouter-5139-stateless"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-openrouter-5148-stateless"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-openrouter-5148-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-openrouter-5158-history"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-openrouter-5158-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-openrouter-5167-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-openrouter-5167-history"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-openrouter-5149-history"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-openrouter-5149-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-openrouter-5159-stateless"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-openrouter-5159-history"
+    }
+  ],
+  "model": "anthropic/claude-haiku-4.5",
+  "original_plan_digest": "sha256:1c1545ad3cceb1818cc115c66a41ec76f58ef2d77651453f6d15e579448ed687",
+  "original_summary_digest": "sha256:5ae6c91b84720cb2c374a4408311ad7df7c890f7c618a3492dc63929fe145645",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "disabled",
+      "code_revision": "66e6a47a858051fe4f911661b98c3a00a5a1d836",
+      "context_limit": 131072,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:6ac6a0f8f805400ba2f64acedb5040c81420686082821ace60a1208682c3bf84",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "anthropic"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "1"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 5.0, \"prompt\": 1.0}"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ],
+        [
+          "reasoning",
+          "enabled-default"
+        ],
+        [
+          "request_bound",
+          "full-context-plus-output"
+        ],
+        [
+          "seed",
+          "omitted-unsupported-route"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-history-v1",
+      "model": "anthropic/claude-haiku-4.5",
+      "parser_version": "haiku-openrouter-native-json-envelope-v1",
+      "policy_id": "policy-5b8311c5dc93f2a58b34",
+      "provider": "openrouter/anthropic",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 190,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:ca47683c3480346c6120a87aec9dac82ce3b03d745d04a506e5c9d61cc56f146"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:c5c392c21a21474882ac265754ec1a22a6798333843a4dd86925e84cdeac169b",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "openrouter-one-transient-retry-retain-unknown-cost-v1"
+    },
+    "stateless": {
+      "cancellation_mode": "disabled",
+      "code_revision": "66e6a47a858051fe4f911661b98c3a00a5a1d836",
+      "context_limit": 131072,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:6ac6a0f8f805400ba2f64acedb5040c81420686082821ace60a1208682c3bf84",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "anthropic"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "1"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 5.0, \"prompt\": 1.0}"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ],
+        [
+          "reasoning",
+          "enabled-default"
+        ],
+        [
+          "request_bound",
+          "full-context-plus-output"
+        ],
+        [
+          "seed",
+          "omitted-unsupported-route"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-stateless-v1",
+      "model": "anthropic/claude-haiku-4.5",
+      "parser_version": "haiku-openrouter-native-json-envelope-v1",
+      "policy_id": "policy-344596678a6f7d6752f2",
+      "provider": "openrouter/anthropic",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 190,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:ca47683c3480346c6120a87aec9dac82ce3b03d745d04a506e5c9d61cc56f146"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:c5c392c21a21474882ac265754ec1a22a6798333843a4dd86925e84cdeac169b",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "openrouter-one-transient-retry-retain-unknown-cost-v1"
+    }
+  },
+  "private_audit": {
+    "host_success_and_measurements_match": true,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:303da178456399120dbafe18c8eff151bac0185e8905f68efc2024b2581d3387",
+      "event_count": 8693,
+      "object_count": 3553,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "provider_calls_made": 0,
+    "read_only": true,
+    "result_events_match": true
+  },
+  "recorded": 23,
+  "results": [
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-openrouter-5138-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions": 29,
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 29,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-openrouter-5147-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_policy_checkpoint_digest": "sha256:e6ec2a3675bc893aef80870bde33ac2960e8ee224ffb6449cac1e6daf4cba454",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-openrouter-5147-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:4b89e14a0938c2635ae9bc77ae928fff3ad45f22c96d6f3cf0cb1203cfe38397",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-openrouter-5157-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 9,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 24,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 26,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-openrouter-5157-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 5,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [
+        5
+      ],
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-openrouter-5166-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 29,
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_policy_checkpoint_digest": "sha256:0f4ba4be2654ab6b5140d0bd0dc9208add7e6af356942f18e220c965a4f43408",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 20,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 29,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 29,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-openrouter-5166-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:d382712f95317b5b7f09f05af2736ec392ce18aac12fd12f7e4af999bd4e7c35",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-openrouter-5119-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:7d03056259b3c58778ca6cfd030ad351fc4b3c882cba796a750c938ccde585ce",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 31,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 31,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-openrouter-5119-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:ef7fceb4fdfad54e1b1bcd47d57051808e674a7de39cf9cea537f581020f799f",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-openrouter-5129-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:6db760a0ab84f69da211dce3f36195cc389a539ddc78164d8a00972d62402328",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 24,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 31,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 31,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-openrouter-5129-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:592476e5bb46fb6b498b73f2094057ad823a68bba1a4c86d98edd17b0e1776d2",
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-openrouter-5139-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-openrouter-5139-stateless"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 24,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 26,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-openrouter-5148-stateless"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:a81b00002567d5f9c23e9e0e01adcf44ec58f56cebb5c8d1afe63a5698079e5f",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-openrouter-5148-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:bdb096170778c927b798a9b7ca8de4f8672024cd0120cfbb019023ae15050326",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 23,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-openrouter-5158-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-openrouter-5158-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-openrouter-5167-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:ff35f6a8e9fc80c7d03cfddbdd67e01e1b227443b6a14dbbad8bd5ac9b1f2654",
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-openrouter-5167-history"
+    },
+    {
+      "action_limit": 32,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_policy_checkpoint_digest": "sha256:6f63b40ec8492acd604ffe44b677d3ef5d24ca8c3ca0cad0220342ab334ae9ab",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-openrouter-5149-history"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions": 32,
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 32,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-openrouter-5149-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 21,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-openrouter-5159-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:0c1df9df06e02db2dffe008b91a7740360b4f98c8f0c97c75e22a63e197597ac",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-openrouter-5159-history"
+    }
+  ],
+  "stop_reason": "completed_all_assignments"
+}

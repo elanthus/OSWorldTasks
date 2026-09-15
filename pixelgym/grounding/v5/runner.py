@@ -611,8 +611,15 @@ class V5Runner:
             if not isinstance(transport_outcome, TransportOutcome):
                 raise TypeError("provider transport returned an invalid outcome")
             self._boundary("provider_receipt")
-            if transport_outcome.status in RETRYABLE_SEND_STATUSES:
-                rule = RETRYABLE_SEND_STATUSES[transport_outcome.status]
+            retry_status = transport_outcome.status
+            if retry_status == "deadline" and getattr(
+                self.transport, "retry_allowed", lambda outcome: False
+            )(transport_outcome):
+                # Only an opted-in transport can confirm a stopped CLI process.
+                # A generic runner deadline may still have a live request behind it.
+                retry_status = "transport_fault"
+            if retry_status in RETRYABLE_SEND_STATUSES:
+                rule = RETRYABLE_SEND_STATUSES[retry_status]
                 if transport_outcome.status == "rate_limited":
                     self._settle_zero_charge_spend(
                         idempotency_key,
@@ -628,6 +635,7 @@ class V5Runner:
                 next_attempt_permitted = (
                     bounded_retries < retry_budget
                     and attempt_index + 1 < self.manifest.max_model_attempts_per_action
+                    and getattr(self.transport, "retry_allowed", lambda outcome: True)(transport_outcome)
                 )
                 failure_code = transport_outcome.failure_code or rule.default_failure_code
                 post_retry_state = (

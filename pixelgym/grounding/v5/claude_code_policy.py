@@ -1,4 +1,4 @@
-"""Fail-closed Claude Code Sonnet policy with inline screenshot input and zero tools."""
+"""Fail-closed Claude Code Haiku policy with inline screenshot input and zero tools."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import base64
 import io
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import tempfile
@@ -15,7 +16,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from PIL import Image
 
@@ -61,8 +62,9 @@ from pixelgym.serialization import canonical_json_bytes
 RunningProcess = cli_transport.RunningProcess
 
 CLAUDE_CLI_VERSION = "2.1.236 (Claude Code)"
-MODEL = "claude-sonnet-5"
-MODEL_REASONING_EFFORT = "medium"
+MODEL = "claude-haiku-4-5-20251001"
+# Haiku 4.5 has no effort control; retain the field as truthful default metadata.
+MODEL_REASONING_EFFORT = "default"
 AUTH_METHOD = "claude.ai"
 SUBSCRIPTION_TYPE = "max"
 PROVIDER_IDENTITY = "claude-code-cli/claude-ai-max-subscription"
@@ -75,8 +77,8 @@ KILL_GRACE_SECONDS = 2.0
 EXPERIMENT_CHARGE_USD = Decimal("0.00")
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
-CONTEXT_LIMIT_TOKENS = 1_000_000
-PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v1"
+CONTEXT_LIMIT_TOKENS = 200_000
+PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v3-json-envelope"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-claude-stream-json-response-v1"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
@@ -84,8 +86,9 @@ TASK_RENDERER_VERSION = "pixelgym-agent-v5-task-renderer-v1"
 TRANSPORT_RETRY_RULE = "one-claude-cli-process-per-action-no-runner-retry-v1"
 INVOCATION_JOURNAL_SCHEMA_VERSION = "pixelgym-agent-v5-claude-cli-invocation-journal-v2"
 SYSTEM_PROMPT = (
-    "You are a stateless pixel-only GUI policy. Use only the user-provided task text and "
-    "inline screenshot. Do not use tools or request other context. Return exactly one action "
+    "You are a pixel-only GUI policy. Use only the user-provided task text and "
+    "inline screenshots, including any supplied history. The last screenshot is current. "
+    "Do not use tools or request other context. Return exactly one action "
     "as a bare JSON object matching the required action contract, with no markdown or prose."
 )
 
@@ -112,6 +115,11 @@ _MALFORMED_STREAM_VIOLATIONS = frozenset(
         "invalid_rate_limit_event",
         "invalid_assistant_message",
         "invalid_assistant_content",
+        "invalid_thinking_telemetry",
+        "invalid_extended_stream_identity",
+        "invalid_extended_stream_order",
+        "assistant_text_count_mismatch",
+        "assistant_result_text_mismatch",
     }
 )
 
@@ -163,7 +171,6 @@ def probe_claude_runtime(
     required_flags = (
         "--print",
         "--model",
-        "--effort",
         "--output-format",
         "--input-format",
         "--tools",
@@ -198,8 +205,6 @@ def sanitized_command_contract() -> tuple[str, ...]:
         "--verbose",
         "--model",
         MODEL,
-        "--effort",
-        MODEL_REASONING_EFFORT,
         "--output-format",
         "stream-json",
         "--input-format",
@@ -238,6 +243,7 @@ def _runtime_command() -> list[str]:
 _ALLOWED_ENVIRONMENT_VARIABLES = (
     "PATH",
     "HOME",
+    "USER",  # macOS Claude keychain account lookup requires this nonsecret identity.
     "TMPDIR",
     "LANG",
     "LC_ALL",
@@ -293,16 +299,46 @@ def _png_bytes(screenshot: bytes) -> bytes:
     return encoded.getvalue()
 
 
+def _decode_action_content(content: str) -> Any:
+    """Accept bare JSON or one complete JSON fence, never extract from prose.
+
+    This versioned envelope adapter leaves stored model output unchanged. Action
+    fields still undergo exact-shape/type validation and host-side bounds checks.
+    """
+    if not isinstance(content, str):
+        raise TypeError("Claude action content must be text")
+    text = content.strip()
+    if text.startswith("```"):
+        match = re.fullmatch(r"```(?:json)?[ \t]*\r?\n(.*?)\r?\n```", text, re.DOTALL)
+        if match is None:
+            raise ValueError("Claude action must be one complete JSON fence")
+        text = match.group(1)
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate action field")
+            result[key] = value
+        return result
+
+    return json.loads(text, object_pairs_hook=unique_object)
+
+
 class ClaudeCodePolicy:
     def reset(self, task_instruction: str) -> bytes:
         return canonical_json_bytes({"instruction": task_instruction})
 
-    def build_request(self, state: bytes, screenshot: bytes) -> dict[str, Any]:
+    def build_request(
+        self, state: bytes, screenshot: bytes, *, screenshot_history: Sequence[bytes] = ()
+    ) -> dict[str, Any]:
+        if len(screenshot_history) > 31:
+            raise ValueError("screenshot history exceeds 31 prior frames")
         value = json.loads(state)
         if not isinstance(value, dict) or set(value) != {"instruction"}:
             raise ValueError("Claude policy state is invalid")
         png = _png_bytes(screenshot)
-        return {
+        request: dict[str, Any] = {
             "provider": PROVIDER_IDENTITY,
             "model": MODEL,
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
@@ -312,6 +348,15 @@ class ClaudeCodePolicy:
             "action_schema_digest": content_digest(ACTION_SCHEMA),
             "command_contract_digest": command_contract_digest(),
         }
+        if screenshot_history:
+            request["image_history"] = [
+                {
+                    "image_png_base64": base64.b64encode(history_png).decode("ascii"),
+                    "image_sha256": "sha256:" + sha256_bytes(history_png),
+                }
+                for history_png in map(_png_bytes, screenshot_history)
+            ]
+        return request
 
     def reduce_state(self, state: bytes, canonical_response: bytes) -> bytes:
         del canonical_response
@@ -344,7 +389,7 @@ class ClaudeCodePolicy:
             usage.get(key) != expected_value for key, expected_value in expected.items()
         ):
             raise ValueError("Claude identity, accounting, or policy boundary is invalid")
-        candidate = json.loads(response.get("content", ""))
+        candidate = _decode_action_content(response.get("content", ""))
         if not isinstance(candidate, dict) or set(candidate) != {
             "action_type",
             "x",
@@ -590,9 +635,72 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
     required_events = {"system", "assistant", "result"}
     allowed_events = required_events | {"rate_limit_event"}
     event_counts = Counter(str(event["type"]) for event in events)
-    for event_type in required_events:
-        if event_counts[event_type] != 1:
-            violations.append(f"{event_type}_event_count_mismatch")
+    initial_events = [
+        event for event in events
+        if event["type"] == "system" and event.get("subtype") == "init"
+    ]
+    if len(initial_events) != 1:
+        violations.append("system_event_count_mismatch")
+    assistant_events = [event for event in events if event["type"] == "assistant"]
+    telemetry_events = [
+        event for event in events
+        if event["type"] == "system" and event.get("subtype") == "thinking_tokens"
+    ]
+    if len(assistant_events) not in (1, 2):
+        violations.append("assistant_event_count_mismatch")
+    if event_counts["result"] != 1:
+        violations.append("result_event_count_mismatch")
+    extended_stream = bool(telemetry_events) or len(assistant_events) == 2
+    if extended_stream:
+        sessions = [event.get("session_id") for event in events]
+        uuids = [event.get("uuid") for event in events]
+        if (
+            not all(isinstance(value, str) and value for value in sessions + uuids)
+            or len(set(sessions)) != 1
+            or len(set(uuids)) != len(uuids)
+        ):
+            violations.append("invalid_extended_stream_identity")
+        if not events or events[0] not in initial_events or events[-1]["type"] != "result":
+            violations.append("invalid_extended_stream_order")
+        previous_estimate = 0
+        for telemetry in telemetry_events:
+            if set(telemetry) != {
+                "type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"
+            }:
+                violations.append("invalid_thinking_telemetry")
+                continue
+            estimate = telemetry["estimated_tokens"]
+            delta = telemetry["estimated_tokens_delta"]
+            if (
+                type(estimate) is not int or type(delta) is not int
+                or estimate < 0 or delta < 0 or estimate != previous_estimate + delta
+            ):
+                violations.append("invalid_thinking_telemetry")
+            else:
+                previous_estimate = estimate
+    if len(assistant_events) == 2:
+        messages = [event.get("message") for event in assistant_events]
+        if not all(isinstance(message, dict) for message in messages):
+            violations.append("invalid_assistant_message")
+        else:
+            validated_messages = cast(list[dict[str, Any]], messages)
+            message_ids = [message.get("id") for message in validated_messages]
+            request_ids = [event.get("request_id") for event in assistant_events]
+            if (
+                not all(isinstance(value, str) and value for value in message_ids + request_ids)
+                or len(set(message_ids)) != 1 or len(set(request_ids)) != 1
+            ):
+                violations.append("invalid_extended_stream_identity")
+            contents: list[Any] = [message.get("content") for message in validated_messages]
+            if (
+                not all(isinstance(content, list) and content for content in contents)
+                or not all(isinstance(block, dict) and block.get("type") == "thinking" for block in contents[0])
+                or len(contents[1]) != 1
+                or not isinstance(contents[1][0], dict)
+                or contents[1][0].get("type") != "text"
+            ):
+                violations.append("invalid_assistant_content")
+    assistant_texts: list[str] = []
     result_events: list[dict[str, Any]] = []
     resolved_models: set[str] = set()
     for event in events:
@@ -610,6 +718,11 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             if rate_limit.get("isUsingOverage") not in (None, False):
                 violations.append("subscription_overage_active")
         elif event_type == "system":
+            if event.get("subtype") == "thinking_tokens":
+                continue
+            if event.get("subtype") != "init":
+                violations.append(f"unauthorized_system_event:{event.get('subtype')}")
+                continue
             tools = event.get("tools")
             if tools not in (None, []):
                 violations.append("system_advertised_tools")
@@ -634,6 +747,11 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
                 block_type = block.get("type") if isinstance(block, dict) else None
                 if block_type not in {"text", "thinking"}:
                     violations.append(f"unauthorized_content_block:{block_type}")
+                if block_type == "text":
+                    if not isinstance(block.get("text"), str):
+                        violations.append("invalid_assistant_content")
+                    else:
+                        assistant_texts.append(block["text"])
         else:
             result_events.append(event)
     if len(result_events) != 1:
@@ -655,12 +773,17 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         resolved_model = None
     else:
         resolved_model = next(iter(resolved_models))
-        if not resolved_model.startswith(MODEL):
+        if resolved_model != MODEL:
             violations.append("resolved_model_mismatch")
     if result.get("structured_output") is not None:
         violations.append("unexpected_structured_output")
     result_text = result.get("result")
     content = result_text if isinstance(result_text, str) else ""
+    if len(assistant_texts) != 1:
+        if not any(value.startswith("unauthorized_content_block:") for value in violations):
+            violations.append("assistant_text_count_mismatch")
+    elif extended_stream and assistant_texts[0] != content:
+        violations.append("assistant_result_text_mismatch")
     raw_usage = result.get("usage")
     usage: dict[str, int] | None = None
     if isinstance(raw_usage, dict):
@@ -731,6 +854,7 @@ class ClaudeCodeTransport:
         environment: Mapping[str, str] = os.environ,
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
+        allow_timeout_retry: bool = False,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
@@ -742,6 +866,7 @@ class ClaudeCodeTransport:
         self.environment = _minimal_environment(environment)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
+        self.allow_timeout_retry = allow_timeout_retry
         self.records: list[dict[str, Any]] = []
         self._lifecycle = CliSubprocessTransport(
             parser=_claude_parse_envelope,
@@ -803,21 +928,25 @@ class ClaudeCodeTransport:
                     self._record(idempotency_key, "pre_send_failure", outcome)
                 )
                 return transport_outcome
-            image_block = {
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": request["image_png_base64"],
-                },
-            }
+            image_blocks = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/png",
+                        "data": image["image_png_base64"],
+                    },
+                }
+                for image in [*request.get("image_history", []), request]
+            ]
             input_event = {
                 "type": "user",
                 "message": {
                     "role": "user",
-                    "content": [image_block, {"type": "text", "text": request["prompt"]}],
+                    "content": [*image_blocks, {"type": "text", "text": request["prompt"]}],
                 },
             }
+
             def mark_started(started: RunningProcess) -> None:
                 self.ledger.mark_process_started()
                 self.invocation_journal.mark_running(idempotency_key, started.pid)
@@ -865,6 +994,12 @@ class ClaudeCodeTransport:
                 )
                 if execution_fault.phase == "pre_send":
                     self.ledger.release_pre_send(idempotency_key)
+                elif (
+                    self.allow_timeout_retry
+                    and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
+                    and execution.process_confirmed_stopped
+                ):
+                    self.ledger.retain_stopped_timeout(idempotency_key)
                 else:
                     self.ledger.retain_unresolved_and_block(idempotency_key)
                 if execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT:
@@ -873,6 +1008,7 @@ class ClaudeCodeTransport:
                 outcome = {
                     "failure_code": execution_fault.code,
                     "type": execution.error_type,
+                    "process_confirmed_stopped": execution.process_confirmed_stopped,
                     "cli_fault": execution_fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
                     "transport_outcome": transport_outcome.to_dict(),
@@ -1020,6 +1156,15 @@ class ClaudeCodeTransport:
         self._lifecycle.close()
         self._closed = True
 
+    def retry_allowed(self, outcome: TransportOutcome) -> bool:
+        return (
+            self.allow_timeout_retry
+            and outcome.fault is not None
+            and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+            and self.subprocesses_closed
+            and not self.ledger.blocked
+        )
+
     def _validate_request(self, request: dict[str, Any], deadline_seconds: float) -> str | None:
         expected_keys = {
             "provider",
@@ -1031,6 +1176,8 @@ class ClaudeCodeTransport:
             "action_schema_digest",
             "command_contract_digest",
         }
+        if "image_history" in request:
+            expected_keys.add("image_history")
         if set(request) != expected_keys:
             return "request_shape_mismatch"
         if request.get("provider") != PROVIDER_IDENTITY or request.get("model") != MODEL:
@@ -1043,12 +1190,20 @@ class ClaudeCodeTransport:
             return "command_contract_mismatch"
         if deadline_seconds < self.process_timeout_seconds:
             return "runner_deadline_below_process_timeout"
-        try:
-            image = base64.b64decode(request["image_png_base64"], validate=True)
-        except (TypeError, ValueError):
-            return "image_encoding_invalid"
-        if request.get("image_sha256") != "sha256:" + sha256_bytes(image):
-            return "image_digest_mismatch"
+        history = request.get("image_history", [])
+        if not isinstance(history, list) or len(history) > 31 or any(
+            not isinstance(item, dict)
+            or set(item) != {"image_png_base64", "image_sha256"}
+            for item in history
+        ):
+            return "image_history_shape_mismatch"
+        for item in [*history, request]:
+            try:
+                image = base64.b64decode(item["image_png_base64"], validate=True)
+            except (TypeError, ValueError):
+                return "image_encoding_invalid"
+            if item.get("image_sha256") != "sha256:" + sha256_bytes(image):
+                return "image_digest_mismatch"
         return None
 
     def _record(

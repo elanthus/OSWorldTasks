@@ -59,7 +59,7 @@ from pixelgym.serialization import canonical_json_bytes
 
 RunningProcess = cli_transport.RunningProcess
 
-CODEX_CLI_VERSION = "codex-cli 0.150.1"
+CODEX_CLI_VERSION = "codex-cli 0.153.4"
 AUTH_MODE = "chatgpt_subscription"
 PROVIDER_IDENTITY = "codex-cli/chatgpt-subscription"
 PROVIDER_ORIGIN = "https://chatgpt.com"
@@ -690,6 +690,18 @@ class SubscriptionExemptLedger:
             self.unresolved.discard(idempotency_key)
             return True
 
+    def retain_stopped_timeout(self, idempotency_key: str) -> None:
+        """Retain unknown provider outcome without blocking a confirmed-safe retry.
+
+        Subscription experiment charge remains zero; no inference is made about
+        server completion or usage. Only the stopped-process timeout path calls this.
+        """
+        with self._lock:
+            if idempotency_key not in self.experiment_charges:
+                self.blocked = True
+                return
+            self.unresolved.add(idempotency_key)
+
     def retain_unresolved_and_block(self, idempotency_key: str) -> None:
         with self._lock:
             if idempotency_key in self.experiment_charges:
@@ -1055,6 +1067,7 @@ class CodexCliTransport:
         environment: Mapping[str, str] = os.environ,
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
+        allow_timeout_retry: bool = False,
     ) -> None:
         CodexRuntimeIdentity(**runtime_identity.__dict__)
         self.config = CodexPolicyConfig(**config.__dict__)
@@ -1069,6 +1082,7 @@ class CodexCliTransport:
         self.environment = _minimal_environment(environment)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
+        self.allow_timeout_retry = allow_timeout_retry
         self.records: list[dict[str, Any]] = []
         self._lifecycle = CliSubprocessTransport(
             parser=lambda raw: _codex_parse_envelope(
@@ -1115,9 +1129,15 @@ class CodexCliTransport:
             image_path = input_directory / "current-screenshot.png"
             schema_path.write_bytes(canonical_json_bytes(ACTION_SCHEMA))
             image_path.write_bytes(base64.b64decode(request["image_png_base64"], validate=True))
+            image_paths = []
+            for index, frame in enumerate(request.get("image_history", [])):
+                prior_path = input_directory / f"history-{index:02d}.png"
+                prior_path.write_bytes(base64.b64decode(frame["image_png_base64"], validate=True))
+                image_paths.append(str(prior_path))
+            image_paths.append(str(image_path))
             command = _runtime_command(
                 schema_path=schema_path,
-                image_path=image_path,
+                image_path=Path(",".join(image_paths)),
                 working_directory=working_directory,
                 config=self.config,
             )
@@ -1202,6 +1222,12 @@ class CodexCliTransport:
                 )
                 if execution_fault.phase == "pre_send":
                     self.ledger.release_pre_send(idempotency_key)
+                elif (
+                    self.allow_timeout_retry
+                    and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
+                    and execution.process_confirmed_stopped
+                ):
+                    self.ledger.retain_stopped_timeout(idempotency_key)
                 else:
                     self.ledger.retain_unresolved_and_block(idempotency_key)
                 if execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT:
@@ -1369,6 +1395,15 @@ class CodexCliTransport:
         self._lifecycle.close()
         self._closed = True
 
+    def retry_allowed(self, outcome: TransportOutcome) -> bool:
+        return (
+            self.allow_timeout_retry
+            and outcome.fault is not None
+            and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+            and self.subprocesses_closed
+            and not self.ledger.blocked
+        )
+
     def _validate_request(self, request: dict[str, Any], *, deadline_seconds: float) -> str | None:
         expected_keys = {
             "provider",
@@ -1380,7 +1415,7 @@ class CodexCliTransport:
             "action_schema_digest",
             "command_contract_digest",
         }
-        if set(request) != expected_keys:
+        if set(request) not in (expected_keys, expected_keys | {"image_history"}):
             return "request_shape_mismatch"
         if (
             request.get("provider") != PROVIDER_IDENTITY
@@ -1403,6 +1438,18 @@ class CodexCliTransport:
             return "image_encoding_invalid"
         if request.get("image_sha256") != "sha256:" + sha256_bytes(image):
             return "image_digest_mismatch"
+        history = request.get("image_history", [])
+        if not isinstance(history, list) or len(history) > 31:
+            return "image_history_invalid"
+        for frame in history:
+            if not isinstance(frame, dict) or set(frame) != {"image_png_base64", "image_sha256"}:
+                return "image_history_invalid"
+            try:
+                png = base64.b64decode(frame["image_png_base64"], validate=True)
+            except (TypeError, ValueError):
+                return "image_history_invalid"
+            if frame["image_sha256"] != "sha256:" + sha256_bytes(png):
+                return "image_history_digest_mismatch"
         return None
 
     def _record(
