@@ -32,16 +32,19 @@ report without reading private journals or making provider calls:
 .venv/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify
 ```
 
-Two heavier checks are kept outside the fast unit target and run as explicit steps in the
-pull-request `Release integration` job. The first opens a loopback listener to compare the FastAPI
-and OSWorld guest HTTP contracts. The second builds and installs the wheel in temporary directories,
-then checks packaged application assets, schemas, license material, and imports outside the source
-checkout. Neither command needs OSWorld or provider access:
+Three integration checks are kept outside the fast unit target and run as explicit steps in the pull-request
+`Release integration` job. The first opens a loopback listener to
+compare the FastAPI and OSWorld guest HTTP contracts. The second builds and installs the wheel in
+temporary directories, then checks packaged application assets, schemas, license material, and
+imports outside the source checkout. The third sends a large POST through system curl to a
+temporary local TLS server, verifies its certificate, and checks exact body forwarding. These
+commands need no OSWorld or provider access; the curl fixture uses the host's curl and OpenSSL tools:
 
 ```bash
 .venv/bin/pytest -q -m local_http_integration \
   tests/integration/test_vendor_form_server_contract.py
 .venv/bin/pytest -q tests/integration/test_wheel_packaging.py
+.venv/bin/pytest -q tests/integration/test_grounding_v5_curl_wire.py
 ```
 
 Pull-request CI also runs the fast suite with deterministic Hypothesis settings and branch coverage.

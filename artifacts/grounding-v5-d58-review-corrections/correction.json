@@ -1,0 +1,19 @@
+{
+  "corrections": [
+    "The historical provider_calls=0 describes the analysis process, not pilot execution. The corrected analysis separately reports provider_control_requests, wire_requests_sent, and provider_calls_by_analysis.",
+    "Development summary denominators are derived from stored task and choice rows. The active admission builder now records these counts for report rendering.",
+    "Use scripts.verify_grounding_v5_full_calibration for explicit verification checks that remain active with Python -O. The old verifier remains reproduction-only inside its hash-bound historical bundle."
+  ],
+  "new_spend_usd": "0",
+  "original_artifacts_replaced": false,
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-review-corrections-v1",
+  "source_file_digests": {
+    "artifacts/grounding-v5-d58-calibration-pilot/analysis.json": "sha256:59e791a1cd634e1679f065d29391a23bf55f9e222efab83cf680f84e4adcd961",
+    "artifacts/grounding-v5-d58-calibration-pilot/analyze.py": "sha256:4455377eb5f3ab0dce4de055ffdd9a6dc51398664d893c081e7b28ece22fee85",
+    "artifacts/grounding-v5-d58-calibration-pilot/summary.json": "sha256:5d8e41bcae8d42165ca2c46ec8a65a830456718f60096c139ae3d2028cbc8672",
+    "artifacts/grounding-v5-d58-design/memory-repair/admission.json": "sha256:35f2e10d5e027f9e6227feff8b4d543a30bfd4668d913389709fe707e3e57612",
+    "scripts/prepare_grounding_v5_review_corrections.py": "sha256:8c03f8dcb1d7d68281ec013755d336948d1d70a0a1b58fb4c6941acf0d41fc1b",
+    "scripts/verify_grounding_v5_full_calibration.py": "sha256:84dd8fcf09c8e919d302eaa2efca98be9cd997b121c192412789fd17db9d01ed"
+  }
+}

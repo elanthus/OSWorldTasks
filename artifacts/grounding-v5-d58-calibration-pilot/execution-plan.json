@@ -1,0 +1,125 @@
+{
+  "aggregate_ceiling_usd": "5.00",
+  "approval_scope": "the previously presented ten-example, twenty-condition-call diagnostic under the existing shared USD 5 cap; no full episode or confirmatory run",
+  "candidate_plan_digest": "sha256:e332f40fc60e67b6611dc26dd7d4840092898b1f76fb25142bcc3e24f18de696",
+  "caps": {
+    "environment_action_cap": 340,
+    "model_attempt_cap": 20,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 20
+  },
+  "confirmatory_call_cap": 0,
+  "driver_code_revision": "4bd3c7747adcb0d31809f77e756ef9c99e57445f",
+  "driver_source_digest": "sha256:34a116429decad8fd487561e3c2de5636fbe2b2fa9bdcfac4a1c4dd99c55916a",
+  "execution_enabled": true,
+  "execution_plan_digest": "sha256:deaff5b283025c360bc9cdec80da80f5d238705a90fabd34826a957a6b4a5066",
+  "jobs": [
+    {
+      "mode": "history",
+      "seed": 5000,
+      "trial_id": "d58-memory-pilot-v1-5000-history"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5000,
+      "trial_id": "d58-memory-pilot-v1-5000-stateless"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5004,
+      "trial_id": "d58-memory-pilot-v1-5004-stateless"
+    },
+    {
+      "mode": "history",
+      "seed": 5004,
+      "trial_id": "d58-memory-pilot-v1-5004-history"
+    },
+    {
+      "mode": "history",
+      "seed": 5008,
+      "trial_id": "d58-memory-pilot-v1-5008-history"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5008,
+      "trial_id": "d58-memory-pilot-v1-5008-stateless"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5012,
+      "trial_id": "d58-memory-pilot-v1-5012-stateless"
+    },
+    {
+      "mode": "history",
+      "seed": 5012,
+      "trial_id": "d58-memory-pilot-v1-5012-history"
+    },
+    {
+      "mode": "history",
+      "seed": 5016,
+      "trial_id": "d58-memory-pilot-v1-5016-history"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5016,
+      "trial_id": "d58-memory-pilot-v1-5016-stateless"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5020,
+      "trial_id": "d58-memory-pilot-v1-5020-stateless"
+    },
+    {
+      "mode": "history",
+      "seed": 5020,
+      "trial_id": "d58-memory-pilot-v1-5020-history"
+    },
+    {
+      "mode": "history",
+      "seed": 5001,
+      "trial_id": "d58-memory-pilot-v1-5001-history"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5001,
+      "trial_id": "d58-memory-pilot-v1-5001-stateless"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5005,
+      "trial_id": "d58-memory-pilot-v1-5005-stateless"
+    },
+    {
+      "mode": "history",
+      "seed": 5005,
+      "trial_id": "d58-memory-pilot-v1-5005-history"
+    },
+    {
+      "mode": "history",
+      "seed": 5009,
+      "trial_id": "d58-memory-pilot-v1-5009-history"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5009,
+      "trial_id": "d58-memory-pilot-v1-5009-stateless"
+    },
+    {
+      "mode": "stateless",
+      "seed": 5013,
+      "trial_id": "d58-memory-pilot-v1-5013-stateless"
+    },
+    {
+      "mode": "history",
+      "seed": 5013,
+      "trial_id": "d58-memory-pilot-v1-5013-history"
+    }
+  ],
+  "ledger_location": ".cache/d58-memory-calibration/aggregate.sqlite",
+  "owner_approval": "OK, unit tests passed. Lets do the calbration",
+  "phase_id": "d58-memory-pilot-v1",
+  "price_recheck_digest": "sha256:ff9fcbf5ae798a34701b48805f0fd4fa19e12cd6ef1797cef9734c7461a52965",
+  "provider_retries": 0,
+  "schema_version": "pixelgym-v5-d58-memory-pilot-execution-v1",
+  "stop_rule": "complete twenty assigned conditions or stop before the aggregate reservation exceeds USD 5; never resend an uncertain request; retain all errors and unrun assignments"
+}

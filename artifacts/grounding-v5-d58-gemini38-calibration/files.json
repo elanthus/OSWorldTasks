@@ -1,0 +1,10 @@
+{
+  "analysis.json": "sha256:ec7ff5609242968196ace2d5024ef99faefb4430bba2a202e14a9fc085d67bb1",
+  "analyze.py": "sha256:150dd33ec907efcca5a93a9afdf18fb2d621b0c8cf307c4346ae9ac823046100",
+  "execution-plan.json": "sha256:7677f0c13f5dfde536086a73ead341eb7daf41c59ac8a0d70c84220af5fddbf3",
+  "owner-spend-reconciliation.json": "sha256:26907d1b1c0232b0ebb7e1a311ea426ef5ae9695d91a074c24b6b9a70cf37fcf",
+  "price-recheck.json": "sha256:8ae80aaf945751bd3baeed0c90b422c127c9a443cd26fec9f9b3c6a6b08b87f7",
+  "report.md": "sha256:21bb9a75958583ecb0813420e4b1316d743e9c5ca5d28097d16a1a182223caec",
+  "summary.json": "sha256:8c7d2bd6778381f70a5c2e64141e504d4bc8653e7624ecfa3cd22d2a97d5c55e",
+  "verification.json": "sha256:d6fe3985cd072aa92e42b7b7ccbe306f97042e493ec77372eae659b9541d351e"
+}

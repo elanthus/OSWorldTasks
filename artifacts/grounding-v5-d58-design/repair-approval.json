@@ -1,0 +1,12 @@
+{
+  "schema_version": "pixelgym-v5-d58-repair-approval-v1",
+  "decision": "bounded_repairs_approved",
+  "owner_response": "approved, 5 dollars",
+  "approved_total_new_spend_usd": "5.00",
+  "spend_scope": "aggregate additional calibration and confirmatory provider spend for this D5.8 successor, including unknown-charge reservations",
+  "feedback_decision": "Defer correctness feedback until final submission (recommended)",
+  "implementation_scope": "versioned generator repairs, delayed deferred-choice validation, matched screenshot-memory harness, no-call admission and cost/call planning",
+  "paid_execution_plan_approved": false,
+  "final_confirmatory_freeze_approved": false,
+  "remaining_boundary": "Present exact task/policy identities and phase call/cost caps before paid execution; final confirmatory approval follows informative calibration."
+}

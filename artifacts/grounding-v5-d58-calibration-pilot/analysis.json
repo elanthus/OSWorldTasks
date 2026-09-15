@@ -1,0 +1,18 @@
+{
+  "decision": "retain the frozen generator and policies; require end-to-end calibration before final evaluation approval",
+  "execution_plan_digest": "sha256:deaff5b283025c360bc9cdec80da80f5d238705a90fabd34826a957a6b4a5066",
+  "exploratory_exact_mcnemar_two_sided_p": 0.375,
+  "history_consumer_misses": 1,
+  "inference_scope": "exploratory first-attempt diagnostic; not the confirmatory terminal-success hypothesis",
+  "paired_counts": {
+    "both_correct": 5,
+    "history_only": 4,
+    "incomplete_pair": 0,
+    "neither_correct": 0,
+    "stateless_only": 1
+  },
+  "provider_calls": 0,
+  "remaining_aggregate_ceiling_usd": "4.80991250",
+  "schema_version": "pixelgym-d58-memory-pilot-descriptive-analysis-v1",
+  "summary_digest": "sha256:1f503ec98e717c08192842699bec7b8cb9ae0af2631674018b761a6e28132fb5"
+}

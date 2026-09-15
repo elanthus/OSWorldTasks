@@ -1,0 +1,215 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "27.922679325",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "23.275649025",
+    "unknown_charge_outcomes": 90,
+    "unknown_reservation_usd": "4.64703030",
+    "wire_requests_sent": 3287
+  },
+  "all_repaired_transport_assignments": {
+    "history": {
+      "assigned": 45,
+      "attempted_episodes": 43,
+      "classifications": {
+        "not_run": 2,
+        "request_failure": 2,
+        "success_termination": 41
+      },
+      "correct_first_memory_attempts": 83,
+      "first_memory_attempts": 84,
+      "reached_both_consumers": 42,
+      "terminal_successes": 41
+    },
+    "stateless": {
+      "assigned": 45,
+      "attempted_episodes": 43,
+      "classifications": {
+        "not_run": 2,
+        "policy_violation": 1,
+        "step_limit_truncation": 36,
+        "success_termination": 6
+      },
+      "correct_first_memory_attempts": 32,
+      "first_memory_attempts": 82,
+      "reached_both_consumers": 41,
+      "terminal_successes": 6
+    }
+  },
+  "all_repaired_transport_paired_outcomes": {
+    "both_success": 6,
+    "history_only": 35,
+    "incomplete": 2,
+    "neither_success": 2,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "calibration_threshold_scope": "Compare history consumer exposure with 40/50 and history terminal success with 10..40/50; these are planning thresholds, not a milestone verdict. Missing episodes do not count as observed model failures.",
+  "complete": false,
+  "confirmatory_power_estimate": null,
+  "current_phase_paired_outcomes": {
+    "both_success": 5,
+    "history_only": 26,
+    "incomplete": 2,
+    "neither_success": 1,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "current_phase_subset": {
+    "history": {
+      "assigned": 34,
+      "attempted_episodes": 32,
+      "classifications": {
+        "not_run": 2,
+        "request_failure": 1,
+        "success_termination": 31
+      },
+      "correct_first_memory_attempts": 64,
+      "first_memory_attempts": 64,
+      "reached_both_consumers": 32,
+      "terminal_successes": 31
+    },
+    "stateless": {
+      "assigned": 34,
+      "attempted_episodes": 32,
+      "classifications": {
+        "not_run": 2,
+        "policy_violation": 1,
+        "step_limit_truncation": 26,
+        "success_termination": 5
+      },
+      "correct_first_memory_attempts": 22,
+      "first_memory_attempts": 60,
+      "reached_both_consumers": 30,
+      "terminal_successes": 5
+    }
+  },
+  "execution_plan_digest": "sha256:d60e7390fb91bfded91e26b127b7bb9e521c048e41e8e7d407294367c2d49ba9",
+  "first_attempt_and_exposure_counts": {
+    "history": {
+      "assigned": 50,
+      "attempted_episodes": 48,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "not_run": 2,
+        "request_failure": 2,
+        "success_termination": 41
+      },
+      "correct_first_memory_attempts": 83,
+      "first_memory_attempts": 84,
+      "reached_both_consumers": 42,
+      "terminal_successes": 41
+    },
+    "stateless": {
+      "assigned": 50,
+      "attempted_episodes": 48,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "not_run": 2,
+        "policy_violation": 1,
+        "step_limit_truncation": 36,
+        "success_termination": 6
+      },
+      "correct_first_memory_attempts": 36,
+      "first_memory_attempts": 88,
+      "reached_both_consumers": 44,
+      "terminal_successes": 6
+    }
+  },
+  "history_exposure_upper_bound_including_missing": 44,
+  "inferential_test": null,
+  "interpretation": "Continued focus-repaired Gemini 3.8 cohort including ten preserved failures and an explicit transport-version boundary; do not pool with earlier renderers or scripted-prefix diagnostics. Infrastructure failures are retained. Final confirmation remains unapproved.",
+  "logical_clusters": 44,
+  "new_phase_known_spend_usd": "12.710328975",
+  "new_phase_wire_requests": 1652,
+  "paired_terminal_outcomes": {
+    "both_success": 6,
+    "history_only": 35,
+    "incomplete": 2,
+    "neither_success": 7,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "planned_exposure_threshold_count": 40,
+  "planned_mixed_terminal_outcome_range": [
+    10,
+    40
+  ],
+  "provider_calls": 0,
+  "representative_seeds": [
+    5112,
+    5114,
+    5115,
+    5116,
+    5117,
+    5118,
+    5119,
+    5122,
+    5124,
+    5125,
+    5126,
+    5127,
+    5128,
+    5129,
+    5132,
+    5134,
+    5135,
+    5136,
+    5137,
+    5138,
+    5139,
+    5141,
+    5142,
+    5144,
+    5145,
+    5146,
+    5147,
+    5148,
+    5149,
+    5151,
+    5152,
+    5154,
+    5155,
+    5156,
+    5157,
+    5158,
+    5159,
+    5160,
+    5162,
+    5163,
+    5164,
+    5165,
+    5166,
+    5167
+  ],
+  "representative_terminal_outcomes": {
+    "both_success": 6,
+    "history_only": 30,
+    "incomplete": 2,
+    "neither_success": 6,
+    "stateless_only": 0,
+    "unpaired_in_subset": 0
+  },
+  "schema_version": "pixelgym-d58-reliable-extension-analysis-v1",
+  "started_final_stages": {
+    "history": {
+      "12": 32,
+      "14": 9,
+      "3": 1,
+      "4": 5,
+      "8": 1
+    },
+    "stateless": {
+      "1": 2,
+      "10": 1,
+      "11": 28,
+      "12": 5,
+      "13": 8,
+      "14": 1,
+      "4": 2,
+      "8": 1
+    }
+  },
+  "summary_digest": "sha256:b2eb8014b0a84b9c0a8e0df4c25bed2d996637a0a6b67d6774c6469c0edc2eb0"
+}

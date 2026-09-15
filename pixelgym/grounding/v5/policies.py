@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -53,7 +53,7 @@ def golden_actions(task: V5Task, backend: V5FakeBackend) -> tuple[Action, ...]:
     actions: list[Action] = []
     # Simulate only to query state-dependent recovery controls.  The caller's
     # backend is not mutated; a private planner backend produces the trace.
-    planner = V5FakeBackend()
+    planner = V5FakeBackend(task_factory=backend.task_factory)
     planner.reset(task.seed)
     for stage in task.stages:
         _append_golden_stage(planner, stage, actions)
@@ -61,11 +61,14 @@ def golden_actions(task: V5Task, backend: V5FakeBackend) -> tuple[Action, ...]:
     return tuple(actions)
 
 
-def mutation_trace(task: V5Task, mutation: Mutation) -> ScriptedTrace:
+def mutation_trace(
+    task: V5Task, mutation: Mutation, *,
+    backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
+) -> ScriptedTrace:
     if mutation is Mutation.STEP_BUDGET_EXHAUSTION or mutation is Mutation.STALE_TASK_SUBMISSION:
         actions = tuple(noop_action() for _ in range(task.max_episode_steps))
     else:
-        planner = V5FakeBackend()
+        planner = backend_factory()
         planner.reset(task.seed)
         prefix: list[Action] = []
         target_index = {

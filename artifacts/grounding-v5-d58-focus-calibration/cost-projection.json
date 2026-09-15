@@ -1,0 +1,167 @@
+{
+  "carry_forward_summary_digest": "sha256:0dc152ec1a7281d464cc847426ce0e6972c52717d2aff13b763a3e557cf24635",
+  "episodes": [
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.09426975",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5122-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.07296750",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5132-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.14485800",
+      "mode": "stateless",
+      "model_attempts": 26,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5151-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.15015225",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5160-stateless"
+    },
+    {
+      "classification": "success_termination",
+      "known_cost_usd": "0.27000225",
+      "mode": "history",
+      "model_attempts": 22,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5160-history"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.2163360",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5123-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.10338375",
+      "mode": "stateless",
+      "model_attempts": 29,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5142-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.08425650",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5152-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.09617850",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5161-stateless"
+    },
+    {
+      "classification": "success_termination",
+      "known_cost_usd": "0.30111645",
+      "mode": "history",
+      "model_attempts": 23,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5161-history"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.11814150",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5114-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.13191975",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5124-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.12731625",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5134-stateless"
+    },
+    {
+      "classification": "success_termination",
+      "known_cost_usd": "0.28609050",
+      "mode": "history",
+      "model_attempts": 22,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5153-history"
+    },
+    {
+      "classification": "success_termination",
+      "known_cost_usd": "0.27779475",
+      "mode": "history",
+      "model_attempts": 22,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5162-history"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.07719150",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5115-stateless"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.07307850",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5125-stateless"
+    },
+    {
+      "classification": "success_termination",
+      "known_cost_usd": "0.31964400",
+      "mode": "history",
+      "model_attempts": 23,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5135-history"
+    },
+    {
+      "classification": "step_limit_truncation",
+      "known_cost_usd": "0.11278275",
+      "mode": "stateless",
+      "model_attempts": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5154-stateless"
+    }
+  ],
+  "illustrative_affordable_episode_count": "64.19537582794078112144098832",
+  "limitation": "Means condition on episodes that reached success or the action limit. Only 5 history and 14 stateless observations; focus repair may change lengths. Projection is neither a billing bound nor a guarantee of episode completion. Early infrastructure failures make all-attempt averages underestimate the cost of 100 completed episodes.",
+  "mode_estimates": {
+    "history": {
+      "known_cost_usd": "1.45464795",
+      "mean_episode_cost_usd": "0.29092959",
+      "projected_50_episodes_usd": "14.54647950",
+      "sample_episodes": 5
+    },
+    "stateless": {
+      "known_cost_usd": "1.60283250",
+      "mean_episode_cost_usd": "0.1144880357142857142857142857",
+      "projected_50_episodes_usd": "5.724401785714285714285714285",
+      "sample_episodes": 14
+    }
+  },
+  "naive_all_attempts_projection_usd": "9.147206911764705882352941176",
+  "projected_new_known_cost_100_episodes_usd": "20.27088128571428571428571428",
+  "provider_calls": 0,
+  "remaining_budget_including_holds_usd": "13.012968425",
+  "schema_version": "pixelgym-d58-calibration-cost-projection-v1",
+  "source_journal_prefix": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:246a87401b1ddf6a3f9e41b5aa68a392ab6093291784c324c4476b8f087b807f",
+    "event_count": 10044,
+    "object_count": 3677,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "source_summary_digest": "sha256:1442c0ee2b491c68d05fa40b48630c6d20a8dce71b27a37c4a527f20c030a3bd"
+}

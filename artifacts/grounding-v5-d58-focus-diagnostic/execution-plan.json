@@ -1,0 +1,579 @@
+{
+  "admission_digest": "sha256:fa5479a02e8caa06d5775d2274bc4a27948ebcbc19af544f3d0437121933ce88",
+  "aggregate_caps": {
+    "environment_action_cap": 901,
+    "model_attempt_cap": 935,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 935
+  },
+  "aggregate_ceiling_usd": "20.00",
+  "backend_identity": "pixelgym-v5-memory-focus-backend-v3",
+  "confirmatory_call_cap": 0,
+  "diagnosis_digest": "sha256:151fa371419e0850c67a523efe388739947c0a9c063673e62844735201f002ae",
+  "driver_code_revision": "7cedfebc97b552e1862aa3333546b716fed4bb9e",
+  "execution_enabled": true,
+  "execution_plan_digest": "sha256:6c4bde99c9a6dbfd576816a95568845d94e7e5430fcb546d28233c8b73d231dd",
+  "interruption_rule": "never resend a started condition; preserve prefix, response, failed and unrun conditions; closed phases cannot restart",
+  "jobs": [
+    {
+      "case": {
+        "case_id": "case-00",
+        "scripted_prefix_action_count": 1,
+        "scripted_prefix_actions_digest": "sha256:8e975e3260ff818d4b4f02315f0780236c0bb7f3f8392b9024919a9835761953",
+        "seed": 5000,
+        "stage_index": 1,
+        "state_name": "unfocused",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-00-history"
+    },
+    {
+      "case": {
+        "case_id": "case-00",
+        "scripted_prefix_action_count": 1,
+        "scripted_prefix_actions_digest": "sha256:8e975e3260ff818d4b4f02315f0780236c0bb7f3f8392b9024919a9835761953",
+        "seed": 5000,
+        "stage_index": 1,
+        "state_name": "unfocused",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-00-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-01",
+        "scripted_prefix_action_count": 1,
+        "scripted_prefix_actions_digest": "sha256:fd056662d8d72e4c3a5081585d27f034dceabe9a06e86b25965249b8350f714b",
+        "seed": 5004,
+        "stage_index": 1,
+        "state_name": "unfocused",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-01-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-01",
+        "scripted_prefix_action_count": 1,
+        "scripted_prefix_actions_digest": "sha256:fd056662d8d72e4c3a5081585d27f034dceabe9a06e86b25965249b8350f714b",
+        "seed": 5004,
+        "stage_index": 1,
+        "state_name": "unfocused",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-01-history"
+    },
+    {
+      "case": {
+        "case_id": "case-02",
+        "scripted_prefix_action_count": 2,
+        "scripted_prefix_actions_digest": "sha256:a4e3c7d67a236c1d0181fe597b3434cb0f4ac0aa12cdb10d8db55bf3543344c8",
+        "seed": 5000,
+        "stage_index": 1,
+        "state_name": "focused_empty",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-02-history"
+    },
+    {
+      "case": {
+        "case_id": "case-02",
+        "scripted_prefix_action_count": 2,
+        "scripted_prefix_actions_digest": "sha256:a4e3c7d67a236c1d0181fe597b3434cb0f4ac0aa12cdb10d8db55bf3543344c8",
+        "seed": 5000,
+        "stage_index": 1,
+        "state_name": "focused_empty",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-02-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-03",
+        "scripted_prefix_action_count": 2,
+        "scripted_prefix_actions_digest": "sha256:81baff1d9b1c28ea1b8133bd210acc91d6eb1f222b4150f9ab4d1e2365502a44",
+        "seed": 5004,
+        "stage_index": 1,
+        "state_name": "focused_empty",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-03-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-03",
+        "scripted_prefix_action_count": 2,
+        "scripted_prefix_actions_digest": "sha256:81baff1d9b1c28ea1b8133bd210acc91d6eb1f222b4150f9ab4d1e2365502a44",
+        "seed": 5004,
+        "stage_index": 1,
+        "state_name": "focused_empty",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-03-history"
+    },
+    {
+      "case": {
+        "case_id": "case-04",
+        "scripted_prefix_action_count": 3,
+        "scripted_prefix_actions_digest": "sha256:fccb1bdf38388aec44208f2084514e4a4af0292090320a9787269284a0ea9978",
+        "seed": 5008,
+        "stage_index": 1,
+        "state_name": "partial",
+        "task_digest": "sha256:c8aeb6521513e5bf7717e50ea24b18dab5c1b5ff1ae7a3f0c0116efd95529512",
+        "task_id": "v5m-785bd71c49b26542e8559997"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-04-history"
+    },
+    {
+      "case": {
+        "case_id": "case-04",
+        "scripted_prefix_action_count": 3,
+        "scripted_prefix_actions_digest": "sha256:fccb1bdf38388aec44208f2084514e4a4af0292090320a9787269284a0ea9978",
+        "seed": 5008,
+        "stage_index": 1,
+        "state_name": "partial",
+        "task_digest": "sha256:c8aeb6521513e5bf7717e50ea24b18dab5c1b5ff1ae7a3f0c0116efd95529512",
+        "task_id": "v5m-785bd71c49b26542e8559997"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-04-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-05",
+        "scripted_prefix_action_count": 6,
+        "scripted_prefix_actions_digest": "sha256:212938063ef1ae33d25384f0671c92ac4a157f09e705d22a0ec906d6a4525d79",
+        "seed": 5012,
+        "stage_index": 1,
+        "state_name": "complete",
+        "task_digest": "sha256:2ac4692ebb2eeabe58bc5480341c3de1cb74812d1a86de93ec8fa033dc572a92",
+        "task_id": "v5m-027a1833e45f69f7fb0758ef"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-05-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-05",
+        "scripted_prefix_action_count": 6,
+        "scripted_prefix_actions_digest": "sha256:212938063ef1ae33d25384f0671c92ac4a157f09e705d22a0ec906d6a4525d79",
+        "seed": 5012,
+        "stage_index": 1,
+        "state_name": "complete",
+        "task_digest": "sha256:2ac4692ebb2eeabe58bc5480341c3de1cb74812d1a86de93ec8fa033dc572a92",
+        "task_id": "v5m-027a1833e45f69f7fb0758ef"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-05-history"
+    },
+    {
+      "case": {
+        "case_id": "case-06",
+        "scripted_prefix_action_count": 15,
+        "scripted_prefix_actions_digest": "sha256:7ee377b7e06c3ec77388e33f98515078a707bdb7ea134ba696529ab615bcbde6",
+        "seed": 5000,
+        "stage_index": 5,
+        "state_name": "memory_5",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-06-history"
+    },
+    {
+      "case": {
+        "case_id": "case-06",
+        "scripted_prefix_action_count": 15,
+        "scripted_prefix_actions_digest": "sha256:7ee377b7e06c3ec77388e33f98515078a707bdb7ea134ba696529ab615bcbde6",
+        "seed": 5000,
+        "stage_index": 5,
+        "state_name": "memory_5",
+        "task_digest": "sha256:b6ca20723363b66e11a4b0a912db2ffc769fe233e2140b5bebf3683ba1cc9fa7",
+        "task_id": "v5m-dc8952119f67c0134d64e11b"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-06-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-07",
+        "scripted_prefix_action_count": 17,
+        "scripted_prefix_actions_digest": "sha256:864fd7ca1bb107aabc0c67e8cd2caa42730570818327301a0fb5ad16a101eb40",
+        "seed": 5004,
+        "stage_index": 7,
+        "state_name": "memory_7",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-07-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-07",
+        "scripted_prefix_action_count": 17,
+        "scripted_prefix_actions_digest": "sha256:864fd7ca1bb107aabc0c67e8cd2caa42730570818327301a0fb5ad16a101eb40",
+        "seed": 5004,
+        "stage_index": 7,
+        "state_name": "memory_7",
+        "task_digest": "sha256:f82770db1893bad982c9d73e762cc31ef378b7d1de9b86d0fbbd3afad1f39c5e",
+        "task_id": "v5m-96b06d4889d7fda349e208c4"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-07-history"
+    },
+    {
+      "case": {
+        "case_id": "case-08",
+        "scripted_prefix_action_count": 15,
+        "scripted_prefix_actions_digest": "sha256:20fa9258b22dcbde9a6c4ca223d4bbc0539421c119c4c96cf8f4c798636e2ccc",
+        "seed": 5008,
+        "stage_index": 5,
+        "state_name": "memory_5",
+        "task_digest": "sha256:c8aeb6521513e5bf7717e50ea24b18dab5c1b5ff1ae7a3f0c0116efd95529512",
+        "task_id": "v5m-785bd71c49b26542e8559997"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-08-history"
+    },
+    {
+      "case": {
+        "case_id": "case-08",
+        "scripted_prefix_action_count": 15,
+        "scripted_prefix_actions_digest": "sha256:20fa9258b22dcbde9a6c4ca223d4bbc0539421c119c4c96cf8f4c798636e2ccc",
+        "seed": 5008,
+        "stage_index": 5,
+        "state_name": "memory_5",
+        "task_digest": "sha256:c8aeb6521513e5bf7717e50ea24b18dab5c1b5ff1ae7a3f0c0116efd95529512",
+        "task_id": "v5m-785bd71c49b26542e8559997"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-08-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-09",
+        "scripted_prefix_action_count": 17,
+        "scripted_prefix_actions_digest": "sha256:77ba27b1df6e874ff7abe8336ff8eb8887e228ca419ea7fe73f2908e52796ca1",
+        "seed": 5012,
+        "stage_index": 7,
+        "state_name": "memory_7",
+        "task_digest": "sha256:2ac4692ebb2eeabe58bc5480341c3de1cb74812d1a86de93ec8fa033dc572a92",
+        "task_id": "v5m-027a1833e45f69f7fb0758ef"
+      },
+      "mode": "stateless",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-09-stateless"
+    },
+    {
+      "case": {
+        "case_id": "case-09",
+        "scripted_prefix_action_count": 17,
+        "scripted_prefix_actions_digest": "sha256:77ba27b1df6e874ff7abe8336ff8eb8887e228ca419ea7fe73f2908e52796ca1",
+        "seed": 5012,
+        "stage_index": 7,
+        "state_name": "memory_7",
+        "task_digest": "sha256:2ac4692ebb2eeabe58bc5480341c3de1cb74812d1a86de93ec8fa033dc572a92",
+        "task_id": "v5m-027a1833e45f69f7fb0758ef"
+      },
+      "mode": "history",
+      "trial_id": "d58-focus-timeout-diagnostic-v1-case-09-history"
+    }
+  ],
+  "maximum_new_request_reservations_usd": "2.76480000",
+  "model_action_cap": 20,
+  "model_call_cap": 20,
+  "owner_approval": "go ahead with the repair and diagnosis, the run the diagnostic",
+  "phase_id": "d58-focus-timeout-diagnostic-v1",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "disabled",
+      "code_revision": "7cedfebc97b552e1862aa3333546b716fed4bb9e",
+      "context_limit": 163840,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 3.75, \"prompt\": 0.75}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-history-v1",
+      "model": "google/gemini-3.8-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-bf537f0e7483bbabd779",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    },
+    "stateless": {
+      "cancellation_mode": "disabled",
+      "code_revision": "7cedfebc97b552e1862aa3333546b716fed4bb9e",
+      "context_limit": 163840,
+      "coordinate_adapter": "normalized-1000x1000",
+      "coordinate_adapter_digest": "sha256:c526633bc18e54d2c7d07a5f67e4248688be6a3288da623ff332c6895b434c12",
+      "coordinate_input_convention": "integer-normalized-square/0..999-inclusive",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": false,
+      "harness_digest": "sha256:1a0bf721c7efdf455f9c0030841415e37b79626f1ec156a2a84a685f99dc11f4",
+      "inference_parameters": [
+        [
+          "allow_fallbacks",
+          "false"
+        ],
+        [
+          "data_collection",
+          "deny"
+        ],
+        [
+          "max_tokens",
+          "4096"
+        ],
+        [
+          "provider",
+          "google-vertex/global"
+        ],
+        [
+          "require_parameters",
+          "true"
+        ],
+        [
+          "response_schema_strict",
+          "true"
+        ],
+        [
+          "seed",
+          "20260809"
+        ],
+        [
+          "max_rate_limit_retries_per_action",
+          "0"
+        ],
+        [
+          "rate_limit_backoff_base_seconds",
+          "2.0"
+        ],
+        [
+          "rate_limit_backoff_max_seconds",
+          "60.0"
+        ],
+        [
+          "runner_deadline_safety_margin_seconds",
+          "1.0"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "0"
+        ],
+        [
+          "router_metadata",
+          "enabled"
+        ],
+        [
+          "provider_max_price",
+          "{\"completion\": 3.75, \"prompt\": 0.75}"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 1,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-agent-v5-screenshot-stateless-v1",
+      "model": "google/gemini-3.8-flash",
+      "parser_version": "pixelgym-agent-v5-json-action-normalized-1000x1000-parser-v1",
+      "policy_id": "policy-6ce0faed4fe947716584",
+      "provider": "openrouter/google-vertex/global",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 1.0,
+      "request_deadline_seconds": 210.0,
+      "response_schema_version": "pixelgym-agent-v5-canonical-response-v2",
+      "sandbox": {
+        "denied_capabilities": [
+          "browser_dom",
+          "cross_policy_channel",
+          "external_search",
+          "inbound_listener",
+          "shared_storage",
+          "shell"
+        ],
+        "endpoint_allowlist_digest": "sha256:51709a786baa7e9a63f9c6823d04be2d8a3dcce94a3d975d4a106fab9916decd",
+        "network_policy_version": "pixelgym-agent-v5-sandbox-v2",
+        "provider_endpoint": "https://openrouter.ai",
+        "runtime_digest": "sha256:d66ba41fcb8d31ba78484b0f70e4ffe69d833d8e6cecc0626815d1d14ed653f0"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:5775565a2f7372271d0bbb5726a33c96a60fe31fcb22fcf60cfb4f58ded15374",
+      "task_renderer_version": "pixelgym-agent-v5-task-renderer-v1",
+      "transport_retry_rule": "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-after-bounded-backoff-v3"
+    }
+  },
+  "price_snapshot_digest": "sha256:9e76f76a562600466db9fb0dcc64c520b79be3759f2ed059b5c31536b5aa1179",
+  "prior_event_count": 10044,
+  "prior_event_prefix_digest": "sha256:246a87401b1ddf6a3f9e41b5aa68a392ab6093291784c324c4476b8f087b807f",
+  "prior_model_attempts": 915,
+  "prior_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "6.842349075",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "5.508152775",
+    "unknown_charge_outcomes": 27,
+    "unknown_reservation_usd": "1.33419630",
+    "wire_requests_sent": 915
+  },
+  "provider_control_call_cap": 0,
+  "provider_retries": 0,
+  "provider_wire_call_cap": 20,
+  "purpose": "10 scripted-prefix states x 2 matched modes, one model action per condition; 6 text-entry states and 4 deferred-choice states; no end-to-end or confirmatory execution",
+  "schema_version": "pixelgym-d58-focus-diagnostic-plan-v1",
+  "scripted_action_cap": 158,
+  "source_digests": {
+    "pixelgym/actions.py": "sha256:c060674623681123ebbdbf54c52a7e4eca72d3cc9805cd2f0c4519c00ecc9912",
+    "pixelgym/env.py": "sha256:36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+    "pixelgym/evaluator.py": "sha256:35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+    "pixelgym/grounding/v5/admission.py": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+    "pixelgym/grounding/v5/backend.py": "sha256:a8916ca84f5617030044fd2c22d0a30dcbd826aeb4fb431cec6085945e005a58",
+    "pixelgym/grounding/v5/contracts.py": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+    "pixelgym/grounding/v5/coordinates.py": "sha256:4640011e9a93891490be020f5ab6a784ba8080b0a1a92d86a0f88b8d95947540",
+    "pixelgym/grounding/v5/generator.py": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+    "pixelgym/grounding/v5/journal.py": "sha256:71a50c9d58e2237cbaacf74dd237a0e1337f3239dd78660d3716a8ecf61e2929",
+    "pixelgym/grounding/v5/memory_backend.py": "sha256:b0454540ef27368e2fa7aa0b3254f4e8f58cc1890845daa525f4c6e89237f8de",
+    "pixelgym/grounding/v5/memory_focus_backend.py": "sha256:d8ce6bf73fed8be10c70ef22c9eac67f0cefd595418b8a64e5c0e4c0b3c95f24",
+    "pixelgym/grounding/v5/memory_focus_diagnostic.py": "sha256:6519cda039be93f80b5b1440497a4fcfd02aa1bf0476d6396a3b2623eeb104f7",
+    "pixelgym/grounding/v5/memory_generator.py": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+    "pixelgym/grounding/v5/memory_pilot.py": "sha256:8644490fef5550a7237b2f4674c2503dd0b0e81864efaa445281471952ba029d",
+    "pixelgym/grounding/v5/memory_plan.py": "sha256:f06e2b007911f27e3b794cf594063a6920296a2cf5e505da07e74a81f19eedc6",
+    "pixelgym/grounding/v5/openrouter_policy.py": "sha256:009bf8e5827a55ea314dc3ea75946213f3818b954fdef9af3c41cf86c879c37f",
+    "pixelgym/grounding/v5/panel_policy.py": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6",
+    "pixelgym/grounding/v5/policies.py": "sha256:9ceb6583cd8bee0be90d0e4ad425c160f08f436212b21d1f1e37716264fbabb2",
+    "pixelgym/grounding/v5/request_budget.py": "sha256:94729c0f64348c24451cc16d7cdf5b2a1979933841abc3366f8ffbe9c9fa6258",
+    "pixelgym/grounding/v5/request_budget_v2.py": "sha256:330a62ef927378fc4d80210a13a880192046aeb8c09f2474c4ca759a548049b5",
+    "pixelgym/grounding/v5/resume.py": "sha256:1042cdd70708acdc4439b7ac45eee2219c7a2a48dfa7347cb24d14e59d850f6e",
+    "pixelgym/grounding/v5/runner.py": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+    "pixelgym/grounding/v5/schemas/memory-task.schema.json": "sha256:acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+    "pixelgym/grounding/v5/screenshot_memory.py": "sha256:6ead1700ec16b2876aa21a8045061c5193b992dfe706db78310365270acef772",
+    "pixelgym/grounding/v5/seeds.py": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+    "pyproject.toml": "sha256:e887cc83aa5412d55fdfc967364d7c68a7b870660d3d9850b352374797a7baa0",
+    "requirements/platform-py312.lock": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+    "scripts/prepare_grounding_v5_memory.py": "sha256:47f10261a45836211302e0657caf25a56406da5167db415143c9ea97eaa696b1",
+    "scripts/run_grounding_v5_focus_diagnostic.py": "sha256:813e9278133b9f65d9dc5d066809c2c7660fb8bf55a65a2a429207a441bcd3d6",
+    "scripts/run_grounding_v5_gemini38_calibration.py": "sha256:379765a4077af0d3c876a403b8bf582f70719fed42edd7884ceb531490a6e38d",
+    "scripts/run_grounding_v5_memory_calibration.py": "sha256:18d1aad7f717561896469bbfa4d2c21531388bbcb0ecb2b0fe4418da7f1e308f"
+  },
+  "stop_rules": [
+    "20 assigned calls completed",
+    "any runner-abandoned active send retires the phase transport and stops the phase",
+    "five consecutive conditions without a dispatched model action",
+    "provider identity or price violation",
+    "next reservation would exceed USD 20 aggregate"
+  ],
+  "transport_version": "gemini-request-local-transport-v2",
+  "unknown_charge_rule": "retain request-sized holds until billing evidence resolves them; no zero-charge assumption"
+}

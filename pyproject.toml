@@ -112,6 +112,11 @@ output = "coverage.xml"
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint.per-file-ignores]
+# Preserve the closed evidence manifest's analyzer bytes; only import ordering
+# is exempt, and runtime correctness rules remain enabled for this file.
+"artifacts/grounding-v5-d58-reliable-diagnostic/analyze.py" = ["I001"]
+
 [tool.mypy]
 python_version = "3.12"
 files = ["pixelgym"]

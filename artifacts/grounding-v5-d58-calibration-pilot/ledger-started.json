@@ -1,0 +1,6 @@
+{
+  "execution_plan_digest": "sha256:deaff5b283025c360bc9cdec80da80f5d238705a90fabd34826a957a6b4a5066",
+  "maximum_aggregate_spend_usd": "5.00",
+  "phase_id": "d58-memory-pilot-v1",
+  "schema_version": "pixelgym-d58-aggregate-ledger-binding-v1"
+}

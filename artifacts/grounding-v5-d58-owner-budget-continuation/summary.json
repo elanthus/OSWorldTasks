@@ -1,0 +1,5686 @@
+{
+  "aggregate_spend": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "23.978227275",
+    "in_flight_reservation_usd": "0",
+    "owner_budget_approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+    "spent_usd": "23.978227275",
+    "unknown_budget_rule": "owner-authorized-zero-unpriced-holds-v1",
+    "unknown_charge_outcomes": 95,
+    "unknown_reservation_usd": "0",
+    "wire_requests_sent": 3393
+  },
+  "backend_identity": "pixelgym-v5-memory-focus-backend-v3",
+  "cohort_known_spend_usd": "18.225860250",
+  "cohort_wire_requests": 2448,
+  "complete": true,
+  "conditions": [
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 9,
+      "environment_dispatch_reservations": 9,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 10,
+      "policy_id": "policy-5efda6406cb9fd77502f",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5112,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 2,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5112,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:415bf53b1acf8bce189255dec59e9d6e18ead3c6a8be43b17d02e85678ed9029",
+      "task_id": "v5m-ddb09cb8c04068399c57624e",
+      "trial_id": "d58-focus-memory-calibration-v1-5112-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 2,
+      "environment_dispatch_reservations": 2,
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 3,
+      "policy_id": "policy-e4abdb596c4d98f644bb",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5112,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 2,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5112,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:415bf53b1acf8bce189255dec59e9d6e18ead3c6a8be43b17d02e85678ed9029",
+      "task_id": "v5m-ddb09cb8c04068399c57624e",
+      "trial_id": "d58-focus-memory-calibration-v1-5112-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 20,
+      "environment_dispatch_reservations": 20,
+      "final_stage_index": 10,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 21,
+      "policy_id": "policy-e4abdb596c4d98f644bb",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5122,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 2,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5122,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:4af52d9efe22107edb0e7f2d914cb792f0c6994f344f974b865fa560277155a1",
+      "task_id": "v5m-b815cf961825babd22c85d13",
+      "trial_id": "d58-focus-memory-calibration-v1-5122-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 9,
+      "environment_dispatch_reservations": 9,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 10,
+      "policy_id": "policy-5efda6406cb9fd77502f",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5122,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 2,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5122,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:4af52d9efe22107edb0e7f2d914cb792f0c6994f344f974b865fa560277155a1",
+      "task_id": "v5m-b815cf961825babd22c85d13",
+      "trial_id": "d58-focus-memory-calibration-v1-5122-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 8,
+      "environment_dispatch_reservations": 8,
+      "final_stage_index": 3,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 9,
+      "policy_id": "policy-5efda6406cb9fd77502f",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5132,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 2,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5132,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:594d26b93aa87239ca70f290cee28efb5e98130a220e826a95396669ecf5739d",
+      "task_id": "v5m-b7c26480d34115ad2319b983",
+      "trial_id": "d58-focus-memory-calibration-v1-5132-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 21,
+      "environment_dispatch_reservations": 21,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 22,
+      "policy_id": "policy-e4abdb596c4d98f644bb",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5132,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 2,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5132,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:594d26b93aa87239ca70f290cee28efb5e98130a220e826a95396669ecf5739d",
+      "task_id": "v5m-b7c26480d34115ad2319b983",
+      "trial_id": "d58-focus-memory-continuation-v1-5132-stateless"
+    },
+    {
+      "action_limit": 27,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 19,
+      "environment_dispatch_reservations": 19,
+      "final_stage_index": 8,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 20,
+      "policy_id": "policy-e4abdb596c4d98f644bb",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5141,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "visible_error_recovery",
+        "family_index": 1,
+        "logical_id": "calibration-visible_error_recovery-logical-00",
+        "partition": "calibration",
+        "seed": 5141,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:26403e72be4d8d64880409632f5d553d956bc64d21bff923db808acf622905ba",
+      "task_id": "v5m-d840c31b987f87019efa3629",
+      "trial_id": "d58-focus-memory-continuation-v1-5141-stateless"
+    },
+    {
+      "action_limit": 27,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 11,
+      "environment_dispatch_reservations": 11,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 12,
+      "policy_id": "policy-5efda6406cb9fd77502f",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5141,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "visible_error_recovery",
+        "family_index": 1,
+        "logical_id": "calibration-visible_error_recovery-logical-00",
+        "partition": "calibration",
+        "seed": 5141,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:26403e72be4d8d64880409632f5d553d956bc64d21bff923db808acf622905ba",
+      "task_id": "v5m-d840c31b987f87019efa3629",
+      "trial_id": "d58-focus-memory-continuation-v1-5141-history"
+    },
+    {
+      "action_limit": 26,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 9,
+      "environment_dispatch_reservations": 9,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 10,
+      "policy_id": "policy-5efda6406cb9fd77502f",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5151,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "review_and_commit",
+        "family_index": 1,
+        "logical_id": "calibration-review_and_commit-logical-00",
+        "partition": "calibration",
+        "seed": 5151,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:2a85d9d64988e1f71aa83182d3eef79d1808230e11ca95e5edebb50cbfed9374",
+      "task_id": "v5m-aef5f47dd38f311c31bc3a50",
+      "trial_id": "d58-focus-memory-continuation-v1-5151-history"
+    },
+    {
+      "action_limit": 26,
+      "classification": "infrastructure_failure",
+      "environment_actions_dispatched": 2,
+      "environment_dispatch_reservations": 2,
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 3,
+      "policy_id": "policy-e4abdb596c4d98f644bb",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5151,
+      "seed_record": {
+        "difficulty_band": "regression_canary",
+        "family": "review_and_commit",
+        "family_index": 1,
+        "logical_id": "calibration-review_and_commit-logical-00",
+        "partition": "calibration",
+        "seed": 5151,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:2a85d9d64988e1f71aa83182d3eef79d1808230e11ca95e5edebb50cbfed9374",
+      "task_id": "v5m-aef5f47dd38f311c31bc3a50",
+      "trial_id": "d58-focus-memory-continuation-v1-5151-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5160,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 10,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5160,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:b202e044e74b74b14eecab5e0d171836e8e980808a9e4b5ac028e7eeab706a54",
+      "task_id": "v5m-526574dcbd4a8c3241092147",
+      "trial_id": "d58-reliable-memory-continuation-v1-5160-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5160,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 10,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5160,
+        "variant": "twin_a"
+      },
+      "success": true,
+      "task_digest": "sha256:b202e044e74b74b14eecab5e0d171836e8e980808a9e4b5ac028e7eeab706a54",
+      "task_id": "v5m-526574dcbd4a8c3241092147",
+      "trial_id": "d58-reliable-memory-continuation-v1-5160-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5113,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 3,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5113,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:a1c505b68fd60d56046d028dc3f4a1f4b0794ab1e8c6a7946481e4ade8fed242",
+      "task_id": "v5m-c5dee28403c112accca77d13",
+      "trial_id": "d58-reliable-memory-continuation-v1-5113-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5113,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 3,
+        "logical_id": "calibration-deferred_join-logical-01",
+        "partition": "calibration",
+        "seed": 5113,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:a1c505b68fd60d56046d028dc3f4a1f4b0794ab1e8c6a7946481e4ade8fed242",
+      "task_id": "v5m-c5dee28403c112accca77d13",
+      "trial_id": "d58-reliable-memory-continuation-v1-5113-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5123,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 3,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5123,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:37a0a945b57ab28fe53d2859fcf95840eea993b0093b4ff99b1b53e76d89d163",
+      "task_id": "v5m-8559e94feb4cba514f429ace",
+      "trial_id": "d58-reliable-memory-continuation-v1-5123-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5123,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 3,
+        "logical_id": "calibration-conditional_precedence-logical-01",
+        "partition": "calibration",
+        "seed": 5123,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:37a0a945b57ab28fe53d2859fcf95840eea993b0093b4ff99b1b53e76d89d163",
+      "task_id": "v5m-8559e94feb4cba514f429ace",
+      "trial_id": "d58-reliable-memory-continuation-v1-5123-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5133,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 3,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5133,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:d39cc1eb64eeef0b31315be3392b59c4dcf97403dd0fdfbbb667a4989c660d1d",
+      "task_id": "v5m-010414927e76ddbd0a7f5943",
+      "trial_id": "d58-reliable-memory-continuation-v1-5133-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5133,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 3,
+        "logical_id": "calibration-revision_after_reveal-logical-01",
+        "partition": "calibration",
+        "seed": 5133,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:d39cc1eb64eeef0b31315be3392b59c4dcf97403dd0fdfbbb667a4989c660d1d",
+      "task_id": "v5m-010414927e76ddbd0a7f5943",
+      "trial_id": "d58-reliable-memory-continuation-v1-5133-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5142,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 2,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5142,
+        "variant": "twin_a"
+      },
+      "success": false,
+      "task_digest": "sha256:e99796788b1efa6bfc649c8af2ccf537e896ea3b2bb62a18627cae71d9c298c1",
+      "task_id": "v5m-03bd6d15025a86986aa5da6d",
+      "trial_id": "d58-reliable-memory-continuation-v1-5142-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5142,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 2,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5142,
+        "variant": "twin_a"
+      },
+      "success": true,
+      "task_digest": "sha256:e99796788b1efa6bfc649c8af2ccf537e896ea3b2bb62a18627cae71d9c298c1",
+      "task_id": "v5m-03bd6d15025a86986aa5da6d",
+      "trial_id": "d58-reliable-memory-continuation-v1-5142-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": false
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5152,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 2,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5152,
+        "variant": "twin_a"
+      },
+      "success": true,
+      "task_digest": "sha256:f5d51486bd37e7ad0fbe9c29c218255fd550482cb7ce9189039ddeca14e533a4",
+      "task_id": "v5m-9fd67fe6e9af0693ea01db3e",
+      "trial_id": "d58-reliable-memory-continuation-v1-5152-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 22,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5152,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 2,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5152,
+        "variant": "twin_a"
+      },
+      "success": true,
+      "task_digest": "sha256:f5d51486bd37e7ad0fbe9c29c218255fd550482cb7ce9189039ddeca14e533a4",
+      "task_id": "v5m-9fd67fe6e9af0693ea01db3e",
+      "trial_id": "d58-reliable-memory-continuation-v1-5152-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5161,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 11,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5161,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:5ac69bc5aa6711b6407d149084acf373120baec73f628bfe9f054bb42d745bed",
+      "task_id": "v5m-1ef6097f666a87dd4873c134",
+      "trial_id": "d58-reliable-memory-continuation-v1-5161-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5161,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 11,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-00",
+        "partition": "calibration",
+        "seed": 5161,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:5ac69bc5aa6711b6407d149084acf373120baec73f628bfe9f054bb42d745bed",
+      "task_id": "v5m-1ef6097f666a87dd4873c134",
+      "trial_id": "d58-reliable-memory-continuation-v1-5161-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 28,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5114,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 4,
+        "logical_id": "calibration-deferred_join-logical-02",
+        "partition": "calibration",
+        "seed": 5114,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:2a2400ae812288ddfb4ee03bb3b44f9c899d673662916bd93e80a69e3a4709a8",
+      "task_id": "v5m-7e1619961efd9078402c8b68",
+      "trial_id": "d58-reliable-memory-continuation-v1-5114-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5114,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 4,
+        "logical_id": "calibration-deferred_join-logical-02",
+        "partition": "calibration",
+        "seed": 5114,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:2a2400ae812288ddfb4ee03bb3b44f9c899d673662916bd93e80a69e3a4709a8",
+      "task_id": "v5m-7e1619961efd9078402c8b68",
+      "trial_id": "d58-reliable-memory-continuation-v1-5114-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5124,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 4,
+        "logical_id": "calibration-conditional_precedence-logical-02",
+        "partition": "calibration",
+        "seed": 5124,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1048835a10567bc1c63ce6d780688aeeef196790a16c52d81e92c6bba4710439",
+      "task_id": "v5m-da9f495f6b28d525dc9e0318",
+      "trial_id": "d58-reliable-memory-continuation-v1-5124-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 27,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5124,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 4,
+        "logical_id": "calibration-conditional_precedence-logical-02",
+        "partition": "calibration",
+        "seed": 5124,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:1048835a10567bc1c63ce6d780688aeeef196790a16c52d81e92c6bba4710439",
+      "task_id": "v5m-da9f495f6b28d525dc9e0318",
+      "trial_id": "d58-reliable-memory-continuation-v1-5124-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5134,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 4,
+        "logical_id": "calibration-revision_after_reveal-logical-02",
+        "partition": "calibration",
+        "seed": 5134,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:602d35e2a4c312ac6da1871cf64b0373e2dbe2cb83178b5bc0466ad6683ee43a",
+      "task_id": "v5m-8a60861676460a306d2450b0",
+      "trial_id": "d58-reliable-memory-continuation-v1-5134-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5134,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 4,
+        "logical_id": "calibration-revision_after_reveal-logical-02",
+        "partition": "calibration",
+        "seed": 5134,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:602d35e2a4c312ac6da1871cf64b0373e2dbe2cb83178b5bc0466ad6683ee43a",
+      "task_id": "v5m-8a60861676460a306d2450b0",
+      "trial_id": "d58-reliable-memory-continuation-v1-5134-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-4680142ee87a67927eee",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "d58-reliable-memory-continuation-v1-5143-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "request_failure",
+      "environment_actions_dispatched": 10,
+      "environment_dispatch_reservations": 10,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 12,
+      "policy_id": "policy-0d014e4eb5da08a6bf79",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "d58-reliable-memory-continuation-v1-5143-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "d58-reliable-memory-extension-v1-5153-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "d58-reliable-memory-extension-v1-5153-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "d58-reliable-memory-extension-v1-5162-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "d58-reliable-memory-extension-v1-5162-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "d58-reliable-memory-extension-v1-5115-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "d58-reliable-memory-extension-v1-5115-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "d58-reliable-memory-extension-v1-5125-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "d58-reliable-memory-extension-v1-5125-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "d58-reliable-memory-extension-v1-5135-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "d58-reliable-memory-extension-v1-5135-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "d58-reliable-memory-extension-v1-5144-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "d58-reliable-memory-extension-v1-5144-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "d58-reliable-memory-extension-v1-5154-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 25,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "d58-reliable-memory-extension-v1-5154-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 31,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "d58-reliable-memory-extension-v1-5163-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "d58-reliable-memory-extension-v1-5163-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "d58-reliable-memory-extension-v1-5116-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "d58-reliable-memory-extension-v1-5116-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "d58-reliable-memory-extension-v1-5126-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "d58-reliable-memory-extension-v1-5126-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "d58-reliable-memory-extension-v1-5136-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 22,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "d58-reliable-memory-extension-v1-5136-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "d58-reliable-memory-extension-v1-5145-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "d58-reliable-memory-extension-v1-5145-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "d58-reliable-memory-extension-v1-5155-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "d58-reliable-memory-extension-v1-5155-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "d58-reliable-memory-extension-v1-5164-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "d58-reliable-memory-extension-v1-5164-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "d58-reliable-memory-extension-v1-5117-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "d58-reliable-memory-extension-v1-5117-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 24,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "d58-reliable-memory-extension-v1-5127-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "d58-reliable-memory-extension-v1-5127-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "d58-reliable-memory-extension-v1-5137-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "d58-reliable-memory-extension-v1-5137-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": false
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "d58-reliable-memory-extension-v1-5146-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "d58-reliable-memory-extension-v1-5146-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "d58-reliable-memory-extension-v1-5156-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "d58-reliable-memory-extension-v1-5156-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "d58-reliable-memory-extension-v1-5165-stateless"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "d58-reliable-memory-extension-v1-5165-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "d58-reliable-memory-extension-v1-5118-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 27,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "d58-reliable-memory-extension-v1-5118-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 31,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "d58-reliable-memory-extension-v1-5128-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "d58-reliable-memory-extension-v1-5128-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "d58-reliable-memory-extension-v1-5138-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "d58-reliable-memory-extension-v1-5138-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 24,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "d58-reliable-memory-extension-v1-5147-stateless"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "d58-reliable-memory-extension-v1-5147-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "d58-reliable-memory-extension-v1-5157-history"
+    },
+    {
+      "action_limit": 28,
+      "classification": "policy_violation",
+      "environment_actions_dispatched": 9,
+      "environment_dispatch_reservations": 9,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 10,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "d58-reliable-memory-extension-v1-5157-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "d58-reliable-memory-extension-v1-5166-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "d58-reliable-memory-extension-v1-5166-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "d58-reliable-memory-extension-v1-5119-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "d58-reliable-memory-extension-v1-5119-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "d58-reliable-memory-extension-v1-5129-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "d58-reliable-memory-extension-v1-5129-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "d58-reliable-memory-extension-v1-5139-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "d58-reliable-memory-extension-v1-5139-stateless"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "d58-reliable-memory-extension-v1-5148-stateless"
+    },
+    {
+      "action_limit": 32,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 28,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "d58-reliable-memory-extension-v1-5148-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 28,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "d58-reliable-memory-extension-v1-5158-history"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "d58-reliable-memory-extension-v1-5158-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "policy_id": "policy-d338617668eebf5250f3",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "d58-reliable-memory-extension-v1-5167-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "request_failure",
+      "environment_actions_dispatched": 18,
+      "environment_dispatch_reservations": 18,
+      "final_stage_index": 8,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 20,
+      "policy_id": "policy-0392b99b8884d70726f2",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "d58-reliable-memory-extension-v1-5167-history"
+    },
+    {
+      "action_limit": 32,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "policy_id": "policy-f3643833caa8b2e9a526",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-owner-budget-continuation-v1-5149-history"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "policy_id": "policy-1c80069711f0cf37e792",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-owner-budget-continuation-v1-5149-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "policy_id": "policy-1c80069711f0cf37e792",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-owner-budget-continuation-v1-5159-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "request_failure",
+      "environment_actions_dispatched": 14,
+      "environment_dispatch_reservations": 14,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 17,
+      "policy_id": "policy-f3643833caa8b2e9a526",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-owner-budget-continuation-v1-5159-history"
+    }
+  ],
+  "confirmatory_tasks_evaluated": 0,
+  "driver_code_revision": "85adb9b9000dea7860a6097a20b54f0e90158951",
+  "execution_plan_digest": "sha256:cf01761a3daac6d1b33e0e35dcb147a57ff1fddc33fbf8c8186303058546190c",
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:ddd4b0bfc02c3cf9866cdf1e24b99044cf592f424c30c788d0497dcea964390a",
+    "event_count": 42086,
+    "object_count": 14503,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "model": "google/gemini-3.8-flash",
+  "model_attempt_reservations": 3396,
+  "new_conditions": [
+    {
+      "action_limit": 32,
+      "classification": "success_termination",
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "policy_id": "policy-f3643833caa8b2e9a526",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-owner-budget-continuation-v1-5149-history"
+    },
+    {
+      "action_limit": 32,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 32,
+      "environment_dispatch_reservations": 32,
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "policy_id": "policy-1c80069711f0cf37e792",
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "d58-owner-budget-continuation-v1-5149-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 32,
+      "policy_id": "policy-1c80069711f0cf37e792",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-owner-budget-continuation-v1-5159-stateless"
+    },
+    {
+      "action_limit": 30,
+      "classification": "request_failure",
+      "environment_actions_dispatched": 14,
+      "environment_dispatch_reservations": 14,
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 17,
+      "policy_id": "policy-f3643833caa8b2e9a526",
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "d58-owner-budget-continuation-v1-5159-history"
+    }
+  ],
+  "new_phase_known_spend_usd": "0.702578250",
+  "new_phase_unknown_holds_usd": "0E-8",
+  "new_phase_wire_requests": 106,
+  "owner_budget_approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+  "owner_reconciliation_digest": "sha256:30909b34d3ae7e323d20b559176e87e27876a3856ad606e23ed6b57858fce861",
+  "phase_id": "d58-owner-budget-continuation-v1",
+  "preserved_episode_count": 96,
+  "prior_phase_known_spend_usd": "23.275649025",
+  "provider_control_requests": 0,
+  "publication_policy": "provider text, screenshots and checkpoints remain in the ignored authoritative journal",
+  "schema_version": "pixelgym-d58-owner-budget-continuation-summary-v1",
+  "scores": {
+    "history": {
+      "assigned": 50,
+      "attempted_episodes": 50,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "request_failure": 3,
+        "success_termination": 42
+      },
+      "correct_first_memory_attempts": 85,
+      "first_memory_attempts": 86,
+      "reached_both_consumers": 43,
+      "terminal_successes": 42
+    },
+    "stateless": {
+      "assigned": 50,
+      "attempted_episodes": 50,
+      "classifications": {
+        "infrastructure_failure": 5,
+        "policy_violation": 1,
+        "step_limit_truncation": 38,
+        "success_termination": 6
+      },
+      "correct_first_memory_attempts": 36,
+      "first_memory_attempts": 90,
+      "reached_both_consumers": 45,
+      "terminal_successes": 6
+    }
+  },
+  "stop_reason": "phase_time_stop",
+  "transport_idle_at_close": true,
+  "transport_receipts": [
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.35982,
+        "http_code": 200,
+        "tls_seconds": 0.541189,
+        "total_seconds": 5.418062,
+        "uploaded_bytes": 55990
+      },
+      "reservation_id": "sha256:e1eebd928b4e453f59b3575f707555bf79257dd0f9be549af5ef88e3e5bc2f02",
+      "response_envelope_digest": "sha256:fb9c949dce3e858a58d96218e7bd8788fa6ffc20120062e0a1425667dd711818"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171434,
+        "http_code": 200,
+        "tls_seconds": 0.351682,
+        "total_seconds": 5.035888,
+        "uploaded_bytes": 101567
+      },
+      "reservation_id": "sha256:537300c2880e747dda7be205010f64bbeff389da9377a7c35d226fc56a53e666",
+      "response_envelope_digest": "sha256:5df493a434e265cddb2162436aff7fe28bc4a7d54b2354882aa29d183161855d"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.167551,
+        "http_code": 200,
+        "tls_seconds": 0.352155,
+        "total_seconds": 5.843389,
+        "uploaded_bytes": 148872
+      },
+      "reservation_id": "sha256:f808f5a26730add65b1afe6fb19016680718fb13d9e1679b32594a9e14708f32",
+      "response_envelope_digest": "sha256:5171465c5cbc5d99bb2ed5211fd053c3f6acd521ea2a1aaef2588989f8f7496e"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175423,
+        "http_code": 200,
+        "tls_seconds": 0.356659,
+        "total_seconds": 3.992849,
+        "uploaded_bytes": 193502
+      },
+      "reservation_id": "sha256:63945772418db98f674fb21491323d274c7576baae2fa5bfaf3c9f556373c750",
+      "response_envelope_digest": "sha256:eaf2baeec7e667fbafbd98ffbc84ed8b73da7a3aab8a72fe4c57357cfe3f3fc4"
+    },
+    {
+      "curl_exit_code": 52,
+      "http_status": 0,
+      "metrics": {},
+      "reservation_id": "sha256:734ade366a2d6f17ae50d3d80b1ebe04a87f69d3d33f8605c058e9ddbaf67bf1",
+      "response_envelope_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178083,
+        "http_code": 200,
+        "tls_seconds": 0.357979,
+        "total_seconds": 3.907189,
+        "uploaded_bytes": 238555
+      },
+      "reservation_id": "sha256:5c7f0f85996d915f337c2a68dd2699d2761f3684acc264b13c577a0201bc3966",
+      "response_envelope_digest": "sha256:6b1804cf75db44edf5df66f5228bc8a1374efae07fe98088581967cc0595721b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170995,
+        "http_code": 200,
+        "tls_seconds": 0.351054,
+        "total_seconds": 6.291563,
+        "uploaded_bytes": 284061
+      },
+      "reservation_id": "sha256:27d0878fc8135e62174f185475decff0626b41ef29f7fd0c76694ee13c173e50",
+      "response_envelope_digest": "sha256:41d72590ae2fc1d6079fb10f064843b3875f87def11a49c72e710a4662e22d5b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170517,
+        "http_code": 200,
+        "tls_seconds": 0.357143,
+        "total_seconds": 9.257518,
+        "uploaded_bytes": 329826
+      },
+      "reservation_id": "sha256:600ad74a9eb3c41821164a9ed5e0f569d58c8875b082bdda435395f014977339",
+      "response_envelope_digest": "sha256:367d692ae7c265989051cb51ea925c5b589adf34019be2ecc34bf5f91dd922aa"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175863,
+        "http_code": 200,
+        "tls_seconds": 0.352334,
+        "total_seconds": 7.960824,
+        "uploaded_bytes": 384031
+      },
+      "reservation_id": "sha256:2bfb76f2e20eb2dc8603c080893b26342b2b05631f07e30829efb0fb4a5377e2",
+      "response_envelope_digest": "sha256:e805e7e4d8f4425228ea4d9928988a4e500522a54d9185dc985cb24121822ad5"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178645,
+        "http_code": 200,
+        "tls_seconds": 0.35819,
+        "total_seconds": 8.808747,
+        "uploaded_bytes": 434860
+      },
+      "reservation_id": "sha256:fe642a4431207a6b3aa4d8fcf83b70883276be9a5e4c286ac3a04e2b474228cf",
+      "response_envelope_digest": "sha256:e086085dfb0cd394679d369aa9f111753818c850924cc245ada8f70bbeb1cfd0"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17117,
+        "http_code": 200,
+        "tls_seconds": 0.352829,
+        "total_seconds": 18.163995,
+        "uploaded_bytes": 481489
+      },
+      "reservation_id": "sha256:68f5e3e3a207dd42b257c62ce60fc3838aac3e192a47d2d8c7fc78e381606687",
+      "response_envelope_digest": "sha256:27edf79d898ec7264be6772833e5075ad4e28f5b150052c646ab9bedebb64905"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174103,
+        "http_code": 200,
+        "tls_seconds": 0.35864,
+        "total_seconds": 6.310694,
+        "uploaded_bytes": 529826
+      },
+      "reservation_id": "sha256:aec1a14d3007041267523389e2adc6924aa46873516df0a5d5f4ff1f58cd9038",
+      "response_envelope_digest": "sha256:b5c8ad5fa0f10656636ae5e4527c26800e70be1b91f3c58bba20106408e2e3d4"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174775,
+        "http_code": 200,
+        "tls_seconds": 0.351366,
+        "total_seconds": 4.741772,
+        "uploaded_bytes": 575508
+      },
+      "reservation_id": "sha256:c206d51c951bee5a1fea7856b2a745725eab1fc32b05c96ac655ab9d5d2d066f",
+      "response_envelope_digest": "sha256:5b11470cc199aa5f7e552f11d66e2a143ba105e2efcbbb97d854fc5db5c1bc41"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.186182,
+        "http_code": 200,
+        "tls_seconds": 0.365694,
+        "total_seconds": 6.924181,
+        "uploaded_bytes": 621613
+      },
+      "reservation_id": "sha256:9651755cb347f7632f1cbd3ea95c3b470ff69690243e6ef9ea318d5637069bc5",
+      "response_envelope_digest": "sha256:91649dd1d31ee8b598e594674c075066326eed4dfb363b738aa6b10bdf8c6313"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.176338,
+        "http_code": 200,
+        "tls_seconds": 0.353363,
+        "total_seconds": 4.64811,
+        "uploaded_bytes": 668171
+      },
+      "reservation_id": "sha256:9fe28a72bf38da2835e444383e8c204b2b8ba9b7b0fd67afdabddb3f0ee6b401",
+      "response_envelope_digest": "sha256:23a705a089099b280135be2723e3c653ce36ef936189e353c0a3f5f5bc4e4830"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171594,
+        "http_code": 200,
+        "tls_seconds": 0.398479,
+        "total_seconds": 16.252169,
+        "uploaded_bytes": 714992
+      },
+      "reservation_id": "sha256:1ce9f0445dd1b1f964668540c7968d27b06808e247817223b507d1622368a838",
+      "response_envelope_digest": "sha256:99a34fdb70ba829cfafe60405dc0fef4894febd030309e806bd301ce872e80a6"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.182408,
+        "http_code": 200,
+        "tls_seconds": 0.366632,
+        "total_seconds": 8.863883,
+        "uploaded_bytes": 767741
+      },
+      "reservation_id": "sha256:aa46a838624f0db01b0ab1c3429abc442d07bf6bacf836a7a175421b1f45a087",
+      "response_envelope_digest": "sha256:670e8403335d888e6b836987e911fac15db825ada165ad3a9f891b3cedbc17a9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171009,
+        "http_code": 200,
+        "tls_seconds": 0.355543,
+        "total_seconds": 11.409611,
+        "uploaded_bytes": 819994
+      },
+      "reservation_id": "sha256:860a34daff2f59dfa697dfa7d087d80afd49c367e4429123c1ff2281e891db11",
+      "response_envelope_digest": "sha256:56a32fa4e8c12876e2a920e82cdc12cdb899599d8e9c69772144225aeeaa1a43"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17708,
+        "http_code": 200,
+        "tls_seconds": 0.354759,
+        "total_seconds": 14.276328,
+        "uploaded_bytes": 872103
+      },
+      "reservation_id": "sha256:d172abd6f7f6fa998050cb35f472b878a52ab75ed8fc17188280a5bde8d49285",
+      "response_envelope_digest": "sha256:0e868b273953e9d6391e27d7c648938ce61ef092304e50fbed5a9d8c8b471640"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17417,
+        "http_code": 200,
+        "tls_seconds": 0.358695,
+        "total_seconds": 11.118241,
+        "uploaded_bytes": 921072
+      },
+      "reservation_id": "sha256:6fcf5b09cc0a9007d7c1383fdd3ad9db458615c2ffbc48c0e6ded20d97786d7e",
+      "response_envelope_digest": "sha256:5d56587e2f267c87fb0874a1178f8b5b7236faace3dac04c2449ba4a8854cb34"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.181421,
+        "http_code": 200,
+        "tls_seconds": 0.362584,
+        "total_seconds": 10.163258,
+        "uploaded_bytes": 977185
+      },
+      "reservation_id": "sha256:d17192cc28c868ffd6c7d63cb888fe7a4ff95301c88586061130cbc76cdf3876",
+      "response_envelope_digest": "sha256:5682462860b89a7c9c170cb3b43e53cf72cf48d66da9809398c65e8e70d21877"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172315,
+        "http_code": 200,
+        "tls_seconds": 0.355804,
+        "total_seconds": 5.969134,
+        "uploaded_bytes": 1033606
+      },
+      "reservation_id": "sha256:1b2adec118d9ca531336a962207ab407ca9e511350c93d8f9c6dc191a18c8720",
+      "response_envelope_digest": "sha256:dc1c00b535a9a6619fa81124b00b96294c4fc3453f7a89b2ea1a6742e8f3df64"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174978,
+        "http_code": 200,
+        "tls_seconds": 0.352074,
+        "total_seconds": 11.808756,
+        "uploaded_bytes": 1089643
+      },
+      "reservation_id": "sha256:03b3ba36baeebb8b6046afb29ff3c53356b9f803a76a5425af0712c9878d00a9",
+      "response_envelope_digest": "sha256:cec12d92018152e4970504699a521580966b958d46fc2c377b0e143c9ec28ec7"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.16915,
+        "http_code": 200,
+        "tls_seconds": 0.355955,
+        "total_seconds": 10.426122,
+        "uploaded_bytes": 1145656
+      },
+      "reservation_id": "sha256:89fecfdfa50161d50cf082ad1c87e32f76a64239403ca1cdaccf18adcbd88764",
+      "response_envelope_digest": "sha256:ee9d51d7793ba29066032663b9e42aaef4a0897b99b4b97e3d1e963d075ff2e2"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.176638,
+        "http_code": 200,
+        "tls_seconds": 0.357575,
+        "total_seconds": 17.962854,
+        "uploaded_bytes": 1205389
+      },
+      "reservation_id": "sha256:79072a070574a8267368b1e76ce25f00816e9216d71122d7ef7555132a8339e1",
+      "response_envelope_digest": "sha256:136ee8a8e1f2afaf573abf92c68a293193c3182ace34891b3b443090fe2d637e"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.185199,
+        "http_code": 200,
+        "tls_seconds": 0.364407,
+        "total_seconds": 10.50617,
+        "uploaded_bytes": 1257538
+      },
+      "reservation_id": "sha256:3b19e8b2c9da4658f5b0927e41ef23a3f9376838b4209ac3ddd40e8484040893",
+      "response_envelope_digest": "sha256:2883142e1addcf2a3e31c90522b6367526407cba6c44b68c86b365510c22ac3d"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179446,
+        "http_code": 200,
+        "tls_seconds": 0.359974,
+        "total_seconds": 4.345156,
+        "uploaded_bytes": 55990
+      },
+      "reservation_id": "sha256:42694adf3c6fd58ad9a72d380de847c8ba57c2746071303a7586250f8e8543e0",
+      "response_envelope_digest": "sha256:5c02a3bfc87aaa1a8d9f343a5b2764a8213982b316cb1aa718a2cf80133886d7"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175167,
+        "http_code": 200,
+        "tls_seconds": 0.36244,
+        "total_seconds": 4.647924,
+        "uploaded_bytes": 48086
+      },
+      "reservation_id": "sha256:214392923050621f368cde8b4670f28bca082a7ed48b021988c741a0d748df75",
+      "response_envelope_digest": "sha256:03ac272ccf683e3f01ea29a3887457c22d96f8a1200097c4213bcb30a40df498"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.169877,
+        "http_code": 200,
+        "tls_seconds": 0.346094,
+        "total_seconds": 5.050362,
+        "uploaded_bytes": 49814
+      },
+      "reservation_id": "sha256:487ec0f4031ed75e2a35356dc9d693fe45438e09a7baddc92615d02474ad034f",
+      "response_envelope_digest": "sha256:85f6fc6ca61cd99cf7149a9b10ce8ec326f4a7374d375d8ae498ac95aeed10db"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.185031,
+        "http_code": 200,
+        "tls_seconds": 0.366294,
+        "total_seconds": 5.763862,
+        "uploaded_bytes": 47142
+      },
+      "reservation_id": "sha256:97360a31af955efc8bdb8cfd1887cead0a4d5d107d3a50f956e3bf4436573015",
+      "response_envelope_digest": "sha256:cb040dcc703b0046aefc0bc8df519605828a4370fe8f4fdf9d9e2fb3dae3573f"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17731,
+        "http_code": 200,
+        "tls_seconds": 0.365804,
+        "total_seconds": 6.492294,
+        "uploaded_bytes": 47566
+      },
+      "reservation_id": "sha256:deef2d76d8b6c6852a7cc081d3536a59c00b05e6a7374a02a9f53668d96da163",
+      "response_envelope_digest": "sha256:8c5cba953939cd136d5f1112e556a2f7a5d4063e35896e15d8bfa33ac87be16e"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.180393,
+        "http_code": 200,
+        "tls_seconds": 0.361392,
+        "total_seconds": 35.543169,
+        "uploaded_bytes": 48018
+      },
+      "reservation_id": "sha256:6917e8ff703f328ce56609a7a549e58acb87bfecf214f25f351085a68ed94201",
+      "response_envelope_digest": "sha256:ae4f008141e0773a06a8f80fe0843f6b6b695121055cdc67bc5c9d634566b1dc"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172291,
+        "http_code": 200,
+        "tls_seconds": 0.356499,
+        "total_seconds": 6.928706,
+        "uploaded_bytes": 48278
+      },
+      "reservation_id": "sha256:9576761f51dc886867e5e2ccc0bf930d0a86bb2fc0778d2e04f961ffad958312",
+      "response_envelope_digest": "sha256:1e3983bf0bd16a4b616dd8302078dc7ab0c84b3d15185d4d63acabb5be568e48"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173874,
+        "http_code": 200,
+        "tls_seconds": 0.35996,
+        "total_seconds": 5.161743,
+        "uploaded_bytes": 56714
+      },
+      "reservation_id": "sha256:09a5331fd704eb3388658d08ff0ccf145819db98679715ee6ff139cc542ac34a",
+      "response_envelope_digest": "sha256:14bc26a96cf641e520f8ba64cc15b03f30085cf9da8f84ca2b03fdf887a0dcf9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175382,
+        "http_code": 200,
+        "tls_seconds": 0.353487,
+        "total_seconds": 7.09578,
+        "uploaded_bytes": 53338
+      },
+      "reservation_id": "sha256:66b97492dd099450824b4e54a3579cdf66f2bb67f8c7fe0b110e325463506bf0",
+      "response_envelope_digest": "sha256:06f2f8af5693e1fc1a460778082cd46897b2b215fc286801a6c2dead9d662da9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17887,
+        "http_code": 200,
+        "tls_seconds": 0.359874,
+        "total_seconds": 14.814178,
+        "uploaded_bytes": 49138
+      },
+      "reservation_id": "sha256:e0f4cdfaac2e505bd3a90fc3bbf9f906fcc56c120c269df9e7d99d00ccd67563",
+      "response_envelope_digest": "sha256:f67a4cb43688dfba119423a87337525b0d802f33060ed01560567825085d4c7f"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.168648,
+        "http_code": 200,
+        "tls_seconds": 0.350108,
+        "total_seconds": 32.628222,
+        "uploaded_bytes": 50846
+      },
+      "reservation_id": "sha256:448812b0782790268b42e23bd457c548036c870d6e8484e1a5715387f92a6882",
+      "response_envelope_digest": "sha256:d32ea37a9a8d7347e7ae5b06abc9eb560660027a47b73c996730f7a2ee41d9f1"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.168751,
+        "http_code": 200,
+        "tls_seconds": 0.347986,
+        "total_seconds": 32.587684,
+        "uploaded_bytes": 48194
+      },
+      "reservation_id": "sha256:e6bbc6dd1261e11a68236c5efa9363d733fe38d451c8ab20112b344bf0f0fe92",
+      "response_envelope_digest": "sha256:147f7933913f93d16362f6254a6e827640b6ecac83ce681f7c1b3dbf891ddfca"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.169051,
+        "http_code": 200,
+        "tls_seconds": 0.34931,
+        "total_seconds": 3.692549,
+        "uploaded_bytes": 48618
+      },
+      "reservation_id": "sha256:ecfd9ab26296344da7cb41517bfe80e08bf8ea403fa3de088ce468fa4be21305",
+      "response_envelope_digest": "sha256:41dba640d04e7faa099ffe7fc79e4fefc327928c27f9017bad92de4bce6a4741"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175451,
+        "http_code": 200,
+        "tls_seconds": 0.379187,
+        "total_seconds": 3.386898,
+        "uploaded_bytes": 49070
+      },
+      "reservation_id": "sha256:284320eceabb64947181e5b5fd9d1d135706973f5c2ac20afdf189a26ba30744",
+      "response_envelope_digest": "sha256:eedb33820e2486de2b77abba39004cbdd5b61dd964f0cec11e636446eb6ff0b3"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179741,
+        "http_code": 200,
+        "tls_seconds": 0.363461,
+        "total_seconds": 4.668792,
+        "uploaded_bytes": 49334
+      },
+      "reservation_id": "sha256:a9d6b3c112f1f108292c93be4dc14872cc42e26413d25bbd363a25ae31abaed3",
+      "response_envelope_digest": "sha256:7c79184a6f88faa91112ae5f4a7cc2bc06d4daf53938d42c8009af9ecebf700d"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.181413,
+        "http_code": 200,
+        "tls_seconds": 0.380743,
+        "total_seconds": 10.899646,
+        "uploaded_bytes": 55258
+      },
+      "reservation_id": "sha256:d0b4eb166640ad279cc55446de1d784ba354487fa8a6ef29f62c279d2aecdb80",
+      "response_envelope_digest": "sha256:28200395bc0a8e1b069b9247e8c96949fb64adff56b6acf8347125fe586d7848"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174185,
+        "http_code": 200,
+        "tls_seconds": 0.350016,
+        "total_seconds": 5.568963,
+        "uploaded_bytes": 54762
+      },
+      "reservation_id": "sha256:bb8a273d79cb920440f94b11d8c3399710398eb22cd974a5c75c8fd519a0b389",
+      "response_envelope_digest": "sha256:626a2f266381f12c4ed5fabf2348bc4614425c8587dcb5cc2458b5177047004a"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172949,
+        "http_code": 200,
+        "tls_seconds": 0.352094,
+        "total_seconds": 44.544747,
+        "uploaded_bytes": 54618
+      },
+      "reservation_id": "sha256:b1edf2173ffb4bdee55878f3641718207f011b57920b782828ab834328f1f1f7",
+      "response_envelope_digest": "sha256:17cbdb9bc8974d9fbdb431c600366f182a61cc894c636e951795d7e8079f1fbb"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.183763,
+        "http_code": 200,
+        "tls_seconds": 0.372202,
+        "total_seconds": 9.913071,
+        "uploaded_bytes": 51478
+      },
+      "reservation_id": "sha256:0f89ff111f151b1638e3eb7d6328206c3dca95a901dbaff2d891d52240494291",
+      "response_envelope_digest": "sha256:194898e02d63a1dcd0b71c0c8c58b4270ac6e69b20213afb9024e7e7538327e1"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174304,
+        "http_code": 200,
+        "tls_seconds": 0.356534,
+        "total_seconds": 7.780509,
+        "uploaded_bytes": 58622
+      },
+      "reservation_id": "sha256:c0f6b21d9f225772a9c32d9ec113e67481644226eb0217b0e15e2aad36f24369",
+      "response_envelope_digest": "sha256:513c5fedbfd8dc8f1f40152b940d3df125496f92cd3338d84e733925fa387afb"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172141,
+        "http_code": 200,
+        "tls_seconds": 0.355629,
+        "total_seconds": 6.191318,
+        "uploaded_bytes": 58930
+      },
+      "reservation_id": "sha256:55e78541674cc4ceec33f3c4d5570e7ee78d25384a749421150868da116ca5be",
+      "response_envelope_digest": "sha256:74be02c07af914a798af4e9739f18569a7b18e846965090b9bb6b441eb547bbe"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.181093,
+        "http_code": 200,
+        "tls_seconds": 0.36844,
+        "total_seconds": 6.819397,
+        "uploaded_bytes": 58546
+      },
+      "reservation_id": "sha256:1c97f3c25b110c4d9dcb2eded7cd903b2217add5daf001883828f136e3c04589",
+      "response_envelope_digest": "sha256:fef73f7450f639e5532adca325e403891d53c626525f2e02cdf2e4f8847dabf0"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175828,
+        "http_code": 200,
+        "tls_seconds": 0.360868,
+        "total_seconds": 37.654661,
+        "uploaded_bytes": 58522
+      },
+      "reservation_id": "sha256:290d16fb17530f8782408e59252ad26a6f88703ede7fcb4ade34866b0f86a7d3",
+      "response_envelope_digest": "sha256:cf51f081d2d2485a86db72a3840d7e26deaf2f6818313c67ed2e20dc5020371b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.355111,
+        "http_code": 200,
+        "tls_seconds": 0.53308,
+        "total_seconds": 11.139894,
+        "uploaded_bytes": 62242
+      },
+      "reservation_id": "sha256:4f19af47806e98abee4e9b6e6af52c8ffffcb3c8e02c2735020c478829db1053",
+      "response_envelope_digest": "sha256:325a7dc299e12d3e6933b6b35b2b20010f46980bdf81c7dd234b4cc85a4a4e80"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178646,
+        "http_code": 200,
+        "tls_seconds": 0.360492,
+        "total_seconds": 8.997489,
+        "uploaded_bytes": 54658
+      },
+      "reservation_id": "sha256:160895c001252a970749c782abb3269b6b6085b804a4b77dee5880fee8a329c1",
+      "response_envelope_digest": "sha256:5946323bfbc1eb33f14b205d6349d1f2b77b6b79b40294c8048103607fb60d11"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.180646,
+        "http_code": 200,
+        "tls_seconds": 0.360491,
+        "total_seconds": 4.40873,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:4cf5ed266324c7d2ee89651bf8cd16f31646367f41af26f94eb45d9d18a63e6f",
+      "response_envelope_digest": "sha256:c78bbbc14a13646a0c4b97fe8a7cbcd0929b4195fa1ef90da182061ef5bf381c"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171787,
+        "http_code": 200,
+        "tls_seconds": 0.351015,
+        "total_seconds": 60.919484,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:aa2c92191368983851e2f3f62268e9900d6db36ecd67d6ebb1fc329efc25f84a",
+      "response_envelope_digest": "sha256:e424b94308d8dcf01816112c68e71bdcb6310f18f804427d38cda1bfe08b2d6d"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17805,
+        "http_code": 200,
+        "tls_seconds": 0.359439,
+        "total_seconds": 4.232514,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:aa333ca22bd5b1599da841c72d91082bfe4459c350985b26f0964fb5fea296d9",
+      "response_envelope_digest": "sha256:96c85db3ce7ffb6785eb838b9f03e0a77d549c6a3a354ab75e39c2cdb60b0c96"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178926,
+        "http_code": 200,
+        "tls_seconds": 0.369237,
+        "total_seconds": 4.258,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:ca988854e10fd151e017078f5befb634c15ca2bddcf0bbd90b951d2666026726",
+      "response_envelope_digest": "sha256:ddd290e64100fe25f17d0b1de4f31137f1d5e7a1a07e9208e2e6f6cf16906e17"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179823,
+        "http_code": 200,
+        "tls_seconds": 0.364684,
+        "total_seconds": 4.562738,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:d61e17f8f38c42df9f53f8c9df19d16f1f59f639a5ea1073b1e082e408cfa483",
+      "response_envelope_digest": "sha256:36a7be4c436a43912417fe2299daaae3e6c7a6a95bca54feb501b54e4e2ec84b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.184244,
+        "http_code": 200,
+        "tls_seconds": 0.359274,
+        "total_seconds": 6.50068,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:98859a06c4f3ddf51f7846b247109cd0411d734f9a7a8dafedb1743e7b6477e9",
+      "response_envelope_digest": "sha256:d62103e0876555f234089171313c1b53ed15cb69f3f62966367da809c8f37dfa"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171441,
+        "http_code": 200,
+        "tls_seconds": 0.399347,
+        "total_seconds": 4.304683,
+        "uploaded_bytes": 39198
+      },
+      "reservation_id": "sha256:d933418cb9771026482fbb548761bb6bf75912951a2261e23457fbe9793c16d5",
+      "response_envelope_digest": "sha256:9b60c09dd0a12ca9559c2f67b65bf128d42c8e7dcff3eca94b420cebe0dde057"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.169433,
+        "http_code": 200,
+        "tls_seconds": 0.353641,
+        "total_seconds": 30.593191,
+        "uploaded_bytes": 56517
+      },
+      "reservation_id": "sha256:7e24718178f248aa145e25889b420146769e8e89c88e115580bc820285ce1b48",
+      "response_envelope_digest": "sha256:79de2df7b91cfd27e6df982d279aef968ef842c2a83abc8deec02b7478de9e2b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.176899,
+        "http_code": 200,
+        "tls_seconds": 0.352918,
+        "total_seconds": 8.649953,
+        "uploaded_bytes": 48749
+      },
+      "reservation_id": "sha256:af94806072b75c24117c7f2701f2713f583fdbb0bcfef487ecabdcefab0e5779",
+      "response_envelope_digest": "sha256:34f633630d8e4876695c8c11d6c67cef31a67f8c2fc145ca9a04aea49b5993fb"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.186195,
+        "http_code": 200,
+        "tls_seconds": 0.369289,
+        "total_seconds": 5.14111,
+        "uploaded_bytes": 50473
+      },
+      "reservation_id": "sha256:105897d4f49c59eb0c4fcfae3669b733643b2ccbf41fc0a8141fa0dc31656d09",
+      "response_envelope_digest": "sha256:6e3bd9d33ad3e1158145dca58c38dd13b31fcd2da4b6a2459a26fed8df1d5c8a"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170419,
+        "http_code": 200,
+        "tls_seconds": 0.348498,
+        "total_seconds": 4.046677,
+        "uploaded_bytes": 47797
+      },
+      "reservation_id": "sha256:a9387d42f7477ffd648311b5abb928114e70933c7bcb5e3c59754c25754b3e09",
+      "response_envelope_digest": "sha256:fd6dbc6737106fa480fbc211fe277fd5370fb21105ae9d60e5b151e97815a746"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 429,
+      "metrics": {
+        "connect_seconds": 0.174173,
+        "http_code": 429,
+        "tls_seconds": 0.35155,
+        "total_seconds": 4.263016,
+        "uploaded_bytes": 48217
+      },
+      "reservation_id": "sha256:6a5c51f0afc039194a8d082c7b6bbfde16b37d6a6655a50ceab713d81dfd393d",
+      "response_envelope_digest": "sha256:0b48699693eaee03951eaead9c57857e4d204402102059252f985b7528555a70"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174518,
+        "http_code": 200,
+        "tls_seconds": 0.350548,
+        "total_seconds": 8.676945,
+        "uploaded_bytes": 48217
+      },
+      "reservation_id": "sha256:aab74618336b8ee90e6db4e9cc4c525061b5c7b1912a5b4bb8237c8fe6b8db51",
+      "response_envelope_digest": "sha256:b951175089591191d9f77a9119bc8ba213533768ed692123b1c9f9cf5641053c"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172375,
+        "http_code": 200,
+        "tls_seconds": 0.348978,
+        "total_seconds": 4.049813,
+        "uploaded_bytes": 48677
+      },
+      "reservation_id": "sha256:ad7ef12cab0919b777b3958859fd77aa04ecd4f639c90a127883637b4a74ab60",
+      "response_envelope_digest": "sha256:2f4022dc2e49f97ed3eda8d58eeaa3400b6b7bb8f27da35cc41176cc9b2b7640"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174038,
+        "http_code": 200,
+        "tls_seconds": 0.350427,
+        "total_seconds": 10.320262,
+        "uploaded_bytes": 48941
+      },
+      "reservation_id": "sha256:15b5cfc28e6060f4ce9226841c83713f1c3e51dfcc5c94379eb9dd190dbd5507",
+      "response_envelope_digest": "sha256:ed4869330ba3b083546223892f2f607a4f3574ecf6d8cf77dbbc88f36b56a491"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172575,
+        "http_code": 200,
+        "tls_seconds": 0.352645,
+        "total_seconds": 8.124647,
+        "uploaded_bytes": 57173
+      },
+      "reservation_id": "sha256:1b04cd9d0364f5fee42b7f7016f7614bef92886502e4096539e8e5583c1c9db2",
+      "response_envelope_digest": "sha256:2f4af7b3df9fefe513f8e885fb6df120b6cbf13c6e896cf47ab2e34f4ec50a4c"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179009,
+        "http_code": 200,
+        "tls_seconds": 0.361146,
+        "total_seconds": 5.609765,
+        "uploaded_bytes": 53997
+      },
+      "reservation_id": "sha256:5ec1fd0a591e8b879912900a30c9baad4f96b728b976aa23b97894e8c7b275e7",
+      "response_envelope_digest": "sha256:fcaa96c4f5b3ccd1ded2e62d778c625a371b0b0533314e9ee50e15951855b804"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170984,
+        "http_code": 200,
+        "tls_seconds": 0.359013,
+        "total_seconds": 5.691331,
+        "uploaded_bytes": 49769
+      },
+      "reservation_id": "sha256:6bbf889fb59e97e5d1849dab674ec874342a111a7dba6eae3c27b5247d638b51",
+      "response_envelope_digest": "sha256:704bb8ff63e6f1fe135d09eb8db43f52b463da4504f31deeebfae38eebff5572"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178823,
+        "http_code": 200,
+        "tls_seconds": 0.359099,
+        "total_seconds": 5.764244,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:f7f156dbb4a1ab3b65cd56e76d730fb2debcd0385a6a965571f2b464fea2d9fb",
+      "response_envelope_digest": "sha256:2bafacbce69f393989de5c89fdbca4727129e5f81c986d95a09e4ce474b77d4b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179745,
+        "http_code": 200,
+        "tls_seconds": 0.361621,
+        "total_seconds": 5.428841,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:8323dec22e8b92aa7f354575296e653d831e9c48e4e85fb47babcc7975a7ec2b",
+      "response_envelope_digest": "sha256:b9012b04b601e2f187d6b7826ec2ebe3eeaf080a988254f6e441bfcf1fc3adf9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.211563,
+        "http_code": 200,
+        "tls_seconds": 0.389428,
+        "total_seconds": 5.619321,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:28fd9f5f2d2eca91597a2ca7fedbf3fb522c45dd7da706d7c3923c18a153e952",
+      "response_envelope_digest": "sha256:e74f4b4a5f5936ae33bee86933b9a07e5492b9c4b263d34af7105770c6e3104a"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.177133,
+        "http_code": 200,
+        "tls_seconds": 0.352078,
+        "total_seconds": 5.893496,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:f2a90bfbcebc5827cd9151d6197e333549035cf9b7acc69aa9c3773e61b4d9d0",
+      "response_envelope_digest": "sha256:801c224388430f76758ab9e6440219d645a80019d43c4e7bea3e19eaf8c44d0f"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172098,
+        "http_code": 200,
+        "tls_seconds": 0.353165,
+        "total_seconds": 5.982776,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:c3e489dd9a2752022dda762568a0c66f7a16ac95a4159e528bd1afba3bd9fa7b",
+      "response_envelope_digest": "sha256:a7d705160603eb3535767809f60cc062ed5e16a4bfd1f8b96ef06d3d36f9faab"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170669,
+        "http_code": 200,
+        "tls_seconds": 0.348289,
+        "total_seconds": 14.858144,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:b9f339ce96eafa21bbea589166a4f1f059e2325104c0feaadc9a9283d2e782e9",
+      "response_envelope_digest": "sha256:06f7ee2d07704b590597dae7eac40964d510cf3ad36e17400d37a7bcd2bdcc8a"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.176799,
+        "http_code": 200,
+        "tls_seconds": 0.357952,
+        "total_seconds": 14.906053,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:40b22da63521adcb590d04f0e9bf9911b446f044cf8420542e2d1573a90057fd",
+      "response_envelope_digest": "sha256:d06755afb2112bedeb5655f1707432267f88c15870505f735fb5dd33d422fc00"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.171853,
+        "http_code": 200,
+        "tls_seconds": 0.354885,
+        "total_seconds": 5.892548,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:fd144d96de2dccf934e70a35a59b21b4ade5aca88de198bd1cb0aa3e24d59d4e",
+      "response_envelope_digest": "sha256:cd74267a243719c5194af4fa23364bcdabc57648ea3724d312e0c6ee7931227a"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172702,
+        "http_code": 200,
+        "tls_seconds": 0.348606,
+        "total_seconds": 5.473291,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:73bcb623936b043b2ca2c8b27b84f1c6f1683fcfc3829f0623f7b30ba2345517",
+      "response_envelope_digest": "sha256:1e0d992988f2196e375b35c863856bfc5d2f74a7007564f10b075e5f063b80cd"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178102,
+        "http_code": 200,
+        "tls_seconds": 0.357939,
+        "total_seconds": 5.567668,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:28dfa4cc0b3bb81197e1b0979332baa8ff44e8668b00b2e73c9b787504932eb0",
+      "response_envelope_digest": "sha256:69bd40561a6d33269b7a52ebc93f724ac7d004558c7c0df3f29947685ac58e5c"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.179174,
+        "http_code": 200,
+        "tls_seconds": 0.356212,
+        "total_seconds": 5.315384,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:fa25e7589acb9fd19498d88e7fe6b9c4d7334d2c540ad721a524edfbe00783d0",
+      "response_envelope_digest": "sha256:e61ff31d4dace8a6537af8ee078a6b354620dcd84e4193226db34887a27ab6c3"
+    },
+    {
+      "curl_exit_code": 52,
+      "http_status": 0,
+      "metrics": {},
+      "reservation_id": "sha256:0880933777c7688cb4c0f5195b5513a60b7b5e05b91736253c4b2cfaa245b5ae",
+      "response_envelope_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.372299,
+        "http_code": 200,
+        "tls_seconds": 0.556759,
+        "total_seconds": 8.219311,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:6a9667f65388912c10304747801289549dbea64135e400c7bbb291ed2e42244f",
+      "response_envelope_digest": "sha256:28677fd47b6d0120983d5c84019eff47acbbbb79dbd872257874747cb8fdd0d5"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.183803,
+        "http_code": 200,
+        "tls_seconds": 0.36191,
+        "total_seconds": 5.800793,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:32ef5b3e6dc8ea00229da82d64ea4cea98d478b6785880a25429bc5f7d9ed1af",
+      "response_envelope_digest": "sha256:410d5799c5f1b7ffe81928a974e4adaee4c3c2f5dce2d62927d33108bfe88463"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.178493,
+        "http_code": 200,
+        "tls_seconds": 0.360475,
+        "total_seconds": 6.163292,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:f5ebc41c5cfcbe320ae30f3a81a3377590bf5bc1ce4a7c8032f242763597d849",
+      "response_envelope_digest": "sha256:af163fac65b2c1e4864c6fb1b01a78b68717cbda2894c335288d33fe8b3c6c54"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174692,
+        "http_code": 200,
+        "tls_seconds": 0.352547,
+        "total_seconds": 5.758167,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:2ebf97a99c9586fe860ffa60bb615ed69ef5ebafb9610cefcb916d7d05628c65",
+      "response_envelope_digest": "sha256:9e10ca694aa7495f4f460f8e7ded40a0e4b63bfc67fbcabd45d5cc17031bea19"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175737,
+        "http_code": 200,
+        "tls_seconds": 0.356752,
+        "total_seconds": 5.675307,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:d374ad9ec40fe9932bba0b148dbd4f7feae758aa1fa46f5e46d3f61dee3a29eb",
+      "response_envelope_digest": "sha256:246cfdba85d01a9b08153aadfd47bbb9beea0fa99aa8fc4898a7bbfe27f5becc"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170573,
+        "http_code": 200,
+        "tls_seconds": 0.354671,
+        "total_seconds": 5.469727,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:6b5898c6e40e9ac2504dc69b824b3a217171fb35ded9ea1f5a948d773af3fcdc",
+      "response_envelope_digest": "sha256:c6c8c5a653f3d97b47569ca887913fc9e4feca924285200e64d5bd96b89626b9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173802,
+        "http_code": 200,
+        "tls_seconds": 0.358512,
+        "total_seconds": 5.783568,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:abf60164faa294cfebdd0e2977762977a65095bd3a99655ed0afff1c7f725c09",
+      "response_envelope_digest": "sha256:9ecd7f70025fc64f5958196b6de676d3cb0bf704bf40a05597f4d09c35242d22"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172413,
+        "http_code": 200,
+        "tls_seconds": 0.356699,
+        "total_seconds": 5.376997,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:396c8049e5621160db44d0b1ba57d8ed85ea5c9933d7cea9cf79af69e2ac6b66",
+      "response_envelope_digest": "sha256:7a0db248bdbcf6a5d6db09fbf40958714f9d93522c4d3b57b86e70b51dbdf203"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172637,
+        "http_code": 200,
+        "tls_seconds": 0.349115,
+        "total_seconds": 5.591851,
+        "uploaded_bytes": 52657
+      },
+      "reservation_id": "sha256:848c79eaae6b4841c2e1de3d3cefa2366eece667a00654af5ebb691aa6895504",
+      "response_envelope_digest": "sha256:41fd3a57b4dc3389695c31e1c992294a528dc9d5ba0ee89c92e2d5446760f7d9"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174,
+        "http_code": 200,
+        "tls_seconds": 0.351303,
+        "total_seconds": 8.138787,
+        "uploaded_bytes": 56517
+      },
+      "reservation_id": "sha256:a7ae1b2253c56cc30640219181976b28ba976689d1f139c434e61aa00f8f72c4",
+      "response_envelope_digest": "sha256:6b4f74265b81cc8a23b01ab2b19104dd41231adc3bf20fd2e20332da000f02da"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174442,
+        "http_code": 200,
+        "tls_seconds": 0.35447,
+        "total_seconds": 8.882534,
+        "uploaded_bytes": 102762
+      },
+      "reservation_id": "sha256:7c222a479b70e7381cda2d1c62883059e3f23f4657f1612222044aa36e5762fa",
+      "response_envelope_digest": "sha256:03198fd88d4ac21d116a54f11fcf557f00b3f8cdf36fd35779f7a9ad031c0966"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.176597,
+        "http_code": 200,
+        "tls_seconds": 0.355658,
+        "total_seconds": 4.594166,
+        "uploaded_bytes": 150731
+      },
+      "reservation_id": "sha256:93dc30f74172bc1881081e8e6e3084bade2404be25398411b7e249665bc1628e",
+      "response_envelope_digest": "sha256:9bd7737b30fcdf02e51055aaa9046147314b574d16974d7b4653d63fabaf6707"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.175714,
+        "http_code": 200,
+        "tls_seconds": 0.360489,
+        "total_seconds": 4.624614,
+        "uploaded_bytes": 196021
+      },
+      "reservation_id": "sha256:adc8e68fee1022e6224978aec132c8273181e4513c892e87bb0fc5985c81b1a5",
+      "response_envelope_digest": "sha256:42ba091b38a380d19241136b1c893cd1cab460a4486fe06427ccce005ee5fe78"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173976,
+        "http_code": 200,
+        "tls_seconds": 0.34998,
+        "total_seconds": 4.66714,
+        "uploaded_bytes": 241730
+      },
+      "reservation_id": "sha256:3e2022d4356324d681b42d2781fad1244b4bbc740f02b9bf39dfe68223cf50b0",
+      "response_envelope_digest": "sha256:f804781f18a8765d90ac2c63cddcecd52af694ad1a5fe5cf4dd1fe1e3485e93b"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.17313,
+        "http_code": 200,
+        "tls_seconds": 0.787187,
+        "total_seconds": 8.278144,
+        "uploaded_bytes": 287900
+      },
+      "reservation_id": "sha256:6794ab33e5929eac4e898d20e1195138553513071a6515fa270719c254f9f06f",
+      "response_envelope_digest": "sha256:6b654ce56249dd4c3b2dc692158609ff4894cd607a246ebeb7ec7dcb0ddde032"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173468,
+        "http_code": 200,
+        "tls_seconds": 0.34703,
+        "total_seconds": 8.31782,
+        "uploaded_bytes": 334333
+      },
+      "reservation_id": "sha256:b048413d46eb133eca2b7515e9c4f74f6d32bf4c6b4e60507b5c2eb4004924bc",
+      "response_envelope_digest": "sha256:52547201b56478f287dad017ee42cea382e04cbfa062e4b13dec6f62f5c5c40c"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.181346,
+        "http_code": 200,
+        "tls_seconds": 0.361024,
+        "total_seconds": 13.894503,
+        "uploaded_bytes": 389002
+      },
+      "reservation_id": "sha256:2197e6b30d895a6cec7b560de5c54da3245dd1867bfbfd14123523172a8c2dbf",
+      "response_envelope_digest": "sha256:ddd17ffb4934e90a32a1009d88d7d4226e3f530af46ca1f15a13d110b36db463"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173563,
+        "http_code": 200,
+        "tls_seconds": 0.355747,
+        "total_seconds": 8.449963,
+        "uploaded_bytes": 440495
+      },
+      "reservation_id": "sha256:eac832cf9701178c30ab33a991b1bbc977726da7c962bb8a8fbe89cdf997ca5c",
+      "response_envelope_digest": "sha256:982416fe6ad8aa6768114d0e1ef16650b7cbc9e19ba131317a6a581edcd3b4ef"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.170677,
+        "http_code": 200,
+        "tls_seconds": 0.349127,
+        "total_seconds": 11.052357,
+        "uploaded_bytes": 487760
+      },
+      "reservation_id": "sha256:330fc3396d7cb1b27c22a122acbad31799d334f67658c8204260c3a3f8412887",
+      "response_envelope_digest": "sha256:3853009f8f78ef5746336d924fc6faec415a870bea65aa885e5a742f97a458db"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.174476,
+        "http_code": 200,
+        "tls_seconds": 0.34852,
+        "total_seconds": 5.45418,
+        "uploaded_bytes": 536809
+      },
+      "reservation_id": "sha256:bab31a6d563d9c328f3f929ef3628c7416fccd41b2baa99280bc479b77a22126",
+      "response_envelope_digest": "sha256:b21e2dd65156ffabea5c0d0590c004eeeaa2024155b59077ae23af2837524a00"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172459,
+        "http_code": 200,
+        "tls_seconds": 0.348078,
+        "total_seconds": 5.303718,
+        "uploaded_bytes": 583107
+      },
+      "reservation_id": "sha256:807923bdd62c28605339f14c6b12b14c825a728a6caca87c2fa66ea59299e138",
+      "response_envelope_digest": "sha256:f84b2de951ad8999747d84618f0e4daef5070ff97973db223af2db2dbc913905"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 429,
+      "metrics": {
+        "connect_seconds": 0.172366,
+        "http_code": 429,
+        "tls_seconds": 0.346623,
+        "total_seconds": 9.951773,
+        "uploaded_bytes": 629748
+      },
+      "reservation_id": "sha256:977b720ef687d9daa46ea1910679a67630764e4910d07529e1935063d2512463",
+      "response_envelope_digest": "sha256:cc35893a84170de3c7883b2640124a77c1b4e165544cd330a7b4ca0fb6856548"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.173857,
+        "http_code": 200,
+        "tls_seconds": 0.353077,
+        "total_seconds": 5.315175,
+        "uploaded_bytes": 629748
+      },
+      "reservation_id": "sha256:6c2ce3fc7e229b64bbf1de6f9434d2efed85e88c6d1803e7adfa1b5baf3aee89",
+      "response_envelope_digest": "sha256:0f905b698f5b341f08974e5f45f062c54ee085a4c4fcf7737b7b80945c92bca5"
+    },
+    {
+      "curl_exit_code": 0,
+      "http_status": 200,
+      "metrics": {
+        "connect_seconds": 0.172907,
+        "http_code": 200,
+        "tls_seconds": 0.355639,
+        "total_seconds": 4.450986,
+        "uploaded_bytes": 676766
+      },
+      "reservation_id": "sha256:5869af44cf5e924e70a6ac07bc8b597a78bdffc5f09ddffad13803d508820c6e",
+      "response_envelope_digest": "sha256:c17cdb1d50383f3739d3bcab0d51a2b284429c03cdfc7983e91f681affe9bea5"
+    },
+    {
+      "curl_exit_code": 28,
+      "http_status": 0,
+      "metrics": {},
+      "reservation_id": "sha256:873711dce38a0cc31fbe2c868d7cdcfa396e0864d29049f22d030dc8356a9369",
+      "response_envelope_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "transport_version": "curl-request-local-transport-v3"
+}

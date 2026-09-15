@@ -1,0 +1,11 @@
+{
+  "schema_version": "pixelgym-d58-runtime-approval-v1",
+  "owner_selection": "Allow up to 6 hours; keep $28 cap",
+  "presented_question": "The frozen plan enforces the repository’s 90-minute stop-loss, but the first two episodes took about five minutes, suggesting the 90 may need roughly 3–4 hours. May I continue untouched assignments in additional phases for up to 6 hours total, while keeping the existing $28 aggregate cap?",
+  "aggregate_ceiling_usd": "28.00",
+  "maximum_total_runtime_seconds": 21600,
+  "runtime_origin_phase": "d58-reliable-memory-continuation-v1",
+  "runtime_rule": "Six hours total measured from the original reliable continuation's durable start, including intervening setup time; no new six-hour allowance per continuation.",
+  "assignment_rule": "Continue only untouched assignments from the same 100-assignment cohort; preserve all ten original failures and every subsequently started or completed episode; no episode replay.",
+  "scope": "Additional continuation phases after the frozen 90-minute phase closes; existing $28 aggregate cap, unchanged model and task bank, no confirmatory evaluation."
+}

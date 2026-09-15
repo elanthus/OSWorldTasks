@@ -1,0 +1,34 @@
+{
+  "aggregate_accounted_spend_usd": "3.72952845",
+  "aggregate_known_spend_usd": "0.84307725",
+  "aggregate_unknown_hold_usd": "2.88645120",
+  "confirmatory_power_estimate": null,
+  "execution_plan_digest": "sha256:e0e05fc719ccbf0fa7f2c10efbf90d1f4908824ade4dbadab1d2619feb3a9b96",
+  "inferential_test": null,
+  "interpretation": "Descriptive calibration only. Incomplete pairs remain explicit; a budget-stopped campaign cannot establish complete calibration rates or confirmatory power. Infrastructure failures remain failed outcomes in completed pairs. Do not pool these terminal results with the scripted-prefix pilot.",
+  "new_phase_known_spend_usd": "0.65298975",
+  "new_phase_wire_requests": 106,
+  "next_request_bound_usd": "1.44322560",
+  "next_request_fits": false,
+  "paired_terminal_outcomes": {
+    "both_success": 0,
+    "history_only": 1,
+    "incomplete": 48,
+    "neither_success": 1,
+    "stateless_only": 0
+  },
+  "provider_calls": 0,
+  "remaining_unreserved_ceiling_usd": "1.27047155",
+  "schema_version": "pixelgym-d58-full-memory-descriptive-analysis-v1",
+  "started_final_stages": {
+    "history": {
+      "12": 1,
+      "4": 1,
+      "6": 1
+    },
+    "stateless": {
+      "1": 2
+    }
+  },
+  "summary_digest": "sha256:8d919819530a5f149b7659c2b4d7cbda89b70682414e2c52b27850582882c585"
+}

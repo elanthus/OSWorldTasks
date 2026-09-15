@@ -1,0 +1,3495 @@
+{
+  "accounting": {
+    "elapsed_seconds": 20594.627,
+    "event_counts": {
+      "attempt_completed": 1206,
+      "attempt_started": 1208,
+      "canonical_response_persisted": 1206,
+      "cli_memory_assignment_completed": 47,
+      "cli_memory_assignment_started": 47,
+      "dispatch_committed": 1203,
+      "dispatch_started": 1203,
+      "initial_screenshot": 47,
+      "parsed_action_candidate": 1203,
+      "privileged_dispatch_diagnostic": 1203,
+      "retryable_transport_fault": 2,
+      "sealed_action_intent": 1203,
+      "sealed_unsuccessful_result": 4,
+      "unknown_outcome_infrastructure_failure": 2
+    },
+    "incremental_experiment_charge_usd": "0.00",
+    "invocation_integrity_digest": "sha256:feee1c3264297107a4c6712fa8c2c521dc683ec10856064119d7287636579d63",
+    "invocation_statuses": {
+      "infrastructure_failure": 1,
+      "response": 1206,
+      "timeout": 1
+    },
+    "unresolved_invocations": 1
+  },
+  "adapter_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+  "assigned": 69,
+  "benchmark_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+  "benchmark_source_hashes": {
+    "pixelgym/grounding/v5/memory_backend.py": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+    "pixelgym/grounding/v5/memory_focus_backend.py": "sha256:d8ce6bf73fed8be10c70ef22c9eac67f0cefd595418b8a64e5c0e4c0b3c95f24",
+    "pixelgym/grounding/v5/memory_generator.py": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+    "pixelgym/grounding/v5/screenshot_memory.py": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8"
+  },
+  "cohort": "haiku-cli-continuation",
+  "jobs": [
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "pr196-haiku-default-5143-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "pr196-haiku-default-5153-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "pr196-haiku-default-5153-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "pr196-haiku-default-5162-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "pr196-haiku-default-5162-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "pr196-haiku-default-5115-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "pr196-haiku-default-5115-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "pr196-haiku-default-5125-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "pr196-haiku-default-5125-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "pr196-haiku-default-5135-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "pr196-haiku-default-5135-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "pr196-haiku-default-5144-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "pr196-haiku-default-5144-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "pr196-haiku-default-5154-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "pr196-haiku-default-5154-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "pr196-haiku-default-5163-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "pr196-haiku-default-5163-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "pr196-haiku-default-5116-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "pr196-haiku-default-5116-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "pr196-haiku-default-5126-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "pr196-haiku-default-5126-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "pr196-haiku-default-5136-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "pr196-haiku-default-5136-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "pr196-haiku-default-5145-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "pr196-haiku-default-5145-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "pr196-haiku-default-5155-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "pr196-haiku-default-5155-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "pr196-haiku-default-5164-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "pr196-haiku-default-5164-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "pr196-haiku-default-5117-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "pr196-haiku-default-5117-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "pr196-haiku-default-5127-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "pr196-haiku-default-5127-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "pr196-haiku-default-5137-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "pr196-haiku-default-5137-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "pr196-haiku-default-5146-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "pr196-haiku-default-5146-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "pr196-haiku-default-5156-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "pr196-haiku-default-5156-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "pr196-haiku-default-5165-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "pr196-haiku-default-5165-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "pr196-haiku-default-5118-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "pr196-haiku-default-5118-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "pr196-haiku-default-5128-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "pr196-haiku-default-5128-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-default-5138-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-default-5138-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "stateless",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-default-5147-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "mode": "history",
+      "seed": 5147,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 7,
+        "logical_id": "calibration-visible_error_recovery-logical-05",
+        "partition": "calibration",
+        "seed": 5147,
+        "variant": "base"
+      },
+      "task_digest": "sha256:71681178871567d44634ce0678ce516856b832455e6693145bc44a404847ff1e",
+      "task_id": "v5m-c1f3cc5e91447055adcd7e43",
+      "trial_id": "pr196-haiku-default-5147-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "history",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-default-5157-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "mode": "stateless",
+      "seed": 5157,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 7,
+        "logical_id": "calibration-review_and_commit-logical-05",
+        "partition": "calibration",
+        "seed": 5157,
+        "variant": "base"
+      },
+      "task_digest": "sha256:ebd822d02b0e6d3a39f98f1d863175412b71ae5eda6a0a8e94b6993839db1d8e",
+      "task_id": "v5m-d9b26d9ef5a9d91741a2a88f",
+      "trial_id": "pr196-haiku-default-5157-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-default-5166-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5166,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 16,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-05",
+        "partition": "calibration",
+        "seed": 5166,
+        "variant": "base"
+      },
+      "task_digest": "sha256:542bd28e41bb01d6d938d357697afd8db12345b228b8c6343eaa4d05f6909232",
+      "task_id": "v5m-6f71ddd6d13320d321cae7a8",
+      "trial_id": "pr196-haiku-default-5166-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-default-5119-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5119,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 9,
+        "logical_id": "calibration-deferred_join-logical-07",
+        "partition": "calibration",
+        "seed": 5119,
+        "variant": "base"
+      },
+      "task_digest": "sha256:f0e630c0945162de45fea7505c06df8007b933ee6ff29ceb75ae6461cb2accb4",
+      "task_id": "v5m-b990ec5251cc0ca7c0b1c2dd",
+      "trial_id": "pr196-haiku-default-5119-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-default-5129-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5129,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 9,
+        "logical_id": "calibration-conditional_precedence-logical-07",
+        "partition": "calibration",
+        "seed": 5129,
+        "variant": "base"
+      },
+      "task_digest": "sha256:5942c930054e1893ac2e1e9057fdfaec857b2a2593063ce3585cd12d79bcd5ba",
+      "task_id": "v5m-1685670c4faf0e71cc0405c6",
+      "trial_id": "pr196-haiku-default-5129-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-default-5139-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5139,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 9,
+        "logical_id": "calibration-revision_after_reveal-logical-07",
+        "partition": "calibration",
+        "seed": 5139,
+        "variant": "base"
+      },
+      "task_digest": "sha256:574b1b9d52906ed27a512d978a64a5487ed19c104467a287fb90e050d9abbd30",
+      "task_id": "v5m-49ac36b7a7b5babf250ead6f",
+      "trial_id": "pr196-haiku-default-5139-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-default-5148-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5148,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 8,
+        "logical_id": "calibration-visible_error_recovery-logical-06",
+        "partition": "calibration",
+        "seed": 5148,
+        "variant": "base"
+      },
+      "task_digest": "sha256:23861d5c5d4018ba666a5ea6dc170f00b84fbcc28b37b7e27ca2ddf1fd608995",
+      "task_id": "v5m-f69347ee579664546c6e6981",
+      "trial_id": "pr196-haiku-default-5148-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-default-5158-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5158,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 8,
+        "logical_id": "calibration-review_and_commit-logical-06",
+        "partition": "calibration",
+        "seed": 5158,
+        "variant": "base"
+      },
+      "task_digest": "sha256:7678ad20014890519b0911e6fcbced6896e0ab10d7f61957f8472d76a198e011",
+      "task_id": "v5m-5c11377903f1fd64abe4b1f7",
+      "trial_id": "pr196-haiku-default-5158-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-default-5167-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5167,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "evidence_aggregation",
+        "family_index": 17,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-06",
+        "partition": "calibration",
+        "seed": 5167,
+        "variant": "base"
+      },
+      "task_digest": "sha256:922de8da87f05d625f773e70265471243aa151b92302e0d240ebba5290d7895b",
+      "task_id": "v5m-3a727b4ea11c7d0d1c85cf30",
+      "trial_id": "pr196-haiku-default-5167-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "history",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-default-5149-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 32,
+      "mode": "stateless",
+      "seed": 5149,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "visible_error_recovery",
+        "family_index": 9,
+        "logical_id": "calibration-visible_error_recovery-logical-07",
+        "partition": "calibration",
+        "seed": 5149,
+        "variant": "base"
+      },
+      "task_digest": "sha256:9986dfa2723c66df40721fb68d276a04c427aa83b004b282447ff99e0467b29a",
+      "task_id": "v5m-b4784d0976abe05e27413ca6",
+      "trial_id": "pr196-haiku-default-5149-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "stateless",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-default-5159-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "mode": "history",
+      "seed": 5159,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "review_and_commit",
+        "family_index": 9,
+        "logical_id": "calibration-review_and_commit-logical-07",
+        "partition": "calibration",
+        "seed": 5159,
+        "variant": "base"
+      },
+      "task_digest": "sha256:c103a45013ffcfe223b73eaa067d70f238d7bced52089561fd3e6d251e402e01",
+      "task_id": "v5m-f7cf58101c23dae46ad1ce94",
+      "trial_id": "pr196-haiku-default-5159-history-timeout-continuation-v1"
+    }
+  ],
+  "model": "haiku-default",
+  "original_plan_digest": "sha256:33812f7839bf34303766cece34861b63f4e41bdad58612e8c18d76da517a5845",
+  "original_summary_digest": "sha256:44bb3163b48b3bc56386753e73ec3342e437415e7ace263228ca80ac8f70ae25",
+  "policy_manifests": {
+    "history": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+      "context_limit": 200000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": true,
+      "harness_digest": "sha256:536a6d902f7591b39a531aa50df178f3b4ffa988f1a6b784c874534757089bd8",
+      "inference_parameters": [
+        [
+          "auth_method",
+          "claude.ai"
+        ],
+        [
+          "subscription_type",
+          "max"
+        ],
+        [
+          "cli_version",
+          "2.1.236 (Claude Code)"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:25a6478aa731f1c7798851eb7bc87914adcb1911e3382a6e5e093bd9d25e507f"
+        ],
+        [
+          "model_reasoning_effort",
+          "default"
+        ],
+        [
+          "resolved_model",
+          "claude-haiku-4-5-20251001"
+        ],
+        [
+          "tools",
+          "none"
+        ],
+        [
+          "mcp",
+          "none"
+        ],
+        [
+          "claude_max_turns",
+          "1"
+        ],
+        [
+          "structured_output_auto_retry",
+          "disabled_no_json_schema_flag"
+        ],
+        [
+          "runner_retries",
+          "1-confirmed-stopped-timeout-only"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-history-v1",
+      "model": "claude-haiku-4-5-20251001",
+      "parser_version": "pixelgym-agent-v5-claude-stream-json-action-parser-v3-json-envelope",
+      "policy_id": "policy-4cace9e7f89f17ba294c",
+      "provider": "claude-code-cli/claude-ai-max-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 125.0,
+      "response_schema_version": "pixelgym-agent-v5-claude-stream-json-response-v1",
+      "sandbox": {
+        "policy_claim": {
+          "declared_unavailable_capabilities": []
+        },
+        "probe_result": {
+          "applied_to_cli_launch": false,
+          "mechanism_name": "darwin_sandbox_exec_probe_only",
+          "profile_digest": null,
+          "status": "not_run"
+        },
+        "provider_endpoint": "https://api.anthropic.com",
+        "provider_endpoint_allowlist_digest": "sha256:3d99e8a8ca11866adb9b51291c41488e8d6097469d173be18f07eb22bb21015f",
+        "runtime_digest": "sha256:037f4f0cd6fb536281edb23b26030b36ba272bfd70011e2a021a134acf6c1e4f",
+        "runtime_enforcement": {
+          "argv_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cli_restrictions_applied": false,
+          "environment_allowlist_applied": false,
+          "environment_allowlist_digest": "sha256:858dc8bd43714315e6db442a959158da913d89ada981f8851224ff0ab7b6e590",
+          "environment_variable_names": [],
+          "mechanism_name": "not_bound_to_cli_launch",
+          "os_sandbox_applied": false
+        },
+        "schema_version": "pixelgym-agent-v5-sandbox-v3"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-history",
+      "system_prompt_digest": "sha256:6db28ba2af5c39e0aa463592d617ce7ab10d42b80b7341a51739b53f2cc95c2e",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "cli-one-confirmed-stopped-timeout-retry-v1"
+    },
+    "stateless": {
+      "cancellation_mode": "transport_process_group_termination",
+      "code_revision": "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b",
+      "context_limit": 200000,
+      "coordinate_adapter": "native-1024x768",
+      "coordinate_adapter_digest": "sha256:7bb746784b5c63d15018ebb150e9a1b073afdc221b91a8907e0cef4266ad2d73",
+      "coordinate_input_convention": "integer-pixel/1024x768",
+      "cross_episode_cache": "disabled",
+      "dependency_lock_digest": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+      "dirty_worktree_policy": "reject-tracked-changes",
+      "exact_snapshot": true,
+      "harness_digest": "sha256:536a6d902f7591b39a531aa50df178f3b4ffa988f1a6b784c874534757089bd8",
+      "inference_parameters": [
+        [
+          "auth_method",
+          "claude.ai"
+        ],
+        [
+          "subscription_type",
+          "max"
+        ],
+        [
+          "cli_version",
+          "2.1.236 (Claude Code)"
+        ],
+        [
+          "command_contract_digest",
+          "sha256:25a6478aa731f1c7798851eb7bc87914adcb1911e3382a6e5e093bd9d25e507f"
+        ],
+        [
+          "model_reasoning_effort",
+          "default"
+        ],
+        [
+          "resolved_model",
+          "claude-haiku-4-5-20251001"
+        ],
+        [
+          "tools",
+          "none"
+        ],
+        [
+          "mcp",
+          "none"
+        ],
+        [
+          "claude_max_turns",
+          "1"
+        ],
+        [
+          "structured_output_auto_retry",
+          "disabled_no_json_schema_flag"
+        ],
+        [
+          "runner_retries",
+          "1-confirmed-stopped-timeout-only"
+        ],
+        [
+          "max_bounded_retries_per_action",
+          "1"
+        ],
+        [
+          "max_observed_frames",
+          "32"
+        ]
+      ],
+      "max_cancellation_requests_per_attempt": 0,
+      "max_model_attempts_per_action": 2,
+      "max_reconciliation_requests_per_attempt": 0,
+      "memory_policy_version": "pixelgym-cli-screenshot-stateless-v1",
+      "model": "claude-haiku-4-5-20251001",
+      "parser_version": "pixelgym-agent-v5-claude-stream-json-action-parser-v3-json-envelope",
+      "policy_id": "policy-d53e2cbc48d70bf5c9a2",
+      "provider": "claude-code-cli/claude-ai-max-subscription",
+      "provider_sdk_auto_retries": false,
+      "proxy_auto_retries": false,
+      "reconciliation_deadline_seconds": 0.0,
+      "request_deadline_seconds": 125.0,
+      "response_schema_version": "pixelgym-agent-v5-claude-stream-json-response-v1",
+      "sandbox": {
+        "policy_claim": {
+          "declared_unavailable_capabilities": []
+        },
+        "probe_result": {
+          "applied_to_cli_launch": false,
+          "mechanism_name": "darwin_sandbox_exec_probe_only",
+          "profile_digest": null,
+          "status": "not_run"
+        },
+        "provider_endpoint": "https://api.anthropic.com",
+        "provider_endpoint_allowlist_digest": "sha256:3d99e8a8ca11866adb9b51291c41488e8d6097469d173be18f07eb22bb21015f",
+        "runtime_digest": "sha256:037f4f0cd6fb536281edb23b26030b36ba272bfd70011e2a021a134acf6c1e4f",
+        "runtime_enforcement": {
+          "argv_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "cli_restrictions_applied": false,
+          "environment_allowlist_applied": false,
+          "environment_allowlist_digest": "sha256:858dc8bd43714315e6db442a959158da913d89ada981f8851224ff0ab7b6e590",
+          "environment_variable_names": [],
+          "mechanism_name": "not_bound_to_cli_launch",
+          "os_sandbox_applied": false
+        },
+        "schema_version": "pixelgym-agent-v5-sandbox-v3"
+      },
+      "state_reducer_version": "pixelgym-agent-v5-observed-screenshots-v1-stateless",
+      "system_prompt_digest": "sha256:6db28ba2af5c39e0aa463592d617ce7ab10d42b80b7341a51739b53f2cc95c2e",
+      "task_renderer_version": "pixelgym-v5-memory-focus-backend-v3",
+      "transport_retry_rule": "cli-one-confirmed-stopped-timeout-retry-v1"
+    }
+  },
+  "private_audit": {
+    "host_success_and_measurements_match": true,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:35529d03faf4b6cdda2af843b39aa6d459c3c7c18b9a6dc984661c12a50764ff",
+      "event_count": 9784,
+      "object_count": 5093,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "provider_calls_made": 0,
+    "read_only": true,
+    "result_events_match": true
+  },
+  "recorded": 47,
+  "results": [
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions": 26,
+      "environment_actions_dispatched": 26,
+      "environment_dispatch_reservations": 26,
+      "final_policy_checkpoint_digest": "sha256:cc5f4bca2e38724b7e6f4aa197a6c736e5ef3cec881f5b164a0fae80894d53b6",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5143,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 3,
+        "logical_id": "calibration-visible_error_recovery-logical-01",
+        "partition": "calibration",
+        "seed": 5143,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:80137f6ce93d06c556a1cb086d40c676c5e4e5a1a9c373867c4b3bcd28019c90",
+      "task_id": "v5m-3b10f86e80e9c029a4fc0c96",
+      "trial_id": "pr196-haiku-default-5143-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:c10aff28b9a8014edd481a9c5c0f836b1e1b6e557ccfd35404c96c089187a034",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "success": true,
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "pr196-haiku-default-5153-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5153,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 3,
+        "logical_id": "calibration-review_and_commit-logical-01",
+        "partition": "calibration",
+        "seed": 5153,
+        "variant": "twin_b"
+      },
+      "success": false,
+      "task_digest": "sha256:ad01f4b2f980966b6adb737ab7b5de69a163bc722cff7ddb899754217973e08a",
+      "task_id": "v5m-d1536379214ae2ac2e12c331",
+      "trial_id": "pr196-haiku-default-5153-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "pr196-haiku-default-5162-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:83a214c8d25491f1d6ccc0cae459bcada0728feaf651bd69daad9c5d69bc6dc0",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5162,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 12,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-01",
+        "partition": "calibration",
+        "seed": 5162,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:985928385f024586dc30aefd0510a58008d21448ebd473567fc6971dbcb4edbd",
+      "task_id": "v5m-d2fd38dbdd759959c725b8c7",
+      "trial_id": "pr196-haiku-default-5162-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:b6de17768db42a617845f9baa683e9670a13c4543184bdea65657b62baeeafd4",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "pr196-haiku-default-5115-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:7d03056259b3c58778ca6cfd030ad351fc4b3c882cba796a750c938ccde585ce",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 20,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5115,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 5,
+        "logical_id": "calibration-deferred_join-logical-03",
+        "partition": "calibration",
+        "seed": 5115,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:99c738ad6321abe7de436df65136efd8c8762ddac989f6b1595a32262157e8c8",
+      "task_id": "v5m-5adef258b652c069c8e9de7c",
+      "trial_id": "pr196-haiku-default-5115-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:ef7fceb4fdfad54e1b1bcd47d57051808e674a7de39cf9cea537f581020f799f",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 20,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "pr196-haiku-default-5125-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "invalid_output",
+      "environment_actions": 7,
+      "environment_actions_dispatched": 7,
+      "environment_dispatch_reservations": 7,
+      "final_policy_checkpoint_digest": "sha256:c5d1624709470aef128b63b7c9062401490eb4f2486615bc055b7d6e58be8fe7",
+      "final_stage_index": 1,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 8,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 8,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5125,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 5,
+        "logical_id": "calibration-conditional_precedence-logical-03",
+        "partition": "calibration",
+        "seed": 5125,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:226df67d6ba99e0354c689d4440f6ab1ab606b1dd2ef480027cf91cca875f9d9",
+      "task_id": "v5m-bb17f8b584bd5c6f59f39a91",
+      "trial_id": "pr196-haiku-default-5125-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:23885148beb64d4b220bad5f437a57f41c0f8fc59c61de41721fb3e26d7a62fa",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "pr196-haiku-default-5135-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5135,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 5,
+        "logical_id": "calibration-revision_after_reveal-logical-03",
+        "partition": "calibration",
+        "seed": 5135,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:858d0acd036069a3cc34a2850b317834d1cf126320a2c59998061e01f3ee8ab4",
+      "task_id": "v5m-9c3fc1f2a49ecbb0663bd87d",
+      "trial_id": "pr196-haiku-default-5135-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions": 29,
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 23,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 29,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "pr196-haiku-default-5144-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_policy_checkpoint_digest": "sha256:97fc5d5740d64eed949dbcd58c5277d7f31d581fd1e33c3a62dc6bccca81bd59",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5144,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 4,
+        "logical_id": "calibration-visible_error_recovery-logical-02",
+        "partition": "calibration",
+        "seed": 5144,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:16a287ecf0443c494538f28622cb16a77a6a0352240e3b9be95153a6d685a9b2",
+      "task_id": "v5m-f53e204bd780f0cebcfd8775",
+      "trial_id": "pr196-haiku-default-5144-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2fb7d725015b58a35d31344b16bcce90b7388768ef086bb6dd893dc4156972fa",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "pr196-haiku-default-5154-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 10,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 23,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 25,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5154,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 4,
+        "logical_id": "calibration-review_and_commit-logical-02",
+        "partition": "calibration",
+        "seed": 5154,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1cd341b94d8c2cb659cbf161f658432a4322c2c15ec0d13fd377ce73150c2632",
+      "task_id": "v5m-bd393b734e463cd9ec3f9de3",
+      "trial_id": "pr196-haiku-default-5154-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 21,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 23,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "pr196-haiku-default-5163-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:798bd600bf3a349e05f0400a4194f800c3028ea4dbb7933bcb63e2d6d7a54271",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5163,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 13,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-02",
+        "partition": "calibration",
+        "seed": 5163,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:12b4db799a41f6e93f754ef944a1e4700dd56db671ba2777a5c20e48fcefad2c",
+      "task_id": "v5m-110d80d0ef0912b18d944f0d",
+      "trial_id": "pr196-haiku-default-5163-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:1ccd639e72fb29a2a9eddb04f2c1ac74b0cefdc9987d5cb00de3eeb1c51be471",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "pr196-haiku-default-5116-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:7d03056259b3c58778ca6cfd030ad351fc4b3c882cba796a750c938ccde585ce",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5116,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 6,
+        "logical_id": "calibration-deferred_join-logical-04",
+        "partition": "calibration",
+        "seed": 5116,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:7cf1c0ee19fcbc3f2ae29a836b2ee1161cb628f62ea0ad581d99d8323fa32c23",
+      "task_id": "v5m-a00964962dd2c5a0918eb650",
+      "trial_id": "pr196-haiku-default-5116-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:ef7fceb4fdfad54e1b1bcd47d57051808e674a7de39cf9cea537f581020f799f",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 22,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 24,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "pr196-haiku-default-5126-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "invalid_output",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:003b2199efa4c41606c96d1e27713ba80a8a6b69bc30d916d1e008fbea2c7618",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5126,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 6,
+        "logical_id": "calibration-conditional_precedence-logical-04",
+        "partition": "calibration",
+        "seed": 5126,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:b667fdeb3da264ae5dc0ba4842d8130b397ef0bbcab6e3915714e941bbce2600",
+      "task_id": "v5m-8095c86e47a5927859596eb5",
+      "trial_id": "pr196-haiku-default-5126-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:ff749578a353c8d295736170ef1e883eb6aee181c14d67cf03c6c2cbec0f33b0",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "pr196-haiku-default-5136-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 26,
+      "environment_actions_dispatched": 26,
+      "environment_dispatch_reservations": 26,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 26,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5136,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 6,
+        "logical_id": "calibration-revision_after_reveal-logical-04",
+        "partition": "calibration",
+        "seed": 5136,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:df8bd44d8c5ea07fb47b40f424d3ee63fa4784f126a886e5b5fed7711cfe7d5a",
+      "task_id": "v5m-f9e0771b06763bd2a7bb77c1",
+      "trial_id": "pr196-haiku-default-5136-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions": 29,
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 29,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 29,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "pr196-haiku-default-5145-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "step_limit_truncation",
+      "environment_actions": 29,
+      "environment_actions_dispatched": 29,
+      "environment_dispatch_reservations": 29,
+      "final_policy_checkpoint_digest": "sha256:5f145a0b727465aa786e2fbf1a6e6a9f8ca3ab1bf92db85c1d566e2ebe23f461",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5145,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 5,
+        "logical_id": "calibration-visible_error_recovery-logical-03",
+        "partition": "calibration",
+        "seed": 5145,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:73b12e3567d428285e467173da05595761b5bca196a46be5d613a31d81516656",
+      "task_id": "v5m-95ef80d2f05b31dee8852080",
+      "trial_id": "pr196-haiku-default-5145-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "invalid_output",
+      "environment_actions": 14,
+      "environment_actions_dispatched": 14,
+      "environment_dispatch_reservations": 14,
+      "final_policy_checkpoint_digest": "sha256:fd985a032242d8c6376bfa0d1db102e2ef7c188ec4ec305c6463f928915a64c7",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "history",
+      "model_attempts": 15,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 15,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "pr196-haiku-default-5155-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5155,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 5,
+        "logical_id": "calibration-review_and_commit-logical-03",
+        "partition": "calibration",
+        "seed": 5155,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:28fe2932f6f702a7a2a432bb7a6ceacd7fb656df8eceeabbfcdc7574538063de",
+      "task_id": "v5m-b6db1d36302f21842fbbc5b7",
+      "trial_id": "pr196-haiku-default-5155-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "pr196-haiku-default-5164-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 26,
+      "environment_actions_dispatched": 26,
+      "environment_dispatch_reservations": 26,
+      "final_policy_checkpoint_digest": "sha256:e4092e0226abc859eb94232ac410f5e39f31d77c880386ad235a619393602df8",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 26,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5164,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 14,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-03",
+        "partition": "calibration",
+        "seed": 5164,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:219694eec9043692a2b1d7052adf03e56d108c99eeca3049a2c3cdfdea659dff",
+      "task_id": "v5m-183db2c2369a623f54aa34fe",
+      "trial_id": "pr196-haiku-default-5164-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 27,
+      "environment_actions_dispatched": 27,
+      "environment_dispatch_reservations": 27,
+      "final_policy_checkpoint_digest": "sha256:f49b63c3fe400146188c6297b3e305c29658156488ba35a17d4ed372316b465d",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 27,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 27,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "pr196-haiku-default-5117-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:7d03056259b3c58778ca6cfd030ad351fc4b3c882cba796a750c938ccde585ce",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5117,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "deferred_join",
+        "family_index": 7,
+        "logical_id": "calibration-deferred_join-logical-05",
+        "partition": "calibration",
+        "seed": 5117,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:fd98d0159843c16627b1165f5065ac1717c70ad9164d9e182415152a6067f596",
+      "task_id": "v5m-6d0de88d6cbf288f2d43e826",
+      "trial_id": "pr196-haiku-default-5117-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:ef7fceb4fdfad54e1b1bcd47d57051808e674a7de39cf9cea537f581020f799f",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "pr196-haiku-default-5127-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:7ad6ea4fa62abb122c90668e8bf4e1e48992e6187917428ac29914372629021b",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5127,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "conditional_precedence",
+        "family_index": 7,
+        "logical_id": "calibration-conditional_precedence-logical-05",
+        "partition": "calibration",
+        "seed": 5127,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:ca90e57bca09ce7d66081537fbf2af0ae764926ba5d34886fea95beb0d90a5e1",
+      "task_id": "v5m-925ae87c1aba0f01a4290055",
+      "trial_id": "pr196-haiku-default-5127-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:f1108b8c14b003879e75495c39a5b79c37b59281c13b0c9824b56ee9bcd944a5",
+      "final_stage_index": 6,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 27,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": false,
+      "reached_consumers": [
+        5
+      ],
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "pr196-haiku-default-5137-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 16,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 18,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5137,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "revision_after_reveal",
+        "family_index": 7,
+        "logical_id": "calibration-revision_after_reveal-logical-05",
+        "partition": "calibration",
+        "seed": 5137,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:1c47511889a58c4145561bbe987e83aa12786af573e4b04276fb1fb763a8e6ef",
+      "task_id": "v5m-f60b69f4594ce1bdf5e065a2",
+      "trial_id": "pr196-haiku-default-5137-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_policy_checkpoint_digest": "sha256:db41959cbce29e8f43a3ff4f6763c1e8c293f713e9bf4a0b8802776466e694fe",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 25,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "pr196-haiku-default-5146-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 29,
+      "classification": "success_termination",
+      "environment_actions": 23,
+      "environment_actions_dispatched": 23,
+      "environment_dispatch_reservations": 23,
+      "final_policy_checkpoint_digest": "sha256:ee5ddd611ab518162d000d2fb0a680a1c7b0abb841cfd6d763e245cdc8c4aa45",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 23,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 23,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5146,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "visible_error_recovery",
+        "family_index": 6,
+        "logical_id": "calibration-visible_error_recovery-logical-04",
+        "partition": "calibration",
+        "seed": 5146,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:b208dc1972fe0ab5784ea55b6bd313548f9382625fdab7acd0991204c574f0e2",
+      "task_id": "v5m-fe338eab3423cf7af8cae834",
+      "trial_id": "pr196-haiku-default-5146-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:f1ba55982cd33c0bd014cff376193aab543a5ec0daecae2d3aae6edccf33b431",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "pr196-haiku-default-5156-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:2eeed207992c62a675a4663b5b782c261ee2f1b0a7767de426f7466246709483",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5156,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "review_and_commit",
+        "family_index": 6,
+        "logical_id": "calibration-review_and_commit-logical-04",
+        "partition": "calibration",
+        "seed": 5156,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:6403456a6941c06d8ff6c428b18a69c18c53448144c19e368e244fa734afd56e",
+      "task_id": "v5m-dde153abb43dc6cfffb335c0",
+      "trial_id": "pr196-haiku-default-5156-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "step_limit_truncation",
+      "environment_actions": 28,
+      "environment_actions_dispatched": 28,
+      "environment_dispatch_reservations": 28,
+      "final_policy_checkpoint_digest": "sha256:32e4c8899dd5b8dbbf68159a617771c4708644818f3b38ab5ee3eaead043883a",
+      "final_stage_index": 11,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 28,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 28,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "pr196-haiku-default-5165-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 28,
+      "classification": "success_termination",
+      "environment_actions": 22,
+      "environment_actions_dispatched": 22,
+      "environment_dispatch_reservations": 22,
+      "final_policy_checkpoint_digest": "sha256:0988b306031c4e8fc49035b251452f2b0bda528eff58e5acf7447bbf0aec944c",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 22,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 22,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5165,
+      "seed_record": {
+        "difficulty_band": "frontier",
+        "family": "evidence_aggregation",
+        "family_index": 15,
+        "logical_id": "calibration-evidence_aggregation-replacement-logical-04",
+        "partition": "calibration",
+        "seed": 5165,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:316e51020882c8408ed4a3f5531b842e922090ef646530c956908f20ce2a3e8c",
+      "task_id": "v5m-21d56a7fad21eeaf7ce485e3",
+      "trial_id": "pr196-haiku-default-5165-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:b1815db4fa5e6d577a63d846acf76f30e6fa6a123491551584d0f4a1d765eb61",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 24,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "pr196-haiku-default-5118-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:7d03056259b3c58778ca6cfd030ad351fc4b3c882cba796a750c938ccde585ce",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 21,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 23,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5118,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "deferred_join",
+        "family_index": 8,
+        "logical_id": "calibration-deferred_join-logical-06",
+        "partition": "calibration",
+        "seed": 5118,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:073a5b4e43b7efa0be81196173d0765d4ac7abf46f6c697f23305027b3b21180",
+      "task_id": "v5m-c67dc1f6113406c8a46c90d9",
+      "trial_id": "pr196-haiku-default-5118-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:ef7fceb4fdfad54e1b1bcd47d57051808e674a7de39cf9cea537f581020f799f",
+      "final_stage_index": 13,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "pr196-haiku-default-5128-stateless-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "success_termination",
+      "environment_actions": 24,
+      "environment_actions_dispatched": 24,
+      "environment_dispatch_reservations": 24,
+      "final_policy_checkpoint_digest": "sha256:260cb69837e6b4c05fb6baa399c98ab201e00b8c84b8a9ad5e62fa5ba14ab494",
+      "final_stage_index": 14,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 24,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 24,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5128,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "conditional_precedence",
+        "family_index": 8,
+        "logical_id": "calibration-conditional_precedence-logical-06",
+        "partition": "calibration",
+        "seed": 5128,
+        "variant": "base"
+      },
+      "success": true,
+      "task_digest": "sha256:47d7c4e122f4c5ff48fb78ccce8004dbd1c8dcb10fc6b9ba03d3b6ef12e7fa01",
+      "task_id": "v5m-3d1ca05819cb03f88be82347",
+      "trial_id": "pr196-haiku-default-5128-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "step_limit_truncation",
+      "environment_actions": 30,
+      "environment_actions_dispatched": 30,
+      "environment_dispatch_reservations": 30,
+      "final_policy_checkpoint_digest": "sha256:aa86b36456ee3b7eb794aa21f6a1881419be3f3aa4713b18d8a9da3187ebde56",
+      "final_stage_index": 12,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 25,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 30,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 30,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-default-5138-history-timeout-continuation-v1"
+    },
+    {
+      "action_limit": 30,
+      "classification": "infrastructure_failure",
+      "environment_actions": 15,
+      "environment_actions_dispatched": 15,
+      "environment_dispatch_reservations": 15,
+      "final_policy_checkpoint_digest": "sha256:6a1b69fb7dd495bc99e573567a1b262a675f78547828cacf6cad6374eaed62c4",
+      "final_stage_index": 4,
+      "first_attempts": [],
+      "mode": "stateless",
+      "model_attempts": 16,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 16,
+      "reached_both_consumers": false,
+      "reached_consumers": [],
+      "seed": 5138,
+      "seed_record": {
+        "difficulty_band": "ceiling_probe",
+        "family": "revision_after_reveal",
+        "family_index": 8,
+        "logical_id": "calibration-revision_after_reveal-logical-06",
+        "partition": "calibration",
+        "seed": 5138,
+        "variant": "base"
+      },
+      "success": false,
+      "task_digest": "sha256:d7a0326dbc80040750a4729f8b263ee74d12f07302ed3fd15a9cc3bafae2e6ae",
+      "task_id": "v5m-b34b342cee91d60b94462c66",
+      "trial_id": "pr196-haiku-default-5138-stateless-timeout-continuation-v1"
+    }
+  ],
+  "stop_reason": "infrastructure_failure"
+}

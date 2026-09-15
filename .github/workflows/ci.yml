@@ -89,6 +89,11 @@ jobs:
           python -m pytest -q
           tests/integration/test_wheel_packaging.py
 
+      - name: Run curl transport TLS integration
+        run: >-
+          python -m pytest -q
+          tests/integration/test_grounding_v5_curl_wire.py
+
   unit-suite:
     name: Unit suite with coverage
     runs-on: ubuntu-latest

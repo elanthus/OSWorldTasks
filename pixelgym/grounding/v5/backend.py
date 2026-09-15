@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -56,7 +56,8 @@ class V5FakeBackend:
     app_url = "fake://pixelgym-agent-v5"
     backend_identity = "pixelgym-v5-fake-backend-v1"
 
-    def __init__(self) -> None:
+    def __init__(self, *, task_factory: Callable[[int], V5Task] = generate_task) -> None:
+        self.task_factory = task_factory
         self._task: V5Task | None = None
         self._stage_index = 0
         self._focused = False
@@ -92,7 +93,7 @@ class V5FakeBackend:
     def reset(self, seed: int) -> Mapping[str, Any]:
         if self._closed:
             raise RuntimeError("V5FakeBackend is closed")
-        self._task = generate_task(seed)
+        self._task = self.task_factory(seed)
         self._stage_index = 0
         self._focused = False
         self._text_value = ""
@@ -317,7 +318,7 @@ class V5FakeBackend:
         }
         if not required <= value.keys():
             raise ValueError("v5 fake-backend checkpoint is missing required fields")
-        task = generate_task(value["seed"])
+        task = self.task_factory(value["seed"])
         if task.task_id != value.get("task_id"):
             raise ValueError("checkpoint task identity mismatch")
         self._closed = False

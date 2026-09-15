@@ -225,7 +225,9 @@ class V5AttemptJournal:
                 ).fetchone()
                 if existing is not None and bytes(existing[6]) == encoded and existing[2] == kind:
                     return self._event_from_row(existing)
-                raise JournalConflictError("conflicting or duplicate terminal journal event") from exc
+                raise JournalConflictError(
+                    "conflicting or duplicate terminal journal event"
+                ) from exc
         event = self.event(event_key)
         assert event is not None
         return event
@@ -318,9 +320,7 @@ class V5AttemptJournal:
                 payload=payload,
                 model_delta=model_attempt_reservation,
                 control_delta=0,
-                wire_capacity_delta=(
-                    model_attempt_reservation + control_request_reservation
-                ),
+                wire_capacity_delta=(model_attempt_reservation + control_request_reservation),
                 approved_caps=approved_caps,
             )
 
@@ -396,41 +396,48 @@ class V5AttemptJournal:
         )
 
     def event(self, event_key: str) -> JournalEvent | None:
-        row = self._connection.execute(
-            """
-            SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
-            FROM events WHERE event_key = ?
-            """,
-            (event_key,),
-        ).fetchone()
+        # The connection is shared by timeout settlement and late-response
+        # workers. Keyed reads must not overlap another thread's transaction.
+        with self._lock:
+            row = self._connection.execute(
+                """
+                SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
+                FROM events WHERE event_key = ?
+                """,
+                (event_key,),
+            ).fetchone()
         return None if row is None else self._event_from_row(row)
 
     def events(self, trial_id: str | None = None) -> tuple[JournalEvent, ...]:
-        query = (
-            "SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload "
-            "FROM events"
-        )
-        parameters: tuple[object, ...] = ()
-        if trial_id is not None:
-            query += " WHERE trial_id = ?"
-            parameters = (trial_id,)
-        query += " ORDER BY sequence"
-        return tuple(self._event_from_row(row) for row in self._connection.execute(query, parameters))
+        with self._lock:
+            query = (
+                "SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload "
+                "FROM events"
+            )
+            parameters: tuple[object, ...] = ()
+            if trial_id is not None:
+                query += " WHERE trial_id = ?"
+                parameters = (trial_id,)
+            query += " ORDER BY sequence"
+            return tuple(
+                self._event_from_row(row) for row in self._connection.execute(query, parameters)
+            )
 
     def terminal_attempt(self, identity: AttemptIdentity) -> JournalEvent | None:
-        row = self._connection.execute(
-            """
-            SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
-            FROM events
-            WHERE trial_id = ? AND step_index = ? AND attempt_index = ?
-              AND kind IN (
-                'attempt_completed', 'confirmed_cancellation',
-                'confirmed_no_response_timeout', 'unknown_outcome_infrastructure_failure'
-              )
-            """,
-            (identity.trial_id, identity.step_index, identity.attempt_index),
-        ).fetchone()
-        return None if row is None else self._event_from_row(row)
+        with self._lock:
+            row = self._connection.execute(
+                """
+                SELECT sequence, event_key, kind, trial_id, step_index, attempt_index, payload
+                FROM events
+                WHERE trial_id = ? AND step_index = ? AND attempt_index = ?
+                  AND kind IN (
+                    'attempt_completed', 'confirmed_cancellation',
+                    'confirmed_no_response_timeout', 'unknown_outcome_infrastructure_failure'
+                  )
+                """,
+                (identity.trial_id, identity.step_index, identity.attempt_index),
+            ).fetchone()
+            return None if row is None else self._event_from_row(row)
 
     def call_counts(self) -> tuple[int, int]:
         """Return run-wide provider reservations reconstructed from durable events."""
@@ -499,9 +506,7 @@ class V5AttemptJournal:
         ):
             raise CallCapExceededError("approved provider-control-request cap reached")
         if (
-            model_attempts
-            + control_requests
-            + wire_capacity_delta
+            model_attempts + control_requests + wire_capacity_delta
             > approved_caps.provider_wire_request_cap
         ):
             raise CallCapExceededError("approved provider-wire-request cap reached")
@@ -547,57 +552,61 @@ class V5AttemptJournal:
         return model_attempts, control_requests
 
     def integrity_report(self) -> dict[str, Any]:
-        object_rows = self._connection.execute("SELECT digest, kind, data FROM objects").fetchall()
-        for digest, _kind, data in object_rows:
-            if "sha256:" + sha256_bytes(bytes(data)) != digest:
-                raise JournalConflictError("journal integrity verification failed")
-        events = self.events()
-        digest_version = self._digest_version()
-        event_chain = [
-            {
-                "sequence": event.sequence,
-                "event_key": event.event_key,
-                "kind": event.kind,
-                "payload": event.payload,
-            }
-            for event in events
-        ]
-        if digest_version == JOURNAL_DIGEST_VERSION_V2:
+        with self._lock:
+            object_rows = self._connection.execute(
+                "SELECT digest, kind, data FROM objects"
+            ).fetchall()
+            for digest, _kind, data in object_rows:
+                if "sha256:" + sha256_bytes(bytes(data)) != digest:
+                    raise JournalConflictError("journal integrity verification failed")
+            events = self.events()
+            digest_version = self._digest_version()
             event_chain = [
                 {
                     "sequence": event.sequence,
                     "event_key": event.event_key,
                     "kind": event.kind,
-                    "trial_id": event.trial_id,
-                    "step_index": event.step_index,
-                    "attempt_index": event.attempt_index,
                     "payload": event.payload,
                 }
                 for event in events
             ]
-        report = {
-            "schema_version": JOURNAL_INTEGRITY_SCHEMA_VERSION,
-            "object_count": len(object_rows),
-            "event_count": len(events),
-            "event_chain_digest": content_digest(event_chain),
-        }
-        if digest_version == JOURNAL_DIGEST_VERSION_V2:
-            report["digest_version"] = digest_version
-        return report
+            if digest_version == JOURNAL_DIGEST_VERSION_V2:
+                event_chain = [
+                    {
+                        "sequence": event.sequence,
+                        "event_key": event.event_key,
+                        "kind": event.kind,
+                        "trial_id": event.trial_id,
+                        "step_index": event.step_index,
+                        "attempt_index": event.attempt_index,
+                        "payload": event.payload,
+                    }
+                    for event in events
+                ]
+            report = {
+                "schema_version": JOURNAL_INTEGRITY_SCHEMA_VERSION,
+                "object_count": len(object_rows),
+                "event_count": len(events),
+                "event_chain_digest": content_digest(event_chain),
+            }
+            if digest_version == JOURNAL_DIGEST_VERSION_V2:
+                report["digest_version"] = digest_version
+            return report
 
     def _digest_version(self) -> str:
-        metadata_table = self._connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'journal_metadata'"
-        ).fetchone()
-        if metadata_table is None:
-            return JOURNAL_DIGEST_VERSION_V1
-        row = self._connection.execute(
-            "SELECT value FROM journal_metadata WHERE key = ?",
-            (_DIGEST_VERSION_METADATA_KEY,),
-        ).fetchone()
-        if row is None or row[0] != JOURNAL_DIGEST_VERSION_V2:
-            raise JournalConflictError("journal digest version metadata is invalid")
-        return JOURNAL_DIGEST_VERSION_V2
+        with self._lock:
+            metadata_table = self._connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'journal_metadata'"
+            ).fetchone()
+            if metadata_table is None:
+                return JOURNAL_DIGEST_VERSION_V1
+            row = self._connection.execute(
+                "SELECT value FROM journal_metadata WHERE key = ?",
+                (_DIGEST_VERSION_METADATA_KEY,),
+            ).fetchone()
+            if row is None or row[0] != JOURNAL_DIGEST_VERSION_V2:
+                raise JournalConflictError("journal digest version metadata is invalid")
+            return JOURNAL_DIGEST_VERSION_V2
 
     @staticmethod
     def _event_from_row(row: tuple[Any, ...]) -> JournalEvent:

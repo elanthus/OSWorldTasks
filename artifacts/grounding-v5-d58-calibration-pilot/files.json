@@ -1,0 +1,13 @@
+{
+  "bundle_digest": "sha256:ab67baa6463e55dd5683adb0c22a803872539e9651cf8f5d3f2ce0ef53467098",
+  "files": {
+    "analysis.json": "sha256:59e791a1cd634e1679f065d29391a23bf55f9e222efab83cf680f84e4adcd961",
+    "analyze.py": "sha256:4455377eb5f3ab0dce4de055ffdd9a6dc51398664d893c081e7b28ece22fee85",
+    "execution-plan.json": "sha256:84fe0d8c8988f211561bc40d0677ad4892348f45e3cc504b2ae3a792a47be00d",
+    "ledger-started.json": "sha256:023682867066be95cba11ce79411671769e3b417f030a6a8ef6453e6296b9a90",
+    "price-recheck.json": "sha256:276fc4641d69ef9e52a4c2dbdfda038e97c749490a7db71f641861329505e943",
+    "report.md": "sha256:4734a09dfe71cb2d23e3591661e96dd800ecc6ff30744bf1826a58a03a628472",
+    "summary.json": "sha256:5d8e41bcae8d42165ca2c46ec8a65a830456718f60096c139ae3d2028cbc8672"
+  },
+  "schema_version": "pixelgym-d58-pilot-publication-files-v1"
+}

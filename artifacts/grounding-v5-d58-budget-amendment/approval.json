@@ -1,0 +1,28 @@
+{
+  "assignment_selection": "Retain five results; run remaining 95 (recommended)",
+  "authorized_increment_usd": "8.00",
+  "carried_accounting": {
+    "blocked": false,
+    "budget_accounted_spend_usd": "7.454700825",
+    "in_flight_reservation_usd": "0",
+    "spent_usd": "5.931273525",
+    "unknown_charge_outcomes": 31,
+    "unknown_reservation_usd": "1.52342730",
+    "wire_requests_sent": 988
+  },
+  "closed_source_plan_digest": "sha256:ba18d81a153e09736681a2f8f323dc00c6f78aafd4555440914678f245603947",
+  "closed_source_summary_digest": "sha256:37e0944e614a507f20c13737170660978e05842bcef5612f44e5d6248496a59f",
+  "execution_enabled": false,
+  "new_aggregate_cap_usd": "28.00",
+  "owner_approval": "please make sure the authorization for this calibration is high enough to complete. Sounds like an extra $8 should cover it.",
+  "previous_aggregate_cap_usd": "20.00",
+  "projected_aggregate_accounted_cost_usd": "26.62381726928571428571428571",
+  "projected_remaining_known_cost_usd": "19.16911644428571428571428571",
+  "reason": "Budget amendment alone does not restart a closed phase; freeze successor source, assignment scope and transport diagnosis first.",
+  "remaining_assignment_counts": {
+    "history": 47,
+    "stateless": 48
+  },
+  "schema_version": "pixelgym-d58-budget-amendment-v1",
+  "scope": "D5.8 calibration including all historical charges and unresolved holds; no confirmatory evaluation or final design verdict"
+}

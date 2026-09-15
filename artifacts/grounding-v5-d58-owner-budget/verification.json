@@ -1,0 +1,13 @@
+{
+  "approval_digest": "sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f",
+  "confirmed_charges_unchanged": true,
+  "driver_code_revision": "85adb9b9000dea7860a6097a20b54f0e90158951",
+  "failed_outcome_count_unchanged": true,
+  "prior_prefix_preserved": true,
+  "private_journal_verified": true,
+  "provider_calls": 0,
+  "reconciliation_digest": "sha256:30909b34d3ae7e323d20b559176e87e27876a3856ad606e23ed6b57858fce861",
+  "schema_version": "pixelgym-d58-owner-reconciliation-verification-v1",
+  "unresolved_budget_holds_usd": "0",
+  "waivers_verified": 90
+}

@@ -1,0 +1,15 @@
+{
+  "aggregate_ceiling_usd": "28.00",
+  "billing_evidence_basis": "Owner checked OpenRouter activity and reports failed calls are not billed. This is owner-supplied evidence, not an independently retrieved per-request provider receipt.",
+  "execution_boundary": "Apply after the active frozen phase closes with idle transport; preserve every started assignment and run only untouched assignments.",
+  "maximum_total_runtime_seconds": 21600,
+  "owner_statement": "we can count unresolved holds as $0. I checked the openrouter activity, and they're not getting billed",
+  "provider_calls": 0,
+  "recorded_at": "2026-09-12T02:03:54.995504+00:00",
+  "rule": "owner-authorized-zero-unpriced-holds-v1",
+  "runtime_origin_phase": "d58-reliable-memory-continuation-v1",
+  "schema_version": "pixelgym-d58-owner-zero-holds-approval-v1",
+  "scope": "Apply zero budget weight to existing and subsequent unresolved outcomes; retain their original request bounds and uncertainty records. Confirmed charges and in-flight request bounds still count toward USD 28.",
+  "supersedes": "The positive unresolved-hold budget treatment in preceding D5.8 phases, prospectively for admission and after an explicit append-only waiver for earlier holds. Historical summaries remain unchanged. The pending USD 35 proposal is unnecessary; the owner retains USD 28.",
+  "unresolved_budget_hold_usd": "0"
+}

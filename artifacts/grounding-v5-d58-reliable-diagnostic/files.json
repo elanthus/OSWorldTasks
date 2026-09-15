@@ -1,0 +1,9 @@
+{
+  "analyze.py": "sha256:41ddecf7c04990496df1f60b9faea4676596d66b7c90a7a89b120ec7c1640e99",
+  "curl-identity.json": "sha256:6a4de6742b26156b05bb0891968b5628ecd806f109390706d1402ae2aed16238",
+  "execution-plan.json": "sha256:d59ab8615ad1aa13ae575c7f5b28f1e852d2b0fe34d0f868ed1cd74fc8b74175",
+  "price-recheck.json": "sha256:9e6658128d98b21957989440fd8968ff8fe3b77faf15b5126472a08c6b776406",
+  "report.md": "sha256:ea8ed2873f740472d8b04cd91332ce380dbec9b7fae4179cf1e3eab6f6826879",
+  "summary.json": "sha256:d82312d2b2c90cb35169993c651b6fc78541b3299638234c6c393bdd30ec48dd",
+  "verification.json": "sha256:4a6de0abfb1f29cc8d1fc36be6debee98a915a67f407b56f1f0fe71190184651"
+}

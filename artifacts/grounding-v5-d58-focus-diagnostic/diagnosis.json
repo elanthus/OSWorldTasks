@@ -1,0 +1,133 @@
+{
+  "episodes": [
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5122-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5122,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5122-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5132-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5132,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5132-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 24,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5151-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5151,
+      "text_stage_actions": 25,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5151-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5160-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5160,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5160-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5123-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5123,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5123-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 27,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5142-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5142,
+      "text_stage_actions": 28,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5142-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5152-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5152,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5152-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5161-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5161,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5161-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5114-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5114,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5114-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5124-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5124,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5124-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5134-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5134,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5134-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5115-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5115,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5115-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5125-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5125,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5125-stateless"
+    },
+    {
+      "clicks_on_focused_empty_input": 26,
+      "first_repeated_click_event": "d58-gemini38-memory-calibration-v1-5154-stateless/step-0002/sealed_action_intent",
+      "key_actions": 0,
+      "seed": 5154,
+      "text_stage_actions": 27,
+      "trial_id": "d58-gemini38-memory-calibration-v1-5154-stateless"
+    }
+  ],
+  "inference": "A clear visible focus cue may break the loop. This causal explanation requires the separate diagnostic; the traces alone do not prove it.",
+  "observation": "All stateless action-limit episodes repeatedly clicked an already-focused empty field. Focus changed only the fill; the old empty placeholder continued to instruct clicking.",
+  "provider_calls": 0,
+  "schema_version": "pixelgym-d58-text-entry-diagnosis-v1",
+  "source_journal_prefix": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:246a87401b1ddf6a3f9e41b5aa68a392ab6093291784c324c4476b8f087b807f",
+    "event_count": 10044,
+    "object_count": 3677,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "source_summary_digest": "sha256:1442c0ee2b491c68d05fa40b48630c6d20a8dce71b27a37c4a527f20c030a3bd",
+  "totals": {
+    "clicks_on_focused_empty_input": 363,
+    "key_actions": 0,
+    "text_stage_actions": 377
+  }
+}

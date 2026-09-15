@@ -35,7 +35,7 @@ from pixelgym.grounding.v5.contracts import (
 )
 from pixelgym.grounding.v5.runner import PolicyVisibleResult
 
-RESOLVED_MODEL = "claude-sonnet-5-20260801"
+RESOLVED_MODEL = "claude-haiku-4-5-20251001"
 
 
 def runtime_identity() -> policy.ClaudeRuntimeIdentity:
