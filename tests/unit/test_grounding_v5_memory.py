@@ -20,6 +20,7 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_generator import (
     MEMORY_GENERATOR_VERSION,
+    MEMORY_TASK_SCHEMA_VERSION,
     development_counterfactuals,
     generate_memory_task,
     permute_controls,
@@ -101,7 +102,10 @@ def test_versioned_generator_uniqueness_and_target_independent_layout() -> None:
     ]
     assert generate_memory_task(5112).semantic_digest == generate_memory_task(5113).semantic_digest
     schema = json.loads(
-        (ROOT / "pixelgym/grounding/v5/schemas/memory-task.schema.json").read_text()
+        (ROOT / "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json").read_text()
+    )
+    assert generate_memory_task(5000).canonical_dict()["schema_version"] == (
+        MEMORY_TASK_SCHEMA_VERSION
     )
     Draft202012Validator(schema).validate(generate_memory_task(5000).canonical_dict())
 

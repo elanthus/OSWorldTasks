@@ -30,9 +30,11 @@ SOURCE_FILES = (
     "pixelgym/grounding/v5/generator.py",
     "pixelgym/grounding/v5/seeds.py",
     "pixelgym/grounding/v5/memory_generator.py",
+    "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
     "pixelgym/grounding/v5/memory_backend.py",
     "pixelgym/grounding/v5/screenshot_memory.py",
     "pixelgym/grounding/v5/request_budget.py",
+    "pixelgym/grounding/v5/admission.py",
 )
 
 

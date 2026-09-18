@@ -23,7 +23,7 @@ from pixelgym.grounding.v5.generator import _build_stages, _family_language
 from pixelgym.grounding.v5.seeds import SEED_RECORD_BY_SEED
 
 MEMORY_GENERATOR_VERSION = "pixelgym-agent-v5-generator-memory-v3"
-MEMORY_TASK_SCHEMA_VERSION = "pixelgym-agent-v5-task-memory-v2"
+MEMORY_TASK_SCHEMA_VERSION = "pixelgym-agent-v5-task-memory-v3"
 COUNTERFACTUAL_SEEDS = tuple(range(5200, 5248))
 ADDITIONAL_CONFIRMATORY_SEEDS = tuple(range(6096, 6192))
 CONSUMERS = ((0, 5, "request"), (2, 7, "verification"))
