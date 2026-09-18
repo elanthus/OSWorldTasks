@@ -81,7 +81,7 @@ recorded in the task manifest:
 
 ```sh
 .venv/bin/python -m scripts.prepare_grounding_v5_d59_freeze \
-  --source-revision 086cfc56be3b091f52ea3ff05f998436c0eb3323 --verify
+  --source-revision f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3 --verify
 ```
 
 The command reconstructs all canonical records and every admission replay, then compares the exact
