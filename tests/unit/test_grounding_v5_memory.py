@@ -51,14 +51,14 @@ def advance(backend: MemoryBackend, until: int) -> None:
 
 
 def test_reserved_seed_allocation_without_generating_confirmation() -> None:
-    records = [seed_record(seed) for seed in range(6000, 6144)]
-    assert len({record.logical_id for record in records}) == 120
+    records = [seed_record(seed) for seed in range(6000, 6192)]
+    assert len({record.logical_id for record in records}) == 168
     assert all(record.partition is Partition.CONFIRMATORY for record in records)
-    assert set(Counter(record.family for record in records).values()) == {24}
+    assert set(Counter(record.family for record in records).values()) == {32}
     assert Counter(record.difficulty_band.value for record in records) == {
-        "regression_canary": 30,
-        "frontier": 84,
-        "ceiling_probe": 30,
+        "regression_canary": 42,
+        "frontier": 108,
+        "ceiling_probe": 42,
     }
     with pytest.raises(TypeError):
         generate_memory_task(True)

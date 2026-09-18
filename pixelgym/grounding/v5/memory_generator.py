@@ -22,10 +22,10 @@ from pixelgym.grounding.v5.contracts import (
 from pixelgym.grounding.v5.generator import _build_stages, _family_language
 from pixelgym.grounding.v5.seeds import SEED_RECORD_BY_SEED
 
-MEMORY_GENERATOR_VERSION = "pixelgym-agent-v5-generator-memory-v2"
+MEMORY_GENERATOR_VERSION = "pixelgym-agent-v5-generator-memory-v3"
 MEMORY_TASK_SCHEMA_VERSION = "pixelgym-agent-v5-task-memory-v2"
 COUNTERFACTUAL_SEEDS = tuple(range(5200, 5248))
-ADDITIONAL_CONFIRMATORY_SEEDS = tuple(range(6096, 6144))
+ADDITIONAL_CONFIRMATORY_SEEDS = tuple(range(6096, 6192))
 CONSUMERS = ((0, 5, "request"), (2, 7, "verification"))
 TOKENS = ("A17", "B24", "C31", "D48", "E52", "F69", "G73", "H86")
 
@@ -42,7 +42,8 @@ def seed_record(seed: int) -> SeedRecord:
         source = "request" if seed % 2 == 0 else "verification"
         return replace(original, seed=seed, logical_id=f"{original.logical_id}-cf-{source}")
     if seed in ADDITIONAL_CONFIRMATORY_SEEDS:
-        family_index, offset = divmod(seed - 6096, 8)
+        block, block_offset = divmod(seed - 6096, 48)
+        family_index, offset = divmod(block_offset, 8)
         band = (
             DifficultyBand.REGRESSION
             if offset < 2
@@ -55,8 +56,8 @@ def seed_record(seed: int) -> SeedRecord:
             seed,
             Partition.CONFIRMATORY,
             family,
-            16 + offset,
-            f"confirmatory-{family.value}-logical-{12 + offset:02d}",
+            16 + block * 8 + offset,
+            f"confirmatory-{family.value}-logical-{12 + block * 8 + offset:02d}",
             "base",
             band,
         )

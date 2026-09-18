@@ -1,0 +1,17 @@
+{
+  "schema_version": "pixelgym-d59-owner-selection-v1",
+  "recorded_at": "2026-09-18",
+  "owner_statement": "go ahead",
+  "interpreted_selection": "Select the recommended 168-independent-pair design, 192 episodes per arm, and USD 120 aggregate planning cap; prepare the exact D5.9 freeze without launching calls.",
+  "episodes_per_arm": 192,
+  "independent_pairs": 168,
+  "seed_first": 6000,
+  "seed_last": 6191,
+  "aggregate_planning_cap_usd": "120.00",
+  "confirmatory_paid_call_cap": 0,
+  "paid_execution_authorized": false,
+  "runtime_window_approved": false,
+  "exact_execution_plan_approval_pending": true,
+  "supersedes_pending_choices_in": "artifacts/grounding-v5-d58-final-design/decision.json",
+  "milestone_verdict_declared": false
+}
