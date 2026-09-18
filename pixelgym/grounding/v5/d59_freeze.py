@@ -21,10 +21,8 @@ from pixelgym.grounding.v5.memory_generator import (
     D59_MEMORY_GENERATOR_VERSION,
     generate_memory_task,
 )
-from pixelgym.grounding.v5.request_budget import (
-    MAX_OUTPUT_TOKENS,
-    MAX_WORKLOAD_INPUT_TOKENS,
-)
+from pixelgym.grounding.v5.panel_policy import MAX_OUTPUT_TOKENS
+from pixelgym.grounding.v5.request_budget import MAX_WORKLOAD_INPUT_TOKENS
 from pixelgym.serialization import canonical_json_bytes
 
 D59_CONFIRMATORY_SEEDS = tuple(range(6000, 6192))
