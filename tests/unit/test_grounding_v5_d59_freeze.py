@@ -7,6 +7,8 @@ from copy import deepcopy
 from decimal import Decimal
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 from pixelgym.grounding.v5.d59_freeze import (
     D59_CONFIRMATORY_SEEDS,
     confirmatory_tasks,
@@ -14,7 +16,12 @@ from pixelgym.grounding.v5.d59_freeze import (
     reliability_tasks,
     validate_confirmatory_design,
 )
-from pixelgym.grounding.v5.memory_generator import MEMORY_GENERATOR_VERSION, seed_record
+from pixelgym.grounding.v5.memory_generator import (
+    D59_MEMORY_GENERATOR_VERSION,
+    D59_MEMORY_TASK_SCHEMA_VERSION,
+    generate_memory_task,
+    seed_record,
+)
 
 ROOT = Path(__file__).parents[2]
 
@@ -22,7 +29,7 @@ ROOT = Path(__file__).parents[2]
 def test_d59_selected_seed_allocation_is_balanced_and_versioned() -> None:
     tasks = confirmatory_tasks()
     summary = validate_confirmatory_design(tasks)
-    assert MEMORY_GENERATOR_VERSION == "pixelgym-agent-v5-generator-memory-v3"
+    assert D59_MEMORY_GENERATOR_VERSION == "pixelgym-agent-v5-generator-memory-v3"
     assert D59_CONFIRMATORY_SEEDS == tuple(range(6000, 6192))
     assert summary == {
         "episode_count_per_arm": 192,
@@ -59,6 +66,13 @@ def test_d59_selected_seed_allocation_is_balanced_and_versioned() -> None:
     assert [task.seed for task in reliability_tasks(tasks)] == summary["reliability_seeds"]
     assert seed_record(6144).family_index == 24
     assert seed_record(6191).family_index == 31
+    task = generate_memory_task(6000)
+    assert task.canonical_dict()["generator_version"] == D59_MEMORY_GENERATOR_VERSION
+    assert task.canonical_dict()["schema_version"] == D59_MEMORY_TASK_SCHEMA_VERSION
+    schema = json.loads(
+        (ROOT / "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json").read_text()
+    )
+    Draft202012Validator(schema).validate(task.canonical_dict())
 
 
 def test_d59_execution_plan_is_exact_but_non_executable() -> None:

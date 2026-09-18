@@ -18,7 +18,7 @@ from pixelgym.grounding.v5.contracts import (
 )
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_generator import (
-    MEMORY_GENERATOR_VERSION,
+    D59_MEMORY_GENERATOR_VERSION,
     generate_memory_task,
 )
 from pixelgym.grounding.v5.request_budget import (
@@ -136,7 +136,7 @@ def source_binding(root: Path, *, source_revision: str) -> dict[str, Any]:
     value = {
         "schema_version": "pixelgym-d59-source-binding-v1",
         "source_revision": source_revision,
-        "generator_version": MEMORY_GENERATOR_VERSION,
+        "generator_version": D59_MEMORY_GENERATOR_VERSION,
         "files": files,
     }
     return {**value, "binding_digest": content_digest(value)}
@@ -160,7 +160,7 @@ def task_manifest(root: Path, *, source_revision: str) -> dict[str, Any]:
         "schema_version": "pixelgym-agent-v5-d59-confirmatory-manifest-v1",
         "status": "frozen_no_call_candidate",
         "partition": "confirmatory",
-        "generator_version": MEMORY_GENERATOR_VERSION,
+        "generator_version": D59_MEMORY_GENERATOR_VERSION,
         "source_binding": source_binding(root, source_revision=source_revision),
         "allocation": allocation,
         "records": records,

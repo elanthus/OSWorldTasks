@@ -102,7 +102,7 @@ def test_versioned_generator_uniqueness_and_target_independent_layout() -> None:
     ]
     assert generate_memory_task(5112).semantic_digest == generate_memory_task(5113).semantic_digest
     schema = json.loads(
-        (ROOT / "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json").read_text()
+        (ROOT / "pixelgym/grounding/v5/schemas/memory-task.schema.json").read_text()
     )
     assert generate_memory_task(5000).canonical_dict()["schema_version"] == (
         MEMORY_TASK_SCHEMA_VERSION
