@@ -19,15 +19,27 @@ PUBLIC = ROOT / "artifacts/grounding-v5-d59-freeze"
 
 def expected(*, source_revision: str, include_admission: bool) -> dict[str, bytes]:
     price = json.loads((PUBLIC / "price-recheck.json").read_text(encoding="utf-8"))
+    manifest = task_manifest(ROOT, source_revision=source_revision)
+    admission = (
+        admission_evidence()
+        if include_admission
+        else json.loads((PUBLIC / "admission.json").read_text(encoding="utf-8"))
+    )
     values = {
-        "task-manifest.json": task_manifest(ROOT, source_revision=source_revision),
+        "task-manifest.json": manifest,
+        "admission.json": admission,
         "execution-plan.json": execution_plan(
-            ROOT, source_revision=source_revision, price_snapshot=price
+            ROOT,
+            source_revision=source_revision,
+            price_snapshot=price,
+            task_manifest_value=manifest,
+            admission_value=admission,
         ),
     }
-    if include_admission:
-        values["admission.json"] = admission_evidence()
-    return {name: canonical_json_bytes(value) + b"\n" for name, value in values.items()}
+    outputs = {name: canonical_json_bytes(value) + b"\n" for name, value in values.items()}
+    if not include_admission:
+        outputs.pop("admission.json")
+    return outputs
 
 
 def main() -> None:

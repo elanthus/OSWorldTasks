@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from decimal import Decimal
 from pathlib import Path
 
@@ -64,7 +65,20 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
     price = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
     )
-    plan = execution_plan(ROOT, source_revision="source-revision", price_snapshot=price)
+    manifest = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
+    )
+    admission = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
+    )
+    source_revision = manifest["source_binding"]["source_revision"]
+    plan = execution_plan(
+        ROOT,
+        source_revision=source_revision,
+        price_snapshot=price,
+        task_manifest_value=manifest,
+        admission_value=admission,
+    )
     assert not plan["execution_enabled"]
     assert not plan["paid_execution_authorized"]
     assert plan["approved_model_attempt_cap"] == 0
@@ -86,6 +100,22 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
         == Decimal("120.00")
     )
     assert plan["provider_calls_made"] == 0
+    assert plan["task_manifest_binding"]["manifest_digest"] == manifest["manifest_digest"]
+    assert plan["admission_binding"]["evidence_digest"] == admission["evidence_digest"]
+
+    doubled = deepcopy(price)
+    doubled["endpoints"][0]["pricing"]["prompt"] = "0.00000150"
+    doubled["endpoints"][0]["pricing"]["image"] = "0.00000150"
+    rebound = execution_plan(
+        ROOT,
+        source_revision=source_revision,
+        price_snapshot=doubled,
+        task_manifest_value=manifest,
+        admission_value=admission,
+    )
+    assert Decimal(rebound["request_budget"]["maximum_request_reservation_usd"]) > Decimal(
+        plan["request_budget"]["maximum_request_reservation_usd"]
+    )
 
 
 def test_d59_checked_in_artifacts_verify_without_provider_access() -> None:

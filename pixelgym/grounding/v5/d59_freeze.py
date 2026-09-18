@@ -10,12 +10,22 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5.admission import validate_task_admission
-from pixelgym.grounding.v5.contracts import DifficultyBand, WorkflowFamily, content_digest
+from pixelgym.grounding.v5.contracts import (
+    DifficultyBand,
+    WorkflowFamily,
+    content_digest,
+    sha256_bytes,
+)
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_generator import (
     MEMORY_GENERATOR_VERSION,
     generate_memory_task,
 )
+from pixelgym.grounding.v5.request_budget import (
+    MAX_OUTPUT_TOKENS,
+    MAX_WORKLOAD_INPUT_TOKENS,
+)
+from pixelgym.serialization import canonical_json_bytes
 
 D59_CONFIRMATORY_SEEDS = tuple(range(6000, 6192))
 HISTORICAL_SPEND_USD = Decimal("23.978227275")
@@ -40,6 +50,20 @@ SOURCE_FILES = (
 
 def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _artifact_binding(
+    *, path: str, value: dict[str, Any], digest_field: str
+) -> dict[str, Any]:
+    digest = value.get(digest_field)
+    if not isinstance(digest, str) or not digest.startswith("sha256:"):
+        raise ValueError(f"{path} lacks {digest_field}")
+    payload = canonical_json_bytes(value) + b"\n"
+    return {
+        "path": path,
+        digest_field: digest,
+        "file_sha256": "sha256:" + sha256_bytes(payload),
+    }
 
 
 def confirmatory_tasks() -> tuple[Any, ...]:
@@ -190,6 +214,8 @@ def execution_plan(
     *,
     source_revision: str,
     price_snapshot: dict[str, Any],
+    task_manifest_value: dict[str, Any],
+    admission_value: dict[str, Any],
 ) -> dict[str, Any]:
     tasks = confirmatory_tasks()
     allocation = validate_confirmatory_design(tasks)
@@ -219,6 +245,35 @@ def execution_plan(
         raise ValueError("D5.9 price snapshot must bind the selected Vertex route")
     if price_snapshot["model"] != "google/gemini-3.8-flash":
         raise ValueError("D5.9 price snapshot model changed")
+    selected_endpoint = endpoint[0]
+    prompt_rate = Decimal(selected_endpoint["pricing"]["prompt"])
+    completion_rate = Decimal(selected_endpoint["pricing"]["completion"])
+    if any(not rate.is_finite() or rate <= 0 for rate in (prompt_rate, completion_rate)):
+        raise ValueError("D5.9 route prices must be finite positive amounts")
+    if selected_endpoint["context_length"] < MAX_WORKLOAD_INPUT_TOKENS:
+        raise ValueError("D5.9 route context is smaller than the workload bound")
+    if selected_endpoint["max_completion_tokens"] < MAX_OUTPUT_TOKENS:
+        raise ValueError("D5.9 route completion limit is smaller than the policy bound")
+    for auxiliary, ceiling in (("image", prompt_rate), ("internal_reasoning", completion_rate)):
+        rate = Decimal(selected_endpoint["pricing"][auxiliary])
+        if not rate.is_finite() or rate < 0 or rate > ceiling:
+            raise ValueError("D5.9 auxiliary prices exceed the reserved token rates")
+    maximum_request_reservation = (
+        prompt_rate * MAX_WORKLOAD_INPUT_TOKENS
+        + completion_rate * MAX_OUTPUT_TOKENS
+    )
+    if task_manifest_value["source_binding"] != source_binding(
+        root, source_revision=source_revision
+    ):
+        raise ValueError("D5.9 task manifest has a different source binding")
+    if task_manifest_value["allocation"] != allocation or len(
+        task_manifest_value["records"]
+    ) != len(tasks):
+        raise ValueError("D5.9 task manifest has a different selected allocation")
+    if admission_value.get("task_count") != len(tasks) or admission_value.get(
+        "provider_calls_made"
+    ) != 0:
+        raise ValueError("D5.9 admission does not cover the selected no-call task set")
     all_jobs = primary_jobs + reliability_jobs
     value = {
         "schema_version": "pixelgym-agent-v5-d59-execution-plan-v1",
@@ -235,8 +290,16 @@ def execution_plan(
             )
         ),
         "source_binding": source_binding(root, source_revision=source_revision),
-        "task_manifest_path": "artifacts/grounding-v5-d59-freeze/task-manifest.json",
-        "admission_path": "artifacts/grounding-v5-d59-freeze/admission.json",
+        "task_manifest_binding": _artifact_binding(
+            path="artifacts/grounding-v5-d59-freeze/task-manifest.json",
+            value=task_manifest_value,
+            digest_field="manifest_digest",
+        ),
+        "admission_binding": _artifact_binding(
+            path="artifacts/grounding-v5-d59-freeze/admission.json",
+            value=admission_value,
+            digest_field="evidence_digest",
+        ),
         "policy_manifests": policies,
         "allocation": allocation,
         "primary_comparison": {
@@ -256,9 +319,9 @@ def execution_plan(
         "request_budget": {
             "version": "gemini-png-request-budget-v1",
             "maximum_images_per_request": 32,
-            "maximum_workload_input_tokens": 163840,
-            "maximum_output_tokens": 4096,
-            "maximum_request_reservation_usd": "0.13824000",
+            "maximum_workload_input_tokens": MAX_WORKLOAD_INPUT_TOKENS,
+            "maximum_output_tokens": MAX_OUTPUT_TOKENS,
+            "maximum_request_reservation_usd": str(maximum_request_reservation),
             "completion_not_guaranteed_within_dollar_cap": True,
         },
         "budget": {
