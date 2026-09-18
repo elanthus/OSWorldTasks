@@ -24,8 +24,10 @@ from pixelgym.grounding.v5.seeds import SEED_RECORD_BY_SEED
 
 MEMORY_GENERATOR_VERSION = "pixelgym-agent-v5-generator-memory-v2"
 MEMORY_TASK_SCHEMA_VERSION = "pixelgym-agent-v5-task-memory-v2"
+D59_MEMORY_GENERATOR_VERSION = "pixelgym-agent-v5-generator-memory-v3"
+D59_MEMORY_TASK_SCHEMA_VERSION = "pixelgym-agent-v5-task-memory-v3"
 COUNTERFACTUAL_SEEDS = tuple(range(5200, 5248))
-ADDITIONAL_CONFIRMATORY_SEEDS = tuple(range(6096, 6144))
+ADDITIONAL_CONFIRMATORY_SEEDS = tuple(range(6096, 6192))
 CONSUMERS = ((0, 5, "request"), (2, 7, "verification"))
 TOKENS = ("A17", "B24", "C31", "D48", "E52", "F69", "G73", "H86")
 
@@ -42,7 +44,8 @@ def seed_record(seed: int) -> SeedRecord:
         source = "request" if seed % 2 == 0 else "verification"
         return replace(original, seed=seed, logical_id=f"{original.logical_id}-cf-{source}")
     if seed in ADDITIONAL_CONFIRMATORY_SEEDS:
-        family_index, offset = divmod(seed - 6096, 8)
+        block, block_offset = divmod(seed - 6096, 48)
+        family_index, offset = divmod(block_offset, 8)
         band = (
             DifficultyBand.REGRESSION
             if offset < 2
@@ -55,8 +58,8 @@ def seed_record(seed: int) -> SeedRecord:
             seed,
             Partition.CONFIRMATORY,
             family,
-            16 + offset,
-            f"confirmatory-{family.value}-logical-{12 + offset:02d}",
+            16 + block * 8 + offset,
+            f"confirmatory-{family.value}-logical-{12 + block * 8 + offset:02d}",
             "base",
             band,
         )
@@ -68,15 +71,21 @@ def seed_record(seed: int) -> SeedRecord:
 
 @dataclass(frozen=True)
 class MemoryTask(V5Task):
+    memory_generator_version: str = MEMORY_GENERATOR_VERSION
+    memory_task_schema_version: str = MEMORY_TASK_SCHEMA_VERSION
+
     def canonical_dict(self) -> dict[str, Any]:
         return {
             **super().canonical_dict(),
-            "schema_version": MEMORY_TASK_SCHEMA_VERSION,
-            "generator_version": MEMORY_GENERATOR_VERSION,
+            "schema_version": self.memory_task_schema_version,
+            "generator_version": self.memory_generator_version,
         }
 
     def generated_record(self) -> dict[str, Any]:
-        return {**super().generated_record(), "generator_version": MEMORY_GENERATOR_VERSION}
+        return {
+            **super().generated_record(),
+            "generator_version": self.memory_generator_version,
+        }
 
 
 def permute_controls(
@@ -173,6 +182,16 @@ def generate_memory_task(seed: int) -> MemoryTask:
         f"completed-memory-v2-{seed}",
         content_digest({"logical_id": record.logical_id, "stages": semantic_stages}),
         "",
+        memory_generator_version=(
+            D59_MEMORY_GENERATOR_VERSION
+            if record.partition is Partition.CONFIRMATORY
+            else MEMORY_GENERATOR_VERSION
+        ),
+        memory_task_schema_version=(
+            D59_MEMORY_TASK_SCHEMA_VERSION
+            if record.partition is Partition.CONFIRMATORY
+            else MEMORY_TASK_SCHEMA_VERSION
+        ),
     )
     return replace(task, task_id="v5m-" + content_digest(task.canonical_dict())[7:31])
 

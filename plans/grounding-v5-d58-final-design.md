@@ -1,6 +1,11 @@
 # D5.8 — Final evaluation design decision package
 
-**Status: the owner has accepted the observed difficulty and requested a review-ready PR. All 100 calibration assignments are recorded: history succeeds on 42/50 and stateless on 6/50. The prospective power check gives 71.4% power for the reserved 120 independent pairs, below the 80% target. Final sample size and planning budget remain owner choices; confirmatory execution is disabled.**
+**Status: the owner accepted the observed difficulty and, on 2026-09-18, selected the successor
+168-pair design and USD 120 aggregate planning cap. All 100 calibration assignments remain
+recorded: history succeeds on 42/50 and stateless on 6/50. The response-free
+[D5.9 freeze candidate](grounding-v5-d59-confirmatory-freeze.md) records the selected sample,
+admission, and exact caps. Confirmatory execution remains disabled pending separate exact-plan and
+runtime approval.**
 
 ## Decision after calibration
 
@@ -36,28 +41,29 @@ discordance, 55.78%–81.84%. They are planning assumptions, not a guarantee for
 family mix. At 100% discordance, the 168-pair option has 70.0% power. The full structured
 calculation includes additional sample sizes and source hashes.
 
-The proposed expansion would retain seeds 6000–6143 and add 6144–6191 as eight
+The subsequently selected expansion retains seeds 6000–6143 and adds 6144–6191 as eight
 singletons per family, preserving the existing family order and the proposed two/four/two
 regression/frontier/ceiling allocation for each added block. That yields 42/108/42
 episodes across the three bands, 168 independent representatives and 24 robustness
-twins. This extension has not been implemented or selected; no confirmatory tasks were
-generated or inspected for the power calculation. A versioned seed-registry extension
-and its source/admission binding must precede any executable freeze.
+twins. This extension was not generated or inspected for the power calculation. It was selected
+later and is implemented by the separately versioned D5.9 freeze candidate, whose source and
+admission bindings do not alter this prospective calculation.
 
 Cost is a linear projection from USD 17.645094 across the 90 newly attempted episodes.
 The 168-pair comparison projects USD 75.29, the 48 additional reliability episodes
 USD 9.41, and historical aggregate charges are USD 23.978227275. The requested planning
-cap is USD 120 aggregate, not an additional USD 120. It remains unapproved. These
+cap is USD 120 aggregate, not an additional USD 120. The owner selected it on 2026-09-18; it
+remains a planning limit rather than paid-call authorization. These
 estimates include shortened episodes and owner-zero-weight unknown outcomes, assume
 the historical prices, and do not guarantee completion.
 
 The owner was asked to choose sample size and planning cap because the
 [parent protocol](grounding-v5-agent-benchmark.md#statistical-analysis) requires a human
 choice when the sample misses the power target. The existing USD 28 aggregate cap and
-zero confirmatory-call allowance remain effective until those choices arrive. A planning
-decision will still require an exact execution plan, fresh price check, canonical task
-admission, phase caps and a new runtime window before paid-call approval. The completed
-six-hour calibration window has expired.
+zero confirmatory-call allowance remained effective until those choices arrived. The successor
+package now supplies an exact execution-plan candidate, fresh price check, canonical task
+admission, and phase caps. Its proposed runtime window and every nonzero call allowance remain
+unapproved. The completed six-hour calibration window has expired.
 
 ## Completed continuation
 
@@ -573,8 +579,8 @@ USD 20.00 and USD 5.00.** Confirmed charges are USD 23.978227275. The owner assi
 zero budget weight to unresolved outcomes after checking OpenRouter activity; retain
 those outcomes and count any later actual charges. Full active request bounds still
 count against the cap. This is not a separate allowance per policy or per run.
-The proposed USD 120 aggregate planning cap above is pending. Confirmatory execution
-remains disabled until its exact plan receives separate approval.
+The owner selected the USD 120 aggregate planning cap on 2026-09-18. Confirmatory execution
+remains disabled until the successor exact plan and runtime receive separate approval.
 
 The complete design is not projected to fit within the current ceiling. The completed
 calibration now supplies an observed cost for the matched screenshot-history policy,
@@ -617,13 +623,13 @@ candidate bounds before execution. Preserve the ignored authoritative ledger at
 `.cache/d58-memory-calibration/aggregate.sqlite`; a subsequent approved phase must carry forward
 its settled spend and reservations. Any changed manifest requires the owner's exact-plan approval.
 
-The final executable freeze must bind the actual generator and source digests, canonical tasks and seed lists,
+The successor D5.9 freeze candidate binds the actual generator and source digests, canonical tasks and seed lists,
 admission evidence, exact candidate policy manifests, primary comparison, power calculation,
 reliability subset, prices, per-phase dollar/request caps, and owner approval. Those executable
-artifacts still require the selected sample and cap, any seed-registry extension and its
-admission, and separate exact-plan approval. The repairs and full calibration are complete;
-the difficulty decision is recorded. D5.8's final executable freeze remains open, and
-D5.9 must not start from this document.
+artifacts record the selected sample and cap, versioned seed-registry extension, and admission.
+Separate exact-plan and runtime approval remain required. The repairs and full calibration are
+complete; the difficulty decision is recorded. D5.9 must not start from this document or from the
+response-free candidate alone.
 
 ## Reproduction
 
