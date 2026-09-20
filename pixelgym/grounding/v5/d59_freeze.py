@@ -32,6 +32,9 @@ PRIMARY_PHASE_CAP_USD = Decimal("85.00")
 RELIABILITY_PHASE_CAP_USD = AGGREGATE_PLANNING_CAP_USD - HISTORICAL_SPEND_USD - PRIMARY_PHASE_CAP_USD
 MAX_MODEL_ATTEMPTS_PER_ACTION = 3
 RELIABILITY_REPEATS_PER_ARM = 2
+D59_ADMISSION_EVIDENCE_DIGEST = (
+    "sha256:5555be6f6859d2578db43d83e1d2fbe88cec9ce1d566f96f3fa871bf7ca92c56"
+)
 
 SOURCE_FILES = (
     "pixelgym/grounding/v5/contracts.py",
@@ -207,6 +210,41 @@ def _caps(jobs: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def _validate_admission_evidence(
+    tasks: tuple[Any, ...], admission_value: dict[str, Any]
+) -> None:
+    if admission_value.get("schema_version") != "pixelgym-agent-v5-d59-admission-v1":
+        raise ValueError("D5.9 admission schema changed")
+    if admission_value.get("partition") != "confirmatory":
+        raise ValueError("D5.9 admission partition changed")
+    records = admission_value.get("tasks")
+    if (
+        admission_value.get("task_count") != len(tasks)
+        or not isinstance(records, list)
+        or len(records) != len(tasks)
+    ):
+        raise ValueError("D5.9 admission does not cover the selected task set")
+    if admission_value.get("provider_calls_made") != 0:
+        raise ValueError("D5.9 admission must remain provider-free")
+    if any(not isinstance(record, dict) for record in records):
+        raise ValueError("D5.9 admission records must be objects")
+    identities = [
+        (record.get("task_id"), record.get("seed"), record.get("family"))
+        for record in records
+    ]
+    expected_identities = [
+        (task.task_id, task.seed, task.family.value) for task in tasks
+    ]
+    if identities != expected_identities:
+        raise ValueError("D5.9 admission task order or identity changed")
+    recomputed_digest = content_digest(records)
+    if (
+        admission_value.get("evidence_digest") != recomputed_digest
+        or recomputed_digest != D59_ADMISSION_EVIDENCE_DIGEST
+    ):
+        raise ValueError("D5.9 admission evidence digest changed")
+
+
 def execution_plan(
     root: Path,
     *,
@@ -268,10 +306,7 @@ def execution_plan(
         task_manifest_value["records"]
     ) != len(tasks):
         raise ValueError("D5.9 task manifest has a different selected allocation")
-    if admission_value.get("task_count") != len(tasks) or admission_value.get(
-        "provider_calls_made"
-    ) != 0:
-        raise ValueError("D5.9 admission does not cover the selected no-call task set")
+    _validate_admission_evidence(tasks, admission_value)
     all_jobs = primary_jobs + reliability_jobs
     value = {
         "schema_version": "pixelgym-agent-v5-d59-execution-plan-v1",

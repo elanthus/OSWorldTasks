@@ -42,6 +42,23 @@ def expected(*, source_revision: str, include_admission: bool) -> dict[str, byte
     return outputs
 
 
+def write_outputs(
+    outputs: dict[str, bytes], *, verify: bool, public: Path = PUBLIC
+) -> None:
+    paths = {name: public / name for name in outputs}
+    if not verify:
+        existing = [path for path in paths.values() if path.exists()]
+        if existing:
+            raise SystemExit(f"refusing to overwrite D5.9 artifacts: {existing}")
+    for name, payload in outputs.items():
+        path = paths[name]
+        if verify:
+            if path.read_bytes() != payload:
+                raise SystemExit(f"stored D5.9 artifact differs: {path}")
+        else:
+            path.write_bytes(payload)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-revision", required=True)
@@ -52,15 +69,7 @@ def main() -> None:
         source_revision=args.source_revision,
         include_admission=not args.skip_admission,
     )
-    for name, payload in outputs.items():
-        path = PUBLIC / name
-        if args.verify:
-            if path.read_bytes() != payload:
-                raise SystemExit(f"stored D5.9 artifact differs: {path}")
-        else:
-            if path.exists():
-                raise SystemExit(f"refusing to overwrite D5.9 artifact: {path}")
-            path.write_bytes(payload)
+    write_outputs(outputs, verify=args.verify)
     print(
         json.dumps(
             {

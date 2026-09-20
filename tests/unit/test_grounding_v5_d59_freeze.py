@@ -7,8 +7,10 @@ from copy import deepcopy
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
+from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.d59_freeze import (
     D59_CONFIRMATORY_SEEDS,
     confirmatory_tasks,
@@ -22,6 +24,7 @@ from pixelgym.grounding.v5.memory_generator import (
     generate_memory_task,
     seed_record,
 )
+from scripts.prepare_grounding_v5_d59_freeze import write_outputs
 
 ROOT = Path(__file__).parents[2]
 
@@ -130,6 +133,59 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
     assert Decimal(rebound["request_budget"]["maximum_request_reservation_usd"]) > Decimal(
         plan["request_budget"]["maximum_request_reservation_usd"]
     )
+
+
+def test_d59_execution_plan_rejects_changed_admission_records() -> None:
+    price = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
+    )
+    manifest = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
+    )
+    admission = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
+    )
+
+    def assert_rejected(value: dict[str, object], match: str) -> None:
+        with pytest.raises(ValueError, match=match):
+            execution_plan(
+                ROOT,
+                source_revision=manifest["source_binding"]["source_revision"],
+                price_snapshot=price,
+                task_manifest_value=manifest,
+                admission_value=value,
+            )
+
+    invalid = deepcopy(admission)
+    invalid["schema_version"] = "wrong"
+    assert_rejected(invalid, "schema")
+
+    invalid = deepcopy(admission)
+    invalid["partition"] = "development"
+    assert_rejected(invalid, "partition")
+
+    invalid = deepcopy(admission)
+    invalid["tasks"].pop()
+    assert_rejected(invalid, "selected task set")
+
+    invalid = deepcopy(admission)
+    invalid["tasks"][0]["seed"] = -1
+    invalid["evidence_digest"] = content_digest(invalid["tasks"])
+    assert_rejected(invalid, "order or identity")
+
+    invalid = deepcopy(admission)
+    invalid["tasks"][0]["golden"]["reward_sum"] = 0
+    invalid["evidence_digest"] = content_digest(invalid["tasks"])
+    assert_rejected(invalid, "evidence digest")
+
+
+def test_d59_writer_refuses_partial_artifact_creation(tmp_path: Path) -> None:
+    outputs = {"first.json": b"first\n", "second.json": b"second\n"}
+    (tmp_path / "second.json").write_bytes(b"existing\n")
+    with pytest.raises(SystemExit, match="refusing to overwrite D5.9 artifacts"):
+        write_outputs(outputs, verify=False, public=tmp_path)
+    assert not (tmp_path / "first.json").exists()
+    assert (tmp_path / "second.json").read_bytes() == b"existing\n"
 
 
 def test_d59_checked_in_artifacts_verify_without_provider_access() -> None:
