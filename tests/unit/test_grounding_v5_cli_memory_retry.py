@@ -1,5 +1,6 @@
 """Bounded CLI retries and unfinished-only continuation selection."""
 
+import json
 import subprocess
 from decimal import Decimal
 from pathlib import Path
@@ -17,11 +18,15 @@ from pixelgym.grounding.v5.cli_memory_calibration import (
     CliMemoryRunner,
     build_memory_manifest,
 )
-from pixelgym.grounding.v5.contracts import CallCaps
+from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_focus_backend import FocusMemoryBackend
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
-from scripts.run_grounding_v5_cli_memory import unfinished_jobs
+from scripts.run_grounding_v5_cli_memory import (
+    fresh_jobs,
+    unfinished_jobs,
+    validate_fresh_approval,
+)
 
 ROOT = Path(__file__).parents[2]
 
@@ -157,3 +162,37 @@ def test_continuation_preserves_terminal_failures_and_retries_only_unfinished():
     rows[0]["task_digest"] = "changed"
     with pytest.raises(ValueError, match="differs"):
         unfinished_jobs(jobs, {"results": rows})
+
+
+def test_fresh_cohort_keeps_every_assignment_and_rejects_duplicates():
+    jobs = [
+        {"seed": 5112, "mode": "history"},
+        {"seed": 5112, "mode": "stateless"},
+    ]
+    assert fresh_jobs(jobs) == jobs
+    assert fresh_jobs(jobs) is not jobs
+    with pytest.raises(ValueError, match="duplicate"):
+        fresh_jobs(jobs + [jobs[0]])
+
+
+def test_fresh_approval_must_match_every_exact_cap(tmp_path):
+    caps = CallCaps(2862, 5724, 0, 5724)
+    plan = {"maximum_elapsed_seconds": 43200, "jobs": ["bound"]}
+    approval = {
+        "schema_version": "pixelgym-pr196-haiku-cli-replication-approval-v1",
+        "execution_plan_digest": content_digest(plan),
+        "approved_environment_action_cap": 2862,
+        "approved_model_attempt_cap": 5724,
+        "approved_provider_control_request_cap": 0,
+        "approved_provider_wire_request_cap": 5724,
+        "approved_runtime_seconds": 43200,
+        "incremental_experiment_charge_cap_usd": "0.00",
+        "owner_approved": True,
+    }
+    path = tmp_path / "approval.json"
+    path.write_text(json.dumps(approval))
+    assert validate_fresh_approval(path, plan, caps) == approval
+    approval["approved_model_attempt_cap"] -= 1
+    path.write_text(json.dumps(approval))
+    with pytest.raises(ValueError, match="differs"):
+        validate_fresh_approval(path, plan, caps)

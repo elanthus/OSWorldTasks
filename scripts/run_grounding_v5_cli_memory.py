@@ -56,6 +56,33 @@ def unfinished_jobs(jobs, predecessor):
     return [j for j in jobs if seen.get((j["seed"], j["mode"])) not in terminal]
 
 
+def fresh_jobs(jobs):
+    """Return the complete frozen assignment set after rejecting duplicate identities."""
+    identities = [(job["seed"], job["mode"]) for job in jobs]
+    if len(set(identities)) != len(identities):
+        raise ValueError("duplicate source assignment")
+    return list(jobs)
+
+
+def validate_fresh_approval(path, plan, caps):
+    """Require an exact, separate owner approval before a fresh model call."""
+    approval = json.loads(path.read_text())
+    expected = {
+        "schema_version": "pixelgym-pr196-haiku-cli-replication-approval-v1",
+        "execution_plan_digest": content_digest(plan),
+        "approved_environment_action_cap": caps.environment_action_cap,
+        "approved_model_attempt_cap": caps.model_attempt_cap,
+        "approved_provider_control_request_cap": caps.provider_control_request_cap,
+        "approved_provider_wire_request_cap": caps.provider_wire_request_cap,
+        "approved_runtime_seconds": plan["maximum_elapsed_seconds"],
+        "incremental_experiment_charge_cap_usd": "0.00",
+        "owner_approved": True,
+    }
+    if approval != expected:
+        raise ValueError("fresh execution approval differs from the exact prepared plan")
+    return approval
+
+
 def validate_predecessor(path, model):
     predecessor = json.loads(path.read_text())
     prior_plan = json.loads(path.with_name("execution-plan.json").read_text())
@@ -105,7 +132,14 @@ def main():
     parser.add_argument("mode", choices=["prepare", "execute"])
     parser.add_argument("--model", choices=["luna-medium", "haiku-default"], required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--predecessor-summary", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
+        "--fresh",
+        action="store_true",
+        help="run a new cohort containing every frozen assignment",
+    )
+    source.add_argument("--predecessor-summary", type=Path)
+    parser.add_argument("--approval-file", type=Path)
     args = parser.parse_args()
     require_clean_tracked_worktree(ROOT)
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
@@ -120,7 +154,7 @@ def main():
         "pixelgym/grounding/v5/cli_memory_calibration.py",
         "scripts/run_grounding_v5_cli_memory.py",
     }
-    if any(
+    if not args.fresh and any(
         p not in allowed
         and not p.startswith("tests/unit/test_grounding_v5_cli_memory")
         and p
@@ -150,8 +184,10 @@ def main():
         for mode in ("history", "stateless")
     }
     original = json.loads((ROOT / SOURCE_PLAN).read_text())
+    campaign = "fresh-replication-v1" if args.fresh else "timeout-continuation-v1"
     jobs = [
-        {**j, "trial_id": f"pr196-{args.model}-{j['seed']}-{j['mode']}"} for j in original["jobs"]
+        {**j, "trial_id": f"pr196-{args.model}-{j['seed']}-{j['mode']}-{campaign}"}
+        for j in original["jobs"]
     ]
     for job in jobs:
         task = generate_memory_task(job["seed"])
@@ -161,15 +197,24 @@ def main():
             or task.max_episode_steps != job["action_limit"]
         ):
             raise ValueError("frozen task mismatch")
-    predecessor = validate_predecessor(args.predecessor_summary, args.model)
-    jobs = unfinished_jobs(jobs, predecessor)
-    if not jobs:
-        raise ValueError("no unfinished assignments")
-    jobs = [{**j, "trial_id": j["trial_id"] + "-timeout-continuation-v1"} for j in jobs]
+    predecessor = None
+    if args.fresh:
+        if args.model != "haiku-default":
+            raise ValueError("the approved fresh replication is Haiku-only")
+        jobs = fresh_jobs(jobs)
+    else:
+        predecessor = validate_predecessor(args.predecessor_summary, args.model)
+        jobs = unfinished_jobs(jobs, predecessor)
+        if not jobs:
+            raise ValueError("no unfinished assignments")
     actions = sum(j["action_limit"] for j in jobs)
     caps = CallCaps(actions, actions * 2, 0, actions * 2)
     plan = {
-        "schema_version": "pixelgym-pr196-cli-memory-plan-v1",
+        "schema_version": (
+            "pixelgym-pr196-haiku-cli-replication-plan-v1"
+            if args.fresh
+            else "pixelgym-pr196-cli-memory-plan-v1"
+        ),
         "frozen_benchmark_revision": FROZEN,
         "adapter_revision": revision,
         "model": args.model,
@@ -179,16 +224,22 @@ def main():
         "jobs": jobs,
         "policy_manifests": {m: p.to_dict() for m, p in manifests.items()},
         "caps": caps.to_dict(),
-        "owner_authorization": "Please add a retry for CLI timeouts, then retry the ones that did not finish. One retry after confirmed process stop; unfinished assignments only, both models.",
+        "owner_authorization": (
+            "Fresh 100-episode matched Haiku calibration requested and scope confirmed "
+            "on 2026-09-20; exact derived caps and runtime still require approval before execute."
+            if args.fresh
+            else "Please add a retry for CLI timeouts, then retry the ones that did not finish. "
+            "One retry after confirmed process stop; unfinished assignments only, both models."
+        ),
         "transport_retries": 1,
         "maximum_elapsed_seconds": 43200,
         "incremental_experiment_charge_usd": "0.00",
         "billing": "authenticated subscriptions only",
+        "execution_authorized": False,
         "stop_rule": "stop on infrastructure/request/policy failures or unresolved invocations; retain invalid outputs; no silent retries",
     }
-    if args.predecessor_summary is not None:
+    if predecessor is not None:
         # Unknown provider completion stays recorded; exited CLI cannot dispatch later.
-        predecessor = validate_predecessor(args.predecessor_summary, args.model)
         plan["predecessor"] = {
             "summary_digest": content_digest(predecessor),
             "plan_digest": predecessor["plan_digest"],
@@ -196,6 +247,13 @@ def main():
             "stop_reason": predecessor["stop_reason"],
             "rule": "retain finished outcomes; interrupted episodes reset; preserve prior timeouts and disclose changed retry policy",
             "unresolved_provider_outcomes_retained": predecessor["unresolved_invocations"],
+        }
+    else:
+        plan["fresh_cohort"] = {
+            "prior_outcomes_reused": 0,
+            "assignments": len(jobs),
+            "conditions": {"history": 50, "stateless": 50},
+            "confirmatory_tasks_exposed": 0,
         }
     output = args.output.resolve()
     if args.mode == "prepare":
@@ -214,6 +272,12 @@ def main():
         return
     if json.loads((output / "execution-plan.json").read_text()) != plan:
         raise ValueError("runtime differs from prepared plan")
+    if args.fresh:
+        if args.approval_file is None:
+            raise ValueError("fresh execution requires an exact owner approval file")
+        validate_fresh_approval(args.approval_file, plan, caps)
+    elif args.approval_file is not None:
+        raise ValueError("continuation execution does not accept a fresh approval file")
     if (output / "attempts.sqlite").exists():
         raise FileExistsError("never restart or overwrite an existing campaign")
     ledger = codex.SubscriptionExemptLedger(Decimal(1), Decimal(0))
