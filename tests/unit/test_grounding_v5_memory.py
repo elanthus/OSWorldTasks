@@ -20,6 +20,7 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_generator import (
     MEMORY_GENERATOR_VERSION,
+    MEMORY_TASK_SCHEMA_VERSION,
     development_counterfactuals,
     generate_memory_task,
     permute_controls,
@@ -51,14 +52,14 @@ def advance(backend: MemoryBackend, until: int) -> None:
 
 
 def test_reserved_seed_allocation_without_generating_confirmation() -> None:
-    records = [seed_record(seed) for seed in range(6000, 6144)]
-    assert len({record.logical_id for record in records}) == 120
+    records = [seed_record(seed) for seed in range(6000, 6192)]
+    assert len({record.logical_id for record in records}) == 168
     assert all(record.partition is Partition.CONFIRMATORY for record in records)
-    assert set(Counter(record.family for record in records).values()) == {24}
+    assert set(Counter(record.family for record in records).values()) == {32}
     assert Counter(record.difficulty_band.value for record in records) == {
-        "regression_canary": 30,
-        "frontier": 84,
-        "ceiling_probe": 30,
+        "regression_canary": 42,
+        "frontier": 108,
+        "ceiling_probe": 42,
     }
     with pytest.raises(TypeError):
         generate_memory_task(True)
@@ -102,6 +103,9 @@ def test_versioned_generator_uniqueness_and_target_independent_layout() -> None:
     assert generate_memory_task(5112).semantic_digest == generate_memory_task(5113).semantic_digest
     schema = json.loads(
         (ROOT / "pixelgym/grounding/v5/schemas/memory-task.schema.json").read_text()
+    )
+    assert generate_memory_task(5000).canonical_dict()["schema_version"] == (
+        MEMORY_TASK_SCHEMA_VERSION
     )
     Draft202012Validator(schema).validate(generate_memory_task(5000).canonical_dict())
 
