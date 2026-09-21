@@ -23,9 +23,11 @@ from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.memory_focus_backend import FocusMemoryBackend
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
 from scripts.run_grounding_v5_cli_memory import (
+    FROZEN_RUNTIME_FILES,
     fresh_jobs,
     unfinished_jobs,
     validate_fresh_approval,
+    validate_fresh_runtime_surface,
 )
 
 ROOT = Path(__file__).parents[2]
@@ -173,6 +175,19 @@ def test_fresh_cohort_keeps_every_assignment_and_rejects_duplicates():
     assert fresh_jobs(jobs) is not jobs
     with pytest.raises(ValueError, match="duplicate"):
         fresh_jobs(jobs + [jobs[0]])
+
+
+def test_fresh_runtime_surface_rejects_changed_backend(monkeypatch):
+    calls = []
+
+    def fake_check_output(command, cwd):
+        calls.append((command, cwd))
+        return b"changed" if command[2].startswith("HEAD:") else b"frozen"
+
+    monkeypatch.setattr(subprocess, "check_output", fake_check_output)
+    with pytest.raises(ValueError, match="runtime source differs"):
+        validate_fresh_runtime_surface(ROOT, "HEAD")
+    assert calls[0][0][-1].endswith(FROZEN_RUNTIME_FILES[0])
 
 
 def test_fresh_approval_must_match_every_exact_cap(tmp_path):

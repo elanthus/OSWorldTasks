@@ -28,6 +28,11 @@ from pixelgym.grounding.v5.screenshot_memory import require_clean_tracked_worktr
 ROOT = Path(__file__).resolve().parents[1]
 FROZEN = "1e5d9c0d19acf51505919deefe0d155c2ab22b26"
 SOURCE_PLAN = "artifacts/grounding-v5-d58-gemini38-calibration/execution-plan.json"
+FROZEN_RUNTIME_FILES = (
+    "pixelgym/grounding/v5/memory_backend.py",
+    "pixelgym/grounding/v5/memory_focus_backend.py",
+    "pixelgym/grounding/v5/screenshot_memory.py",
+)
 
 
 def write(path, value):
@@ -62,6 +67,15 @@ def fresh_jobs(jobs):
     if len(set(identities)) != len(identities):
         raise ValueError("duplicate source assignment")
     return list(jobs)
+
+
+def validate_fresh_runtime_surface(root, revision):
+    """Keep runtime behavior frozen while task identities bind the evolved generator."""
+    for path in FROZEN_RUNTIME_FILES:
+        current = subprocess.check_output(["git", "show", f"{revision}:{path}"], cwd=root)
+        frozen = subprocess.check_output(["git", "show", f"{FROZEN}:{path}"], cwd=root)
+        if current != frozen:
+            raise ValueError(f"fresh runtime source differs from frozen benchmark: {path}")
 
 
 def validate_fresh_approval(path, plan, caps):
@@ -202,6 +216,7 @@ def main():
         if args.model != "haiku-default":
             raise ValueError("the approved fresh replication is Haiku-only")
         jobs = fresh_jobs(jobs)
+        validate_fresh_runtime_surface(ROOT, revision)
     else:
         predecessor = validate_predecessor(args.predecessor_summary, args.model)
         jobs = unfinished_jobs(jobs, predecessor)
@@ -252,7 +267,7 @@ def main():
         plan["fresh_cohort"] = {
             "prior_outcomes_reused": 0,
             "assignments": len(jobs),
-            "conditions": {"history": 50, "stateless": 50},
+            "conditions": dict(sorted(Counter(job["mode"] for job in jobs).items())),
             "confirmatory_tasks_exposed": 0,
         }
     output = args.output.resolve()

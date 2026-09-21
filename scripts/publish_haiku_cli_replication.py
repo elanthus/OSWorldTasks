@@ -18,7 +18,7 @@ from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_byt
 from pixelgym.grounding.v5.memory_calibration import episode_measurements
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
 from scripts.publish_pr196_calibration import ReadOnlyJournal, metrics
-from scripts.run_grounding_v5_cli_memory import validate_fresh_approval
+from scripts.run_grounding_v5_cli_memory import FROZEN_RUNTIME_FILES, validate_fresh_approval
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "artifacts/grounding-v5-haiku-cli-replication"
@@ -69,7 +69,8 @@ def audit(private_directory: Path) -> dict:
     require(content_digest(plan) == PLAN_DIGEST == summary["plan_digest"], "plan binding mismatch")
     require(plan["adapter_revision"] == summary["adapter_revision"], "revision mismatch")
     require(plan["frozen_benchmark_revision"] == summary["frozen_benchmark_revision"] == FROZEN, "benchmark revision mismatch")
-    require(plan["fresh_cohort"] == {"assignments": 100, "conditions": {"history": 50, "stateless": 50}, "confirmatory_tasks_exposed": 0, "prior_outcomes_reused": 0}, "fresh-cohort contract mismatch")
+    expected_conditions = dict(sorted(Counter(job["mode"] for job in plan["jobs"]).items()))
+    require(plan["fresh_cohort"] == {"assignments": len(plan["jobs"]), "conditions": expected_conditions, "confirmatory_tasks_exposed": 0, "prior_outcomes_reused": 0}, "fresh-cohort contract mismatch")
     require(summary["completed"] == summary["assigned"] == 100 and summary["unrun"] == 0, "cohort is incomplete")
     require(summary["stop_reason"] == "completed_all_assignments" and summary["error"] is None, "cohort did not finish cleanly")
     require(summary["subprocesses_closed"] and summary["unresolved_invocations"] == 0, "provider process remains unresolved")
@@ -87,6 +88,12 @@ def audit(private_directory: Path) -> dict:
         == [_assignment_identity(row) for row in source_plan["jobs"]],
         "fresh panel differs from the PR196 calibration panel",
     )
+    for path in FROZEN_RUNTIME_FILES:
+        executed = subprocess.check_output(
+            ["git", "show", f"{plan['adapter_revision']}:{path}"], cwd=ROOT
+        )
+        frozen = subprocess.check_output(["git", "show", f"{FROZEN}:{path}"], cwd=ROOT)
+        require(executed == frozen, "runtime source differs from frozen benchmark: " + path)
 
     journal = ReadOnlyJournal(private_directory / "attempts.sqlite")
     try:
