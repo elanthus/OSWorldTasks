@@ -14,10 +14,11 @@ from collections import Counter
 from pathlib import Path
 
 from pixelgym.grounding.v5.claude_code_policy import ClaudeInvocationJournal
-from pixelgym.grounding.v5.contracts import content_digest, sha256_bytes
+from pixelgym.grounding.v5.contracts import CallCaps, content_digest, sha256_bytes
 from pixelgym.grounding.v5.memory_calibration import episode_measurements
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
 from scripts.publish_pr196_calibration import ReadOnlyJournal, metrics
+from scripts.run_grounding_v5_cli_memory import validate_fresh_approval
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / "artifacts/grounding-v5-haiku-cli-replication"
@@ -73,6 +74,12 @@ def audit(private_directory: Path) -> dict:
     require(summary["stop_reason"] == "completed_all_assignments" and summary["error"] is None, "cohort did not finish cleanly")
     require(summary["subprocesses_closed"] and summary["unresolved_invocations"] == 0, "provider process remains unresolved")
 
+    approval = validate_fresh_approval(
+        private_directory / "owner-approval.json",
+        plan,
+        CallCaps(**plan["caps"]),
+    )
+
     source_plan = read(SOURCE_PLAN)
     require(content_digest(source_plan) == plan["source_plan_digest"], "source-plan digest mismatch")
     require(
@@ -89,6 +96,14 @@ def audit(private_directory: Path) -> dict:
         results = [e.payload for e in events if e.kind == "cli_memory_assignment_completed"]
         require(results == summary["results"], "recorded results differ from summary")
         require(len(results) == 100, "result count mismatch")
+        require(
+            summary["counts"]
+            == {
+                mode: dict(Counter(row["classification"] for row in results if row["mode"] == mode))
+                for mode in ("history", "stateless")
+            },
+            "summary classification counts differ",
+        )
         jobs = {(row["seed"], row["mode"]): row for row in plan["jobs"]}
         require(len(jobs) == 100, "duplicate assignments")
         seen = set()
@@ -140,6 +155,7 @@ def audit(private_directory: Path) -> dict:
     snapshot = {
         "schema_version": "pixelgym-pr196-haiku-cli-replication-snapshot-v1",
         "plan_digest": PLAN_DIGEST,
+        "approval_digest": content_digest(approval),
         "summary_digest": content_digest(summary),
         "adapter_revision": plan["adapter_revision"],
         "frozen_benchmark_revision": FROZEN,

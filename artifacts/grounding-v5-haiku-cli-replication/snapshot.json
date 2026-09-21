@@ -20,6 +20,7 @@
     "unresolved_invocations": 0
   },
   "adapter_revision": "6128428008d3c40e38851817a98893239a144596",
+  "approval_digest": "sha256:8e2db7a0cb79b065e5f779abd6491fc6aefd60dd6927976c75c2936a916c2cbd",
   "assigned": 100,
   "caps": {
     "environment_action_cap": 2862,

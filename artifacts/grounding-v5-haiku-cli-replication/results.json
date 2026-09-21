@@ -81,5 +81,5 @@
     "subscription_type": "max"
   },
   "schema_version": "pixelgym-pr196-haiku-cli-replication-report-v1",
-  "snapshot_sha256": "sha256:06f0f0692bf8e8ddbe551e6496847935ae0e91d660c7d5e38fa59f57b0ce7063"
+  "snapshot_sha256": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450"
 }

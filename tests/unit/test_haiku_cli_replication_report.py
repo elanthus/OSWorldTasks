@@ -61,6 +61,7 @@ def test_snapshot_is_response_free_and_records_exact_caps():
         "confirmatory_tasks_exposed": 0,
         "prior_outcomes_reused": 0,
     }
+    assert snapshot["approval_digest"].startswith("sha256:")
     assert snapshot["accounting"]["environment_actions"] == 2394
     assert snapshot["accounting"]["model_attempts"] == 2416
     assert snapshot["accounting"]["provider_wire_requests"] == 2416
