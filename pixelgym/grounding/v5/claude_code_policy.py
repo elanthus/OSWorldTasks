@@ -61,7 +61,7 @@ from pixelgym.serialization import canonical_json_bytes
 
 RunningProcess = cli_transport.RunningProcess
 
-CLAUDE_CLI_VERSION = "2.1.236 (Claude Code)"
+CLAUDE_CLI_VERSION = "2.1.267 (Claude Code)"
 MODEL = "claude-haiku-4-5-20251001"
 # Haiku 4.5 has no effort control; retain the field as truthful default metadata.
 MODEL_REASONING_EFFORT = "default"

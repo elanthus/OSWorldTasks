@@ -1,0 +1,85 @@
+{
+  "accounting": {
+    "environment_actions": 2394,
+    "invocation_integrity_digest": "sha256:e347670d4a7848da7cb530cdecfff03f2b77c8f5eff47d96c527bb8f19584682",
+    "invocation_statuses": {
+      "response": 2416
+    },
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:927f2bb6d35c5364d0d2a31736b79fdc787913cdb1840ec55b5dc022f0f2a3a1",
+      "event_count": 19540,
+      "object_count": 9750,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "model_attempts": 2416,
+    "provider_control_requests": 0,
+    "provider_processes_started": 2416,
+    "provider_wire_requests": 2416,
+    "subprocesses_closed": true,
+    "unresolved_invocations": 0
+  },
+  "adapter_revision": "6128428008d3c40e38851817a98893239a144596",
+  "caps": {
+    "environment_action_cap": 2862,
+    "model_attempt_cap": 5724,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 5724
+  },
+  "conditions": {
+    "history": {
+      "actions": 1044,
+      "classifications": {
+        "invalid_output": 18,
+        "step_limit_truncation": 4,
+        "success_termination": 28
+      },
+      "episodes": 50,
+      "first_choices_attempted": 72,
+      "first_choices_correct": 67,
+      "first_choices_valid": 70,
+      "model_attempts": 1062,
+      "reached_both_consumers": 36,
+      "successes": 28
+    },
+    "stateless": {
+      "actions": 1350,
+      "classifications": {
+        "invalid_output": 4,
+        "step_limit_truncation": 41,
+        "success_termination": 5
+      },
+      "episodes": 50,
+      "first_choices_attempted": 92,
+      "first_choices_correct": 34,
+      "first_choices_valid": 91,
+      "model_attempts": 1354,
+      "reached_both_consumers": 45,
+      "successes": 5
+    }
+  },
+  "elapsed_seconds": 35564.61,
+  "frozen_benchmark_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+  "incremental_experiment_charge_usd": "0.00",
+  "paired": {
+    "outcomes": {
+      "both": 0,
+      "history_only": 28,
+      "neither": 17,
+      "stateless_only": 5
+    },
+    "pairs": 50
+  },
+  "plan_digest": "sha256:6b2fa2ccf8ae9f2d5c42666167116a2f6dc6ed00c6b39cce4c0d62bdbdadc476",
+  "provider_calls_made": 0,
+  "runtime_identity": {
+    "auth_method": "claude.ai",
+    "cli_version": "2.1.267 (Claude Code)",
+    "help_sha256": "sha256:ae85d661e9c086f05637ebcd868f5702b477ff6e55e2e65b8ada7807cd51a4b6",
+    "reasoning_effort": "default",
+    "requested_model": "claude-haiku-4-5-20251001",
+    "subscription_type": "max"
+  },
+  "schema_version": "pixelgym-pr196-haiku-cli-replication-report-v1",
+  "snapshot_sha256": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450"
+}
