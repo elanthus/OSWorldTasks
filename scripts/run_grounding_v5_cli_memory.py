@@ -30,6 +30,7 @@ FROZEN = "1e5d9c0d19acf51505919deefe0d155c2ab22b26"
 SOURCE_PLAN = "artifacts/grounding-v5-d58-gemini38-calibration/execution-plan.json"
 FROZEN_RUNTIME_FILES = (
     "pixelgym/grounding/v5/memory_backend.py",
+    "pixelgym/grounding/v5/memory_calibration.py",
     "pixelgym/grounding/v5/memory_focus_backend.py",
     "pixelgym/grounding/v5/screenshot_memory.py",
 )
