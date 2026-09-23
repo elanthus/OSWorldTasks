@@ -112,6 +112,13 @@ def test_successor_rejects_discarded_run_drift(mutation: object, message: str) -
         execution_plan(ROOT, source_revision="a" * 40, discarded_run=discarded)
 
 
+@pytest.mark.parametrize("revision", ["main", "A" * 40, "0" * 40])
+def test_successor_rejects_unbound_source_revision(revision: str) -> None:
+    discarded = read(DISCARDED_RUN_PATH)
+    with pytest.raises(ValueError, match="source revision|source file is unavailable"):
+        execution_plan(ROOT, source_revision=revision, discarded_run=discarded)
+
+
 def test_checked_in_successor_reproduces_from_recorded_source_revision() -> None:
     discarded = read(DISCARDED_RUN_PATH)
     outputs = expected_outputs(

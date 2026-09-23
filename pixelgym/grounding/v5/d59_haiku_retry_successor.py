@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,21 @@ def _read(root: Path, path: str) -> dict[str, Any]:
 
 def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _sha256_at_revision(root: Path, revision: str, path: str) -> str:
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
+        raise ValueError("source revision must be a full lowercase Git commit SHA")
+    try:
+        payload = subprocess.run(
+            ["git", "show", f"{revision}:{path}"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        ).stdout
+    except subprocess.CalledProcessError as error:
+        raise ValueError(f"source file is unavailable at revision: {path}") from error
+    return "sha256:" + hashlib.sha256(payload).hexdigest()
 
 
 def _binding(root: Path, path: str, value: dict[str, Any]) -> dict[str, str]:
@@ -142,7 +158,7 @@ def execution_plan(
     source = {
         "schema_version": "pixelgym-d59-haiku-api-retry-successor-source-v1",
         "source_revision": source_revision,
-        "files": {path: _sha256(root / path) for path in SOURCE_FILES},
+        "files": {path: _sha256_at_revision(root, source_revision, path) for path in SOURCE_FILES},
     }
     source["binding_digest"] = content_digest(source)
     value = {
