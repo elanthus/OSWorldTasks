@@ -1,0 +1,55 @@
+{
+  "decision": "Select the exact Haiku screenshot-history and stateless-current-frame policies and carry forward 168 independent representatives, or 192 episodes per arm including 24 robustness twins.",
+  "execution_boundary": {
+    "aggregate_planning_cap_usd": null,
+    "approved_model_attempt_cap": 0,
+    "approved_provider_wire_request_cap": 0,
+    "blockers": [
+      "Apply and verify OS-level sandbox enforcement for both Claude Code CLI policies.",
+      "Create a versioned D5.9 freeze binding admitted tasks, source and runtime digests, caps, runtime window, and subscription boundary.",
+      "Obtain separate exact execution approval before any provider call."
+    ],
+    "confirmatory_tasks_generated": 0,
+    "execution_enabled": false,
+    "os_sandbox_applied": {
+      "history": false,
+      "stateless": false
+    },
+    "paid_or_subscription_execution_authorized": false,
+    "provider_calls_made": 0,
+    "runtime_window_approved": false
+  },
+  "milestone_verdict_declared": false,
+  "owner_statement": "yes, select haiku",
+  "recorded_at": "2026-09-23",
+  "schema_version": "pixelgym-d59-haiku-owner-selection-v1",
+  "selected_design": {
+    "alpha": 0.05,
+    "episodes_per_arm": 192,
+    "independent_representatives": 168,
+    "minimum_relevant_absolute_difference": 0.2,
+    "power_at_observed_discordance": 0.8702198361382038,
+    "power_at_upper_sensitivity": 0.8120345910241988,
+    "robustness_twins_per_arm": 24,
+    "target_power": 0.8
+  },
+  "selected_pair": {
+    "cli_version": "2.1.267 (Claude Code)",
+    "history_policy_id": "policy-79441db33362e00a1ac6",
+    "model": "claude-haiku-4-5-20251001",
+    "provider": "claude-code-cli/claude-ai-max-subscription",
+    "stateless_policy_id": "policy-e1d746cd6a83ffb12a20"
+  },
+  "selection_status": "selected_for_versioned_d59_freeze_successor",
+  "source": {
+    "analysis_merge_revision": "0b2567f1c7d90f2e3cbf08c409d93a355444b957",
+    "analysis_path": "artifacts/grounding-v5-d58-haiku-successor/analysis.json",
+    "analysis_schema_version": "pixelgym-d58-haiku-successor-analysis-v1",
+    "analysis_sha256": "sha256:ba28b3e6bf8aed0d7c71a2ea45f9d499277dbfdfce1afe7ab84d05ec99bf8eea"
+  },
+  "supersession": {
+    "does_not_reuse_gemini_execution_approval": true,
+    "historical_gemini_evidence_and_freeze_preserved": true,
+    "supersedes_gemini_candidate_policy_selection": true
+  }
+}
