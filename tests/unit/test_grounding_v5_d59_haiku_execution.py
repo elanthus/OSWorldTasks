@@ -86,15 +86,18 @@ def test_all_assignments_reproduce_the_approved_caps() -> None:
     assert len({job["trial_id"] for job in jobs}) == len(jobs)
 
 
-def test_live_policy_sources_reproduce_the_frozen_manifests() -> None:
+def test_superseded_execution_rejects_changed_live_policy_sources() -> None:
     plan = read(EXECUTION_PLAN_PATH)
     calibration = json.loads(CALIBRATION_PATH.read_text(encoding="utf-8"))
     identity = ClaudeRuntimeIdentity(**calibration["runtime_identity"])
-    manifests = validated_live_manifests(ROOT, plan, identity)
-    assert {mode: manifest.policy_id for mode, manifest in manifests.items()} == {
-        "history": "policy-79441db33362e00a1ac6",
-        "stateless": "policy-e1d746cd6a83ffb12a20",
-    }
+    with pytest.raises(ValueError, match="live history policy differs"):
+        validated_live_manifests(ROOT, plan, identity)
+
+
+def test_historical_execution_binding_remains_response_free() -> None:
+    plan = read(EXECUTION_PLAN_PATH)
+    calibration = json.loads(CALIBRATION_PATH.read_text(encoding="utf-8"))
+    identity = ClaudeRuntimeIdentity(**calibration["runtime_identity"])
     binding = execution_binding(
         ROOT,
         plan=plan,
