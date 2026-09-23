@@ -59,6 +59,7 @@ def test_selection_carries_168_pair_design_but_no_execution_authority() -> None:
             False,
             "upper-sensitivity",
         ),
+        (("calibration", "history_policy_id"), "policy-replaced", "identity drift"),
         (("execution_readiness", "os_sandbox_applied", "history"), True, "unsandboxed"),
     ],
 )

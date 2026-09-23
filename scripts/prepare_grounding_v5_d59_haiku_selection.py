@@ -12,6 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS = ROOT / "artifacts/grounding-v5-d58-haiku-successor/analysis.json"
 OUTPUT = ROOT / "artifacts/grounding-v5-d59-haiku-selection"
 SELECTION = OUTPUT / "owner-selection.json"
+EXPECTED_PAIR = {
+    "model": "claude-haiku-4-5-20251001",
+    "provider": "claude-code-cli/claude-ai-max-subscription",
+    "cli_version": "2.1.267 (Claude Code)",
+    "history_policy_id": "policy-79441db33362e00a1ac6",
+    "stateless_policy_id": "policy-e1d746cd6a83ffb12a20",
+}
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -44,6 +51,15 @@ def build_selection() -> dict[str, Any]:
         if row["independent_pairs"] == candidate["independent_pairs"]
     )
     calibration = analysis["calibration"]
+    selected_pair = {
+        "model": calibration["model"],
+        "provider": calibration["provider"],
+        "cli_version": calibration["cli_version"],
+        "history_policy_id": calibration["history_policy_id"],
+        "stateless_policy_id": calibration["stateless_policy_id"],
+    }
+    if selected_pair != EXPECTED_PAIR:
+        raise ValueError("Haiku selected-pair identity drift")
     sandbox = analysis["execution_readiness"]["os_sandbox_applied"]
     if sandbox != {"history": False, "stateless": False}:
         raise ValueError("selection expects the disclosed unsandboxed calibration boundary")
@@ -63,13 +79,7 @@ def build_selection() -> dict[str, Any]:
             "analysis_schema_version": analysis["schema_version"],
             "analysis_merge_revision": "0b2567f1c7d90f2e3cbf08c409d93a355444b957",
         },
-        "selected_pair": {
-            "model": calibration["model"],
-            "provider": calibration["provider"],
-            "cli_version": calibration["cli_version"],
-            "history_policy_id": calibration["history_policy_id"],
-            "stateless_policy_id": calibration["stateless_policy_id"],
-        },
+        "selected_pair": selected_pair,
         "selected_design": {
             "independent_representatives": candidate["independent_pairs"],
             "episodes_per_arm": candidate["episodes_per_arm_with_robustness_twins"],
