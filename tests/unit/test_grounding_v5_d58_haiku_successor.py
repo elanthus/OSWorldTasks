@@ -16,8 +16,8 @@ from scripts.prepare_grounding_v5_d58_haiku_successor import (
 
 def test_committed_successor_reproduces_from_response_free_evidence():
     analysis = build_analysis()
-    assert json.loads((OUTPUT / "analysis.json").read_text()) == analysis
-    assert (OUTPUT / "report.md").read_text() == render_report(analysis)
+    assert json.loads((OUTPUT / "analysis.json").read_text(encoding="utf-8")) == analysis
+    assert (OUTPUT / "report.md").read_text(encoding="utf-8") == render_report(analysis)
     assert analysis["provider_calls_made"] == 0
     assert analysis["confirmatory_tasks_generated"] == 0
     assert analysis["owner_selection"] is None
@@ -47,7 +47,7 @@ def test_independent_outcomes_and_power_are_derived_not_all_pair_counts():
 
 @pytest.mark.parametrize("damage", ["duplicate", "missing", "classification", "success"])
 def test_representative_outcomes_rejects_invalid_evidence(damage):
-    snapshot = json.loads(SNAPSHOT.read_text())
+    snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
     seeds = [row["seed"] for row in build_analysis()["calibration"]["independent_representatives"]["rows"]]
     changed = copy.deepcopy(snapshot)
     if damage == "duplicate":

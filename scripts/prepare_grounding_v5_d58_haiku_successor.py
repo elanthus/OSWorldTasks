@@ -21,7 +21,7 @@ TERMINAL = {"success_termination", "step_limit_truncation", "invalid_output"}
 
 
 def _read(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text())
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _digest(path: Path) -> str:
@@ -221,15 +221,15 @@ def main() -> None:
     encoded = json.dumps(analysis, indent=2, sort_keys=True) + "\n"
     report = render_report(analysis)
     if args.verify:
-        if (OUTPUT / "analysis.json").read_text() != encoded:
+        if (OUTPUT / "analysis.json").read_text(encoding="utf-8") != encoded:
             raise ValueError("Haiku successor analysis differs from stored evidence")
-        if (OUTPUT / "report.md").read_text() != report:
+        if (OUTPUT / "report.md").read_text(encoding="utf-8") != report:
             raise ValueError("Haiku successor report differs from stored evidence")
         print("Verified Haiku D5.8 successor power evidence; provider calls: 0")
         return
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    (OUTPUT / "analysis.json").write_text(encoded)
-    (OUTPUT / "report.md").write_text(report)
+    (OUTPUT / "analysis.json").write_text(encoded, encoding="utf-8")
+    (OUTPUT / "report.md").write_text(report, encoding="utf-8")
 
 
 if __name__ == "__main__":
