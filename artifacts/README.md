@@ -57,6 +57,13 @@ Counts are top-level entries before this map was added; status phrases are copie
 | `grounding-v4c*` | 26 | [v4c longer-horizon pilot plan](../plans/grounding-v4c-longer-horizon-pilot.md) | frozen evidence |
 | `grounding-v5*` | 70 | [v5 agent benchmark plan](../plans/grounding-v5-agent-benchmark.md) | These runs do not constitute a completed confirmatory benchmark or a v5 gate. |
 
+The latest response-free D5.9 candidate is the
+[Haiku freeze successor](../plans/grounding-v5-d59-haiku-freeze.md). Its
+[owner exception](grounding-v5-d59-haiku-freeze/owner-exception.json) and
+[execution plan](grounding-v5-d59-haiku-freeze/execution-plan.json) record the narrow
+OS-sandbox exception and proposed limits. They do not authorize a model call: execution is
+disabled and the approved attempt and wire-request caps are zero.
+
 **Naming conventions**
 
 - `-pre-review`: retained; see the file header.

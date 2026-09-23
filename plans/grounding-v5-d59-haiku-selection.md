@@ -1,6 +1,6 @@
 # Select Haiku for the D5.9 freeze successor
 
-**Status:** accepted owner decision on 2026-09-23. The exact Haiku policy pair and the 168-independent-representative design are selected for a new D5.9 freeze. Execution remains disabled.
+**Status:** accepted owner decision on 2026-09-23. The exact Haiku policy pair and the 168-independent-representative design are selected for a new D5.9 freeze. The owner subsequently approved a D5.9-specific OS-sandbox exception; the [versioned freeze successor](grounding-v5-d59-haiku-freeze.md) records that boundary. Execution remains disabled.
 
 ## Decision
 
@@ -21,9 +21,9 @@ The earlier Gemini budget, route, prices, runtime proposal, and execution-plan d
 
 ## Required successor work
 
-D5.9 remains non-executable. Both calibration manifests record `os_sandbox_applied: false`. Before requesting execution approval, a versioned Haiku freeze successor must:
+D5.9 remains non-executable. Both calibration manifests record `os_sandbox_applied: false`. The owner approved an explicit exception for this exact pair rather than changing the calibrated authentication route. The versioned Haiku freeze successor must:
 
-1. apply and verify OS-level sandbox enforcement for both Claude Code CLI policies;
+1. preserve and disclose `os_sandbox_applied: false` and the narrower claim boundary;
 2. bind the admitted confirmatory tasks and exact source, policy, prompt, parser, adapter, CLI, and runtime digests;
 3. bind count caps, a planning budget, a runtime window, and the subscription execution boundary; and
 4. preserve zero approved model-attempt and provider-wire caps until the owner separately approves the exact frozen plan.
