@@ -21,7 +21,7 @@ from pixelgym.grounding.v5.d59_haiku_freeze import (
 from scripts.prepare_grounding_v5_d59_haiku_freeze import write_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
-RECORDED_SOURCE_REVISION = "e039ccdf9115dece43f5ace3390ffdce4d0ea703"
+RECORDED_SOURCE_REVISION = "ca1c98333cffb5f04beef1d4f56ed09f9840f538"
 
 
 def read(path: str) -> dict[str, object]:
