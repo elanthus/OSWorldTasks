@@ -75,6 +75,7 @@ RUNNER_REQUEST_DEADLINE_SECONDS = 125.0
 TERMINATE_GRACE_SECONDS = 2.0
 KILL_GRACE_SECONDS = 2.0
 EXPERIMENT_CHARGE_USD = Decimal("0.00")
+CLI_API_RETRY_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_MAX_RETRIES"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 CONTEXT_LIMIT_TOKENS = 200_000
@@ -255,19 +256,33 @@ _ALLOWED_ENVIRONMENT_VARIABLES = (
 )
 
 
-def _minimal_environment(environment: Mapping[str, str]) -> dict[str, str]:
-    return {
-        name: environment[name]
-        for name in _ALLOWED_ENVIRONMENT_VARIABLES
-        if environment.get(name)
+def _minimal_environment(
+    environment: Mapping[str, str], *, api_retry_limit: int | None = None
+) -> dict[str, str]:
+    if api_retry_limit is not None and (type(api_retry_limit) is not int or api_retry_limit < 0):
+        raise ValueError("Claude CLI API retry limit must be a non-negative integer")
+    result = {
+        name: environment[name] for name in _ALLOWED_ENVIRONMENT_VARIABLES if environment.get(name)
     }
+    if api_retry_limit is not None:
+        result[CLI_API_RETRY_ENVIRONMENT_VARIABLE] = str(api_retry_limit)
+    return result
 
 
 def _claude_launch_enforcement(
-    command: Sequence[str], environment: Mapping[str, str]
+    command: Sequence[str],
+    environment: Mapping[str, str],
+    *,
+    api_retry_limit: int | None = None,
 ) -> RuntimeEnforcement:
     controls_match = tuple(command) == sanitized_command_contract()
-    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    allowed_names = set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    if api_retry_limit is not None:
+        allowed_names.add(CLI_API_RETRY_ENVIRONMENT_VARIABLE)
+    environment_is_allowlisted = set(environment) <= allowed_names and (
+        api_retry_limit is None
+        or environment.get(CLI_API_RETRY_ENVIRONMENT_VARIABLE) == str(api_retry_limit)
+    )
     return runtime_enforcement(
         argv=command,
         environment=environment,
@@ -636,14 +651,14 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
     allowed_events = required_events | {"rate_limit_event"}
     event_counts = Counter(str(event["type"]) for event in events)
     initial_events = [
-        event for event in events
-        if event["type"] == "system" and event.get("subtype") == "init"
+        event for event in events if event["type"] == "system" and event.get("subtype") == "init"
     ]
     if len(initial_events) != 1:
         violations.append("system_event_count_mismatch")
     assistant_events = [event for event in events if event["type"] == "assistant"]
     telemetry_events = [
-        event for event in events
+        event
+        for event in events
         if event["type"] == "system" and event.get("subtype") == "thinking_tokens"
     ]
     if len(assistant_events) not in (1, 2):
@@ -665,15 +680,23 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         previous_estimate = 0
         for telemetry in telemetry_events:
             if set(telemetry) != {
-                "type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"
+                "type",
+                "subtype",
+                "estimated_tokens",
+                "estimated_tokens_delta",
+                "uuid",
+                "session_id",
             }:
                 violations.append("invalid_thinking_telemetry")
                 continue
             estimate = telemetry["estimated_tokens"]
             delta = telemetry["estimated_tokens_delta"]
             if (
-                type(estimate) is not int or type(delta) is not int
-                or estimate < 0 or delta < 0 or estimate != previous_estimate + delta
+                type(estimate) is not int
+                or type(delta) is not int
+                or estimate < 0
+                or delta < 0
+                or estimate != previous_estimate + delta
             ):
                 violations.append("invalid_thinking_telemetry")
             else:
@@ -688,13 +711,17 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             request_ids = [event.get("request_id") for event in assistant_events]
             if (
                 not all(isinstance(value, str) and value for value in message_ids + request_ids)
-                or len(set(message_ids)) != 1 or len(set(request_ids)) != 1
+                or len(set(message_ids)) != 1
+                or len(set(request_ids)) != 1
             ):
                 violations.append("invalid_extended_stream_identity")
             contents: list[Any] = [message.get("content") for message in validated_messages]
             if (
                 not all(isinstance(content, list) and content for content in contents)
-                or not all(isinstance(block, dict) and block.get("type") == "thinking" for block in contents[0])
+                or not all(
+                    isinstance(block, dict) and block.get("type") == "thinking"
+                    for block in contents[0]
+                )
                 or len(contents[1]) != 1
                 or not isinstance(contents[1][0], dict)
                 or contents[1][0].get("type") != "text"
@@ -832,12 +859,8 @@ def _claude_parse_envelope(raw_stdout: str) -> StreamParseEnvelope[ParsedClaudeS
     parsed = _parse_stream(raw_stdout)
     return StreamParseEnvelope(
         parsed=parsed,
-        stream_malformed=bool(
-            _MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)
-        ),
-        subscription_rate_limited=(
-            "subscription_rate_limit_rejected" in parsed.policy_violations
-        ),
+        stream_malformed=bool(_MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)),
+        subscription_rate_limited=("subscription_rate_limit_rejected" in parsed.policy_violations),
         usage_observed=parsed.usage is not None,
         cost_observed=parsed.informational_cost_usd is not None,
     )
@@ -855,6 +878,7 @@ class ClaudeCodeTransport:
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
         allow_timeout_retry: bool = False,
+        api_retry_limit: int | None = None,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
@@ -863,7 +887,8 @@ class ClaudeCodeTransport:
         self.invocation_journal = invocation_journal
         self.runtime_identity = runtime_identity
         self.expected_resolved_model = expected_resolved_model
-        self.environment = _minimal_environment(environment)
+        self.api_retry_limit = api_retry_limit
+        self.environment = _minimal_environment(environment, api_retry_limit=api_retry_limit)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
         self.allow_timeout_retry = allow_timeout_retry
@@ -899,7 +924,11 @@ class ClaudeCodeTransport:
         outcome: dict[str, Any]
         with tempfile.TemporaryDirectory(prefix="pixelgym-claude-cli-") as temporary:
             command = _runtime_command()
-            launch_enforcement = _claude_launch_enforcement(command, self.environment)
+            launch_enforcement = _claude_launch_enforcement(
+                command,
+                self.environment,
+                api_retry_limit=self.api_retry_limit,
+            )
             enforcement_record = launch_enforcement.to_dict()
             try:
                 validate_runtime_enforcement(
@@ -924,9 +953,7 @@ class ClaudeCodeTransport:
                     raw_stderr="",
                     outcome=outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, "pre_send_failure", outcome)
-                )
+                self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
                 return transport_outcome
             image_blocks = [
                 {
@@ -1021,9 +1048,7 @@ class ClaudeCodeTransport:
                     raw_stderr=execution.stderr,
                     outcome=outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, failure_status, outcome)
-                )
+                self.records.append(self._record(idempotency_key, failure_status, outcome))
                 return transport_outcome
             if execution.parsed is None:
                 self.ledger.retain_unresolved_and_block(idempotency_key)
@@ -1077,9 +1102,7 @@ class ClaudeCodeTransport:
                 raw_stderr=execution.stderr,
                 outcome=outcome,
             )
-            self.records.append(
-                self._record(idempotency_key, fault.classification, outcome)
-            )
+            self.records.append(self._record(idempotency_key, fault.classification, outcome))
             return transport_outcome
         usage_record = {
             **(parsed.usage or {}),
@@ -1112,9 +1135,7 @@ class ClaudeCodeTransport:
             "resolved_model": parsed.resolved_model,
             "policy_violation": violation_value,
             "experiment_charge_usd": "0.00",
-            "informational_cost_telemetry_usd": usage_record[
-                "informational_cost_telemetry_usd"
-            ],
+            "informational_cost_telemetry_usd": usage_record["informational_cost_telemetry_usd"],
             "usage_telemetry_status": usage_status,
             "canonical_response": canonical,
         }
@@ -1144,9 +1165,7 @@ class ClaudeCodeTransport:
         if record is None or record["status"] in {"reserved", "running"}:
             return TransportOutcome("unknown", failure_code="invocation_unresolved")
         outcome = record.get("outcome")
-        if isinstance(outcome, dict) and isinstance(
-            outcome.get("transport_outcome"), dict
-        ):
+        if isinstance(outcome, dict) and isinstance(outcome.get("transport_outcome"), dict):
             return TransportOutcome.from_dict(outcome["transport_outcome"])
         if isinstance(outcome, dict) and isinstance(outcome.get("canonical_response"), dict):
             return TransportOutcome("response", outcome["canonical_response"])
@@ -1191,10 +1210,13 @@ class ClaudeCodeTransport:
         if deadline_seconds < self.process_timeout_seconds:
             return "runner_deadline_below_process_timeout"
         history = request.get("image_history", [])
-        if not isinstance(history, list) or len(history) > 31 or any(
-            not isinstance(item, dict)
-            or set(item) != {"image_png_base64", "image_sha256"}
-            for item in history
+        if (
+            not isinstance(history, list)
+            or len(history) > 31
+            or any(
+                not isinstance(item, dict) or set(item) != {"image_png_base64", "image_sha256"}
+                for item in history
+            )
         ):
             return "image_history_shape_mismatch"
         for item in [*history, request]:
@@ -1221,15 +1243,11 @@ class ClaudeCodeTransport:
             "runtime_enforcement": outcome.get("runtime_enforcement"),
             "resolved_model": outcome.get("resolved_model"),
             "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
-            "informational_cost_telemetry_usd": outcome.get(
-                "informational_cost_telemetry_usd"
-            ),
+            "informational_cost_telemetry_usd": outcome.get("informational_cost_telemetry_usd"),
             "policy_violation": outcome.get("policy_violation", "none"),
             "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
-            "usage_telemetry_status": outcome.get(
-                "usage_telemetry_status", "unavailable"
-            ),
+            "usage_telemetry_status": outcome.get("usage_telemetry_status", "unavailable"),
         }
 
 
@@ -1243,6 +1261,7 @@ def build_claude_policy_manifest(
     code_revision: str,
     runtime_identity: ClaudeRuntimeIdentity,
     resolved_model: str | None,
+    api_retry_limit: int | None = None,
 ) -> PolicyManifest:
     ClaudeRuntimeIdentity(**runtime_identity.__dict__)
     runtime_digest = content_digest(
@@ -1277,15 +1296,24 @@ def build_claude_policy_manifest(
         ("claude_max_turns", "1"),
         ("structured_output_auto_retry", "disabled_no_json_schema_flag"),
         ("runner_retries", "0"),
+        *(
+            ()
+            if api_retry_limit is None
+            else (
+                ("cli_api_retry_limit", str(api_retry_limit)),
+                (
+                    "cli_api_retry_environment_variable",
+                    CLI_API_RETRY_ENVIRONMENT_VARIABLE,
+                ),
+            )
+        ),
     )
     return PolicyManifest.build(
         provider=PROVIDER_IDENTITY,
         model=MODEL,
         exact_snapshot=resolved_model is not None,
         harness_digest=_file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-        dependency_lock_digest=_file_digest(
-            repository_root / "requirements/platform-py312.lock"
-        ),
+        dependency_lock_digest=_file_digest(repository_root / "requirements/platform-py312.lock"),
         system_prompt_digest=content_digest(SYSTEM_PROMPT),
         task_renderer_version=TASK_RENDERER_VERSION,
         response_schema_version=RESPONSE_SCHEMA_VERSION,

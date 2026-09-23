@@ -1,9 +1,9 @@
 # D5.9 Haiku confirmatory freeze successor
 
-**Status:** response-free freeze candidate. The owner selected the exact Haiku policy pair and
-approved a D5.9-specific exception to the OS-sandbox requirement on 2026-09-23. Execution remains
-disabled. Approved model-attempt and provider-wire caps remain zero, and the proposed runtime
-window still requires owner approval.
+**Status:** superseded after the authorized campaign stopped on an unauthorized Claude CLI API
+retry event. The run is excluded from scoring and retained as invalid infrastructure evidence. The
+[zero-API-retry successor](grounding-v5-d59-haiku-api-retry-successor.md) is the only candidate for
+any future execution decision.
 
 This successor replaces the Gemini candidate for the next D5.9 execution decision. It preserves
 the admitted confirmatory tasks and statistical design while binding the exact Haiku policies that
