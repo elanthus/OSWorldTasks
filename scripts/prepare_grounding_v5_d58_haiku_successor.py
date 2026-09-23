@@ -166,6 +166,7 @@ def build_analysis() -> dict[str, Any]:
 def render_report(data: dict[str, Any]) -> str:
     paired = data["calibration"]["independent_representatives"]
     outcomes = paired["outcomes"]
+    candidate = next(row for row in data["options"] if row["independent_pairs"] == 168)
     lines = [
         "# Haiku D5.8 successor power check",
         "",
@@ -193,7 +194,10 @@ def render_report(data: dict[str, Any]) -> str:
             "",
             f"The conventional 95% Wilson planning range is {scenarios['lower_sensitivity']:.4%}–{scenarios['upper_sensitivity']:.4%}. {data['sensitivity_scope']}",
             "",
-            "The prior 168-independent-pair choice remains an analytical candidate: it yields 87.0% power at observed discordance and 81.2% at the upper sensitivity endpoint. This recomputation does not carry forward the prior Gemini owner selection automatically.",
+            "The prior 168-independent-pair choice remains an analytical candidate: it yields "
+            f"{candidate['power']['observed_discordance']:.1%} power at observed discordance and "
+            f"{candidate['power']['upper_sensitivity']:.1%} at the upper sensitivity endpoint. "
+            "This recomputation does not carry forward the prior Gemini owner selection automatically.",
             "",
             "## Remaining boundary",
             "",
@@ -220,7 +224,7 @@ def main() -> None:
             raise ValueError("Haiku successor report differs from stored evidence")
         print("Verified Haiku D5.8 successor power evidence; provider calls: 0")
         return
-    OUTPUT.mkdir(parents=True, exist_ok=False)
+    OUTPUT.mkdir(parents=True, exist_ok=True)
     (OUTPUT / "analysis.json").write_text(encoded)
     (OUTPUT / "report.md").write_text(report)
 
