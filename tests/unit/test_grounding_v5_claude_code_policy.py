@@ -202,6 +202,40 @@ def test_claude_child_launch_can_disable_internal_api_retries(tmp_path: Path) ->
         journal.close()
 
 
+def test_claude_child_strips_unbound_inherited_api_retry_limit(tmp_path: Path) -> None:
+    captured: dict[str, Any] = {}
+
+    def factory(command: list[str], **kwargs: Any) -> SuccessfulProcess:
+        captured["command"] = command
+        captured["environment"] = kwargs["env"]
+        return SuccessfulProcess()
+
+    journal = policy.ClaudeInvocationJournal(tmp_path / "claude-invocations.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=journal,
+        runtime_identity=runtime_identity(),
+        environment={
+            "PATH": "/bin",
+            "HOME": "/private/auth-home",
+            policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE: "7",
+        },
+        process_factory=factory,
+    )
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:claude-strip-unbound-api-retries",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        assert policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE not in captured["environment"]
+    finally:
+        transport.close()
+        journal.close()
+
+
 def test_claude_api_retry_limit_rejects_invalid_values(tmp_path: Path) -> None:
     journal = policy.ClaudeInvocationJournal(tmp_path / "claude-invocations.sqlite")
     with pytest.raises(ValueError, match="non-negative integer"):

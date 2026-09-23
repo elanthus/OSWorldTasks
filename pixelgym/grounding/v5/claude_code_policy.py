@@ -253,7 +253,6 @@ _ALLOWED_ENVIRONMENT_VARIABLES = (
     "HTTPS_PROXY",
     "HTTP_PROXY",
     "NO_PROXY",
-    CLI_API_RETRY_ENVIRONMENT_VARIABLE,
 )
 
 
@@ -277,7 +276,10 @@ def _claude_launch_enforcement(
     api_retry_limit: int | None = None,
 ) -> RuntimeEnforcement:
     controls_match = tuple(command) == sanitized_command_contract()
-    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES) and (
+    allowed_names = set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    if api_retry_limit is not None:
+        allowed_names.add(CLI_API_RETRY_ENVIRONMENT_VARIABLE)
+    environment_is_allowlisted = set(environment) <= allowed_names and (
         api_retry_limit is None
         or environment.get(CLI_API_RETRY_ENVIRONMENT_VARIABLE) == str(api_retry_limit)
     )
