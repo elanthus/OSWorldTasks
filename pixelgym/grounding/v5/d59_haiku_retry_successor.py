@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,11 @@ SOURCE_FILES = (
     "pixelgym/grounding/v5/d59_haiku_retry_successor.py",
     "scripts/prepare_grounding_v5_d59_haiku_retry_successor.py",
 )
+POLICY_INPUT_ROOTS = (
+    "pixelgym",
+    "pyproject.toml",
+    "requirements/platform-py312.lock",
+)
 
 
 def _read(root: Path, path: str) -> dict[str, Any]:
@@ -39,19 +45,50 @@ def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _sha256_at_revision(root: Path, revision: str, path: str) -> str:
-    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
-        raise ValueError("source revision must be a full lowercase Git commit SHA")
+def _git_output(root: Path, *arguments: str) -> bytes:
+    environment = {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
     try:
-        payload = subprocess.run(
-            ["git", "show", f"{revision}:{path}"],
+        return subprocess.run(
+            ["git", *arguments],
             cwd=root,
             check=True,
             capture_output=True,
+            env=environment,
         ).stdout
     except subprocess.CalledProcessError as error:
-        raise ValueError(f"source file is unavailable at revision: {path}") from error
+        raise ValueError("source revision or path is unavailable") from error
+
+
+def _validate_source_revision(revision: str) -> None:
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
+        raise ValueError("source revision must be a full lowercase Git commit SHA")
+
+
+def _sha256_at_revision(root: Path, revision: str, path: str) -> str:
+    _validate_source_revision(revision)
+    payload = _git_output(root, "show", f"{revision}:{path}")
     return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
+def _validate_policy_inputs(root: Path, revision: str) -> None:
+    _validate_source_revision(revision)
+    payload = _git_output(
+        root,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        revision,
+        "--",
+        *POLICY_INPUT_ROOTS,
+    )
+    paths = tuple(line for line in payload.decode("utf-8").splitlines() if line)
+    required = set(POLICY_INPUT_ROOTS[1:])
+    if not paths or not required.issubset(paths):
+        raise ValueError("source revision does not contain all policy inputs")
+    for path in paths:
+        current = root / path
+        if not current.is_file() or _sha256(current) != _sha256_at_revision(root, revision, path):
+            raise ValueError(f"policy input differs from source revision: {path}")
 
 
 def _binding(root: Path, path: str, value: dict[str, Any]) -> dict[str, str]:
@@ -129,6 +166,7 @@ def execution_plan(
     approval = _read(root, PREDECESSOR_APPROVAL_PATH)
     calibration = _read(root, CALIBRATION_PATH)
     _validate_predecessor(predecessor, approval, discarded_run)
+    _validate_policy_inputs(root, source_revision)
     identity = claude.ClaudeRuntimeIdentity(**calibration["runtime_identity"])
     base = claude.build_claude_policy_manifest(
         root,

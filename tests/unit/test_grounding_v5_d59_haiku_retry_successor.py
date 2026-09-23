@@ -11,6 +11,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
     DISCARDED_RUN_PATH,
     PREDECESSOR_PLAN_DIGEST,
     PREDECESSOR_PLAN_PATH,
+    _sha256_at_revision,
     execution_plan,
     expected_outputs,
 )
@@ -117,6 +118,37 @@ def test_successor_rejects_unbound_source_revision(revision: str) -> None:
     discarded = read(DISCARDED_RUN_PATH)
     with pytest.raises(ValueError, match="source revision|source file is unavailable"):
         execution_plan(ROOT, source_revision=revision, discarded_run=discarded)
+
+
+def test_revision_reads_ignore_inherited_git_repository_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GIT_DIR", "/private/tmp/not-the-repository")
+    monkeypatch.setenv("GIT_OBJECT_DIRECTORY", "/private/tmp/not-the-objects")
+    assert _sha256_at_revision(
+        ROOT,
+        RECORDED_SOURCE_REVISION,
+        "pixelgym/grounding/v5/d59_haiku_retry_successor.py",
+    ).startswith("sha256:")
+
+
+def test_successor_rejects_policy_input_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pixelgym.grounding.v5 import d59_haiku_retry_successor as successor
+
+    original = successor._sha256
+
+    def damaged(path: Path) -> str:
+        if path == ROOT / "pixelgym/actions.py":
+            return "sha256:" + "0" * 64
+        return original(path)
+
+    monkeypatch.setattr(successor, "_sha256", damaged)
+    with pytest.raises(ValueError, match="policy input differs from source revision"):
+        execution_plan(
+            ROOT,
+            source_revision=RECORDED_SOURCE_REVISION,
+            discarded_run=read(DISCARDED_RUN_PATH),
+        )
 
 
 def test_checked_in_successor_reproduces_from_recorded_source_revision() -> None:
