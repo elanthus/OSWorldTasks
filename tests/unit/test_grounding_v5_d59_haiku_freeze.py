@@ -6,9 +6,11 @@ from pathlib import Path
 
 import pytest
 
+from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.d59_haiku_freeze import (
     ADMISSION_PATH,
     CALIBRATION_PATH,
+    HISTORICAL_PLAN_PATH,
     HISTORY_POLICY_ID,
     SELECTION_PATH,
     STATELESS_POLICY_ID,
@@ -24,6 +26,14 @@ RECORDED_SOURCE_REVISION = "e039ccdf9115dece43f5ace3390ffdce4d0ea703"
 
 def read(path: str) -> dict[str, object]:
     return json.loads((ROOT / path).read_text(encoding="utf-8"))
+
+
+def mutate_historical_task_binding(value: dict[str, object]) -> None:
+    binding = value["task_manifest_binding"]
+    assert isinstance(binding, dict)
+    binding["file_sha256"] = "sha256:" + "0" * 64
+    body = {key: item for key, item in value.items() if key != "execution_plan_digest"}
+    value["execution_plan_digest"] = content_digest(body)
 
 
 def test_owner_exception_is_narrow_and_non_executable() -> None:
@@ -52,10 +62,11 @@ def test_execution_plan_reuses_admitted_tasks_and_exact_selected_policies() -> N
     assert value["approved_provider_wire_request_cap"] == 0
     assert value["task_manifest_binding"]["path"].endswith("task-manifest.json")
     assert value["admission_binding"]["path"] == ADMISSION_PATH
-    assert {item["policy_id"] for item in value["policy_manifests"].values()} == {
-        HISTORY_POLICY_ID,
-        STATELESS_POLICY_ID,
-    }
+    assert value["policy_manifests"]["history"]["policy_id"] == HISTORY_POLICY_ID
+    assert (
+        value["policy_manifests"]["stateless"]["policy_id"]
+        == STATELESS_POLICY_ID
+    )
     assert value["security_boundary"]["os_sandbox_applied"] == {
         "history": False,
         "stateless": False,
@@ -106,6 +117,18 @@ def test_execution_plan_reuses_admitted_tasks_and_exact_selected_policies() -> N
             ].__setitem__("os_sandbox_applied", True),
             "expects the disclosed unsandboxed policy",
         ),
+        (
+            HISTORICAL_PLAN_PATH,
+            mutate_historical_task_binding,
+            "task manifest binding changed",
+        ),
+        (
+            HISTORICAL_PLAN_PATH,
+            lambda value: value.__setitem__(
+                "execution_plan_digest", "sha256:" + "0" * 64
+            ),
+            "execution plan digest changed",
+        ),
     ],
 )
 def test_execution_plan_rejects_identity_drift(
@@ -136,12 +159,23 @@ def test_execution_plan_rejects_identity_drift(
 def test_expected_outputs_are_response_free_and_write_once(tmp_path: Path) -> None:
     outputs = expected_outputs(ROOT, source_revision="c" * 40)
     assert set(outputs) == {"owner-exception.json", "execution-plan.json"}
-    assert all(b"provider_calls_made" in payload for payload in outputs.values())
+    assert all(
+        json.loads(payload)["provider_calls_made"] == 0
+        for payload in outputs.values()
+    )
     public = tmp_path / "freeze"
     write_outputs(outputs, verify=False, public=public)
     write_outputs(outputs, verify=True, public=public)
     with pytest.raises(SystemExit, match="refusing to overwrite"):
         write_outputs(outputs, verify=False, public=public)
+
+
+def test_write_outputs_supports_existing_empty_directory(tmp_path: Path) -> None:
+    outputs = expected_outputs(ROOT, source_revision="d" * 40)
+    public = tmp_path / "freeze"
+    public.mkdir()
+    write_outputs(outputs, verify=False, public=public)
+    assert {path.name for path in public.iterdir()} == set(outputs)
 
 
 def test_checked_in_freeze_reproduces_from_recorded_source_revision() -> None:

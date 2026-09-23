@@ -20,7 +20,7 @@ def write_outputs(
         existing = [path for path in paths.values() if path.exists()]
         if existing:
             raise SystemExit(f"refusing to overwrite D5.9 Haiku artifacts: {existing}")
-        public.mkdir(parents=True, exist_ok=False)
+        public.mkdir(parents=True, exist_ok=True)
     for name, payload in outputs.items():
         path = paths[name]
         if verify:

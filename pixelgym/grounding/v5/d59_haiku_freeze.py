@@ -60,6 +60,7 @@ def owner_exception() -> dict[str, Any]:
             "Waive OS-level sandbox enforcement for the exact selected Haiku D5.9 "
             "policy pair and retain the calibrated Claude Code CLI controls."
         ),
+        "provider_calls_made": 0,
         "scope": {
             "applies_only_to_d59_haiku_successor": True,
             "history_policy_id": HISTORY_POLICY_ID,
@@ -216,12 +217,33 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
     exception = owner_exception()
     _validate_selection(selection)
     policies = _validate_policies(calibration)
-    if task_manifest.get("manifest_digest") != historical["task_manifest_binding"].get(
-        "manifest_digest"
+    historical_digest = historical.get("execution_plan_digest")
+    historical_body = {
+        key: value for key, value in historical.items() if key != "execution_plan_digest"
+    }
+    if historical_digest != content_digest(historical_body):
+        raise ValueError("historical D5.9 execution plan digest changed")
+    task_binding = _binding(root, TASK_MANIFEST_PATH, task_manifest)
+    admission_binding = _binding(root, ADMISSION_PATH, admission)
+    historical_task_binding = historical.get("task_manifest_binding")
+    historical_admission_binding = historical.get("admission_binding")
+    if not isinstance(historical_task_binding, dict) or not isinstance(
+        historical_admission_binding, dict
+    ):
+        raise TypeError("historical D5.9 bindings are incomplete")
+    if (
+        historical_task_binding.get("path") != task_binding["path"]
+        or historical_task_binding.get("file_sha256") != task_binding["file_sha256"]
+        or task_manifest.get("manifest_digest")
+        != historical_task_binding.get("manifest_digest")
     ):
         raise ValueError("historical D5.9 task manifest binding changed")
-    if admission.get("evidence_digest") != historical["admission_binding"].get(
-        "evidence_digest"
+    if (
+        historical_admission_binding.get("path") != admission_binding["path"]
+        or historical_admission_binding.get("file_sha256")
+        != admission_binding["file_sha256"]
+        or admission.get("evidence_digest")
+        != historical_admission_binding.get("evidence_digest")
     ):
         raise ValueError("historical D5.9 admission binding changed")
     if historical.get("allocation") != task_manifest.get("allocation"):
@@ -269,8 +291,8 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
         "owner_exception": exception,
         "source_binding": source,
         "calibration_binding": _binding(root, CALIBRATION_PATH, calibration),
-        "task_manifest_binding": _binding(root, TASK_MANIFEST_PATH, task_manifest),
-        "admission_binding": _binding(root, ADMISSION_PATH, admission),
+        "task_manifest_binding": task_binding,
+        "admission_binding": admission_binding,
         "policy_manifests": policies,
         "allocation": historical["allocation"],
         "primary_comparison": historical["primary_comparison"],
