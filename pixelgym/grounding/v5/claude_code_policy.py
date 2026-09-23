@@ -75,6 +75,7 @@ RUNNER_REQUEST_DEADLINE_SECONDS = 125.0
 TERMINATE_GRACE_SECONDS = 2.0
 KILL_GRACE_SECONDS = 2.0
 EXPERIMENT_CHARGE_USD = Decimal("0.00")
+CLI_API_RETRY_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_MAX_RETRIES"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 CONTEXT_LIMIT_TOKENS = 200_000
@@ -252,22 +253,38 @@ _ALLOWED_ENVIRONMENT_VARIABLES = (
     "HTTPS_PROXY",
     "HTTP_PROXY",
     "NO_PROXY",
+    CLI_API_RETRY_ENVIRONMENT_VARIABLE,
 )
 
 
-def _minimal_environment(environment: Mapping[str, str]) -> dict[str, str]:
-    return {
+def _minimal_environment(
+    environment: Mapping[str, str], *, api_retry_limit: int | None = None
+) -> dict[str, str]:
+    if api_retry_limit is not None and (
+        type(api_retry_limit) is not int or api_retry_limit < 0
+    ):
+        raise ValueError("Claude CLI API retry limit must be a non-negative integer")
+    result = {
         name: environment[name]
         for name in _ALLOWED_ENVIRONMENT_VARIABLES
         if environment.get(name)
     }
+    if api_retry_limit is not None:
+        result[CLI_API_RETRY_ENVIRONMENT_VARIABLE] = str(api_retry_limit)
+    return result
 
 
 def _claude_launch_enforcement(
-    command: Sequence[str], environment: Mapping[str, str]
+    command: Sequence[str],
+    environment: Mapping[str, str],
+    *,
+    api_retry_limit: int | None = None,
 ) -> RuntimeEnforcement:
     controls_match = tuple(command) == sanitized_command_contract()
-    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES)
+    environment_is_allowlisted = set(environment) <= set(_ALLOWED_ENVIRONMENT_VARIABLES) and (
+        api_retry_limit is None
+        or environment.get(CLI_API_RETRY_ENVIRONMENT_VARIABLE) == str(api_retry_limit)
+    )
     return runtime_enforcement(
         argv=command,
         environment=environment,
@@ -855,6 +872,7 @@ class ClaudeCodeTransport:
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
         allow_timeout_retry: bool = False,
+        api_retry_limit: int | None = None,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
@@ -863,7 +881,10 @@ class ClaudeCodeTransport:
         self.invocation_journal = invocation_journal
         self.runtime_identity = runtime_identity
         self.expected_resolved_model = expected_resolved_model
-        self.environment = _minimal_environment(environment)
+        self.api_retry_limit = api_retry_limit
+        self.environment = _minimal_environment(
+            environment, api_retry_limit=api_retry_limit
+        )
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
         self.allow_timeout_retry = allow_timeout_retry
@@ -899,7 +920,11 @@ class ClaudeCodeTransport:
         outcome: dict[str, Any]
         with tempfile.TemporaryDirectory(prefix="pixelgym-claude-cli-") as temporary:
             command = _runtime_command()
-            launch_enforcement = _claude_launch_enforcement(command, self.environment)
+            launch_enforcement = _claude_launch_enforcement(
+                command,
+                self.environment,
+                api_retry_limit=self.api_retry_limit,
+            )
             enforcement_record = launch_enforcement.to_dict()
             try:
                 validate_runtime_enforcement(
@@ -1243,6 +1268,7 @@ def build_claude_policy_manifest(
     code_revision: str,
     runtime_identity: ClaudeRuntimeIdentity,
     resolved_model: str | None,
+    api_retry_limit: int | None = None,
 ) -> PolicyManifest:
     ClaudeRuntimeIdentity(**runtime_identity.__dict__)
     runtime_digest = content_digest(
@@ -1277,6 +1303,17 @@ def build_claude_policy_manifest(
         ("claude_max_turns", "1"),
         ("structured_output_auto_retry", "disabled_no_json_schema_flag"),
         ("runner_retries", "0"),
+        *(
+            ()
+            if api_retry_limit is None
+            else (
+                ("cli_api_retry_limit", str(api_retry_limit)),
+                (
+                    "cli_api_retry_environment_variable",
+                    CLI_API_RETRY_ENVIRONMENT_VARIABLE,
+                ),
+            )
+        ),
     )
     return PolicyManifest.build(
         provider=PROVIDER_IDENTITY,

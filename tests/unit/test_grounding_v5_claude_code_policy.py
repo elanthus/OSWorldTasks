@@ -163,6 +163,57 @@ def test_claude_child_launch_metadata_matches_exact_argv_and_environment(
         journal.close()
 
 
+def test_claude_child_launch_can_disable_internal_api_retries(tmp_path: Path) -> None:
+    captured: dict[str, Any] = {}
+
+    def factory(command: list[str], **kwargs: Any) -> SuccessfulProcess:
+        captured["command"] = command
+        captured["environment"] = kwargs["env"]
+        return SuccessfulProcess()
+
+    journal = policy.ClaudeInvocationJournal(tmp_path / "claude-invocations.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=journal,
+        runtime_identity=runtime_identity(),
+        environment={"PATH": "/bin", "HOME": "/private/auth-home", "SECRET": "blocked"},
+        process_factory=factory,
+        api_retry_limit=0,
+    )
+    try:
+        outcome = transport.send(
+            request(),
+            idempotency_key="sha256:claude-zero-api-retries",
+            deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS,
+        )
+
+        assert outcome.status == "response"
+        assert captured["environment"][policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE] == "0"
+        assert "SECRET" not in captured["environment"]
+        record = journal.record("sha256:claude-zero-api-retries")
+        assert record is not None
+        enforcement = record["outcome"]["runtime_enforcement"]
+        assert enforcement["environment_allowlist_applied"] is True
+        assert policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE in (
+            enforcement["environment_variable_names"]
+        )
+    finally:
+        transport.close()
+        journal.close()
+
+
+def test_claude_api_retry_limit_rejects_invalid_values(tmp_path: Path) -> None:
+    journal = policy.ClaudeInvocationJournal(tmp_path / "claude-invocations.sqlite")
+    with pytest.raises(ValueError, match="non-negative integer"):
+        policy.ClaudeCodeTransport(
+            ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+            invocation_journal=journal,
+            runtime_identity=runtime_identity(),
+            api_retry_limit=-1,
+        )
+    journal.close()
+
+
 def test_claude_missing_required_launch_flag_fails_before_process_start(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -216,6 +267,43 @@ def test_haiku_contract_pins_model_and_leaves_unsupported_effort_unset() -> None
     ).to_dict()
     assert manifest["context_limit"] == 200_000
     assert dict(manifest["inference_parameters"])["model_reasoning_effort"] == "default"
+
+
+def test_haiku_successor_manifest_binds_zero_cli_api_retries() -> None:
+    manifest = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+        resolved_model="claude-haiku-4-5-20251001",
+        api_retry_limit=0,
+    ).to_dict()
+    inference = dict(manifest["inference_parameters"])
+    assert inference["cli_api_retry_limit"] == "0"
+    assert (
+        inference["cli_api_retry_environment_variable"]
+        == policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE
+    )
+
+
+def test_api_retry_event_remains_a_fail_closed_policy_violation() -> None:
+    stdout, _ = SuccessfulProcess().communicate()
+    events = [json.loads(line) for line in stdout.splitlines()]
+    events.insert(
+        2,
+        {
+            "type": "system",
+            "subtype": "api_retry",
+            "attempt": 1,
+            "max_retries": 10,
+            "retry_delay_ms": 500,
+            "error_status": None,
+            "error": "unknown",
+            "session_id": "synthetic-session",
+            "uuid": "synthetic-event",
+        },
+    )
+    parsed = policy._parse_stream("\n".join(json.dumps(event) for event in events) + "\n")
+    assert "unauthorized_system_event:api_retry" in parsed.policy_violations
 
 
 @pytest.mark.parametrize(
