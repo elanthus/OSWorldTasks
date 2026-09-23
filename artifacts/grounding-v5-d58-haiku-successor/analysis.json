@@ -1,0 +1,291 @@
+{
+  "alpha": 0.05,
+  "calibration": {
+    "all_pairs": 50,
+    "cli_version": "2.1.267 (Claude Code)",
+    "history_policy_id": "policy-79441db33362e00a1ac6",
+    "independent_representatives": {
+      "discordant": 30,
+      "outcomes": {
+        "both_success": 0,
+        "history_only": 25,
+        "neither_success": 14,
+        "stateless_only": 5
+      },
+      "pairs": 44,
+      "rows": [
+        {
+          "outcome": "history_only",
+          "seed": 5112
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5114
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5115
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5116
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5117
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5118
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5119
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5122
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5124
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5125
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5126
+        },
+        {
+          "outcome": "stateless_only",
+          "seed": 5127
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5128
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5129
+        },
+        {
+          "outcome": "stateless_only",
+          "seed": 5132
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5134
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5135
+        },
+        {
+          "outcome": "stateless_only",
+          "seed": 5136
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5137
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5138
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5139
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5141
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5142
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5144
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5145
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5146
+        },
+        {
+          "outcome": "stateless_only",
+          "seed": 5147
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5148
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5149
+        },
+        {
+          "outcome": "stateless_only",
+          "seed": 5151
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5152
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5154
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5155
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5156
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5157
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5158
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5159
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5160
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5162
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5163
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5164
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5165
+        },
+        {
+          "outcome": "neither_success",
+          "seed": 5166
+        },
+        {
+          "outcome": "history_only",
+          "seed": 5167
+        }
+      ]
+    },
+    "model": "claude-haiku-4-5-20251001",
+    "plan_digest": "sha256:6b2fa2ccf8ae9f2d5c42666167116a2f6dc6ed00c6b39cce4c0d62bdbdadc476",
+    "provider": "claude-code-cli/claude-ai-max-subscription",
+    "stateless_policy_id": "policy-e1d746cd6a83ffb12a20"
+  },
+  "carry_forward_candidate": {
+    "episodes_per_arm_with_robustness_twins": 192,
+    "independent_pairs": 168,
+    "meets_power_at_observed_discordance": true,
+    "meets_power_at_upper_sensitivity": true,
+    "status": "analytical candidate; owner selection not recorded"
+  },
+  "confirmatory_tasks_generated": 0,
+  "discordance_scenarios": {
+    "all_discordant_stress": 1.0,
+    "lower_sensitivity": 0.5344310393781777,
+    "observed_discordance": 0.6818181818181818,
+    "upper_sensitivity": 0.8000069228914657
+  },
+  "execution_readiness": {
+    "confirmatory_ready": false,
+    "os_sandbox_applied": {
+      "history": false,
+      "stateless": false
+    },
+    "reason": "The calibration manifests record that OS sandbox enforcement was not applied to either Claude Code CLI launch. A confirmatory successor also requires newly frozen caps, runtime, admission, and exact approval."
+  },
+  "method": "Unconditional power: M~Bin(n,q), B|M~Bin(M,(q+delta)/(2q)); sum the two-sided exact McNemar rejection probability over M.",
+  "method_reference": "https://pubmed.ncbi.nlm.nih.gov/1509223/",
+  "minimum_relevant_absolute_difference": 0.2,
+  "options": [
+    {
+      "episodes_per_arm_with_robustness_twins": 144,
+      "independent_pairs": 120,
+      "power": {
+        "all_discordant_stress": 0.5395507629305875,
+        "lower_sensitivity": 0.8370402613818109,
+        "observed_discordance": 0.7284458882390037,
+        "upper_sensitivity": 0.6602111514798867
+      }
+    },
+    {
+      "episodes_per_arm_with_robustness_twins": 168,
+      "independent_pairs": 144,
+      "power": {
+        "all_discordant_stress": 0.6285912938095707,
+        "lower_sensitivity": 0.8993619636760871,
+        "observed_discordance": 0.8122338595435492,
+        "upper_sensitivity": 0.7432510300149623
+      }
+    },
+    {
+      "episodes_per_arm_with_robustness_twins": 174,
+      "independent_pairs": 150,
+      "power": {
+        "all_discordant_stress": 0.6631528819119802,
+        "lower_sensitivity": 0.9111507032418518,
+        "observed_discordance": 0.8280164979123381,
+        "upper_sensitivity": 0.7616900627406664
+      }
+    },
+    {
+      "episodes_per_arm_with_robustness_twins": 192,
+      "independent_pairs": 168,
+      "power": {
+        "all_discordant_stress": 0.6996369697382712,
+        "lower_sensitivity": 0.9405875959237132,
+        "observed_discordance": 0.8702198361382038,
+        "upper_sensitivity": 0.8120345910241988
+      }
+    },
+    {
+      "episodes_per_arm_with_robustness_twins": 228,
+      "independent_pairs": 204,
+      "power": {
+        "all_discordant_stress": 0.8008053564450761,
+        "lower_sensitivity": 0.9739589383051236,
+        "observed_discordance": 0.9291043380044394,
+        "upper_sensitivity": 0.8826781067887968
+      }
+    }
+  ],
+  "owner_selection": null,
+  "paid_or_subscription_execution_authorized": false,
+  "power_target": 0.8,
+  "provider_calls_made": 0,
+  "schema_version": "pixelgym-d58-haiku-successor-analysis-v1",
+  "sensitivity_scope": "Wilson endpoints are a disclosed planning range, not a guarantee for the fixed family mix or a formal confidence bound on prospective power. No observed-effect power or calibration significance test is reported.",
+  "source_file_digests": {
+    "artifacts/grounding-v5-d58-design/audit.py": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0",
+    "artifacts/grounding-v5-d58-final-design/power.py": "sha256:f5c6137030e429cac4126925ee5b04a85e677b696819ce0ab559720d73b0208f",
+    "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
+    "artifacts/grounding-v5-haiku-cli-replication/snapshot.json": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450",
+    "artifacts/grounding-v5-haiku-cli-replication/sources.json": "sha256:403077953af47cec1001954b4095c2ea898832efc73577725c453b9ee2ab4cca",
+    "scripts/prepare_grounding_v5_d58_haiku_successor.py": "sha256:b7fda5c0f9aadd2dcca2988f7c62bd223fc749336377d8dcd0908f8ebd2e05b3"
+  }
+}
