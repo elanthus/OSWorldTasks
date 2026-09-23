@@ -31,7 +31,7 @@ from the stopped run.
 
 The new [execution plan](../artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json)
 has digest
-`sha256:39bf3195238885f13923e314f3ec12b5a3557fffaf065ac817f11924464283c6`.
+`sha256:b1a35c728f20f0e1a95dc6fdded41227b12acb06433cfe8297b68851b064d477`.
 Its candidate ceilings remain:
 
 | Phase | Environment actions | Model attempts | Provider wire requests |
@@ -55,5 +55,5 @@ The verification command reads only checked-in response-free evidence and makes 
 
 ```sh
 .venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_retry_successor \
-  --source-revision f965d65380a230113327b6c3c637787af35a88d3 --verify
+  --source-revision 2364280d440cf1cfe49969b8ebe6a5917b845cba --verify
 ```
