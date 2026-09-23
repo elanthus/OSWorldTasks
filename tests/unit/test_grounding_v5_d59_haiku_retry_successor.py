@@ -16,7 +16,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-RECORDED_SOURCE_REVISION = "ef8c94d220551aafc5d696e13a18f596dcab8a46"
+RECORDED_SOURCE_REVISION = "f3168916655a81f63e3508df81a92b50000af452"
 PUBLIC = ROOT / "artifacts/grounding-v5-d59-haiku-api-retry-successor"
 
 
@@ -78,11 +78,9 @@ def test_successor_is_fresh_non_executable_and_zero_retry() -> None:
     old_policy_ids = {item["policy_id"] for item in predecessor["policy_manifests"].values()}
     for manifest in value["policy_manifests"].values():
         assert manifest["policy_id"] not in old_policy_ids
-        assert manifest["inference_parameters"]["cli_api_retry_limit"] == "0"
-        assert (
-            manifest["inference_parameters"]["cli_api_retry_environment_variable"]
-            == "CLAUDE_CODE_MAX_RETRIES"
-        )
+        inference = dict(manifest["inference_parameters"])
+        assert inference["cli_api_retry_limit"] == "0"
+        assert inference["cli_api_retry_environment_variable"] == "CLAUDE_CODE_MAX_RETRIES"
 
 
 @pytest.mark.parametrize(
