@@ -19,6 +19,7 @@ from pixelgym.grounding.v5.d59_haiku_freeze import (
 from scripts.prepare_grounding_v5_d59_haiku_freeze import write_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
+RECORDED_SOURCE_REVISION = "e039ccdf9115dece43f5ace3390ffdce4d0ea703"
 
 
 def read(path: str) -> dict[str, object]:
@@ -141,3 +142,10 @@ def test_expected_outputs_are_response_free_and_write_once(tmp_path: Path) -> No
     write_outputs(outputs, verify=True, public=public)
     with pytest.raises(SystemExit, match="refusing to overwrite"):
         write_outputs(outputs, verify=False, public=public)
+
+
+def test_checked_in_freeze_reproduces_from_recorded_source_revision() -> None:
+    outputs = expected_outputs(ROOT, source_revision=RECORDED_SOURCE_REVISION)
+    public = ROOT / "artifacts/grounding-v5-d59-haiku-freeze"
+    for name, payload in outputs.items():
+        assert (public / name).read_bytes() == payload
