@@ -194,10 +194,13 @@ def render_report(data: dict[str, Any]) -> str:
             "",
             f"The conventional 95% Wilson planning range is {scenarios['lower_sensitivity']:.4%}–{scenarios['upper_sensitivity']:.4%}. {data['sensitivity_scope']}",
             "",
-            "The prior 168-independent-pair choice remains an analytical candidate: it yields "
-            f"{candidate['power']['observed_discordance']:.1%} power at observed discordance and "
-            f"{candidate['power']['upper_sensitivity']:.1%} at the upper sensitivity endpoint. "
-            "This recomputation does not carry forward the prior Gemini owner selection automatically.",
+            (
+                "The prior 168-independent-pair choice remains an analytical candidate: it yields "
+                f"{candidate['power']['observed_discordance']:.1%} power at observed discordance and "
+                f"{candidate['power']['upper_sensitivity']:.1%} at the upper sensitivity endpoint. "
+                "This recomputation does not carry forward the prior Gemini owner selection "
+                "automatically."
+            ),
             "",
             "## Remaining boundary",
             "",

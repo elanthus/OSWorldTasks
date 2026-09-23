@@ -286,6 +286,6 @@
     "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
     "artifacts/grounding-v5-haiku-cli-replication/snapshot.json": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450",
     "artifacts/grounding-v5-haiku-cli-replication/sources.json": "sha256:403077953af47cec1001954b4095c2ea898832efc73577725c453b9ee2ab4cca",
-    "scripts/prepare_grounding_v5_d58_haiku_successor.py": "sha256:dce5a80a030c29d2b40e47647b0b544973373382a332863039ff9ba74bd6a17d"
+    "scripts/prepare_grounding_v5_d58_haiku_successor.py": "sha256:314b13ee51b471ce43707bb3089e49a48e3f6a1d5e3c359a42629a27c3a7c4de"
   }
 }
