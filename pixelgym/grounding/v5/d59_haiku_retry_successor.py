@@ -13,17 +13,11 @@ from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.serialization import canonical_json_bytes
 
 PREDECESSOR_PLAN_PATH = "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json"
-PREDECESSOR_APPROVAL_PATH = (
-    "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json"
-)
-DISCARDED_RUN_PATH = (
-    "artifacts/grounding-v5-d59-haiku-api-retry-successor/discarded-run.json"
-)
+PREDECESSOR_APPROVAL_PATH = "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json"
+DISCARDED_RUN_PATH = "artifacts/grounding-v5-d59-haiku-api-retry-successor/discarded-run.json"
 CALIBRATION_PATH = "artifacts/grounding-v5-haiku-cli-replication/snapshot.json"
 OUTPUT_DIRECTORY = "artifacts/grounding-v5-d59-haiku-api-retry-successor"
-PREDECESSOR_PLAN_DIGEST = (
-    "sha256:9523674b3cc8b9bca053072103ec885802ce5eec6109ca94fc843fa792c10a52"
-)
+PREDECESSOR_PLAN_DIGEST = "sha256:9523674b3cc8b9bca053072103ec885802ce5eec6109ca94fc843fa792c10a52"
 API_RETRY_LIMIT = 0
 
 SOURCE_FILES = (
@@ -64,9 +58,7 @@ def _prospective_binding(path: str, value: dict[str, Any]) -> dict[str, str]:
 def _validate_predecessor(
     predecessor: dict[str, Any], approval: dict[str, Any], discarded: dict[str, Any]
 ) -> None:
-    body = {
-        key: value for key, value in predecessor.items() if key != "execution_plan_digest"
-    }
+    body = {key: value for key, value in predecessor.items() if key != "execution_plan_digest"}
     if predecessor.get("execution_plan_digest") != content_digest(body):
         raise ValueError("predecessor execution-plan digest is invalid")
     if predecessor["execution_plan_digest"] != PREDECESSOR_PLAN_DIGEST:
@@ -218,9 +210,7 @@ def execution_plan(
 def expected_outputs(
     root: Path, *, source_revision: str, discarded_run: dict[str, Any]
 ) -> dict[str, bytes]:
-    plan = execution_plan(
-        root, source_revision=source_revision, discarded_run=discarded_run
-    )
+    plan = execution_plan(root, source_revision=source_revision, discarded_run=discarded_run)
     return {
         "discarded-run.json": canonical_json_bytes(discarded_run) + b"\n",
         "execution-plan.json": canonical_json_bytes(plan) + b"\n",

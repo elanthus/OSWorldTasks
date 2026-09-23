@@ -194,8 +194,8 @@ def test_claude_child_launch_can_disable_internal_api_retries(tmp_path: Path) ->
         assert record is not None
         enforcement = record["outcome"]["runtime_enforcement"]
         assert enforcement["environment_allowlist_applied"] is True
-        assert policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE in (
-            enforcement["environment_variable_names"]
+        assert (
+            policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE in (enforcement["environment_variable_names"])
         )
     finally:
         transport.close()
@@ -280,8 +280,7 @@ def test_haiku_successor_manifest_binds_zero_cli_api_retries() -> None:
     inference = dict(manifest["inference_parameters"])
     assert inference["cli_api_retry_limit"] == "0"
     assert (
-        inference["cli_api_retry_environment_variable"]
-        == policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE
+        inference["cli_api_retry_environment_variable"] == policy.CLI_API_RETRY_ENVIRONMENT_VARIABLE
     )
 
 
@@ -497,27 +496,35 @@ def test_haiku_fenced_json_adapter_preserves_raw_model_output() -> None:
         },
     }
     assert policy.ClaudeCodePolicy().parse(json.dumps(response).encode(), b"{}") == {
-        "action_type": 1, "x": 100, "y": 100, "key": 0,
+        "action_type": 1,
+        "x": 100,
+        "y": 100,
+        "key": 0,
     }
     assert response["content"] == text
 
 
-@pytest.mark.parametrize("wrapper", ["{}", "```json\n{}\n```", "```\n{}\n```", " \n```json\r\n{}\r\n```\n"])
+@pytest.mark.parametrize(
+    "wrapper", ["{}", "```json\n{}\n```", "```\n{}\n```", " \n```json\r\n{}\r\n```\n"]
+)
 def test_action_envelope_accepts_only_complete_json(wrapper: str) -> None:
     text = '{"action_type":1,"x":100,"y":100,"key":0}'
     assert policy._decode_action_content(wrapper.format(text)) == json.loads(text)
 
 
-@pytest.mark.parametrize("content", [
-    'Here is the action: ```json\n{}\n```',
-    '```json\n{}\n``` extra',
-    '```json\n{}\n```\n```json\n{}\n```',
-    '```python\n{}\n```',
-    '```json {} ```',
-    '{} {}',
-    '{"x":1,"x":2}',
-    '```json\n{"x":1,"x":2}\n```',
-])
+@pytest.mark.parametrize(
+    "content",
+    [
+        "Here is the action: ```json\n{}\n```",
+        "```json\n{}\n``` extra",
+        "```json\n{}\n```\n```json\n{}\n```",
+        "```python\n{}\n```",
+        "```json {} ```",
+        "{} {}",
+        '{"x":1,"x":2}',
+        '```json\n{"x":1,"x":2}\n```',
+    ],
+)
 def test_action_envelope_rejects_prose_multiple_objects_and_duplicate_fields(content: str) -> None:
     with pytest.raises(ValueError):
         policy._decode_action_content(content)

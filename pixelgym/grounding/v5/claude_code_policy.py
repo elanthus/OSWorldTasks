@@ -260,14 +260,10 @@ _ALLOWED_ENVIRONMENT_VARIABLES = (
 def _minimal_environment(
     environment: Mapping[str, str], *, api_retry_limit: int | None = None
 ) -> dict[str, str]:
-    if api_retry_limit is not None and (
-        type(api_retry_limit) is not int or api_retry_limit < 0
-    ):
+    if api_retry_limit is not None and (type(api_retry_limit) is not int or api_retry_limit < 0):
         raise ValueError("Claude CLI API retry limit must be a non-negative integer")
     result = {
-        name: environment[name]
-        for name in _ALLOWED_ENVIRONMENT_VARIABLES
-        if environment.get(name)
+        name: environment[name] for name in _ALLOWED_ENVIRONMENT_VARIABLES if environment.get(name)
     }
     if api_retry_limit is not None:
         result[CLI_API_RETRY_ENVIRONMENT_VARIABLE] = str(api_retry_limit)
@@ -653,14 +649,14 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
     allowed_events = required_events | {"rate_limit_event"}
     event_counts = Counter(str(event["type"]) for event in events)
     initial_events = [
-        event for event in events
-        if event["type"] == "system" and event.get("subtype") == "init"
+        event for event in events if event["type"] == "system" and event.get("subtype") == "init"
     ]
     if len(initial_events) != 1:
         violations.append("system_event_count_mismatch")
     assistant_events = [event for event in events if event["type"] == "assistant"]
     telemetry_events = [
-        event for event in events
+        event
+        for event in events
         if event["type"] == "system" and event.get("subtype") == "thinking_tokens"
     ]
     if len(assistant_events) not in (1, 2):
@@ -682,15 +678,23 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         previous_estimate = 0
         for telemetry in telemetry_events:
             if set(telemetry) != {
-                "type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"
+                "type",
+                "subtype",
+                "estimated_tokens",
+                "estimated_tokens_delta",
+                "uuid",
+                "session_id",
             }:
                 violations.append("invalid_thinking_telemetry")
                 continue
             estimate = telemetry["estimated_tokens"]
             delta = telemetry["estimated_tokens_delta"]
             if (
-                type(estimate) is not int or type(delta) is not int
-                or estimate < 0 or delta < 0 or estimate != previous_estimate + delta
+                type(estimate) is not int
+                or type(delta) is not int
+                or estimate < 0
+                or delta < 0
+                or estimate != previous_estimate + delta
             ):
                 violations.append("invalid_thinking_telemetry")
             else:
@@ -705,13 +709,17 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             request_ids = [event.get("request_id") for event in assistant_events]
             if (
                 not all(isinstance(value, str) and value for value in message_ids + request_ids)
-                or len(set(message_ids)) != 1 or len(set(request_ids)) != 1
+                or len(set(message_ids)) != 1
+                or len(set(request_ids)) != 1
             ):
                 violations.append("invalid_extended_stream_identity")
             contents: list[Any] = [message.get("content") for message in validated_messages]
             if (
                 not all(isinstance(content, list) and content for content in contents)
-                or not all(isinstance(block, dict) and block.get("type") == "thinking" for block in contents[0])
+                or not all(
+                    isinstance(block, dict) and block.get("type") == "thinking"
+                    for block in contents[0]
+                )
                 or len(contents[1]) != 1
                 or not isinstance(contents[1][0], dict)
                 or contents[1][0].get("type") != "text"
@@ -849,12 +857,8 @@ def _claude_parse_envelope(raw_stdout: str) -> StreamParseEnvelope[ParsedClaudeS
     parsed = _parse_stream(raw_stdout)
     return StreamParseEnvelope(
         parsed=parsed,
-        stream_malformed=bool(
-            _MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)
-        ),
-        subscription_rate_limited=(
-            "subscription_rate_limit_rejected" in parsed.policy_violations
-        ),
+        stream_malformed=bool(_MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)),
+        subscription_rate_limited=("subscription_rate_limit_rejected" in parsed.policy_violations),
         usage_observed=parsed.usage is not None,
         cost_observed=parsed.informational_cost_usd is not None,
     )
@@ -882,9 +886,7 @@ class ClaudeCodeTransport:
         self.runtime_identity = runtime_identity
         self.expected_resolved_model = expected_resolved_model
         self.api_retry_limit = api_retry_limit
-        self.environment = _minimal_environment(
-            environment, api_retry_limit=api_retry_limit
-        )
+        self.environment = _minimal_environment(environment, api_retry_limit=api_retry_limit)
         self.process_factory = process_factory
         self.process_timeout_seconds = process_timeout_seconds
         self.allow_timeout_retry = allow_timeout_retry
@@ -949,9 +951,7 @@ class ClaudeCodeTransport:
                     raw_stderr="",
                     outcome=outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, "pre_send_failure", outcome)
-                )
+                self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
                 return transport_outcome
             image_blocks = [
                 {
@@ -1046,9 +1046,7 @@ class ClaudeCodeTransport:
                     raw_stderr=execution.stderr,
                     outcome=outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, failure_status, outcome)
-                )
+                self.records.append(self._record(idempotency_key, failure_status, outcome))
                 return transport_outcome
             if execution.parsed is None:
                 self.ledger.retain_unresolved_and_block(idempotency_key)
@@ -1102,9 +1100,7 @@ class ClaudeCodeTransport:
                 raw_stderr=execution.stderr,
                 outcome=outcome,
             )
-            self.records.append(
-                self._record(idempotency_key, fault.classification, outcome)
-            )
+            self.records.append(self._record(idempotency_key, fault.classification, outcome))
             return transport_outcome
         usage_record = {
             **(parsed.usage or {}),
@@ -1137,9 +1133,7 @@ class ClaudeCodeTransport:
             "resolved_model": parsed.resolved_model,
             "policy_violation": violation_value,
             "experiment_charge_usd": "0.00",
-            "informational_cost_telemetry_usd": usage_record[
-                "informational_cost_telemetry_usd"
-            ],
+            "informational_cost_telemetry_usd": usage_record["informational_cost_telemetry_usd"],
             "usage_telemetry_status": usage_status,
             "canonical_response": canonical,
         }
@@ -1169,9 +1163,7 @@ class ClaudeCodeTransport:
         if record is None or record["status"] in {"reserved", "running"}:
             return TransportOutcome("unknown", failure_code="invocation_unresolved")
         outcome = record.get("outcome")
-        if isinstance(outcome, dict) and isinstance(
-            outcome.get("transport_outcome"), dict
-        ):
+        if isinstance(outcome, dict) and isinstance(outcome.get("transport_outcome"), dict):
             return TransportOutcome.from_dict(outcome["transport_outcome"])
         if isinstance(outcome, dict) and isinstance(outcome.get("canonical_response"), dict):
             return TransportOutcome("response", outcome["canonical_response"])
@@ -1216,10 +1208,13 @@ class ClaudeCodeTransport:
         if deadline_seconds < self.process_timeout_seconds:
             return "runner_deadline_below_process_timeout"
         history = request.get("image_history", [])
-        if not isinstance(history, list) or len(history) > 31 or any(
-            not isinstance(item, dict)
-            or set(item) != {"image_png_base64", "image_sha256"}
-            for item in history
+        if (
+            not isinstance(history, list)
+            or len(history) > 31
+            or any(
+                not isinstance(item, dict) or set(item) != {"image_png_base64", "image_sha256"}
+                for item in history
+            )
         ):
             return "image_history_shape_mismatch"
         for item in [*history, request]:
@@ -1246,15 +1241,11 @@ class ClaudeCodeTransport:
             "runtime_enforcement": outcome.get("runtime_enforcement"),
             "resolved_model": outcome.get("resolved_model"),
             "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
-            "informational_cost_telemetry_usd": outcome.get(
-                "informational_cost_telemetry_usd"
-            ),
+            "informational_cost_telemetry_usd": outcome.get("informational_cost_telemetry_usd"),
             "policy_violation": outcome.get("policy_violation", "none"),
             "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
-            "usage_telemetry_status": outcome.get(
-                "usage_telemetry_status", "unavailable"
-            ),
+            "usage_telemetry_status": outcome.get("usage_telemetry_status", "unavailable"),
         }
 
 
@@ -1320,9 +1311,7 @@ def build_claude_policy_manifest(
         model=MODEL,
         exact_snapshot=resolved_model is not None,
         harness_digest=_file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-        dependency_lock_digest=_file_digest(
-            repository_root / "requirements/platform-py312.lock"
-        ),
+        dependency_lock_digest=_file_digest(repository_root / "requirements/platform-py312.lock"),
         system_prompt_digest=content_digest(SYSTEM_PROMPT),
         task_renderer_version=TASK_RENDERER_VERSION,
         response_schema_version=RESPONSE_SCHEMA_VERSION,
