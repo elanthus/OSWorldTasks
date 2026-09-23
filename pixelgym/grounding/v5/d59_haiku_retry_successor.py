@@ -52,6 +52,15 @@ def _binding(root: Path, path: str, value: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def _prospective_binding(path: str, value: dict[str, Any]) -> dict[str, str]:
+    payload = canonical_json_bytes(value) + b"\n"
+    return {
+        "path": path,
+        "content_digest": content_digest(value),
+        "file_sha256": "sha256:" + hashlib.sha256(payload).hexdigest(),
+    }
+
+
 def _validate_predecessor(
     predecessor: dict[str, Any], approval: dict[str, Any], discarded: dict[str, Any]
 ) -> None:
@@ -163,7 +172,7 @@ def execution_plan(
         "predecessor": {
             "execution_plan": _binding(root, PREDECESSOR_PLAN_PATH, predecessor),
             "owner_approval": _binding(root, PREDECESSOR_APPROVAL_PATH, approval),
-            "discarded_run": _binding(root, DISCARDED_RUN_PATH, discarded_run),
+            "discarded_run": _prospective_binding(DISCARDED_RUN_PATH, discarded_run),
             "outcomes_reused": 0,
             "assignments_replayed": 0,
             "disposition": "retained_as_invalid_infrastructure_evidence_only",
