@@ -35,6 +35,8 @@ from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 TERMINAL_BENCHMARK_OUTCOMES = {"success_termination", "step_limit_truncation"}
+SUMMARY_SCHEMA_VERSION = "pixelgym-agent-v5-d59-haiku-execution-summary-v1"
+CLI_API_RETRY_LIMIT: int | None = None
 
 
 def read_object(path: Path) -> dict[str, Any]:
@@ -122,6 +124,7 @@ def execute(output: Path) -> None:
         runtime_identity=identity,
         expected_resolved_model=claude.MODEL,
         allow_timeout_retry=True,
+        api_retry_limit=CLI_API_RETRY_LIMIT,
     )
     journal = V5AttemptJournal(output / "attempts.sqlite")
     rows: list[dict[str, Any]] = []
@@ -153,7 +156,7 @@ def execute(output: Path) -> None:
     def summary() -> dict[str, Any]:
         elapsed = round(time.monotonic() - started, 3)
         return {
-            "schema_version": "pixelgym-agent-v5-d59-haiku-execution-summary-v1",
+            "schema_version": SUMMARY_SCHEMA_VERSION,
             "execution_plan_digest": EXECUTION_PLAN_DIGEST,
             "execution_binding_digest": content_digest(binding),
             "source_revision": subprocess.check_output(

@@ -1,0 +1,28 @@
+{
+  "approved_caps": {
+    "environment_action_cap": 12134,
+    "model_attempt_cap": 24268,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 24268
+  },
+  "approved_runtime_window_hours": 168,
+  "execution_plan_digest": "sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7",
+  "incremental_experiment_charge_cap_usd": "0.00",
+  "owner_statement": "yes",
+  "provider_calls_made_at_authorization": 0,
+  "recorded_at": "2026-09-23",
+  "remaining_human_boundary": {
+    "D5_10_verdict_remains_human_owned": true,
+    "public_model_quality_claims_authorized": false,
+    "public_security_claims_authorized": false
+  },
+  "schema_version": "pixelgym-agent-v5-d59-haiku-execution-approval-v2",
+  "scope": {
+    "history_policy_id": "policy-6788af9cc24b21e0b89f",
+    "model": "claude-haiku-4-5-20251001",
+    "provider": "claude-code-cli/claude-ai-max-subscription",
+    "sandbox_exception_digest": "sha256:f7f4e08834e2b6d059b56febbe2922bed1fd18516212ea626e92397fca2b5244",
+    "stateless_policy_id": "policy-9ce79eec1338f6426873"
+  },
+  "subscription_execution_authorized": true
+}
