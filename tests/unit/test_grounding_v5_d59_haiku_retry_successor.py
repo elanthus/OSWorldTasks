@@ -18,7 +18,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-RECORDED_SOURCE_REVISION = "4f0b62d64293443d68154f5880d0136d1de7bc74"
+RECORDED_SOURCE_REVISION = "1201df8a773add79733d392f876b579752f797c5"
 PUBLIC = ROOT / "artifacts/grounding-v5-d59-haiku-api-retry-successor"
 
 
