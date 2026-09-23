@@ -11,6 +11,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
     DISCARDED_RUN_PATH,
     PREDECESSOR_PLAN_DIGEST,
     PREDECESSOR_PLAN_PATH,
+    _git_output,
     _sha256_at_revision,
     execution_plan,
     expected_outputs,
@@ -118,6 +119,16 @@ def test_successor_rejects_unbound_source_revision(revision: str) -> None:
     discarded = read(DISCARDED_RUN_PATH)
     with pytest.raises(ValueError, match="source revision|source file is unavailable"):
         execution_plan(ROOT, source_revision=revision, discarded_run=discarded)
+
+
+def test_successor_rejects_tree_object_as_source_revision() -> None:
+    tree = _git_output(ROOT, "rev-parse", f"{RECORDED_SOURCE_REVISION}^{{tree}}").decode().strip()
+    with pytest.raises(ValueError, match="must name a Git commit object"):
+        execution_plan(
+            ROOT,
+            source_revision=tree,
+            discarded_run=read(DISCARDED_RUN_PATH),
+        )
 
 
 def test_revision_reads_ignore_inherited_git_repository_overrides(

@@ -59,19 +59,21 @@ def _git_output(root: Path, *arguments: str) -> bytes:
         raise ValueError("source revision or path is unavailable") from error
 
 
-def _validate_source_revision(revision: str) -> None:
+def _validate_source_revision(root: Path, revision: str) -> None:
     if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
         raise ValueError("source revision must be a full lowercase Git commit SHA")
+    if _git_output(root, "cat-file", "-t", revision).strip() != b"commit":
+        raise ValueError("source revision must name a Git commit object")
 
 
 def _sha256_at_revision(root: Path, revision: str, path: str) -> str:
-    _validate_source_revision(revision)
+    _validate_source_revision(root, revision)
     payload = _git_output(root, "show", f"{revision}:{path}")
     return "sha256:" + hashlib.sha256(payload).hexdigest()
 
 
 def _validate_policy_inputs(root: Path, revision: str) -> None:
-    _validate_source_revision(revision)
+    _validate_source_revision(root, revision)
     payload = _git_output(
         root,
         "ls-tree",
