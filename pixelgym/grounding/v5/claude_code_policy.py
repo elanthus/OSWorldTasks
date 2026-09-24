@@ -1100,27 +1100,24 @@ class ClaudeCodeTransport:
         parsed = execution.parsed
         violations = list(parsed.policy_violations)
         completed_fault = execution.fault
-        if (
-            self.allow_connection_retry
-            and execution.process_confirmed_stopped
-            and not execution.stdout.credential_redacted
-        ):
-            connection_fault = _synthetic_connection_fault(
-                execution.stdout.value, parsed, execution.return_code
-            )
-            if connection_fault is not None:
-                completed_fault = connection_fault
-            elif (
+        if self.allow_connection_retry:
+            # Stderr is diagnostic text, not authority to retry a parsed response.
+            # Only the verified synthetic error envelope may opt that stream in.
+            if (
                 completed_fault is not None
                 and completed_fault.kind is CliFaultKind.CONNECTION_RESET
-                and parsed.policy_violations
             ):
-                # A diagnostic cannot turn malformed output or a tool event into a retry.
                 completed_fault = replace(
                     completed_fault,
                     kind=CliFaultKind.NONZERO_EXIT,
-                    code="cli_connection_reset_with_invalid_stream",
+                    code="cli_connection_reset_in_diagnostic",
                 )
+            if execution.process_confirmed_stopped and not execution.stdout.credential_redacted:
+                connection_fault = _synthetic_connection_fault(
+                    execution.stdout.value, parsed, execution.return_code
+                )
+                if connection_fault is not None:
+                    completed_fault = connection_fault
         if (
             self.expected_resolved_model is not None
             and parsed.resolved_model != self.expected_resolved_model

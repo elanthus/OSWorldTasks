@@ -10,6 +10,7 @@ from test_grounding_v5_claude_code_transport import (
     ConnectionResetProcess,
     RawExitProcess,
     SuccessfulProcess,
+    credential_shaped_value,
 )
 from test_grounding_v5_claude_code_transport import runtime_identity as claude_identity
 from test_grounding_v5_codex_cli_policy import FakeProcess, cli_stream
@@ -253,6 +254,8 @@ def synthetic_connection_error(
         ("tool_error", 1, 0),
         ("no_opt_in", 1, 0),
         ("model_error_text", 1, 0),
+        ("diagnostic_only", 1, 0),
+        ("redacted_diagnostic", 1, 0),
     ],
 )
 def test_counted_connection_retry_preserves_request_and_only_fails_if_unrecovered(
@@ -270,6 +273,11 @@ def test_counted_connection_retry_preserves_request_and_only_fails_if_unrecovere
     first = RawExitProcess("\n".join(map(json.dumps, events)), returncode=1)
     if case == "process_reset":
         first = ConnectionResetProcess()
+    if case in {"diagnostic_only", "redacted_diagnostic"}:
+        first = SuccessfulProcess(
+            stderr="ECONNRESET",
+            diagnostic=credential_shaped_value() if case == "redacted_diagnostic" else None,
+        )
     processes = [first, first if case == "reset_reset" else SuccessfulProcess()]
     calls = []
     inputs = []
