@@ -34,6 +34,8 @@ from pixelgym.grounding.v5.screenshot_memory import require_clean_tracked_worktr
 from pixelgym.serialization import canonical_json_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
+CLI_API_RETRY_LIMIT: int | None = None
+ALLOW_CONNECTION_RETRY = False
 TERMINAL_BENCHMARK_OUTCOMES = {"success_termination", "step_limit_truncation"}
 
 
@@ -122,6 +124,8 @@ def execute(output: Path) -> None:
         runtime_identity=identity,
         expected_resolved_model=claude.MODEL,
         allow_timeout_retry=True,
+        api_retry_limit=CLI_API_RETRY_LIMIT,
+        allow_connection_retry=ALLOW_CONNECTION_RETRY,
     )
     journal = V5AttemptJournal(output / "attempts.sqlite")
     rows: list[dict[str, Any]] = []

@@ -87,8 +87,17 @@ class CliMemoryPolicy:
 
 
 def build_memory_manifest(
-    root: Path, base: PolicyManifest, *, retain_screenshots: bool
+    root: Path,
+    base: PolicyManifest,
+    *,
+    retain_screenshots: bool,
+    allow_connection_retry: bool = False,
 ) -> PolicyManifest:
+    if allow_connection_retry and (
+        base.provider != "claude-code-cli/claude-ai-max-subscription"
+        or dict(base.inference_parameters).get("cli_api_retry_limit") != "0"
+    ):
+        raise ValueError("connection retries require the zero-internal-retry Claude transport")
     sources = {
         name: "sha256:" + sha256_bytes((root / "pixelgym/grounding/v5" / name).read_bytes())
         for name in (
@@ -116,10 +125,21 @@ def build_memory_manifest(
         memory_policy_version=f"pixelgym-cli-screenshot-{mode}-v1",
         state_reducer_version=f"pixelgym-agent-v5-observed-screenshots-v1-{mode}",
         max_model_attempts_per_action=2,
-        transport_retry_rule="cli-one-confirmed-stopped-timeout-retry-v1",
+        transport_retry_rule=(
+            "claude-one-stopped-timeout-or-connection-retry-v1"
+            if allow_connection_retry
+            else "cli-one-confirmed-stopped-timeout-retry-v1"
+        ),
         inference_parameters=(
             *((k, v) for k, v in base.inference_parameters if k != "runner_retries"),
-            ("runner_retries", "1-confirmed-stopped-timeout-only"),
+            (
+                "runner_retries",
+                (
+                    "1-confirmed-stopped-timeout-or-connection-reset"
+                    if allow_connection_retry
+                    else "1-confirmed-stopped-timeout-only"
+                ),
+            ),
             ("max_bounded_retries_per_action", "1"),
             ("max_observed_frames", str(MAX_OBSERVED_FRAMES)),
         ),
@@ -128,9 +148,17 @@ def build_memory_manifest(
 
 
 class CliMemoryRunner(V5Runner):
-    def __init__(self, *, time_exhausted: Callable[[], bool] = lambda: False, **kwargs: Any) -> None:
+    def __init__(
+        self, *, time_exhausted: Callable[[], bool] = lambda: False, **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
         self.time_exhausted = time_exhausted
+        connection_retry = (
+            self.manifest.transport_retry_rule
+            == "claude-one-stopped-timeout-or-connection-retry-v1"
+        )
+        if bool(getattr(self.transport, "allow_connection_retry", False)) != connection_retry:
+            raise ValueError("connection retry transport differs from frozen manifest")
         mode = "history" if cast(CliMemoryPolicy, self.policy).retain_screenshots else "stateless"
         if self.manifest.memory_policy_version != f"pixelgym-cli-screenshot-{mode}-v1":
             raise ValueError("manifest memory mode differs from executable policy")

@@ -694,7 +694,8 @@ class SubscriptionExemptLedger:
         """Retain unknown provider outcome without blocking a confirmed-safe retry.
 
         Subscription experiment charge remains zero; no inference is made about
-        server completion or usage. Only the stopped-process timeout path calls this.
+        server completion or usage. Used for stopped-process timeouts and opted-in
+        Claude connection-reset retries; the historical method name is retained.
         """
         with self._lock:
             if idempotency_key not in self.experiment_charges:
