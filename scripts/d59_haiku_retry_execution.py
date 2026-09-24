@@ -11,7 +11,7 @@ from pixelgym.grounding.v5.cli_memory_calibration import build_memory_manifest
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, content_digest
 from pixelgym.grounding.v5.d59_haiku_execution import (
     sha256_file,
-    validate_assignments,
+    validate_assignments as validate_assignments,
 )
 
 EXECUTION_PLAN_PATH = (
