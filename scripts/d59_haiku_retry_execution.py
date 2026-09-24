@@ -7,12 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
+from pixelgym.grounding.v5 import d59_haiku_execution as historical_execution
 from pixelgym.grounding.v5.cli_memory_calibration import build_memory_manifest
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, content_digest
-from pixelgym.grounding.v5.d59_haiku_execution import (
-    sha256_file,
-    validate_assignments as validate_assignments,
-)
 
 EXECUTION_PLAN_PATH = (
     "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json"
@@ -30,6 +27,12 @@ EXECUTION_SOURCE_FILES = (
     "scripts/run_grounding_v5_d59_haiku.py",
     "scripts/run_grounding_v5_d59_haiku_retry_successor.py",
 )
+
+
+def validate_assignments(plan: dict[str, Any]) -> list[dict[str, Any]]:
+    """Validate the unchanged assignment and aggregate-cap contract."""
+
+    return historical_execution.validate_assignments(plan)
 
 
 def expected_owner_approval(plan: dict[str, Any]) -> dict[str, Any]:
@@ -131,19 +134,20 @@ def execution_binding(
                 ["git", "rev-parse", "HEAD"], cwd=root, text=True
             ).strip(),
             "files": {
-                path: sha256_file(root / path) for path in EXECUTION_SOURCE_FILES
+                path: historical_execution.sha256_file(root / path)
+                for path in EXECUTION_SOURCE_FILES
             },
         },
         "execution_plan": {
             "path": EXECUTION_PLAN_PATH,
             "content_digest": content_digest(plan),
-            "file_sha256": sha256_file(root / EXECUTION_PLAN_PATH),
+            "file_sha256": historical_execution.sha256_file(root / EXECUTION_PLAN_PATH),
             "execution_plan_digest": EXECUTION_PLAN_DIGEST,
         },
         "owner_approval": {
             "path": OWNER_APPROVAL_PATH,
             "content_digest": content_digest(approval),
-            "file_sha256": sha256_file(root / OWNER_APPROVAL_PATH),
+            "file_sha256": historical_execution.sha256_file(root / OWNER_APPROVAL_PATH),
         },
         "runtime_identity": runtime_identity.to_dict(),
         "approved_caps": APPROVED_CAPS.to_dict(),
