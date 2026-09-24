@@ -13,7 +13,7 @@ import tempfile
 import threading
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -32,9 +32,11 @@ from pixelgym.grounding.v5.codex_cli_policy import SubscriptionExemptLedger
 from pixelgym.grounding.v5.contracts import (
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
+    CliFault,
     CliFaultKind,
     PolicyManifest,
     TransportOutcome,
+    classify_cli_process_fault,
     cli_fault_outcome,
     cli_pre_send_fault,
     content_digest,
@@ -866,6 +868,39 @@ def _claude_parse_envelope(raw_stdout: str) -> StreamParseEnvelope[ParsedClaudeS
     )
 
 
+def _synthetic_connection_fault(
+    raw_stdout: str, parsed: ParsedClaudeStream, return_code: int | None
+) -> CliFault | None:
+    """Recognize the CLI's error envelope, never a model answer containing error text."""
+    if return_code != 1 or set(parsed.policy_violations) != {
+        "claude_result_error",
+        "resolved_model_mismatch",
+    }:
+        return None
+    events = [json.loads(line) for line in raw_stdout.splitlines() if line.strip()]
+    if [event.get("type") for event in events] != ["system", "assistant", "result"]:
+        return None
+    assistant, result = events[1:]
+    message = assistant.get("message", {})
+    if (
+        assistant.get("error") != "server_error"
+        or message.get("model") != "<synthetic>"
+        or result.get("is_error") is not True
+        or result.get("modelUsage") != {}
+        or result.get("result") != "API Error: Connection dropped (ECONNRESET)"
+        or message.get("content") != [{"type": "text", "text": result["result"]}]
+        or parsed.usage is None
+        or any(parsed.usage.values())
+        or parsed.informational_cost_usd != 0
+    ):
+        return None
+    return classify_cli_process_fault(
+        return_code=return_code,
+        stderr="ECONNRESET",
+        stream_malformed=False,
+    )
+
+
 class ClaudeCodeTransport:
     def __init__(
         self,
@@ -878,11 +913,15 @@ class ClaudeCodeTransport:
         process_factory: Callable[..., RunningProcess] = _start_process,
         process_timeout_seconds: float = PROCESS_TIMEOUT_SECONDS,
         allow_timeout_retry: bool = False,
+        allow_connection_retry: bool = False,
         api_retry_limit: int | None = None,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
             raise ValueError("Claude process timeout must be positive")
+        if allow_connection_retry and api_retry_limit != 0:
+            raise ValueError("counted connection retries require zero internal CLI retries")
+        self.allow_connection_retry = allow_connection_retry
         self.ledger = ledger
         self.invocation_journal = invocation_journal
         self.runtime_identity = runtime_identity
@@ -1022,10 +1061,15 @@ class ClaudeCodeTransport:
                 if execution_fault.phase == "pre_send":
                     self.ledger.release_pre_send(idempotency_key)
                 elif (
-                    self.allow_timeout_retry
-                    and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
-                    and execution.process_confirmed_stopped
-                ):
+                    (
+                        self.allow_timeout_retry
+                        and execution_fault.kind is CliFaultKind.PROCESS_TIMEOUT
+                    )
+                    or (
+                        self.allow_connection_retry
+                        and execution_fault.kind is CliFaultKind.CONNECTION_RESET
+                    )
+                ) and execution.process_confirmed_stopped:
                     self.ledger.retain_stopped_timeout(idempotency_key)
                 else:
                     self.ledger.retain_unresolved_and_block(idempotency_key)
@@ -1056,6 +1100,24 @@ class ClaudeCodeTransport:
         parsed = execution.parsed
         violations = list(parsed.policy_violations)
         completed_fault = execution.fault
+        if self.allow_connection_retry:
+            # Stderr is diagnostic text, not authority to retry a parsed response.
+            # Only the verified synthetic error envelope may opt that stream in.
+            if (
+                completed_fault is not None
+                and completed_fault.kind is CliFaultKind.CONNECTION_RESET
+            ):
+                completed_fault = replace(
+                    completed_fault,
+                    kind=CliFaultKind.NONZERO_EXIT,
+                    code="cli_connection_reset_in_diagnostic",
+                )
+            if execution.process_confirmed_stopped and not execution.stdout.credential_redacted:
+                connection_fault = _synthetic_connection_fault(
+                    execution.stdout.value, parsed, execution.return_code
+                )
+                if connection_fault is not None:
+                    completed_fault = connection_fault
         if (
             self.expected_resolved_model is not None
             and parsed.resolved_model != self.expected_resolved_model
@@ -1177,9 +1239,14 @@ class ClaudeCodeTransport:
 
     def retry_allowed(self, outcome: TransportOutcome) -> bool:
         return (
-            self.allow_timeout_retry
-            and outcome.fault is not None
-            and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT
+            outcome.fault is not None
+            and (
+                (self.allow_timeout_retry and outcome.fault.kind is CliFaultKind.PROCESS_TIMEOUT)
+                or (
+                    self.allow_connection_retry
+                    and outcome.fault.kind is CliFaultKind.CONNECTION_RESET
+                )
+            )
             and self.subprocesses_closed
             and not self.ledger.blocked
         )
