@@ -317,9 +317,7 @@ def test_counted_connection_retry_preserves_request_and_only_fails_if_unrecovere
             ),
             policy=CliMemoryPolicy(claude.ClaudeCodePolicy(), retain_screenshots=True),
             transport=transport,
-            approved_caps=CallCaps(
-                1, 1 if case == "cap_exhausted" else 2, 0, 1 if case == "cap_exhausted" else 2
-            ),
+            approved_caps=CallCaps(1, 2, 0, 2),
         ).run(
             trial_id="connection-retry",
             task=generate_memory_task(5112),
