@@ -1,4 +1,4 @@
-"""Continue a stopped r3 campaign under an explicit malformed-output amendment.
+"""Continue a stopped r3 campaign under explicit assignment-failure amendments.
 
 The predecessor is retained untouched. SQLite backups carry every reservation into
 new journals; only the exact unrun suffix is dispatched. No model answer is repaired.
@@ -13,6 +13,7 @@ import sqlite3
 import subprocess
 import time
 from collections import Counter
+from collections.abc import Sequence
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -30,7 +31,11 @@ from pixelgym.grounding.v5.d59_haiku_execution import (
     sha256_file,
     validate_assignments,
 )
-from pixelgym.grounding.v5.journal import TERMINAL_ATTEMPT_KINDS, V5AttemptJournal
+from pixelgym.grounding.v5.journal import (
+    TERMINAL_ATTEMPT_KINDS,
+    JournalEvent,
+    V5AttemptJournal,
+)
 from pixelgym.grounding.v5.memory_calibration import episode_measurements
 from pixelgym.grounding.v5.memory_focus_backend import FocusMemoryBackend
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
@@ -40,9 +45,77 @@ from scripts.run_grounding_v5_d59_haiku import read_object, write_object
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNER_STATEMENT = (
-    "ok, lets count the malformed response as a failure, then continue with the rest of the run."
+    "I don't want a closed failure for a connection reset. Just record the case as a failure, "
+    "and continue with remaining assignments."
 )
 CONTINUE_OUTCOMES = frozenset({"success_termination", "step_limit_truncation", "invalid_output"})
+CONTINUATION_RULE = "malformed-output-or-exhausted-stopped-connection-reset-v2"
+
+
+def may_continue(row: dict[str, Any], events: Sequence[JournalEvent]) -> bool:
+    if row["classification"] in CONTINUE_OUTCOMES:
+        return True
+    if row["classification"] != "infrastructure_failure":
+        return False
+    failures = [
+        e
+        for e in events
+        if e.trial_id == row["trial_id"] and e.kind == "sealed_unsuccessful_result"
+    ]
+    if not failures:
+        return False
+    failure = failures[-1].payload
+    fault = failure.get("cli_fault", {})
+    return (
+        failure.get("failure_code") == "transport_fault_retry_exhausted"
+        and fault.get("kind") == "connection_reset"
+        and fault.get("code") == "cli_connection_reset"
+        and fault.get("classification") == "infrastructure_failure"
+    )
+
+
+def confirmed_reset(record: dict[str, Any]) -> bool:
+    outcome = record["outcome"] or {}
+    transport = outcome.get("transport_outcome", {})
+    fault = transport.get("fault") or {}
+    if (
+        record["status"] != "infrastructure_failure"
+        or transport.get("status") != "transport_fault"
+        or fault.get("kind") != "connection_reset"
+        or fault.get("code") != "cli_connection_reset"
+    ):
+        return False
+    if outcome.get("process_confirmed_stopped") is True:
+        return True
+    # A parsed CLI reset has no explicit stopped flag in the frozen transport;
+    # reproduce its strict synthetic-envelope classification, including exit code.
+    if record["credential_redacted"]:
+        return False
+    raw = record["raw_stdout"]
+    try:
+        return (
+            claude._synthetic_connection_fault(
+                raw, claude._parse_stream(raw), outcome.get("exit_code")
+            )
+            is not None
+        )
+    except (ValueError, TypeError, KeyError):
+        return False
+
+
+def original_start(predecessor: Path, summary: dict[str, Any]) -> datetime:
+    if "continuation_digest" in summary:
+        prior = read_object(predecessor / "continuation-approval.json")
+        if content_digest(prior) != summary["continuation_digest"]:
+            raise ValueError("predecessor continuation approval changed")
+        started = datetime.fromisoformat(prior["original_started_at"])
+        if (started + timedelta(hours=APPROVED_RUNTIME_HOURS)).isoformat() != prior["deadline"]:
+            raise ValueError("predecessor extended the original runtime window")
+    else:
+        started = datetime.fromisoformat(read_object(predecessor / "launch.json")["started_at"])
+    if started.utcoffset() is None:
+        raise ValueError("original launch time must include timezone")
+    return started
 
 
 def stopped_prefix(plan: dict[str, Any], summary: dict[str, Any]) -> list[dict[str, Any]]:
@@ -55,18 +128,19 @@ def stopped_prefix(plan: dict[str, Any], summary: dict[str, Any]) -> list[dict[s
         or summary["completed"] != len(rows)
         or summary["attempted"] != len(rows)
         or summary["unrun"] != len(jobs) - len(rows)
-        or summary["stop_reason"] != "invalid_output"
+        or summary["stop_reason"] not in {"invalid_output", "infrastructure_failure"}
         or summary["error"] is not None
         or summary["subprocesses_closed"] is not True
-        or summary["unresolved_invocations"] != 0
         or Decimal(summary["incremental_experiment_charge_usd"]) != 0
-        or rows[-1]["classification"] != "invalid_output"
+        or rows[-1]["classification"] != summary["stop_reason"]
     ):
-        raise ValueError("predecessor must be fully settled and stopped on malformed output")
+        raise ValueError(
+            "predecessor must be fully settled and stopped on an authorized assignment failure"
+        )
     for job, row in zip(jobs, rows, strict=False):
         if any(row.get(key) != value for key, value in job.items()):
             raise ValueError("completed assignments must be the exact frozen prefix")
-        if row["classification"] not in CONTINUE_OUTCOMES:
+        if row["classification"] not in CONTINUE_OUTCOMES | {"infrastructure_failure"}:
             raise ValueError("predecessor contains another failure requiring review")
     return jobs[len(rows) :]
 
@@ -94,6 +168,8 @@ def validate_journals(output: Path, summary: dict[str, Any]) -> SubscriptionExem
         if completed != rows or started != [r["trial_id"] for r in rows]:
             raise ValueError("summary differs from authoritative assignment events")
         for row in rows:
+            if not may_continue(row, events):
+                raise ValueError("predecessor contains a failure outside the continuation rule")
             if row["classification"] == "invalid_output":
                 sealed = [
                     e
@@ -119,16 +195,27 @@ def validate_journals(output: Path, summary: dict[str, Any]) -> SubscriptionExem
             if (
                 key in keys
                 or record is None
-                or record["status"] != "response"
                 or record["outcome"] is None
-                or record["outcome"]["transport_outcome"]["status"] != "response"
+                or not (
+                    (
+                        record["status"] == "response"
+                        and record["outcome"].get("transport_outcome", {}).get("status")
+                        == "response"
+                    )
+                    or confirmed_reset(record)
+                )
             ):
                 raise ValueError("predecessor has an unsettled or duplicate invocation")
             keys.add(key)
             ledger.reserve(key)
             ledger.mark_process_started()
+            if record["outcome"].get("process_confirmed_stopped") is True:
+                # Preserve the frozen transport's unknown provider completion.
+                ledger.retain_stopped_timeout(key)
         if len(keys) != invocations.integrity_report()["invocation_count"]:
             raise ValueError("unaccounted invocation in predecessor")
+        if len(ledger.unresolved) != summary["unresolved_invocations"]:
+            raise ValueError("unresolved invocation accounting differs from predecessor")
         if ledger.processes_started != summary["provider_processes_started"]:
             raise ValueError("process accounting differs from predecessor")
         totals = {
@@ -178,10 +265,7 @@ def prepare(predecessor: Path, output: Path, owner_statement: str) -> None:
     plan = read_object(predecessor / "execution-plan.json")
     summary = read_object(predecessor / "summary.json")
     remaining = stopped_prefix(plan, summary)
-    launch = read_object(predecessor / "launch.json")
-    started = datetime.fromisoformat(launch["started_at"])
-    if started.utcoffset() is None:
-        raise ValueError("original launch time must include timezone")
+    started = original_start(predecessor, summary)
     deadline = started + timedelta(hours=APPROVED_RUNTIME_HOURS)
     if datetime.now(UTC) >= deadline:
         raise ValueError("the original approved runtime window has expired")
@@ -194,7 +278,8 @@ def prepare(predecessor: Path, output: Path, owner_statement: str) -> None:
     inputs(output)
     validate_journals(output, summary)
     amendment = {
-        "schema_version": "pixelgym-d59-malformed-output-continuation-v1",
+        "schema_version": "pixelgym-d59-assignment-failure-continuation-v2",
+        "continuation_rule": CONTINUATION_RULE,
         "owner_statement": owner_statement,
         "recorded_at": datetime.now(UTC).isoformat(),
         "execution_plan_digest": plan["execution_plan_digest"],
@@ -235,6 +320,7 @@ def execute(output: Path) -> None:
         or amendment["execution_plan_digest"] != plan["execution_plan_digest"]
         or amendment["predecessor_summary_digest"] != content_digest(previous)
         or amendment["continue_outcomes"] != sorted(CONTINUE_OUTCOMES)
+        or amendment["continuation_rule"] != CONTINUATION_RULE
         or amendment["continuation_source_sha256"] != sha256_file(Path(__file__))
         or amendment["next_trial_id"] != jobs[0]["trial_id"]
     ):
@@ -326,7 +412,7 @@ def execute(output: Path) -> None:
 
     try:
         journal.append_event(
-            event_key="d59-malformed-output-continuation",
+            event_key="d59-continuation/" + content_digest(amendment),
             kind="owner_continuation_authorized",
             trial_id=jobs[0]["trial_id"],
             step_index=0,
@@ -386,9 +472,17 @@ def execute(output: Path) -> None:
                 ),
                 flush=True,
             )
-            if row["classification"] not in CONTINUE_OUTCOMES or ledger.blocked:
+            if (
+                not may_continue(row, journal.events(job["trial_id"]))
+                or ledger.blocked
+                or not transport.subprocesses_closed
+            ):
                 stop_reason = (
-                    "invocation_ledger_blocked" if ledger.blocked else str(row["classification"])
+                    "invocation_ledger_blocked"
+                    if ledger.blocked
+                    else "subprocess_not_stopped"
+                    if not transport.subprocesses_closed
+                    else str(row["classification"])
                 )
                 break
         else:
