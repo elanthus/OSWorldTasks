@@ -12,11 +12,11 @@ from scripts import run_grounding_v5_d59_haiku as runner
 
 
 def validated_transport_manifests(
-    root: Path, plan: dict[str, Any], identity: claude.ClaudeRuntimeIdentity
+    root: Path, plan: dict[str, Any], runtime_identity: claude.ClaudeRuntimeIdentity
 ) -> dict[str, PolicyManifest]:
     """Reject transport configuration drift before the shared runner opens journals."""
 
-    manifests = authorization.validated_live_manifests(root, plan, identity)
+    manifests = authorization.validated_live_manifests(root, plan, runtime_identity)
     limits = {
         dict(manifest.inference_parameters).get("cli_api_retry_limit")
         for manifest in manifests.values()
