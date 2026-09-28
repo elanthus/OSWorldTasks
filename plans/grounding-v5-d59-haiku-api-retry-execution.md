@@ -25,3 +25,13 @@ The campaign must use a new evidence directory and the committed execution sourc
 first nonterminal benchmark classification, blocked invocation ledger, runtime-window exhaustion,
 or execution error. Preserve the summary, attempt journal, invocation journal, binding, plan, and
 approval at the retained state; do not replay completed or in-progress assignments.
+
+## Historical execution boundary
+
+The later [counted network retry candidate](grounding-v5-d59-haiku-network-retry.md)
+supersedes this zero-retry execution. Its frozen manifests remain unchanged; the
+historical entry point rejects the changed live policy sources. The entry point
+also checks that both validated manifests match the transport retry limit before
+preparation or execution. The shared executor remains byte-identical to the newer
+candidate's source binding. Reproduction of this earlier execution uses its
+original PR revision, `ce67910149788c1b69d4967050b92d3c091c1d1b`.

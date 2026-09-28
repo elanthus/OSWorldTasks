@@ -71,15 +71,12 @@ def test_all_successor_assignments_reproduce_the_approved_caps() -> None:
     assert all(str(job["trial_id"]).startswith("d59-haiku-r2-") for job in jobs)
 
 
-def test_live_policy_sources_reproduce_the_successor_manifests() -> None:
+def test_superseded_successor_rejects_changed_live_policy_sources() -> None:
     plan = read(EXECUTION_PLAN_PATH)
     calibration = json.loads(CALIBRATION_PATH.read_text(encoding="utf-8"))
     identity = ClaudeRuntimeIdentity(**calibration["runtime_identity"])
-    manifests = validated_live_manifests(ROOT, plan, identity)
-    assert {mode: manifest.policy_id for mode, manifest in manifests.items()} == {
-        "history": "policy-6788af9cc24b21e0b89f",
-        "stateless": "policy-9ce79eec1338f6426873",
-    }
+    with pytest.raises(ValueError, match="live history policy differs"):
+        validated_live_manifests(ROOT, plan, identity)
 
 
 def test_successor_execution_binding_is_response_free() -> None:
@@ -94,3 +91,54 @@ def test_successor_execution_binding_is_response_free() -> None:
     )
     assert binding["provider_calls_made_during_binding"] == 0
     assert binding["approved_caps"] == APPROVED_CAPS.to_dict()
+
+
+@pytest.mark.parametrize("runtime_limit", [None, 1])
+def test_successor_entry_rejects_transport_retry_drift(monkeypatch, runtime_limit):
+    from scripts import run_grounding_v5_d59_haiku_retry_successor as entry
+
+    plan = read(EXECUTION_PLAN_PATH)
+    identity = ClaudeRuntimeIdentity(**read(CALIBRATION_PATH)["runtime_identity"])
+    # Explicit policy fixtures isolate the transport binding from historical source drift.
+    from types import SimpleNamespace
+
+    manifests = {
+        mode: SimpleNamespace(inference_parameters=(("cli_api_retry_limit", "0"),))
+        for mode in ("history", "stateless")
+    }
+    monkeypatch.setattr(entry.authorization, "validated_live_manifests", lambda *args: manifests)
+    monkeypatch.setattr(entry.runner, "CLI_API_RETRY_LIMIT", runtime_limit)
+    with pytest.raises(ValueError, match="retry limit differs"):
+        entry.validated_transport_manifests(ROOT, plan, identity)
+
+
+@pytest.mark.parametrize("limits,runtime_limit", [(("0", "0"), 0), ((None, None), None)])
+def test_successor_entry_accepts_matching_transport_limits(monkeypatch, limits, runtime_limit):
+    from types import SimpleNamespace
+
+    from scripts import run_grounding_v5_d59_haiku_retry_successor as entry
+
+    manifests = {
+        mode: SimpleNamespace(inference_parameters=(() if limit is None else (("cli_api_retry_limit", limit),)))
+        for mode, limit in zip(("history", "stateless"), limits, strict=True)
+    }
+    monkeypatch.setattr(entry.authorization, "validated_live_manifests", lambda *args: manifests)
+    monkeypatch.setattr(entry.runner, "CLI_API_RETRY_LIMIT", runtime_limit)
+    identity = ClaudeRuntimeIdentity(**read(CALIBRATION_PATH)["runtime_identity"])
+    assert entry.validated_transport_manifests(ROOT, read(EXECUTION_PLAN_PATH), identity) == manifests
+
+
+def test_successor_entry_checks_every_manifest(monkeypatch):
+    from types import SimpleNamespace
+
+    from scripts import run_grounding_v5_d59_haiku_retry_successor as entry
+
+    manifests = {
+        "history": SimpleNamespace(inference_parameters=(("cli_api_retry_limit", "0"),)),
+        "stateless": SimpleNamespace(inference_parameters=(("cli_api_retry_limit", "1"),)),
+    }
+    monkeypatch.setattr(entry.authorization, "validated_live_manifests", lambda *args: manifests)
+    monkeypatch.setattr(entry.runner, "CLI_API_RETRY_LIMIT", 0)
+    identity = ClaudeRuntimeIdentity(**read(CALIBRATION_PATH)["runtime_identity"])
+    with pytest.raises(ValueError, match="retry limit differs"):
+        entry.validated_transport_manifests(ROOT, read(EXECUTION_PLAN_PATH), identity)
