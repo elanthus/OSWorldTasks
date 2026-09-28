@@ -61,3 +61,33 @@ campaign is authorized, use a new output directory:
 Preparation validates source, runtime, policy, and approval before calls. Execution refuses existing
 journals and preserves the historical fail-stop behavior after an unrecovered error. D5.10 and
 public claims remain human-owned. No live model calls were made to implement or test this change.
+
+## Recorded continuations and completed execution
+
+The owner later authorized keeping malformed responses as failed assignments and continuing
+with the unrun suffix. On 2026-09-25 the owner extended that rule to exhausted connection resets.
+The [authorization history](../artifacts/grounding-v5-d59-haiku-results/authorization-history.json)
+records both changes. These amendments were made after observing failures and must be disclosed
+with any analysis of the run.
+
+`scripts/continue_grounding_v5_d59_haiku.py` implements those continuations in fresh output
+directories. It verifies the completed prefix against the journals, copies the journals with
+SQLite backup, retains prior reservations, and dispatches only unrun assignments. It preserves
+unknown provider completion and the original runtime deadline across successive continuations.
+It does not retry malformed answers or reset the network retry budget. Unrelated transport
+failures, blocked accounting, or subprocesses that have not stopped still stop the campaign.
+The persistent execution claim prevents restarting a partially executed continuation.
+
+The [generated execution report](../artifacts/grounding-v5-d59-haiku-results/report.md) records
+all 432 assignments. Its generator reads stored results without provider calls. The public
+projection includes per-assignment outcomes and provenance digests; raw responses, screenshots,
+and checkpoints remain in ignored local journals. This is execution evidence for review, not a
+D5.10 verdict or an approved public model-quality claim.
+
+To reproduce the published projection where the retained source evidence is available:
+
+```sh
+.venv/bin/python -m scripts.report_grounding_v5_d59_haiku \
+  --input artifacts/grounding-v5-d59-haiku-reset-continuation \
+  --output artifacts/grounding-v5-d59-haiku-results --verify
+```
