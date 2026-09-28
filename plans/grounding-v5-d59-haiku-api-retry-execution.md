@@ -1,6 +1,6 @@
 # D5.9 Haiku zero-API-retry execution
 
-**Status:** authorized on 2026-09-23 for the exact successor plan and awaiting execution.
+**Status:** historical authorization recorded on 2026-09-23; superseded by the counted network retry candidate.
 
 The owner approved successor digest
 `sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7`,
