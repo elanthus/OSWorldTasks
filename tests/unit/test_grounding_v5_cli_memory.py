@@ -95,6 +95,7 @@ def test_runner_rejects_manifest_mode_mismatch():
         inference_parameters=(),
         max_model_attempts_per_action=1,
         memory_policy_version="pixelgym-cli-screenshot-stateless-v1",
+        transport_retry_rule="cli-one-confirmed-stopped-timeout-retry-v1",
     )
     with pytest.raises(ValueError, match="memory mode"):
         CliMemoryRunner(

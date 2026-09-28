@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import io
 import json
+import tarfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -24,6 +26,29 @@ PUBLIC = ROOT / "artifacts/grounding-v5-d59-haiku-api-retry-successor"
 
 def read(path: str) -> dict[str, object]:
     return json.loads((ROOT / path).read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def recorded_root(tmp_path, monkeypatch):
+    """Reproduce old evidence using the frozen source bytes, not today's adapter."""
+    from pixelgym.grounding.v5 import d59_haiku_retry_successor as successor
+
+    archive = _git_output(
+        ROOT,
+        "archive",
+        RECORDED_SOURCE_REVISION,
+        "--",
+        *successor.POLICY_INPUT_ROOTS,
+        *successor.SOURCE_FILES,
+        successor.PREDECESSOR_PLAN_PATH,
+        successor.PREDECESSOR_APPROVAL_PATH,
+        successor.CALIBRATION_PATH,
+    )
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        tar.extractall(tmp_path, filter="data")
+    original = successor._git_output
+    monkeypatch.setattr(successor, "_git_output", lambda _root, *args: original(ROOT, *args))
+    return tmp_path
 
 
 def test_discarded_run_receipt_is_response_free_and_preserves_failure() -> None:
@@ -54,11 +79,11 @@ def test_discarded_run_receipt_is_response_free_and_preserves_failure() -> None:
         assert forbidden not in serialized
 
 
-def test_successor_is_fresh_non_executable_and_zero_retry() -> None:
+def test_successor_is_fresh_non_executable_and_zero_retry(recorded_root) -> None:
     discarded = read(DISCARDED_RUN_PATH)
     predecessor = read(PREDECESSOR_PLAN_PATH)
     value = execution_plan(
-        ROOT,
+        recorded_root,
         source_revision=RECORDED_SOURCE_REVISION,
         discarded_run=discarded,
     )
@@ -162,10 +187,10 @@ def test_successor_rejects_policy_input_drift(monkeypatch: pytest.MonkeyPatch) -
         )
 
 
-def test_checked_in_successor_reproduces_from_recorded_source_revision() -> None:
+def test_checked_in_successor_reproduces_from_recorded_source_revision(recorded_root) -> None:
     discarded = read(DISCARDED_RUN_PATH)
     outputs = expected_outputs(
-        ROOT,
+        recorded_root,
         source_revision=RECORDED_SOURCE_REVISION,
         discarded_run=discarded,
     )

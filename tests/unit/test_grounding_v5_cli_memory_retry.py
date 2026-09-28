@@ -6,7 +6,12 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from test_grounding_v5_claude_code_transport import SuccessfulProcess
+from test_grounding_v5_claude_code_transport import (
+    ConnectionResetProcess,
+    RawExitProcess,
+    SuccessfulProcess,
+    credential_shaped_value,
+)
 from test_grounding_v5_claude_code_transport import runtime_identity as claude_identity
 from test_grounding_v5_codex_cli_policy import FakeProcess, cli_stream
 from test_grounding_v5_codex_cli_policy import runtime_identity as codex_identity
@@ -189,8 +194,7 @@ def test_fresh_runtime_surface_rejects_changed_measurement_code(monkeypatch):
     with pytest.raises(ValueError, match="runtime source differs"):
         validate_fresh_runtime_surface(ROOT, "HEAD")
     assert any(
-        command[-1] == "HEAD:pixelgym/grounding/v5/memory_calibration.py"
-        for command, _cwd in calls
+        command[-1] == "HEAD:pixelgym/grounding/v5/memory_calibration.py" for command, _cwd in calls
     )
 
 
@@ -215,3 +219,146 @@ def test_fresh_approval_must_match_every_exact_cap(tmp_path):
     path.write_text(json.dumps(approval))
     with pytest.raises(ValueError, match="differs"):
         validate_fresh_approval(path, plan, caps)
+
+
+def synthetic_connection_error(
+    *, error="server_error", text="API Error: Connection dropped (ECONNRESET)"
+):
+    return [
+        {"type": "system", "subtype": "init", "tools": [], "mcp_servers": []},
+        {
+            "type": "assistant",
+            "error": error,
+            "message": {"model": "<synthetic>", "content": [{"type": "text", "text": text}]},
+        },
+        {
+            "type": "result",
+            "subtype": "success",
+            "is_error": True,
+            "num_turns": 1,
+            "result": text,
+            "usage": {"input_tokens": 0, "output_tokens": 0},
+            "modelUsage": {},
+            "total_cost_usd": 0,
+        },
+    ]
+
+
+@pytest.mark.parametrize(
+    "case,expected_calls,expected_actions",
+    [
+        ("reset_success", 2, 1),
+        ("reset_reset", 2, 0),
+        ("process_reset", 2, 1),
+        ("auth_error", 1, 0),
+        ("tool_error", 1, 0),
+        ("no_opt_in", 1, 0),
+        ("model_error_text", 1, 0),
+        ("diagnostic_only", 1, 0),
+        ("redacted_diagnostic", 1, 0),
+    ],
+)
+def test_counted_connection_retry_preserves_request_and_only_fails_if_unrecovered(
+    tmp_path, case, expected_calls, expected_actions
+):
+    events = synthetic_connection_error()
+    if case == "auth_error":
+        events = synthetic_connection_error(
+            error="authentication_error", text="API Error: 401 Unauthorized"
+        )
+    if case == "tool_error":
+        events[0]["tools"] = ["Bash"]
+    if case == "model_error_text":
+        events[1]["message"]["model"] = claude.MODEL
+    first = RawExitProcess("\n".join(map(json.dumps, events)), returncode=1)
+    if case == "process_reset":
+        first = ConnectionResetProcess()
+    if case in {"diagnostic_only", "redacted_diagnostic"}:
+        first = SuccessfulProcess(
+            stderr="ECONNRESET",
+            diagnostic=credential_shaped_value() if case == "redacted_diagnostic" else None,
+        )
+    processes = [first, first if case == "reset_reset" else SuccessfulProcess()]
+    calls = []
+    inputs = []
+
+    def factory(*args, **kwargs):
+        assert kwargs["env"]["CLAUDE_CODE_MAX_RETRIES"] == "0"
+        process = processes[len(calls)]
+        calls.append(kwargs)
+        original = process.communicate
+
+        def communicate(input=None, timeout=None):
+            if input is not None:
+                inputs.append(input)
+            return original(input=input, timeout=timeout)
+
+        process.communicate = communicate
+        return process
+
+    enabled = case != "no_opt_in"
+    ledger = codex.SubscriptionExemptLedger(Decimal(1), Decimal(0))
+    invocations = claude.ClaudeInvocationJournal(tmp_path / "invocations.sqlite")
+    transport = claude.ClaudeCodeTransport(
+        ledger=ledger,
+        invocation_journal=invocations,
+        runtime_identity=claude_identity(),
+        expected_resolved_model=claude.MODEL,
+        process_factory=factory,
+        allow_timeout_retry=True,
+        allow_connection_retry=enabled,
+        api_retry_limit=0,
+    )
+    base = claude.build_claude_policy_manifest(
+        ROOT,
+        code_revision="test",
+        runtime_identity=claude_identity(),
+        resolved_model=claude.MODEL,
+        api_retry_limit=0,
+    )
+    journal = V5AttemptJournal(tmp_path / "attempts.sqlite")
+    try:
+        result = CliMemoryRunner(
+            journal=journal,
+            manifest=build_memory_manifest(
+                ROOT, base, retain_screenshots=True, allow_connection_retry=enabled
+            ),
+            policy=CliMemoryPolicy(claude.ClaudeCodePolicy(), retain_screenshots=True),
+            transport=transport,
+            approved_caps=CallCaps(1, 2, 0, 2),
+        ).run(
+            trial_id="connection-retry",
+            task=generate_memory_task(5112),
+            backend=FocusMemoryBackend(),
+            action_limit=1,
+        )
+        assert len(calls) == expected_calls
+        assert result.model_attempts == expected_calls
+        assert result.provider_wire_requests == expected_calls
+        assert result.environment_actions == expected_actions
+        assert transport.subprocesses_closed
+        if expected_actions:
+            assert result.classification == "pilot_action_limit"
+            assert inputs[0] == inputs[1]
+            assert not any(e.kind == "sealed_unsuccessful_result" for e in journal.events())
+        if case == "reset_reset":
+            assert result.classification == "infrastructure_failure"
+        if case.startswith("reset") or case == "process_reset":
+            faults = [e for e in journal.events() if e.kind == "retryable_transport_fault"]
+            assert faults[0].payload["next_attempt_permitted"] is True
+            assert faults[0].payload["cli_fault"]["kind"] == "connection_reset"
+            assert len({r["idempotency_key_digest"] for r in transport.records}) == expected_calls
+    finally:
+        transport.close()
+        invocations.close()
+        journal.close()
+
+
+def test_connection_retry_requires_internal_retries_disabled(tmp_path):
+    with pytest.raises(ValueError, match="zero internal CLI retries"):
+        claude.ClaudeCodeTransport(
+            ledger=codex.SubscriptionExemptLedger(Decimal(1), Decimal(0)),
+            invocation_journal=claude.ClaudeInvocationJournal(tmp_path / "invocations.sqlite"),
+            runtime_identity=claude_identity(),
+            allow_connection_retry=True,
+        )
