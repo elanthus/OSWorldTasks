@@ -103,6 +103,19 @@ def confirmed_reset(record: dict[str, Any]) -> bool:
         return False
 
 
+def confirmed_timeout(record: dict[str, Any]) -> bool:
+    outcome = record["outcome"] or {}
+    transport = outcome.get("transport_outcome", {})
+    fault = transport.get("fault") or {}
+    return (
+        record["status"] == "timeout"
+        and outcome.get("process_confirmed_stopped") is True
+        and transport.get("status") == "deadline"
+        and fault.get("kind") == "process_timeout"
+        and fault.get("code") == "claude_process_timeout"
+    )
+
+
 def original_start(predecessor: Path, summary: dict[str, Any]) -> datetime:
     if "continuation_digest" in summary:
         prior = read_object(predecessor / "continuation-approval.json")
@@ -203,6 +216,7 @@ def validate_journals(output: Path, summary: dict[str, Any]) -> SubscriptionExem
                         == "response"
                     )
                     or confirmed_reset(record)
+                    or confirmed_timeout(record)
                 )
             ):
                 raise ValueError("predecessor has an unsettled or duplicate invocation")

@@ -360,3 +360,34 @@ def test_rejects_inconsistent_unknown_completion_count(settled):
     summary["unresolved_invocations"] = 1
     with pytest.raises(ValueError, match="unresolved invocation accounting"):
         continuation.validate_journals(output, summary)
+
+
+@pytest.mark.parametrize("stopped", [True, False])
+def test_restores_recovered_timeout_only_when_local_process_stopped(settled, stopped):
+    output, _, summary = settled
+    invocations = claude.ClaudeInvocationJournal(output / "invocations.sqlite")
+    invocations.finish(
+        "key-0",
+        status="timeout",
+        exit_code=-15,
+        raw_stdout="",
+        raw_stderr="",
+        outcome={
+            "process_confirmed_stopped": stopped,
+            "transport_outcome": {
+                "status": "deadline",
+                "fault": {"kind": "process_timeout", "code": "claude_process_timeout"},
+            },
+        },
+    )
+    summary["invocation_integrity"] = invocations.integrity_report()
+    summary["unresolved_invocations"] = 1
+    invocations.close()
+    if stopped:
+        ledger = continuation.validate_journals(output, summary)
+        assert ledger.unresolved == {"key-0"}
+        assert ledger.processes_started == 7
+        assert not ledger.blocked
+    else:
+        with pytest.raises(ValueError, match="unsettled"):
+            continuation.validate_journals(output, summary)
