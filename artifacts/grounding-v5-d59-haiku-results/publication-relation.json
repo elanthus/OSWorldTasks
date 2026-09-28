@@ -1,0 +1,156 @@
+{
+  "schema_version": "pixelgym-d59-publication-relation-v1",
+  "published_report_sha256": "sha256:cffff25e2e25fdce12df95d7174535594da74605d22a60fa8a344c179ea91fff",
+  "excluded_authoritative_artifacts": [
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/execution-binding.json",
+      "sha256": "sha256:176ee6a363a059458097952fa8f769ad4ee964211de86a18d147b223e7dbec69",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/execution-plan.json",
+      "sha256": "sha256:f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/execution.log",
+      "sha256": "sha256:82fc642f8481b552b81f6ecce8a2baac18e6396e583bb6c620f29500fa65f8a4",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/launch.json",
+      "sha256": "sha256:5338b8ad0fd778b628807e81a823d9fe9d43c6601aa4b4b9b8ff17774be12898",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/owner-approval.json",
+      "sha256": "sha256:f9a0d36daccc80d5f42995580d52f430af1acd76cfc344f1134d59ba6bceeef3",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/summary.json",
+      "sha256": "sha256:1d50f06df9ae8b6a709286b37f192d14bde4bb58d8dec54436533f7bdf71f27e",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/attempts.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-execution/invocations.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/continuation-approval.json",
+      "sha256": "sha256:d1dfe3bd268cee0589fb06ee05c8c936fc162bebded104440b8a2f42bda28645",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/execution-binding.json",
+      "sha256": "sha256:176ee6a363a059458097952fa8f769ad4ee964211de86a18d147b223e7dbec69",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/execution-plan.json",
+      "sha256": "sha256:f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/execution-started.json",
+      "sha256": "sha256:bea961ef4af76fb59d3382d7d5686201ca99e39002cbc8d0d8c39b3330e05866",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/execution.log",
+      "sha256": "sha256:8973a65875f27e2df2a76c6750bd98514c456dc9cbb9dccdfd1ed9b2a5d92508",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/launch.json",
+      "sha256": "sha256:fc35d09bff44b6382c026f8bf7e7ca1a6e41364f3ea420ac05b063a9fe530805",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/owner-approval.json",
+      "sha256": "sha256:f9a0d36daccc80d5f42995580d52f430af1acd76cfc344f1134d59ba6bceeef3",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/predecessor-summary.json",
+      "sha256": "sha256:1d50f06df9ae8b6a709286b37f192d14bde4bb58d8dec54436533f7bdf71f27e",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/summary.json",
+      "sha256": "sha256:4c6d59788abc817b4627771eddb48fc8a8d2d8b4cbb407f598a3299462107e88",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/attempts.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry-continuation/invocations.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/continuation-approval.json",
+      "sha256": "sha256:a39852287c22e9224ae1e7075eff697708840811e7e23abe520b0373d1532b31",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/execution-binding.json",
+      "sha256": "sha256:176ee6a363a059458097952fa8f769ad4ee964211de86a18d147b223e7dbec69",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/execution-plan.json",
+      "sha256": "sha256:f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/execution-started.json",
+      "sha256": "sha256:f53bb86bb6e9d1f296a3f3e54a4f6cfd95f3d534670837d76b364682d59b89c1",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/execution.log",
+      "sha256": "sha256:2680b8908b74d4976f754575d4ffdf67c68a6484dbca5e9d154a65f3571d3dbb",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/launch.json",
+      "sha256": "sha256:b982615f5cba6217bdc1e736a5e9c1d793c40fe56f58d2ce09f0c2ab5cf30156",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/owner-approval.json",
+      "sha256": "sha256:f9a0d36daccc80d5f42995580d52f430af1acd76cfc344f1134d59ba6bceeef3",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/predecessor-summary.json",
+      "sha256": "sha256:4c6d59788abc817b4627771eddb48fc8a8d2d8b4cbb407f598a3299462107e88",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/summary.json",
+      "sha256": "sha256:21963ec88f0646cd40cd6cedc2be31399dd77f9f0469e5b41690f5dce333ccd1",
+      "git_status": "must_not_commit"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/attempts.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-reset-continuation/invocations.sqlite",
+      "git_status": "must_not_commit",
+      "reason": "restricted journal; logical integrity is bound by source summary"
+    }
+  ]
+}

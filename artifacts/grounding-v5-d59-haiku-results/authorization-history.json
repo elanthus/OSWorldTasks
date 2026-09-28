@@ -1,0 +1,47 @@
+[
+  {
+    "completed_assignments_replayed": 0,
+    "continuation_source_sha256": "sha256:164e23efd5e1d83aaa1ea06369a3a0656244d8f2885c821b30ebc029d1421cd8",
+    "continue_outcomes": [
+      "invalid_output",
+      "step_limit_truncation",
+      "success_termination"
+    ],
+    "deadline": "2026-10-01T04:48:47.477487+00:00",
+    "execution_plan_digest": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092",
+    "next_trial_id": "d59-haiku-r3-primary-6003-stateless-r0",
+    "original_started_at": "2026-09-24T04:48:47.477487+00:00",
+    "owner_statement": "ok, lets count the malformed response as a failure, then continue with the rest of the run.",
+    "predecessor_summary_digest": "sha256:f7c2d2c1728528524cd55f29188c826131f1ce5b8cf733bfc2e4ada59b48cb64",
+    "previous_results_reclassified": 0,
+    "provider_calls_during_preparation": 0,
+    "recorded_at": "2026-09-24T19:32:51.869703+00:00",
+    "remaining_assignments": 425,
+    "retained_results": 7,
+    "schema_version": "pixelgym-d59-malformed-output-continuation-v1",
+    "source_revision": "ca00793ca39fb10bc1409681087bc2c2eee807fb"
+  },
+  {
+    "completed_assignments_replayed": 0,
+    "continuation_rule": "malformed-output-or-exhausted-stopped-connection-reset-v2",
+    "continuation_source_sha256": "sha256:634d158a3e8fd6318a70ec3625a792b38351fc2e736717916c3d1951778c9244",
+    "continue_outcomes": [
+      "invalid_output",
+      "step_limit_truncation",
+      "success_termination"
+    ],
+    "deadline": "2026-10-01T04:48:47.477487+00:00",
+    "execution_plan_digest": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092",
+    "next_trial_id": "d59-haiku-r3-primary-6045-stateless-r0",
+    "original_started_at": "2026-09-24T04:48:47.477487+00:00",
+    "owner_statement": "I don't want a closed failure for a connection reset. Just record the case as a failure, and continue with remaining assignments.",
+    "predecessor_summary_digest": "sha256:c2be366f6dcbfc20c1f88856175322063d357a241241193dc5b0bd20168c8402",
+    "previous_results_reclassified": 0,
+    "provider_calls_during_preparation": 0,
+    "recorded_at": "2026-09-25T19:29:43.734745+00:00",
+    "remaining_assignments": 341,
+    "retained_results": 91,
+    "schema_version": "pixelgym-d59-assignment-failure-continuation-v2",
+    "source_revision": "7868a4cd45e2fc907b21924a67c486b4a8548004"
+  }
+]

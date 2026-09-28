@@ -254,3 +254,9 @@ artifacts/grounding-v5-d56-glm-relaxed-trial-plan.json
 artifacts/grounding-v5-d56-glm-relaxed-trial-run/summary.json
 artifacts/grounding-v5-d56-calibration-plan.json
 artifacts/grounding-v5-d56-calibration-plan-v2.json
+
+# D5.9 restricted local execution evidence; publish only the allowlisted result projection.
+artifacts/grounding-v5-d59-haiku-network-retry-execution/
+artifacts/grounding-v5-d59-haiku-network-retry-continuation/
+artifacts/grounding-v5-d59-haiku-reset-continuation/
+artifacts/grounding-v5-d59-haiku-network-retry-approval.json
