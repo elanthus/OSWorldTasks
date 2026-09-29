@@ -206,7 +206,8 @@ documented without being promoted to a headline result
   Haiku 4.5 scored 100/100 raw on the same 100 examples
   ([v3 Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md)).
 - The headline calls ran through the Codex CLI harness and averaged about 11,900 input tokens per
-  screenshot-plus-instruction ([predictions](artifacts/grounding-predictions.jsonl)). The harness
+  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md),
+  derived from [predictions](artifacts/grounding-predictions.jsonl)). The harness
   prompt is not part of the recorded prompt v1, and it is not recorded whether the harness prompt
   was identical across conditions.
 - Platform metrics are synthetic, local scripted-provider measurements. V5 calibration is

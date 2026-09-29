@@ -20,6 +20,21 @@
     35.0,
     54.0
   ],
+  "harness_input_tokens": {
+    "marks": {
+      "count": 100,
+      "max": 11922,
+      "mean": 11915.26,
+      "min": 11908
+    },
+    "raw": {
+      "count": 100,
+      "max": 11924,
+      "mean": 11909.31,
+      "min": 11706
+    },
+    "source": "artifacts/grounding-predictions.jsonl usage.input_tokens (Codex CLI harness, per call)"
+  },
   "inputs": [
     "artifacts/grounding-results.json",
     "artifacts/grounding-predictions.jsonl"
@@ -108,7 +123,7 @@
   ],
   "schema_version": "pixelgym-grounding-clustered-analysis-v1",
   "target_clustered_bootstrap_95_ci_percentage_points": [
-    20.999999999999996,
+    21.0,
     67.0
   ],
   "target_sign_test": {

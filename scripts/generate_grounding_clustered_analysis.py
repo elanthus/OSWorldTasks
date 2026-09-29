@@ -54,6 +54,7 @@ def load_rows(root: Path) -> list[dict[str, Any]]:
     if not isinstance(rows, list) or not rows:
         raise ClusteredAnalysisError("results file has no per_example rows")
     predictions: dict[tuple[str, str], bool] = {}
+    input_tokens: dict[tuple[str, str], int] = {}
     for line in (root / PREDICTIONS_PATH).read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
@@ -62,6 +63,10 @@ def load_rows(root: Path) -> list[dict[str, Any]]:
         if key in predictions:
             raise ClusteredAnalysisError(f"duplicate prediction {key}")
         predictions[key] = record["correct"] is True
+        tokens = (record.get("usage") or {}).get("input_tokens")
+        if not isinstance(tokens, int):
+            raise ClusteredAnalysisError(f"prediction {key} lacks integer usage.input_tokens")
+        input_tokens[key] = tokens
     parsed: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in rows:
@@ -80,7 +85,14 @@ def load_rows(root: Path) -> list[dict[str, Any]]:
         if row.get("paired_difference") != int(marks) - int(raw):
             raise ClusteredAnalysisError(f"paired_difference mismatch for {example_id}")
         parsed.append(
-            {"example_id": example_id, "target_id": target_id, "raw": raw, "marks": marks}
+            {
+                "example_id": example_id,
+                "target_id": target_id,
+                "raw": raw,
+                "marks": marks,
+                "raw_input_tokens": input_tokens[(example_id, "raw")],
+                "marks_input_tokens": input_tokens[(example_id, "marks")],
+            }
         )
     if len(predictions) != 2 * len(parsed):
         raise ClusteredAnalysisError("predictions contain records absent from results")
@@ -227,8 +239,15 @@ def analyze(rows: list[dict[str, Any]], samples: int = SAMPLES, seed: int = SEED
         },
         "per_target": per_target,
         "delta_percentage_points": 100 * sum(differences) / len(differences),
-        "example_level_bootstrap_95_ci_percentage_points": [100 * ex_lo, 100 * ex_hi],
-        "target_clustered_bootstrap_95_ci_percentage_points": [100 * cl_lo, 100 * cl_hi],
+        "example_level_bootstrap_95_ci_percentage_points": [
+            round(100 * ex_lo, 9),
+            round(100 * ex_hi, 9),
+        ],
+        "target_clustered_bootstrap_95_ci_percentage_points": [
+            round(100 * cl_lo, 9),
+            round(100 * cl_hi, 9),
+        ],
+        "harness_input_tokens": harness_input_tokens(rows),
         "target_sign_test": {
             "targets_marks_better": pos,
             "targets_raw_better": neg,
@@ -252,6 +271,22 @@ def analyze(rows: list[dict[str, Any]], samples: int = SAMPLES, seed: int = SEED
     }
 
 
+def harness_input_tokens(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Per-condition usage.input_tokens summary from the stored predictions."""
+    block: dict[str, Any] = {
+        "source": f"{PREDICTIONS_PATH} usage.input_tokens (Codex CLI harness, per call)"
+    }
+    for condition in ("raw", "marks"):
+        values = [r[f"{condition}_input_tokens"] for r in rows]
+        block[condition] = {
+            "count": len(values),
+            "mean": round(sum(values) / len(values), 9),
+            "min": min(values),
+            "max": max(values),
+        }
+    return block
+
+
 def _pp(value: float) -> str:
     return f"{value:+.1f}"
 
@@ -263,6 +298,7 @@ def render_markdown(result: dict[str, Any]) -> str:
     cl = result["target_clustered_bootstrap_95_ci_percentage_points"]
     st = result["target_sign_test"]
     cp = result["clopper_pearson_95_ci_marks_only_proportion"]
+    tok = result["harness_input_tokens"]
     per_target_size = result["per_target"][0]["example_count"]
     lines = [
         "# Grounding v1 clustered-analysis supplement",
@@ -312,6 +348,13 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"- Clopper-Pearson 95% CI for {cp['successes']}/{cp['trials']} marks-only-correct "
             f"examples: [{cp['interval'][0]:.4f}, {cp['interval'][1]:.4f}] (unit: example; "
             "assumes independence)."
+        ),
+        "",
+        (
+            f"- Harness input tokens per call (usage.input_tokens): raw mean "
+            f"{tok['raw']['mean']:.2f} (n={tok['raw']['count']}, min {tok['raw']['min']}, "
+            f"max {tok['raw']['max']}); marks mean {tok['marks']['mean']:.2f} "
+            f"(n={tok['marks']['count']}, min {tok['marks']['min']}, max {tok['marks']['max']})."
         ),
         "",
         "## Why the example-level interval overstates precision",

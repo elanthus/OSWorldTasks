@@ -67,6 +67,37 @@ def test_deterministic(rows: list[dict[str, Any]]) -> None:
     )
 
 
+def test_harness_input_tokens_block(rows: list[dict[str, Any]]) -> None:
+    block = mod.analyze(rows, samples=50)["harness_input_tokens"]
+    assert block["raw"]["count"] == block["marks"]["count"] == 100
+    assert round(block["raw"]["mean"]) == 11909
+    assert round(block["marks"]["mean"]) == 11915
+    committed = json.loads((ROOT / mod.JSON_OUTPUT).read_text())
+    assert committed["harness_input_tokens"] == block
+
+
+def test_rejects_missing_input_tokens(tmp_path: Path) -> None:
+    root = _copy_inputs(tmp_path)
+    path = root / mod.PREDICTIONS_PATH
+    lines = path.read_text().splitlines()
+    record = json.loads(lines[0])
+    del record["usage"]["input_tokens"]
+    lines[0] = json.dumps(record)
+    path.write_text("\n".join(lines) + "\n")
+    with pytest.raises(mod.ClusteredAnalysisError, match="input_tokens"):
+        mod.load_rows(root)
+
+
+def test_interval_endpoints_rounded() -> None:
+    committed = json.loads((ROOT / mod.JSON_OUTPUT).read_text())
+    for key in (
+        "example_level_bootstrap_95_ci_percentage_points",
+        "target_clustered_bootstrap_95_ci_percentage_points",
+    ):
+        assert all(v == round(v, 9) for v in committed[key])
+    assert committed["target_clustered_bootstrap_95_ci_percentage_points"] == [21.0, 67.0]
+
+
 def test_structure(rows: list[dict[str, Any]]) -> None:
     result = mod.analyze(rows, samples=50)
     assert result["counts"]["example_count"] == 100
