@@ -8,19 +8,16 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
+from pixelgym.grounding.stats import exact_mcnemar_p_value, wilson_interval
 
-def wilson_interval(successes: int, total: int, *, z: float = 1.959963984540054) -> tuple[float, float]:
-    if total <= 0 or not 0 <= successes <= total:
-        raise ValueError("Wilson interval requires 0 <= successes <= positive total")
-    proportion = successes / total
-    denominator = 1 + z * z / total
-    center = (proportion + z * z / (2 * total)) / denominator
-    half = (
-        z
-        * math.sqrt(proportion * (1 - proportion) / total + z * z / (4 * total * total))
-        / denominator
-    )
-    return max(0.0, center - half), min(1.0, center + half)
+__all__ = [
+    "MetricSummary",
+    "clustered_bootstrap_difference",
+    "exact_mcnemar_pvalue",
+    "paired_success_table",
+    "summarize_sealed_episodes",
+    "wilson_interval",
+]
 
 
 def paired_success_table(
@@ -38,16 +35,10 @@ def paired_success_table(
 
 
 def exact_mcnemar_pvalue(first_only: int, second_only: int) -> float:
+    """Two-sided exact McNemar p-value; delegates to the integer implementation."""
     if min(first_only, second_only) < 0:
         raise ValueError("discordant counts must be non-negative")
-    discordant = first_only + second_only
-    if discordant == 0:
-        return 1.0
-    tail = sum(
-        math.comb(discordant, index) * 0.5**discordant
-        for index in range(min(first_only, second_only) + 1)
-    )
-    return min(1.0, 2 * tail)
+    return exact_mcnemar_p_value(first_only, second_only)
 
 
 def clustered_bootstrap_difference(
@@ -57,6 +48,13 @@ def clustered_bootstrap_difference(
     samples: int = 10_000,
     confidence: float = 0.95,
 ) -> tuple[float, float]:
+    """Unstratified logical-cluster bootstrap of the paired mean difference.
+
+    Clusters are resampled with replacement from one pool, ignoring any family
+    or other stratum, and the interval uses nearest-rank (floor/ceil index)
+    percentiles. For the pre-registered family-stratified estimator see
+    :func:`pixelgym.grounding.v5.confirmatory_analysis.stratified_cluster_bootstrap`.
+    """
     if not rows or samples <= 0 or not 0 < confidence < 1:
         raise ValueError("bootstrap inputs are invalid")
     clusters: dict[str, list[tuple[bool, bool]]] = {}

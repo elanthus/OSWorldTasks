@@ -27,6 +27,8 @@ from pixelgym.grounding.schema import (
     target_area_ratio,
     target_area_slice,
 )
+from pixelgym.grounding.stats import exact_mcnemar_p_value as mcnemar_exact
+from pixelgym.grounding.stats import interpolated_percentile as _percentile
 
 ANALYSIS_SCHEMA_VERSION = "pixelgym-grounding-results-v3"
 ERROR_REVIEW_SCHEMA_VERSION = "pixelgym-grounding-error-review-v2"
@@ -65,18 +67,6 @@ REVIEW_STATUSES = ("pending_visual_review", "manual_visual_review")
 ERROR_REVIEW_DECISIONS_SCHEMA_VERSION = "pixelgym-grounding-error-review-decisions-v1"
 
 
-def _percentile(sorted_values: list[float], percentile: float) -> float:
-    if not sorted_values:
-        raise ValueError("cannot calculate a percentile of an empty sequence")
-    position = (len(sorted_values) - 1) * percentile
-    lower = math.floor(position)
-    upper = math.ceil(position)
-    if lower == upper:
-        return sorted_values[lower]
-    fraction = position - lower
-    return sorted_values[lower] * (1 - fraction) + sorted_values[upper] * fraction
-
-
 def paired_bootstrap_interval(
     paired_differences: list[int],
     *,
@@ -96,18 +86,6 @@ def paired_bootstrap_interval(
     ]
     estimates.sort()
     return _percentile(estimates, 0.025), _percentile(estimates, 0.975)
-
-
-def mcnemar_exact(raw_only_correct: int, marks_only_correct: int) -> float:
-    """Two-sided exact McNemar p-value, conditional on discordant pairs."""
-    if raw_only_correct < 0 or marks_only_correct < 0:
-        raise ValueError("discordant counts must be nonnegative")
-    discordant = raw_only_correct + marks_only_correct
-    if discordant == 0:
-        return 1.0
-    smaller = min(raw_only_correct, marks_only_correct)
-    lower_tail = sum(math.comb(discordant, k) for k in range(smaller + 1)) / (2**discordant)
-    return float(min(1.0, 2 * lower_tail))
 
 
 def _rate(numerator: int, denominator: int) -> float | None:
