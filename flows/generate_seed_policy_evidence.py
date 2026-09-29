@@ -26,6 +26,8 @@ from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_
 from pixelgym.platform.runtime_fixture import provider_ledger_snapshot
 from pixelgym.platform.source_provenance import generate_source_provenance
 
+DESIGN_NOTE_PATH = Path("docs/million-episode-design-note.md")
+
 POLICY_SPECS = (
     ("day3-replay-baseline-v1", 1, "baseline"),
     ("day3-replay-revised-v2", 2, "revised"),
@@ -248,7 +250,7 @@ def generate(repository_root: Path, output_dir: Path, *, overwrite: bool = False
     targets = {
         "plan": output_dir / "seed-policy-plan-v1.json",
         "evidence": output_dir / "seed-policy-fanout-evidence-v1.json",
-        "note": repository_root / "plans/million-episode-grounding-evaluation.md",
+        "note": repository_root / DESIGN_NOTE_PATH,
     }
     existing = [path for path in targets.values() if path.exists()]
     if existing and not overwrite:

@@ -51,23 +51,12 @@ tests; it does **not** run the Docker/Playwright lifecycle suite
 
 | Area | State | Record |
 | --- | --- | --- |
-| Environment and validation | Done | [D1.8](artifacts/day-1/human-gate.json), [D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json) |
-| Grounding v1 experiment | Done, frozen | [D3.11](artifacts/day-3/raw/human-gate.json) |
-| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | [D4.12](artifacts/platform/human-gate.json) |
+| Environment and validation | Done | Sprint 1 gate ([D1.8](artifacts/day-1/human-gate.json)), Sprint 2 gate ([D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json)) |
+| Grounding v1 experiment | Done, frozen | Sprint 3 gate ([D3.11](artifacts/day-3/raw/human-gate.json)) |
+| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | Milestone 4 platform gate ([D4.12](artifacts/platform/human-gate.json)) |
 | Grounding v2 crossed allocation | Designed, not run against a model | [v2 manifest](artifacts/grounding-v2-manifest.json) |
-| v5 agent benchmark and calibration | In progress, no gate declared | [v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md) |
-| v5 stateful serving | In progress | [v5 serving plan](plans/v5-policy-serving.md) |
-
-## Owner-held decisions
-
-[AGENTS.md section 4](AGENTS.md#4-human-gates--stop-and-ask) reserves scope changes, sprint gates, provider and cloud spend, paid model calls, and public claims for the repository owner.
-
-Repository work used a bounded agent-assisted branch-and-PR process: agents could implement,
-test, and prepare evidence, while deterministic checks, independent review, and owner-held scope,
-spend, scientific, and publication gates remained separate. The
-[workflow ADR](plans/adr-agent-assisted-workflow.md) records both useful findings and defects that
-escaped automation; it is a process audit, not an authorship claim or a substitute for human
-review.
+| v5 agent benchmark and calibration | In progress; v5 benchmark verdict (D5.10) not declared | [v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md) |
+| v5 stateful serving | In progress | [Platform design](docs/platform-design.md#v5-stateful-serving-apiv2) |
 
 ## Problem
 
@@ -179,7 +168,7 @@ The owner-recorded [D1.8](artifacts/day-1/human-gate.json),
 to its reviewed revision and scripted-provider scope. The v5 confirmatory benchmark and v5
 milestone gate remain incomplete; retained calibration, negative results, and unfinished work are
 documented without being promoted to a headline result
-([v5 plan](plans/grounding-v5-agent-benchmark.md), [evidence index](docs/evidence-index.md)).
+([v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md)).
 
 ## Limitations
 
@@ -237,16 +226,14 @@ a broad agent benchmark.
 - [Evidence index](docs/evidence-index.md) — canonical claims, historical records, withdrawals,
   and public-verification limits.
 - [Reproduction guide](docs/reproduction.md) — offline, loopback, browser, and OSWorld commands.
-- [Sprint 1 environment plan](plans/sprint-1-environment-core.md),
-  [Sprint 2 integration plan](plans/sprint-2-osworld-integration-and-validation.md), and
-  [Sprint 3 grounding plan](plans/sprint-3-grounding-and-portfolio.md) — completed core sequence.
-- [Platform milestone plan](plans/grounding-evaluation-platform.md) and
-  [v5 benchmark plan](plans/grounding-v5-agent-benchmark.md) — supporting platform detail and
-  unfinished work.
-- [Qualified resume-bullet review candidate](artifacts/resume-bullets-v2-review.md) — proposed
-  wording with the current scope qualifications. The digest-bound historical approved artifact is
-  retained unchanged at [artifacts/resume-bullets.md](artifacts/resume-bullets.md).
-- [Public release checklist](plans/public-release-checklist.md) — unticked human release gate.
+- [Environment contract](docs/environment-contract.md) — the fifteen invariants and where they
+  are enforced.
+- [Platform design](docs/platform-design.md) — Milestone 4 platform and v5 stateful serving.
+- [v5 benchmark design](docs/v5-benchmark-design.md) — contract, analysis plan, and current status
+  of the unfinished benchmark.
+- [Development process](docs/development-process.md) — branch, review, and human-gate process,
+  including defects that escaped review.
+- [Glossary](docs/glossary.md) — D-numbers, grounding versions, and codenames.
 
 ## Contributing
 
@@ -255,6 +242,15 @@ host-evaluated reward, determinism, and build-time-instrumentation boundaries; k
 for the fast path; version corrections to frozen evidence instead of silently rewriting history;
 and report only checks actually run. Open review-ready pull requests by default. Human-owned gates
 remain human decisions.
+
+## Development process
+
+[AGENTS.md section 4](AGENTS.md#4-human-gates--stop-and-ask) reserves scope changes, milestone
+gates, provider and cloud spend, paid model calls, and public claims for a human decision. Coding
+agents implemented, tested, and prepared evidence on branches and pull requests; deterministic
+checks and independent review ran separately. The
+[development process record](docs/development-process.md) lists the defects review caught and the
+ones that escaped it.
 
 ## License
 

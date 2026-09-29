@@ -20,6 +20,8 @@ from pixelgym.grounding.v5.panel_policy import (
 from pixelgym.grounding.v5.plan import CalibrationPlan, load_plan
 from pixelgym.grounding.v5.planning import _validated_records
 
+MISTRAL_SMOKE_REVIEW_PATH = Path("artifacts/grounding-v5-slot-c-mistral-smoke-review.json")
+
 
 def build_slot_c_plan(
     root: Path,
@@ -165,7 +167,7 @@ def verify_mistral_smoke_review(root: Path) -> str:
     A public clone without the restricted source journal cannot prepare a paid run.
     """
 
-    review = json.loads((root / "plans/slot-c-mistral-smoke-review.json").read_text())
+    review = json.loads((root / MISTRAL_SMOKE_REVIEW_PATH).read_text())
     if review["summary_validation"] != "valid" or not review["original_files_unchanged"]:
         raise ValueError("Mistral smoke review is not valid")
     paths = review["source_file_sha256"]

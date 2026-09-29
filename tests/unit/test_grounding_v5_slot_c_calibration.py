@@ -15,7 +15,7 @@ from pixelgym.grounding.v5.slot_c import build_slot_c_plan, verify_mistral_smoke
 
 ROOT = Path(__file__).resolve().parents[2]
 PLAN = 'artifacts/grounding-v5-slot-c-mistral-smoke-plan.json'
-REVIEW = 'plans/slot-c-mistral-smoke-review.json'
+REVIEW = 'artifacts/grounding-v5-slot-c-mistral-smoke-review.json'
 SUMMARY = 'artifacts/review-fixture/summary.json'
 JOURNAL = 'artifacts/review-fixture/attempts.sqlite'
 
@@ -56,7 +56,7 @@ def reviewed_root(tmp_path):
             for name in (PLAN, SUMMARY, JOURNAL)
         },
     }
-    (tmp_path / REVIEW).parent.mkdir()
+    (tmp_path / REVIEW).parent.mkdir(parents=True, exist_ok=True)
     (tmp_path / REVIEW).write_text(json.dumps(review))
     return tmp_path
 
@@ -255,3 +255,18 @@ def test_smoke_review_rejects_changed_runtime_component(reviewed_root, monkeypat
     monkeypatch.setattr(panel_policy, '_file_digest', changed_digest)
     with pytest.raises(ValueError, match='policy contract differs'):
         verify_mistral_smoke_review(reviewed_root)
+
+
+def test_review_at_retired_plans_location_is_not_honored(reviewed_root):
+    retired = reviewed_root / 'plans' / 'slot-c-mistral-smoke-review.json'
+    retired.parent.mkdir()
+    (reviewed_root / REVIEW).rename(retired)
+    with pytest.raises(FileNotFoundError):
+        verify_mistral_smoke_review(reviewed_root)
+
+
+def test_checked_in_review_lives_beside_its_evidence():
+    assert slot_c.MISTRAL_SMOKE_REVIEW_PATH.as_posix() == REVIEW
+    review = json.loads((ROOT / REVIEW).read_text())
+    assert review['summary_validation'] == 'valid'
+    assert not (ROOT / 'plans' / 'slot-c-mistral-smoke-review.json').exists()

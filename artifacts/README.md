@@ -30,8 +30,6 @@ capture, a calibration campaign, or a release record, retained on purpose. Use t
 | Owner gate records | [platform/human-gate.json](platform/human-gate.json) | Owner-recorded D4.12 decision |
 | Demo media | [day-3/review/real-osworld-episode.gif](day-3/review/real-osworld-episode.gif) | Real OSWorld episode |
 | Demo media | [grounding/figures/raw-vs-marks-accuracy.png](grounding/figures/raw-vs-marks-accuracy.png) | Raw-coordinate versus set-of-marks accuracy |
-| Portfolio wording | [resume-bullets-v2-review.md](resume-bullets-v2-review.md) | Qualified resume-bullet review candidate |
-| Portfolio wording | [resume-bullets.md](resume-bullets.md) | Digest-bound historical approved artifact |
 
 ## Historical revisions
 
@@ -49,20 +47,22 @@ These are calibration and pilot records, not headline results, and none carries 
 Counts are top-level entries before this map was added; status phrases are copied from the
 [evidence index](../docs/evidence-index.md) or the linked historical report.
 
-| Prefix | Top-level entries | Plan | Status |
+| Prefix | Top-level entries | Design record | Status |
 |---|---|---|---|
 | `grounding-v3*` | 48 | [Historical v3 report](grounding-v3-haiku-gemini-report.md) | Historical, non-canonical evidence. |
-| `grounding-v4-pilot*` | 9 | [v4 pilot plan](../plans/grounding-v4-pilot.md) | frozen evidence |
-| `grounding-v4b*` | 20 | [v4b multistep pilot plan](../plans/grounding-v4b-multistep-pilot.md) | frozen evidence |
-| `grounding-v4c*` | 26 | [v4c longer-horizon pilot plan](../plans/grounding-v4c-longer-horizon-pilot.md) | frozen evidence |
-| `grounding-v5*` | 70 | [v5 agent benchmark plan](../plans/grounding-v5-agent-benchmark.md) | These runs do not constitute a completed confirmatory benchmark or a v5 gate. |
+| `grounding-v4-pilot*` | 9 | — | frozen evidence |
+| `grounding-v4b*` | 20 | — | frozen evidence |
+| `grounding-v4c*` | 26 | — | frozen evidence |
+| `grounding-v5*` | 70 | [v5 benchmark design](../docs/v5-benchmark-design.md) | These runs do not constitute a completed confirmatory benchmark or a v5 gate. |
 
-The latest response-free D5.9 candidate is the
-[Haiku freeze successor](../plans/grounding-v5-d59-haiku-freeze.md). Its
+The D5.9 Haiku freeze successor's
 [owner exception](grounding-v5-d59-haiku-freeze/owner-exception.json) and
 [execution plan](grounding-v5-d59-haiku-freeze/execution-plan.json) record the narrow
 OS-sandbox exception and proposed limits. They do not authorize a model call: execution is
 disabled and the approved attempt and wire-request caps are zero.
+
+The [D5.9 pre-registration record](grounding-v5-d59-freeze/analysis-plan.md) keeps the
+frozen analysis plan and stop rules beside the D5.9 evidence.
 
 **Naming conventions**
 

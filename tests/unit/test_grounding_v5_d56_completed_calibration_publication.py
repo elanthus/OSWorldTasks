@@ -416,7 +416,7 @@ def test_readme_v5_status_links_to_generated_derivative() -> None:
         assert expected in report
         assert f"{counts['success']}/{run['assigned_tasks']}" not in readme
     assert "v5 confirmatory benchmark and v5 milestone gate remain incomplete" in section
-    assert "plans/grounding-v5-agent-benchmark.md" in section
+    assert "docs/v5-benchmark-design.md" in section
     assert "docs/evidence-index.md" in section
     assert "remains withdrawn" in evidence_index
     assert "cannot be verified from a public clone" in evidence_index
