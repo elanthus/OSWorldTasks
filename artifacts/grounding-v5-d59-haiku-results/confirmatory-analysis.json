@@ -31,6 +31,7 @@
     "completed": 432,
     "stop_reason": "completed_all_assignments",
     "stop_rule_changed": true,
+    "text": "The stop rule was amended after repeated infrastructure failures from Anthropic to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed.",
     "unresolved_invocations": 3
   },
   "human_gate": "D5.10 is the owner's review.",

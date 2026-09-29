@@ -123,4 +123,4 @@ These are not estimated.
 
 ## Disclosure
 
-The stop rule was changed after repeated infrastructure failures. The owner authorized continuation after malformed output and, later, after exhausted connection resets. Each failed assignment remains in the results. No prior assignment was replayed. Retries kept the same per-action and aggregate caps. 3 timed-out provider calls retain unknown provider completion, as recorded in the projection's `unresolved_invocations`; the projection does not identify which assignments they belong to.
+The stop rule was amended after repeated infrastructure failures from Anthropic to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed.

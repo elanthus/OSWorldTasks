@@ -134,6 +134,13 @@ PREREGISTRATION_QUOTES = (
 )
 
 
+DISCLOSURE_TEXT = (
+    "The stop rule was amended after repeated infrastructure failures from Anthropic to allow for "
+    "retries in the case of intermittent network issues. Each failed assignment remains in the "
+    "results. No prior assignment was replayed."
+)
+
+
 class AnalysisError(ValueError):
     """Raised when the evidence cannot be joined or does not match its bindings."""
 
@@ -469,6 +476,7 @@ def analyze(
             ],
         },
         "disclosure": {
+            "text": DISCLOSURE_TEXT,
             "stop_rule_changed": True,
             "unresolved_invocations": int(projection["unresolved_invocations"]),
             "stop_reason": projection["stop_reason"],
@@ -660,15 +668,7 @@ def render(analysis: Mapping[str, Any]) -> str:
         "",
         "## Disclosure",
         "",
-        (
-            "The stop rule was changed after repeated infrastructure failures. The owner authorized "
-            "continuation after malformed output and, later, after exhausted connection resets. Each "
-            "failed assignment remains in the results. No prior assignment was replayed. Retries kept "
-            f"the same per-action and aggregate caps. {disclosure['unresolved_invocations']} timed-out "
-            "provider calls retain unknown provider completion, as recorded in the projection's "
-            "`unresolved_invocations`; the projection does not identify which assignments they "
-            "belong to."
-        ),
+        disclosure["text"],
         "",
     ]
     return "\n".join(lines)

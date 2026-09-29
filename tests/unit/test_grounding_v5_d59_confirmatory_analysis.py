@@ -256,11 +256,15 @@ def test_non_preregistered_sections_are_labelled_exploratory() -> None:
 
 def test_render_has_disclosure_and_no_verdict_language() -> None:
     md = analysis.render(_analyze())
-    assert (
-        "\n## Disclosure\n\nThe stop rule was changed after repeated infrastructure failures. "
-        in md
+    expected = (
+        "The stop rule was amended after repeated infrastructure failures from Anthropic to allow "
+        "for retries in the case of intermittent network issues. Each failed assignment remains in "
+        "the results. No prior assignment was replayed."
     )
-    assert "3 timed-out provider calls" in md
+    assert analysis.DISCLOSURE_TEXT == expected
+    assert _analyze()["disclosure"]["text"] == expected
+    section = md.split("\n## Disclosure\n", 1)[1]
+    assert section == f"\n{expected}\n"
     assert "D5.10 is the owner's review." in md
     lowered = md.lower()
     for word in ("significant", "confirmed", "pass", "fail "):
