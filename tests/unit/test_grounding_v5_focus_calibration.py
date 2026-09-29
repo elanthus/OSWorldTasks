@@ -16,13 +16,13 @@ from pixelgym.grounding.v5.screenshot_memory import (
     ScreenshotMemoryPolicy,
     build_screenshot_policy_manifest,
 )
-from tests.unit.test_grounding_v5_memory_calibration import CONFIG, PLAN, ROOT, GoldenTransport, job
+from tests.support.grounding_v5 import CONFIG, PLAN, ROOT, GoldenTransport, job
 
 
 def test_only_unique_approved_vertex_route_is_selected():
     from scripts.run_grounding_v5_focus_calibration import config_from_snapshot
-    from tests.unit.test_grounding_v5_request_budget import CONFIG as approved
-    from tests.unit.test_grounding_v5_request_budget import SNAPSHOT
+    from tests.support.grounding_v5 import BUDGET_CONFIG as approved
+    from tests.support.grounding_v5 import BUDGET_SNAPSHOT as SNAPSHOT
 
     mixed = {
         **SNAPSHOT,

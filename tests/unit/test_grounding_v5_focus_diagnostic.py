@@ -20,8 +20,8 @@ from pixelgym.grounding.v5.screenshot_memory import (
     ScreenshotMemoryPolicy,
     build_screenshot_policy_manifest,
 )
-from tests.unit.test_grounding_v5_request_budget import CONFIG
-from tests.unit.test_grounding_v5_timeout_reuse import response
+from tests.support.grounding_v5 import BUDGET_CONFIG as CONFIG
+from tests.support.grounding_v5 import budget_response as response
 
 ROOT = Path(__file__).parents[2]
 

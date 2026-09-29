@@ -1,8 +1,8 @@
 """Strict HTTP adapter for caller-owned stateful serving episodes.
 
-This module is deliberately independent of the v1 ``PolicyRuntime``.  S4 supplies only the
-versioned wire boundary, an injectable host factory/session registry, and immutable operational
-storage.  Deployment selection and control-plane activation remain S6 concerns.
+Provides the versioned wire boundary, an injectable host factory and session registry, and
+immutable operational storage. It does not use the v1 ``PolicyRuntime`` and does not select
+deployments or activate control-plane state.
 """
 
 from __future__ import annotations

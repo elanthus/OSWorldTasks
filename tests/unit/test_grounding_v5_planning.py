@@ -1,5 +1,5 @@
 """Tests for `pixelgym.grounding.v5.planning`'s file loader and versioned-schema
-derivation/replacement validation (issue #170, coverage-gate follow-up).
+derivation/replacement validation.
 
 `tests/unit/test_grounding_v5_runner.py` already exercises `call_cap_plan()` against
 schema-v2 partition manifests, but never against `load_partition_manifests()` itself,

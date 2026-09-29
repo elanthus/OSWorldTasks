@@ -10,17 +10,14 @@ import pytest
 from pixelgym.grounding.v5.contracts import CallCaps
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.panel_policy import SpendLedger
-from pixelgym.grounding.v5.reliable_calibration import run_episode
 from pixelgym.grounding.v5.reliable_memory import (
-    ReliableMemoryPolicy,
     build_reliable_manifest,
     reliable_config,
 )
 from pixelgym.grounding.v5.runner import InjectedInterruption
 from scripts.run_grounding_v5_reliable_continuation import PREVIOUS, continuation_assignments, read
-from tests.unit.test_grounding_v5_memory_calibration import CONFIG, PLAN, ROOT, GoldenTransport, job
-
-CONFIG = reliable_config(CONFIG)
+from tests.support.grounding_v5 import PLAN, ROOT, GoldenTransport
+from tests.support.grounding_v5 import reliable_execute as execute
 
 
 def test_exact_ten_preserved_failures_and_ninety_untouched_assignments():
@@ -50,22 +47,6 @@ def test_changed_previous_assignments_are_rejected(mutation):
         summary["conditions"].reverse()
     with pytest.raises(ValueError):
         continuation_assignments(old, summary)
-
-
-def execute(journal, transport, *, mode="history", **kwargs):
-    return run_episode(
-        journal,
-        job=job(mode),
-        manifest=build_reliable_manifest(
-            ROOT, config=CONFIG, code_revision="test", retain_screenshots=mode == "history"
-        ),
-        policy=ReliableMemoryPolicy(CONFIG, retain_screenshots=mode == "history"),
-        transport=transport,
-        ledger=transport.ledger,
-        caps=CallCaps(100, 300, 0, 300),
-        plan_digest=PLAN,
-        **kwargs,
-    )
 
 
 @pytest.mark.parametrize("mode,wrong", [("history", False), ("stateless", True)])

@@ -6,7 +6,6 @@ import json
 import urllib.error
 from contextlib import closing
 from decimal import Decimal
-from pathlib import Path
 
 import pytest
 
@@ -18,21 +17,9 @@ from pixelgym.grounding.v5.request_budget import (
     request_bound,
 )
 from pixelgym.grounding.v5.screenshot_memory import ScreenshotMemoryPolicy
-from scripts.run_grounding_v5_gemini38_calibration import config_from_snapshot
-
-ROOT = Path(__file__).parents[2]
-SNAPSHOT = json.loads(
-    (ROOT / "artifacts/grounding-v5-d58-gemini38-calibration/price-recheck.json").read_text()
-)
-CONFIG = config_from_snapshot(SNAPSHOT)
-
-
-def request(images=1):
-    policy = ScreenshotMemoryPolicy(CONFIG, retain_screenshots=False)
-    result = policy.build_request(policy.reset("Complete the workflow."), bytes(1024 * 768 * 3))
-    picture = next(part for part in result["messages"][1]["content"] if part["type"] == "image_url")
-    result["messages"][1]["content"] += [copy.deepcopy(picture) for _ in range(images - 1)]
-    return result
+from tests.support.grounding_v5 import BUDGET_CONFIG as CONFIG
+from tests.support.grounding_v5 import ROOT
+from tests.support.grounding_v5 import budget_request as request
 
 
 def test_bounded_images_do_not_change_request_and_prices_use_selected_route():
