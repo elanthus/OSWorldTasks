@@ -1,0 +1,521 @@
+{
+  "confirmatory": {
+    "p_value_below_alpha": true,
+    "paired_absolute_difference": {
+      "clusters": 168,
+      "estimate": 0.4739583333333333,
+      "interval": [
+        0.3919546184530902,
+        0.5497382198952879
+      ],
+      "level": 0.95,
+      "method": "family-stratified-logical-cluster-bootstrap-pooled-difference-v1",
+      "percentile": "linear-interpolation-(n-1)q-v1",
+      "resamples": 10000,
+      "rows": 192,
+      "seed": 20260911,
+      "strata": 6
+    },
+    "paired_success_table": {
+      "both_failure": 79,
+      "both_success": 8,
+      "exact_mcnemar_two_sided_p": 1.2065431169279858e-21,
+      "history_only_success": 98,
+      "pairs": 192,
+      "stateless_only_success": 7
+    },
+    "preregistered": true
+  },
+  "disclosure": {
+    "assigned": 432,
+    "completed": 432,
+    "stop_reason": "completed_all_assignments",
+    "stop_rule_changed": true,
+    "text": "The stop rule was amended after repeated intermittent network failures to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed.",
+    "unresolved_invocations": 3
+  },
+  "human_gate": "D5.10 is the owner's review.",
+  "independent_representative_subset": {
+    "label": "exploratory",
+    "note": "The same test restricted to singletons and twin_a, the frozen independent representative rule. The pre-registration does not name this subset as a test.",
+    "paired_success_table": {
+      "both_failure": 72,
+      "both_success": 7,
+      "exact_mcnemar_two_sided_p": 2.428370408743998e-17,
+      "history_only_success": 82,
+      "pairs": 168,
+      "stateless_only_success": 7
+    },
+    "preregistered": false
+  },
+  "inputs": {
+    "execution_plan": {
+      "execution_plan_digest": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092",
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+      "sha256": "sha256:f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5"
+    },
+    "pre_registration": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+    "projection": {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "sha256": "sha256:cffff25e2e25fdce12df95d7174535594da74605d22a60fa8a344c179ea91fff"
+    }
+  },
+  "method": {
+    "bootstrap": {
+      "estimator": "pixelgym.grounding.v5.confirmatory_analysis.stratified_cluster_bootstrap",
+      "interpretation_choices_accepted_by_owner": [
+        "Stratum: the workflow family of the task.",
+        "Logical cluster: the frozen logical_id; a robustness pair (twin_a, twin_b) is one cluster, a singleton is its own cluster. A cluster must lie within one family.",
+        "Resampling within strata: each family independently draws as many clusters, with replacement, as it contains; all rows of a drawn cluster enter the resample.",
+        "Estimate: the pooled all-episode absolute difference mean(history) - mean(stateless) over every row in the resample, not an average of per-family differences.",
+        "Percentile convention: the frozen v1 linear-interpolation percentile at position (n - 1) * q.",
+        "Draw order: one random.Random(seed); per resample, families in ascending key order; within a family, rng.choice over ascending cluster keys once per original cluster.",
+        "Row shape: one row per paired seed with boolean history and stateless outcomes."
+      ],
+      "level": 0.95,
+      "resamples": 10000,
+      "seed": 20260911
+    },
+    "denominator_rule": "every assigned primary episode, including invalid output, step-limit truncation, and infrastructure failure",
+    "interval_estimator": "pixelgym.grounding.stats.wilson_interval",
+    "mcnemar_estimator": "pixelgym.grounding.stats.exact_mcnemar_p_value",
+    "pre_registration_quotes": [
+      {
+        "line": "- The single primary hypothesis remains a two-sided exact McNemar comparison at alpha 0.05, with",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  a 20-point minimum relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- The family-stratified logical-cluster bootstrap keeps seed 20260911, 10,000 resamples, and 95%",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  intervals.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Screenshot-history policy: `policy-79441db33362e00a1ac6`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Current-frame-only policy: `policy-e1d746cd6a83ffb12a20`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Primary test: two-sided exact McNemar at alpha 0.05, with the unchanged 20-point minimum",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Reliability schedule: two additional trials per arm on the first two independent",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  representatives in each workflow family.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  Every singleton and each pair's `twin_a` is a primary representative.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- **Primary metric:** exact episode success over all assigned confirmatory episodes. Invalid",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  episode makes the run incomplete.",
+        "source": "docs/v5-benchmark-design.md"
+      }
+    ],
+    "primary_comparison": {
+      "alpha": 0.05,
+      "difference_direction": "history minus stateless",
+      "minimum_relevant_absolute_difference": 0.2,
+      "paired_on": "identical seed, phase primary, repeat 0",
+      "paired_sample": "all paired_task_seeds in the execution plan's primary_comparison (every assigned primary episode)",
+      "phase": "primary",
+      "policies": {
+        "history": "policy-79441db33362e00a1ac6",
+        "stateless": "policy-e1d746cd6a83ffb12a20"
+      },
+      "target_power": 0.8,
+      "test": "two-sided exact McNemar"
+    }
+  },
+  "reliability": {
+    "note": "Reported separately; never pooled with the primary comparison.",
+    "policies": {
+      "history": {
+        "all_three_failure": 0,
+        "all_three_success": 3,
+        "consistent_tasks": 3,
+        "one_of_three_success": 2,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.6666666666666666,
+          "successes": 16,
+          "wilson_95": [
+            0.4670631683813174,
+            0.8202780967270225
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 7
+      },
+      "stateless": {
+        "all_three_failure": 8,
+        "all_three_success": 0,
+        "consistent_tasks": 8,
+        "one_of_three_success": 4,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.125,
+          "successes": 3,
+          "wilson_95": [
+            0.04344334080123444,
+            0.31003881270500067
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 0
+      }
+    },
+    "preregistered": true,
+    "seeds": [
+      6000,
+      6002,
+      6016,
+      6018,
+      6032,
+      6034,
+      6048,
+      6050,
+      6064,
+      6066,
+      6080,
+      6082
+    ]
+  },
+  "schema_version": "pixelgym-d59-confirmatory-analysis-v1",
+  "secondary": {
+    "label": "exploratory",
+    "not_computable_from_public_projection": [
+      {
+        "diagnostic": "critical-decision accuracy",
+        "reason": "needs per-step decision annotations held in the private journals"
+      },
+      {
+        "diagnostic": "dependency retention",
+        "reason": "needs per-step state and response records held in the private journals"
+      },
+      {
+        "diagnostic": "recovery success",
+        "reason": "needs error-injection and recovery annotations held in the private journals"
+      },
+      {
+        "diagnostic": "irreversible-error rate",
+        "reason": "the projection does not distinguish wrong commits from other unsuccessful terminations"
+      },
+      {
+        "diagnostic": "path overhead",
+        "reason": "the projection carries action totals but not the action trace the diagnostic is defined over"
+      },
+      {
+        "diagnostic": "loop rate",
+        "reason": "needs the per-episode action trace held in the private journals"
+      },
+      {
+        "diagnostic": "latency",
+        "reason": "the projection carries no timing fields"
+      },
+      {
+        "diagnostic": "tokens",
+        "reason": "the projection carries no token counts"
+      }
+    ],
+    "note": "Invalid-output and request-failure rates are the invalid_output and infrastructure_failure columns of the termination profile.",
+    "preregistered": false,
+    "resource_use": {
+      "primary": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 20.005208333333332,
+            "total": 3841
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 20.479166666666668,
+            "total": 3932
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 20.479166666666668,
+            "total": 3932
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 26.875,
+            "total": 5160
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 26.973958333333332,
+            "total": 5179
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 26.973958333333332,
+            "total": 5179
+          }
+        }
+      },
+      "reliability": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 19.666666666666668,
+            "total": 472
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 19.958333333333332,
+            "total": 479
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 19.958333333333332,
+            "total": 479
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 25.416666666666668,
+            "total": 610
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 25.5,
+            "total": 612
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 25.5,
+            "total": 612
+          }
+        }
+      }
+    },
+    "robustness_consistency": {
+      "history": {
+        "different_outcome": 10,
+        "pairs": 24,
+        "same_outcome": 14
+      },
+      "stateless": {
+        "different_outcome": 3,
+        "pairs": 24,
+        "same_outcome": 21
+      }
+    },
+    "termination_profile": {
+      "primary": {
+        "history": {
+          "denominator": 192,
+          "infrastructure_failure": 1,
+          "invalid_output": 71,
+          "step_limit_truncation": 14,
+          "success_termination": 106
+        },
+        "stateless": {
+          "denominator": 192,
+          "infrastructure_failure": 0,
+          "invalid_output": 19,
+          "step_limit_truncation": 158,
+          "success_termination": 15
+        }
+      },
+      "reliability": {
+        "history": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 7,
+          "step_limit_truncation": 1,
+          "success_termination": 16
+        },
+        "stateless": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 2,
+          "step_limit_truncation": 19,
+          "success_termination": 3
+        }
+      }
+    }
+  },
+  "success_rates": {
+    "label": "exploratory",
+    "note": "Wilson intervals are listed in the v5 design analysis plan but not in the pre-registration record.",
+    "phase": "primary",
+    "policies": {
+      "history": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.5520833333333334,
+          "successes": 106,
+          "wilson_95": [
+            0.48140813449710274,
+            0.6207152877876104
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.5,
+            "successes": 16,
+            "wilson_95": [
+              0.33630882869327483,
+              0.6636911713067252
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.65625,
+            "successes": 21,
+            "wilson_95": [
+              0.4831108797896222,
+              0.7958956207556682
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.59375,
+            "successes": 19,
+            "wilson_95": [
+              0.42260024875382873,
+              0.7448036515733456
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.34375,
+            "successes": 11,
+            "wilson_95": [
+              0.20410437924433172,
+              0.5168891202103778
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.5625,
+            "successes": 18,
+            "wilson_95": [
+              0.3932559113685198,
+              0.7183466888495963
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.65625,
+            "successes": 21,
+            "wilson_95": [
+              0.4831108797896222,
+              0.7958956207556682
+            ]
+          }
+        }
+      },
+      "stateless": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.078125,
+          "successes": 15,
+          "wilson_95": [
+            0.04791391008238129,
+            0.12488636941144249
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.125,
+            "successes": 4,
+            "wilson_95": [
+              0.04970134387480073,
+              0.2806830548165022
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.09375,
+            "successes": 3,
+            "wilson_95": [
+              0.032401551298366194,
+              0.24218154728387864
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.03125,
+            "successes": 1,
+            "wilson_95": [
+              0.005537860164003122,
+              0.15744263820012558
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.0625,
+            "successes": 2,
+            "wilson_95": [
+              0.017310567031640967,
+              0.2014712314415458
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.125,
+            "successes": 4,
+            "wilson_95": [
+              0.04970134387480073,
+              0.2806830548165022
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.03125,
+            "successes": 1,
+            "wilson_95": [
+              0.005537860164003122,
+              0.15744263820012558
+            ]
+          }
+        }
+      }
+    },
+    "preregistered": false
+  }
+}
