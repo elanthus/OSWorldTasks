@@ -77,7 +77,7 @@ def test_network_successor_is_reproducible_and_preserves_cohort_and_caps(recorde
         job["trial_id"] for job in previous["primary_jobs"] + previous["reliability_jobs"]
     )
     identity = claude.ClaudeRuntimeIdentity(**value["runtime_identity"])
-    manifests = execution.manifests(ROOT, value, identity)
+    manifests = execution.manifests(recorded_root, value, identity)
     for manifest in manifests.values():
         assert manifest.max_model_attempts_per_action == 2
         assert dict(manifest.inference_parameters)["cli_api_retry_limit"] == "0"
