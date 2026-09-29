@@ -1,0 +1,136 @@
+{
+  "clopper_pearson_95_ci_marks_only_proportion": {
+    "interval": [
+      0.3408360237234581,
+      0.5428125029366824
+    ],
+    "successes": 44,
+    "trials": 100
+  },
+  "counts": {
+    "example_count": 100,
+    "marks_correct": 100,
+    "marks_only_correct": 44,
+    "raw_correct": 56,
+    "raw_only_correct": 0,
+    "target_count": 10
+  },
+  "delta_percentage_points": 44.0,
+  "example_level_bootstrap_95_ci_percentage_points": [
+    35.0,
+    54.0
+  ],
+  "harness_input_tokens": {
+    "marks": {
+      "count": 100,
+      "max": 11922,
+      "mean": 11915.26,
+      "min": 11908
+    },
+    "raw": {
+      "count": 100,
+      "max": 11924,
+      "mean": 11909.31,
+      "min": 11706
+    },
+    "source": "artifacts/grounding-predictions.jsonl usage.input_tokens (Codex CLI harness, per call)"
+  },
+  "inputs": [
+    "artifacts/grounding-results.json",
+    "artifacts/grounding-predictions.jsonl"
+  ],
+  "method": {
+    "bootstrap_samples": 10000,
+    "clopper_pearson": "exact binomial interval for the proportion of examples with marks correct and raw incorrect",
+    "cluster_level_draw_order": "fresh random.Random(seed); per resample, k sequential rng.randrange(k) draws over targets in first-appearance order; pooled mean of drawn examples",
+    "confidence_level": 0.95,
+    "example_level_draw_order": "per resample, n sequential rng.randrange(n) draws over per_example order; same as pixelgym.grounding.analysis.paired_bootstrap_interval",
+    "percentile_convention": "linear interpolation at position (n-1)*q, identical to pixelgym.grounding.analysis._percentile used for the frozen v1 interval",
+    "rng": "Python random.Random(20260809); rng.randrange draws",
+    "sign_test": "exact two-sided binomial, p=0.5, over targets; targets with zero net difference excluded"
+  },
+  "per_target": [
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 9,
+      "raw_correct": 1,
+      "target_id": "company_name"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 3,
+      "raw_correct": 7,
+      "target_id": "contact_email"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 10,
+      "raw_correct": 0,
+      "target_id": "contact_phone"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 2,
+      "raw_correct": 8,
+      "target_id": "tax_id"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 6,
+      "raw_correct": 4,
+      "target_id": "country"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 0,
+      "raw_correct": 10,
+      "target_id": "payment_terms_net_15"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 7,
+      "raw_correct": 3,
+      "target_id": "payment_terms_net_30"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 7,
+      "raw_correct": 3,
+      "target_id": "payment_terms_net_45"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 0,
+      "raw_correct": 10,
+      "target_id": "expedited_onboarding"
+    },
+    {
+      "example_count": 10,
+      "marks_correct": 10,
+      "paired_difference_sum": 0,
+      "raw_correct": 10,
+      "target_id": "submit"
+    }
+  ],
+  "schema_version": "pixelgym-grounding-clustered-analysis-v1",
+  "target_clustered_bootstrap_95_ci_percentage_points": [
+    21.0,
+    67.0
+  ],
+  "target_sign_test": {
+    "targets_marks_better": 7,
+    "targets_raw_better": 0,
+    "targets_tied": 3,
+    "two_sided_p_value": 0.015625
+  },
+  "unit_of_analysis_note": "The examples are target controls each repeated across seeds. Raw-condition success is strongly shared within a target, so examples of the same target are not independent. The example-level bootstrap treats every example as independent and therefore overstates precision; the target-clustered bootstrap resamples whole targets and reflects how many independent controls were actually tested. Both intervals are reported, each with its unit of analysis named; neither replaces the frozen v1 report."
+}

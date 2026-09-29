@@ -10,7 +10,7 @@ inspectable—not to claim broad desktop-agent performance.
 ## At a glance
 
 - Pixel-only Gymnasium environment with a privileged evaluator; five bitwise identical real OSWorld resets at 1024×768 on one host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)).
-- 100 paired targets: 56/100 raw, 100/100 marks, +44.0 percentage points, 95% CI [+35.0, +54.0]; moving `gpt-5.4-mini` alias, DOM-derived offline marks ([canonical report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
+- 100 paired examples (10 target controls x 10 seeds): 56/100 raw, 100/100 marks, +44.0 percentage points, example-level 95% CI [+35.0, +54.0] (target-clustered 95% CI [+21.0, +67.0], [supplement](artifacts/grounding-clustered-analysis-v1.md)); marks are selection among 10 labelled candidates with proposal coverage 100% by the retention rule ([protocol](artifacts/grounding-protocol.md)); moving `gpt-5.4-mini` alias, DOM-derived offline marks ([canonical report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
 - Documented reproduction workflow: ruff, strict mypy, offline unit tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
@@ -123,7 +123,7 @@ OSWorld-V2 adapter for real episodes. For seed 7, **five real OSWorld resets wer
 bitwise identical at 1024×768 on one local Apple Silicon Docker/QEMU host**
 ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json),
 [revision environment](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)). The
-reward-hacking audit records a disposition and evidence for **14 tested surfaces**
+reward-hacking audit records a disposition and evidence for **14 surfaces (11 tested, 2 blocked, 1 mitigated)**
 ([audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)). The historical
 1920×1080 run established semantic task-state determinism and perceptual visual stability, not
 bitwise equality ([historical reset evidence](artifacts/day-2/raw/real-reset.json)).
@@ -135,14 +135,21 @@ truncation, and stepping after either ending raises an error
 
 ### Frozen grounding experiment
 
-On **100 paired targets** from the same 1024×768 synthetic form, the Codex CLI provider using the
+On **100 paired examples (10 target controls x 10 seeds)** from the same 1024×768 synthetic form, the Codex CLI provider using the
 moving `gpt-5.4-mini` alias scored **56/100 with raw coordinates and 100/100 with marks**. The
 paired difference was **+44.0 percentage points**, with a fixed-seed percentile-bootstrap **95% CI
 of [+35.0, +54.0]** ([canonical report](artifacts/grounding-report.md),
 [structured results](artifacts/grounding-results.json),
-[provenance](artifacts/grounding-report-provenance-v1.json)). Proposal coverage was **100/100** and
-conditional mark-selection accuracy was **100/100**; the two quantities are reported separately
-in the same evidence.
+[provenance](artifacts/grounding-report-provenance-v1.json)). That interval treats the 100 examples
+as independent; resampling the 10 target controls instead gives a target-clustered 95% CI of
+[+21.0, +67.0], and 7 of 10 targets favour marks with none favouring raw (exact sign test
+p = 0.0156) ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md)). Proposal
+coverage was **100/100**, which holds by construction: the retention rule requires the target to
+occur exactly once among the independently collected candidates
+([protocol, retention rule](artifacts/grounding-protocol.md#retention-validation-and-exclusions)).
+The marks condition is therefore selection among 10 labelled candidates, and conditional
+mark-selection accuracy was **100/100**; the two quantities are reported separately in the same
+evidence.
 
 The marks condition is not an end-to-end pixel-only proposal system. During offline dataset
 construction, Playwright evaluates `getBoundingClientRect()` for every actionable control and
@@ -195,6 +202,14 @@ documented without being promoted to a headline result
 - The privileged state endpoint exists inside the guest. App-mode navigation containment was
   tested, while browser and guest-OS exploits remain outside the threat model. Digest pinning does
   not remove third-party publisher risk ([reward-hacking audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)).
+- The +44 pp result is specific to `gpt-5.4-mini` with prompt v1. With a revised prompt, Claude
+  Haiku 4.5 scored 100/100 raw on the same 100 examples
+  ([v3 Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md)).
+- The headline calls ran through the Codex CLI harness and averaged about 11,900 input tokens per
+  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md),
+  derived from [predictions](artifacts/grounding-predictions.jsonl)). The harness
+  prompt is not part of the recorded prompt v1, and it is not recorded whether the harness prompt
+  was identical across conditions.
 - Platform metrics are synthetic, local scripted-provider measurements. V5 calibration is
   descriptive, the confirmatory benchmark is unfinished, and no v5 gate is declared
   ([evidence index](docs/evidence-index.md)).
@@ -231,8 +246,7 @@ a broad agent benchmark.
 - [Qualified resume-bullet review candidate](artifacts/resume-bullets-v2-review.md) — proposed
   wording with the current scope qualifications. The digest-bound historical approved artifact is
   retained unchanged at [artifacts/resume-bullets.md](artifacts/resume-bullets.md).
-- [Public release checklist](plans/public-release-checklist.md) — unticked human release gate; its
-  inventory refresh remains separate from this change.
+- [Public release checklist](plans/public-release-checklist.md) — unticked human release gate.
 
 ## Contributing
 
