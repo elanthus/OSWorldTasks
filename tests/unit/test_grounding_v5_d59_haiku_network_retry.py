@@ -1,4 +1,10 @@
-"""No-call checks of the new D5.9 retry plan and execution boundary."""
+"""No-call checks of the new D5.9 retry plan and execution boundary.
+
+The plan's policy inputs (all of ``pixelgym/``, ``pyproject.toml``, and the
+platform lock) are byte-verified against the plan's recorded source revision
+using an archive of that revision, not the live checkout. This keeps the frozen
+artifact verified while allowing ``pixelgym/`` edits after D5.9.
+"""
 
 import json
 from copy import deepcopy
@@ -10,7 +16,9 @@ from pixelgym.grounding.v5 import claude_code_policy as claude
 from pixelgym.grounding.v5 import d59_haiku_network_retry as successor
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.d59_haiku_execution import validate_assignments
+from pixelgym.grounding.v5.d59_haiku_retry_successor import CALIBRATION_PATH, POLICY_INPUT_ROOTS
 from scripts import run_grounding_v5_d59_haiku_network_retry as execution
+from tests.support.recorded_revision import archive_recorded_root
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / successor.OUTPUT_DIRECTORY / "execution-plan.json"
@@ -18,6 +26,22 @@ PUBLIC = ROOT / successor.OUTPUT_DIRECTORY / "execution-plan.json"
 
 def plan():
     return json.loads(PUBLIC.read_text())
+
+
+@pytest.fixture
+def recorded_root(tmp_path, monkeypatch):
+    """Policy inputs and plan sources as they were at the recorded revision."""
+    return archive_recorded_root(
+        tmp_path,
+        monkeypatch,
+        plan()["source_binding"]["source_revision"],
+        (
+            *POLICY_INPUT_ROOTS,
+            *successor.SOURCE_FILES,
+            successor.PREDECESSOR_PATH,
+            CALIBRATION_PATH,
+        ),
+    )
 
 
 def approval(value):
@@ -30,10 +54,10 @@ def approval(value):
     }
 
 
-def test_network_successor_is_reproducible_and_preserves_cohort_and_caps():
+def test_network_successor_is_reproducible_and_preserves_cohort_and_caps(recorded_root):
     value = plan()
     source_revision = value["source_binding"]["source_revision"]
-    assert successor.execution_plan(ROOT, source_revision=source_revision) == value
+    assert successor.execution_plan(recorded_root, source_revision=source_revision) == value
     previous = json.loads((ROOT / successor.PREDECESSOR_PATH).read_text())
     for field in ("phase_caps", "primary_comparison", "allocation", "runtime", "security_boundary"):
         assert value[field] == previous[field]
@@ -91,15 +115,26 @@ def test_live_manifest_rejects_retry_rule_drift():
         execution.manifests(ROOT, value, identity)
 
 
-def test_preparation_rejects_changed_executor(monkeypatch):
+def test_preparation_rejects_changed_executor(recorded_root, monkeypatch):
     value = plan()
     original = Path.read_bytes
 
     def changed(path):
-        if path == ROOT / "scripts/run_grounding_v5_d59_haiku_network_retry.py":
+        if path == recorded_root / "scripts/run_grounding_v5_d59_haiku_network_retry.py":
             return b"changed"
         return original(path)
 
     monkeypatch.setattr(Path, "read_bytes", changed)
     with pytest.raises(ValueError, match="execution source differs"):
-        successor.execution_plan(ROOT, source_revision=value["source_binding"]["source_revision"])
+        successor.execution_plan(
+            recorded_root, source_revision=value["source_binding"]["source_revision"]
+        )
+
+
+def test_policy_input_mutation_at_recorded_revision_is_rejected(recorded_root):
+    target = recorded_root / "pixelgym/env.py"
+    target.write_bytes(target.read_bytes() + b"# mutated\n")
+    with pytest.raises(ValueError, match="policy input differs from source revision"):
+        successor.execution_plan(
+            recorded_root, source_revision=plan()["source_binding"]["source_revision"]
+        )
