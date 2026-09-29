@@ -256,7 +256,10 @@ def test_non_preregistered_sections_are_labelled_exploratory() -> None:
 
 def test_render_has_disclosure_and_no_verdict_language() -> None:
     md = analysis.render(_analyze())
-    assert "\n## Disclosure\n\nThe stop rule was changed after repeated infrastructure failures. " in md
+    assert (
+        "\n## Disclosure\n\nThe stop rule was changed after repeated infrastructure failures. "
+        in md
+    )
     assert "3 timed-out provider calls" in md
     assert "D5.10 is the owner's review." in md
     lowered = md.lower()
