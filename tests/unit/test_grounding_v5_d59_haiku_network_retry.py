@@ -30,8 +30,12 @@ def plan():
 
 @pytest.fixture
 def recorded_root(tmp_path, monkeypatch):
-    """Policy inputs and plan sources as they were at the recorded revision."""
-    return archive_recorded_root(
+    """Policy inputs and plan sources as they were at the recorded revision.
+
+    The frozen executor's ``validate_plan`` rebuilds the plan from its module
+    ``ROOT``; point it at the archive so it also verifies against the revision.
+    """
+    root = archive_recorded_root(
         tmp_path,
         monkeypatch,
         plan()["source_binding"]["source_revision"],
@@ -42,6 +46,8 @@ def recorded_root(tmp_path, monkeypatch):
             CALIBRATION_PATH,
         ),
     )
+    monkeypatch.setattr(execution, "ROOT", root)
+    return root
 
 
 def approval(value):
@@ -97,7 +103,7 @@ def test_execution_rejects_approval_drift(field, value):
         successor.validate_approval(frozen, changed)
 
 
-def test_execution_rejects_modified_plan_even_with_updated_digest():
+def test_execution_rejects_modified_plan_even_with_updated_digest(recorded_root):
     value = plan()
     value["primary_jobs"][0]["seed"] += 1
     value["execution_plan_digest"] = content_digest(
