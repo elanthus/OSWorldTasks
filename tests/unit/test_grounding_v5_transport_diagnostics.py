@@ -83,8 +83,8 @@ def test_diagnostics_preserve_request_local_unknown_accounting(tmp_path):
 
     from pixelgym.grounding.v5.request_budget import ReboundedMemoryLedger, request_bound
     from pixelgym.grounding.v5.request_budget_v2 import IsolatedRequestBoundTransport
-    from tests.unit.test_grounding_v5_request_budget import CONFIG
-    from tests.unit.test_grounding_v5_request_budget import request as model_request
+    from tests.support.grounding_v5 import BUDGET_CONFIG as CONFIG
+    from tests.support.grounding_v5 import budget_request as model_request
 
     body = model_request(2)
 

@@ -299,7 +299,7 @@ def test_v5_runner_reports_step_limit_truncation_from_the_environments_own_signa
     environment ever truncating): here `action_limit` is left at its default
     (`task.max_episode_steps`), so the environment's own `truncated=True` on the
     final step is what ends the episode, inside the action loop rather than after
-    it (issue #170, coverage-gate follow-up).
+    it.
     """
 
     seed = 5000

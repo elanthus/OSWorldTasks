@@ -10,7 +10,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pixelgym.grounding.release import collect_release_observations
+from scripts.release_observations import collect_release_observations
 
 
 def parse_args() -> argparse.Namespace:

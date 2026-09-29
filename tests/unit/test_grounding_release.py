@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
-from pixelgym.grounding.release import (
+from scripts.release_observations import (
     RELEASE_OBSERVATIONS_SCHEMA_VERSION,
     collect_release_observations,
 )
@@ -71,3 +72,15 @@ def test_release_collector_reports_raw_counts_without_a_verdict(tmp_path: Path) 
     required = {row["path"]: row for row in observations["required_artifacts"]}
     assert required["artifacts/grounding-protocol.md"]["exists"] is True
     assert required["artifacts/grounding-results.json"]["exists"] is False
+
+
+def test_release_collector_is_build_time_only_and_reads_no_resume_copy(tmp_path: Path) -> None:
+    assert importlib.util.find_spec("pixelgym.grounding.release") is None
+    (tmp_path / "artifacts/day-3/review").mkdir(parents=True)
+    (tmp_path / "artifacts/resume-bullets.md").write_text("[PENDING]\n")
+    (tmp_path / "artifacts/day-3/review/resume-bullets-draft.md").write_text("[PENDING]\n")
+
+    copy = collect_release_observations(tmp_path)["portfolio_copy"]
+
+    assert set(copy) == {"public_readme", "readme_review_draft"}
+    assert not any("resume" in row["path"] for row in copy.values())

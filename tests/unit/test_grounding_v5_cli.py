@@ -1,9 +1,6 @@
 """Direct tests for `pixelgym.grounding.v5.cli`'s shared argparse validator.
 
-This function has no live shipped caller today (only the deleted `legacy/`
-D5.6 calibration scripts used it as an argparse `type=`), but it is still part
-of the module's public surface, so it is tested directly rather than deleted
-(issue #170, coverage-gate follow-up).
+The validator has no shipped caller but is public module surface, so it is tested directly.
 """
 
 from __future__ import annotations

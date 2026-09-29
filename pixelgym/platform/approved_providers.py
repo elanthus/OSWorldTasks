@@ -440,7 +440,7 @@ class ApprovedCallLedger:
 
 
 class ApprovedGroundingProviderAdapter:
-    """Platform provider around a Day 3 grounding provider with a pre-send call cap."""
+    """Wrap an approved grounding provider and refuse any call beyond its cap before sending."""
 
     synthetic = False
 

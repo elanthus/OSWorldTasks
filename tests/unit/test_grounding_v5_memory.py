@@ -41,14 +41,9 @@ from pixelgym.grounding.v5.screenshot_memory import (
     build_screenshot_policy_manifest,
 )
 from pixelgym.serialization import canonical_json_bytes
+from tests.support.grounding_v5 import advance
 
 ROOT = Path(__file__).parents[2]
-
-
-def advance(backend: MemoryBackend, until: int) -> None:
-    actions: list[dict[str, int]] = []
-    for stage in backend.task.stages[backend.stage_index : until]:
-        _append_golden_stage(backend, stage, actions)
 
 
 def test_reserved_seed_allocation_without_generating_confirmation() -> None:

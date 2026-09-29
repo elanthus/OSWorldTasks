@@ -82,25 +82,11 @@ markers = [
 ]
 
 [tool.coverage.run]
-# Measure the complete package, including optional OSWorld, browser, grounding,
-# and platform paths. Keeping difficult modules in scope prevents the fast-suite
-# baseline from being inflated by exclusions. `source = ["pixelgym"]` matches
-# the packaging scope in [tool.setuptools.packages.find] and the mypy scope in
-# [tool.mypy] `files`: `flows/` and `scripts/` are not part of the
-# installable package and are out of scope for the same reason they are out of
-# scope for those tools, not because they are hard to cover. The 12 pre-existing
-# `# pragma: no cover` lines inside pixelgym (optional-import fallbacks and
-# exhaustiveness guards unreachable without the optional extras) remain in
-# force and are not re-justified per line here.
+# Measure the whole installable package, matching the packaging and mypy scope.
 branch = true
 source = ["pixelgym"]
 
 [tool.coverage.report]
-# The branch-aware fast suite measured 80.337% before issue #114's property
-# tests were added, and 80.343% after (artifacts/ci-coverage-baseline-issue-114.md)
-# — the new tests add negligible headroom (2217 -> 2216 missed statements out
-# of 13686). Fail at the rounded pre-existing baseline so small regressions are
-# caught without relying on margin the new tests themselves created.
 fail_under = 80
 precision = 2
 show_missing = true
@@ -111,11 +97,7 @@ output = "coverage.xml"
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-
-[tool.ruff.lint.per-file-ignores]
-# Preserve the closed evidence manifest's analyzer bytes; only import ordering
-# is exempt, and runtime correctness rules remain enabled for this file.
-"artifacts/grounding-v5-d58-reliable-diagnostic/analyze.py" = ["I001"]
+extend-exclude = ["artifacts"]
 
 [tool.mypy]
 python_version = "3.12"

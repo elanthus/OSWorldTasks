@@ -954,13 +954,8 @@ def test_duplicate_idempotency_key_never_replays_process(tmp_path: Path) -> None
         invocation_journal.close()
 
 
-# ── Coverage recovery after issue #170 (round 2) ──
-#
-# The deleted `test_grounding_v5_d56_codex_subscription_campaign.py` and
-# `test_grounding_v5_d56_codex_cli_calibration.py` exercised `probe_codex_runtime()`,
-# `CodexCliInvocationJournal.integrity_report()`, and the lifecycle's own pre-send
-# process-start-failure path only indirectly, through the legacy campaign driver.
-# These restore that coverage directly against the shipped module.
+# Direct tests for `probe_codex_runtime()`, `CodexCliInvocationJournal.integrity_report()`,
+# and the pre-send process-start-failure path, which no other test reaches.
 
 
 def test_probe_codex_runtime_reads_local_cli_metadata_without_a_model_request() -> None:

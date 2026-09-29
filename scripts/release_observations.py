@@ -1,4 +1,8 @@
-"""Raw grounding-release observations with no automated gate verdict."""
+"""Collect raw D3.11 grounding-release observations with no automated gate verdict.
+
+Build-time only: it reads checked-in artifacts and portfolio copy and is not part of the
+installed ``pixelgym`` package.
+"""
 
 from __future__ import annotations
 
@@ -157,8 +161,6 @@ def _copy_observations(root: Path) -> dict[str, Any]:
     paths = {
         "public_readme": root / "README.md",
         "readme_review_draft": root / "artifacts/day-3/review/README-draft.md",
-        "resume_final": root / "artifacts/resume-bullets.md",
-        "resume_review_draft": root / "artifacts/day-3/review/resume-bullets-draft.md",
     }
     output = {}
     for name, path in paths.items():
