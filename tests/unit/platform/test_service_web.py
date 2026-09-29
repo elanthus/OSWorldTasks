@@ -3470,7 +3470,7 @@ def test_runs_render_recorded_badges_filters_summary_and_fixture_disclosure(
     assert runs.status_code == 200
     assert "REAL PROVIDER" in runs.text
     assert "INCOMPLETE" in runs.text
-    assert "DIRTY CODE" in runs.text
+    assert "UNCOMMITTED CHANGES" in runs.text
     assert "UNPRICED" in runs.text
     assert "invalid 3" in runs.text
     assert report.dataset_fingerprint.removeprefix("sha256:")[:12] in runs.text
@@ -3836,3 +3836,79 @@ def test_runs_render_safe_source_provenance_diagnostic(
     client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     page = client.get("/runs")
     assert "PROVENANCE: MANIFEST MALFORMED JSON" in page.text
+
+
+_REMOVED_SLOGANS = (
+    "Measure the policy.",
+    "Then earn the right to ship it.",
+    "Every result stays visible.",
+    "No favorable metric gets to travel alone.",
+    "One exact policy is active.",
+)
+
+
+def _badge_candidate(code_state: str) -> object:
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        gate_report={
+            "completeness": {"passed": True},
+            "cost_usd_per_100": {"observed": 1.0},
+        },
+        summary=SimpleNamespace(synthetic_provider=True, unpriced_call_count=0),
+        policy=SimpleNamespace(
+            provider="scripted-demo",
+            code_state=code_state,
+            source_provenance_failure_reason=None,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    ("code_state", "expected", "absent"),
+    [
+        ("clean", None, ("UNCOMMITTED CHANGES", "UNVERIFIED SOURCE", "DIRTY CODE")),
+        ("dirty", "UNCOMMITTED CHANGES", ("UNVERIFIED SOURCE", "DIRTY CODE")),
+        ("unverifiable", "UNVERIFIED SOURCE", ("UNCOMMITTED CHANGES", "DIRTY CODE")),
+        ("not-a-schema-value", "UNVERIFIED SOURCE", ("UNCOMMITTED CHANGES", "DIRTY CODE")),
+    ],
+)
+def test_code_state_badge_covers_every_schema_value_and_unknown(
+    code_state: str, expected: str | None, absent: tuple[str, ...]
+) -> None:
+    from pixelgym.platform.web.app import _candidate_badges
+
+    badges = _candidate_badges(_badge_candidate(code_state))
+    if expected is not None:
+        assert expected in badges
+    for label in absent:
+        assert label not in badges
+
+
+def test_every_page_renders_descriptive_heading_without_slogans(
+    tmp_path: Path, passing_evidence, policy_factory
+) -> None:
+    policy, summary, report = passing_evidence
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=report,
+        artifacts=[],
+        summary=summary,
+    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
+    pages = {
+        "/": "<h1>Grounding evaluation</h1>",
+        "/runs": "<h1>Run history</h1>",
+        "/compare": "<h1>Compatible comparison</h1>",
+        f"/candidates/{candidate.candidate_id}": f"<h1>{candidate.candidate_id}</h1>",
+        "/deployment": "<h1>Delivery ledger</h1>",
+    }
+    for path, heading in pages.items():
+        response = client.get(path)
+        assert response.status_code == 200, path
+        assert heading in response.text, path
+        for slogan in _REMOVED_SLOGANS:
+            assert slogan not in response.text, (path, slogan)
