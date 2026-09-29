@@ -21,7 +21,8 @@ from pixelgym.grounding.v5.reliable_memory import (
 )
 from pixelgym.grounding.v5.reliable_transport import ReliableTransport, retry_delay
 from pixelgym.grounding.v5.request_budget import ReboundedMemoryLedger, request_bound
-from tests.unit.test_grounding_v5_request_budget import CONFIG, request
+from tests.support.grounding_v5 import BUDGET_CONFIG as CONFIG
+from tests.support.grounding_v5 import budget_request as request
 
 CONFIG = reliable_config(CONFIG)
 

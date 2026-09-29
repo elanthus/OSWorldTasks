@@ -14,13 +14,10 @@ import pytest
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.grounding.v5.memory_backend import MemoryBackend
 from pixelgym.grounding.v5.memory_calibration import MemoryCalibrationLedger, run_episode, summarize
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
-from pixelgym.grounding.v5.memory_plan import config_from_price_snapshot
 from pixelgym.grounding.v5.panel_policy import SpendLedger
-from pixelgym.grounding.v5.policies import _append_golden_stage, noop_action
-from pixelgym.grounding.v5.runner import InjectedInterruption, ScriptedTransport, TransportOutcome
+from pixelgym.grounding.v5.runner import InjectedInterruption
 from pixelgym.grounding.v5.screenshot_memory import (
     ScreenshotMemoryPolicy,
     build_screenshot_policy_manifest,
@@ -34,81 +31,7 @@ from scripts.run_grounding_v5_memory_calibration import (
     render_report,
     verify_ledger,
 )
-
-ROOT = Path(__file__).parents[2]
-CONFIG = config_from_price_snapshot(
-    json.loads((ROOT / "artifacts/grounding-v5-d58-design/gemini-price-snapshot.json").read_text())
-)
-PLAN = "sha256:" + "a" * 64
-
-
-def job(mode: str = "history") -> dict[str, Any]:
-    task = generate_memory_task(5112)
-    return {
-        "trial_id": mode,
-        "mode": mode,
-        "seed": task.seed,
-        "task_id": task.task_id,
-        "task_digest": content_digest(task.canonical_dict()),
-        "action_limit": task.max_episode_steps,
-        "seed_record": task.seed_record.to_dict(),
-    }
-
-
-class GoldenTransport(ScriptedTransport):
-    def __init__(
-        self, ledger: SpendLedger, *, cost: str = "0.001", wrong_memory: bool = False
-    ) -> None:
-        backend = MemoryBackend()
-        backend.reset(5112)
-        actions: list[dict[str, int]] = []
-        try:
-            for stage in backend.task.stages:
-                _append_golden_stage(backend, stage, actions)
-            actions.extend(
-                noop_action() for _ in range(backend.task.max_episode_steps - len(actions))
-            )
-        finally:
-            backend.close()
-        if wrong_memory:
-            stage = generate_memory_task(5112).stages[5]
-            rank = next(
-                i for i, c in enumerate(stage.controls) if c.control_id != stage.target_control_id
-            )
-            actions[15] = {"action_type": 1, "x": 512, "y": 459 + 72 * rank, "key": 0}
-        outcomes = []
-        for action in actions:
-            normalized = dict(action)
-            if action["action_type"] == 1:
-                normalized.update(x=int(action["x"] * 1000 / 1024), y=int(action["y"] * 1000 / 768))
-            outcomes.append(
-                TransportOutcome(
-                    "response",
-                    {
-                        "response_id": "fake",
-                        "model": CONFIG.model,
-                        "content": json.dumps(normalized),
-                        "finish_reason": "stop",
-                        "usage": {
-                            "upstream_provider": CONFIG.response_provider,
-                            "price_guard": "ok",
-                            "cost": float(cost),
-                        },
-                    },
-                )
-            )
-        super().__init__(outcomes)
-        self.ledger, self.cost = ledger, Decimal(cost)
-
-    def send(
-        self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
-    ) -> TransportOutcome:
-        assert self.ledger.reserve_wire(idempotency_key, CONFIG.request_maximum_usd)
-        outcome = super().send(
-            request, idempotency_key=idempotency_key, deadline_seconds=deadline_seconds
-        )
-        assert self.ledger.record_cost(idempotency_key, self.cost, CONFIG.request_maximum_usd)
-        return outcome
+from tests.support.grounding_v5 import CONFIG, PLAN, ROOT, GoldenTransport, job
 
 
 def execute(

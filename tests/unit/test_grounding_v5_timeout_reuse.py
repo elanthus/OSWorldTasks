@@ -1,7 +1,5 @@
 """Offline overlap fixtures: late results cannot borrow another request's bound."""
 
-import io
-import json
 import threading
 import urllib.error
 from contextlib import closing
@@ -13,21 +11,9 @@ from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.request_budget import ReboundedMemoryLedger, request_bound
 from pixelgym.grounding.v5.request_budget_v2 import IsolatedRequestBoundTransport
-from tests.unit.test_grounding_v5_request_budget import CONFIG, request
-
-
-def response(cost="0.01"):
-    return io.BytesIO(
-        json.dumps(
-            {
-                "id": "fixture",
-                "model": CONFIG.model,
-                "provider": "Google",
-                "choices": [{"message": {"content": "{}"}, "finish_reason": "stop"}],
-                "usage": {"cost": cost},
-            }
-        ).encode()
-    )
+from tests.support.grounding_v5 import BUDGET_CONFIG as CONFIG
+from tests.support.grounding_v5 import budget_request as request
+from tests.support.grounding_v5 import budget_response as response
 
 
 @pytest.mark.parametrize("late_failure", [False, True])
