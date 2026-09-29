@@ -169,8 +169,11 @@ def _candidate_badges(candidate: Any) -> str:
     badges = [_badge("DEMO PROVIDER" if synthetic else "REAL PROVIDER", "demo" if synthetic else "real")]
     if not report["completeness"]["passed"]:
         badges.append(_badge("INCOMPLETE", "bad"))
-    if candidate.policy.code_state != "clean":
-        badges.append(_badge("DIRTY CODE", "bad"))
+    if candidate.policy.code_state == "dirty":
+        badges.append(_badge("UNCOMMITTED CHANGES", "bad"))
+    elif candidate.policy.code_state != "clean":
+        # "unverifiable" and any value outside the schema: never claim a dirty tree.
+        badges.append(_badge("UNVERIFIED SOURCE", "bad"))
     if candidate.policy.source_provenance_failure_reason is not None:
         badges.append(
             _badge(
@@ -224,6 +227,46 @@ def _evidence_links(candidate: Any, mlflow_base_url: str) -> str:
         f"{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}", "MLflow run"
     )
     return f'<div class="evidence-links">{raw} · {per_example} · {gate_link} · {mlflow}</div>'
+
+
+def _candidate_header(candidate_id: str, candidate: Any, invalid: str, disclosure: str) -> str:
+    policy = candidate.policy
+    return (
+        f'<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1>'
+        f'<p class="mono">{_escape(policy.policy_id)}</p>'
+        f"<p>{_escape(policy.provider)} · code {_escape(_short_digest(policy.code_revision))} · invalid outputs {invalid}</p>"
+        f"{_candidate_badges(candidate)}{disclosure}</section>"
+    )
+
+
+def _gate_metric(label: str, observation: dict[str, Any], bound: str, formatter: Callable[[object], str]) -> str:
+    return (
+        f"<div><span>{label}</span><strong>{formatter(observation['observed'])}</strong>"
+        f"<small>{bound} {formatter(observation['threshold'])}</small></div>"
+    )
+
+
+def _gate_report_panel(candidate: Any, reasons: str, mlflow_base_url: str) -> str:
+    report = candidate.gate_report
+    metrics = (
+        _gate_metric("Accuracy", report["accuracy"], "minimum", _percentage)
+        + _gate_metric("Cost / 100", report["cost_usd_per_100"], "maximum", _money)
+        + _gate_metric("Provider p95", report["provider_latency_p95_ms"], "maximum", _milliseconds)
+    )
+    return (
+        f'<section class="panel"><h2>Gate report</h2><div class="metric-strip">{metrics}</div>'
+        f"<h3>Evidence</h3>{_evidence_links(candidate, mlflow_base_url)}"
+        f"<h3>Decision details</h3><ul>{reasons}</ul></section>"
+    )
+
+
+def _human_gate_panel(candidate: Any, controls: str) -> str:
+    return (
+        '<aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p>'
+        f"<h2>{_escape(candidate.state.value)}</h2>"
+        "<p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>"
+        f"{controls}</aside>"
+    )
 
 
 def _delta(value: object, baseline: object, *, kind: str) -> str:
@@ -410,7 +453,7 @@ def create_control_app(
 
     @app.get("/", response_class=HTMLResponse)
     def submit_view(request: Request) -> str:
-        body = f"""<section class="hero"><div><p class="eyebrow">GROUNDING EVALUATION</p><h1>Measure the policy.<br>Then earn the right to ship it.</h1>
+        body = f"""<section class="hero"><div><p class="eyebrow">GROUNDING EVALUATION</p><h1>Grounding evaluation</h1>
 <p class="lede">Submit one frozen, attributable evaluation. Every response is preserved before scoring; every gate must pass together.</p></div>
 <aside><div class="signal"><span>DATASET</span><strong>100</strong><small>frozen examples</small></div><div class="signal"><span>SPEND CAP</span><strong>$0</strong><small>scripted demo only</small></div></aside></section>
 <section class="panel"><div class="panel__heading"><div><p class="eyebrow">NEW EXPERIMENT</p><h2>Resolve every input before execution</h2></div>{_badge('DEMO PROVIDER', 'demo')}</div>
@@ -618,7 +661,7 @@ def create_control_app(
             else ""
         )
         pagination = " · ".join(link for link in (previous_link, next_link) if link)
-        body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Every result stays visible.</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
+        body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Run history</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
 <section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table>{f'<nav aria-label="Run pages">{pagination}</nav>' if pagination else ''}</section>"""
         return layout(request, "Runs", body)
 
@@ -705,7 +748,7 @@ def create_control_app(
                 query = urlencode([( "candidate", item.candidate_id) for item in selected[:2]])
                 prompt_diff = f'<p><a href="/compare/prompt-diff?{_escape(query)}">Prompt diff (recorded versions)</a></p>'
             comparison = f'<section class="comparison-head">{warning}<p>{explanation}</p>{prompt_diff}</section><div class="metric-grid">{cards}</div>'
-        body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>No favorable metric gets to travel alone.</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
+        body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>Compatible comparison</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
         return layout(request, "Compare", body)
 
     def _packaged_prompt_text(item: Any) -> tuple[str, bool]:
@@ -792,7 +835,13 @@ def create_control_app(
         disclosure = ""
         if item.policy.provider == "scripted-demo" and item.policy.model == "day3-replay-revised-v2":
             disclosure = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
-        body = f"""<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1><p class="mono">{_escape(item.policy.policy_id)}</p><p>{_escape(item.policy.provider)} · code {_escape(_short_digest(item.policy.code_revision))} · invalid outputs {invalid}</p>{_candidate_badges(item)}{disclosure}</section><div class="detail-grid"><section class="panel"><h2>Gate report</h2><div class="metric-strip"><div><span>Accuracy</span><strong>{_percentage(report['accuracy']['observed'])}</strong><small>minimum {_percentage(report['accuracy']['threshold'])}</small></div><div><span>Cost / 100</span><strong>{_money(report['cost_usd_per_100']['observed'])}</strong><small>maximum {_money(report['cost_usd_per_100']['threshold'])}</small></div><div><span>Provider p95</span><strong>{_milliseconds(report['provider_latency_p95_ms']['observed'])}</strong><small>maximum {_milliseconds(report['provider_latency_p95_ms']['threshold'])}</small></div></div><h3>Evidence</h3>{_evidence_links(item, mlflow_base_url)}<h3>Decision details</h3><ul>{reasons}</ul></section><aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p><h2>{_escape(item.state.value)}</h2><p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>{controls}</aside></div>"""
+        body = (
+            _candidate_header(candidate_id, item, invalid, disclosure)
+            + '<div class="detail-grid">'
+            + _gate_report_panel(item, reasons, mlflow_base_url)
+            + _human_gate_panel(item, controls)
+            + "</div>"
+        )
         return layout(request, "Candidate", body)
 
     def _approve(
@@ -898,7 +947,7 @@ def create_control_app(
             if has_rollback_target and coordinator is not None:
                 rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
         timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>' for event in events)
-        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>One exact policy is active.</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
+        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Delivery ledger</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
         return layout(request, "Deployment", body)
 
     @app.get("/deployment/audit", response_class=HTMLResponse)
