@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import io
 import json
-import tarfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -18,6 +16,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
     execution_plan,
     expected_outputs,
 )
+from tests.support.recorded_revision import archive_recorded_root
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORDED_SOURCE_REVISION = "1201df8a773add79733d392f876b579752f797c5"
@@ -33,22 +32,18 @@ def recorded_root(tmp_path, monkeypatch):
     """Reproduce old evidence using the frozen source bytes, not today's adapter."""
     from pixelgym.grounding.v5 import d59_haiku_retry_successor as successor
 
-    archive = _git_output(
-        ROOT,
-        "archive",
+    return archive_recorded_root(
+        tmp_path,
+        monkeypatch,
         RECORDED_SOURCE_REVISION,
-        "--",
-        *successor.POLICY_INPUT_ROOTS,
-        *successor.SOURCE_FILES,
-        successor.PREDECESSOR_PLAN_PATH,
-        successor.PREDECESSOR_APPROVAL_PATH,
-        successor.CALIBRATION_PATH,
+        (
+            *successor.POLICY_INPUT_ROOTS,
+            *successor.SOURCE_FILES,
+            successor.PREDECESSOR_PLAN_PATH,
+            successor.PREDECESSOR_APPROVAL_PATH,
+            successor.CALIBRATION_PATH,
+        ),
     )
-    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-        tar.extractall(tmp_path, filter="data")
-    original = successor._git_output
-    monkeypatch.setattr(successor, "_git_output", lambda _root, *args: original(ROOT, *args))
-    return tmp_path
 
 
 def test_discarded_run_receipt_is_response_free_and_preserves_failure() -> None:
