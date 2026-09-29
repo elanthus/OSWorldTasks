@@ -126,3 +126,19 @@ change at the frontier ceiling or for the two evaluable floor models.**
 - If a longer-horizon successor pilot is designed, keep the paired-condition structure so the
   band-dependence claim can be tested where frontier failures are semantic rather than
   geometric.
+
+## Amendment 2026-09-29: v4c pilot rows
+
+The sections above omitted the v4c pilot. They are left unchanged; the rows below are read
+directly from the per-episode condition records bound by each results file. Episode success is
+the privileged evaluator outcome.
+
+| Run (protocol) | Model | n per condition | Raw | Marks | Discordant episodes | Source artifact |
+|---|---|---:|---:|---:|---|---|
+| v4c pilot (10 closed-loop episodes) | `gpt-5.6-luna` (low) | 10 | 10 | 9 | 1, raw-only (seed 66) | `grounding-v4c-pilot-results-luna.json` |
+| v4c pilot (10 closed-loop episodes), coordinates rescaled from a 1000x1000 grid | `qwen/qwen3.8-27b` | 10 | 10 | 8 | 2, raw-only (seeds 61, 68) | `grounding-v4c-pilot-results-qwen3-8-27b-normalized-1000.json` |
+| v4c pilot (10 closed-loop episodes), native coordinates | `qwen/qwen3.8-27b` | 10 | 0 | 0 | 0 | `grounding-v4c-pilot-results-qwen3-8-27b.json` |
+
+The native-coordinate Qwen row is a coordinate-frame floor, not a grounding result; see
+`grounding-v4c-pilot-floor-audit-qwen3-8-27b.json`. With n = 10 these rows support no delta
+estimate.

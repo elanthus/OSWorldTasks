@@ -1,7 +1,8 @@
 # Evidence store
 
-This directory is append-only: recorded SHA-256 digests and provenance files bind file paths, so
-nothing here is moved or renamed. The canonical evidence for public claims is the set of files
+This directory is append-only since `a07069d4dfefe2ff05c1cb6d865053e8682925c3`; earlier
+withdrawals are listed in the [evidence index](../docs/evidence-index.md#withdrawn-and-historical-work).
+Recorded SHA-256 digests and provenance files bind file paths. The canonical evidence for public claims is the set of files
 linked by the [root README](../README.md). Everything else is a historical revision, a superseded
 capture, a calibration campaign, or a release record, retained on purpose. Use the
 [evidence index](../docs/evidence-index.md) for context and public-verification limits.
@@ -14,7 +15,7 @@ capture, a calibration campaign, or a release record, retained on purpose. Use t
 | Environment validation | [day-2-rev-2026-09-06-issues-95-101/validation-report.json](day-2-rev-2026-09-06-issues-95-101/validation-report.json) | Revision environment record |
 | Environment validation | [day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json](day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json) | Reward-hacking audit |
 | Environment validation | [day-2/raw/real-reset.json](day-2/raw/real-reset.json) | Historical reset evidence |
-| Environment validation | [validation-report.json](validation-report.json) | Environment contract validation report |
+| Environment validation | [validation-report.json](validation-report.json) | Superseded 1920x1080 validation run (with its [generated report](validation-report.md)); the current record is the [revision report](day-2-rev-2026-09-06-issues-95-101/validation-report.md) |
 | Environment validation | [day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json](day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json) | Visual differences |
 | Grounding v1 experiment | [grounding-protocol.md](grounding-protocol.md) | Protocol and leakage controls |
 | Grounding v1 experiment | [grounding-report.md](grounding-report.md) | Canonical report |
@@ -66,9 +67,8 @@ frozen analysis plan and stop rules beside the D5.9 evidence.
 
 **Naming conventions**
 
-- `-pre-review`: retained; see the file header.
+- `-pre-review`: the original v4b Luna pilot collection, kept after review found an inconsistent amount in two captured triage scenarios; the canonical files are the corrected rerun (commit `1da5d6e`).
 - `-errata`: correct interpretation of immutable evidence without rewriting approved plans or run summaries; see the [calibration errata](grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json).
-- `-invalid-do-not-execute`: retained; see the file header of the [panel smoke plan](grounding-v5-d56-panel-smoke-plan-v2-invalid-do-not-execute.json).
 - `-vN` suffixes: retained; see the file header.
 - `SUPERSEDED-SOURCES`: records changed layout sources while retaining the frozen earlier capture; see the [source notice](grounding-capture.SUPERSEDED-SOURCES.md).
 - `luna` / `terra`: model codenames in [codex_cli_policy.py](../pixelgym/grounding/v5/codex_cli_policy.py), not hosts.
@@ -78,7 +78,6 @@ frozen analysis plan and stop rules beside the D5.9 evidence.
 - [public-release/](public-release/) — release-review records; [latest inventory and privacy refresh](public-release/release-review-2026-09-12.md).
 - [public-release-inventory.json](public-release-inventory.json) — revision-bound tracked-file, link, licensing, redaction, and reachable-history inventory.
 - [agent-assisted-workflow-history.json](agent-assisted-workflow-history.json) — agent-assisted workflow history.
-- [ci-coverage-baseline-issue-114.md](ci-coverage-baseline-issue-114.md) — CI coverage baseline record.
 
 ## How to verify
 
