@@ -130,6 +130,10 @@
       {
         "line": "  output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing",
         "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  episode makes the run incomplete.",
+        "source": "docs/v5-benchmark-design.md"
       }
     ],
     "primary_comparison": {

@@ -20,6 +20,7 @@ Quoted from the [pre-registration record](../grounding-v5-d59-freeze/analysis-pl
   Every singleton and each pair's `twin_a` is a primary representative.
 - **Primary metric:** exact episode success over all assigned confirmatory episodes. Invalid
   output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing
+  episode makes the run incomplete.
 ```
 
 The primary comparison is history minus stateless, primary phase only, paired on identical seed, phase primary, repeat 0, two-sided exact McNemar at alpha 0.05. Every assigned episode stays in the denominator.

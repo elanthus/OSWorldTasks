@@ -130,6 +130,7 @@ PREREGISTRATION_QUOTES = (
         DESIGN_DOC,
         "  output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing",
     ),
+    (DESIGN_DOC, "  episode makes the run incomplete."),
 )
 
 
