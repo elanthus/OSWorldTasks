@@ -1,10 +1,9 @@
 """Frozen contracts for serving v5 stateful policy systems (``pixelgym-serving-v2``).
 
-This module is the S2 deliverable of ``plans/v5-policy-serving.md``. It defines the Python side
-of three JSON Schemas: the stateful policy package, the ``/api/v2/episodes`` session messages,
-and the immutable episode records the serving host writes. It contains no runtime behaviour:
-no provider call, no policy execution, no storage. Later stages build on these types and are
-not allowed to change their meaning without a new schema version.
+Defines the Python side of three JSON Schemas: the stateful policy package, the
+``/api/v2/episodes`` session messages, and the immutable episode records the serving host
+writes. It has no runtime behaviour: no provider call, no policy execution, no storage.
+Changing the meaning of any type requires a new schema version.
 
 Boundaries encoded here:
 

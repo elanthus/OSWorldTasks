@@ -7,6 +7,10 @@ Endpoints:
 - ``GET  /api/task``   — public "request card" view (the values a human/agent
   is meant to read and transcribe; not secret).
 - ``POST /api/submit`` — record an immutable submission event.
+- ``POST /api/page-ready`` — the loaded page reports that it rendered the active
+  task; returns 409 if its ``task_id`` is stale.
+- ``GET  /api/page-ready`` — whether the page has reported ready since the last
+  reset. Returns 409 before reset.
 - ``GET  /api/state``  — privileged view for the host-side evaluator (task +
   every submission). Returns 409 before reset. Not linked from the UI.
 - ``GET  /``           — the form itself, served as static HTML.

@@ -778,14 +778,8 @@ def test_cleanup_does_not_claim_a_stubborn_process_was_closed(tmp_path: Path) ->
     assert transport.subprocesses_closed is False
 
 
-# ── Coverage recovery after issue #170 (round 2) ──
-#
-# The tests above exercise `ClaudeCodeTransport`/`ClaudeInvocationJournal` and only
-# ever call `ClaudeCodePolicy.parse()` inside `pytest.raises` blocks (failure paths).
-# The deleted legacy campaign's `execute_smoke()` also drove a full successful round
-# trip — `parse()` returning a candidate, plus every no-op `Policy` protocol hook the
-# runner calls around it, and `ClaudeInvocationJournal.integrity_report()` — with no
-# replacement. These restore that coverage directly.
+# Successful round trip: `parse()` returning a candidate, the no-op `Policy` hooks, and
+# `ClaudeInvocationJournal.integrity_report()`; the tests above cover only failure paths.
 
 
 def test_claude_policy_hooks_are_pure_pass_throughs_between_attempts() -> None:

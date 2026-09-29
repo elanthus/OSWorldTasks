@@ -97,3 +97,73 @@ def test_publication_audit_preserves_explicit_v2_digest_version() -> None:
     }
 
     assert journal_integrity_audit_record(report) == report
+
+
+# Source must not hard-code an operator's filesystem either.
+LOCAL_PATH_SCAN_ROOTS = ("pixelgym", "scripts", "flows")
+LOCAL_PATH_MARKERS = ("/Users/", "/home/", "/private/tmp/")
+# Each entry names one exact source line and why it may contain a marker. These lines are
+# detectors that reject local paths in published evidence; they are not paths themselves.
+LOCAL_PATH_ALLOWLIST: dict[tuple[str, str], str] = {
+    (
+        "scripts/publish_grounding_v5_d56_completed_calibrations.py",
+        '_LOCAL_PATH = re.compile(r"(?:/Users/|/home/|[A-Za-z]:\\\\\\\\Users\\\\\\\\)")',
+    ): "local-path detector regex; hash-bound by published D5.6 evidence",
+    (
+        "scripts/record_grounding_v5_d56_retained_development_runs.py",
+        '_LOCAL_PATH = re.compile(r"(?:/Users/|/home/|[A-Za-z]:\\\\\\\\Users\\\\\\\\)")',
+    ): "local-path detector regex; hash-bound by published D5.6 evidence",
+    (
+        "scripts/publish_pr196_calibration.py",
+        '"/Users/" not in text and "/private/" not in text and "data:image/" not in text,',
+    ): "private-surface check on the published snapshot",
+    (
+        "scripts/publish_haiku_cli_replication.py",
+        (
+            'require("/Users/" not in text and "/private/" not in text and "data:image/" not in text,'
+            ' "private surface in snapshot")'
+        ),
+    ): "private-surface check on the published snapshot",
+}
+
+
+def local_path_hits(root: Path) -> list[tuple[str, str]]:
+    hits = []
+    for top in LOCAL_PATH_SCAN_ROOTS:
+        for path in sorted((root / top).rglob("*")):
+            if not path.is_file() or "__pycache__" in path.parts:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            relative = path.relative_to(root).as_posix()
+            hits.extend(
+                (relative, line.strip())
+                for line in text.splitlines()
+                if any(marker in line for marker in LOCAL_PATH_MARKERS)
+            )
+    return hits
+
+
+def test_source_contains_no_local_absolute_paths() -> None:
+    hits = local_path_hits(ROOT)
+    assert [hit for hit in hits if hit not in LOCAL_PATH_ALLOWLIST] == []
+
+
+def test_local_path_allowlist_has_no_stale_entries() -> None:
+    assert set(LOCAL_PATH_ALLOWLIST) <= set(local_path_hits(ROOT))
+
+
+@pytest.mark.parametrize("top", LOCAL_PATH_SCAN_ROOTS)
+@pytest.mark.parametrize("marker", LOCAL_PATH_MARKERS)
+def test_local_path_scan_detects_each_marker_in_each_root(
+    tmp_path: Path, top: str, marker: str
+) -> None:
+    source = tmp_path / top / "nested" / "module.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(f'OUTPUT = "{marker}operator/run"\n')
+
+    assert local_path_hits(tmp_path) == [
+        (f"{top}/nested/module.py", f'OUTPUT = "{marker}operator/run"')
+    ]

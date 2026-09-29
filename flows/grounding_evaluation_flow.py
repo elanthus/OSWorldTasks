@@ -266,8 +266,8 @@ class GroundingEvaluationFlow(FlowSpec):
     maximum_calls = Parameter("maximum-calls", type=int, default=100)
     shard_size = Parameter("shard-size", type=int, default=25)
     provider_concurrency = Parameter("provider-concurrency", type=int, default=1)
-    # Approved real-provider path (issue #164). Both default to empty: the scripted replay
-    # remains the only provider unless a launcher names a registry reference *and* its
+    # Approved real-provider selection. Both default to empty, which selects the scripted
+    # replay; a real provider runs only when a launcher passes a registry reference and its
     # exact approval digest. The web submit form never sets these.
     approved_provider = Parameter("approved-provider", default="")
     approved_provider_sha256 = Parameter("approved-provider-sha256", default="")
