@@ -144,7 +144,7 @@ The binding D5.9 pre-registration, copied verbatim from the frozen design, is th
 | D5.1–D5.5: construct approval, frozen contracts, generator, no-cost admission, stateful harness | Implemented; the calibration runs below used them | [Evidence index](evidence-index.md) |
 | D5.6–D5.7: calibration panel and runs | Delivered as descriptive calibration, including negative results | [D5.6 calibration report](../artifacts/grounding-v5-d56-completed-calibrations-report.md), [supplement](../artifacts/grounding-v5-calibration-supplement/report.md) |
 | D5.8: design decisions (difficulty, minimum difference, power, sample, caps) | Decided; Gemini and Haiku analyses retained | [Gemini power check](../artifacts/grounding-v5-d58-final-design/power.md), [Haiku successor analysis](../artifacts/grounding-v5-d58-haiku-successor/report.md) |
-| D5.9: confirmatory evaluation | Haiku execution recorded, 432 outcomes | [D5.9 Haiku report](../artifacts/grounding-v5-d59-haiku-results/report.md), [pre-registration](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) |
+| D5.9: confirmatory evaluation | Haiku execution recorded, 432 outcomes. The stop rule was changed after repeated infrastructure failures. Confirmatory analysis not yet produced. | [D5.9 Haiku report](../artifacts/grounding-v5-d59-haiku-results/report.md), [pre-registration](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) |
 | D5.10: milestone verdict and public wording | Not declared; human-owned | — |
 
 Calibration results are descriptive and are not a model ranking. The D5.9 Haiku policies ran under

@@ -38,9 +38,9 @@ Review found real defects. Each reviewer is named from the record, not inferred:
   [thread reply](https://github.com/elanthus/OSWorldTasks/pull/87#discussion_r3849840791) names the
   fix and its regression test. CodeRabbit is identified by the GitHub App author on that thread. The
   repository holds no CodeRabbit configuration of its own.
-- **Orchestrator review with an independent read-only pass.** This review found that CLI fault
-  classification erased policy violations in
-  [PR #155](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557419773). The
+- **Orchestrator review with an independent read-only pass.** In
+  [PR #155](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557419773), this review
+  showed that policy violations were lost when a CLI fault was classified. The
   [follow-up](https://github.com/elanthus/OSWorldTasks/pull/155#issuecomment-5557506551) records the
   fixing commit and the rerun checks. It is distinct from both review bots.
 
@@ -152,19 +152,21 @@ judgment is still needed to challenge the measurement, the threat model, and the
 
 ### Lessons for the next project
 
-- Build one manifest-driven calibration runner and a shared CLI lifecycle before adding
-  experiment-specific variants, keeping provider-specific parsing and security contracts explicit
-  (issue #111).
-- Define the typed boundary between policy-visible and host-only results before implementing
-  resume and diagnostics. Issue #98 stays open until a tested fix exists.
-- Make every evidence claim read a stored result with provenance. A report generator must not run
-  the check it reports, and a literal boolean is never evidence
+- A single manifest-driven calibration runner and a shared CLI lifecycle come first; experiment
+  variants are added on top of them, with provider-specific parsing and security contracts still
+  explicit (issue #111).
+- The typed boundary between policy-visible and host-only results is settled before resume and
+  diagnostics are built. Issue #98 remains open until a tested fix lands.
+- Evidence claims read a stored result that carries provenance. Report generators never execute
+  the check they report, and a hard-coded boolean does not count as evidence
   ([PR #156 review](https://github.com/elanthus/OSWorldTasks/pull/156#discussion_r3943508362)).
-- Test the real readiness and mutation boundary rather than a proxy such as navigation chrome,
-  stable intermediate pixels, or eventual zero reward. Add adversarial matrices early for Unicode,
-  duplicate fields, rollback lineage, concurrent reservations, interruption, and resume.
-- Split broad changes before review and budget an independent pass for evidence interpretation.
-- Generate the workflow-history artifact from the first milestone onward, at named revisions.
+- Tests target the actual readiness and mutation boundary, not a stand-in such as navigation
+  chrome, stable intermediate pixels, or reward that eventually stays at zero. Adversarial cases
+  for Unicode, duplicate fields, rollback lineage, concurrent reservations, interruption, and
+  resume are written at the start of a feature rather than after a defect.
+- Large changes are divided before review, and evidence interpretation gets its own independent
+  review pass.
+- The workflow-history artifact is generated at named revisions from the first milestone onward.
 
 Public wording derived from this record is subject to the public-claim gate in
 [`AGENTS.md`](../AGENTS.md#4-human-gates--stop-and-ask).
