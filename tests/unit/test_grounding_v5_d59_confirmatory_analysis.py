@@ -257,7 +257,7 @@ def test_non_preregistered_sections_are_labelled_exploratory() -> None:
 def test_render_has_disclosure_and_no_verdict_language() -> None:
     md = analysis.render(_analyze())
     expected = (
-        "The stop rule was amended after repeated infrastructure failures from Anthropic to allow "
+        "The stop rule was amended after repeated intermittent network failures to allow "
         "for retries in the case of intermittent network issues. Each failed assignment remains in "
         "the results. No prior assignment was replayed."
     )

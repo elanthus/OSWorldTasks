@@ -123,4 +123,4 @@ These are not estimated.
 
 ## Disclosure
 
-The stop rule was amended after repeated infrastructure failures from Anthropic to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed.
+The stop rule was amended after repeated intermittent network failures to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed.
