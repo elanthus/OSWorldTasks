@@ -87,7 +87,7 @@ branch = true
 source = ["pixelgym"]
 
 [tool.coverage.report]
-fail_under = 80  # measured fast-suite baseline; see docs/reproduction.md
+fail_under = 80
 precision = 2
 show_missing = true
 

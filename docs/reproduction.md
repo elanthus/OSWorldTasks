@@ -19,12 +19,8 @@ python3.12 -m venv .venv
 ```
 
 The documented fast-suite target uses the `pytest-xdist` dependency included in the `dev` extra to
-run independent tests in parallel. On 2026-09-29 the plain `pytest -q -n auto tests/unit` run
-reported 2381 passed in 108.58s on a local macOS development machine, and the hosted CI
-"Unit suite with coverage" job (run 36607316326 at `0c65c33`) reported 2366 passed in 407.82s with
-coverage enabled. Both figures are pytest's own reported wall time for a single run; see the
-historical ranges below for run-to-run variance. Serial execution remains supported but is slower and
-not the parallel timing target. The editable install is sufficient for the fast suite, lint, and
+run independent tests in parallel. Serial execution remains supported but is slower. The editable
+install is sufficient for the fast suite, lint, and
 strict static type check of the complete `pixelgym` package.
 
 The public, response-free calibration supplement has a canonical verifier that checks its
