@@ -1,10 +1,18 @@
-"""The Haiku D5.8 successor uses only predeclared independent representatives."""
+"""The Haiku D5.8 successor uses only predeclared independent representatives.
+
+The committed analysis records ``source_file_digests`` over its evidence inputs
+and the prepare script itself. Reproduction reads those files from an archive of
+the revision that wrote the analysis, not the live checkout, so later edits or
+removal of the script do not break byte verification of the frozen analysis.
+"""
 
 import copy
 import json
+from pathlib import Path
 
 import pytest
 
+from scripts import prepare_grounding_v5_d58_haiku_successor as successor
 from scripts.prepare_grounding_v5_d58_haiku_successor import (
     OUTPUT,
     SNAPSHOT,
@@ -12,9 +20,42 @@ from scripts.prepare_grounding_v5_d58_haiku_successor import (
     render_report,
     representative_outcomes,
 )
+from tests.support.recorded_revision import archive_recorded_root, artifact_revision
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = "scripts/prepare_grounding_v5_d58_haiku_successor.py"
+INPUTS = (
+    "artifacts/grounding-v5-haiku-cli-replication/snapshot.json",
+    "artifacts/grounding-v5-haiku-cli-replication/sources.json",
+    "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json",
+    "artifacts/grounding-v5-d58-design/audit.py",
+    "artifacts/grounding-v5-d58-final-design/power.py",
+)
 
 
-def test_committed_successor_reproduces_from_response_free_evidence():
+@pytest.fixture
+def recorded_root(tmp_path, monkeypatch):
+    """Script and inputs as they were when the analysis was written.
+
+    ``build_analysis`` reads module-level paths and hashes its own ``__file__``;
+    point those attributes into the archive. ``OUTPUT`` stays live because it
+    is the checked-in artifact under verification.
+    """
+    root = archive_recorded_root(
+        tmp_path,
+        monkeypatch,
+        artifact_revision(OUTPUT.relative_to(ROOT) / "analysis.json"),
+        (SCRIPT, *INPUTS),
+    )
+    monkeypatch.setattr(successor, "ROOT", root)
+    monkeypatch.setattr(successor, "SNAPSHOT", root / INPUTS[0])
+    monkeypatch.setattr(successor, "SOURCES", root / INPUTS[1])
+    monkeypatch.setattr(successor, "REPRESENTATIVES", root / INPUTS[2])
+    monkeypatch.setattr(successor, "__file__", str(root / SCRIPT))
+    return root
+
+
+def test_committed_successor_reproduces_from_response_free_evidence(recorded_root):
     analysis = build_analysis()
     assert json.loads((OUTPUT / "analysis.json").read_text(encoding="utf-8")) == analysis
     assert (OUTPUT / "report.md").read_text(encoding="utf-8") == render_report(analysis)
@@ -22,6 +63,13 @@ def test_committed_successor_reproduces_from_response_free_evidence():
     assert analysis["confirmatory_tasks_generated"] == 0
     assert analysis["owner_selection"] is None
     assert analysis["paid_or_subscription_execution_authorized"] is False
+
+
+def test_script_mutation_at_recorded_revision_breaks_reproduction(recorded_root):
+    with (recorded_root / SCRIPT).open("a", encoding="utf-8") as handle:
+        handle.write("# mutated\n")
+    committed = json.loads((OUTPUT / "analysis.json").read_text(encoding="utf-8"))
+    assert committed != build_analysis()
 
 
 def test_independent_outcomes_and_power_are_derived_not_all_pair_counts():

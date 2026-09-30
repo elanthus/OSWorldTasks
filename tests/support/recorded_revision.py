@@ -33,3 +33,16 @@ def archive_recorded_root(
     original = successor._git_output
     monkeypatch.setattr(successor, "_git_output", lambda _root, *args: original(ROOT, *args))
     return tmp_path
+
+
+def artifact_revision(path: str | Path) -> str:
+    """Return the commit that last wrote the checked-in artifact at ``path``.
+
+    For frozen artifacts that do not store their own source revision, the commit
+    that wrote them is the revision whose sources they were generated from.
+    """
+    output = successor._git_output(ROOT, "log", "-1", "--format=%H", "--", str(path))
+    revision = output.decode("ascii").strip()
+    if len(revision) != 40:
+        raise ValueError(f"{path} has no recorded revision in the local history")
+    return revision

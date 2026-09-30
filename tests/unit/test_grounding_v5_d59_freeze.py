@@ -1,4 +1,11 @@
-"""No-call D5.9 sample, cap, and immutable artifact checks."""
+"""No-call D5.9 sample, cap, and immutable artifact checks.
+
+The execution plan's source binding hashes the D5.9 generator and admission
+sources. Those bytes are verified against an archive of the manifest's recorded
+``source_binding.source_revision``, not the live checkout, so later edits or
+removal of ``pixelgym/grounding/v5/`` modules do not break byte verification of
+the frozen artifacts.
+"""
 
 from __future__ import annotations
 
@@ -13,6 +20,7 @@ from jsonschema import Draft202012Validator
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.d59_freeze import (
     D59_CONFIRMATORY_SEEDS,
+    SOURCE_FILES,
     confirmatory_tasks,
     execution_plan,
     reliability_tasks,
@@ -25,8 +33,27 @@ from pixelgym.grounding.v5.memory_generator import (
     seed_record,
 )
 from scripts.prepare_grounding_v5_d59_freeze import write_outputs
+from tests.support.recorded_revision import archive_recorded_root
 
 ROOT = Path(__file__).parents[2]
+PLAN_INPUTS = (
+    "artifacts/grounding-v5-d58-owner-budget-continuation/execution-plan.json",
+    "artifacts/grounding-v5-d59-freeze/owner-selection.json",
+)
+
+
+@pytest.fixture
+def recorded_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """D5.9 sources and plan inputs as they were at the recorded revision."""
+    manifest = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
+    )
+    return archive_recorded_root(
+        tmp_path,
+        monkeypatch,
+        manifest["source_binding"]["source_revision"],
+        (*SOURCE_FILES, *PLAN_INPUTS),
+    )
 
 
 def test_d59_selected_seed_allocation_is_balanced_and_versioned() -> None:
@@ -78,7 +105,7 @@ def test_d59_selected_seed_allocation_is_balanced_and_versioned() -> None:
     Draft202012Validator(schema).validate(task.canonical_dict())
 
 
-def test_d59_execution_plan_is_exact_but_non_executable() -> None:
+def test_d59_execution_plan_is_exact_but_non_executable(recorded_root: Path) -> None:
     price = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
     )
@@ -90,7 +117,7 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
     )
     source_revision = manifest["source_binding"]["source_revision"]
     plan = execution_plan(
-        ROOT,
+        recorded_root,
         source_revision=source_revision,
         price_snapshot=price,
         task_manifest_value=manifest,
@@ -124,7 +151,7 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
     doubled["endpoints"][0]["pricing"]["prompt"] = "0.00000150"
     doubled["endpoints"][0]["pricing"]["image"] = "0.00000150"
     rebound = execution_plan(
-        ROOT,
+        recorded_root,
         source_revision=source_revision,
         price_snapshot=doubled,
         task_manifest_value=manifest,
@@ -135,7 +162,7 @@ def test_d59_execution_plan_is_exact_but_non_executable() -> None:
     )
 
 
-def test_d59_execution_plan_rejects_changed_admission_records() -> None:
+def test_d59_execution_plan_rejects_changed_admission_records(recorded_root: Path) -> None:
     price = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
     )
@@ -149,7 +176,7 @@ def test_d59_execution_plan_rejects_changed_admission_records() -> None:
     def assert_rejected(value: dict[str, object], match: str) -> None:
         with pytest.raises(ValueError, match=match):
             execution_plan(
-                ROOT,
+                recorded_root,
                 source_revision=manifest["source_binding"]["source_revision"],
                 price_snapshot=price,
                 task_manifest_value=manifest,
@@ -203,3 +230,25 @@ def test_d59_checked_in_artifacts_verify_without_provider_access() -> None:
     assert admission["task_count"] == 192
     assert execution["provider_calls_made"] == manifest["provider_calls_made"] == 0
     assert admission["provider_calls_made"] == 0
+
+
+def test_d59_source_mutation_at_recorded_revision_is_rejected(recorded_root: Path) -> None:
+    price = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
+    )
+    manifest = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
+    )
+    admission = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
+    )
+    with (recorded_root / "pixelgym/grounding/v5/contracts.py").open("a") as handle:
+        handle.write("# mutated\n")
+    with pytest.raises(ValueError, match="different source binding"):
+        execution_plan(
+            recorded_root,
+            source_revision=manifest["source_binding"]["source_revision"],
+            price_snapshot=price,
+            task_manifest_value=manifest,
+            admission_value=admission,
+        )
