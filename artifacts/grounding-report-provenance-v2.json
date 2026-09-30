@@ -1,0 +1,69 @@
+{
+  "applies_from": {
+    "branch": "cleanup/wp19-grounding-report-v2",
+    "pull_request": "elanthus/OSWorldTasks#232"
+  },
+  "applies_from_note": "The first main revision containing this report is the merge commit of that pull request, resolvable from GitHub.",
+  "cited_documents": [
+    {
+      "path": "artifacts/grounding-protocol.md",
+      "sha256": "14581a44e439a4254c7f7ca1d644f12bfb654884cbb1b90bece9385aae921140"
+    },
+    {
+      "path": "artifacts/grounding-report.md",
+      "sha256": "a761eab5ebb3c397f9a752181b644f81622752346037c0a12b9e0cb1b3e39f87"
+    },
+    {
+      "path": "artifacts/grounding-report-provenance-v1.json",
+      "sha256": "71e22e6649bd0644c61e295bf45dc399e91c23bc57fbe5f22933cbb0de5cbcc4"
+    },
+    {
+      "path": "artifacts/grounding-v3-haiku-gemini-report.md",
+      "sha256": "62723fd7eb6337ca8012ce6c12856ea19936897ddc0fd2a3b4d31bef51ce75c4"
+    }
+  ],
+  "generator": {
+    "module": "pixelgym/grounding/report_v2.py",
+    "script": "scripts/generate_grounding_report_v2.py",
+    "verifier": "scripts/verify_grounding_report_v2.py"
+  },
+  "inputs": [
+    {
+      "path": "artifacts/grounding-results.json",
+      "sha256": "0d65ee6da145762904cc8ba57c204c2e39acd384af8b0796a1c752a79072850a"
+    },
+    {
+      "path": "artifacts/grounding-predictions.jsonl",
+      "sha256": "51e5b07bd9d9172b6454ca5b0c6759af4f36d7f6c48b460fc6aa8f15a659073c"
+    },
+    {
+      "path": "artifacts/grounding-clustered-analysis-v1.json",
+      "sha256": "4b07acf44adcc395a304d4327699d86172deb50823b2a2b077924b352ead460b"
+    },
+    {
+      "path": "artifacts/grounding-error-review.jsonl",
+      "sha256": "e821e21aa7224f19ed9874c3b1d75d1540e9e3e40f50fff24c2d2822e67c495e"
+    },
+    {
+      "path": "artifacts/grounding-error-review-decisions.json",
+      "sha256": "aa6de77ca2ae7ddc7be0276c75b0838d99cc1379aa2f502bfa6c5134807753af"
+    },
+    {
+      "path": "artifacts/grounding-overlays.jsonl",
+      "sha256": "d083cff182ffa438ddaeed3ec045a3936f33c08e6cf4ead059181a808cfdd527"
+    }
+  ],
+  "model_calls": 0,
+  "report": {
+    "path": "artifacts/grounding-report-v2.md",
+    "sha256": "f51bea6797d4dfe0b60ee76e2171f31daf2391ef0f0575456c8369d0ca29b3b1",
+    "size_bytes": 7404
+  },
+  "report_version": "pixelgym-grounding-report-v2",
+  "retains": {
+    "note": "The v1 report and provenance are frozen and are not modified by v2.",
+    "provenance": "artifacts/grounding-report-provenance-v1.json",
+    "report": "artifacts/grounding-report.md"
+  },
+  "schema_version": "pixelgym-grounding-report-provenance-v2"
+}
