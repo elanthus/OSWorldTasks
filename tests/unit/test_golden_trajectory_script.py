@@ -181,7 +181,11 @@ class _RewardWithoutSubmissionEnv:
         self._backend.reset(seed)
         self._seen = 0
         self._ended = False
-        return self._observation(), {"task_id": "vf-fabricated"}
+        return self._observation(), {"episode_id": "0" * 32}
+
+    @property
+    def task_id(self) -> str:
+        return "vf-fabricated"
 
     def step(self, action):
         if self._ended:
@@ -192,7 +196,7 @@ class _RewardWithoutSubmissionEnv:
         self._seen += 1
         last = self._seen == self.total_actions
         self._ended = last
-        return self._observation(), 1.0 if last else 0.0, last, False, {"task_id": "vf-fabricated"}
+        return self._observation(), 1.0 if last else 0.0, last, False, {"episode_id": "0" * 32}
 
     def close(self) -> None:
         pass
