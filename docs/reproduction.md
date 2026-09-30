@@ -64,12 +64,7 @@ identical coverage gate locally with:
   --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit
 ```
 
-The [CI workflow](../.github/workflows/ci.yml) gives the unit-coverage job a **20-minute timeout**;
-lint, type checking, and release integration each have a 10-minute timeout. Hosted coverage runtime
-includes runner, setup, instrumentation, and reporting costs and is a different measurement from a
-local plain suite. Historical local measurements in the README at revision `06d695a` ranged
-54.6–69.5s for the plain suite and 66.9–82.2s with coverage. These are historical observations, not
-current timing guarantees or evidence that a hosted job should finish in a minute. The
+CI job timeouts are configured in the [CI workflow](../.github/workflows/ci.yml). The
 [revision-pinned status source record](../artifacts/public-release/status-sources.json) captures the
 configuration, visibility, and owner-gate sources at its recorded `source_revision`; it is historical
 evidence, not an inventory of the current workflow.
@@ -146,5 +141,5 @@ optional integration dependency and run:
 ```
 
 Preparation downloads the release's 14.2 GB compressed guest artifact. Apple Silicon still runs
-the x86-64 guest without KVM; the recorded first expanded reset took 183.23 seconds
+the x86-64 guest without KVM, so the first expanded reset is slow
 ([validation evidence](../artifacts/validation-report.json)).

@@ -83,7 +83,7 @@ Some decisions belong to a person, not an agent. An agent prepares work up to th
 - **Report the tests you actually ran**, with counts and runtime. Never describe a check you did not execute.
 - Match reasoning effort to the task: medium for bounded implementation with an explicit test; high for environment semantics, evaluator boundaries, integration, determinism interpretation, and statistics.
 - Prefer explicit fixtures over mocks that restate implementation details.
-- Fast tests must not touch network, browser, OSWorld, or wall-clock sleeps, and must finish well under a minute.
+- Fast tests must not touch network, browser, OSWorld, or wall-clock sleeps.
 - Integration work goes behind the optional extra; it never changes the core environment contract to accommodate a provider quirk.
 - **Dev setup must be self-contained.** `python3.12 -m venv .venv && pip install -e ".[dev]"` is the only setup step anyone (human or agent) should ever need to run the fast suite and lint. If a test needs a build tool (e.g. `setuptools` for `tests/integration/test_wheel_packaging.py`), add it to the `dev` extra in `pyproject.toml` — never document a manual `pip install <tool>` workaround instead.
 
