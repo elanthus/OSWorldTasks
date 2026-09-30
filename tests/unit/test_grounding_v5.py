@@ -1,4 +1,11 @@
-"""Fast no-cost contract tests for the PixelGym v5 agent benchmark."""
+"""Fast no-cost contract tests for the PixelGym v5 agent benchmark.
+
+The checked-in v2 partition manifests bind ``generator_source_digest`` over
+``contracts.py``, ``generator.py``, and ``seeds.py``. Those bytes are verified
+against an archive of the revision that wrote the manifests, not the live
+checkout, so later edits or removal of v5 modules do not break byte verification
+of the frozen manifests.
+"""
 
 from __future__ import annotations
 
@@ -13,6 +20,7 @@ import pytest
 from pixelgym.actions import ActionType
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
+from pixelgym.grounding.v5 import manifests
 from pixelgym.grounding.v5.admission import validate_task_admission
 from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
@@ -56,6 +64,7 @@ from pixelgym.grounding.v5.seeds import (
     validate_seed_contract,
 )
 from pixelgym.serialization import canonical_json_bytes
+from tests.support.recorded_revision import archive_recorded_root, artifact_revision
 
 ROOT = Path(__file__).parents[2]
 HISTORICAL_MANIFEST_DIRECTORY = Path("artifacts/grounding-v5-manifests")
@@ -65,6 +74,30 @@ HISTORICAL_MANIFEST_SHA256 = {
     "confirmatory.json": "b801fc5617d2df1ad05114f116adb62bbb017ce9dd01c4918a6d0999f0b50f08",
     "calibration-d56.json": "7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
 }
+
+
+GENERATOR_SOURCE_FILES = tuple(
+    f"pixelgym/grounding/v5/{name}" for name in ("contracts.py", "generator.py", "seeds.py")
+)
+
+
+@pytest.fixture
+def recorded_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Generator sources as they were when the v2 manifests were written.
+
+    ``generator_source_digest`` reads files beside its module's ``__file__``;
+    point that attribute into the archive so the digest covers recorded bytes.
+    """
+    root = archive_recorded_root(
+        tmp_path,
+        monkeypatch,
+        artifact_revision(CURRENT_PARTITION_MANIFEST_DIRECTORY),
+        GENERATOR_SOURCE_FILES,
+    )
+    monkeypatch.setattr(
+        manifests, "__file__", str(root / "pixelgym/grounding/v5/manifests.py")
+    )
+    return root
 
 
 def _nested_keys(value: object) -> set[str]:
@@ -96,13 +129,15 @@ def test_v5_seed_and_generator_contract_freezes_allocations() -> None:
 
 @pytest.mark.parametrize("partition", tuple(Partition))
 def test_v5_checked_in_partition_manifests_match_current_sources(
-    partition: Partition,
+    partition: Partition, recorded_root: Path
 ) -> None:
     stored = ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / f"{partition.value}.json"
     assert stored.read_bytes() == canonical_json_bytes(partition_manifest(partition)) + b"\n"
 
 
-def test_v5_d56_calibration_manifest_replaces_every_exposed_task() -> None:
+def test_v5_d56_calibration_manifest_replaces_every_exposed_task(
+    recorded_root: Path,
+) -> None:
     source = partition_manifest(Partition.CALIBRATION)
     derived = d56_calibration_manifest()
 
@@ -124,6 +159,20 @@ def test_v5_d56_calibration_manifest_replaces_every_exposed_task() -> None:
     )
     stored = ROOT / CURRENT_D56_CALIBRATION_MANIFEST
     assert stored.read_bytes() == canonical_json_bytes(derived) + b"\n"
+
+
+def test_v5_generator_source_mutation_at_recorded_revision_is_detected(
+    recorded_root: Path,
+) -> None:
+    stored = ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / "development.json"
+    assert stored.read_bytes() == (
+        canonical_json_bytes(partition_manifest(Partition.DEVELOPMENT)) + b"\n"
+    )
+    with (recorded_root / "pixelgym/grounding/v5/generator.py").open("a") as handle:
+        handle.write("# mutated\n")
+    assert stored.read_bytes() != (
+        canonical_json_bytes(partition_manifest(Partition.DEVELOPMENT)) + b"\n"
+    )
 
 
 @pytest.mark.parametrize("filename, expected_sha256", HISTORICAL_MANIFEST_SHA256.items())

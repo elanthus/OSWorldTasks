@@ -1,3 +1,12 @@
+"""No-call checks of the D5.9 Haiku freeze successor.
+
+The frozen plan's source binding hashes ``d59_haiku_freeze.py`` and its prepare
+script. Reproduction of the checked-in artifacts reads those sources and the
+plan inputs from an archive of the plan's recorded
+``source_binding.source_revision``, not the live checkout, so later edits or
+removal of those modules do not break byte verification of the frozen evidence.
+"""
+
 from __future__ import annotations
 
 import json
@@ -13,15 +22,46 @@ from pixelgym.grounding.v5.d59_haiku_freeze import (
     HISTORICAL_PLAN_PATH,
     HISTORY_POLICY_ID,
     SELECTION_PATH,
+    SOURCE_FILES,
     STATELESS_POLICY_ID,
+    TASK_MANIFEST_PATH,
     execution_plan,
     expected_outputs,
     owner_exception,
 )
 from scripts.prepare_grounding_v5_d59_haiku_freeze import write_outputs
+from tests.support.recorded_revision import archive_recorded_root
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORDED_SOURCE_REVISION = "ca1c98333cffb5f04beef1d4f56ed09f9840f538"
+PUBLIC = ROOT / "artifacts/grounding-v5-d59-haiku-freeze"
+PLAN_INPUTS = (
+    SELECTION_PATH,
+    CALIBRATION_PATH,
+    TASK_MANIFEST_PATH,
+    ADMISSION_PATH,
+    HISTORICAL_PLAN_PATH,
+    "artifacts/grounding-v5-pr196-calibration/haiku-v4.json",
+    "artifacts/grounding-v5-pr196-calibration/haiku-cli-continuation.json",
+)
+
+
+def recorded_revision() -> str:
+    plan = json.loads((PUBLIC / "execution-plan.json").read_text(encoding="utf-8"))
+    revision = plan["source_binding"]["source_revision"]
+    assert revision == RECORDED_SOURCE_REVISION
+    return revision
+
+
+@pytest.fixture
+def recorded_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Freeze sources and plan inputs as they were at the recorded revision."""
+    return archive_recorded_root(
+        tmp_path / "recorded",
+        monkeypatch,
+        recorded_revision(),
+        (*SOURCE_FILES, *PLAN_INPUTS),
+    )
 
 
 def read(path: str) -> dict[str, object]:
@@ -178,8 +218,18 @@ def test_write_outputs_supports_existing_empty_directory(tmp_path: Path) -> None
     assert {path.name for path in public.iterdir()} == set(outputs)
 
 
-def test_checked_in_freeze_reproduces_from_recorded_source_revision() -> None:
-    outputs = expected_outputs(ROOT, source_revision=RECORDED_SOURCE_REVISION)
-    public = ROOT / "artifacts/grounding-v5-d59-haiku-freeze"
+def test_checked_in_freeze_reproduces_from_recorded_source_revision(
+    recorded_root: Path,
+) -> None:
+    outputs = expected_outputs(recorded_root, source_revision=recorded_revision())
     for name, payload in outputs.items():
-        assert (public / name).read_bytes() == payload
+        assert (PUBLIC / name).read_bytes() == payload
+
+
+def test_source_mutation_at_recorded_revision_breaks_reproduction(
+    recorded_root: Path,
+) -> None:
+    with (recorded_root / "pixelgym/grounding/v5/d59_haiku_freeze.py").open("a") as handle:
+        handle.write("# mutated\n")
+    outputs = expected_outputs(recorded_root, source_revision=recorded_revision())
+    assert (PUBLIC / "execution-plan.json").read_bytes() != outputs["execution-plan.json"]
