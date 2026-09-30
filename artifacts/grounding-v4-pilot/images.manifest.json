@@ -1,0 +1,171 @@
+{
+  "schema_version": "pixelgym.evidence-images-manifest.v1",
+  "set": "grounding-v4-pilot",
+  "release_tag": "evidence-images-v1",
+  "archive": "grounding-v4-pilot-images.tar.gz",
+  "paths_relative_to": "artifacts/grounding-v4-pilot",
+  "file_count": 32,
+  "total_bytes": 3727864,
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "size": 419536,
+      "sha256": "b0c9f5bcd984e607b99c705d407d54b4fd981c5d280eb6d7d414b882060eabf4"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0001.png",
+      "size": 101026,
+      "sha256": "aeb40610b65338f28bc8b1cf03171864387996146f4e89e15ee88a84ebedd29d"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0002.png",
+      "size": 101112,
+      "sha256": "a0396428d54436134f7d8c012c5fcf84ba5cd7915a66c7e7e6fbd022dea92e5a"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0003.png",
+      "size": 103192,
+      "sha256": "32c48db9807c990f9a634b5e2e8eee761ad7c6caef21e49c6d4ed742f2d82262"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0004.png",
+      "size": 101763,
+      "sha256": "cc789110081f4e2dc4843e61dfc5c85ad502650ae4f2e1fa317ecd7f089ed84d"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0005.png",
+      "size": 105293,
+      "sha256": "feb84e3263553530ec050d48cc1c9b0023e928e53a0d6c545072766100400884"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0006.png",
+      "size": 100646,
+      "sha256": "c238371e67d77fa5c454a3279e3d165e72030909de47d6edd3fd1f2122c4dbf8"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0007.png",
+      "size": 100732,
+      "sha256": "16bfc093de59e28e0b79de63547b381d662d2a7a60695c6a0135b7339668cbd8"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0008.png",
+      "size": 102879,
+      "sha256": "1da273827b86eab75f73e11adf7603faee4ce3f70761cbccdee6cb6b688b1688"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0009.png",
+      "size": 101309,
+      "sha256": "8cdc2989fe44fcb219368a1ea7da9f81fc046a1c13536c2775a6938e71b878d4"
+    },
+    {
+      "path": "images/marks/vendor-workbench-v4-0010.png",
+      "size": 102929,
+      "sha256": "0af532efe0d3b0fb6307f9c6ce5a9989ff383fe75c72ce0979cde93395a4b29a"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0001.png",
+      "size": 89477,
+      "sha256": "d4071d0421b5d42a7ac82dfdac59b7a06d486c70b9ed69f60bb4099add672d8f"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0002.png",
+      "size": 89651,
+      "sha256": "05884d378bf3bf3eada1c75b75812af4a2d92e3d1a638c6b5589a75f6e6b3124"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0003.png",
+      "size": 91614,
+      "sha256": "b3b9e8bfea8f996d8e7f4fef9b2bd32b84ab55aea24d503c2562d96ec19fb95c"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0004.png",
+      "size": 90335,
+      "sha256": "6120358a0fedc71b09ce95bf6f748358cd8343cc62952d8fd84cdb7e757fd7d9"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0005.png",
+      "size": 94132,
+      "sha256": "da13cd6e96ecdbb2b30b90e1d84969d77689bd210e6ebbc74541d2ad14e4c1f7"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0006.png",
+      "size": 89186,
+      "sha256": "4f9367794df1c0a7ac7c8337ffaaa367f96058bae2e8e2c3059c8f6b1e6f47a2"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0007.png",
+      "size": 89364,
+      "sha256": "acce21187d452176f23054eb4e0cbd64484859423f04fcb4cd5198fbcbb7c772"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0008.png",
+      "size": 91348,
+      "sha256": "eab9cd797fc4aadac1b23e412939da40ff116f6b9ae01d7017f5cc018c428ee0"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0009.png",
+      "size": 89939,
+      "sha256": "07d6009478c66bc5700ecc5cc9257a020c4667d2ef3277ba0a5f16e1adb13ea0"
+    },
+    {
+      "path": "images/raw-repeat/vendor-workbench-v4-0010.png",
+      "size": 91327,
+      "sha256": "798c8ed0f0b5d124bd5718abbaf4ec13eee7d831204caeb86268c48530e28b77"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0001.png",
+      "size": 89477,
+      "sha256": "d4071d0421b5d42a7ac82dfdac59b7a06d486c70b9ed69f60bb4099add672d8f"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0002.png",
+      "size": 89651,
+      "sha256": "05884d378bf3bf3eada1c75b75812af4a2d92e3d1a638c6b5589a75f6e6b3124"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0003.png",
+      "size": 91614,
+      "sha256": "b3b9e8bfea8f996d8e7f4fef9b2bd32b84ab55aea24d503c2562d96ec19fb95c"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0004.png",
+      "size": 90335,
+      "sha256": "6120358a0fedc71b09ce95bf6f748358cd8343cc62952d8fd84cdb7e757fd7d9"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0005.png",
+      "size": 94132,
+      "sha256": "da13cd6e96ecdbb2b30b90e1d84969d77689bd210e6ebbc74541d2ad14e4c1f7"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0006.png",
+      "size": 89186,
+      "sha256": "4f9367794df1c0a7ac7c8337ffaaa367f96058bae2e8e2c3059c8f6b1e6f47a2"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0007.png",
+      "size": 89364,
+      "sha256": "acce21187d452176f23054eb4e0cbd64484859423f04fcb4cd5198fbcbb7c772"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0008.png",
+      "size": 91348,
+      "sha256": "eab9cd797fc4aadac1b23e412939da40ff116f6b9ae01d7017f5cc018c428ee0"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0009.png",
+      "size": 89939,
+      "sha256": "07d6009478c66bc5700ecc5cc9257a020c4667d2ef3277ba0a5f16e1adb13ea0"
+    },
+    {
+      "path": "images/raw/vendor-workbench-v4-0010.png",
+      "size": 91327,
+      "sha256": "798c8ed0f0b5d124bd5718abbaf4ec13eee7d831204caeb86268c48530e28b77"
+    },
+    {
+      "path": "marks-contact-sheet.png",
+      "size": 474701,
+      "sha256": "9105cd6425f37e3192cb62366d54a0c6b1b61c66b7ea369f52f1b7189f9aa81c"
+    }
+  ]
+}
