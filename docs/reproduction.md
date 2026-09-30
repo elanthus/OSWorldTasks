@@ -56,9 +56,7 @@ The 80% threshold comes from the pre-property-test measurement of 80.337% across
 of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
 hard to cover); optional OSWorld, browser, grounding, and platform modules remain included, along
 with the project's 12 pre-existing `# pragma: no cover` lines. CI publishes the terminal report in
-the job summary and uploads `coverage.xml` as the `fast-suite-coverage` artifact. The measured report
-that produced the 80% baseline is checked in at
-[`artifacts/ci-coverage-baseline-issue-114.md`](../artifacts/ci-coverage-baseline-issue-114.md). Run the
+the job summary and uploads `coverage.xml` as the `fast-suite-coverage` artifact. Run the
 identical coverage gate locally with:
 
 ```bash
