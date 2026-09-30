@@ -70,9 +70,9 @@ def test_fixture_identifies_the_task_it_was_recorded_against(env, golden_traject
     """The recorded `task_id` and full spec hash pin the trajectory to one
     generated task. A generator change that altered seed 7's task would
     otherwise leave a fixture aimed at a task that no longer exists."""
-    _observation, info = env.reset(seed=SEED)
+    _observation, _info = env.reset(seed=SEED)
 
-    assert info["task_id"] == golden_trajectory["task_id"]
+    assert env.task_id == golden_trajectory["task_id"]
 
     record = generator.generate_task(SEED)
     body = {key: value for key, value in record.items() if key != "task_id"}

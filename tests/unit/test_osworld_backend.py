@@ -120,7 +120,7 @@ def test_public_environment_reset_returns_only_pixels_and_task_id(backend):
 
     assert observation.shape == (3, 4, 3)
     assert observation.dtype == np.uint8
-    assert set(info) == {"task_id"}
+    assert set(info) == {"episode_id"}
     assert created[0].kwargs["action_space"] == "computer_13"
     assert created[0].kwargs["require_a11y_tree"] is False
     assert created[0].kwargs["require_terminal"] is False
@@ -232,7 +232,7 @@ def test_guest_root_disk_probe_is_validation_only(backend):
         "available_bytes": 26_843_545_600,
         "used_percent": 50,
     }
-    assert set(info) == {"task_id"}
+    assert set(info) == {"episode_id"}
 
 
 def test_close_is_idempotent_and_closes_provider(backend):

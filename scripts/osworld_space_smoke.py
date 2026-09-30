@@ -35,7 +35,7 @@ def run(guest_image: Path, output: Path) -> dict[str, Any]:
     observation_records: list[dict[str, Any]] = []
     provider_closed = False
     try:
-        observation, info = env.reset(seed=7)
+        observation, _info = env.reset(seed=7)
         observation_records.append(
             {
                 "name": "reset",
@@ -131,7 +131,7 @@ def run(guest_image: Path, output: Path) -> dict[str, Any]:
             "validator": "real-space-smoke",
             "backend": "real-osworld-docker",
             "seed": 7,
-            "task_id": info["task_id"],
+            "task_id": env.task_id,
             "valid_action_count": len(valid_actions),
             "observations": observation_records,
             "invalid_actions": invalid_records,

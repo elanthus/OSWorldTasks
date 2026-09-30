@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "reward_hacking_addendum",
+  "supplements": "artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json",
+  "decision_date": "2026-09-30",
+  "applies_from_revision": "<merge commit>",
+  "applies_from_revision_note": "Placeholder: replace with the merge commit of cleanup/wp5-opaque-episode-id once it lands on main.",
+  "attacks": [
+    {
+      "attack": "Precompute task_id to answers from the public generator",
+      "disposition": "mitigated",
+      "previous_exposure": "reset and step returned info={'task_id': ...}. task_id is a pure function of the seed via sha256 of the canonical task spec, and the vendor-form generator is public, so an agent that saw task_id could search seeds, regenerate the matching spec, and read the expected answers without looking at the screenshot.",
+      "mitigation": "info now carries only an opaque per-episode ID (episode_id = secrets.token_hex(16), fresh at every reset) that carries no information about the task. task_id is host-side only, exposed to validators and runners through the read-only PixelGuiEnv.task_id property.",
+      "evidence": "tests/unit/test_env.py asserts info has exactly episode_id (a 32-hex string), that task_id never appears in info, and that two resets with the same seed give different episode IDs and the same task_id property; tests/unit/test_reward_hacking_addendum.py checks this addendum."
+    }
+  ]
+}
