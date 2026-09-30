@@ -6,7 +6,7 @@ Reports summarize stored evidence; reading or regenerating them does not authori
 
 | Question | Evidence and limits |
 |---|---|
-| What establishes the environment contract? | [Validation JSON](../artifacts/validation-report.json), [generated report](../artifacts/validation-report.md), and [reward-hacking audit](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json). |
+| What establishes the environment contract? | [Revision validation JSON](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json), [revision report](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.md), and [reward-hacking audit](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json). |
 | What are the core environment-validation counts? | [Fake-reset evidence](../artifacts/day-2/raw/fake-reset.json) records 10 deterministic resets; [reward-timing evidence](../artifacts/day-2/raw/reward-timing.json) records 122/122 passing trajectories; and [space-integrity evidence](../artifacts/day-2/raw/space-integrity.json) records the Gymnasium checker and 500 sampled actions. These measurements cover the synthetic vendor form, not general desktop tasks. |
 | What changed in the visual evidence? | [Revision report](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json) and [raw renderer comparisons](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json) retain intermediate-readiness and historical differences. One-host bitwise evidence does not establish portability. |
 | What does the grounding improvement measure? | [Frozen results](../artifacts/grounding-results.json), [canonical report](../artifacts/grounding-report.md), [detailed set-of-marks analysis](../artifacts/grounding-set-of-marks-analysis.md), and [report provenance](../artifacts/grounding-report-provenance-v1.json). V1 aliases target with state; [unrun v2](../artifacts/grounding-v2-manifest.json) crosses them. The moving model alias is not an immutable model snapshot. |
@@ -16,7 +16,7 @@ Reports summarize stored evidence; reading or regenerating them does not authori
 | What platform risks remain? | [Known limitations](../artifacts/platform/known-limitations.md) records the single-reviewer local scope, synthetic provider, non-production WORM posture, single-form generalization limit, and serving/proposal gaps. |
 | Which owner gate records are retained? | [D1.8](../artifacts/day-1/human-gate.json), the [historical D2.11 record](../artifacts/day-2/raw/human-gate.json), the [re-graded D2.11 revision](../artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json), [D3.11](../artifacts/day-3/raw/human-gate.json), and [D4.12](../artifacts/platform/human-gate.json). Each decision remains limited to its recorded evidence and revision. |
 | What did the transport repair show? | [Reliability diagnostic](../artifacts/grounding-v5-d58-reliable-diagnostic/report.md) and [verification receipt](../artifacts/grounding-v5-d58-reliable-diagnostic/verification.json) record ten actions from ten calls, no network errors or retries, and USD 0.099531750 in new charges. These supplied-state checks add no end-to-end calibration observations. |
-| What happened in the completed Gemini calibration? | [Final continuation report](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md) and [verification receipt](../artifacts/grounding-v5-d58-owner-budget-continuation/verification.json) record all 100 assignments, including ten earlier failures: history 42/50 terminal successes and stateless 6/50, with both consumers reached on 43/50 and 45/50. The final history episode was cut short at the authorized six-hour limit. Confirmed aggregate charges were USD 23.978227275 under the USD 28 cap; unresolved holds carry owner-authorized zero budget weight. The owner accepted the observed difficulty as an exception to the proposed 40/50 ceiling. |
+| What happened in the completed Gemini calibration? | [Final continuation report](../artifacts/grounding-v5-d58-owner-budget-continuation/report.md) and [verification receipt](../artifacts/grounding-v5-d58-owner-budget-continuation/verification.json) record all 100 assignments, including ten earlier failures: history 42/50 terminal successes and stateless 6/50, with both consumers reached on 43/50 and 45/50. The final history episode was cut short at the authorized six-hour limit. Confirmed aggregate charges were USD 23.978227275 under the USD 28 cap; unresolved holds carry owner-authorized zero budget weight. The [D5.8 final-design decision](../artifacts/grounding-v5-d58-final-design/decision.json), recorded 2026-09-12 (commit `bacae4d`), retains the calibrated task mechanics and records 42/50 capable-arm success as an explicit exception to the proposed 40/50 ceiling; it records the reason as not tuning the generator to reduce success. |
 | What did the PR196 Luna/Haiku calibration record? | [Consolidated report](../artifacts/grounding-v5-pr196-calibration/report.md), [structured results](../artifacts/grounding-v5-pr196-calibration/results.json), and [snapshot bindings](../artifacts/grounding-v5-pr196-calibration/sources.json) retain final outcomes, paired results, memory observations, interrupted attempts, all earlier Haiku cohorts, and cost. Haiku combines CLI and API execution; these are descriptive calibration results, not a model ranking or final evaluation. |
 | What did the fresh Haiku CLI replication record? | [Response-free report](../artifacts/grounding-v5-haiku-cli-replication/report.md), [structured results](../artifacts/grounding-v5-haiku-cli-replication/results.json), and [audited snapshot](../artifacts/grounding-v5-haiku-cli-replication/snapshot.json) retain all 100 fresh PR196-panel outcomes from exact `claude-haiku-4-5-20251001` through Claude Code CLI: history 28/50 successes and stateless 5/50, with every invalid output retained. The single-route replication is calibration evidence, not D5.9 execution, a model ranking, or a human gate. |
 | What does the Haiku D5.8 successor calculate? | [Structured analysis](../artifacts/grounding-v5-d58-haiku-successor/analysis.json) and [generated report](../artifacts/grounding-v5-d58-haiku-successor/report.md) use the 44 predesignated independent representatives: 30 are discordant. Under the unchanged 20-point/80% planning assumptions, 168 independent pairs yield 87.0% power at observed discordance and 81.2% at the upper sensitivity endpoint. That analytical package left owner selection unset; the later Haiku selection records the decision. D5.9 execution was unset in that analytical package. |
@@ -50,6 +50,28 @@ not rewritten. These runs do not constitute a completed confirmatory benchmark o
 Superseded v3/v4 calibration apps and v5 D5.6 experiment drivers remain reproducible at the
 `legacy-grounding-final` tag. Their removal from the current tree does not remove their frozen
 evidence or turn calibration into a benchmark score.
+
+## Corrections
+
+Each entry corrects presentation only; no stored measurement changed.
+
+- **2026-09-29, root validation report.** [`validation-report.json`](../artifacts/validation-report.json)
+  and its [generated report](../artifacts/validation-report.md) record the superseded 1920x1080 run.
+  The current environment record is the [revision report](../artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.md).
+  The generated report is not edited.
+- **2026-09-29, append-only claim.** The [artifacts map](../artifacts/README.md) previously said
+  nothing in `artifacts/` is moved or renamed. Files were withdrawn earlier (see above). The map now
+  states append-only since `a07069d4dfefe2ff05c1cb6d865053e8682925c3`.
+- **2026-09-29, v4c omission.** The [set-of-marks analysis](../artifacts/grounding-set-of-marks-analysis.md)
+  omitted the v4c pilot. A dated amendment section at its end adds the v4c rows from
+  `artifacts/grounding-v4c-pilot-results-*.json`.
+- **2026-09-29, protocol amendment.** The [protocol amendment note](../artifacts/grounding-protocol-amendment-2026-08-14-note.md)
+  records that the 2026-08-14 change to the [grounding protocol](../artifacts/grounding-protocol.md)
+  (diff `901734b..f6a247b`) disclosed target/state aliasing and changed no metric. The protocol
+  itself is not edited because its SHA-256 is recorded in `artifacts/grounding-results.json`.
+- **2026-09-29, platform architecture.** In the [platform architecture](../artifacts/platform/architecture.md),
+  "the existing Day 3 parser" means `parse_prediction` in `pixelgym.grounding.evaluation`. That
+  file is not edited because the D4.12 evidence manifests record its SHA-256.
 
 ## Retired planning links in frozen reports
 
