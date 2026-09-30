@@ -17,7 +17,7 @@ section 3) against any backend satisfying `pixelgym.backends.base.Backend`:
 `info` carries only an opaque per-episode ID, `episode_id`, drawn from
 `secrets.token_hex(16)` at every `reset`. The episode ID carries no
 information about the task: it is random, not derived from the seed or the
-canonical task spec. `info` never carries the task hash `task_id` (AGENTS.md
+canonical task spec. `info` never carries the task hash `task_id` (docs/environment-contract.md
 invariant 13: "must never carry expected answers or bounding boxes") --
 `task_id` is a pure function of the seed through the canonical spec, so an
 agent that saw it could regenerate the expected answers with the public
