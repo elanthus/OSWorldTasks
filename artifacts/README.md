@@ -20,7 +20,9 @@ capture, a calibration campaign, or a release record, retained on purpose. Use t
 | Environment validation | [validation-report.json](validation-report.json) | Superseded 1920x1080 validation run (with its [generated report](validation-report.md)); the current record is the [revision report](day-2-rev-2026-09-06-issues-95-101/validation-report.md) |
 | Environment validation | [day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json](day-2-rev-2026-09-06-issues-95-101/raw/renderer-screenshot-differences.json) | Visual differences |
 | Grounding v1 experiment | [grounding-protocol.md](grounding-protocol.md) | Protocol and leakage controls |
-| Grounding v1 experiment | [grounding-report.md](grounding-report.md) | Canonical report |
+| Grounding v1 experiment | [grounding-report-v2.md](grounding-report-v2.md) | Current report (v2): both intervals, data-derived prose |
+| Grounding v1 experiment | [grounding-report-provenance-v2.json](grounding-report-provenance-v2.json) | Report v2 input digests and generator |
+| Grounding v1 experiment | [grounding-report.md](grounding-report.md) | Frozen original report (v1) |
 | Grounding v1 experiment | [grounding-results.json](grounding-results.json) | Structured results |
 | Grounding v1 experiment | [grounding-report-provenance-v1.json](grounding-report-provenance-v1.json) | Recorded provider, prompt, data, and collection window |
 | Grounding v2 design (not run) | [grounding-v2-protocol.md](grounding-v2-protocol.md) | Crossed allocation protocol |

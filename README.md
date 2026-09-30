@@ -10,7 +10,7 @@ inspectable—not to claim broad desktop-agent performance.
 ## At a glance
 
 - Pixel-only Gymnasium environment with a privileged evaluator; five bitwise identical real OSWorld resets at 1024×768 on one host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)).
-- 100 paired examples (10 target controls x 10 seeds): 56/100 raw, 100/100 marks, +44.0 percentage points, example-level 95% CI [+35.0, +54.0] (target-clustered 95% CI [+21.0, +67.0], [supplement](artifacts/grounding-clustered-analysis-v1.md)); marks are selection among 10 labelled candidates with proposal coverage 100% by the retention rule ([protocol](artifacts/grounding-protocol.md)); moving `gpt-5.4-mini` alias, DOM-derived offline marks ([canonical report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
+- 100 paired examples (10 target controls x 10 seeds): 56/100 raw, 100/100 marks, +44.0 percentage points, example-level 95% CI [+35.0, +54.0] (target-clustered 95% CI [+21.0, +67.0], [supplement](artifacts/grounding-clustered-analysis-v1.md)); marks are selection among 10 labelled candidates with proposal coverage 100% by the retention rule ([protocol](artifacts/grounding-protocol.md)); moving `gpt-5.4-mini` alias, DOM-derived offline marks ([current report v2](artifacts/grounding-report-v2.md), [frozen original v1 report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
 - Documented reproduction workflow: ruff, strict mypy, offline unit tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
@@ -129,7 +129,9 @@ truncation, and stepping after either ending raises an error
 On **100 paired examples (10 target controls x 10 seeds)** from the same 1024×768 synthetic form, the Codex CLI provider using the
 moving `gpt-5.4-mini` alias scored **56/100 with raw coordinates and 100/100 with marks**. The
 paired difference was **+44.0 percentage points**, with a fixed-seed percentile-bootstrap **95% CI
-of [+35.0, +54.0]** ([canonical report](artifacts/grounding-report.md),
+of [+35.0, +54.0]** ([current report v2](artifacts/grounding-report-v2.md) with
+[its provenance](artifacts/grounding-report-provenance-v2.json),
+[frozen original v1 report](artifacts/grounding-report.md),
 [structured results](artifacts/grounding-results.json),
 [provenance](artifacts/grounding-report-provenance-v1.json)). That interval treats the 100 examples
 as independent; resampling the 10 target controls instead gives a target-clustered 95% CI of
