@@ -1,6 +1,8 @@
-"""Successor with optimization-safe checks; the frozen original is reproduction-only.
+"""Verify the closed D5.8 Gemini 3.8 calibration evidence without provider calls.
 
-Analyze stored outcomes and verify the closed journal without provider calls."""
+Re-analyzes the stored outcomes, audits the closed attempt journal against them, and
+checks the published analysis, verification, and file manifest. Checks raise explicit
+errors rather than using assertions, so they still run under ``python -O``."""
 
 import argparse
 import json

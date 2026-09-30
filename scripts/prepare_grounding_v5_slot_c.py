@@ -8,6 +8,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from pixelgym._io import require_clean_worktree
 from pixelgym.grounding.v5.provider_adapters import OpenRouterHttpAdapter
 from pixelgym.grounding.v5.slot_c import build_slot_c_plan
 
@@ -22,11 +23,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    dirty = subprocess.check_output(
-        ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"], text=True
-    )
-    if dirty:
-        raise ValueError("commit implementation before freezing a Slot C plan")
+    require_clean_worktree(root, message="commit implementation before freezing a Slot C plan")
     revision = subprocess.check_output(
         ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
     ).strip()
