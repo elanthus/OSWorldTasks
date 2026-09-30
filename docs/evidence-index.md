@@ -78,6 +78,11 @@ Each entry corrects presentation only; no stored measurement changed.
   changed. The [artifacts map](../artifacts/README.md#release-hosted-evidence-images) lists the
   sets and the fetch command, `scripts/fetch_evidence_images.py`. Without the images, the unit
   suite skips the tests that open them and names the fetch command in the skip reason.
+- **2026-09-30, D5.9 private journals.** The attempt and invocation journals for the D5.9 Haiku
+  execution were not retained after the public projection was published. They were untracked
+  files in a temporary checkout that was later removed. The digests recorded in `report.json`
+  under `source_artifacts` and `journal_integrity` were computed from those journals at
+  publication and cannot be re-verified against them. D5.9 closes on the published projection.
 
 ## Retired planning links in frozen reports
 
