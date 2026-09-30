@@ -8,12 +8,13 @@ import html
 import ipaddress
 import re
 import secrets
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict
 from datetime import date
 from difflib import HtmlDiff
 from numbers import Real
 from pathlib import Path
+from types import MappingProxyType
 from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlsplit
 
@@ -227,6 +228,24 @@ def _evidence_links(candidate: Any, mlflow_base_url: str) -> str:
         f"{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}", "MLflow run"
     )
     return f'<div class="evidence-links">{raw} · {per_example} · {gate_link} · {mlflow}</div>'
+
+
+# Trusted, source-controlled HTML keyed by (provider, model); never populated from runtime input.
+CANDIDATE_DISCLOSURE_TRUSTED_HTML: Mapping[tuple[str, str], str] = MappingProxyType(
+    {
+        ("scripted-demo", "day3-replay-revised-v2"): (
+            "<strong>Synthetic fixture disclosure:</strong> Candidate B's scripted revised responses "
+            'are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled '
+            "for this policy's raw-condition demonstration. They are not results from the recorded "
+            "raw prompt."
+        ),
+    }
+)
+
+
+def _candidate_disclosure(policy: Any) -> str:
+    body = CANDIDATE_DISCLOSURE_TRUSTED_HTML.get((policy.provider, policy.model))
+    return "" if body is None else f'<p class="disclosure">{body}</p>'
 
 
 def _candidate_header(candidate_id: str, candidate: Any, invalid: str, disclosure: str) -> str:
@@ -832,9 +851,7 @@ def create_control_app(
         else:
             controls = '<div class="blocked"><strong>Approval unavailable</strong><p>A failed gate is terminal for this candidate. Revise the policy and create a new run.</p></div>'
         invalid = "missing" if item.summary is None else str(item.summary.invalid_count)
-        disclosure = ""
-        if item.policy.provider == "scripted-demo" and item.policy.model == "day3-replay-revised-v2":
-            disclosure = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
+        disclosure = _candidate_disclosure(item.policy)
         body = (
             _candidate_header(candidate_id, item, invalid, disclosure)
             + '<div class="detail-grid">'
