@@ -1,0 +1,11 @@
+{
+  "schema_version": "pixelgym-decision-record-v1",
+  "gate": "D4.12",
+  "decision": "PASS",
+  "revision": "4c4a7fb2fcb983e81084542365abc0ec2d7df538",
+  "date": "2026-09-09T18:54:15Z",
+  "decided_by": "Michael Swailes",
+  "tag": "d4.12-pass",
+  "source_record": "artifacts/platform/human-gate.json",
+  "source_record_sha256": "021f261a8fe299a0d8d6ea9329ec2653d62f7c8778ae78b4aaa78b37de03076d"
+}

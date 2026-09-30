@@ -51,9 +51,9 @@ tests; it does **not** run the Docker/Playwright lifecycle suite
 
 | Area | State | Record |
 | --- | --- | --- |
-| Environment and validation | Done | Sprint 1 gate ([D1.8](artifacts/day-1/human-gate.json)), Sprint 2 gate ([D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json)) |
-| Grounding v1 experiment | Done, frozen | Sprint 3 gate ([D3.11](artifacts/day-3/raw/human-gate.json)) |
-| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | Milestone 4 platform gate ([D4.12](artifacts/platform/human-gate.json)) |
+| Environment and validation | Done | Sprint 1 gate ([D1.8](artifacts/decisions/d1.8.json)), Sprint 2 gate ([D2.11](artifacts/decisions/d2.11.json)) |
+| Grounding v1 experiment | Done, frozen | Sprint 3 gate ([D3.11](artifacts/decisions/d3.11.json)) |
+| Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | Milestone 4 platform gate ([D4.12](artifacts/decisions/d4.12.json)) |
 | Grounding v2 crossed allocation | Designed, not run against a model | [v2 manifest](artifacts/grounding-v2-manifest.json) |
 | v5 agent benchmark and calibration | In progress; v5 benchmark verdict (D5.10) not declared | [v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md) |
 | v5 stateful serving | In progress | [Platform design](docs/platform-design.md#v5-stateful-serving-apiv2) |
@@ -161,10 +161,10 @@ synthetic orchestration fixtures—not model-quality, production-throughput, or 
 no caller authentication; it and the MLflow demo UI must remain on loopback and must not be exposed
 or proxied onto a shared network ([deployment warning](deploy/README.md)).
 
-The owner-recorded [D1.8](artifacts/day-1/human-gate.json),
-[D2.11](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json),
-[D3.11](artifacts/day-3/raw/human-gate.json), and
-[D4.12](artifacts/platform/human-gate.json) decisions remain in the audit trail. D4.12 applies only
+The owner-recorded [D1.8](artifacts/decisions/d1.8.json),
+[D2.11](artifacts/decisions/d2.11.json),
+[D3.11](artifacts/decisions/d3.11.json), and
+[D4.12](artifacts/decisions/d4.12.json) decisions remain in the audit trail. D4.12 applies only
 to its reviewed revision and scripted-provider scope. The v5 confirmatory benchmark and v5
 milestone gate remain incomplete; retained calibration, negative results, and unfinished work are
 documented without being promoted to a headline result

@@ -1,0 +1,14 @@
+{
+  "schema_version": "pixelgym-decision-record-v1",
+  "gate": "D2.11",
+  "decision": "PASS",
+  "revision": null,
+  "date": "2026-09-07T06:12:43Z",
+  "decided_by": "Michael Swailes",
+  "tag": null,
+  "source_record": "artifacts/day-2-rev-2026-09-06-issues-95-101/raw/human-gate.json",
+  "source_record_sha256": "c2de69a5b0739bfd5e6a9ed5e26bc3257b2a9aa7081d65678b93272cc35b73cf",
+  "revision_note": "The raw record names no reviewed git revision. Its evidence_revision is the directory path artifacts/day-2-rev-2026-09-06-issues-95-101, not a commit. This re-graded decision supersedes the historical Day 2 record.",
+  "supersedes_record": "artifacts/day-2/raw/human-gate.json",
+  "supersedes_record_sha256": "a1d393b893dfcd0e9f9ed9c7f3b60a2457fe657099209ab6627d1dbc2a4473b9"
+}

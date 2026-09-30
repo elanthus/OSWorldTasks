@@ -1,0 +1,12 @@
+{
+  "schema_version": "pixelgym-decision-record-v1",
+  "gate": "D3 pilot",
+  "decision": "APPROVED",
+  "revision": null,
+  "date": "2026-08-10",
+  "decided_by": "Michael Swailes",
+  "tag": null,
+  "source_record": "artifacts/day-3/raw/human-approvals.json",
+  "source_record_sha256": "30fe4519ec91cb601a0a865fc6a47780ab64d90b8b62677238509aa3790e6ae9",
+  "revision_note": "The raw record names no reviewed git revision; only recorded_date 2026-08-10 exists."
+}
