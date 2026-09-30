@@ -135,8 +135,7 @@ def manifest_document(set_name: str, entries: Sequence[ManifestEntry]) -> dict[s
         "file_count": len(entries),
         "total_bytes": sum(entry.size for entry in entries),
         "files": [
-            {"path": entry.path, "size": entry.size, "sha256": entry.sha256}
-            for entry in entries
+            {"path": entry.path, "size": entry.size, "sha256": entry.sha256} for entry in entries
         ],
     }
 

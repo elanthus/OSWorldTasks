@@ -69,6 +69,23 @@ CI job timeouts are configured in the [CI workflow](../.github/workflows/ci.yml)
 configuration, visibility, and owner-gate sources at its recorded `source_revision`; it is historical
 evidence, not an inventory of the current workflow.
 
+## Release-hosted evidence images
+
+The PNGs of the historical `day-2/` and `platform/` records and of the v3, v4, and v5 pilot and
+calibration sets are assets of the `evidence-images-v1` GitHub release rather than tracked files.
+The canonical v1 grounding images in `artifacts/grounding/` stay in the tree, so the v1 commands
+below need no fetch. Before opening pilot or calibration images, or to run the unit tests that
+open them rather than skip, fetch and verify them:
+
+```bash
+.venv/bin/python scripts/fetch_evidence_images.py
+.venv/bin/python scripts/package_evidence_images.py verify --require-images
+```
+
+The fetch uses the GitHub CLI (`gh`) and needs network access. It verifies every file against the
+checked-in `images.manifest.json` before writing and exits non-zero on any mismatch. The
+[artifacts map](../artifacts/README.md#release-hosted-evidence-images) lists the sets.
+
 ## Local loopback HTTP contract
 
 The vendor-form server contract group starts the bundled guest HTTP server on an ephemeral IPv4

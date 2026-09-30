@@ -72,6 +72,12 @@ Each entry corrects presentation only; no stored measurement changed.
 - **2026-09-29, platform architecture.** In the [platform architecture](../artifacts/platform/architecture.md),
   "the existing Day 3 parser" means `parse_prediction` in `pixelgym.grounding.evaluation`. That
   file is not edited because the D4.12 evidence manifests record its SHA-256.
+- **Release-hosted evidence images.** 1,408 PNGs (106,987,721 bytes) in ten historical and
+  calibration sets moved from the tree to assets of the `evidence-images-v1` GitHub release. Each
+  set keeps an `images.manifest.json` with every PNG's path, size, and SHA-256; no PNG bytes
+  changed. The [artifacts map](../artifacts/README.md#release-hosted-evidence-images) lists the
+  sets and the fetch command, `scripts/fetch_evidence_images.py`. Without the images, the unit
+  suite skips the tests that open them and names the fetch command in the skip reason.
 
 ## Retired planning links in frozen reports
 

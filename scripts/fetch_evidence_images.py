@@ -33,7 +33,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.package_evidence_images import (  # noqa: E402
+from scripts.package_evidence_images import (
     DEFAULT_ARTIFACTS_ROOT,
     HOSTED_SETS,
     RELEASE_TAG,
@@ -84,9 +84,7 @@ def read_verified_archive(archive: Path, entries: Sequence[ManifestEntry]) -> di
     return contents
 
 
-def install_set(
-    artifacts_root: Path, set_name: str, archive: Path
-) -> tuple[int, int]:
+def install_set(artifacts_root: Path, set_name: str, archive: Path) -> tuple[int, int]:
     """Verify then write one set. Returns (written, already_present)."""
     entries = load_manifest(artifacts_root, set_name)
     if not archive.is_file():
@@ -123,9 +121,7 @@ def download(tag: str, repo: str, sets: Sequence[str], destination: Path) -> Non
     subprocess.run(command, check=True)
 
 
-def fetch(
-    artifacts_root: Path, sets: Sequence[str], source_dir: Path
-) -> int:
+def fetch(artifacts_root: Path, sets: Sequence[str], source_dir: Path) -> int:
     failures = 0
     for set_name in sets:
         try:

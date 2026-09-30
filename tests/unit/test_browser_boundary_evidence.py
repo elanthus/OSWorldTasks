@@ -29,6 +29,7 @@ from pixelgym.validation.browser_boundary import (
     source_hashes,
 )
 from scripts import validate_vendor_form_browser_boundary
+from tests.support.evidence_images import requires_images
 
 _CHECK_NAMES = (
     "submit_response_ok",
@@ -185,6 +186,7 @@ def test_browser_boundary_source_hashes_detect_stale_inline_behavior_and_layout(
     assert browser_boundary_source_hashes_match(evidence, tmp_path) is False
 
 
+@requires_images("day-2")
 def test_ordinary_browser_chrome_fixture_fails_navigation_surface_check() -> None:
     repository_root = Path(__file__).resolve().parents[2]
     with Image.open(repository_root / "artifacts/day-2/first-real-reset.png") as image:
