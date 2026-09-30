@@ -51,8 +51,8 @@ Real-loopback HTTP contract tests are not included in this coverage command. The
 `Fast suite` result aggregates the unit-coverage and `Release integration` job results, so either
 failure blocks that required context.
 
-The 80% threshold comes from the pre-property-test measurement of 80.337% across the complete
-`pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
+The coverage gate threshold is configured in `pyproject.toml`. Coverage is measured across the
+complete `pixelgym` package (`flows/` and `scripts/` are outside the installable package and out
 of coverage scope for the same reason they are out of packaging and mypy scope, not because they are
 hard to cover); optional OSWorld, browser, grounding, and platform modules remain included, along
 with the project's 12 pre-existing `# pragma: no cover` lines. CI publishes the terminal report in
