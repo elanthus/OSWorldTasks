@@ -276,14 +276,15 @@ def test_v5_golden_policy_reaches_sparse_reward_once_for_every_family(seed: int)
     )
     try:
         _observation, info = env.reset(seed=seed)
-        assert info == {"task_id": task.task_id}
+        assert set(info) == {"episode_id"}
+        assert env.task_id == task.task_id
         actions = golden_actions(task, backend)
         assert len(actions) == task.optimal_low_level_actions
         rewards = []
         for action in actions:
             _observation, reward, terminated, truncated, info = env.step(action)
             rewards.append(reward)
-            assert set(info) == {"task_id"}
+            assert set(info) == {"episode_id"}
         assert rewards[:-1] == [0.0] * (len(rewards) - 1)
         assert rewards[-1] == 1.0
         assert terminated and not truncated

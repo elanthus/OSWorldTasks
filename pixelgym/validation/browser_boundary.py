@@ -389,7 +389,7 @@ def validate_guest_browser_boundary(
     }
     check_values: dict[str, bool] = {}
     try:
-        screenshot, info = env.reset(seed=seed)
+        screenshot, _info = env.reset(seed=seed)
         window_state = backend.read_browser_window_state()
         task_app_page_ready = window_state.pop("task_app_page_ready", None)
         check_values["task_app_reported_ready"] = task_app_page_ready == {"ready": True}
@@ -415,7 +415,7 @@ def validate_guest_browser_boundary(
         )
         evidence.update(
             {
-                "task_id": info["task_id"],
+                "task_id": env.task_id,
                 "task_app_page_ready": task_app_page_ready,
                 "screenshot_path": screenshot_path.as_posix(),
                 "browser_launch": launch,

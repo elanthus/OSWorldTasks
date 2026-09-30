@@ -36,6 +36,7 @@ These define the project's claim. Do not weaken one to make a task easier; stop 
 
 12. `PixelGuiEnv` talks only to the backend protocol. **No OSWorld import in the core module.**
 13. `info` may carry task ID and validation hashes. It must never carry expected answers or bounding boxes.
+    *Note:* `PixelGuiEnv` puts only an opaque per-episode ID (`episode_id`, random at every reset) in `info`, never the task hash. The task ID is a pure function of the seed, so exposing it would let an agent regenerate the answers with the public generator; host-side code reads it from the `PixelGuiEnv.task_id` property.
 14. Dataset-capture instrumentation (bounding boxes) is build-time only and must not be reachable from the evaluation adapter.
 15. Set-of-marks candidates are generated **without consulting the requested target**. Marking only the ground-truth element leaks the answer.
 

@@ -66,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     error: Exception | None = None
     try:
-        observation, info = env.reset(seed=7)
+        observation, _info = env.reset(seed=7)
         elapsed = time.monotonic() - started
         state = backend.read_privileged_state()
         root_disk = backend.read_guest_root_disk()
@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
         Image.fromarray(observation).save(args.screenshot)
         evidence.update(
             {
-                "task_id": info["task_id"],
+                "task_id": env.task_id,
                 **privileged_hashes(state),
                 "screenshot_path": str(args.screenshot),
                 "screenshot_shape": list(observation.shape),

@@ -481,7 +481,7 @@ class V5Runner:
         classification = "incomplete"
         success = False
         try:
-            observation, info = env.reset(seed=task.seed)
+            observation, _info = env.reset(seed=task.seed)
             initial_digest = self.journal.put_object("screenshot", observation.tobytes())
             initial_checkpoint = backend.checkpoint()
             initial_checkpoint_digest = self.journal.put_object(
@@ -498,7 +498,7 @@ class V5Runner:
                 step_index=0,
                 payload={
                     "screenshot_digest": initial_digest,
-                    "task_id": info["task_id"],
+                    "task_id": env.task_id,
                     "environment_checkpoint_digest": initial_checkpoint_digest,
                     "environment_resume_digest": initial_resume_digest,
                 },

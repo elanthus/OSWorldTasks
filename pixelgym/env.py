@@ -14,8 +14,15 @@ section 3) against any backend satisfying `pixelgym.backends.base.Backend`:
   raises.
 - The same seed produces the same task and the same initial observation.
 
-`info` never carries anything beyond `task_id` (AGENTS.md invariant 13:
-"must never carry expected answers or bounding boxes"). In particular it
+`info` carries only an opaque per-episode ID, `episode_id`, drawn from
+`secrets.token_hex(16)` at every `reset`. The episode ID carries no
+information about the task: it is random, not derived from the seed or the
+canonical task spec. `info` never carries the task hash `task_id` (docs/environment-contract.md
+invariant 13: "must never carry expected answers or bounding boxes") --
+`task_id` is a pure function of the seed through the canonical spec, so an
+agent that saw it could regenerate the expected answers with the public
+generator. Host-side validators and runners read it through the read-only
+`PixelGuiEnv.task_id` property instead. In particular `info` also
 never carries the *seed* passed to `reset` -- the vendor-form task app is a
 public deterministic generator (`pixelgym.tasks.vendor_form.generator`), so
 handing back the seed would let an agent reconstruct every expected field
@@ -30,6 +37,7 @@ This module imports only `gymnasium`, `numpy`, and the rest of `pixelgym`
 
 from __future__ import annotations
 
+import secrets
 from collections.abc import Mapping
 from typing import Any
 
@@ -89,8 +97,17 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         self.action_space: spaces.Dict = build_action_space(backend.width, backend.height)
 
         self._task: TaskSpec | None = None
+        self._episode_id: str | None = None
         self._step_count = 0
         self._episode_ended = False
+
+    @property
+    def task_id(self) -> str:
+        """Host-side task hash of the current episode; never exposed through `info`."""
+
+        if self._task is None:
+            raise RuntimeError("task_id is unavailable before reset() or restore_episode()")
+        return self._task.task_id
 
     def reset(
         self,
@@ -110,11 +127,12 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             app_url=self.backend.app_url,
             max_episode_steps=self._max_episode_steps,
         )
+        self._episode_id = secrets.token_hex(16)
         self._step_count = 0
         self._episode_ended = False
 
         observation = self._capture_observation()
-        info = {"task_id": self._task.task_id}
+        info = {"episode_id": self._episode_id}
         return observation, info
 
     def step(
@@ -143,8 +161,9 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         # mismatched_fields, task_id_matches -- that must stay host-side; only
         # `success` may ever cross into the agent-facing reward/terminated
         # signal (AGENTS.md invariant 6). `info` here is deliberately just
-        # `task_id`, not a copy of `result`.
-        info = {"task_id": self._task.task_id}
+        # the opaque `episode_id`, not a copy of `result` and never `task_id`.
+        assert self._episode_id is not None
+        info = {"episode_id": self._episode_id}
         return observation, reward, terminated, truncated, info
 
     def restore_episode(self, task: TaskSpec, *, step_count: int) -> None:
@@ -168,6 +187,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         if task.max_episode_steps != self._max_episode_steps:
             raise ValueError("restored task step limit does not match the environment")
         self._task = task
+        self._episode_id = secrets.token_hex(16)
         self._step_count = step_count
         result = evaluate(task, self.backend.read_submissions())
         self._episode_ended = result.success or step_count >= task.max_episode_steps

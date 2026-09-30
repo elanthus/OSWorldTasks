@@ -313,11 +313,11 @@ def execute_smoke(
         backend, instruction=task.instruction, max_episode_steps=task.max_episode_steps
     )
     try:
-        observation, info = env.reset(seed=task.seed)
+        observation, _info = env.reset(seed=task.seed)
         with Image.open(screenshot_path) as approved_image:
             if not np.array_equal(observation, np.asarray(approved_image.convert("RGB"))):
                 raise ValueError("runtime initial screenshot differs from the approved image")
-        if info["task_id"] != plan["task"]["task_id"]:
+        if env.task_id != plan["task"]["task_id"]:
             raise ValueError("runtime task differs from the approved task")
 
         if provider is None:
@@ -395,10 +395,10 @@ def execute_smoke(
             "y": validated.y,
             "key": validated.key,
         }
-        _next_observation, reward, terminated, truncated, result_info = env.step(canonical_action)
+        _next_observation, reward, terminated, truncated, _result_info = env.step(canonical_action)
         result.update(
             environment_actions=1,
-            task_id=result_info["task_id"],
+            task_id=env.task_id,
             publishable_response=canonical_action,
             action_validation="accepted",
             dispatch={

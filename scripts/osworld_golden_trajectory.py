@@ -155,7 +155,7 @@ def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict
     trace = []
     provider_closed = False
     try:
-        observation, info = env.reset(seed=fixture["seed"])
+        observation, _info = env.reset(seed=fixture["seed"])
         initial_path = frames_dir / "step-000.png"
         Image.fromarray(observation).save(initial_path)
         frame_paths.append(initial_path)
@@ -201,7 +201,7 @@ def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict
         "schema_version": 1,
         "validator": "real-golden-episode",
         "seed": fixture["seed"],
-        "task_id": info["task_id"],
+        "task_id": env.task_id,
         "fixture_path": str(fixture_path),
         "action_count": len(trace),
         "trace": trace,
