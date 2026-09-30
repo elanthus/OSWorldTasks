@@ -1,6 +1,9 @@
-"""Successor with optimization-safe checks; the frozen original is reproduction-only.
+"""Read-only audit of the D5.8 owner budget adjustment and continued calibration.
 
-Read-only audit of the owner budget adjustment and continued calibration."""
+Checks that the reconciliation's approval digest and the execution plan digest match
+the recorded evidence and that the continuation journal agrees with the published
+outcomes. Checks raise explicit errors rather than using assertions, so they still
+run under ``python -O``."""
 
 import argparse
 import json
