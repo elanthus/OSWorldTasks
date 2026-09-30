@@ -3912,3 +3912,78 @@ def test_every_page_renders_descriptive_heading_without_slogans(
         assert heading in response.text, path
         for slogan in _REMOVED_SLOGANS:
             assert slogan not in response.text, (path, slogan)
+
+
+# Copied verbatim from the pre-WP9b inline special case in the candidate view.
+_DEMO_DISCLOSURE_HTML = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
+
+
+def _candidate_page_for(tmp_path: Path, gate_policy, summary, provider: str, model: str) -> str:
+    policy = build_policy_manifest(
+        provider=provider,
+        model=model,
+        prompt_name="pixelgym-grounding",
+        prompt_version=2,
+        prompt=prompt_template(2),
+        condition="raw",
+        parameters={"deterministic": True, "hidden_retries": 0},
+        parser_version="pixelgym-grounding-parser-v1",
+        scorer_version=gate_policy.required_scorer_version,
+        overlay_version="none-raw-coordinate-policy",
+        target_semantics=gate_policy.required_target_semantics,
+        source_provenance=SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION,
+            None,
+            None,
+            "unverifiable",
+            "none",
+            "manifest_malformed_json",
+        ),
+        dependency_lock_sha256="a" * 64,
+    )
+    summary = dataclasses.replace(summary, policy_id=policy.policy_id)
+    control = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
+    control.migrate()
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id,
+        policy=policy,
+        gate_report=evaluate_gates(gate_policy, summary),
+        artifacts=[],
+        summary=summary,
+    )
+    client = TestClient(
+        create_control_app(control, csrf_secret="test-secret-at-least-sixteen"),
+        client=("127.0.0.1", 50000),
+    )
+    page = client.get(f"/candidates/{candidate.candidate_id}")
+    assert page.status_code == 200
+    return page.text
+
+
+def test_demo_candidate_disclosure_html_is_byte_identical(
+    tmp_path: Path, passing_evidence, gate_policy
+) -> None:
+    _policy, summary, _report = passing_evidence
+    text = _candidate_page_for(
+        tmp_path, gate_policy, summary, "scripted-demo", "day3-replay-revised-v2"
+    )
+    assert text.count(_DEMO_DISCLOSURE_HTML) == 1
+    assert text.count('class="disclosure"') == 1
+
+
+@pytest.mark.parametrize(
+    ("provider", "model"),
+    [
+        ("openrouter", "some-other-model"),
+        ("scripted-demo", "some-other-model"),
+        ("openrouter", "day3-replay-revised-v2"),
+    ],
+    ids=["neither-matches", "provider-only", "model-only"],
+)
+def test_non_matching_candidate_renders_no_disclosure(
+    tmp_path: Path, passing_evidence, gate_policy, provider: str, model: str
+) -> None:
+    _policy, summary, _report = passing_evidence
+    text = _candidate_page_for(tmp_path, gate_policy, summary, provider, model)
+    assert 'class="disclosure"' not in text
+    assert "Synthetic fixture disclosure" not in text
