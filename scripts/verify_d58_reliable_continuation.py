@@ -1,6 +1,9 @@
-"""Successor with optimization-safe checks; the frozen original is reproduction-only.
+"""Read-only audit of the D5.8 ninety-assignment repaired-transport continuation.
 
-Read-only audit of the ninety-assignment repaired-transport continuation."""
+Audits the continuation journal against the published analysis and requires the
+public directory to match its ``files.json`` manifest exactly: no extra, missing, or
+changed files. Checks raise explicit errors rather than using assertions, so they
+still run under ``python -O``."""
 
 import argparse
 import json
