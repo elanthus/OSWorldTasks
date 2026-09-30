@@ -40,7 +40,7 @@ def validate_resets(
     try:
         for index in range(reset_count):
             started = time.monotonic()
-            observation, info = env.reset(seed=seed)
+            observation, _info = env.reset(seed=seed)
             reset_seconds = time.monotonic() - started
             state_reader = getattr(backend, "read_privileged_state", None)
             if not callable(state_reader):
@@ -49,7 +49,7 @@ def validate_resets(
             hashes = privileged_hashes(state)
             record: dict[str, Any] = {
                 "reset_index": index,
-                "task_id": info["task_id"],
+                "task_id": env.task_id,
                 **hashes,
                 "screenshot_shape": list(observation.shape),
                 "screenshot_dtype": str(observation.dtype),

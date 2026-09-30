@@ -113,7 +113,9 @@ bitwise identical at 1024×768 on one local Apple Silicon Docker/QEMU host**
 ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json),
 [revision environment](artifacts/day-2-rev-2026-09-06-issues-95-101/validation-report.json)). The
 reward-hacking audit records a disposition and evidence for **14 surfaces (11 tested, 2 blocked, 1 mitigated)**
-([audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)). The historical
+([audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)); a later
+[addendum](artifacts/reward-hacking-addendum-2026-09.json) records one more surface, precomputing
+answers from the task ID, as mitigated by replacing it in `info` with an opaque episode ID. The historical
 1920×1080 run established semantic task-state determinism and perceptual visual stability, not
 bitwise equality ([historical reset evidence](artifacts/day-2/raw/real-reset.json)).
 

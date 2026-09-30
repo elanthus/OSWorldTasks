@@ -211,7 +211,7 @@ def replay(fixture: dict[str, Any], *, collect_evidence: bool = False) -> dict[s
 
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
-    observation, info = env.reset(seed=seed)
+    observation, _info = env.reset(seed=seed)
 
     task = _evaluator_task(seed, backend.app_url) if collect_evidence else None
 
@@ -263,7 +263,7 @@ def replay(fixture: dict[str, Any], *, collect_evidence: bool = False) -> dict[s
     env.close()
 
     return {
-        "task_id": info["task_id"],
+        "task_id": env.task_id,
         "steps": steps,
         "final_observation": observation,
         "final_evaluation": final_result,

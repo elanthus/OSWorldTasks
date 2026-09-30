@@ -11,6 +11,7 @@ screenshots), since `FakeBackend` itself always returns a conforming frame.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from typing import Self
 
@@ -161,12 +162,45 @@ def test_reset_returns_observation_within_the_declared_space():
     assert observation in env.observation_space
 
 
-def test_reset_info_carries_only_task_id():
+def test_reset_info_carries_only_an_opaque_episode_id():
     env = PixelGuiEnv(FakeBackend())
 
     _observation, info = env.reset(seed=7)
 
-    assert set(info) == {"task_id"}
+    assert set(info) == {"episode_id"}
+    assert re.fullmatch(r"[0-9a-f]{32}", info["episode_id"])
+
+
+def test_reset_info_does_not_expose_the_task_id():
+    """task_id is a pure function of the seed via the canonical spec; an agent
+    seeing it could regenerate the answers with the public generator."""
+    env = PixelGuiEnv(FakeBackend())
+
+    _observation, info = env.reset(seed=7)
+
+    assert env.task_id not in info.values()
+    assert "task_id" not in info
+
+
+def test_same_seed_gives_different_episode_ids_and_the_same_task_id_property():
+    env = PixelGuiEnv(FakeBackend())
+
+    _obs1, info1 = env.reset(seed=7)
+    task_id1 = env.task_id
+    _obs2, info2 = env.reset(seed=7)
+
+    assert info1["episode_id"] != info2["episode_id"]
+    assert env.task_id == task_id1
+
+
+def test_task_id_property_is_unavailable_before_reset_and_read_only():
+    env = PixelGuiEnv(FakeBackend())
+
+    with pytest.raises(RuntimeError, match="before reset"):
+        _ = env.task_id
+    env.reset(seed=7)
+    with pytest.raises(AttributeError):
+        env.task_id = "forged"  # type: ignore[misc]
 
 
 def test_reset_info_does_not_expose_the_seed():
@@ -194,20 +228,22 @@ def test_reset_info_does_not_expose_expected_field_values():
 def test_same_seed_produces_the_same_task_id_and_initial_observation():
     env = PixelGuiEnv(FakeBackend())
 
-    obs1, info1 = env.reset(seed=7)
-    obs2, info2 = env.reset(seed=7)
+    obs1, _info1 = env.reset(seed=7)
+    task_id1 = env.task_id
+    obs2, _info2 = env.reset(seed=7)
 
-    assert info1["task_id"] == info2["task_id"]
+    assert env.task_id == task_id1
     assert np.array_equal(obs1, obs2)
 
 
 def test_different_seed_produces_a_different_task_id():
     env = PixelGuiEnv(FakeBackend())
 
-    _obs1, info1 = env.reset(seed=1)
-    _obs2, info2 = env.reset(seed=2)
+    env.reset(seed=1)
+    task_id1 = env.task_id
+    env.reset(seed=2)
 
-    assert info1["task_id"] != info2["task_id"]
+    assert env.task_id != task_id1
 
 
 def test_different_seed_produces_a_different_initial_observation():
@@ -227,7 +263,7 @@ def test_reset_without_a_seed_does_not_raise():
     observation, info = env.reset()
 
     assert observation in env.observation_space
-    assert "task_id" in info
+    assert set(info) == {"episode_id"}
 
 
 # -- Action validation: canonical types only, before any backend call -------
@@ -611,14 +647,14 @@ def test_step_observation_is_contained_in_the_declared_space():
     assert observation in env.observation_space
 
 
-def test_step_info_carries_only_task_id():
+def test_step_info_carries_only_the_episode_id_from_reset():
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
-    env.reset(seed=7)
+    _observation, reset_info = env.reset(seed=7)
 
     *_rest, info = env.step(_noop())
 
-    assert set(info) == {"task_id"}
+    assert info == {"episode_id": reset_info["episode_id"]}
 
 
 def test_step_info_does_not_expose_partial_evaluator_score():
@@ -762,7 +798,9 @@ def test_restore_episode_initializes_bookkeeping_without_resetting_backend():
     assert backend.checkpoint() == checkpoint
     _observation, reward, terminated, truncated, info = env.step(_noop())
     assert (reward, terminated, truncated) == (0.0, False, False)
-    assert info == {"task_id": task.task_id}
+    assert set(info) == {"episode_id"}
+    assert re.fullmatch(r"[0-9a-f]{32}", info["episode_id"])
+    assert env.task_id == task.task_id
 
 
 def test_restore_episode_preserves_step_limit_end_guard():

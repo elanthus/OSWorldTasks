@@ -64,8 +64,8 @@ def main() -> int:
 
     backend = FakeBackend()
     env = PixelGuiEnv(backend)
-    observation, info = env.reset(seed=args.seed)
-    print(f"task_id={info['task_id']}  observation={observation.shape} {observation.dtype}")
+    observation, _info = env.reset(seed=args.seed)
+    print(f"task_id={env.task_id}  observation={observation.shape} {observation.dtype}")
     print(f"{'step':>4}  {'action':<28} {'reward':>6}  terminated  truncated")
 
     total = 0.0
