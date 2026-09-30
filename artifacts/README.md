@@ -2,6 +2,8 @@
 
 This directory is append-only since `a07069d4dfefe2ff05c1cb6d865053e8682925c3`; earlier
 withdrawals are listed in the [evidence index](../docs/evidence-index.md#withdrawn-and-historical-work).
+The one exception is the PNGs moved to [release assets](#release-hosted-evidence-images), each
+still bound by a checked-in manifest.
 Recorded SHA-256 digests and provenance files bind file paths. The canonical evidence for public claims is the set of files
 linked by the [root README](../README.md). Everything else is a historical revision, a superseded
 capture, a calibration campaign, or a release record, retained on purpose. Use the
@@ -72,6 +74,46 @@ frozen analysis plan and stop rules beside the D5.9 evidence.
 - `-vN` suffixes: retained; see the file header.
 - `SUPERSEDED-SOURCES`: records changed layout sources while retaining the frozen earlier capture; see the [source notice](grounding-capture.SUPERSEDED-SOURCES.md).
 - `luna` / `terra`: model codenames in [codex_cli_policy.py](../pixelgym/grounding/v5/codex_cli_policy.py), not hosts.
+
+## Release-hosted evidence images
+
+The PNGs in the ten sets below are not in the tree. They are assets of the `evidence-images-v1`
+GitHub release, one `<set>-images.tar.gz` archive per set. Each set keeps a checked-in
+`images.manifest.json` that lists every PNG's relative path, byte size, and SHA-256, so digests
+recorded in capture and results files still bind to a manifest entry without the images. All
+JSON, JSONL, and Markdown files in these directories stay in the tree. The PNGs also remain in
+repository history before their removal.
+
+| Set | PNG files | Bytes |
+|---|---|---|
+| `day-2/` | 130 | 16,902,874 |
+| `grounding-v3a/` | 62 | 3,925,290 |
+| `grounding-v3b/` | 62 | 4,178,743 |
+| `grounding-v3c/` | 62 | 4,811,038 |
+| `grounding-v4-pilot/` | 32 | 3,727,864 |
+| `grounding-v4b-pilot/` | 200 | 12,139,156 |
+| `grounding-v4c-pilot/` | 772 | 54,471,808 |
+| `grounding-v5-d56-twinb-audit/` | 43 | 1,595,885 |
+| `grounding-v5-development-sample/` | 20 | 1,633,075 |
+| `platform/` | 25 | 3,601,988 |
+| **Total** | **1,408** | **106,987,721** |
+
+To restore them, run from the repository root:
+
+```bash
+.venv/bin/python scripts/fetch_evidence_images.py            # all sets
+.venv/bin/python scripts/fetch_evidence_images.py --set grounding-v4c-pilot
+```
+
+The script downloads with `gh release download`, checks every archive member against the
+manifest before writing anything, and refuses to overwrite an existing file whose bytes differ.
+Any mismatch exits non-zero. `--dir <path>` reads archives already downloaded to `<path>`
+instead. `.venv/bin/python scripts/package_evidence_images.py verify` checks fetched PNGs against
+the manifests.
+
+The canonical v1 set in [grounding/](grounding/), the
+[day-2-rev-2026-09-06-issues-95-101/](day-2-rev-2026-09-06-issues-95-101/) reset evidence, the
+`grounding-v2/` contact sheets, and the demo GIF stay in the tree.
 
 ## Release and process records
 

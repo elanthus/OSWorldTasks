@@ -80,3 +80,15 @@ artifacts/grounding-v5-d59-haiku-network-retry-execution/
 artifacts/grounding-v5-d59-haiku-network-retry-continuation/
 artifacts/grounding-v5-d59-haiku-reset-continuation/
 artifacts/grounding-v5-d59-haiku-network-retry-approval.json
+
+# Release-hosted evidence PNGs restored by scripts/fetch_evidence_images.py
+/artifacts/day-2/**/*.png
+/artifacts/grounding-v3a/**/*.png
+/artifacts/grounding-v3b/**/*.png
+/artifacts/grounding-v3c/**/*.png
+/artifacts/grounding-v4-pilot/**/*.png
+/artifacts/grounding-v4b-pilot/**/*.png
+/artifacts/grounding-v4c-pilot/**/*.png
+/artifacts/grounding-v5-d56-twinb-audit/**/*.png
+/artifacts/grounding-v5-development-sample/**/*.png
+/artifacts/platform/**/*.png

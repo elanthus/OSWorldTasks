@@ -11,6 +11,8 @@ from typing import Any
 
 import pytest
 
+from tests.support.evidence_images import requires_images
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 CAPTURE_RELATIVE_PATH = Path("artifacts/grounding-v4-pilot-capture.json")
 PROVENANCE_RELATIVE_PATH = Path(
@@ -316,8 +318,46 @@ def test_v4_capture_is_bitwise_repeatable_and_manifest_hashes_match() -> None:
         )
     )
     for output in manifest["outputs"].values():
+        if output["path"].endswith(".png"):
+            continue  # release-hosted; bound by the two tests below
         actual = hashlib.sha256((REPOSITORY_ROOT / output["path"]).read_bytes()).hexdigest()
         assert actual == output["sha256"], output["path"]
+
+
+def _v4_png_outputs() -> dict[str, str]:
+    manifest = json.loads(
+        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return {
+        output["path"]: output["sha256"]
+        for output in manifest["outputs"].values()
+        if output["path"].endswith(".png")
+    }
+
+
+def test_v4_png_output_hashes_agree_with_release_image_manifest() -> None:
+    images = json.loads(
+        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot/images.manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    hosted = {
+        f"artifacts/grounding-v4-pilot/{entry['path']}": entry["sha256"]
+        for entry in images["files"]
+    }
+    png_outputs = _v4_png_outputs()
+    assert png_outputs
+    for path, digest in png_outputs.items():
+        assert hosted.get(path) == digest, path
+
+
+@requires_images("grounding-v4-pilot")
+def test_v4_png_outputs_match_manifest_hashes_on_disk() -> None:
+    for path, digest in _v4_png_outputs().items():
+        actual = hashlib.sha256((REPOSITORY_ROOT / path).read_bytes()).hexdigest()
+        assert actual == digest, path
 
 
 def test_v4_candidate_join_ids_are_opaque_in_checked_in_evidence() -> None:

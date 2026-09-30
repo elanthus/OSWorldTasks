@@ -1,0 +1,321 @@
+{
+  "schema_version": "pixelgym.evidence-images-manifest.v1",
+  "set": "grounding-v3c",
+  "release_tag": "evidence-images-v1",
+  "archive": "grounding-v3c-images.tar.gz",
+  "paths_relative_to": "artifacts/grounding-v3c",
+  "file_count": 62,
+  "total_bytes": 4811038,
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "size": 122974,
+      "sha256": "9796e1e7e291620839c3582c7fb4745b5a66c1e5ce47005dda1eac87584ae5f8"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0001.png",
+      "size": 80757,
+      "sha256": "ff7fad3bb8d20f0e7a681848876940b8a0add515b398038dd33281a5ecb5cfdf"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0002.png",
+      "size": 80853,
+      "sha256": "af4580ac5cd97d93a5f3852ee04b11793d341eb31f4e14e222fbd7ae4b103509"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0003.png",
+      "size": 84530,
+      "sha256": "89a8dd029ec1218b39169aa7a9a71647b051ad724afc3e83566f60142b18d7f9"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0004.png",
+      "size": 80043,
+      "sha256": "914cef9011f7064914f4ace279ab1423951ec755061b45656e6a01e7772362b0"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0005.png",
+      "size": 80987,
+      "sha256": "396b15e483beaca02347c1945ac2060032340c8663fc94a3fa56a2b5e27794f4"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0006.png",
+      "size": 80757,
+      "sha256": "ff7fad3bb8d20f0e7a681848876940b8a0add515b398038dd33281a5ecb5cfdf"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0007.png",
+      "size": 80853,
+      "sha256": "af4580ac5cd97d93a5f3852ee04b11793d341eb31f4e14e222fbd7ae4b103509"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0008.png",
+      "size": 84530,
+      "sha256": "89a8dd029ec1218b39169aa7a9a71647b051ad724afc3e83566f60142b18d7f9"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0009.png",
+      "size": 80043,
+      "sha256": "914cef9011f7064914f4ace279ab1423951ec755061b45656e6a01e7772362b0"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0010.png",
+      "size": 80987,
+      "sha256": "396b15e483beaca02347c1945ac2060032340c8663fc94a3fa56a2b5e27794f4"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0011.png",
+      "size": 80757,
+      "sha256": "ff7fad3bb8d20f0e7a681848876940b8a0add515b398038dd33281a5ecb5cfdf"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0012.png",
+      "size": 80853,
+      "sha256": "af4580ac5cd97d93a5f3852ee04b11793d341eb31f4e14e222fbd7ae4b103509"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0013.png",
+      "size": 84530,
+      "sha256": "89a8dd029ec1218b39169aa7a9a71647b051ad724afc3e83566f60142b18d7f9"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0014.png",
+      "size": 80043,
+      "sha256": "914cef9011f7064914f4ace279ab1423951ec755061b45656e6a01e7772362b0"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0015.png",
+      "size": 80987,
+      "sha256": "396b15e483beaca02347c1945ac2060032340c8663fc94a3fa56a2b5e27794f4"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0016.png",
+      "size": 80757,
+      "sha256": "ff7fad3bb8d20f0e7a681848876940b8a0add515b398038dd33281a5ecb5cfdf"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0017.png",
+      "size": 80853,
+      "sha256": "af4580ac5cd97d93a5f3852ee04b11793d341eb31f4e14e222fbd7ae4b103509"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0018.png",
+      "size": 84530,
+      "sha256": "89a8dd029ec1218b39169aa7a9a71647b051ad724afc3e83566f60142b18d7f9"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0019.png",
+      "size": 80043,
+      "sha256": "914cef9011f7064914f4ace279ab1423951ec755061b45656e6a01e7772362b0"
+    },
+    {
+      "path": "images/marks/vendor-list-v3c-cal-0020.png",
+      "size": 80987,
+      "sha256": "396b15e483beaca02347c1945ac2060032340c8663fc94a3fa56a2b5e27794f4"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0001.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0002.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0003.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0004.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0005.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0006.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0007.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0008.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0009.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0010.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0011.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0012.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0013.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0014.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0015.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0016.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0017.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0018.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0019.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw-repeat/vendor-list-v3c-cal-0020.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0001.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0002.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0003.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0004.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0005.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0006.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0007.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0008.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0009.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0010.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0011.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0012.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0013.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0014.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0015.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0016.png",
+      "size": 72631,
+      "sha256": "b6fab4e44460498499e16c2769e5a3083270db34d220ff3911de1124f102e58e"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0017.png",
+      "size": 72828,
+      "sha256": "9e1cf2fe338ae1172cbb95cf63be58127e5de0653d31fb2a166258c38546280b"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0018.png",
+      "size": 75986,
+      "sha256": "d3c4cbd5d1e459e1c34fe6d7eca5bc24ee87f6cce49aafddcbb679cccc722f96"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0019.png",
+      "size": 72223,
+      "sha256": "4a065cb214939c37eecf32e0d079013d0c731818819c52c5806c2161d63d93ee"
+    },
+    {
+      "path": "images/raw/vendor-list-v3c-cal-0020.png",
+      "size": 73088,
+      "sha256": "7a729e6ea3f52de40274959f0b2d78664b813c411f803c76fb21ab465c325435"
+    },
+    {
+      "path": "marks-contact-sheet.png",
+      "size": 125336,
+      "sha256": "3da63e35f805f2cfff2b791fdf674e172b6c2dece0720f9f67e32c03d613ec1b"
+    }
+  ]
+}
