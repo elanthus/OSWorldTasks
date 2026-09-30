@@ -45,7 +45,7 @@ HISTORICAL_V3_REPORT_PATH = "artifacts/grounding-v3-haiku-gemini-report.md"
 HISTORICAL_HAIKU_RAW_TEXT = "100/100"
 CITED_PATHS = (PROTOCOL_PATH, V1_REPORT_PATH, V1_PROVENANCE_PATH, HISTORICAL_V3_REPORT_PATH)
 APPLIES_FROM = {
-    "pull_request": "elanthus/OSWorldTasks#PENDING",
+    "pull_request": "elanthus/OSWorldTasks#232",
     "branch": "cleanup/wp19-grounding-report-v2",
 }
 APPLIES_FROM_NOTE = (

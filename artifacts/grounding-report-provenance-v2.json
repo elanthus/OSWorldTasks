@@ -1,7 +1,7 @@
 {
   "applies_from": {
     "branch": "cleanup/wp19-grounding-report-v2",
-    "pull_request": "elanthus/OSWorldTasks#PENDING"
+    "pull_request": "elanthus/OSWorldTasks#232"
   },
   "applies_from_note": "The first main revision containing this report is the merge commit of that pull request, resolvable from GitHub.",
   "cited_documents": [
