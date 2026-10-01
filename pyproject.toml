@@ -7,12 +7,10 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.12"
 dependencies = [
-    "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency
     "gymnasium~=0.28.1",  # matches the osworld extra's pin (xlang-ai/OSWorld-V2@v2026.06.24)
     "numpy>=1.26",
     "pillow>=10.0",
     "fastapi>=0.110",
-    "jsonschema[format-nongpl]==4.25.1",
     "uvicorn>=0.29",
 ]
 
@@ -24,6 +22,8 @@ osworld = [
     "chardet>=3,<6",  # OSWorld requests~=2.31 warns on the current chardet 7.x release
 ]
 platform = [
+    "anyio>=4.0",  # explicit: serving cancellation scopes are a direct platform dependency
+    "jsonschema[format-nongpl]==4.25.1",  # platform and v5 contract validation
     "mlflow==3.14.0",
     "metaflow==2.19.35",
     "boto3==1.40.1",
@@ -39,6 +39,7 @@ dev = [
     "pytest-xdist>=3.8",
     "ruff>=0.4",
     "mypy>=1.17,<2",
+    "jsonschema[format-nongpl]==4.25.1",  # platform/v5 contract tests run in the fast suite
     "types-jsonschema>=4.25",
     "build>=1.0",
     "pip-tools==7.5.3",  # regenerates the checked-in platform runtime lock
