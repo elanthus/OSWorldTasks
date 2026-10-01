@@ -174,7 +174,7 @@ class FakeBackend:
         }
 
     def checkpoint(self) -> bytes:
-        """Content-addressable v5 checkpoint for the in-process backend."""
+        """Content-addressable session checkpoint for the in-process backend."""
 
         record, _layout, form = self._require_task()
         return canonical_json_bytes(

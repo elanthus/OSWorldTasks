@@ -60,6 +60,40 @@ _BUNDLE_FILES = (
 )
 _ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
+# Guest-side Python programs run through the trusted setup controller. They are
+# host-authored templates, not part of the zipped guest bundle (which would
+# change its recorded digest). ``__PIXELGYM_<NAME>__`` placeholders are filled
+# only from validated host constants and the host-generated task record.
+_GUEST_PROGRAM_DIR = Path(__file__).parent / "guest_programs"
+_GUEST_PROGRAM_NAMES = (
+    "browser_window_state",
+    "desktop_ready",
+    "display_size",
+    "page_ready",
+    "pointer_park",
+    "privileged_state",
+    "reset",
+    "service_ready",
+)
+_GUEST_PROGRAMS = {
+    name: (_GUEST_PROGRAM_DIR / f"{name}.py").read_text(encoding="utf-8")
+    for name in _GUEST_PROGRAM_NAMES
+}
+
+
+def _guest_program(name: str, **values: object) -> str:
+    """Render a guest program template with exact ``str()`` substitutions."""
+
+    text = _GUEST_PROGRAMS[name]
+    for key, value in values.items():
+        token = f"__PIXELGYM_{key}__"
+        if token not in text:
+            raise OSWorldTaskError(f"guest program {name!r} has no placeholder {token}")
+        text = text.replace(token, str(value))
+    if "__PIXELGYM_" in text:
+        raise OSWorldTaskError(f"guest program {name!r} has an unfilled placeholder")
+    return text
+
 
 class OSWorldTaskError(RuntimeError):
     """The custom task could not be installed or its state was invalid."""
@@ -178,19 +212,7 @@ class _VendorFormTaskSupport:
         ready_name = "pixelgym-vendor-form-ready.txt"
         ready_path = Path(setup_controller.cache_dir) / ready_name
         ready_path.unlink(missing_ok=True)
-        ready_script = (
-            "import time,urllib.request\n"
-            "last_error = None\n"
-            "for attempt in range(240):\n"
-            " try:\n"
-            f"  body=urllib.request.urlopen('{APP_URL}healthz',timeout=1).read()\n"
-            "  print('READY')\n"
-            "  break\n"
-            " except Exception as exc:\n"
-            "  last_error = repr(exc)\n"
-            "  if attempt == 239: raise RuntimeError(last_error)\n"
-            "  time.sleep(0.25)\n"
-        )
+        ready_script = _guest_program("service_ready", APP_URL=APP_URL)
         ready_error_name = "pixelgym-vendor-form-ready-error.txt"
         ready_error_path = Path(setup_controller.cache_dir) / ready_error_name
         ready_error_path.unlink(missing_ok=True)
@@ -226,14 +248,7 @@ class _VendorFormTaskSupport:
                 f"probe_error={ready_error[-2000:]!r}; server_log={server_log[-4000:]!r}"
             )
 
-        reset_script = (
-            "import json,urllib.request;"
-            "req=urllib.request.Request("
-            f"'{APP_URL}api/reset',"
-            f"data=json.dumps({{'seed':{self._record['seed']}}}).encode(),"
-            "headers={'Content-Type':'application/json'},method='POST');"
-            "print(urllib.request.urlopen(req,timeout=5).read().decode())"
-        )
+        reset_script = _guest_program("reset", APP_URL=APP_URL, SEED=self._record["seed"])
         reset_name = "pixelgym-vendor-form-reset.json"
         reset_path = Path(setup_controller.cache_dir) / reset_name
         reset_path.unlink(missing_ok=True)
@@ -265,24 +280,7 @@ class _VendorFormTaskSupport:
         desktop_ready_name = "pixelgym-vendor-form-desktop-ready.txt"
         desktop_ready_path = Path(setup_controller.cache_dir) / desktop_ready_name
         desktop_ready_path.unlink(missing_ok=True)
-        desktop_ready_script = (
-            "import os,subprocess,time\n"
-            "env=os.environ.copy()\n"
-            "env['DISPLAY']=':0'\n"
-            "last='not attempted'\n"
-            "for attempt in range(480):\n"
-            " try:\n"
-            "  result=subprocess.run(['wmctrl','-m'],env=env,capture_output=True,text=True,"
-            "timeout=2)\n"
-            "  last=(result.stdout+result.stderr).strip()\n"
-            "  if result.returncode == 0:\n"
-            "   print('DESKTOP_READY')\n"
-            "   break\n"
-            " except Exception as exc:\n"
-            "  last=repr(exc)\n"
-            " if attempt == 479: raise RuntimeError(last)\n"
-            " time.sleep(0.25)\n"
-        )
+        desktop_ready_script = _guest_program("desktop_ready")
         setup_controller.execute(
             ["python3", "-c", desktop_ready_script],
             stdout=desktop_ready_name,
@@ -299,22 +297,8 @@ class _VendorFormTaskSupport:
         display_size_path = Path(setup_controller.cache_dir) / display_size_name
         display_size_path.unlink(missing_ok=True)
         display_width, display_height = GUEST_VIEWPORT_SIZE
-        display_size_script = (
-            "import os,re,subprocess\n"
-            "env=os.environ.copy(); env['DISPLAY']=':0'\n"
-            "query=subprocess.run(['xrandr','--query'],env=env,capture_output=True,text=True,"
-            "timeout=5,check=True).stdout\n"
-            "outputs=[line.split()[0] for line in query.splitlines() if ' connected' in line]\n"
-            "if len(outputs) != 1: raise RuntimeError(outputs)\n"
-            f"subprocess.run(['xrandr','--output',outputs[0],'--mode','{display_width}x"
-            f"{display_height}','--scale','1x1','--panning','{display_width}x{display_height}',"
-            f"'--fb','{display_width}x{display_height}'],env=env,capture_output=True,text=True,"
-            "timeout=10,check=True)\n"
-            "verified=subprocess.run(['xrandr','--current'],env=env,capture_output=True,text=True,"
-            "timeout=5,check=True).stdout\n"
-            f"if re.search(r'current {display_width} x {display_height}',verified) is None: "
-            "raise RuntimeError(verified)\n"
-            "print('DISPLAY_SIZE_READY')\n"
+        display_size_script = _guest_program(
+            "display_size", DISPLAY_WIDTH=display_width, DISPLAY_HEIGHT=display_height
         )
         setup_controller.execute(
             ["python3", "-c", display_size_script],
@@ -355,27 +339,7 @@ class _VendorFormTaskSupport:
         page_ready_error_name = "pixelgym-vendor-form-page-ready-error.txt"
         page_ready_error_path = Path(setup_controller.cache_dir) / page_ready_error_name
         page_ready_error_path.unlink(missing_ok=True)
-        page_ready_script = (
-            "import json,time,urllib.request\n"
-            "last_error = None\n"
-            "ready_streak = 0\n"
-            "for attempt in range(240):\n"
-            " try:\n"
-            f"  value=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=1))\n"
-            "  if value == {'ready': True}:\n"
-            "   ready_streak += 1\n"
-            "   if ready_streak == 2:\n"
-            "    print(json.dumps(value,sort_keys=True,separators=(',',':')))\n"
-            "    break\n"
-            "  else:\n"
-            "   ready_streak = 0\n"
-            "   last_error = 'page-ready response: ' + repr(value)\n"
-            " except Exception as exc:\n"
-            "  ready_streak = 0\n"
-            "  last_error = repr(exc)\n"
-            " if attempt == 239: raise RuntimeError(last_error or 'page did not report ready')\n"
-            " time.sleep(0.25)\n"
-        )
+        page_ready_script = _guest_program("page_ready", APP_URL=APP_URL)
         setup_controller.execute(
             ["python3", "-c", page_ready_script],
             stdout=page_ready_name,
@@ -439,10 +403,11 @@ class _VendorFormTaskSupport:
                 "python3",
                 "-c",
                 (
-                    "import pyautogui; "
-                    "pyautogui.click(100,150); "
-                    f"pyautogui.moveTo({setup_controller.screen_width - 10},"
-                    f"{setup_controller.screen_height - 10},duration=0)"
+                    _guest_program(
+                        "pointer_park",
+                        PARK_X=setup_controller.screen_width - 10,
+                        PARK_Y=setup_controller.screen_height - 10,
+                    )
                 ),
             ],
             quiet=True,
@@ -450,12 +415,7 @@ class _VendorFormTaskSupport:
         )
 
     def read_privileged_state(self, env: Any) -> dict[str, Any]:
-        script = (
-            "python3 - <<'PY'\n"
-            "import urllib.request\n"
-            f"print(urllib.request.urlopen('{APP_URL}api/state',timeout=5).read().decode())\n"
-            "PY\n"
-        )
+        script = "python3 - <<'PY'\n" + _guest_program("privileged_state", APP_URL=APP_URL) + "PY\n"
         result = env.controller.run_bash_script(script, timeout=15)
         if not isinstance(result, dict) or result.get("returncode") != 0:
             raise OSWorldTaskError(f"privileged state query failed: {result!r}")
@@ -473,30 +433,7 @@ class _VendorFormTaskSupport:
         """Read validation-only window-mode evidence from the trusted guest controller."""
 
         script = (
-            "python3 - <<'PY'\n"
-            "import json,os,re,subprocess,urllib.request\n"
-            "env=os.environ.copy(); env['DISPLAY']=':0'\n"
-            "def run(argv):\n"
-            " result=subprocess.run(argv,env=env,capture_output=True,text=True,timeout=5)\n"
-            " if result.returncode != 0: raise RuntimeError(result.stderr.strip() or argv[0])\n"
-            " return result.stdout.strip()\n"
-            "active_raw=run(['xprop','-root','_NET_ACTIVE_WINDOW'])\n"
-            "match=re.search(r'0x[0-9a-fA-F]+',active_raw)\n"
-            "if match is None: raise RuntimeError(active_raw)\n"
-            "active_id=match.group(0).lower()\n"
-            "windows=[]\n"
-            "for line in run(['wmctrl','-lGx']).splitlines():\n"
-            " parts=line.split(None,7)\n"
-            " if len(parts) != 8: continue\n"
-            " windows.append({'id':parts[0].lower(),'desktop':parts[1],"
-            "'x':int(parts[2]),'y':int(parts[3]),'width':int(parts[4]),"
-            "'height':int(parts[5]),'class':parts[6],'title':parts[7]})\n"
-            "properties=run(['xprop','-id',active_id,'_NET_WM_STATE','WM_CLASS','_NET_WM_NAME'])\n"
-            f"page_ready=json.load(urllib.request.urlopen('{APP_URL}api/page-ready',timeout=5))\n"
-            "print(json.dumps({'active_window_id':active_id,'windows':windows,"
-            "'active_window_properties':properties,'task_app_page_ready':page_ready},"
-            "sort_keys=True))\n"
-            "PY\n"
+            "python3 - <<'PY'\n" + _guest_program("browser_window_state", APP_URL=APP_URL) + "PY\n"
         )
         result = env.controller.run_bash_script(script, timeout=15)
         if not isinstance(result, dict) or result.get("returncode") != 0:

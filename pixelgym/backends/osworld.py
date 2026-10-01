@@ -408,7 +408,7 @@ class OSWorldBackend:
         }
 
     def checkpoint(self) -> bytes:
-        """Seal the live-session reconnect state used by the v5 runner.
+        """Seal the live-session reconnect state used by the resumable runner.
 
         OSWorld does not expose a content-addressed VM snapshot per action, so
         this checkpoint supports only a proven live reconnect to this exact
@@ -424,7 +424,7 @@ class OSWorldBackend:
                 "schema_version": "pixelgym-osworld-live-reconnect-v1",
                 "task_id": self._task_record["task_id"],
                 "seed": self._task_record["seed"],
-                "backend_identity": self._v5_backend_identity(),
+                "backend_identity": self._session_identity(),
                 "structured_action_count": self._structured_action_count,
                 "screenshot_digest": "sha256:" + sha256_bytes(screenshot.tobytes()),
                 "application_state_digest": content_digest(privileged),
@@ -465,7 +465,7 @@ class OSWorldBackend:
         if self.environment_resume_record(step_count=step_count) != resume_record:
             raise OSWorldBackendError("OSWorld reconnect binding mismatch")
 
-    def _v5_backend_identity(self) -> str:
+    def _session_identity(self) -> str:
         if self._task_record is None:
             raise OSWorldBackendError("OSWorld task is not installed")
         return content_digest(

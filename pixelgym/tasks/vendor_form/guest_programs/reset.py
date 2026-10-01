@@ -1,0 +1,1 @@
+import json,urllib.request;req=urllib.request.Request('__PIXELGYM_APP_URL__api/reset',data=json.dumps({'seed':__PIXELGYM_SEED__}).encode(),headers={'Content-Type':'application/json'},method='POST');print(urllib.request.urlopen(req,timeout=5).read().decode())
