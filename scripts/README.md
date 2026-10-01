@@ -36,6 +36,8 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `run_grounding_evaluation.py` | Run or plan the frozen grounding evaluation with an explicit call cap | `--provider`, `--pilot`/`--full`, `--max-new-calls` | predictions JSONL at `--output`; `--plan-only` makes no calls | paid provider | no |
 | `generate_grounding_report.py` | Recreate grounding statistics, figures, gallery, and report without model calls | predictions, error review, results | `artifacts/grounding-report.md` and figures | none | yes |
 | `verify_grounding_report.py` | Verify the canonical grounding report from frozen evidence without writing files | frozen grounding evidence | exit status | none | yes |
+| `generate_grounding_report_v2.py` | Write the grounding report v2 and its provenance from frozen evidence without model calls | `--repository-root`, `--output-dir` | report v2 and provenance files | none | yes |
+| `verify_grounding_report_v2.py` | Verify the grounding report v2 and its provenance regenerate byte-identically, without writing files | `--repository-root` | exit status | none | yes |
 | `generate_grounding_clustered_analysis.py` | Generate the target-clustered supplement to the frozen v1 analysis | frozen results and predictions | `artifacts/grounding-clustered-analysis-v1.{json,md}` | none | yes |
 | `measure_grounding_maintenance.py` | Compare grounding maintenance surfaces and built-wheel contents at two revisions | `--before-revision`, `--after-revision` | stdout JSON | none (runs `git`) | no |
 
@@ -74,8 +76,6 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `run_grounding_v5_calibration_pilot.py` | Plan or execute the approved bounded calibration pilot | `--plan`, `--approved-plan-sha256` | `--output`; `--plan-only` makes no calls | paid provider | no |
 | `run_grounding_v5_expanded_calibration.py` | Plan or execute the approved full-episode calibration expansion | `--plan`, `--approved-plan-sha256` | `--output`; `--plan-only` makes no calls | paid provider | no |
 | `run_grounding_v5_panel_smoke.py` | Plan or execute the exact four-call D5.6 panel integration smoke | `--plan`, `--approved-plan-sha256` | `--output`; `--plan-only` makes no calls | paid provider | no |
-| `prepare_grounding_v5_comparison.py` | Prepare a no-call comparison plan, or derive diagnostics from stored outcomes | `--phase`, `--generation`, `--plan`, `--summary` | plan or diagnostics JSON at `--output` | none | no |
-| `prepare_grounding_v5_slot_c.py` | Prepare a fresh Slot C plan without credentials or provider calls | `--phase`, `--candidate`, `--generation`, `--maximum-spend-usd` | plan JSON at `--output` | none | no |
 | `record_grounding_v5_d56_retained_development_runs.py` | Record digest-only entries for retained D5.6 development runs | D5.6 plan and run summaries | `artifacts/grounding-v5-d56-retained-development-runs.json` | none | yes |
 | `publish_grounding_v5_d56_completed_calibrations.py` | Publish completed D5.6 calibrations from committed, response-free evidence | committed D5.6 evidence | `artifacts/grounding-v5-d56-*`; `--verify` checks them | none | yes |
 | `publish_grounding_v5_calibration_supplement.py` | Reproduce response-free calibration results without journals or provider calls | committed calibration evidence | `artifacts/grounding-v5-calibration-supplement/` | none | yes |
@@ -115,7 +115,6 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `prepare_grounding_v5_d59_haiku_selection.py` | Build or verify the response-free D5.9 Haiku owner-selection record | Haiku successor analysis | `artifacts/grounding-v5-d59-haiku-selection`; `--verify` checks it | none | yes |
 | `prepare_grounding_v5_d59_haiku_freeze.py` | Build or verify the response-free D5.9 Haiku freeze successor | `--source-revision` | `artifacts/grounding-v5-d59-haiku-freeze`; `--verify` checks it | none | yes |
 | `run_grounding_v5_d59_haiku.py` | Prepare or execute the exactly approved Haiku D5.9 confirmatory campaign | freeze artifacts, owner approval | `--output` run directory | paid provider | no |
-| `continue_grounding_v5_d59_haiku.py` | Continue a stopped campaign under explicit assignment-failure amendments | `--predecessor`, `--owner-statement` | `--output` run directory | paid provider | no |
 | `prepare_grounding_v5_d59_haiku_retry_successor.py` | Audit the stopped D5.9 run and build its no-call API-retry successor | `--source-revision`, `--private-evidence` | successor plan; `--verify` checks it | none | yes |
 | `d59_haiku_retry_execution.py` | Library: exact authorization and runtime binding for the retry successor | owner approval, execution plan | used by `run_grounding_v5_d59_haiku_retry_successor.py` | none | no |
 | `run_grounding_v5_d59_haiku_retry_successor.py` | Prepare or execute the exactly approved Haiku D5.9 retry successor | successor plan, owner approval | run directory | paid provider | no |

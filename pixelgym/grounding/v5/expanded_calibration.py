@@ -1,4 +1,7 @@
-"""Plan and execute the ten-task full-episode Qwen3-VL calibration expansion."""
+"""Plan and execute the ten-task full-episode Qwen3-VL calibration expansion.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

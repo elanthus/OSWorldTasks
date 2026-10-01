@@ -1,4 +1,7 @@
-"""Response-free D5.9 successor with Claude CLI API retries disabled."""
+"""Response-free D5.9 successor with Claude CLI API retries disabled.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

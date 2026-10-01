@@ -1,4 +1,7 @@
-"""No-call D5.9 successor for one counted timeout or connection-reset retry."""
+"""No-call D5.9 successor for one counted timeout or connection-reset retry.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

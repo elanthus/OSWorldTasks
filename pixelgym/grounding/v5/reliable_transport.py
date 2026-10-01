@@ -2,6 +2,8 @@
 
 The runner owns retries. A send here starts at most one curl process and always
 settles its own request bound. Historical transports remain byte-for-byte intact.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
 """
 
 from __future__ import annotations

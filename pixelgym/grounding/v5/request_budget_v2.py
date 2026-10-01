@@ -2,6 +2,8 @@
 
 The executed v1 wrapper remains unchanged for historical reproduction. Each send
 here owns a separate transport with a fixed config. Only the ledger is shared.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
 """
 
 from __future__ import annotations

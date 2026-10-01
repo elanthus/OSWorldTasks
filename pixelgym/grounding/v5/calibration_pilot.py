@@ -1,4 +1,7 @@
-"""Plan and execute the bounded ten-task Qwen3-VL v5 calibration pilot."""
+"""Plan and execute the bounded ten-task Qwen3-VL v5 calibration pilot.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

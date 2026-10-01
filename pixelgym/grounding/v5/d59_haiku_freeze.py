@@ -1,4 +1,7 @@
-"""Response-free D5.9 Haiku freeze successor with an explicit sandbox exception."""
+"""Response-free D5.9 Haiku freeze successor with an explicit sandbox exception.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
-"""One-call, development-only OpenRouter smoke planning and execution."""
+"""One-call, development-only OpenRouter smoke planning and execution.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

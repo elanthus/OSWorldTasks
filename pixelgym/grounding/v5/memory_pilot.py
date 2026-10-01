@@ -2,6 +2,8 @@
 
 This module never changes the admitted task or policy. Scripted prefixes are
 explicitly separate from model-selected actions and cannot be benchmark scores.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
 """
 
 from __future__ import annotations
