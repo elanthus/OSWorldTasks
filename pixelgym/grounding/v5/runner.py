@@ -10,6 +10,7 @@ from functools import partial
 from typing import Any, Literal, Protocol
 
 from pixelgym.actions import InvalidActionError, validate_action
+from pixelgym.backends.base import ResumableBackend
 from pixelgym.env import PixelGuiEnv
 from pixelgym.grounding.v5.backend import V5FakeBackend
 from pixelgym.grounding.v5.contracts import (
@@ -35,6 +36,17 @@ from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import TaskSpec
 
 TransportOutcome = _TransportOutcome
+
+
+class V5RunnerBackend(ResumableBackend, Protocol):
+    """A resumable backend that also exposes the v5 privileged dispatch diagnostic.
+
+    Dispatch and recovery type against this protocol. `run`, `_act`, and
+    `_preflight` keep the concrete `V5FakeBackend` because frozen subclasses
+    override them with that annotation.
+    """
+
+    def read_privileged_diagnostic(self) -> dict[str, Any]: ...
 
 # `dispatch_committed.commit_result_digest_version` distinguishes the two digest
 # semantics a journal can carry under the unchanged `pixelgym-agent-v5-attempt-v1`
@@ -882,7 +894,7 @@ class V5Runner:
         trial_id: str,
         step_index: int,
         env: PixelGuiEnv,
-        backend: V5FakeBackend,
+        backend: V5RunnerBackend,
         action: dict[str, int],
         candidate_digest: str,
         post_parse_state: bytes,
@@ -960,7 +972,7 @@ class V5Runner:
         trial_id: str,
         step_index: int,
         env: PixelGuiEnv,
-        backend: V5FakeBackend,
+        backend: V5RunnerBackend,
         action: dict[str, int],
         intent_digest: str,
         post_parse_state: bytes,
@@ -1244,7 +1256,7 @@ class V5Runner:
         trial_id: str,
         step_index: int,
         task: V5Task | None,
-        backend: V5FakeBackend | None,
+        backend: V5RunnerBackend | None,
     ) -> dict[str, Any]:
         """Recover one interrupted action without duplicating a request or dispatch."""
 
@@ -1277,96 +1289,21 @@ class V5Runner:
                 "redispatched": False,
             }
         if "sealed_action_intent" in by_kind:
-            if task is None or backend is None:
-                raise RuntimeError("environment recovery requires a task and backend")
-            intent = by_kind["sealed_action_intent"]
-            candidate_event = by_kind["parsed_action_candidate"]
-            post_parse_state = self.journal.get_object(
-                candidate_event.payload["post_parse_checkpoint_digest"],
-                expected_kind="policy_checkpoint",
-            )
-            action = json.loads(
-                self.journal.get_object(intent.payload["action_digest"])
-            )
-            checkpoint = self.journal.get_object(
-                intent.payload["environment_checkpoint_digest"],
-                expected_kind="environment_checkpoint",
-            )
-            backend.restore(checkpoint)
-            resume_record = decode_resume_record(
-                self.journal.get_object(
-                    intent.payload["environment_resume_digest"],
-                    expected_kind="environment_resume_record",
-                )
-            )
-            backend.verify_resume_record(resume_record, step_count=step_index)
-            env = self._restored_env(task, backend, step_count=step_index)
-            outcome = self._dispatch_intent(
+            return self._recover_sealed_intent(
                 trial_id=trial_id,
                 step_index=step_index,
-                env=env,
+                by_kind=by_kind,
+                task=task,
                 backend=backend,
-                action=action,
-                intent_digest=intent.payload["sealed_intent_digest"],
-                post_parse_state=post_parse_state,
             )
-            outcome["redispatched"] = True
-            return outcome
         if "parsed_action_candidate" in by_kind:
-            external_candidate = self._recover_external_candidate(
+            return self._recover_parsed_candidate(
                 trial_id=trial_id,
                 step_index=step_index,
-                candidate_event=by_kind["parsed_action_candidate"],
-            )
-            if external_candidate is not None:
-                return external_candidate
-            if task is None or backend is None:
-                raise RuntimeError("environment recovery requires a task and backend")
-            self._restore_current_environment(
-                trial_id=trial_id,
-                step_index=step_index,
+                by_kind=by_kind,
+                task=task,
                 backend=backend,
             )
-            candidate_event = by_kind["parsed_action_candidate"]
-            candidate = json.loads(
-                self.journal.get_object(candidate_event.payload["candidate_digest"])
-            )
-            env = self._restored_env(task, backend, step_count=step_index)
-            try:
-                validated = validate_action(env.action_space, candidate)
-            except InvalidActionError:
-                self.journal.append_event(
-                    event_key=f"{trial_id}/step-{step_index:04d}/sealed_invalid_candidate",
-                    kind="sealed_unsuccessful_result",
-                    trial_id=trial_id,
-                    step_index=step_index,
-                    payload={
-                        "failure_code": "invalid_action",
-                        "candidate_digest": candidate_event.payload["candidate_digest"],
-                    },
-                )
-                return {"classification": "invalid_output", "redispatched": False}
-            action = {
-                "action_type": validated.action_type,
-                "x": validated.x,
-                "y": validated.y,
-                "key": validated.key,
-            }
-            post_parse_state = self.journal.get_object(
-                candidate_event.payload["post_parse_checkpoint_digest"],
-                expected_kind="policy_checkpoint",
-            )
-            outcome = self._seal_validated_action(
-                trial_id=trial_id,
-                step_index=step_index,
-                env=env,
-                backend=backend,
-                action=action,
-                candidate_digest=candidate_event.payload["candidate_digest"],
-                post_parse_state=post_parse_state,
-            )
-            outcome["redispatched"] = True
-            return outcome
         canonical_event = by_kind.get("canonical_response_persisted")
         started_events = [
             event for event in events if event.kind == "attempt_started"
@@ -1445,81 +1382,14 @@ class V5Runner:
             and latest_started is not None
             and retryable_event.attempt_index == latest_started.attempt_index
         ):
-            identity = AttemptIdentity(
-                trial_id,
-                step_index,
-                int(
-                    latest_started.attempt_index
-                    if latest_started.attempt_index is not None
-                    else 0
-                ),
-            )
-            retry_rule = RETRYABLE_SEND_RULES_BY_EVENT_KIND.get(retryable_event.kind)
-            if (
-                retry_rule is not None
-                and retryable_event.payload.get("next_attempt_permitted") is False
-            ):
-                terminal_event = next(
-                    (
-                        event
-                        for event in events
-                        if event.attempt_index == identity.attempt_index
-                        and event.kind == retry_rule.terminal_kind
-                    ),
-                    None,
-                )
-                if terminal_event is None:
-                    raise RuntimeError("retryable send event is missing its terminal evidence")
-                checkpoint_digest = terminal_event.payload[
-                    "post_attempt_checkpoint_digest"
-                ]
-                post_retry_state = self.journal.get_object(
-                    checkpoint_digest,
-                    expected_kind="policy_checkpoint",
-                )
-                self.journal.append_event(
-                    event_key=f"{identity.key}/{retry_rule.exhausted_event_key}",
-                    kind="sealed_unsuccessful_result",
-                    trial_id=trial_id,
-                    step_index=step_index,
-                    attempt_index=identity.attempt_index,
-                    payload={
-                        "failure_code": retry_rule.exhausted_failure_code,
-                        **(
-                            {"cli_fault": retryable_event.payload["cli_fault"]}
-                            if "cli_fault" in retryable_event.payload
-                            else {}
-                        ),
-                        "attempt_identities": [
-                            attempt.key for attempt in attempt_identities
-                        ],
-                        "policy_checkpoint_digest": checkpoint_digest,
-                    },
-                )
-                return {
-                    "classification": retry_rule.exhausted_classification,
-                    "reason": retry_rule.exhausted_failure_code,
-                    "state": post_retry_state,
-                    "redispatched": False,
-                }
-            self.journal.append_event(
-                event_key=f"{identity.key}/sealed_retry_interrupted",
-                kind="sealed_unsuccessful_result",
+            return self._recover_retryable_send(
                 trial_id=trial_id,
                 step_index=step_index,
-                attempt_index=identity.attempt_index,
-                payload={
-                    "failure_code": "retry_interrupted_before_next_attempt",
-                    "attempt_identities": [
-                        attempt.key for attempt in attempt_identities
-                    ],
-                },
+                events=events,
+                retryable_event=retryable_event,
+                latest_started=latest_started,
+                attempt_identities=attempt_identities,
             )
-            return {
-                "classification": "infrastructure_failure",
-                "reason": "retry_interrupted_before_next_attempt",
-                "redispatched": False,
-            }
         if (
             canonical_event is not None
             and latest_started is not None
@@ -1551,228 +1421,21 @@ class V5Runner:
         if terminal is not None and terminal.kind != "attempt_completed":
             return {"classification": "infrastructure_failure", "redispatched": False}
         if canonical_event is not None:
-            response_bytes = self.journal.get_object(
-                canonical_event.payload["canonical_response_digest"],
-                expected_kind="canonical_provider_response",
-            )
-            identity = AttemptIdentity(
-                trial_id,
-                step_index,
-                int(
-                    canonical_event.attempt_index
-                    if canonical_event.attempt_index is not None
-                    else 0
-                ),
-            )
-            response_value = json.loads(response_bytes)
-            response_usage = response_value.get("usage")
-            policy_violation = (
-                response_value.get("finish_reason") == "policy_violation"
-                and isinstance(response_usage, dict)
-                and response_usage.get("policy_violation") not in {None, "none"}
-            )
-            if terminal is None:
-                started = by_kind["attempt_started"]
-                pre_state = self.journal.get_object(
-                    started.payload["pre_call_checkpoint_digest"],
-                    expected_kind="policy_checkpoint",
-                )
-                retry_code = (
-                    None
-                    if policy_violation
-                    else self.policy.retryable_response_code(response_bytes)
-                )
-                post_state = (
-                    self.policy.failure_state(pre_state, "policy_violation")
-                    if policy_violation
-                    else (
-                        pre_state
-                        if retry_code is not None
-                        else self.policy.reduce_state(pre_state, response_bytes)
-                    )
-                )
-                self.journal.seal_attempt_terminal(
-                    identity,
-                    kind="attempt_completed",
-                    post_attempt_checkpoint=post_state,
-                    response_digest=canonical_event.payload["canonical_response_digest"],
-                    usage=json.loads(response_bytes)["usage"],
-                )
-                if retry_code is not None:
-                    self.journal.append_event(
-                        event_key=f"{identity.key}/retryable_provider_response",
-                        kind="retryable_provider_response",
-                        trial_id=trial_id,
-                        step_index=step_index,
-                        attempt_index=identity.attempt_index,
-                        payload={
-                            "failure_code": retry_code,
-                            "response_digest": canonical_event.payload[
-                                "canonical_response_digest"
-                            ],
-                            "retry_rule": self.manifest.transport_retry_rule,
-                            "next_attempt_permitted": False,
-                            "recovery_disposition": (
-                                "retry_not_issued_after_process_interruption"
-                            ),
-                        },
-                    )
-                    self.journal.append_event(
-                        event_key=f"{identity.key}/sealed_retry_interrupted",
-                        kind="sealed_unsuccessful_result",
-                        trial_id=trial_id,
-                        step_index=step_index,
-                        attempt_index=identity.attempt_index,
-                        payload={
-                            "failure_code": "retry_interrupted_before_next_attempt",
-                            "attempt_identities": [
-                                attempt.key for attempt in attempt_identities
-                            ],
-                        },
-                    )
-                    return {
-                        "classification": "infrastructure_failure",
-                        "reason": "retry_interrupted_before_next_attempt",
-                        "state": post_state,
-                        "redispatched": False,
-                    }
-            else:
-                post_state = self.journal.get_object(
-                    terminal.payload["post_attempt_checkpoint_digest"],
-                    expected_kind="policy_checkpoint",
-                )
-            if policy_violation:
-                self._seal_policy_violation(
-                    identity=identity,
-                    response_bytes=response_bytes,
-                    post_attempt_state=post_state,
-                    attempt_identities=attempt_identities,
-                )
-                return {
-                    "classification": "policy_violation",
-                    "state": post_state,
-                    "redispatched": False,
-                }
-            try:
-                candidate = self.policy.parse(response_bytes, post_state)
-            except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
-                self.journal.append_event(
-                    event_key=f"{identity.key}/sealed_parser_failure",
-                    kind="sealed_unsuccessful_result",
-                    trial_id=trial_id,
-                    step_index=step_index,
-                    attempt_index=identity.attempt_index,
-                    payload={
-                        "failure_code": "parse_failure",
-                        "sanitized_reason": type(exc).__name__,
-                        "parser_version": self.manifest.parser_version,
-                        "policy_checkpoint_digest": "sha256:" + sha256_bytes(post_state),
-                        "attempt_identities": [
-                            attempt.key for attempt in attempt_identities
-                        ],
-                    },
-                )
-                self._boundary("parser_failure")
-                return {
-                    "classification": "invalid_output",
-                    "state": post_state,
-                    "redispatched": False,
-                }
-            post_parse_state = self.policy.post_parse_state(post_state, candidate)
-            candidate_digest = self.journal.put_object(
-                "parsed_action_candidate", canonical_json_bytes(candidate)
-            )
-            post_parse_digest = self.journal.put_object("policy_checkpoint", post_parse_state)
-            self.journal.append_event(
-                event_key=f"{trial_id}/step-{step_index:04d}/parsed_action_candidate",
-                kind="parsed_action_candidate",
+            return self._recover_canonical_response(
                 trial_id=trial_id,
                 step_index=step_index,
-                payload={
-                    "candidate_digest": candidate_digest,
-                    "attempt_identities": [
-                        attempt.key for attempt in attempt_identities
-                    ],
-                    "parser_version": self.manifest.parser_version,
-                    "post_parse_checkpoint_digest": post_parse_digest,
-                },
-            )
-            return self.recover_step(
-                trial_id=trial_id,
-                step_index=step_index,
+                by_kind=by_kind,
+                canonical_event=canonical_event,
+                terminal=terminal,
+                attempt_identities=attempt_identities,
                 task=task,
                 backend=backend,
             )
         if "attempt_started" in by_kind:
-            started = by_kind["attempt_started"]
-            identity = AttemptIdentity(
-                trial_id,
-                step_index,
-                int(started.attempt_index if started.attempt_index is not None else 0),
-            )
-            pre_state = self.journal.get_object(
-                started.payload["pre_call_checkpoint_digest"],
-                expected_kind="policy_checkpoint",
-            )
-            if self.manifest.max_reconciliation_requests_per_attempt == 0:
-                self._settle_unknown_spend(started.payload["idempotency_key"])
-                post_state = self.policy.failure_state(pre_state, "reconciliation_disabled")
-                self.journal.seal_attempt_terminal(
-                    identity,
-                    kind="unknown_outcome_infrastructure_failure",
-                    post_attempt_checkpoint=post_state,
-                    failure_code="reconciliation_disabled",
-                )
-                return {
-                    "classification": "infrastructure_failure",
-                    "reason": "reconciliation_disabled",
-                    "redispatched": False,
-                }
-            if not self._reserve_control_request(identity, "reconcile"):
-                return {
-                    "classification": "infrastructure_failure",
-                    "reason": "control_request_reserved_without_settlement",
-                    "redispatched": False,
-                }
-            bounded_reconciliation = self.deadline_executor.execute(
-                lambda: self.transport.reconcile(
-                    idempotency_key=started.payload["idempotency_key"],
-                    deadline_seconds=self.manifest.reconciliation_deadline_seconds,
-                ),
-                timeout_seconds=max(0.001, self.manifest.reconciliation_deadline_seconds),
-            )
-            reconciled = (
-                TransportOutcome("unknown", failure_code="reconciliation_deadline")
-                if bounded_reconciliation.timed_out
-                else bounded_reconciliation.value
-            )
-            if not isinstance(reconciled, TransportOutcome):
-                raise TypeError("provider reconciliation returned an invalid outcome")
-            if reconciled.status != "response" or reconciled.response is None:
-                if reconciled.status == "pre_send_failure":
-                    self._settle_zero_charge_spend(
-                        started.payload["idempotency_key"],
-                        reason="confirmed_pre_send_failure",
-                    )
-                else:
-                    self._settle_unknown_spend(started.payload["idempotency_key"])
-                post_state = self.policy.failure_state(
-                    pre_state, reconciled.failure_code or "outcome_not_recoverable"
-                )
-                self.journal.seal_attempt_terminal(
-                    identity,
-                    kind="unknown_outcome_infrastructure_failure",
-                    post_attempt_checkpoint=post_state,
-                    failure_code=reconciled.failure_code or "outcome_not_recoverable",
-                )
-                return {
-                    "classification": "infrastructure_failure",
-                    "redispatched": False,
-                }
-            self._settle(identity, started.payload["idempotency_key"], reconciled, pre_state)
-            return self.recover_step(
+            return self._reconcile_started_attempt(
                 trial_id=trial_id,
                 step_index=step_index,
+                by_kind=by_kind,
                 task=task,
                 backend=backend,
             )
@@ -1790,6 +1453,458 @@ class V5Runner:
                 "redispatched": False,
             }
         raise RuntimeError("no durable v5 recovery boundary exists for this step")
+
+    def _recover_sealed_intent(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        by_kind: Mapping[str, JournalEvent],
+        task: V5Task | None,
+        backend: V5RunnerBackend | None,
+    ) -> dict[str, Any]:
+        """Re-dispatch a sealed action intent from its recorded environment checkpoint."""
+
+        if task is None or backend is None:
+            raise RuntimeError("environment recovery requires a task and backend")
+        intent = by_kind["sealed_action_intent"]
+        candidate_event = by_kind["parsed_action_candidate"]
+        post_parse_state = self.journal.get_object(
+            candidate_event.payload["post_parse_checkpoint_digest"],
+            expected_kind="policy_checkpoint",
+        )
+        action = json.loads(
+            self.journal.get_object(intent.payload["action_digest"])
+        )
+        checkpoint = self.journal.get_object(
+            intent.payload["environment_checkpoint_digest"],
+            expected_kind="environment_checkpoint",
+        )
+        backend.restore(checkpoint)
+        resume_record = decode_resume_record(
+            self.journal.get_object(
+                intent.payload["environment_resume_digest"],
+                expected_kind="environment_resume_record",
+            )
+        )
+        backend.verify_resume_record(resume_record, step_count=step_index)
+        env = self._restored_env(task, backend, step_count=step_index)
+        outcome = self._dispatch_intent(
+            trial_id=trial_id,
+            step_index=step_index,
+            env=env,
+            backend=backend,
+            action=action,
+            intent_digest=intent.payload["sealed_intent_digest"],
+            post_parse_state=post_parse_state,
+        )
+        outcome["redispatched"] = True
+        return outcome
+
+    def _recover_parsed_candidate(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        by_kind: Mapping[str, JournalEvent],
+        task: V5Task | None,
+        backend: V5RunnerBackend | None,
+    ) -> dict[str, Any]:
+        """Validate and seal a parsed candidate that has no sealed intent yet."""
+
+        external_candidate = self._recover_external_candidate(
+            trial_id=trial_id,
+            step_index=step_index,
+            candidate_event=by_kind["parsed_action_candidate"],
+        )
+        if external_candidate is not None:
+            return external_candidate
+        if task is None or backend is None:
+            raise RuntimeError("environment recovery requires a task and backend")
+        self._restore_current_environment(
+            trial_id=trial_id,
+            step_index=step_index,
+            backend=backend,
+        )
+        candidate_event = by_kind["parsed_action_candidate"]
+        candidate = json.loads(
+            self.journal.get_object(candidate_event.payload["candidate_digest"])
+        )
+        env = self._restored_env(task, backend, step_count=step_index)
+        try:
+            validated = validate_action(env.action_space, candidate)
+        except InvalidActionError:
+            self.journal.append_event(
+                event_key=f"{trial_id}/step-{step_index:04d}/sealed_invalid_candidate",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=step_index,
+                payload={
+                    "failure_code": "invalid_action",
+                    "candidate_digest": candidate_event.payload["candidate_digest"],
+                },
+            )
+            return {"classification": "invalid_output", "redispatched": False}
+        action = {
+            "action_type": validated.action_type,
+            "x": validated.x,
+            "y": validated.y,
+            "key": validated.key,
+        }
+        post_parse_state = self.journal.get_object(
+            candidate_event.payload["post_parse_checkpoint_digest"],
+            expected_kind="policy_checkpoint",
+        )
+        outcome = self._seal_validated_action(
+            trial_id=trial_id,
+            step_index=step_index,
+            env=env,
+            backend=backend,
+            action=action,
+            candidate_digest=candidate_event.payload["candidate_digest"],
+            post_parse_state=post_parse_state,
+        )
+        outcome["redispatched"] = True
+        return outcome
+
+    def _recover_retryable_send(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        events: Sequence[JournalEvent],
+        retryable_event: JournalEvent,
+        latest_started: JournalEvent,
+        attempt_identities: Sequence[AttemptIdentity],
+    ) -> dict[str, Any]:
+        """Seal an interrupted or exhausted retry without issuing another attempt."""
+
+        identity = AttemptIdentity(
+            trial_id,
+            step_index,
+            int(
+                latest_started.attempt_index
+                if latest_started.attempt_index is not None
+                else 0
+            ),
+        )
+        retry_rule = RETRYABLE_SEND_RULES_BY_EVENT_KIND.get(retryable_event.kind)
+        if (
+            retry_rule is not None
+            and retryable_event.payload.get("next_attempt_permitted") is False
+        ):
+            terminal_event = next(
+                (
+                    event
+                    for event in events
+                    if event.attempt_index == identity.attempt_index
+                    and event.kind == retry_rule.terminal_kind
+                ),
+                None,
+            )
+            if terminal_event is None:
+                raise RuntimeError("retryable send event is missing its terminal evidence")
+            checkpoint_digest = terminal_event.payload[
+                "post_attempt_checkpoint_digest"
+            ]
+            post_retry_state = self.journal.get_object(
+                checkpoint_digest,
+                expected_kind="policy_checkpoint",
+            )
+            self.journal.append_event(
+                event_key=f"{identity.key}/{retry_rule.exhausted_event_key}",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=step_index,
+                attempt_index=identity.attempt_index,
+                payload={
+                    "failure_code": retry_rule.exhausted_failure_code,
+                    **(
+                        {"cli_fault": retryable_event.payload["cli_fault"]}
+                        if "cli_fault" in retryable_event.payload
+                        else {}
+                    ),
+                    "attempt_identities": [
+                        attempt.key for attempt in attempt_identities
+                    ],
+                    "policy_checkpoint_digest": checkpoint_digest,
+                },
+            )
+            return {
+                "classification": retry_rule.exhausted_classification,
+                "reason": retry_rule.exhausted_failure_code,
+                "state": post_retry_state,
+                "redispatched": False,
+            }
+        self.journal.append_event(
+            event_key=f"{identity.key}/sealed_retry_interrupted",
+            kind="sealed_unsuccessful_result",
+            trial_id=trial_id,
+            step_index=step_index,
+            attempt_index=identity.attempt_index,
+            payload={
+                "failure_code": "retry_interrupted_before_next_attempt",
+                "attempt_identities": [
+                    attempt.key for attempt in attempt_identities
+                ],
+            },
+        )
+        return {
+            "classification": "infrastructure_failure",
+            "reason": "retry_interrupted_before_next_attempt",
+            "redispatched": False,
+        }
+
+    def _recover_canonical_response(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        by_kind: Mapping[str, JournalEvent],
+        canonical_event: JournalEvent,
+        terminal: JournalEvent | None,
+        attempt_identities: Sequence[AttemptIdentity],
+        task: V5Task | None,
+        backend: V5RunnerBackend | None,
+    ) -> dict[str, Any]:
+        """Finish settling and parsing a persisted canonical provider response."""
+
+        response_bytes = self.journal.get_object(
+            canonical_event.payload["canonical_response_digest"],
+            expected_kind="canonical_provider_response",
+        )
+        identity = AttemptIdentity(
+            trial_id,
+            step_index,
+            int(
+                canonical_event.attempt_index
+                if canonical_event.attempt_index is not None
+                else 0
+            ),
+        )
+        response_value = json.loads(response_bytes)
+        response_usage = response_value.get("usage")
+        policy_violation = (
+            response_value.get("finish_reason") == "policy_violation"
+            and isinstance(response_usage, dict)
+            and response_usage.get("policy_violation") not in {None, "none"}
+        )
+        if terminal is None:
+            started = by_kind["attempt_started"]
+            pre_state = self.journal.get_object(
+                started.payload["pre_call_checkpoint_digest"],
+                expected_kind="policy_checkpoint",
+            )
+            retry_code = (
+                None
+                if policy_violation
+                else self.policy.retryable_response_code(response_bytes)
+            )
+            post_state = (
+                self.policy.failure_state(pre_state, "policy_violation")
+                if policy_violation
+                else (
+                    pre_state
+                    if retry_code is not None
+                    else self.policy.reduce_state(pre_state, response_bytes)
+                )
+            )
+            self.journal.seal_attempt_terminal(
+                identity,
+                kind="attempt_completed",
+                post_attempt_checkpoint=post_state,
+                response_digest=canonical_event.payload["canonical_response_digest"],
+                usage=json.loads(response_bytes)["usage"],
+            )
+            if retry_code is not None:
+                self.journal.append_event(
+                    event_key=f"{identity.key}/retryable_provider_response",
+                    kind="retryable_provider_response",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=identity.attempt_index,
+                    payload={
+                        "failure_code": retry_code,
+                        "response_digest": canonical_event.payload[
+                            "canonical_response_digest"
+                        ],
+                        "retry_rule": self.manifest.transport_retry_rule,
+                        "next_attempt_permitted": False,
+                        "recovery_disposition": (
+                            "retry_not_issued_after_process_interruption"
+                        ),
+                    },
+                )
+                self.journal.append_event(
+                    event_key=f"{identity.key}/sealed_retry_interrupted",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=trial_id,
+                    step_index=step_index,
+                    attempt_index=identity.attempt_index,
+                    payload={
+                        "failure_code": "retry_interrupted_before_next_attempt",
+                        "attempt_identities": [
+                            attempt.key for attempt in attempt_identities
+                        ],
+                    },
+                )
+                return {
+                    "classification": "infrastructure_failure",
+                    "reason": "retry_interrupted_before_next_attempt",
+                    "state": post_state,
+                    "redispatched": False,
+                }
+        else:
+            post_state = self.journal.get_object(
+                terminal.payload["post_attempt_checkpoint_digest"],
+                expected_kind="policy_checkpoint",
+            )
+        if policy_violation:
+            self._seal_policy_violation(
+                identity=identity,
+                response_bytes=response_bytes,
+                post_attempt_state=post_state,
+                attempt_identities=attempt_identities,
+            )
+            return {
+                "classification": "policy_violation",
+                "state": post_state,
+                "redispatched": False,
+            }
+        try:
+            candidate = self.policy.parse(response_bytes, post_state)
+        except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+            self.journal.append_event(
+                event_key=f"{identity.key}/sealed_parser_failure",
+                kind="sealed_unsuccessful_result",
+                trial_id=trial_id,
+                step_index=step_index,
+                attempt_index=identity.attempt_index,
+                payload={
+                    "failure_code": "parse_failure",
+                    "sanitized_reason": type(exc).__name__,
+                    "parser_version": self.manifest.parser_version,
+                    "policy_checkpoint_digest": "sha256:" + sha256_bytes(post_state),
+                    "attempt_identities": [
+                        attempt.key for attempt in attempt_identities
+                    ],
+                },
+            )
+            self._boundary("parser_failure")
+            return {
+                "classification": "invalid_output",
+                "state": post_state,
+                "redispatched": False,
+            }
+        post_parse_state = self.policy.post_parse_state(post_state, candidate)
+        candidate_digest = self.journal.put_object(
+            "parsed_action_candidate", canonical_json_bytes(candidate)
+        )
+        post_parse_digest = self.journal.put_object("policy_checkpoint", post_parse_state)
+        self.journal.append_event(
+            event_key=f"{trial_id}/step-{step_index:04d}/parsed_action_candidate",
+            kind="parsed_action_candidate",
+            trial_id=trial_id,
+            step_index=step_index,
+            payload={
+                "candidate_digest": candidate_digest,
+                "attempt_identities": [
+                    attempt.key for attempt in attempt_identities
+                ],
+                "parser_version": self.manifest.parser_version,
+                "post_parse_checkpoint_digest": post_parse_digest,
+            },
+        )
+        return self.recover_step(
+            trial_id=trial_id,
+            step_index=step_index,
+            task=task,
+            backend=backend,
+        )
+
+    def _reconcile_started_attempt(
+        self,
+        *,
+        trial_id: str,
+        step_index: int,
+        by_kind: Mapping[str, JournalEvent],
+        task: V5Task | None,
+        backend: V5RunnerBackend | None,
+    ) -> dict[str, Any]:
+        """Reconcile a started attempt whose outcome was never persisted."""
+
+        started = by_kind["attempt_started"]
+        identity = AttemptIdentity(
+            trial_id,
+            step_index,
+            int(started.attempt_index if started.attempt_index is not None else 0),
+        )
+        pre_state = self.journal.get_object(
+            started.payload["pre_call_checkpoint_digest"],
+            expected_kind="policy_checkpoint",
+        )
+        if self.manifest.max_reconciliation_requests_per_attempt == 0:
+            self._settle_unknown_spend(started.payload["idempotency_key"])
+            post_state = self.policy.failure_state(pre_state, "reconciliation_disabled")
+            self.journal.seal_attempt_terminal(
+                identity,
+                kind="unknown_outcome_infrastructure_failure",
+                post_attempt_checkpoint=post_state,
+                failure_code="reconciliation_disabled",
+            )
+            return {
+                "classification": "infrastructure_failure",
+                "reason": "reconciliation_disabled",
+                "redispatched": False,
+            }
+        if not self._reserve_control_request(identity, "reconcile"):
+            return {
+                "classification": "infrastructure_failure",
+                "reason": "control_request_reserved_without_settlement",
+                "redispatched": False,
+            }
+        bounded_reconciliation = self.deadline_executor.execute(
+            lambda: self.transport.reconcile(
+                idempotency_key=started.payload["idempotency_key"],
+                deadline_seconds=self.manifest.reconciliation_deadline_seconds,
+            ),
+            timeout_seconds=max(0.001, self.manifest.reconciliation_deadline_seconds),
+        )
+        reconciled = (
+            TransportOutcome("unknown", failure_code="reconciliation_deadline")
+            if bounded_reconciliation.timed_out
+            else bounded_reconciliation.value
+        )
+        if not isinstance(reconciled, TransportOutcome):
+            raise TypeError("provider reconciliation returned an invalid outcome")
+        if reconciled.status != "response" or reconciled.response is None:
+            if reconciled.status == "pre_send_failure":
+                self._settle_zero_charge_spend(
+                    started.payload["idempotency_key"],
+                    reason="confirmed_pre_send_failure",
+                )
+            else:
+                self._settle_unknown_spend(started.payload["idempotency_key"])
+            post_state = self.policy.failure_state(
+                pre_state, reconciled.failure_code or "outcome_not_recoverable"
+            )
+            self.journal.seal_attempt_terminal(
+                identity,
+                kind="unknown_outcome_infrastructure_failure",
+                post_attempt_checkpoint=post_state,
+                failure_code=reconciled.failure_code or "outcome_not_recoverable",
+            )
+            return {
+                "classification": "infrastructure_failure",
+                "redispatched": False,
+            }
+        self._settle(identity, started.payload["idempotency_key"], reconciled, pre_state)
+        return self.recover_step(
+            trial_id=trial_id,
+            step_index=step_index,
+            task=task,
+            backend=backend,
+        )
 
     def _validate_committed_dispatch_evidence(self, event: JournalEvent) -> None:
         """Validate split evidence while accepting sealed pre-split dispatch records."""
@@ -1858,7 +1973,7 @@ class V5Runner:
             raise RuntimeError("privileged dispatch evidence does not match commit")
 
     def _restore_current_environment(
-        self, *, trial_id: str, step_index: int, backend: V5FakeBackend
+        self, *, trial_id: str, step_index: int, backend: V5RunnerBackend
     ) -> None:
         if step_index == 0:
             event = self.journal.event(f"{trial_id}/initial_screenshot")
@@ -1883,7 +1998,7 @@ class V5Runner:
 
     @staticmethod
     def _restored_env(
-        task: V5Task, backend: V5FakeBackend, *, step_count: int
+        task: V5Task, backend: V5RunnerBackend, *, step_count: int
     ) -> PixelGuiEnv:
         env = PixelGuiEnv(
             backend,

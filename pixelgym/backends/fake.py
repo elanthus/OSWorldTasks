@@ -52,9 +52,15 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pixelgym.backends.base import EnvironmentResumeRecord, Frame, content_digest, sha256_bytes
+from pixelgym.backends.base import (
+    EnvironmentResumeRecord,
+    Frame,
+    ResumableBackend,
+    content_digest,
+    sha256_bytes,
+)
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form import generator, render, ui
@@ -463,3 +469,8 @@ def _option_index(name: str, value: Any, options: tuple[str, ...]) -> int | None
             f"{value!r} is not an option for {name!r}; expected one of {list(options)}"
         )
     return options.index(value)
+
+
+if TYPE_CHECKING:
+    # Static proof that the core fake backend satisfies the resumable protocol.
+    _resumable: type[ResumableBackend] = FakeBackend

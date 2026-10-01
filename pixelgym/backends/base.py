@@ -148,3 +148,31 @@ class Backend(Protocol):
         """Release any resources the backend holds (processes, sockets,
         temp state). Safe to call multiple times."""
         ...
+
+
+@runtime_checkable
+class ResumableBackend(Backend, Protocol):
+    """A `Backend` that can checkpoint and restore its task application.
+
+    The v5 runner uses these methods to recover an interrupted step without
+    re-sending a request or re-dispatching an action. `PixelGuiEnv` does not
+    need them, so the core `Backend` protocol stays unchanged.
+    """
+
+    def checkpoint(self) -> bytes:
+        """Return opaque bytes that `restore` can later reinstall exactly."""
+        ...
+
+    def restore(self, checkpoint: bytes) -> None:
+        """Reinstall the application state captured by `checkpoint`."""
+        ...
+
+    def environment_resume_record(self, *, step_count: int) -> EnvironmentResumeRecord:
+        """Return the content-addressed binding for the current state."""
+        ...
+
+    def verify_resume_record(
+        self, record: EnvironmentResumeRecord, /, *, step_count: int
+    ) -> None:
+        """Raise if the current state does not match `record` at `step_count`."""
+        ...
