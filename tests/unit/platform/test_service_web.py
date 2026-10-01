@@ -1967,7 +1967,7 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
             tampered,
             policy_id="sha256:" + sha256_bytes(canonical_json_bytes(tampered.identity_dict())),
         )
-        tampered_report = {**second.gate_report, "policy_id": tampered.policy_id}
+        tampered_report = {**second.gate_report.to_dict(), "policy_id": tampered.policy_id}
         report_bytes = canonical_json_bytes(tampered_report)
         report_digest = sha256_bytes(report_bytes)
         control.connection.execute("DROP TRIGGER approvals_no_update")
@@ -3851,10 +3851,10 @@ def _badge_candidate(code_state: str) -> object:
     from types import SimpleNamespace
 
     return SimpleNamespace(
-        gate_report={
-            "completeness": {"passed": True},
-            "cost_usd_per_100": {"observed": 1.0},
-        },
+        gate_report=SimpleNamespace(
+            completeness=SimpleNamespace(passed=True),
+            cost_usd_per_100=SimpleNamespace(observed=1.0),
+        ),
         summary=SimpleNamespace(synthetic_provider=True, unpriced_call_count=0),
         policy=SimpleNamespace(
             provider="scripted-demo",

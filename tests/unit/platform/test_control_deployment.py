@@ -584,7 +584,7 @@ def test_serving_restore_rejects_unapproved_or_gate_failed_active_policy(
             ("Eligible", candidate.candidate_id),
         )
     else:
-        failed_report = {**candidate.gate_report, "overall_passed": False}
+        failed_report = {**candidate.gate_report.to_dict(), "overall_passed": False}
         encoded = canonical_json_bytes(failed_report)
         control.connection.execute(
             "UPDATE candidates SET gate_report_json = ? WHERE candidate_id = ?",
@@ -623,7 +623,7 @@ def test_serving_restore_rejects_gate_report_rewritten_after_approval(
     DeploymentCoordinator(
         control=control, store=store, load_and_smoke=lambda policy: True
     ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
-    rewritten_report = {**candidate.gate_report, "run_id": "rewritten-after-approval"}
+    rewritten_report = {**candidate.gate_report.to_dict(), "run_id": "rewritten-after-approval"}
     encoded = canonical_json_bytes(rewritten_report)
     control.connection.execute(
         "UPDATE candidates SET gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
@@ -705,7 +705,7 @@ def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_sm
     legacy_identity.pop("policy_id")
     legacy_policy_id = "sha256:" + sha256_bytes(canonical_json_bytes(legacy_identity))
     legacy_policy["policy_id"] = legacy_policy_id
-    rewritten_report = {**candidate.gate_report, "policy_id": legacy_policy_id}
+    rewritten_report = {**candidate.gate_report.to_dict(), "policy_id": legacy_policy_id}
     report_bytes = canonical_json_bytes(rewritten_report)
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
@@ -1678,7 +1678,7 @@ def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
     stripped = _renderer_less(candidate.policy)
-    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    rewritten_report = {**candidate.gate_report.to_dict(), "policy_id": stripped.policy_id}
     report_bytes = canonical_json_bytes(rewritten_report)
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
@@ -1726,7 +1726,7 @@ def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
     tampered = dataclasses.replace(
         tampered, policy_id="sha256:" + sha256_bytes(canonical_json_bytes(tampered.identity_dict()))
     )
-    rewritten_report = {**candidate.gate_report, "policy_id": tampered.policy_id}
+    rewritten_report = {**candidate.gate_report.to_dict(), "policy_id": tampered.policy_id}
     report_bytes = canonical_json_bytes(rewritten_report)
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
@@ -1769,7 +1769,7 @@ def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_s
     ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
 
     stripped = _renderer_less(candidate.policy)
-    rewritten_report = {**candidate.gate_report, "policy_id": stripped.policy_id}
+    rewritten_report = {**candidate.gate_report.to_dict(), "policy_id": stripped.policy_id}
     report_bytes = canonical_json_bytes(rewritten_report)
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)

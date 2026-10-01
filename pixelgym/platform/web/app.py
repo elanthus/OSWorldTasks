@@ -24,7 +24,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
-from pixelgym.platform.contracts import CandidateState
+from pixelgym.platform.contracts import CandidateState, GateObservation
 from pixelgym.platform.control_store import (
     ACTOR_VERIFICATION_SOURCE_KEY,
     RESERVED_ACTOR_NAMES,
@@ -168,7 +168,7 @@ def _candidate_badges(candidate: Any) -> str:
         else candidate.policy.provider == "scripted-demo"
     )
     badges = [_badge("DEMO PROVIDER" if synthetic else "REAL PROVIDER", "demo" if synthetic else "real")]
-    if not report["completeness"]["passed"]:
+    if not report.completeness.passed:
         badges.append(_badge("INCOMPLETE", "bad"))
     if candidate.policy.code_state == "dirty":
         badges.append(_badge("UNCOMMITTED CHANGES", "bad"))
@@ -183,7 +183,7 @@ def _candidate_badges(candidate: Any) -> str:
             )
         )
     unpriced = (
-        report["cost_usd_per_100"]["observed"] is None
+        report.cost_usd_per_100.observed is None
         or (summary is not None and summary.unpriced_call_count > 0)
     )
     if unpriced:
@@ -198,9 +198,9 @@ def _candidate_row(candidate: Any, mlflow_base_url: str) -> str:
     invalid_count = "missing" if summary is None else str(summary.invalid_count)
     return f"""<tr><td><a href="/candidates/{_escape(candidate.candidate_id)}">{_escape(candidate.candidate_id)}</a><br><span class="muted">{_escape(candidate.policy.provider)}</span><br>{_candidate_badges(candidate)}</td>
 <td>{_escape(candidate.policy.model)}<br><span class="muted">prompt v{candidate.policy.prompt_version}</span></td>
-<td class="number">{_percentage(report['accuracy']['observed'])}</td><td class="number">{_money(report['cost_usd_per_100']['observed'])}</td>
-<td class="number">{_milliseconds(report['provider_latency_p95_ms']['observed'])}</td><td>{_badge(candidate.state.value, state_tone)}</td>
-<td><span class="mono">{_escape(_short_digest(report['dataset_fingerprint']))}</span><br><span class="muted">code {_escape(_short_digest(candidate.policy.code_revision))} · invalid {invalid_count}</span></td>
+<td class="number">{_percentage(report.accuracy.observed)}</td><td class="number">{_money(report.cost_usd_per_100.observed)}</td>
+<td class="number">{_milliseconds(report.provider_latency_p95_ms.observed)}</td><td>{_badge(candidate.state.value, state_tone)}</td>
+<td><span class="mono">{_escape(_short_digest(report.dataset_fingerprint))}</span><br><span class="muted">code {_escape(_short_digest(candidate.policy.code_revision))} · invalid {invalid_count}</span></td>
 <td>{_safe_link(f'{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}', 'MLflow')}</td></tr>"""
 
 
@@ -258,19 +258,19 @@ def _candidate_header(candidate_id: str, candidate: Any, invalid: str, disclosur
     )
 
 
-def _gate_metric(label: str, observation: dict[str, Any], bound: str, formatter: Callable[[object], str]) -> str:
+def _gate_metric(label: str, observation: GateObservation, bound: str, formatter: Callable[[object], str]) -> str:
     return (
-        f"<div><span>{label}</span><strong>{formatter(observation['observed'])}</strong>"
-        f"<small>{bound} {formatter(observation['threshold'])}</small></div>"
+        f"<div><span>{label}</span><strong>{formatter(observation.observed)}</strong>"
+        f"<small>{bound} {formatter(observation.threshold)}</small></div>"
     )
 
 
 def _gate_report_panel(candidate: Any, reasons: str, mlflow_base_url: str) -> str:
     report = candidate.gate_report
     metrics = (
-        _gate_metric("Accuracy", report["accuracy"], "minimum", _percentage)
-        + _gate_metric("Cost / 100", report["cost_usd_per_100"], "maximum", _money)
-        + _gate_metric("Provider p95", report["provider_latency_p95_ms"], "maximum", _milliseconds)
+        _gate_metric("Accuracy", report.accuracy, "minimum", _percentage)
+        + _gate_metric("Cost / 100", report.cost_usd_per_100, "maximum", _money)
+        + _gate_metric("Provider p95", report.provider_latency_p95_ms, "maximum", _milliseconds)
     )
     return (
         f'<section class="panel"><h2>Gate report</h2><div class="metric-strip">{metrics}</div>'
@@ -302,7 +302,7 @@ def _delta(value: object, baseline: object, *, kind: str) -> str:
 def _comparison_card(candidate: Any, baseline: Any, mlflow_base_url: str) -> str:
     report = candidate.gate_report
     baseline_report = baseline.gate_report
-    return f"""<article class="metric-card"><p>{_escape(candidate.candidate_id)}</p><h3>{_percentage(report['accuracy']['observed'])}</h3><small>{_escape(_delta(report['accuracy']['observed'], baseline_report['accuracy']['observed'], kind='accuracy'))}</small><dl><dt>Cost / 100</dt><dd>{_money(report['cost_usd_per_100']['observed'])}<br><small>{_escape(_delta(report['cost_usd_per_100']['observed'], baseline_report['cost_usd_per_100']['observed'], kind='money'))}</small></dd><dt>Provider p95</dt><dd>{_milliseconds(report['provider_latency_p95_ms']['observed'])}<br><small>{_escape(_delta(report['provider_latency_p95_ms']['observed'], baseline_report['provider_latency_p95_ms']['observed'], kind='latency'))}</small></dd><dt>Gate state</dt><dd>{_escape(candidate.state.value)}</dd></dl>{_evidence_links(candidate, mlflow_base_url)}</article>"""
+    return f"""<article class="metric-card"><p>{_escape(candidate.candidate_id)}</p><h3>{_percentage(report.accuracy.observed)}</h3><small>{_escape(_delta(report.accuracy.observed, baseline_report.accuracy.observed, kind='accuracy'))}</small><dl><dt>Cost / 100</dt><dd>{_money(report.cost_usd_per_100.observed)}<br><small>{_escape(_delta(report.cost_usd_per_100.observed, baseline_report.cost_usd_per_100.observed, kind='money'))}</small></dd><dt>Provider p95</dt><dd>{_milliseconds(report.provider_latency_p95_ms.observed)}<br><small>{_escape(_delta(report.provider_latency_p95_ms.observed, baseline_report.provider_latency_p95_ms.observed, kind='latency'))}</small></dd><dt>Gate state</dt><dd>{_escape(candidate.state.value)}</dd></dl>{_evidence_links(candidate, mlflow_base_url)}</article>"""
 
 
 def create_control_app(
@@ -614,7 +614,7 @@ def create_control_app(
             candidates = [
                 item
                 for item in candidates
-                if item.gate_report["dataset_fingerprint"].removeprefix("sha256:").startswith(dataset)
+                if item.gate_report.dataset_fingerprint.removeprefix("sha256:").startswith(dataset)
             ]
         if code_revision:
             candidates = [
@@ -651,7 +651,7 @@ def create_control_app(
         if gate_result:
             expected = gate_result == "passed"
             candidates = [
-                item for item in candidates if item.gate_report["overall_passed"] is expected
+                item for item in candidates if item.gate_report.overall_passed is expected
             ]
         if filters_active:
             offset = (page - 1) * RUNS_PAGE_SIZE
@@ -743,7 +743,7 @@ def create_control_app(
         selected = [candidate_or_404(item) for item in selected_ids]
         comparison_keys = {
             (
-                item.gate_report["dataset_fingerprint"],
+                item.gate_report.dataset_fingerprint,
                 item.policy.scorer_version,
                 item.policy.target_semantics,
                 item.summary.primary_metric if item.summary is not None else "unknown",
@@ -840,7 +840,7 @@ def create_control_app(
     def candidate_view(candidate_id: str, request: Request) -> str:
         item = candidate_or_404(candidate_id)
         report = item.gate_report
-        reasons = "".join(f"<li>{_escape(reason)}</li>" for reason in report["reasons"]) or "<li>All automated gates passed.</li>"
+        reasons = "".join(f"<li>{_escape(reason)}</li>" for reason in report.reasons) or "<li>All automated gates passed.</li>"
         controls = ""
         if item.state is CandidateState.ELIGIBLE:
             controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/approve"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Approval reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Approve exact candidate</button></form>"""
