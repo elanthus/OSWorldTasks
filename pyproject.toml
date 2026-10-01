@@ -58,6 +58,7 @@ include = ["pixelgym*"]
 
 [tool.setuptools.package-data]
 "pixelgym.tasks.vendor_form.app" = ["static/*", "static/fonts/*"]
+"pixelgym.tasks.vendor_form" = ["guest_programs/*.py"]
 "pixelgym.platform.web" = ["static/*"]
 "pixelgym.platform.schemas" = ["*.json"]
 "pixelgym.grounding.v5.schemas" = ["*.json"]
@@ -97,11 +98,12 @@ output = "coverage.xml"
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["artifacts"]
+extend-exclude = ["artifacts", "pixelgym/tasks/vendor_form/guest_programs"]
 
 [tool.mypy]
 python_version = "3.12"
 files = ["pixelgym"]
+exclude = ["^pixelgym/tasks/vendor_form/guest_programs/"]
 strict = true
 show_error_codes = true
 pretty = true

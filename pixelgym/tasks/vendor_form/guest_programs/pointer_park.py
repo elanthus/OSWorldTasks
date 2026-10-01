@@ -1,0 +1,1 @@
+import pyautogui; pyautogui.click(100,150); pyautogui.moveTo(__PIXELGYM_PARK_X__,__PIXELGYM_PARK_Y__,duration=0)
