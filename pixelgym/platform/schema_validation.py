@@ -8,13 +8,27 @@ import threading
 from importlib import resources
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any, cast
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, cast
 
-from jsonschema import Draft202012Validator, FormatChecker
-from jsonschema.exceptions import SchemaError
+if TYPE_CHECKING:
+    from jsonschema import Draft202012Validator
 
 from pixelgym.platform.contracts import GatePolicy, PolicyManifest
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
+
+
+def _jsonschema() -> ModuleType:
+    """Import ``jsonschema`` lazily; it ships only with the ``platform`` extra."""
+    try:
+        import jsonschema
+    except ImportError as exc:  # pragma: no cover - exercised only without the extra
+        raise ImportError(
+            "platform schema validation requires jsonschema; "
+            'install the platform extra: pip install -e ".[platform]"'
+        ) from exc
+    return jsonschema
+
 
 CONTRACT_SCHEMA_FILES = {
     "run_manifest": "run-manifest.schema.json",
@@ -127,9 +141,10 @@ class PlatformSchemas:
         with self._cache_lock:
             if filename not in self._schemas:
                 schema = _load_json_object(self.schema_root / filename)
+                jsonschema = _jsonschema()
                 try:
-                    Draft202012Validator.check_schema(schema)
-                except SchemaError as exc:
+                    jsonschema.Draft202012Validator.check_schema(schema)
+                except jsonschema.exceptions.SchemaError as exc:
                     raise ContractValidationError(
                         f"invalid committed JSON Schema: {filename}"
                     ) from exc
@@ -175,18 +190,20 @@ class PlatformSchemas:
                         "$defs": root_schema["$defs"],
                         "$ref": f"#/$defs/{definition}",
                     }
-                self._validators[contract] = Draft202012Validator(
+                jsonschema = _jsonschema()
+                self._validators[contract] = jsonschema.Draft202012Validator(
                     schema,
-                    format_checker=FormatChecker(),
+                    format_checker=jsonschema.FormatChecker(),
                 )
             return self._validators[contract]
 
     def _file_validator(self, filename: str) -> Draft202012Validator:
         with self._cache_lock:
             if filename not in self._file_validators:
-                self._file_validators[filename] = Draft202012Validator(
+                jsonschema = _jsonschema()
+                self._file_validators[filename] = jsonschema.Draft202012Validator(
                     self._schema(filename),
-                    format_checker=FormatChecker(),
+                    format_checker=jsonschema.FormatChecker(),
                 )
             return self._file_validators[filename]
 

@@ -9,8 +9,6 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath
 from typing import Any, Literal, cast
 
-import jsonschema
-
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.evidence import validate_credential_free
 
@@ -255,6 +253,13 @@ def legacy_summary_classifications(value: Mapping[str, Any]) -> dict[str, int]:
 
 
 def _validate_schema(value: dict[str, Any]) -> None:
+    try:
+        import jsonschema
+    except ImportError as exc:  # pragma: no cover - exercised only without the extra
+        raise ImportError(
+            "v5 plan schema validation requires jsonschema; "
+            'install the platform extra: pip install -e ".[platform]"'
+        ) from exc
     schema = _load_json_object(_SCHEMA_PATH)
     jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker()).validate(
         value

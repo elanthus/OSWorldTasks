@@ -7,9 +7,9 @@ import json
 import threading
 from pathlib import Path
 
+import jsonschema
 import pytest
 
-from pixelgym.platform import schema_validation
 from pixelgym.platform.contracts import GateReport, PolicyManifest
 from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.fingerprints import canonical_json_bytes, sha256_bytes
@@ -62,7 +62,7 @@ WRONG_TYPE_FIELDS = {
 
 def test_validator_cache_initialization_is_thread_safe(repository_root: Path, monkeypatch) -> None:
     schemas = PlatformSchemas(repository_root)
-    original_validator = schema_validation.Draft202012Validator
+    original_validator = jsonschema.Draft202012Validator
     constructor_entered = threading.Event()
     release_constructor = threading.Event()
     constructor_calls = 0
@@ -76,7 +76,8 @@ def test_validator_cache_initialization_is_thread_safe(repository_root: Path, mo
         assert release_constructor.wait(timeout=1)
         return original_validator(*args, **kwargs)
 
-    monkeypatch.setattr(schema_validation, "Draft202012Validator", blocking_constructor)
+    # schema_validation imports jsonschema lazily, so patch the class where it is looked up.
+    monkeypatch.setattr(jsonschema, "Draft202012Validator", blocking_constructor)
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = [executor.submit(schemas._validator, "raw_response") for _ in range(8)]
         assert constructor_entered.wait(timeout=1)

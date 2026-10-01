@@ -15,7 +15,7 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-PLATFORM_LOCK_RELATIVE_PATH = Path("requirements/platform-py312.lock")
+PLATFORM_LOCK_RELATIVE_PATH = Path("requirements/platform-py312-v2.lock")
 _INPUT_DIGEST_PREFIX = "# pixelgym-platform-input-sha256: "
 _PIN = re.compile(
     r"^([A-Za-z0-9_.-]+)(?:\[[^]]+\])?==([^\s\\;]+)(?:\s*;[^\\]+)?\s*(?:\\)?$"
