@@ -16,7 +16,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from functools import wraps
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from metaflow import FlowSpec, Parameter, current, step
 
@@ -38,9 +38,17 @@ from pixelgym.platform.contracts import (
 )
 from pixelgym.platform.control_store import ControlStore
 from pixelgym.platform.dependency_lock import dependency_lock_sha256
-from pixelgym.platform.evaluation import EvaluationRunner, ScriptedReplayProvider
+from pixelgym.platform.evaluation import (
+    EvaluationRunner,
+    PlatformProvider,
+    ScriptedReplayProvider,
+)
 from pixelgym.platform.fingerprints import build_dataset_manifest, canonical_json_bytes
-from pixelgym.platform.immutable_store import LocalImmutableStore, S3ImmutableStore
+from pixelgym.platform.immutable_store import (
+    ImmutableStore,
+    LocalImmutableStore,
+    S3ImmutableStore,
+)
 from pixelgym.platform.mlflow_tracking import MlflowTracking
 from pixelgym.platform.policy import PROMPT_NAME, build_policy_manifest, prompt_template
 from pixelgym.platform.schema_validation import load_gate_policy, load_price_catalog
@@ -58,7 +66,7 @@ def _root() -> Path:
     return Path(os.environ.get("PIXELGYM_REPOSITORY_ROOT", Path.cwd())).resolve()
 
 
-def _store() -> object:
+def _store() -> ImmutableStore:
     bucket = os.environ.get("PIXELGYM_IMMUTABLE_BUCKET")
     if bucket:
         return S3ImmutableStore(
@@ -72,7 +80,7 @@ def _store() -> object:
     )
 
 
-def _tracking() -> object:
+def _tracking() -> MlflowTracking:
     return MlflowTracking(os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000"))
 
 
@@ -132,7 +140,7 @@ def _approved_registry() -> dict[str, ApprovedProviderPolicy]:
     return load_approved_providers(_root())
 
 
-def _approved_policy(flow: object) -> ApprovedProviderPolicy | None:
+def _approved_policy(flow: GroundingEvaluationFlow) -> ApprovedProviderPolicy | None:
     """Resolve the approved real-provider record, or None for the scripted default.
 
     Every launch parameter must restate the registry record and the caller must supply the
@@ -165,7 +173,7 @@ def _approved_price_catalog(policy: ApprovedProviderPolicy) -> dict[str, Any]:
     return catalog
 
 
-def _provider(flow: object) -> object:
+def _provider(flow: GroundingEvaluationFlow) -> PlatformProvider:
     approved = _approved_policy(flow)
     if approved is not None:
         if os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER"):
@@ -193,8 +201,8 @@ def _provider(flow: object) -> object:
     variant = SCRIPTED_MODEL_VARIANTS.get((flow.prompt_version, flow.model))
     if variant is None:
         raise ValueError("prompt/model pairing is outside the scripted allowlist")
-    ledger = os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER")
-    if ledger:
+    ledger_path = os.environ.get("PIXELGYM_TEST_PROVIDER_LEDGER")
+    if ledger_path:
         if os.environ.get(_TEST_HOOKS_ENV) != "1":
             raise RuntimeError("the ledgered provider is available only with explicit test hooks")
         from pixelgym.platform.runtime_fixture import LedgeredScriptedReplayProvider
@@ -202,8 +210,13 @@ def _provider(flow: object) -> object:
         return LedgeredScriptedReplayProvider(
             _root() / "artifacts/grounding-predictions.jsonl",
             variant=variant,
-            ledger_path=Path(ledger),
+            ledger_path=Path(ledger_path),
             concurrency_barrier=int(os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")),
+            # The flow step is a separate process, so the test-hook environment is read
+            # here, behind the explicit test-hook gate, and injected into the fixture.
+            concurrency_barrier_timeout_seconds=float(
+                os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS", "10")
+            ),
         )
     return ScriptedReplayProvider(
         _root() / "artifacts/grounding-predictions.jsonl",
@@ -212,7 +225,7 @@ def _provider(flow: object) -> object:
     )
 
 
-def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
+def _runner(flow: GroundingEvaluationFlow, *, with_tracking: bool = False) -> EvaluationRunner:
     return EvaluationRunner(
         repository_root=_root(),
         store=_store(),
@@ -233,7 +246,7 @@ def _runner(flow: object, *, with_tracking: bool = False) -> EvaluationRunner:
     )
 
 
-def _record_failure(flow: object) -> None:
+def _record_failure(flow: GroundingEvaluationFlow) -> None:
     """Best-effort terminal evidence without hiding the step's original exception."""
     with contextlib.suppress(Exception):
         flow.mlflow_run_id = _runner(flow, with_tracking=True).finalize_failure(
@@ -247,7 +260,7 @@ def _record_failure(flow: object) -> None:
 
 def _finalize_on_error(method: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(method)
-    def wrapped(flow: object, *args: object, **kwargs: object) -> Any:
+    def wrapped(flow: GroundingEvaluationFlow, *args: object, **kwargs: object) -> Any:
         try:
             if _control().get_submission(flow.submission_id)["status"] == "Cancelled":
                 raise RuntimeError("evaluation cancelled by the configured reviewer")
@@ -260,17 +273,29 @@ def _finalize_on_error(method: Callable[..., Any]) -> Callable[..., Any]:
 
 
 class GroundingEvaluationFlow(FlowSpec):
-    submission_id = Parameter("submission-id", required=True)
-    prompt_version = Parameter("prompt-version", type=int, required=True)
-    model = Parameter("model", required=True)
-    maximum_calls = Parameter("maximum-calls", type=int, default=100)
-    shard_size = Parameter("shard-size", type=int, default=25)
-    provider_concurrency = Parameter("provider-concurrency", type=int, default=1)
-    # Approved real-provider selection. Both default to empty, which selects the scripted
-    # replay; a real provider runs only when a launcher passes a registry reference and its
-    # exact approval digest. The web submit form never sets these.
-    approved_provider = Parameter("approved-provider", default="")
-    approved_provider_sha256 = Parameter("approved-provider-sha256", default="")
+    if TYPE_CHECKING:
+        # Metaflow replaces each Parameter with its parsed value on the running flow; the
+        # type checker sees those values. The runtime branch below is the real declaration.
+        submission_id: str
+        prompt_version: int
+        model: str
+        maximum_calls: int
+        shard_size: int
+        provider_concurrency: int
+        approved_provider: str
+        approved_provider_sha256: str
+    else:
+        submission_id = Parameter("submission-id", required=True)
+        prompt_version = Parameter("prompt-version", type=int, required=True)
+        model = Parameter("model", required=True)
+        maximum_calls = Parameter("maximum-calls", type=int, default=100)
+        shard_size = Parameter("shard-size", type=int, default=25)
+        provider_concurrency = Parameter("provider-concurrency", type=int, default=1)
+        # Approved real-provider selection. Both default to empty, which selects the
+        # scripted replay; a real provider runs only when a launcher passes a registry
+        # reference and its exact approval digest. The web submit form never sets these.
+        approved_provider = Parameter("approved-provider", default="")
+        approved_provider_sha256 = Parameter("approved-provider-sha256", default="")
 
     @step
     def start(self) -> None:
@@ -379,8 +404,11 @@ class GroundingEvaluationFlow(FlowSpec):
     @step
     @_finalize_on_error
     def evaluate_shard(self) -> None:
+        shard = self.input
+        if shard is None:
+            raise RuntimeError("evaluate_shard runs only as a foreach branch")
         self.raw_responses = _runner(self).evaluate_shard(
-            self.input,
+            shard,
             max_calls=self.maximum_calls,
         )
         _test_fail_once("raw_responses_persisted")
@@ -497,4 +525,5 @@ class GroundingEvaluationFlow(FlowSpec):
 
 
 if __name__ == "__main__":
-    GroundingEvaluationFlow()
+    # Metaflow's FlowSpec.__init__ is unannotated; the CLI entry point is its only caller.
+    GroundingEvaluationFlow()  # type: ignore[no-untyped-call]

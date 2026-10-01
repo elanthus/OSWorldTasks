@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from pixelgym.platform.runtime_fixture import (
     LedgeredScriptedReplayProvider,
     provider_ledger_snapshot,
@@ -39,3 +41,32 @@ def test_ledgered_provider_separates_attempts_from_billable_calls(
         "max_active": 1,
         "billable_calls": 1,
     }
+
+
+def test_concurrency_barrier_timeout_is_injected_not_read_from_environment(
+    repository_root: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A positive environment value must not override the injected parameter.
+    monkeypatch.setenv("PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS", "30")
+    provider = LedgeredScriptedReplayProvider(
+        repository_root / "artifacts/grounding-predictions.jsonl",
+        variant="revised",
+        ledger_path=tmp_path / "provider.db",
+        concurrency_barrier=2,
+        concurrency_barrier_timeout_seconds=0,
+    )
+    with pytest.raises(ValueError, match="barrier timeout must be positive"):
+        provider._wait_for_concurrency_barrier()
+
+
+def test_concurrency_barrier_timeout_default_is_unchanged(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    provider = LedgeredScriptedReplayProvider(
+        repository_root / "artifacts/grounding-predictions.jsonl",
+        variant="revised",
+        ledger_path=tmp_path / "provider.db",
+    )
+    assert provider.concurrency_barrier_timeout_seconds == 10.0
