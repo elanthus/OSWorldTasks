@@ -1,4 +1,7 @@
-"""Ten supplied-state logical actions; network retries never advance the prefix."""
+"""Ten supplied-state logical actions; network retries never advance the prefix.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

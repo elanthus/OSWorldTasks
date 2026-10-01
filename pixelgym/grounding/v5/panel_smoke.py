@@ -1,4 +1,7 @@
-"""Plan and execute the four-action D5.6 panel integration smoke."""
+"""Plan and execute the four-action D5.6 panel integration smoke.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
-"""Exact authorization and runtime validation for the Haiku D5.9 execution."""
+"""Exact authorization and runtime validation for the Haiku D5.9 execution.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

@@ -8,14 +8,32 @@ source revision rather than from the live checkout, so later edits to
 from __future__ import annotations
 
 import io
+import os
+import subprocess
 import tarfile
 from pathlib import Path
 
 import pytest
 
-from pixelgym.grounding.v5 import d59_haiku_retry_successor as successor
-
 ROOT = Path(__file__).resolve().parents[2]
+# The frozen D5.9 successor resolves recorded revisions through this helper; the
+# redirect below is applied by dotted path so this module never imports it.
+_SUCCESSOR_GIT_OUTPUT = "pixelgym.grounding.v5.d59_haiku_retry_successor._git_output"
+
+
+def git_output(root: Path, *arguments: str) -> bytes:
+    """Run ``git`` in ``root`` with inherited ``GIT_*`` variables removed."""
+    environment = {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
+    try:
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            env=environment,
+        ).stdout
+    except subprocess.CalledProcessError as error:
+        raise ValueError("source revision or path is unavailable") from error
 
 
 def archive_recorded_root(
@@ -27,11 +45,10 @@ def archive_recorded_root(
     repository object store so the recorded revision still resolves, while file
     bytes are read from the extracted archive instead of the working tree.
     """
-    archive = successor._git_output(ROOT, "archive", revision, "--", *paths)
+    archive = git_output(ROOT, "archive", revision, "--", *paths)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(tmp_path, filter="data")
-    original = successor._git_output
-    monkeypatch.setattr(successor, "_git_output", lambda _root, *args: original(ROOT, *args))
+    monkeypatch.setattr(_SUCCESSOR_GIT_OUTPUT, lambda _root, *args: git_output(ROOT, *args))
     return tmp_path
 
 
@@ -41,7 +58,7 @@ def artifact_revision(path: str | Path) -> str:
     For frozen artifacts that do not store their own source revision, the commit
     that wrote them is the revision whose sources they were generated from.
     """
-    output = successor._git_output(ROOT, "log", "-1", "--format=%H", "--", str(path))
+    output = git_output(ROOT, "log", "-1", "--format=%H", "--", str(path))
     revision = output.decode("ascii").strip()
     if len(revision) != 40:
         raise ValueError(f"{path} has no recorded revision in the local history")

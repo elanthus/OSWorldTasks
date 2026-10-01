@@ -1,4 +1,7 @@
-"""Credential-free transport diagnostics without changing requests or retries."""
+"""Credential-free transport diagnostics without changing requests or retries.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

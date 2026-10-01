@@ -1,4 +1,7 @@
-"""Matched screenshot policies with a source-bound transient retry contract."""
+"""Matched screenshot policies with a source-bound transient retry contract.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 

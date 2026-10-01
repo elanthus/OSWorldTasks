@@ -1,4 +1,7 @@
-"""Twenty single-action checks of text-entry usability and deferred choices."""
+"""Twenty single-action checks of text-entry usability and deferred choices.
+
+Retained only to reproduce or verify frozen evidence; no live code path depends on it.
+"""
 
 from __future__ import annotations
 
