@@ -71,7 +71,7 @@ pythonpath = ["."]
 # Loads the deterministic "ci" profile (registered in tests/conftest.py) for
 # every invocation, not only the CI workflow's explicit flag, so a local
 # `pytest tests/unit` run and the CI run generate identical examples.
-addopts = "--hypothesis-profile=ci"
+addopts = "--hypothesis-profile=ci -m 'not slow'"
 markers = [
     "local_http_integration: binds a real loopback socket without external network or services",
     "platform_integration: requires the optional MLflow/Metaflow platform dependencies or local services",
@@ -79,6 +79,7 @@ markers = [
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
     "osworld_integration: requires the pinned local OSWorld Docker runtime and guest image",
     "v5_sandbox_integration: requires Darwin sandbox-exec outside a parent process sandbox",
+    "slow: long-running fast-path replay; deselected by default, run with -m slow",
 ]
 
 [tool.coverage.run]

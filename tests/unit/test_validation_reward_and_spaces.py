@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from pixelgym.actions import KEY_ALLOWLIST
+from pixelgym.backends import fake as fake_backend_module
 from pixelgym.validation import reward as reward_validation
 from pixelgym.validation.reward import validate_reward_timing
 from pixelgym.validation.spaces import validate_space_integrity
@@ -16,9 +17,29 @@ from pixelgym.validation.spaces import validate_space_integrity
 GOLDEN = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
 
 
+def _first_frame_only_renderer() -> Any:
+    """Render the first frame for real, then reuse it.
+
+    Reward comes only from the privileged evaluator over form state (invariant 6),
+    never from pixels, so reusing one frame leaves every reward decision intact
+    while removing per-step text rendering cost from the full prefix replay.
+    """
+    real_render = fake_backend_module.render.render
+    cache: list[Any] = []
+
+    def render(record: Any, form: Any, layout: Any) -> Any:
+        if not cache:
+            cache.append(real_render(record, form, layout))
+        return cache[0]
+
+    return render
+
+
 @pytest.fixture(scope="module")
 def reward_report() -> dict[str, Any]:
-    return validate_reward_timing(GOLDEN)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(fake_backend_module.render, "render", _first_frame_only_renderer())
+        return validate_reward_timing(GOLDEN)
 
 
 @pytest.fixture(scope="module")
@@ -154,3 +175,11 @@ def test_post_episode_steps_rejected(space_report):
     assert space_report["post_terminal_step_rejected"] is True
     assert space_report["post_truncation_step_rejected"] is True
     assert space_report["summary"]["post_episode_calls_rejected"] is True
+
+
+@pytest.mark.slow
+def test_reward_timing_full_replay_with_real_rendering():
+    """Invariant 5: the full validator, with real per-step rendering, passes every trajectory."""
+    summary = validate_reward_timing(GOLDEN)["summary"]
+    assert summary["passed"] is True
+    assert summary["failed_count"] == 0
