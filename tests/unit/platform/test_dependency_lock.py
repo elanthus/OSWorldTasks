@@ -56,14 +56,15 @@ def test_repository_lock_is_exact_hashed_and_is_the_manifest_digest(repository_r
     assert "psycopg2-binary==2.9.10" in text
     assert "greenlet==3.5.4" in text
     assert "httpx2==2.9.1" in text
+    assert "jinja2==3.1.6" in text
     assert "--hash=sha256:" in text
 
 
 def test_platform_container_verifies_and_installs_only_the_exact_lock(repository_root: Path) -> None:
     dockerfile = (repository_root / "deploy/Dockerfile.platform").read_text()
-    assert "COPY requirements/platform-py312-v2.lock ./requirements/platform-py312-v2.lock" in dockerfile
+    assert "COPY requirements/platform-py312-v3.lock ./requirements/platform-py312-v3.lock" in dockerfile
     assert "dependency_lock.py --repository-root /app" in dockerfile
-    assert "pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v2.lock" in dockerfile
+    assert "pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v3.lock" in dockerfile
     assert "pip install --no-cache-dir --no-deps ." in dockerfile
     assert ".[platform]" not in dockerfile
 

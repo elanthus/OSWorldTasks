@@ -137,6 +137,16 @@ def test_platform_schemas_are_packaged_in_the_wheel(installed_wheel_site_dir):
     assert installed == expected
 
 
+def test_platform_web_templates_are_packaged_in_the_wheel(installed_wheel_site_dir):
+    templates = installed_wheel_site_dir / "pixelgym" / "platform" / "web" / "templates"
+    source = REPO_ROOT / "pixelgym" / "platform" / "web" / "templates"
+    expected = {path.name for path in source.glob("*.html")}
+    installed = {path.name for path in templates.glob("*.html")}
+
+    assert expected
+    assert installed == expected
+
+
 def test_retired_grounding_sources_are_excluded_from_the_wheel(
     installed_wheel_site_dir,
 ):

@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{#- diff_table is difflib.HtmlDiff output: library-generated markup whose cell text difflib escapes itself. -#}
+{% block body %}<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>{% if includes_legacy %}At least one selected candidate predates renderer identity and carries no packaged prompt artifact; its side is re-rendered from the frozen local templates instead of read from its immutable package.{% else %}Both sides are read directly from each candidate's immutable policy package (<code>prompt_template_text</code>), not re-rendered from code.{% endif %}</p></section><section class="panel diff-table">{{ diff_table }}</section>{% endblock %}

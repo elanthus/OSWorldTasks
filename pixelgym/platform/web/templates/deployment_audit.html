@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% from "_macros.html" import timeline, pagination %}
+{% block body %}<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Full audit history.</h1><p>Newest lifecycle events appear first.</p></section><section class="panel"><ol class="timeline">{% if events %}{{ timeline(events) }}{% else %}<li>No lifecycle events on this page.</li>{% endif %}</ol>{{ pagination("Audit pages", previous_href, next_href) }}<p><a href="/deployment">← Back to deployment</a></p></section>{% endblock %}
