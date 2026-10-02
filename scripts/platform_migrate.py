@@ -11,7 +11,9 @@ from pixelgym.platform.control_store import ControlStore, configured_busy_timeou
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--database", default=os.environ.get("PIXELGYM_CONTROL_DB", ".cache/platform/control.db"))
+    parser.add_argument(
+        "--database", default=os.environ.get("PIXELGYM_CONTROL_DB", ".cache/platform/control.db")
+    )
     args = parser.parse_args()
     if args.database != ":memory:" and not args.database.startswith("file:"):
         Path(args.database).parent.mkdir(parents=True, exist_ok=True)

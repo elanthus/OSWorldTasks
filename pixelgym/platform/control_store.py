@@ -328,9 +328,7 @@ def _next_active_check(sql: str, offset: int) -> int:
             before = sql[cursor - 1] if cursor else ""
             after_at = cursor + len("CHECK")
             after = sql[after_at] if after_at < len(sql) else ""
-            if not (before.isalnum() or before == "_") and not (
-                after.isalnum() or after == "_"
-            ):
+            if not (before.isalnum() or before == "_") and not (after.isalnum() or after == "_"):
                 return cursor
         cursor += 1
     return -1
@@ -416,9 +414,7 @@ def _deployment_schema(connection: sqlite3.Connection) -> _DeploymentSchema:
 
 
 def _fresh_deployment_schema(*, legacy: bool = False) -> _DeploymentSchema:
-    with _open_connection(
-        ":memory:", busy_timeout_ms=DEFAULT_BUSY_TIMEOUT_MS
-    ) as connection:
+    with _open_connection(":memory:", busy_timeout_ms=DEFAULT_BUSY_TIMEOUT_MS) as connection:
         connection.executescript(SCHEMA)
         if legacy:
             connection.execute(
@@ -428,9 +424,7 @@ def _fresh_deployment_schema(*, legacy: bool = False) -> _DeploymentSchema:
         return _deployment_schema(connection)
 
 
-def _assert_deployment_columns(
-    actual: set[str], expected: set[str], *, context: str
-) -> None:
+def _assert_deployment_columns(actual: set[str], expected: set[str], *, context: str) -> None:
     if actual != expected:
         missing = sorted(expected - actual)
         unexpected = sorted(actual - expected)
@@ -455,8 +449,7 @@ def _assert_deployment_schema(
     ]
     if mismatches:
         raise RuntimeError(
-            f"{context} has a stale schema "
-            f"(constraint or index mismatch: {', '.join(mismatches)})"
+            f"{context} has a stale schema (constraint or index mismatch: {', '.join(mismatches)})"
         )
 
 
@@ -558,8 +551,7 @@ class ControlStore:
                 )
             self.connection.executescript(SCHEMA)
             columns = {
-                str(row["name"])
-                for row in self.connection.execute("PRAGMA table_info(candidates)")
+                str(row["name"]) for row in self.connection.execute("PRAGMA table_info(candidates)")
             }
             if "summary_json" not in columns:
                 self.connection.execute(
@@ -604,9 +596,7 @@ class ControlStore:
             ).fetchone()
             deployment_schema = _deployment_schema(self.connection)
             deployment_columns = {column[0] for column in deployment_schema.columns}
-            foreign_keys_enabled = int(
-                self.connection.execute("PRAGMA foreign_keys").fetchone()[0]
-            )
+            foreign_keys_enabled = int(self.connection.execute("PRAGMA foreign_keys").fetchone()[0])
         if not foreign_keys_enabled:
             raise RuntimeError("control database foreign-key enforcement is disabled")
         if pointer is None:
@@ -779,9 +769,7 @@ class ControlStore:
         resolved: bool,
     ) -> None:
         event_type = (
-            "tracking.reconciliation_resolved"
-            if resolved
-            else "tracking.reconciliation_required"
+            "tracking.reconciliation_resolved" if resolved else "tracking.reconciliation_required"
         )
         with self.transaction() as connection:
             self._audit(
@@ -872,10 +860,7 @@ class ControlStore:
             gate_report.completeness.passed,
             gate_report.compatibility_passed,
             gate_report.code_revision_passed,
-            (
-                gate_report.confidence_bound is None
-                or gate_report.confidence_bound.passed
-            ),
+            (gate_report.confidence_bound is None or gate_report.confidence_bound.passed),
         )
         if gate_report.overall_passed and (not all(required_passes) or gate_report.reasons):
             raise ValueError("passing gate report has failed components or blocking reasons")
@@ -885,7 +870,9 @@ class ControlStore:
         report_sha = sha256_bytes(report_bytes)
         summary_bytes = canonical_json_bytes(summary.to_dict() if summary is not None else {})
         candidate_id = "candidate-" + policy.policy_id.removeprefix("sha256:")[:24]
-        state = CandidateState.ELIGIBLE if gate_report.overall_passed else CandidateState.GATE_FAILED
+        state = (
+            CandidateState.ELIGIBLE if gate_report.overall_passed else CandidateState.GATE_FAILED
+        )
         with self.transaction() as connection:
             existing = connection.execute(
                 "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
@@ -903,10 +890,18 @@ class ControlStore:
             )
             if existing:
                 expected = values[1:8]
-                actual = tuple(existing[key] for key in (
-                    "source_run_id", "policy_id", "policy_json", "gate_report_json",
-                    "gate_report_sha256", "artifacts_json", "summary_json"
-                ))
+                actual = tuple(
+                    existing[key]
+                    for key in (
+                        "source_run_id",
+                        "policy_id",
+                        "policy_json",
+                        "gate_report_json",
+                        "gate_report_sha256",
+                        "artifacts_json",
+                        "summary_json",
+                    )
+                )
                 if actual != expected or existing["state"] not in {
                     state.value,
                     CandidateState.APPROVED.value,
@@ -950,9 +945,7 @@ class ControlStore:
             policy=load_policy_manifest(self.schemas, json.loads(row["policy_json"])),
             gate_report=GateReport.from_dict(gate_report_value),
             gate_report_sha256=row["gate_report_sha256"],
-            artifacts=tuple(
-                ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
-            ),
+            artifacts=tuple(ArtifactRef(**value) for value in json.loads(row["artifacts_json"])),
             summary=(
                 RunSummary(**json.loads(row["summary_json"]))
                 if json.loads(row["summary_json"])
@@ -1008,9 +1001,7 @@ class ControlStore:
             policy_value = json.loads(row["policy_json"])
             gate_report = json.loads(row["gate_report_json"])
         except (json.JSONDecodeError, TypeError) as exc:
-            raise ContractValidationError(
-                "stored candidate evidence is not strict JSON"
-            ) from exc
+            raise ContractValidationError("stored candidate evidence is not strict JSON") from exc
         policy = load_policy_manifest(self.schemas, policy_value)
         self.schemas.validate("gate_report", gate_report)
         # Keep strict validation before canonical serialization so corrupt stored
@@ -1022,9 +1013,13 @@ class ControlStore:
             raise ContractValidationError("stored policy identity does not match candidate")
         report = GateReport.from_dict(gate_report)
         if report.policy_id != row["policy_id"]:
-            raise ContractValidationError("stored gate_report policy identity does not match candidate")
+            raise ContractValidationError(
+                "stored gate_report policy identity does not match candidate"
+            )
         if report.run_id != row["source_run_id"]:
-            raise ContractValidationError("stored gate_report run identity does not match candidate")
+            raise ContractValidationError(
+                "stored gate_report run identity does not match candidate"
+            )
         if not report.overall_passed:
             raise ContractValidationError("stored candidate no longer has passing gates")
         if not policy.source_provenance_verified or not report.code_revision_passed:
@@ -1098,11 +1093,19 @@ class ControlStore:
                 raise TransitionError("only an eligible candidate can be approved")
             self._validate_candidate_evidence(row)
             created = self._now()
-            approval_id = "approval-" + sha256_bytes(
-                canonical_json_bytes(
-                    {"candidate_id": candidate_id, "actor": actor, "reason": reason.strip(), "created": created}
-                )
-            )[:24]
+            approval_id = (
+                "approval-"
+                + sha256_bytes(
+                    canonical_json_bytes(
+                        {
+                            "candidate_id": candidate_id,
+                            "actor": actor,
+                            "reason": reason.strip(),
+                            "created": created,
+                        }
+                    )
+                )[:24]
+            )
             approval = {
                 "approval_id": approval_id,
                 "candidate_id": candidate_id,
@@ -1195,8 +1198,7 @@ class ControlStore:
         )
         rows: list[sqlite3.Row] = list(
             connection.execute(
-                "SELECT * FROM deployments WHERE generation <= ? "
-                "ORDER BY generation DESC",
+                "SELECT * FROM deployments WHERE generation <= ? ORDER BY generation DESC",
                 (current_generation,),
             )
         )
@@ -1214,14 +1216,9 @@ class ControlStore:
             raise TransitionError("rollback history has no explicit deploy origin")
 
         for row in rows[chain_start + 1 :]:
-            if (
-                row["action"] == "deploy"
-                and row["candidate_id"] not in abandoned_candidates
-            ):
+            if row["action"] == "deploy" and row["candidate_id"] not in abandoned_candidates:
                 return row
-        raise TransitionError(
-            "there is no eligible known-good deployment to roll back to"
-        )
+        raise TransitionError("there is no eligible known-good deployment to roll back to")
 
     def activate(
         self,
@@ -1248,10 +1245,17 @@ class ControlStore:
             pointer = connection.execute(
                 "SELECT * FROM active_pointer WHERE singleton = 1"
             ).fetchone()
-            if candidate is None or approval is None or candidate["state"] != CandidateState.APPROVED.value:
+            if (
+                candidate is None
+                or approval is None
+                or candidate["state"] != CandidateState.APPROVED.value
+            ):
                 raise TransitionError("deployment target is not approved")
             self._validate_candidate_approval_evidence(candidate, approval)
-            if pointer["deployment_id"] != expected_deployment_id or pointer["generation"] != expected_generation:
+            if (
+                pointer["deployment_id"] != expected_deployment_id
+                or pointer["generation"] != expected_generation
+            ):
                 raise ConflictError("active deployment changed concurrently")
             rollback_lineage: dict[str, str] = {}
             if action == "rollback":
@@ -1354,9 +1358,7 @@ class ControlStore:
             parameters = (offset,)
         with self._lock:
             rows = list(self.connection.execute(query, parameters))
-        return [
-            {**dict(row), "details": json.loads(row["details_json"])} for row in rows
-        ]
+        return [{**dict(row), "details": json.loads(row["details_json"])} for row in rows]
 
     def approval_events(self) -> list[dict[str, Any]]:
         with self._lock:
@@ -1369,7 +1371,5 @@ class ControlStore:
         with self._lock:
             return [
                 dict(row)
-                for row in self.connection.execute(
-                    "SELECT * FROM deployments ORDER BY generation"
-                )
+                for row in self.connection.execute("SELECT * FROM deployments ORDER BY generation")
             ]

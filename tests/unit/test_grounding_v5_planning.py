@@ -71,9 +71,7 @@ def test_load_partition_manifests_reads_exact_bytes_for_every_partition(
 ) -> None:
     written = {partition: partition_manifest(partition) for partition in Partition}
     for partition, manifest in written.items():
-        (tmp_path / f"{partition.value}.json").write_text(
-            json.dumps(manifest), encoding="utf-8"
-        )
+        (tmp_path / f"{partition.value}.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     loaded = load_partition_manifests(tmp_path)
 
@@ -123,17 +121,15 @@ def test_call_cap_plan_accepts_a_v4_derived_calibration_partition() -> None:
     plan = call_cap_plan(
         policy_manifest(),
         partition_manifests=partitions,
-        approved_calibration_manifest_digest=(
-            partitions[Partition.CALIBRATION]["manifest_digest"]
-        ),
+        approved_calibration_manifest_digest=(partitions[Partition.CALIBRATION]["manifest_digest"]),
     )
 
-    assert plan["partition_manifest_digests"]["calibration"] == (
-        partitions[Partition.CALIBRATION]["manifest_digest"]
+    assert (
+        plan["partition_manifest_digests"]["calibration"]
+        == (partitions[Partition.CALIBRATION]["manifest_digest"])
     )
     assert plan["phases"]["calibration"]["environment_action_cap"] == sum(
-        record["max_episode_steps"]
-        for record in partitions[Partition.CALIBRATION]["records"]
+        record["max_episode_steps"] for record in partitions[Partition.CALIBRATION]["records"]
     )
 
 
@@ -143,9 +139,7 @@ def test_call_cap_plan_rejects_a_derivation_with_a_wrong_excluded_count() -> Non
     revised["derivation"]["excluded_episode_count"] += 1
     partitions[Partition.CALIBRATION] = _resign(revised)
 
-    with pytest.raises(
-        ValueError, match="derived calibration exclusion evidence is inconsistent"
-    ):
+    with pytest.raises(ValueError, match="derived calibration exclusion evidence is inconsistent"):
         call_cap_plan(
             policy_manifest(),
             partition_manifests=partitions,

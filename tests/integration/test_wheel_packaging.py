@@ -90,9 +90,7 @@ def test_static_assets_are_packaged_in_the_wheel(installed_wheel_site_dir):
         assert (app_static / relative_path).is_file(), relative_path
 
 
-def test_neutral_backend_contracts_are_packaged_in_the_wheel(
-    installed_wheel_site_dir, tmp_path
-):
+def test_neutral_backend_contracts_are_packaged_in_the_wheel(installed_wheel_site_dir, tmp_path):
     outside_cwd = tmp_path / "neutral-contract-import"
     outside_cwd.mkdir()
     script = textwrap.dedent(
@@ -171,8 +169,7 @@ def test_retired_grounding_sources_are_excluded_from_the_wheel(
 
 def test_manifest_runner_schema_is_packaged_in_the_wheel(installed_wheel_site_dir):
     assert (
-        installed_wheel_site_dir
-        / "pixelgym/grounding/v5/schemas/runner-plan.schema.json"
+        installed_wheel_site_dir / "pixelgym/grounding/v5/schemas/runner-plan.schema.json"
     ).is_file()
 
 

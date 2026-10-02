@@ -103,10 +103,7 @@ def test_execution_plan_reuses_admitted_tasks_and_exact_selected_policies() -> N
     assert value["task_manifest_binding"]["path"].endswith("task-manifest.json")
     assert value["admission_binding"]["path"] == ADMISSION_PATH
     assert value["policy_manifests"]["history"]["policy_id"] == HISTORY_POLICY_ID
-    assert (
-        value["policy_manifests"]["stateless"]["policy_id"]
-        == STATELESS_POLICY_ID
-    )
+    assert value["policy_manifests"]["stateless"]["policy_id"] == STATELESS_POLICY_ID
     assert value["security_boundary"]["os_sandbox_applied"] == {
         "history": False,
         "stateless": False,
@@ -164,9 +161,7 @@ def test_execution_plan_reuses_admitted_tasks_and_exact_selected_policies() -> N
         ),
         (
             HISTORICAL_PLAN_PATH,
-            lambda value: value.__setitem__(
-                "execution_plan_digest", "sha256:" + "0" * 64
-            ),
+            lambda value: value.__setitem__("execution_plan_digest", "sha256:" + "0" * 64),
             "execution plan digest changed",
         ),
     ],
@@ -199,10 +194,7 @@ def test_execution_plan_rejects_identity_drift(
 def test_expected_outputs_are_response_free_and_write_once(tmp_path: Path) -> None:
     outputs = expected_outputs(ROOT, source_revision="c" * 40)
     assert set(outputs) == {"owner-exception.json", "execution-plan.json"}
-    assert all(
-        json.loads(payload)["provider_calls_made"] == 0
-        for payload in outputs.values()
-    )
+    assert all(json.loads(payload)["provider_calls_made"] == 0 for payload in outputs.values())
     public = tmp_path / "freeze"
     write_outputs(outputs, verify=False, public=public)
     write_outputs(outputs, verify=True, public=public)

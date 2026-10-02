@@ -110,9 +110,7 @@ def _measure(root: Path, revision: str, temporary_root: Path, label: str) -> dic
     wheel = _build_wheel(snapshot, wheel_directory)
     with zipfile.ZipFile(wheel) as archive:
         wheel_files = sorted(name for name in archive.namelist() if not name.endswith("/"))
-    grounding_wheel_files = [
-        name for name in wheel_files if name.startswith("pixelgym/grounding/")
-    ]
+    grounding_wheel_files = [name for name in wheel_files if name.startswith("pixelgym/grounding/")]
     return {
         "revision": resolved,
         "grounding_production_physical_loc": _line_count(snapshot, production),
@@ -159,8 +157,7 @@ def main(argv: Sequence[str] | None = None) -> None:
                 - before["grounding_production_physical_loc"]
             ),
             "top_level_python_script_count": (
-                after["top_level_python_script_count"]
-                - before["top_level_python_script_count"]
+                after["top_level_python_script_count"] - before["top_level_python_script_count"]
             ),
             "experiment_specific_maintenance_surface_count": (
                 after["experiment_specific_maintenance_surface_count"]

@@ -79,15 +79,11 @@ class InvalidOutputTransport:
             },
         )
 
-    def cancel(
-        self, *, idempotency_key: str, mode: str
-    ) -> Literal["cancelled", "unknown"]:
+    def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
         del idempotency_key, mode
         return "unknown"
 
-    def reconcile(
-        self, *, idempotency_key: str, deadline_seconds: float
-    ) -> TransportOutcome:
+    def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="disabled")
 
@@ -112,9 +108,7 @@ def test_completed_pilot_evidence_recomputes_journal_integrity(
     monkeypatch.setattr(expanded_calibration, "PILOT_PLAN", Path("pilot-plan.json"))
     monkeypatch.setattr(expanded_calibration, "PILOT_SUMMARY", Path("pilot/summary.json"))
     monkeypatch.setattr(expanded_calibration, "PILOT_JOURNAL", Path("pilot/attempts.sqlite"))
-    monkeypatch.setattr(
-        expanded_calibration, "APPROVED_PILOT_PLAN_DIGEST", content_digest(plan)
-    )
+    monkeypatch.setattr(expanded_calibration, "APPROVED_PILOT_PLAN_DIGEST", content_digest(plan))
 
     evidence = REAL_COMPLETED_PILOT_EVIDENCE(tmp_path)
 
@@ -135,12 +129,8 @@ def test_expanded_plan_runs_full_horizons_within_existing_cap(
     assert plan["caps"]["model_attempt_cap"] == 261
     assert plan["caps"]["provider_wire_request_cap"] == 261
     assert plan["caps"]["provider_control_request_cap"] == 0
-    assert Decimal(plan["caps"]["aggregate_upper_bound_usd"]) == Decimal(
-        "4.430654605"
-    )
-    assert Decimal(plan["caps"]["aggregate_headroom_usd"]) == Decimal(
-        "0.569345395"
-    )
+    assert Decimal(plan["caps"]["aggregate_upper_bound_usd"]) == Decimal("4.430654605")
+    assert Decimal(plan["caps"]["aggregate_headroom_usd"]) == Decimal("0.569345395")
 
 
 def test_expanded_run_rejects_wrong_digest_before_any_attempt(

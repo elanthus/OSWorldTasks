@@ -20,9 +20,7 @@ __all__ = [
 ]
 
 
-def paired_success_table(
-    first: dict[str, bool], second: dict[str, bool]
-) -> dict[str, int]:
+def paired_success_table(first: dict[str, bool], second: dict[str, bool]) -> dict[str, int]:
     if set(first) != set(second) or not first:
         raise ValueError("paired policies require the same nonempty task identities")
     counts = Counter((first[key], second[key]) for key in sorted(first))

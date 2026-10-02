@@ -48,9 +48,8 @@ def proposal_match(target_id: str, marks: list[dict[str, Any]]) -> tuple[bool, i
 
 
 def _boxes_overlap(first: list[int], second: list[int]) -> bool:
-    return (
-        max(first[0], second[0]) < min(first[2], second[2])
-        and max(first[1], second[1]) < min(first[3], second[3])
+    return max(first[0], second[0]) < min(first[2], second[2]) and max(first[1], second[1]) < min(
+        first[3], second[3]
     )
 
 
@@ -79,9 +78,7 @@ def _badge_position(
         if element_type == "radio":
             positions.extend((badge_x, y1 + gap) for badge_x in horizontal_anchors)
         positions.extend((x1 + gap, badge_y) for badge_y in vertical_anchors)
-        positions.extend(
-            (x0 - gap - badge_width, badge_y) for badge_y in vertical_anchors
-        )
+        positions.extend((x0 - gap - badge_width, badge_y) for badge_y in vertical_anchors)
         positions.extend((badge_x, y0 - gap - badge_height) for badge_x in horizontal_anchors)
         positions.extend((badge_x, y1 + gap) for badge_x in horizontal_anchors)
     for badge_x, badge_y in positions:
@@ -130,8 +127,7 @@ def render_overlay(
             font=font,
             width=width,
             height=height,
-            forbidden_bboxes=element_bboxes
-            + [list(mark["badge_bbox"]) for mark in marks],
+            forbidden_bboxes=element_bboxes + [list(mark["badge_bbox"]) for mark in marks],
         )
         bx0, by0, bx1, by1 = badge_bbox
         draw.rectangle((bx0, by0, bx1 - 1, by1 - 1), fill=_BADGE_COLOR)

@@ -60,9 +60,10 @@ def _repository(tmp_path: Path) -> Path:
 
 def test_checked_in_smoke_input_digest_is_frozen() -> None:
     repository_root = Path(__file__).resolve().parents[2]
-    assert provider_smoke._file_digest(
-        repository_root / provider_smoke.SCREENSHOT_PATH
-    ) == "sha256:2bc39b43f359da959e6437025d38fd279518a0b1afb7410fc2d18633352e5be2"
+    assert (
+        provider_smoke._file_digest(repository_root / provider_smoke.SCREENSHOT_PATH)
+        == "sha256:2bc39b43f359da959e6437025d38fd279518a0b1afb7410fc2d18633352e5be2"
+    )
 
 
 def test_plan_is_one_call_development_only_and_under_approved_cap(
@@ -92,9 +93,7 @@ def test_plan_is_one_call_development_only_and_under_approved_cap(
     )
     assert plan["caps"]["model_attempts"] == 1
     assert plan["caps"]["provider_wire_requests"] == 1
-    assert Decimal(plan["caps"]["theoretical_request_maximum_usd"]) == Decimal(
-        "0.016959488"
-    )
+    assert Decimal(plan["caps"]["theoretical_request_maximum_usd"]) == Decimal("0.016959488")
 
 
 def test_execute_smoke_requires_exact_approval_before_provider_call(
@@ -170,11 +169,7 @@ def test_execute_smoke_rejects_image_that_differs_from_runtime_renderer_before_p
     Image.new("RGB", (1024, 768), "black").save(root / provider_smoke.SCREENSHOT_PATH)
 
     def git(_root: Path, *args: str) -> str:
-        return (
-            ""
-            if args == ("status", "--porcelain", "--untracked-files=no")
-            else "revision-1"
-        )
+        return "" if args == ("status", "--porcelain", "--untracked-files=no") else "revision-1"
 
     monkeypatch.setattr(provider_smoke, "_git", git)
     plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
@@ -195,11 +190,7 @@ def test_execute_smoke_makes_one_call_validates_and_dispatches(tmp_path: Path, m
     root = _repository(tmp_path)
 
     def git(_root: Path, *args: str) -> str:
-        return (
-            ""
-            if args == ("status", "--porcelain", "--untracked-files=no")
-            else "revision-1"
-        )
+        return "" if args == ("status", "--porcelain", "--untracked-files=no") else "revision-1"
 
     monkeypatch.setattr(provider_smoke, "_git", git)
     plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
@@ -237,11 +228,7 @@ def test_execute_smoke_retains_attempt_when_usage_cost_is_missing(
     root = _repository(tmp_path)
 
     def git(_root: Path, *args: str) -> str:
-        return (
-            ""
-            if args == ("status", "--porcelain", "--untracked-files=no")
-            else "revision-1"
-        )
+        return "" if args == ("status", "--porcelain", "--untracked-files=no") else "revision-1"
 
     monkeypatch.setattr(provider_smoke, "_git", git)
     plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
@@ -270,11 +257,7 @@ def test_invalid_output_is_retained_only_in_authoritative_result(
     root = _repository(tmp_path)
 
     def git(_root: Path, *args: str) -> str:
-        return (
-            ""
-            if args == ("status", "--porcelain", "--untracked-files=no")
-            else "revision-1"
-        )
+        return "" if args == ("status", "--porcelain", "--untracked-files=no") else "revision-1"
 
     monkeypatch.setattr(provider_smoke, "_git", git)
     plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))
@@ -296,17 +279,11 @@ def test_invalid_output_is_retained_only_in_authoritative_result(
     assert raw_response not in json.dumps(provider_smoke.publishable_result(result))
 
 
-def test_normalized_coordinate_outside_frozen_grid_is_rejected(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_normalized_coordinate_outside_frozen_grid_is_rejected(tmp_path: Path, monkeypatch) -> None:
     root = _repository(tmp_path)
 
     def git(_root: Path, *args: str) -> str:
-        return (
-            ""
-            if args == ("status", "--porcelain", "--untracked-files=no")
-            else "revision-1"
-        )
+        return "" if args == ("status", "--porcelain", "--untracked-files=no") else "revision-1"
 
     monkeypatch.setattr(provider_smoke, "_git", git)
     plan = provider_smoke.build_plan(root, maximum_spend_usd=Decimal("5.00"))

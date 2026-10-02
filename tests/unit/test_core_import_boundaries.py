@@ -22,9 +22,7 @@ def _module_name(path: Path) -> str:
 def _imported_modules_from_source(path: Path, source: str) -> list[str]:
     imported: list[str] = []
     module_name = _module_name(path)
-    package_name = (
-        module_name if path.name == "__init__.py" else module_name.rpartition(".")[0]
-    )
+    package_name = module_name if path.name == "__init__.py" else module_name.rpartition(".")[0]
     for node in ast.walk(ast.parse(source, filename=str(path))):
         if isinstance(node, ast.Import):
             imported.extend(alias.name for alias in node.names)
@@ -45,9 +43,9 @@ def _imported_modules(path: Path) -> list[str]:
 def test_relative_imports_are_resolved_before_boundary_matching() -> None:
     backend_module = REPOSITORY_ROOT / "pixelgym/backends/fake.py"
 
-    assert _imported_modules_from_source(
-        backend_module, "from .. import grounding\n"
-    ) == ["pixelgym.grounding"]
+    assert _imported_modules_from_source(backend_module, "from .. import grounding\n") == [
+        "pixelgym.grounding"
+    ]
 
 
 def test_core_modules_do_not_import_grounding() -> None:
@@ -58,6 +56,6 @@ def test_core_modules_do_not_import_grounding() -> None:
         if imported == "pixelgym.grounding" or imported.startswith("pixelgym.grounding.")
     ]
 
-    assert not forbidden_edges, (
-        "forbidden core-to-grounding import edge(s):\n" + "\n".join(forbidden_edges)
+    assert not forbidden_edges, "forbidden core-to-grounding import edge(s):\n" + "\n".join(
+        forbidden_edges
     )

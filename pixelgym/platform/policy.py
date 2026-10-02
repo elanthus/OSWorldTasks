@@ -188,7 +188,11 @@ def verify_renderer_binding(manifest: PolicyManifest) -> None:
     Approved, or active-traffic state on a package whose renderer is bound and matches
     the code actually running the request.
     """
-    if manifest.renderer_version is None or manifest.renderer_sha256 is None or manifest.prompt_template_text is None:
+    if (
+        manifest.renderer_version is None
+        or manifest.renderer_sha256 is None
+        or manifest.prompt_template_text is None
+    ):
         raise ValueError("policy manifest is missing packaged renderer identity")
     if manifest.renderer_version != RENDERER_VERSION:
         raise ValueError(f"unsupported renderer version {manifest.renderer_version!r}")

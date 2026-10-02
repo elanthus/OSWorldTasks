@@ -45,9 +45,7 @@ def test_v4c_candidate_and_overlay_artifacts_contain_no_target_identity() -> Non
 def test_v4c_qwen_floor_audit_report_is_hash_bound_to_raw_evidence() -> None:
     artifacts = REPOSITORY_ROOT / "artifacts"
     report = json.loads(
-        (artifacts / "grounding-v4c-pilot-floor-audit-qwen3-8-27b.json").read_text(
-            encoding="utf-8"
-        )
+        (artifacts / "grounding-v4c-pilot-floor-audit-qwen3-8-27b.json").read_text(encoding="utf-8")
     )
     predictions_path = artifacts / "grounding-v4c-pilot-predictions-qwen3-8-27b.jsonl"
     results_path = artifacts / "grounding-v4c-pilot-results-qwen3-8-27b.json"

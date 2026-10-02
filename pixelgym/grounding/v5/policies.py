@@ -62,7 +62,9 @@ def golden_actions(task: V5Task, backend: V5FakeBackend) -> tuple[Action, ...]:
 
 
 def mutation_trace(
-    task: V5Task, mutation: Mutation, *,
+    task: V5Task,
+    mutation: Mutation,
+    *,
     backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
 ) -> ScriptedTrace:
     if mutation is Mutation.STEP_BUDGET_EXHAUSTION or mutation is Mutation.STALE_TASK_SUBMISSION:
@@ -75,11 +77,7 @@ def mutation_trace(
             Mutation.MEMORYLESS: 5,
             Mutation.SKIPPED_REVISION: len(task.stages) - 2,
             Mutation.REPEATED_INVALID_REPAIR: next(
-                (
-                    index
-                    for index, stage in enumerate(task.stages)
-                    if stage.recovery_stage
-                ),
+                (index for index, stage in enumerate(task.stages) if stage.recovery_stage),
                 5,
             ),
             Mutation.PREMATURE_COMMIT: 3,
@@ -113,9 +111,7 @@ def all_mutation_traces(task: V5Task) -> Iterable[ScriptedTrace]:
         yield mutation_trace(task, mutation)
 
 
-def _append_golden_stage(
-    planner: V5FakeBackend, stage: Stage, actions: list[Action]
-) -> None:
+def _append_golden_stage(planner: V5FakeBackend, stage: Stage, actions: list[Action]) -> None:
     if stage.kind is StageKind.TEXT:
         center = planner.control_center("text_input")
         actions.append(click_action(*center))

@@ -406,13 +406,19 @@ class V5FakeBackend:
         bold = ImageFont.truetype(str(_BOLD_FONT), 27)
         draw.rectangle((0, 0, self.width, 82), fill="#17253d")
         draw.text((42, 24), "Vendor Onboarding · Agent Benchmark v5", font=bold, fill="white")
-        draw.rounded_rectangle((54, 112, 970, 714), radius=12, fill="white", outline="#cbd3df", width=2)
+        draw.rounded_rectangle(
+            (54, 112, 970, 714), radius=12, fill="white", outline="#cbd3df", width=2
+        )
         draw.text((84, 134), task.title, font=bold, fill="#17253d")
         if self._irreversible_failure:
             draw.text((84, 214), "Final commit rejected", font=bold, fill="#9f1d20")
-            draw.multiline_text((84, 270), self._visible_error or "", font=regular, fill="#4b5563", spacing=8)
+            draw.multiline_text(
+                (84, 270), self._visible_error or "", font=regular, fill="#4b5563", spacing=8
+            )
         elif self._stage_index >= len(task.stages):
-            draw.text((84, 240), "Submission recorded for host evaluation.", font=bold, fill="#17633a")
+            draw.text(
+                (84, 240), "Submission recorded for host evaluation.", font=bold, fill="#17633a"
+            )
         else:
             stage = task.stages[self._stage_index]
             draw.text(
@@ -421,20 +427,26 @@ class V5FakeBackend:
                 font=regular,
                 fill="#334155",
             )
-            draw.multiline_text((84, 228), stage.instruction, font=regular, fill="#111827", spacing=6)
+            draw.multiline_text(
+                (84, 228), stage.instruction, font=regular, fill="#111827", spacing=6
+            )
             y = 286
             for fact in stage.facts:
                 draw.text((104, y), f"• {fact}", font=small, fill="#354153")
                 y += 28
             if self._visible_error:
-                draw.rounded_rectangle((84, 360, 940, 412), radius=8, fill="#fff0f0", outline="#b4232c")
+                draw.rounded_rectangle(
+                    (84, 360, 940, 412), radius=8, fill="#fff0f0", outline="#b4232c"
+                )
                 draw.text((102, 376), self._visible_error, font=small, fill="#8a1820")
             for control in self.visible_controls():
                 x0, y0, _x1, _y1 = control.bbox
                 fill = "#eef4ff" if control.control_id == "text_input" else "#f8fafc"
                 if control.control_id == "text_input" and self._focused:
                     fill = "#e3efff"
-                draw.rounded_rectangle(control.bbox, radius=7, fill=fill, outline="#486284", width=2)
+                draw.rounded_rectangle(
+                    control.bbox, radius=7, fill=fill, outline="#486284", width=2
+                )
                 label = self._text_value if control.control_id == "text_input" else control.label
                 if control.control_id == "text_input" and not label:
                     label = "Click, then enter the short code"

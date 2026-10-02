@@ -107,9 +107,7 @@ def build_dataset_manifest(
     return manifest, "sha256:" + sha256_bytes(canonical_json_bytes(manifest))
 
 
-def verify_dataset_manifest(
-    *, manifest: dict[str, Any], expected_fingerprint: str
-) -> None:
+def verify_dataset_manifest(*, manifest: dict[str, Any], expected_fingerprint: str) -> None:
     actual = "sha256:" + sha256_bytes(canonical_json_bytes(manifest))
     if actual != expected_fingerprint:
         raise ValueError("dataset manifest fingerprint mismatch")

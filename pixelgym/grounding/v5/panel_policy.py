@@ -48,6 +48,8 @@ TRANSPORT_RETRY_RULE = (
     "bounded-same-route-zero-completion-http-429-or-transient-transport-fault-"
     "after-bounded-backoff-v3"
 )
+
+
 def bounded_retry_stop_rule(*, ledger: str) -> str:
     """Describe bounded retries against the plan's actual spend-ledger scope."""
 
@@ -204,17 +206,11 @@ GEMINI_STATEFUL_FULL_CALIBRATION = PanelPolicyConfig(
     model=GEMINI_STATEFUL_ONE_CALL_SMOKE.model,
     provider_route=GEMINI_STATEFUL_ONE_CALL_SMOKE.provider_route,
     response_provider=GEMINI_STATEFUL_ONE_CALL_SMOKE.response_provider,
-    prompt_price_per_token_usd=(
-        GEMINI_STATEFUL_ONE_CALL_SMOKE.prompt_price_per_token_usd
-    ),
-    completion_price_per_token_usd=(
-        GEMINI_STATEFUL_ONE_CALL_SMOKE.completion_price_per_token_usd
-    ),
+    prompt_price_per_token_usd=(GEMINI_STATEFUL_ONE_CALL_SMOKE.prompt_price_per_token_usd),
+    completion_price_per_token_usd=(GEMINI_STATEFUL_ONE_CALL_SMOKE.completion_price_per_token_usd),
     price_source=GEMINI_STATEFUL_ONE_CALL_SMOKE.price_source,
     adapter=GEMINI_STATEFUL_ONE_CALL_SMOKE.adapter,
-    coordinate_input_convention=(
-        GEMINI_STATEFUL_ONE_CALL_SMOKE.coordinate_input_convention
-    ),
+    coordinate_input_convention=(GEMINI_STATEFUL_ONE_CALL_SMOKE.coordinate_input_convention),
     stateful=True,
     temperature=None,
     router_metadata=True,
@@ -666,9 +662,7 @@ class SpendLedger:
         with self._lock:
             return {
                 "spent_usd": str(self.spent_usd),
-                "in_flight_reservation_usd": str(
-                    sum(self._in_flight.values(), Decimal(0))
-                ),
+                "in_flight_reservation_usd": str(sum(self._in_flight.values(), Decimal(0))),
                 "unknown_reservation_usd": str(self.unknown_reservation_usd),
                 "budget_accounted_spend_usd": str(
                     self.spent_usd
@@ -728,9 +722,7 @@ class SpendLedger:
                 self._in_flight.pop(reservation_id, None)
                 if prior is None or prior[0] != "known":
                     self.spent_usd += amount
-                    self.max_observed_cost_usd = max(
-                        self.max_observed_cost_usd, amount
-                    )
+                    self.max_observed_cost_usd = max(self.max_observed_cost_usd, amount)
                 elif prior[1] != amount:
                     raise RuntimeError("conflicting journaled known charge")
                 self._settlements[reservation_id] = ("known", amount)
@@ -777,9 +769,7 @@ class SpendLedger:
     def reserve_wire(self, idempotency_key: str, request_maximum_usd: Decimal) -> bool:
         """Atomically acquire one worst-case hold before a request reaches the wire."""
 
-        self._validate_amount(
-            request_maximum_usd, name="request maximum", allow_zero=False
-        )
+        self._validate_amount(request_maximum_usd, name="request maximum", allow_zero=False)
         reservation_id = self._reservation_id(idempotency_key)
         with self._lock:
             if reservation_id in self._in_flight or reservation_id in self._settlements:
@@ -811,9 +801,7 @@ class SpendLedger:
         """Atomically replace one hold or unknown reservation with a known charge."""
 
         self._validate_amount(cost, name="cost", allow_zero=True)
-        self._validate_amount(
-            request_maximum_usd, name="request maximum", allow_zero=False
-        )
+        self._validate_amount(request_maximum_usd, name="request maximum", allow_zero=False)
         reservation_id = self._reservation_id(idempotency_key)
         with self._lock:
             prior = self._settlements.get(reservation_id)
@@ -832,7 +820,8 @@ class SpendLedger:
             if prior is not None and prior[0] == "unknown":
                 projected -= prior[1]
             violation = (
-                hold is not None and hold != request_maximum_usd
+                hold is not None
+                and hold != request_maximum_usd
                 or cost > request_maximum_usd
                 or projected > self.maximum_spend_usd
             )
@@ -880,9 +869,7 @@ class SpendLedger:
             self.max_observed_cost_usd * UNOBSERVED_CHARGE_CEILING_MULTIPLIER,
         )
 
-    def reserve_unknown_charge(
-        self, idempotency_key: str, request_maximum_usd: Decimal
-    ) -> Decimal:
+    def reserve_unknown_charge(self, idempotency_key: str, request_maximum_usd: Decimal) -> Decimal:
         """Replace one in-flight hold with an unobservable-charge reservation.
 
         The request may have been served and billed upstream. Reserving against
@@ -890,9 +877,7 @@ class SpendLedger:
         blocking every remaining request. Returns the amount held.
         """
 
-        self._validate_amount(
-            request_maximum_usd, name="request maximum", allow_zero=False
-        )
+        self._validate_amount(request_maximum_usd, name="request maximum", allow_zero=False)
         reservation_id = self._reservation_id(idempotency_key)
         with self._lock:
             prior = self._settlements.get(reservation_id)
@@ -928,9 +913,7 @@ class SpendLedger:
                     return True
                 if prior[0] == "known":
                     return False
-            if reservation_id not in self._in_flight and (
-                prior is None or prior[0] != "unknown"
-            ):
+            if reservation_id not in self._in_flight and (prior is None or prior[0] != "unknown"):
                 raise RuntimeError("released request has no matching spend reservation")
             self._append_spend_event(
                 reservation_id=reservation_id,
@@ -1011,9 +994,7 @@ class OpenRouterPanelTransport:
         """Retain a terminal possible-send outcome as an unknown-charge hold."""
 
         if self.ledger.has_in_flight_reservation(idempotency_key):
-            self.ledger.reserve_unknown_charge(
-                idempotency_key, self.config.request_maximum_usd
-            )
+            self.ledger.reserve_unknown_charge(idempotency_key, self.config.request_maximum_usd)
 
     def settle_zero_charge_spend(self, *, idempotency_key: str, reason: str) -> None:
         """Release a hold after the runner proves that no charge is possible."""
@@ -1046,9 +1027,7 @@ class OpenRouterPanelTransport:
             * (2 ** min(max(0, self._consecutive_transport_faults - 1), 63)),
             self.config.rate_limit_backoff_max_seconds,
         )
-        self._cooldown_until = max(
-            self._cooldown_until, self._monotonic() + backoff_seconds
-        )
+        self._cooldown_until = max(self._cooldown_until, self._monotonic() + backoff_seconds)
         self.records.append(
             {
                 "idempotency_key": idempotency_key,
@@ -1116,9 +1095,7 @@ class OpenRouterPanelTransport:
             headers=headers,
             method="POST",
         )
-        if not self.ledger.reserve_wire(
-            idempotency_key, self.config.request_maximum_usd
-        ):
+        if not self.ledger.reserve_wire(idempotency_key, self.config.request_maximum_usd):
             return TransportOutcome("pre_send_failure", failure_code="aggregate_spend_guard")
         started = self._monotonic()
         try:
@@ -1128,9 +1105,7 @@ class OpenRouterPanelTransport:
                 body = json.load(response)
         except urllib.error.HTTPError as exc:
             if exc.code == 429:
-                self.ledger.release_wire(
-                    idempotency_key, reason="confirmed_zero_charge_http_429"
-                )
+                self.ledger.release_wire(idempotency_key, reason="confirmed_zero_charge_http_429")
                 self._consecutive_rate_limits += 1
                 retry_after_seconds, backoff_source = _rate_limit_backoff(
                     exc,
@@ -1172,9 +1147,7 @@ class OpenRouterPanelTransport:
                 )
             # A non-retryable HTTP status is a request, route, or credential
             # defect. Retrying cannot fix it, so the ledger stays blocked.
-            self.ledger.reserve_unknown_charge(
-                idempotency_key, self.config.request_maximum_usd
-            )
+            self.ledger.reserve_unknown_charge(idempotency_key, self.config.request_maximum_usd)
             self.ledger.block()
             self.records.append(
                 {
@@ -1234,15 +1207,11 @@ class OpenRouterPanelTransport:
                     started=started,
                     cooldown_wait=cooldown_wait,
                 )
-            self.ledger.reserve_unknown_charge(
-                idempotency_key, self.config.request_maximum_usd
-            )
+            self.ledger.reserve_unknown_charge(idempotency_key, self.config.request_maximum_usd)
         if cost is not None:
             usage["price_guard"] = (
                 "ok"
-                if self.ledger.record_cost(
-                    idempotency_key, cost, self.config.request_maximum_usd
-                )
+                if self.ledger.record_cost(idempotency_key, cost, self.config.request_maximum_usd)
                 else "exceeded"
             )
         canonical = {
@@ -1485,7 +1454,10 @@ def build_panel_policy_manifest(
         inference_parameters.append(("reasoning_effort", config.reasoning_effort))
     if config.enforce_provider_price_cap:
         inference_parameters.append(
-            ("provider_max_price", json.dumps(config.provider_parameters()["max_price"], sort_keys=True))
+            (
+                "provider_max_price",
+                json.dumps(config.provider_parameters()["max_price"], sort_keys=True),
+            )
         )
     return PolicyManifest.build(
         provider=f"openrouter/{config.provider_route}",

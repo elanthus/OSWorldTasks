@@ -121,9 +121,7 @@ def render_error_review_images(
     records = {(row["example_id"], row["condition"]): row for row in predictions}
     for review in error_reviews:
         example_id = review["example_id"]
-        output_path = resolve_repository_output(
-            repository_root, review["review_image_path"]
-        )
+        output_path = resolve_repository_output(repository_root, review["review_image_path"])
         render_pair_image(
             repository_root=repository_root,
             example=example_by_id[example_id],
@@ -212,7 +210,9 @@ def write_control_type_figure(results: dict[str, Any], output_path: Path) -> Non
     height = 150 + row_height * len(labels)
     image = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(image)
-    draw.text((42, 24), "Descriptive accuracy by control type", font=_font(28, bold=True), fill=_INK)
+    draw.text(
+        (42, 24), "Descriptive accuracy by control type", font=_font(28, bold=True), fill=_INK
+    )
     draw.text(
         (42, 67),
         "Target identity is aliased with screen state; these are not independent effects.",

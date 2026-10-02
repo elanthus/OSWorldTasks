@@ -78,7 +78,7 @@ _OPENROUTER_CONFIGS = {
         LLAMA_STATEFUL_VERTEX_DIAGNOSTIC,
         LLAMA_STATEFUL_VERTEX_SMOKE,
         MISTRAL_STATEFUL_CALIBRATION,
-    MISTRAL_STATEFUL_CALIBRATION_CONTINUE,
+        MISTRAL_STATEFUL_CALIBRATION_CONTINUE,
         MISTRAL_STATEFUL_CALIBRATION_RETRY,
         MISTRAL_STATEFUL_SMOKE,
         GLM_STATEFUL_CANDIDATE,
@@ -105,7 +105,7 @@ class CliAdapterSettings:
         allowed = {
             "invocation_journal",
             "prior_budget_accounted_spend_usd",
-            *(('expected_resolved_model',) if claude else ()),
+            *(("expected_resolved_model",) if claude else ()),
         }
         unexpected = set(value) - allowed
         if unexpected:
@@ -229,9 +229,7 @@ class OpenRouterHttpAdapter(_BaseAdapter):
                 "runner plan per-request theoretical maximum differs from provider transport"
             )
         if plan.budgets.unknown_reservation_rule != _OPENROUTER_UNKNOWN_RESERVATION_RULE:
-            raise ValueError(
-                "runner plan unknown reservation rule differs from provider transport"
-            )
+            raise ValueError("runner plan unknown reservation rule differs from provider transport")
         self.ledger = SpendLedger(plan.budgets.maximum_spend_usd, Decimal(0))
         self._transports: dict[str, OpenRouterPanelTransport] = {}
 
@@ -263,8 +261,7 @@ class OpenRouterHttpAdapter(_BaseAdapter):
         return SpendSnapshot(
             known_spend_usd=self.ledger.spent_usd,
             unknown_reservation_usd=(
-                self.ledger.unknown_reservation_usd
-                + self.ledger.in_flight_reservation_usd
+                self.ledger.unknown_reservation_usd + self.ledger.in_flight_reservation_usd
             ),
             budget_accounted_spend_usd=self.ledger.budget_accounted_spend_usd,
             blocked=self.ledger.blocked,
@@ -272,9 +269,7 @@ class OpenRouterHttpAdapter(_BaseAdapter):
 
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
         provider = [
-            record
-            for transport in self._transports.values()
-            for record in transport.records
+            record for transport in self._transports.values() for record in transport.records
         ]
         return (*provider, *super().transport_records())
 
@@ -362,24 +357,18 @@ class CodexCliAdapter(_BaseAdapter):
         )
         return {
             "provider_calls_made": self.ledger.processes_started,
-            "incremental_experiment_charge_usd": str(
-                self.ledger.incremental_experiment_charge_usd
-            ),
+            "incremental_experiment_charge_usd": str(self.ledger.incremental_experiment_charge_usd),
             "informational_list_price_equivalent_usd": str(
                 self.ledger.incremental_informational_list_price_equivalent_usd
             ),
             "unresolved_invocation_count": len(self.ledger.unresolved),
-            "usage_telemetry_unavailable_count": len(
-                self.ledger.usage_telemetry_unavailable
-            ),
+            "usage_telemetry_unavailable_count": len(self.ledger.usage_telemetry_unavailable),
             "invocation_journal_integrity": invocation_integrity,
         }
 
     def transport_records(self) -> Sequence[Mapping[str, Any]]:
         provider = [
-            record
-            for transport in self._transports.values()
-            for record in transport.records
+            record for transport in self._transports.values() for record in transport.records
         ]
         return (*provider, *super().transport_records())
 
@@ -463,16 +452,12 @@ class ClaudeCliAdapter(_BaseAdapter):
         )
         return {
             "provider_calls_made": self.ledger.processes_started,
-            "incremental_experiment_charge_usd": str(
-                self.ledger.incremental_experiment_charge_usd
-            ),
+            "incremental_experiment_charge_usd": str(self.ledger.incremental_experiment_charge_usd),
             "informational_cost_telemetry_usd": str(
                 self.ledger.incremental_informational_list_price_equivalent_usd
             ),
             "unresolved_invocation_count": len(self.ledger.unresolved),
-            "usage_telemetry_unavailable_count": len(
-                self.ledger.usage_telemetry_unavailable
-            ),
+            "usage_telemetry_unavailable_count": len(self.ledger.usage_telemetry_unavailable),
             "invocation_journal_integrity": invocation_integrity,
         }
 
@@ -491,8 +476,7 @@ class ClaudeCliAdapter(_BaseAdapter):
         return {
             **super().cleanup_evidence(),
             "subprocesses_closed": (
-                self._transport_value is None
-                or self._transport_value.subprocesses_closed
+                self._transport_value is None or self._transport_value.subprocesses_closed
             ),
         }
 

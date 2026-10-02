@@ -199,9 +199,7 @@ def validate_example(example: dict[str, Any]) -> None:
 def target_area_ratio(example: dict[str, Any]) -> float:
     """Return the target box area as a fraction of the full screenshot area."""
     x0, y0, x1, y1 = example["bbox"]
-    return float((x1 - x0) * (y1 - y0)) / float(
-        example["screen_width"] * example["screen_height"]
-    )
+    return float((x1 - x0) * (y1 - y0)) / float(example["screen_width"] * example["screen_height"])
 
 
 def target_area_slice(example: dict[str, Any]) -> str:

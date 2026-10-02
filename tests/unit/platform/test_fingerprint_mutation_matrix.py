@@ -150,8 +150,8 @@ def _mutate_marked_image(snapshot: _Snapshot, manifest: Manifest) -> Manifest:
     del manifest
     _mutate_png(snapshot.marked_image_path)
     overlays = _read_jsonl(snapshot.overlays_path)
-    _find_by_example_id(overlays, snapshot.primary_example_id)["marked_image_sha256"] = (
-        sha256_file(snapshot.marked_image_path)
+    _find_by_example_id(overlays, snapshot.primary_example_id)["marked_image_sha256"] = sha256_file(
+        snapshot.marked_image_path
     )
     _write_jsonl(snapshot.overlays_path, overlays)
     return snapshot.build()[0]

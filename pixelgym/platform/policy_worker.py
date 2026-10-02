@@ -174,17 +174,13 @@ def _invoke(policy: Any, method: str, payload: object) -> tuple[Any, bool]:
             raise TypeError("failure code must be text")
         return (
             _encode_bytes(
-                policy.failure_state(
-                    _decode_bytes(values["state"]), values["failure_code"]
-                )
+                policy.failure_state(_decode_bytes(values["state"]), values["failure_code"])
             ),
             False,
         )
     if method == "retryable_response_code":
         values = _payload(payload, {"canonical_response"})
-        result = policy.retryable_response_code(
-            _decode_bytes(values["canonical_response"])
-        )
+        result = policy.retryable_response_code(_decode_bytes(values["canonical_response"]))
         if result is not None and not isinstance(result, str):
             raise TypeError("retry code must be text or null")
         return result, False
@@ -203,17 +199,13 @@ def _invoke(policy: Any, method: str, payload: object) -> tuple[Any, bool]:
             raise TypeError("action candidate must be an object")
         return (
             _encode_bytes(
-                policy.post_parse_state(
-                    _decode_bytes(values["state"]), values["candidate"]
-                )
+                policy.post_parse_state(_decode_bytes(values["state"]), values["candidate"])
             ),
             False,
         )
     if method == "post_dispatch_state":
         values = _payload(payload, {"state", "action", "result"})
-        if not isinstance(values["action"], dict) or not isinstance(
-            values["result"], dict
-        ):
+        if not isinstance(values["action"], dict) or not isinstance(values["result"], dict):
             raise TypeError("post-dispatch values must be objects")
         return (
             _encode_bytes(
@@ -291,9 +283,7 @@ def main() -> int:
                 kwargs = values["factory_kwargs"]
                 if not isinstance(kwargs, dict):
                     raise TypeError("policy factory kwargs must be an object")
-                policy = _factory(values["factory_module"], values["factory_name"])(
-                    **kwargs
-                )
+                policy = _factory(values["factory_module"], values["factory_name"])(**kwargs)
                 result, should_close = {"ready": True}, False
             else:
                 if policy is None:

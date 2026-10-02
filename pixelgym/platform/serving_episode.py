@@ -110,9 +110,7 @@ class ServingActResult:
             "step_index": self.step_index,
             "intent_id": self.intent_id,
             "action": None if self.action is None else self.action.to_dict(),
-            "sealed_failure": (
-                None if self.sealed_failure is None else self.sealed_failure.value
-            ),
+            "sealed_failure": (None if self.sealed_failure is None else self.sealed_failure.value),
             "attempt_count": self.attempt_count,
             "identity": self.identity.to_dict(),
         }
@@ -132,14 +130,10 @@ def _decode_step_record(value: Mapping[str, Any]) -> EpisodeStepRecord:
     fields.pop("record_kind", None)
     fields["identity"] = ServingIdentity(**fields["identity"])
     fields["previous_result"] = (
-        None
-        if fields["previous_result"] is None
-        else ReportedResult(**fields["previous_result"])
+        None if fields["previous_result"] is None else ReportedResult(**fields["previous_result"])
     )
     fields["checkpoints"] = StepCheckpoints(**fields["checkpoints"])
-    fields["action"] = (
-        None if fields["action"] is None else ServedAction(**fields["action"])
-    )
+    fields["action"] = None if fields["action"] is None else ServedAction(**fields["action"])
     for name in ("attempt_ids", "canonical_response_sha256s", "provider_request_ids"):
         fields[name] = tuple(fields[name])
     return EpisodeStepRecord(**fields)
@@ -151,21 +145,14 @@ def _decode_closed_record(value: Mapping[str, Any]) -> EpisodeClosedRecord:
     fields.pop("record_kind", None)
     fields["identity"] = ServingIdentity(**fields["identity"])
     fields["final_result"] = (
-        None
-        if fields["final_result"] is None
-        else ReportedResult(**fields["final_result"])
+        None if fields["final_result"] is None else ReportedResult(**fields["final_result"])
     )
     return EpisodeClosedRecord(**fields)
 
 
-def _is_post_dispatch_completion(
-    existing_payload: bytes, updated: EpisodeStepRecord
-) -> bool:
+def _is_post_dispatch_completion(existing_payload: bytes, updated: EpisodeStepRecord) -> bool:
     existing = _decode_step_record(json.loads(existing_payload))
-    if (
-        existing.checkpoints.post_dispatch is not None
-        or updated.checkpoints.post_dispatch is None
-    ):
+    if existing.checkpoints.post_dispatch is not None or updated.checkpoints.post_dispatch is None:
         return False
     completed = replace(
         existing,
@@ -250,11 +237,7 @@ class SQLiteServingSessionStore:
         if state.revision != expected_revision + 1:
             raise ValueError("a session save must advance the revision exactly once")
         encoded = canonical_json_bytes(state.to_dict())
-        record_bytes = (
-            None
-            if step_record is None
-            else canonical_json_bytes(step_record.to_dict())
-        )
+        record_bytes = None if step_record is None else canonical_json_bytes(step_record.to_dict())
         with self._lock:
             self._connection.execute("BEGIN IMMEDIATE")
             try:
@@ -339,9 +322,7 @@ class _ServingDispatch:
         candidate_digest: str,
         post_parse_state: bytes,
     ) -> dict[str, Any]:
-        action_digest = runner.journal.put_object(
-            "sealed_action", canonical_json_bytes(action)
-        )
+        action_digest = runner.journal.put_object("sealed_action", canonical_json_bytes(action))
         intent_material = {
             "episode_id": trial_id,
             "step_index": step_index,
@@ -480,9 +461,7 @@ class ServingEpisodeHost:
         self.interrupt_after = interrupt_after
         self.deadline_executor = deadline_executor
         self.clock = clock or (lambda: datetime.now(UTC))
-        self.episode_id_factory = episode_id_factory or (
-            lambda: "ep-" + uuid.uuid4().hex
-        )
+        self.episode_id_factory = episode_id_factory or (lambda: "ep-" + uuid.uuid4().hex)
         self._active_state: EpisodeSessionState | None = None
         control_per_attempt = (
             self.manifest.max_cancellation_requests_per_attempt
@@ -495,9 +474,13 @@ class ServingEpisodeHost:
             provider_wire_request_cap=deployment_attempt_cap * (1 + control_per_attempt),
         )
 
-    def create_episode(self, *, task_instruction: str, client_episode_ref: str) -> EpisodeSessionState:
-        if not isinstance(task_instruction, str) or not task_instruction or (
-            len(task_instruction) > MAX_TASK_INSTRUCTION_CHARS
+    def create_episode(
+        self, *, task_instruction: str, client_episode_ref: str
+    ) -> EpisodeSessionState:
+        if (
+            not isinstance(task_instruction, str)
+            or not task_instruction
+            or (len(task_instruction) > MAX_TASK_INSTRUCTION_CHARS)
         ):
             raise ValueError("task_instruction is empty or exceeds the frozen limit")
         if not isinstance(client_episode_ref, str) or not client_episode_ref:
@@ -640,14 +623,10 @@ class ServingEpisodeHost:
         elif state.resume_phase is SessionResumePhase.INTENT_ISSUED:
             self._validate_outstanding_intent(state, final_intent_id, final_result)
             state = self._report_result(state, cast(ReportedResult, final_result))
-            classification = self._classification_for_close(
-                cast(ReportedResult, final_result)
-            )
+            classification = self._classification_for_close(cast(ReportedResult, final_result))
         elif state.resume_phase is SessionResumePhase.POST_DISPATCH:
             self._validate_report_replay(state, final_intent_id, final_result)
-            classification = self._classification_for_close(
-                cast(ReportedResult, final_result)
-            )
+            classification = self._classification_for_close(cast(ReportedResult, final_result))
         else:
             if final_intent_id is not None:
                 raise IntentReferenceError("the episode has no outstanding intent")
@@ -726,9 +705,7 @@ class ServingEpisodeHost:
         if state.resume_phase in {SessionResumePhase.SEALED, SessionResumePhase.CLOSED}:
             raise EpisodeEndedError("the episode is already over")
         screenshot_digest = "sha256:" + sha256_bytes(screenshot)
-        if previous_result is not None and (
-            previous_result.screenshot_sha256 != screenshot_digest
-        ):
+        if previous_result is not None and (previous_result.screenshot_sha256 != screenshot_digest):
             raise IntentReferenceError(
                 "previous_result screenshot digest must match the current screenshot"
             )
@@ -779,9 +756,7 @@ class ServingEpisodeHost:
 
         self._active_state = state
         try:
-            self._record_act_context(
-                state, screenshot_digest, previous_intent_id, previous_result
-            )
+            self._record_act_context(state, screenshot_digest, previous_intent_id, previous_result)
             if state.step_index >= state.max_steps:
                 return self._seal(
                     state,
@@ -793,8 +768,7 @@ class ServingEpisodeHost:
 
             step_events = self._step_events(state.episode_id, state.step_index)
             has_transaction = any(
-                event.kind
-                not in {"episode_initialized", "act_received", "result_reported"}
+                event.kind not in {"episode_initialized", "act_received", "result_reported"}
                 for event in step_events
             )
             if not has_transaction:
@@ -813,9 +787,7 @@ class ServingEpisodeHost:
                 approved_caps=self._caps,
                 interrupt_after=self.interrupt_after,
                 deadline_executor=self.deadline_executor,
-                external_dispatch=_ServingDispatch(
-                    boundary_callback=self._transaction_boundary
-                ),
+                external_dispatch=_ServingDispatch(boundary_callback=self._transaction_boundary),
             )
             if has_transaction:
                 outcome = transaction.recover_step(
@@ -828,9 +800,7 @@ class ServingEpisodeHost:
                 checkpoint = self.journal.get_object(
                     state.policy_checkpoint_sha256, expected_kind="policy_checkpoint"
                 )
-                env = SimpleNamespace(
-                    action_space=build_action_space(SCREEN_WIDTH, SCREEN_HEIGHT)
-                )
+                env = SimpleNamespace(action_space=build_action_space(SCREEN_WIDTH, SCREEN_HEIGHT))
                 outcome = transaction._act(  # shared v5 transaction; no environment dispatch
                     trial_id=state.episode_id,
                     step_index=state.step_index,
@@ -872,17 +842,13 @@ class ServingEpisodeHost:
         if outcome["classification"] == "intent_issued":
             action = self._served_action(outcome["action"])
             if latest.resume_phase is not SessionResumePhase.INTENT_ISSUED:
-                intent_event = self._event(
-                    latest.episode_id, latest.step_index, "intent_issued"
-                )
+                intent_event = self._event(latest.episode_id, latest.step_index, "intent_issued")
                 if intent_event is None:
                     raise ServingEpisodeError("recovered intent evidence is missing")
                 latest = self._save_phase(
                     latest,
                     SessionResumePhase.INTENT_ISSUED,
-                    checkpoint_digest=intent_event.payload[
-                        "post_parse_checkpoint_digest"
-                    ],
+                    checkpoint_digest=intent_event.payload["post_parse_checkpoint_digest"],
                     last_intent_id=outcome["intent_id"],
                     last_action=action,
                     last_intent_status=IntentStatus.ISSUED,
@@ -908,9 +874,7 @@ class ServingEpisodeHost:
             )
         return self._seal(
             latest,
-            self._failure_for_outcome(
-                outcome, episode_id=episode_id, step_index=latest.step_index
-            ),
+            self._failure_for_outcome(outcome, episode_id=episode_id, step_index=latest.step_index),
             screenshot_digest=screenshot_digest,
             previous_intent_id=previous_intent_id,
             previous_result=previous_result,
@@ -1094,9 +1058,7 @@ class ServingEpisodeHost:
                 provider_control_requests=self._episode_counts(current.episode_id)[1],
                 usage=self._episode_usage(current.episode_id),
             )
-            self.session_store.save(
-                sealed, expected_revision=current.revision, step_record=record
-            )
+            self.session_store.save(sealed, expected_revision=current.revision, step_record=record)
             current = sealed
         self._interrupt("sealed")
         return ServingActResult(
@@ -1121,9 +1083,7 @@ class ServingEpisodeHost:
             provider_control_requests=controls,
             usage=self._episode_usage(state.episode_id),
         )
-        self.session_store.save(
-            updated, expected_revision=state.revision, step_record=record
-        )
+        self.session_store.save(updated, expected_revision=state.revision, step_record=record)
         self._interrupt("step_recorded")
         return updated
 
@@ -1140,9 +1100,7 @@ class ServingEpisodeHost:
     ) -> EpisodeStepRecord:
         events = self._step_events(state.episode_id, state.step_index)
         starts = [event for event in events if event.kind == "attempt_started"]
-        responses = [
-            event for event in events if event.kind == "canonical_response_persisted"
-        ]
+        responses = [event for event in events if event.kind == "canonical_response_persisted"]
         terminal = self._latest_terminal_attempt(state.episode_id, state.step_index)
         candidate = next(
             (event for event in events if event.kind == "parsed_action_candidate"), None
@@ -1176,14 +1134,10 @@ class ServingEpisodeHost:
             checkpoints=StepCheckpoints(
                 pre_call=pre_call,
                 post_attempt=(
-                    None
-                    if terminal is None
-                    else terminal.payload["post_attempt_checkpoint_digest"]
+                    None if terminal is None else terminal.payload["post_attempt_checkpoint_digest"]
                 ),
                 post_parse=(
-                    None
-                    if candidate is None
-                    else candidate.payload["post_parse_checkpoint_digest"]
+                    None if candidate is None else candidate.payload["post_parse_checkpoint_digest"]
                 ),
                 post_dispatch=None,
             ),
@@ -1212,9 +1166,7 @@ class ServingEpisodeHost:
                 "screenshot_digest": screenshot_digest,
                 "previous_intent_id": previous_intent_id,
                 "previous_result_digest": (
-                    None
-                    if previous_result is None
-                    else content_digest(previous_result.to_dict())
+                    None if previous_result is None else content_digest(previous_result.to_dict())
                 ),
             },
         )
@@ -1379,9 +1331,7 @@ class ServingEpisodeHost:
                     totals[str(key)] = totals.get(str(key), 0.0) + float(value)
         return totals or None
 
-    def _latest_terminal_attempt(
-        self, episode_id: str, step_index: int
-    ) -> JournalEvent | None:
+    def _latest_terminal_attempt(self, episode_id: str, step_index: int) -> JournalEvent | None:
         terminal_kinds = {
             "attempt_completed",
             "confirmed_cancellation",
@@ -1397,23 +1347,15 @@ class ServingEpisodeHost:
             None,
         )
 
-    def _event(
-        self, episode_id: str, step_index: int, kind: str
-    ) -> JournalEvent | None:
+    def _event(self, episode_id: str, step_index: int, kind: str) -> JournalEvent | None:
         return next(
-            (
-                event
-                for event in self._step_events(episode_id, step_index)
-                if event.kind == kind
-            ),
+            (event for event in self._step_events(episode_id, step_index) if event.kind == kind),
             None,
         )
 
     def _step_events(self, episode_id: str, step_index: int) -> tuple[JournalEvent, ...]:
         return tuple(
-            event
-            for event in self.journal.events(episode_id)
-            if event.step_index == step_index
+            event for event in self.journal.events(episode_id) if event.step_index == step_index
         )
 
     @staticmethod

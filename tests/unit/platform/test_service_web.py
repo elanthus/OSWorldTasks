@@ -860,9 +860,7 @@ def test_invalid_requests_fail_before_provider(policy_factory, payload: dict) ->
     assert provider.calls == 0
 
 
-def test_encoded_image_limit_rejects_before_base64_decode(
-    policy_factory, monkeypatch
-) -> None:
+def test_encoded_image_limit_rejects_before_base64_decode(policy_factory, monkeypatch) -> None:
     from pixelgym.platform import service as service_module
 
     provider = ServingFake()
@@ -1192,9 +1190,7 @@ def test_oversized_provider_output_is_recorded_and_never_parsed(
         raise AssertionError("oversized provider output must not be parsed")
 
     monkeypatch.setattr(service_module, "parse_prediction", unexpected_parse)
-    response = TestClient(
-        create_serving_app(PolicyRuntime(loaded), operational_log=log)
-    ).post(
+    response = TestClient(create_serving_app(PolicyRuntime(loaded), operational_log=log)).post(
         "/api/v1/ground",
         json={
             "image_base64": base64.b64encode(_image()).decode(),
@@ -1625,9 +1621,7 @@ def _assembled_platform_app(
     bind_address: str = "127.0.0.1",
     session_cookie_secure: bool | None = None,
 ):
-    bootstrap, control = _configure_bootstrap_environment(
-        tmp_path, repository_root, monkeypatch
-    )
+    bootstrap, control = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
     if not bootstrap.resolve_deployment_exposure(bind_address).treated_as_loopback:
         monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "127.0.0.1")
     return (
@@ -1646,9 +1640,7 @@ def _assembled_platform_app(
         pytest.param("127.42.0.9", None, False, id="ipv4-loopback-range-default"),
         pytest.param("::1", None, False, id="ipv6-loopback-default"),
         pytest.param("[::1]", None, False, id="bracketed-ipv6-loopback-default"),
-        pytest.param(
-            "::ffff:127.0.0.1", None, False, id="ipv4-mapped-ipv6-loopback-default"
-        ),
+        pytest.param("::ffff:127.0.0.1", None, False, id="ipv4-mapped-ipv6-loopback-default"),
         pytest.param("localhost", None, False, id="localhost-default"),
         pytest.param("0.0.0.0", None, True, id="non-loopback-default"),
         pytest.param("127.0.0.1", True, True, id="explicit-secure-override"),
@@ -2028,11 +2020,14 @@ def test_untrusted_session_cookie_is_replaced_and_new_csrf_token_validates(
 
     assert issued_session != untrusted_cookie
     assert re.fullmatch(r"[A-Za-z0-9_-]{32}\.[0-9a-f]{64}", issued_session)
-    assert client.post(
-        "/api/candidates/missing/approve",
-        json={"reason": "exercise CSRF validation"},
-        headers={"X-CSRF-Token": token},
-    ).status_code == 404
+    assert (
+        client.post(
+            "/api/candidates/missing/approve",
+            json={"reason": "exercise CSRF validation"},
+            headers={"X-CSRF-Token": token},
+        ).status_code
+        == 404
+    )
 
 
 def test_server_issued_session_cookie_is_retained_and_csrf_token_validates(tmp_path: Path) -> None:
@@ -2045,11 +2040,14 @@ def test_server_issued_session_cookie_is_retained_and_csrf_token_validates(tmp_p
 
     assert "set-cookie" in first_page.headers
     assert "set-cookie" not in second_page.headers
-    assert client.post(
-        "/api/candidates/missing/approve",
-        json={"reason": "exercise CSRF validation"},
-        headers={"X-CSRF-Token": _csrf(second_page.text)},
-    ).status_code == 404
+    assert (
+        client.post(
+            "/api/candidates/missing/approve",
+            json={"reason": "exercise CSRF validation"},
+            headers={"X-CSRF-Token": _csrf(second_page.text)},
+        ).status_code
+        == 404
+    )
 
 
 MUTATING_ROUTES = (
@@ -2071,9 +2069,7 @@ def test_csrf_matrix_covers_every_mutating_route(tmp_path: Path) -> None:
     mutating_endpoints = {
         route.endpoint.__name__
         for route in app.routes
-        if {"POST", "PUT", "PATCH", "DELETE"}.intersection(
-            getattr(route, "methods", ()) or ()
-        )
+        if {"POST", "PUT", "PATCH", "DELETE"}.intersection(getattr(route, "methods", ()) or ())
     }
 
     assert mutating_endpoints == set(MUTATING_ROUTES)
@@ -2196,15 +2192,15 @@ def _mutating_route_context(
         }
 
     app = create_control_app(
-            control,
-            coordinator=probe,
-            csrf_secret=secrets.token_urlsafe(32),
-            loopback_deployment=not verified_proxy,
-            trusted_proxy_addresses=("10.10.0.0/24",) if verified_proxy else (),
-            submit_callback=probe.submit,
-            cancel_callback=probe.cancel,
-            tracking=probe,
-        )
+        control,
+        coordinator=probe,
+        csrf_secret=secrets.token_urlsafe(32),
+        loopback_deployment=not verified_proxy,
+        trusted_proxy_addresses=("10.10.0.0/24",) if verified_proxy else (),
+        submit_callback=probe.submit,
+        cancel_callback=probe.cancel,
+        tracking=probe,
+    )
     client = TestClient(
         app,
         client=("10.10.0.5", 50000) if verified_proxy else ("127.0.0.1", 50000),
@@ -2276,7 +2272,9 @@ def test_allowlisted_proxy_header_attributes_submission_to_verified_principal(
     )
 
     assert response.status_code == 303
-    created = [event for event in control.audit_events() if event["event_type"] == "submission.created"]
+    created = [
+        event for event in control.audit_events() if event["event_type"] == "submission.created"
+    ]
     assert len(created) == 1
     assert created[0]["actor"] == "reviewer.alice"
     assert created[0]["details"][ACTOR_VERIFICATION_SOURCE_KEY] == "proxy_header"
@@ -2285,9 +2283,7 @@ def test_allowlisted_proxy_header_attributes_submission_to_verified_principal(
 def test_attested_loopback_deployment_attributes_bridge_peer_to_synthetic_demo(
     tmp_path: Path, repository_root: Path, monkeypatch
 ) -> None:
-    bootstrap, control = _configure_bootstrap_environment(
-        tmp_path, repository_root, monkeypatch
-    )
+    bootstrap, control = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
     monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
     monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
     monkeypatch.setattr(bootstrap, "_run_flow", lambda *_args, **_kwargs: None)
@@ -2310,9 +2306,7 @@ def test_attested_loopback_deployment_attributes_bridge_peer_to_synthetic_demo(
 def test_attested_loopback_deployment_prefers_trusted_proxy_principal(
     tmp_path: Path, repository_root: Path, monkeypatch
 ) -> None:
-    bootstrap, control = _configure_bootstrap_environment(
-        tmp_path, repository_root, monkeypatch
-    )
+    bootstrap, control = _configure_bootstrap_environment(tmp_path, repository_root, monkeypatch)
     monkeypatch.setenv("PIXELGYM_BIND_ADDRESS", "0.0.0.0")
     monkeypatch.setenv("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT", "true")
     monkeypatch.setenv("PIXELGYM_TRUSTED_PROXY_ADDRESSES", "172.18.0.0/16")
@@ -2663,9 +2657,7 @@ def test_two_principals_are_distinctly_attributed_across_approve_and_deploy(
         client=("10.10.0.5", 50000),
     )
     alice_headers = {"X-Forwarded-User": "reviewer.alice"}
-    approval_page = client.get(
-        f"/candidates/{candidate.candidate_id}", headers=alice_headers
-    )
+    approval_page = client.get(f"/candidates/{candidate.candidate_id}", headers=alice_headers)
     approved = client.post(
         f"/candidates/{candidate.candidate_id}/approve",
         data={"csrf_token": _csrf(approval_page.text), "reason": "alice reviewed evidence"},
@@ -2673,9 +2665,7 @@ def test_two_principals_are_distinctly_attributed_across_approve_and_deploy(
         follow_redirects=False,
     )
     bob_headers = {"X-Forwarded-User": "reviewer.bob"}
-    deployment_page = client.get(
-        f"/candidates/{candidate.candidate_id}", headers=bob_headers
-    )
+    deployment_page = client.get(f"/candidates/{candidate.candidate_id}", headers=bob_headers)
     deployed = client.post(
         f"/candidates/{candidate.candidate_id}/deploy",
         data={
@@ -2700,9 +2690,9 @@ def test_two_principals_are_distinctly_attributed_across_approve_and_deploy(
         ("candidate.approved", "reviewer.alice"),
         ("deployment.deploy", "reviewer.bob"),
     ]
-    assert {
-        event["details"][ACTOR_VERIFICATION_SOURCE_KEY] for event in privileged_events
-    } == {"proxy_header"}
+    assert {event["details"][ACTOR_VERIFICATION_SOURCE_KEY] for event in privileged_events} == {
+        "proxy_header"
+    }
 
 
 def test_principal_middleware_does_not_log_or_audit_unrelated_header_values(
@@ -2791,9 +2781,7 @@ def test_csrf_validation_rejects_arbitrary_unicode_without_raising(
     )
     before = _control_state(control, probe)
 
-    response = _post_mutating_route(
-        client, path, fields, is_api=is_api, token=unicode_token
-    )
+    response = _post_mutating_route(client, path, fields, is_api=is_api, token=unicode_token)
 
     assert response.status_code == 403
     assert response.json() == {"detail": "CSRF validation failed"}
@@ -2825,9 +2813,7 @@ def test_every_mutating_route_returns_documented_csrf_rejection(
         client.cookies.clear()
         client.cookies.set("pixelgym_session", secrets.token_urlsafe(24))
 
-    response = _post_mutating_route(
-        client, path, fields, is_api=is_api, token=tokens[token_case]
-    )
+    response = _post_mutating_route(client, path, fields, is_api=is_api, token=tokens[token_case])
 
     assert response.status_code == 403
     assert response.json() == {"detail": "CSRF validation failed"}
@@ -2853,9 +2839,7 @@ def test_csrf_rejection_precedes_all_control_and_external_mutation(
         client.cookies.set("pixelgym_session", secrets.token_urlsafe(24))
     before = _control_state(control, probe)
 
-    response = _post_mutating_route(
-        client, path, fields, is_api=is_api, token=tokens[token_case]
-    )
+    response = _post_mutating_route(client, path, fields, is_api=is_api, token=tokens[token_case])
 
     assert response.status_code == 403
     assert _control_state(control, probe) == before
@@ -2916,9 +2900,7 @@ def test_mutating_form_routes_reject_duplicate_csrf_token_fields(
     assert _control_state(control, probe) == before
 
 
-def test_approve_api_rejects_duplicate_csrf_token_headers(
-    tmp_path: Path, passing_evidence
-) -> None:
+def test_approve_api_rejects_duplicate_csrf_token_headers(tmp_path: Path, passing_evidence) -> None:
     control, probe, client, path, fields, _is_api = _mutating_route_context(
         tmp_path, passing_evidence, "approve_api"
     )
@@ -3005,9 +2987,7 @@ def test_exhausted_control_lock_returns_redacted_service_response(tmp_path: Path
         busy_timeout_ms=50,
     )
     control.migrate()
-    client = TestClient(
-        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
-    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     page = client.get("/")
     locker = sqlite3.connect(database, isolation_level=None)
     locker.execute("BEGIN IMMEDIATE")
@@ -3510,8 +3490,7 @@ def _register_bulk_candidates(
         )
         candidate_policy = dataclasses.replace(
             unsigned,
-            policy_id="sha256:"
-            + sha256_bytes(canonical_json_bytes(unsigned.identity_dict())),
+            policy_id="sha256:" + sha256_bytes(canonical_json_bytes(unsigned.identity_dict())),
         )
         candidate_report = dataclasses.replace(
             report,
@@ -3562,9 +3541,7 @@ def test_runs_provider_options_include_providers_outside_first_page(
     ).get("/runs")
 
     assert response.status_code == 200
-    provider_select = re.search(
-        r'<select name="provider">(?P<options>.*?)</select>', response.text
-    )
+    provider_select = re.search(r'<select name="provider">(?P<options>.*?)</select>', response.text)
     assert provider_select is not None
     assert 'value="bulk-provider-x"' in provider_select.group("options")
     table_body = response.text.split("<tbody>", 1)[1].split("</tbody>", 1)[0]
@@ -3588,13 +3565,9 @@ def test_runs_query_count_and_rendered_candidates_stay_bounded_with_large_ledger
         control.connection.set_trace_callback(None)
 
     selects = [
-        statement
-        for statement in statements
-        if statement.lstrip().upper().startswith("SELECT")
+        statement for statement in statements if statement.lstrip().upper().startswith("SELECT")
     ]
-    candidate_selects = [
-        statement for statement in selects if "FROM candidates" in statement
-    ]
+    candidate_selects = [statement for statement in selects if "FROM candidates" in statement]
     assert response.status_code == 200
     assert len(selects) == 3
     assert len(candidate_selects) == 2
@@ -3618,9 +3591,7 @@ def test_deployment_window_links_to_history_and_export_retains_every_audit_event
                 {"index": index},
             )
 
-    client = TestClient(
-        create_control_app(control, csrf_secret="test-secret-at-least-sixteen")
-    )
+    client = TestClient(create_control_app(control, csrf_secret="test-secret-at-least-sixteen"))
     deployment = client.get("/deployment")
     history = client.get("/deployment/audit")
     export_path = tmp_path / "export"

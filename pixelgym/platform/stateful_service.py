@@ -226,9 +226,7 @@ class EpisodeOperationalLog(Protocol):
     ) -> StoredScreenshot: ...
 
 
-def _screenshot_reference(
-    *, episode_id: str, data: bytes, media_type: str
-) -> StoredScreenshot:
+def _screenshot_reference(*, episode_id: str, data: bytes, media_type: str) -> StoredScreenshot:
     digest = sha256_bytes(data)
     extension = "png" if media_type == "image/png" else "jpg"
     return StoredScreenshot(
@@ -272,9 +270,7 @@ class ImmutableEpisodeOperationalLog:
     def store_final_screenshot(
         self, *, episode_id: str, data: bytes, media_type: str
     ) -> StoredScreenshot:
-        stored = _screenshot_reference(
-            episode_id=episode_id, data=data, media_type=media_type
-        )
+        stored = _screenshot_reference(episode_id=episode_id, data=data, media_type=media_type)
         try:
             reference = self.store.put_once(stored.object_key, data, media_type=media_type)
             if self.store.get_verified(reference) != data:
@@ -309,9 +305,7 @@ class MemoryEpisodeOperationalLog:
     def store_final_screenshot(
         self, *, episode_id: str, data: bytes, media_type: str
     ) -> StoredScreenshot:
-        stored = _screenshot_reference(
-            episode_id=episode_id, data=data, media_type=media_type
-        )
+        stored = _screenshot_reference(episode_id=episode_id, data=data, media_type=media_type)
         with self._lock:
             existing = self.screenshots.get(stored.object_key)
             candidate = (data, media_type)

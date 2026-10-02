@@ -131,9 +131,7 @@ def test_openrouter_transport_injects_secret_only_at_wire_and_accounts_cost() ->
                 "provider": "Alibaba",
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
@@ -193,9 +191,7 @@ def test_openrouter_transport_preserves_but_blocks_anomalous_response_cost() -> 
                 "provider": "Alibaba",
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],

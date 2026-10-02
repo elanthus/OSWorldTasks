@@ -9,9 +9,7 @@ from pixelgym.evidence_redaction import indexed_path_replacements, redact_eviden
 from scripts.run_clean_install_check import REDACTION_LEGEND
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-LOCAL_PATH_PATTERN = re.compile(
-    r"/(?:Users|home|tmp)/|/private/(?:tmp|var)/|/var/(?:tmp|folders)/"
-)
+LOCAL_PATH_PATTERN = re.compile(r"/(?:Users|home|tmp)/|/private/(?:tmp|var)/|/var/(?:tmp|folders)/")
 
 
 def test_clean_install_redaction_uses_stable_path_placeholders(tmp_path: Path) -> None:
@@ -25,8 +23,7 @@ def test_clean_install_redaction_uses_stable_path_placeholders(tmp_path: Path) -
 
     replacements = indexed_path_replacements([repository, home, system_temporary])
     assert redact_evidence_text(value, replacements) == (
-        "repo=<path-0>; home=<path-1>/Library/Caches/pip; "
-        "venv=<path-2>/run/.venv"
+        "repo=<path-0>; home=<path-1>/Library/Caches/pip; venv=<path-2>/run/.venv"
     )
     assert redact_evidence_text(str(home / ".pyenv/shims/python3.12"), replacements) == (
         "<path-1>/.pyenv/shims/python3.12"
@@ -60,9 +57,5 @@ def test_day3_clean_install_evidence_explains_path_placeholders() -> None:
     assert expected_names <= {path.name for path in evidence_paths}
     for path in evidence_paths:
         assert json.loads(path.read_text())["redaction"] == REDACTION_LEGEND
-    release_observations = json.loads(
-        (release_directory / "release-observations.json").read_text()
-    )
-    assert release_observations["clean_install_command_evidence"]["redaction"] == (
-        REDACTION_LEGEND
-    )
+    release_observations = json.loads((release_directory / "release-observations.json").read_text())
+    assert release_observations["clean_install_command_evidence"]["redaction"] == (REDACTION_LEGEND)

@@ -81,12 +81,8 @@ def prepared_inputs() -> tuple[
 def prepare(output: Path) -> None:
     _plan, _approval, jobs, _identity, binding = prepared_inputs()
     output.mkdir(parents=True, exist_ok=False)
-    (output / "execution-plan.json").write_bytes(
-        (ROOT / EXECUTION_PLAN_PATH).read_bytes()
-    )
-    (output / "owner-approval.json").write_bytes(
-        (ROOT / OWNER_APPROVAL_PATH).read_bytes()
-    )
+    (output / "execution-plan.json").write_bytes((ROOT / EXECUTION_PLAN_PATH).read_bytes())
+    (output / "owner-approval.json").write_bytes((ROOT / OWNER_APPROVAL_PATH).read_bytes())
     write_object(output / "execution-binding.json", binding)
     print(
         json.dumps(
@@ -135,23 +131,17 @@ def execute(output: Path) -> None:
     error: dict[str, str] | None = None
 
     def attempted_assignments() -> int:
-        return sum(
-            event.kind == "d59_assignment_started" for event in journal.events()
-        )
+        return sum(event.kind == "d59_assignment_started" for event in journal.events())
 
     def phase_usage(phase: str) -> dict[str, int]:
         selected = [row for row in rows if row["phase"] == phase]
         return {
-            "environment_actions": sum(
-                int(row["environment_actions"]) for row in selected
-            ),
+            "environment_actions": sum(int(row["environment_actions"]) for row in selected),
             "model_attempts": sum(int(row["model_attempts"]) for row in selected),
             "provider_control_requests": sum(
                 int(row["provider_control_requests"]) for row in selected
             ),
-            "provider_wire_requests": sum(
-                int(row["provider_wire_requests"]) for row in selected
-            ),
+            "provider_wire_requests": sum(int(row["provider_wire_requests"]) for row in selected),
         }
 
     def summary() -> dict[str, Any]:
@@ -187,13 +177,9 @@ def execute(output: Path) -> None:
                 }
                 for phase in ("primary", "reliability")
             },
-            "phase_usage": {
-                phase: phase_usage(phase) for phase in ("primary", "reliability")
-            },
+            "phase_usage": {phase: phase_usage(phase) for phase in ("primary", "reliability")},
             "provider_processes_started": ledger.processes_started,
-            "incremental_experiment_charge_usd": str(
-                ledger.incremental_experiment_charge_usd
-            ),
+            "incremental_experiment_charge_usd": str(ledger.incremental_experiment_charge_usd),
             "informational_list_price_equivalent_usd": str(
                 ledger.incremental_informational_list_price_equivalent_usd
             ),
@@ -222,8 +208,7 @@ def execute(output: Path) -> None:
                 approved_caps=APPROVED_CAPS,
                 time_exhausted=lambda mode=mode: (
                     time.monotonic() - started
-                    >= maximum_elapsed_seconds
-                    - manifests[mode].request_deadline_seconds
+                    >= maximum_elapsed_seconds - manifests[mode].request_deadline_seconds
                 ),
             )
             journal.append_event(
@@ -244,9 +229,7 @@ def execute(output: Path) -> None:
             row = {
                 **job,
                 **result,
-                **episode_measurements(
-                    journal, str(job["trial_id"]), int(job["seed"])
-                ),
+                **episode_measurements(journal, str(job["trial_id"]), int(job["seed"])),
             }
             journal.append_event(
                 event_key=str(job["trial_id"]) + "/assignment_completed",
@@ -276,9 +259,7 @@ def execute(output: Path) -> None:
             )
             if row["classification"] not in TERMINAL_BENCHMARK_OUTCOMES or ledger.blocked:
                 stop_reason = (
-                    "invocation_ledger_blocked"
-                    if ledger.blocked
-                    else str(row["classification"])
+                    "invocation_ledger_blocked" if ledger.blocked else str(row["classification"])
                 )
                 break
         else:

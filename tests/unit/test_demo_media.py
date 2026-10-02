@@ -24,7 +24,7 @@ def _evidence(rewards: list[float]) -> dict:
                 "terminated": index == len(rewards),
             }
             for index, reward in enumerate(rewards, start=1)
-        ]
+        ],
     }
 
 

@@ -127,9 +127,7 @@ class CliSubprocessTransport[ParsedT]:
             )
         except (OSError, ValueError) as exc:
             return self._empty(
-                cli_pre_send_fault(
-                    "process_start_failure", kind=CliFaultKind.PROCESS_START
-                ),
+                cli_pre_send_fault("process_start_failure", kind=CliFaultKind.PROCESS_START),
                 error_type=type(exc).__name__,
             )
         with self._lock:
@@ -162,9 +160,7 @@ class CliSubprocessTransport[ParsedT]:
                     ),
                 ) from exc
             try:
-                raw_stdout, raw_stderr = process.communicate(
-                    input_text, timeout=timeout_seconds
-                )
+                raw_stdout, raw_stderr = process.communicate(input_text, timeout=timeout_seconds)
             except subprocess.TimeoutExpired:
                 raw_stdout, raw_stderr = self._terminate(process)
                 return self._result(
@@ -268,13 +264,9 @@ class CliSubprocessTransport[ParsedT]:
                 return "", ""
 
     @staticmethod
-    def _empty(
-        fault: CliFault, *, error_type: str | None = None
-    ) -> CliExecutionEnvelope[ParsedT]:
+    def _empty(fault: CliFault, *, error_type: str | None = None) -> CliExecutionEnvelope[ParsedT]:
         empty = redact_raw_stdio("")
-        return CliExecutionEnvelope(
-            None, None, empty, empty, None, fault, error_type, True
-        )
+        return CliExecutionEnvelope(None, None, empty, empty, None, fault, error_type, True)
 
     @staticmethod
     def _result(

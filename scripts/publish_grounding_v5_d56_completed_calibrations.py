@@ -24,13 +24,9 @@ AUDIT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-calibration-publication-audit-v1"
 REPORT_SCHEMA_VERSION = "pixelgym-agent-v5-d56-completed-calibrations-report-v1"
 
 ERRATA_PATH = Path("artifacts/grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json")
-DERIVATIVE_PATH = Path(
-    "artifacts/grounding-v5-d56-completed-calibrations-publishable.json"
-)
+DERIVATIVE_PATH = Path("artifacts/grounding-v5-d56-completed-calibrations-publishable.json")
 REPORT_PATH = Path("artifacts/grounding-v5-d56-completed-calibrations-report.md")
-RELATION_PATH = Path(
-    "artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json"
-)
+RELATION_PATH = Path("artifacts/grounding-v5-d56-completed-calibrations-publication-relation.json")
 AUDIT_PATH = Path("artifacts/grounding-v5-d56-completed-calibrations-integrity-audit.json")
 # Digest-only registry of development runs whose sealed originals stay local because their
 # digest-bound path fields record absolute operator paths. Optional: absent in isolated roots.
@@ -89,9 +85,7 @@ RUN_SPECS = (
         "qwen-v2",
         Path("artifacts/grounding-v5-d56-qwen-full-calibration-plan.json"),
         Path("artifacts/grounding-v5-d56-qwen-full-calibration-run/summary.json"),
-        Path(
-            "artifacts/grounding-v5-d56-qwen-full-calibration-publication-relation.json"
-        ),
+        Path("artifacts/grounding-v5-d56-qwen-full-calibration-publication-relation.json"),
         False,
     ),
     RunSpec(
@@ -239,7 +233,9 @@ def _load_retained(repository_root: Path) -> dict[str, Any] | None:
         "retained development runs registry contains an absolute operator path",
     )
     for run in retained.get("runs", []):
-        _require(set(run) >= _RETAINED_RUN_KEYS, f"retained run is missing keys: {run.get('run_id')}")
+        _require(
+            set(run) >= _RETAINED_RUN_KEYS, f"retained run is missing keys: {run.get('run_id')}"
+        )
         _require(
             set(run["classification_counts"]) == _COUNT_KEYS,
             f"retained run has unexpected classification keys: {run['run_id']}",
@@ -249,12 +245,19 @@ def _load_retained(repository_root: Path) -> dict[str, Any] | None:
             f"retained run must name at least one failed publication check: {run['run_id']}",
         )
         _require(
-            all(_DIGEST.match(str(value)) for value in run["authoritative_digests"].values() if isinstance(value, str)),
+            all(
+                _DIGEST.match(str(value))
+                for value in run["authoritative_digests"].values()
+                if isinstance(value, str)
+            ),
             f"retained run records a malformed digest: {run['run_id']}",
         )
         _require_exclusions(run["excluded_artifacts"], run["run_id"])
     for plan in retained.get("plans", []):
-        _require(set(plan) >= _RETAINED_PLAN_KEYS, f"retained plan is missing keys: {plan.get('plan_path')}")
+        _require(
+            set(plan) >= _RETAINED_PLAN_KEYS,
+            f"retained plan is missing keys: {plan.get('plan_path')}",
+        )
         _require_exclusions(plan["excluded_artifacts"], str(plan["plan_path"]))
     return retained
 
@@ -425,16 +428,12 @@ def _taxonomy_record(
         and provider_endpoint.startswith("https://openrouter.ai")
     )
     verified = (
-        http_openrouter_transport
-        and episode_cli_fault_rows == 0
-        and transport_cli_fault_rows == 0
+        http_openrouter_transport and episode_cli_fault_rows == 0 and transport_cli_fault_rows == 0
     )
     return (
         {
             "stored_taxonomy_preserved": True,
-            "legacy_cli_process_failures_recorded_as_invalid_output": (
-                0 if verified else None
-            ),
+            "legacy_cli_process_failures_recorded_as_invalid_output": (0 if verified else None),
             "bound": (
                 "zero invalid_output rows can be former-taxonomy CLI process failures"
                 if verified
@@ -467,8 +466,7 @@ def _redaction_is_safe(plan: dict[str, Any], summary: dict[str, Any]) -> bool:
         not _LOCAL_PATH.search(encoded)
         and not _CREDENTIAL_VALUE.search(encoded)
         and not any(
-            value.startswith(("/", "file:///"))
-            or re.match(r"^[A-Za-z]:[\\\\/]", value) is not None
+            value.startswith(("/", "file:///")) or re.match(r"^[A-Za-z]:[\\\\/]", value) is not None
             for value in strings
         )
         and not (_RAW_PAYLOAD_KEYS & _json_keys(plan))
@@ -595,16 +593,16 @@ def audit_run(
                     repository_root / path
                 )
         plan_record = errata_by_path.get(spec.plan_path.as_posix(), {})
-        source_binding = source_binding and plan_record.get("approved_plan_sha256") == content_digest(
-            plan
-        )
+        source_binding = source_binding and plan_record.get(
+            "approved_plan_sha256"
+        ) == content_digest(plan)
     elif spec.relation_path is not None:
         relation = _load_json(repository_root / spec.relation_path)
-        source_binding = (
-            relation["authoritative"]["approved_plan_content_sha256"] == content_digest(plan)
-            and relation["authoritative"]["run_summary_file_sha256"]
-            == _file_digest(summary_path)
-        )
+        source_binding = relation["authoritative"][
+            "approved_plan_content_sha256"
+        ] == content_digest(plan) and relation["authoritative"][
+            "run_summary_file_sha256"
+        ] == _file_digest(summary_path)
 
     spend, spend_ok = _spend_record(repository_root, spec, plan, summary, errata)
     taxonomy, taxonomy_ok = _taxonomy_record(plan, summary, counts)
@@ -619,11 +617,11 @@ def audit_run(
         for result, task in zip(results, task_order[:attempted], strict=True)
     )
     success_flags = all(
-        bool(row["success"]) == (row["classification"] == "success_termination")
-        for row in results
+        bool(row["success"]) == (row["classification"] == "success_termination") for row in results
     )
     checks = {
-        "present_in_main_inventory": spec.summary_path.as_posix() in inventory_main(repository_root),
+        "present_in_main_inventory": spec.summary_path.as_posix()
+        in inventory_main(repository_root),
         "plan_digest_matches_summary": content_digest(plan) == summary["approved_plan_sha256"],
         "source_file_hash_binding": source_binding,
         "assigned_denominator_matches": (
@@ -702,9 +700,7 @@ def audit_run(
         },
         "predecessor_disclosures": {
             "policy_predecessor": summary.get("predecessor_relation"),
-            "frozen_infrastructure_predecessor": summary.get(
-                "frozen_qwen_429_predecessor"
-            ),
+            "frozen_infrastructure_predecessor": summary.get("frozen_qwen_429_predecessor"),
         },
         "fault_taxonomy": taxonomy,
         "errata_corrections": [
@@ -739,13 +735,10 @@ def _validate_old_relation(repository_root: Path, spec: RunSpec) -> bool:
         target = repository_root / relation["publishable"][f"{artifact}_path"]
         if (
             not target.exists()
-            or _file_digest(target)
-            != relation["publishable"][f"{artifact}_file_sha256"]
+            or _file_digest(target) != relation["publishable"][f"{artifact}_file_sha256"]
         ):
             return False
-    derivative = _load_json(
-        repository_root / relation["publishable"]["derivative_path"]
-    )
+    derivative = _load_json(repository_root / relation["publishable"]["derivative_path"])
     if content_digest(derivative) != relation["publishable"]["derivative_content_sha256"]:
         return False
     audit_digest = relation["authoritative"]["integrity_audit_file_sha256"]
@@ -950,9 +943,7 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         spend = run["spend"]
         stop = run["stop_conditions"]
         temperature = (
-            "not recorded"
-            if versions["temperature"] is None
-            else str(versions["temperature"])
+            "not recorded" if versions["temperature"] is None else str(versions["temperature"])
         )
         response_validation = (
             "not recorded"
@@ -1072,9 +1063,7 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
                 f"- `{run['run_id']}` policy predecessor: distinct successor bound to frozen plan `{policy_predecessor['frozen_plan_sha256']}` and summary `{policy_predecessor['frozen_summary_sha256']}`; stored rule: {policy_predecessor['rule']}"
             )
         if frozen_predecessor is None:
-            lines.append(
-                f"- `{run['run_id']}` frozen infrastructure predecessor: none recorded"
-            )
+            lines.append(f"- `{run['run_id']}` frozen infrastructure predecessor: none recorded")
         else:
             terminal = frozen_predecessor["terminal"]
             lines.append(
@@ -1136,9 +1125,7 @@ def build_relation_sources(
                 "plan_path": row["plan_path"],
                 "plan_file_sha256": _file_digest(repository_root / Path(row["plan_path"])),
                 "summary_path": row["summary_path"],
-                "summary_file_sha256": _file_digest(
-                    repository_root / Path(row["summary_path"])
-                ),
+                "summary_file_sha256": _file_digest(repository_root / Path(row["summary_path"])),
                 "journal_event_chain_sha256": _load_json(
                     repository_root / Path(row["summary_path"])
                 )["journal_integrity"]["event_chain_digest"],
@@ -1221,10 +1208,8 @@ def validate_relation_sources(
         if (
             _file_digest(plan_path) != source["plan_file_sha256"]
             or _file_digest(summary_path) != source["summary_file_sha256"]
-            or content_digest(_load_json(plan_path))
-            != source["approved_plan_content_sha256"]
-            or summary["approved_plan_sha256"]
-            != source["approved_plan_content_sha256"]
+            or content_digest(_load_json(plan_path)) != source["approved_plan_content_sha256"]
+            or summary["approved_plan_sha256"] != source["approved_plan_content_sha256"]
             or summary["journal_integrity"]["event_chain_digest"]
             != source["journal_event_chain_sha256"]
         ):
@@ -1281,17 +1266,16 @@ def validate_relation(
         return False
     for key in ("derivative", "report"):
         path = Path(relation["publishable"][f"{key}_path"])
-        if _bytes_digest(_published_bytes(repository_root, path, in_memory)) != relation[
-            "publishable"
-        ][f"{key}_file_sha256"]:
+        if (
+            _bytes_digest(_published_bytes(repository_root, path, in_memory))
+            != relation["publishable"][f"{key}_file_sha256"]
+        ):
             return False
     derivative_path = Path(relation["publishable"]["derivative_path"])
     derivative = json.loads(
         _published_bytes(repository_root, derivative_path, in_memory).decode("utf-8")
     )
-    return content_digest(derivative) == relation["publishable"][
-        "derivative_content_sha256"
-    ]
+    return content_digest(derivative) == relation["publishable"]["derivative_content_sha256"]
 
 
 def _attach_relation_checks(
@@ -1303,16 +1287,12 @@ def _attach_relation_checks(
         if spec.relation_path is None:
             relation_ok = False
         elif spec.relation_path == RELATION_PATH:
-            relation_ok = validate_relation_sources(
-                repository_root, relation, spec=spec
-            )
+            relation_ok = validate_relation_sources(repository_root, relation, spec=spec)
         else:
             relation_ok = _validate_old_relation(repository_root, spec)
         row["checks"]["publication_relation_verified"] = relation_ok
         row["publication_relation"] = {
-            "path": (
-                None if spec.relation_path is None else spec.relation_path.as_posix()
-            ),
+            "path": (None if spec.relation_path is None else spec.relation_path.as_posix()),
             "verified": relation_ok,
         }
         row["source_checks_passed"] = all(row["checks"].values())
@@ -1326,7 +1306,9 @@ def build_audit(
     artifact_digests: dict[Path, str],
 ) -> dict[str, Any]:
     published = [row["run_id"] for row in run_audits if row["published"]]
-    _require(tuple(published) == EXPECTED_PUBLISHED_RUNS, "final publication checks changed run set")
+    _require(
+        tuple(published) == EXPECTED_PUBLISHED_RUNS, "final publication checks changed run set"
+    )
     checks_failed_for_published_runs = sum(
         not passed
         for row in run_audits
@@ -1404,13 +1386,9 @@ def _build_outputs(
         "completed publication relation did not validate in memory",
     )
     artifact_digests = {path: _bytes_digest(value) for path, value in publishable.items()}
-    audit = build_audit(
-        repository_root, run_audits, artifact_digests=artifact_digests
-    )
+    audit = build_audit(repository_root, run_audits, artifact_digests=artifact_digests)
     validate_credential_free(audit)
-    publishable[AUDIT_PATH] = (
-        json.dumps(audit, indent=2, sort_keys=True) + "\n"
-    ).encode()
+    publishable[AUDIT_PATH] = (json.dumps(audit, indent=2, sort_keys=True) + "\n").encode()
     return publishable, run_audits
 
 
@@ -1425,9 +1403,7 @@ def publish(repository_root: Path) -> dict[str, Any]:
     return {
         "provider_calls_made": _publication_provider_calls_made(),
         "published_run_ids": [row["run_id"] for row in run_audits if row["published"]],
-        "artifacts": {
-            relative.name: _bytes_digest(publishable[relative]) for relative in outputs
-        },
+        "artifacts": {relative.name: _bytes_digest(publishable[relative]) for relative in outputs},
     }
 
 
@@ -1437,9 +1413,7 @@ def verify(repository_root: Path) -> dict[str, Any]:
         for path in (DERIVATIVE_PATH, REPORT_PATH, RELATION_PATH, AUDIT_PATH)
     }
     retained_relation = json.loads(actual[RELATION_PATH])
-    expected, _ = _build_outputs(
-        repository_root, relation=retained_relation
-    )
+    expected, _ = _build_outputs(repository_root, relation=retained_relation)
     reproducibility = {path: actual[path] == expected[path] for path in actual}
     _require(all(reproducibility.values()), "published artifacts are not reproducible")
     expected_audit = json.loads(expected[AUDIT_PATH])
@@ -1464,16 +1438,10 @@ def verify(repository_root: Path) -> dict[str, Any]:
                 },
                 "dates": {
                     "run_execution_date": row["run_execution_date"],
-                    "run_execution_date_disclosure": row[
-                        "run_execution_date_disclosure"
-                    ],
-                    "endpoint_record_observed_at_utc": row[
-                        "endpoint_record_observed_at_utc"
-                    ],
+                    "run_execution_date_disclosure": row["run_execution_date_disclosure"],
+                    "endpoint_record_observed_at_utc": row["endpoint_record_observed_at_utc"],
                     "source_commit_date": row["source_commit_date"],
-                    "source_commit_date_disclosure": row[
-                        "source_commit_date_disclosure"
-                    ],
+                    "source_commit_date_disclosure": row["source_commit_date_disclosure"],
                 },
                 "versions": row["versions"],
                 "predecessor_disclosures": row["predecessor_disclosures"],

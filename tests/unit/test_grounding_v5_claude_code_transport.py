@@ -75,11 +75,7 @@ class SuccessfulProcess:
     ) -> None:
         self.action = action or {"action_type": 1, "x": 100, "y": 100, "key": 0}
         self.content_block_type = content_block_type
-        self.usage = (
-            {"input_tokens": 1000, "output_tokens": 50}
-            if usage is None
-            else usage
-        )
+        self.usage = {"input_tokens": 1000, "output_tokens": 50} if usage is None else usage
         self.total_cost_usd = total_cost_usd
         self.diagnostic = diagnostic
         self.stderr = stderr
@@ -131,9 +127,7 @@ class SuccessfulProcess:
                     else self.result_text
                 ),
                 "usage": self.usage,
-                "modelUsage": {
-                    self.resolved_model: {"inputTokens": 1000, "outputTokens": 50}
-                },
+                "modelUsage": {self.resolved_model: {"inputTokens": 1000, "outputTokens": 50}},
                 "total_cost_usd": self.total_cost_usd,
             },
         ]
@@ -202,9 +196,10 @@ def test_claude_connection_reset_is_stable_and_recoverable(tmp_path: Path) -> No
         assert outcome.failure_code == "cli_connection_reset"
         assert outcome.fault is not None
         assert outcome.fault.kind is CliFaultKind.CONNECTION_RESET
-        assert transport.reconcile(
-            idempotency_key="sha256:claude-reset", deadline_seconds=1
-        ) == outcome
+        assert (
+            transport.reconcile(idempotency_key="sha256:claude-reset", deadline_seconds=1)
+            == outcome
+        )
     finally:
         transport.close()
         invocation_journal.close()
@@ -246,9 +241,10 @@ def test_claude_process_start_failure_is_pre_send_and_costs_zero(
         assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.NOT_CONSUMED
         assert outcome.fault.cost_knowledge is CostKnowledge.ZERO
         assert transport.records[-1]["type"] == "OSError"
-        assert transport.reconcile(
-            idempotency_key="sha256:claude-start-failure", deadline_seconds=1
-        ) == outcome
+        assert (
+            transport.reconcile(idempotency_key="sha256:claude-start-failure", deadline_seconds=1)
+            == outcome
+        )
     finally:
         transport.close()
         invocation_journal.close()
@@ -280,9 +276,7 @@ def test_claude_process_failures_use_shared_fault_taxonomy(
     expected_kind: CliFaultKind,
     expected_code: str,
 ) -> None:
-    invocation_journal = policy.ClaudeInvocationJournal(
-        tmp_path / f"{expected_kind.value}.sqlite"
-    )
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / f"{expected_kind.value}.sqlite")
     transport = policy.ClaudeCodeTransport(
         ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
         invocation_journal=invocation_journal,
@@ -335,8 +329,8 @@ def test_claude_resolved_model_differs_from_smoke_is_policy_violation(
 
         assert outcome.status == "policy_violation"
         assert outcome.response is not None
-        assert "resolved_model_differs_from_smoke" in (
-            outcome.response["usage"]["policy_violation"]
+        assert (
+            "resolved_model_differs_from_smoke" in (outcome.response["usage"]["policy_violation"])
         )
         assert outcome.fault is None
     finally:
@@ -522,8 +516,8 @@ def test_tool_content_is_fail_closed_before_environment_dispatch(tmp_path: Path)
         assert outcome.status == "policy_violation"
         assert outcome.fault is None
         assert outcome.response is not None
-        assert "unauthorized_content_block:tool_use" in (
-            outcome.response["usage"]["policy_violation"]
+        assert (
+            "unauthorized_content_block:tool_use" in (outcome.response["usage"]["policy_violation"])
         )
         with pytest.raises(ValueError, match="policy boundary is invalid"):
             claude_policy.parse(policy.canonical_json_bytes(outcome.response), b"{}")
@@ -800,7 +794,9 @@ def test_claude_policy_hooks_are_pure_pass_throughs_between_attempts() -> None:
         step_index=0,
     )
     assert (
-        claude_policy.post_dispatch_state(state, {"action_type": 0, "x": 0, "y": 0, "key": 0}, result)
+        claude_policy.post_dispatch_state(
+            state, {"action_type": 0, "x": 0, "y": 0, "key": 0}, result
+        )
         == state
     )
     assert claude_policy.close() is None

@@ -54,9 +54,7 @@ def test_checked_in_approval_matches_exact_successor() -> None:
         ),
     ],
 )
-def test_authorization_rejects_cap_or_runtime_drift(
-    mutation: object, message: str
-) -> None:
+def test_authorization_rejects_cap_or_runtime_drift(mutation: object, message: str) -> None:
     plan = read(EXECUTION_PLAN_PATH)
     approval = deepcopy(read(OWNER_APPROVAL_PATH))
     assert callable(mutation)
@@ -119,15 +117,20 @@ def test_successor_entry_accepts_matching_transport_limits(monkeypatch, limits, 
     from scripts import run_grounding_v5_d59_haiku_retry_successor as entry
 
     manifests = {
-        mode: SimpleNamespace(inference_parameters=(() if limit is None else (("cli_api_retry_limit", limit),)))
+        mode: SimpleNamespace(
+            inference_parameters=(() if limit is None else (("cli_api_retry_limit", limit),))
+        )
         for mode, limit in zip(("history", "stateless"), limits, strict=True)
     }
     monkeypatch.setattr(entry.authorization, "validated_live_manifests", lambda *args: manifests)
     monkeypatch.setattr(entry.runner, "CLI_API_RETRY_LIMIT", runtime_limit)
     identity = ClaudeRuntimeIdentity(**read(CALIBRATION_PATH)["runtime_identity"])
-    assert entry.validated_transport_manifests(
-        ROOT, read(EXECUTION_PLAN_PATH), runtime_identity=identity
-    ) == manifests
+    assert (
+        entry.validated_transport_manifests(
+            ROOT, read(EXECUTION_PLAN_PATH), runtime_identity=identity
+        )
+        == manifests
+    )
 
 
 def test_successor_entry_checks_every_manifest(monkeypatch):

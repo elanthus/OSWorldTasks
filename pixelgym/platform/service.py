@@ -235,9 +235,7 @@ def _attach_identity_headers(response: Response, context: _OperationalContext) -
     response.headers["X-PixelGym-API-Version"] = identity["api_version"]
     response.headers["X-PixelGym-Policy-ID"] = identity["policy_id"]
     response.headers["X-PixelGym-Deployment-ID"] = identity["deployment_id"]
-    response.headers["X-PixelGym-Exact-Policy-Version"] = identity[
-        "exact_policy_version"
-    ]
+    response.headers["X-PixelGym-Exact-Policy-Version"] = identity["exact_policy_version"]
 
 
 def _error_response(
@@ -306,10 +304,7 @@ def create_serving_app(
         raise ValueError("provider timeout must be finite and positive")
     if provider_concurrency <= 0:
         raise ValueError("provider concurrency must be positive")
-    if (
-        not math.isfinite(provider_queue_timeout_seconds)
-        or provider_queue_timeout_seconds < 0
-    ):
+    if not math.isfinite(provider_queue_timeout_seconds) or provider_queue_timeout_seconds < 0:
         raise ValueError("provider queue timeout must be finite and nonnegative")
     if max_provider_output_bytes <= 0:
         raise ValueError("maximum provider output bytes must be positive")
@@ -334,9 +329,7 @@ def create_serving_app(
             # this releases the pool without waiting for them and without a hidden retry.
             provider_executor.shutdown(wait=False, cancel_futures=True)
 
-    app = FastAPI(
-        title="PixelGym Grounding API", docs_url=None, redoc_url=None, lifespan=_lifespan
-    )
+    app = FastAPI(title="PixelGym Grounding API", docs_url=None, redoc_url=None, lifespan=_lifespan)
     app.state.operational_log = operational_log
     app.state.provider_executor = provider_executor
     # Install this before the audit middleware below so the audit wrapper remains outermost and
@@ -344,9 +337,7 @@ def create_serving_app(
     app.add_middleware(_RequestBodyLimitMiddleware, max_body_bytes=MAX_REQUEST_BODY_BYTES)
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(
-        request: Request, exc: StarletteHTTPException
-    ) -> Response:
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> Response:
         del request
         return _error_response(exc.status_code, exc.detail, headers=exc.headers)
 
@@ -491,12 +482,16 @@ def create_serving_app(
         loaded = runtime.loaded
         _set_identity(loaded)
         try:
-            rendered_prompt = render_prompt(loaded.manifest, target=target, width=width, height=height)
+            rendered_prompt = render_prompt(
+                loaded.manifest, target=target, width=width, height=height
+            )
         except ValueError as exc:
             # Deploy/rollback/restore already verify renderer binding before traffic can
             # reach an active deployment; this is defense-in-depth, not the expected path.
             _set_terminal_status("renderer_binding_invalid")
-            raise HTTPException(500, "active policy package failed to render a request prompt") from exc
+            raise HTTPException(
+                500, "active policy package failed to render a request prompt"
+            ) from exc
         borrower = object()
         provider_admitted = False
         if provider_queue_timeout_seconds == 0:
@@ -525,9 +520,7 @@ def create_serving_app(
 
         def _on_provider_future_done(_: Future[Any]) -> None:
             try:
-                loop.call_soon_threadsafe(
-                    _release_provider_capacity, provider_limiter, borrower
-                )
+                loop.call_soon_threadsafe(_release_provider_capacity, provider_limiter, borrower)
             except RuntimeError:
                 # The event loop already closed (interpreter/app shutdown); the executor is
                 # being torn down too, so the limiter borrower is abandoned along with it.
@@ -536,9 +529,9 @@ def create_serving_app(
         try:
             # Run inside a copy of the caller's context so request-scoped ContextVars reach the
             # provider thread, matching the audit path's propagation via anyio.to_thread.run_sync.
-            provider_future: Future[
-                tuple[str | None, str, float | None, dict[str, Any] | None]
-            ] = provider_executor.submit(copy_context().run, provider_call)
+            provider_future: Future[tuple[str | None, str, float | None, dict[str, Any] | None]] = (
+                provider_executor.submit(copy_context().run, provider_call)
+            )
         except BaseException:
             provider_limiter.release_on_behalf_of(borrower)
             raise

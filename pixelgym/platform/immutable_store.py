@@ -43,7 +43,12 @@ _ROOT_LOCKS: dict[Path, threading.RLock] = {}
 
 def _validate_key(key: str) -> tuple[str, ...]:
     parts = tuple(Path(key).parts)
-    if not key or Path(key).is_absolute() or not parts or any(part in {"", ".", ".."} for part in parts):
+    if (
+        not key
+        or Path(key).is_absolute()
+        or not parts
+        or any(part in {"", ".", ".."} for part in parts)
+    ):
         raise ValueError("logical key must be a safe relative object key")
     return parts
 
@@ -84,9 +89,7 @@ class LocalImmutableStore:
                 f".{destination.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
             )
             try:
-                descriptor = os.open(
-                    temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
-                )
+                descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             except FileExistsError:
                 continue
             try:
@@ -151,9 +154,7 @@ class LocalImmutableStore:
                 if data_exists and data_path.read_bytes() != data:
                     raise ImmutableStoreError("refusing conflicting bytes at immutable key")
                 if metadata_exists:
-                    metadata_reference = self._load_reference_unlocked(
-                        logical_key, metadata_path
-                    )
+                    metadata_reference = self._load_reference_unlocked(logical_key, metadata_path)
                     if metadata_reference != reference:
                         raise ImmutableStoreError("refusing conflicting bytes at immutable key")
 
@@ -331,7 +332,11 @@ class S3ImmutableStore:
         existing = self.get_reference(logical_key)
         digest = sha256_bytes(data)
         if existing is not None:
-            if existing.sha256 != digest or existing.size != len(data) or existing.media_type != media_type:
+            if (
+                existing.sha256 != digest
+                or existing.size != len(data)
+                or existing.media_type != media_type
+            ):
                 raise ImmutableStoreError("refusing conflicting bytes at immutable S3 key")
             self.get_verified(existing)
             return existing
@@ -347,7 +352,8 @@ class S3ImmutableStore:
             arguments.update(
                 {
                     "ObjectLockMode": "GOVERNANCE",
-                    "ObjectLockRetainUntilDate": datetime.now(UTC) + timedelta(days=self.retention_days),
+                    "ObjectLockRetainUntilDate": datetime.now(UTC)
+                    + timedelta(days=self.retention_days),
                 }
             )
         try:

@@ -45,9 +45,7 @@ def raw_pixel_difference(
     }
 
 
-def _uniform_mean(
-    values: npt.NDArray[np.float64], size: int = 11
-) -> npt.NDArray[np.float64]:
+def _uniform_mean(values: npt.NDArray[np.float64], size: int = 11) -> npt.NDArray[np.float64]:
     """Local mean through an edge-reflected square window and integral image."""
 
     pad = size // 2

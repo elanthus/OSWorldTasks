@@ -96,9 +96,7 @@ class GuestTaskState:
     def submit(self, payload: dict[str, Any]) -> dict[str, int]:
         required = {"task_id", *_SUBMISSION_FIELDS}
         if set(payload) != required:
-            raise PayloadValidationError(
-                f"submission keys must be exactly {sorted(required)}"
-            )
+            raise PayloadValidationError(f"submission keys must be exactly {sorted(required)}")
 
         with self._lock:
             if payload["task_id"] != self._task["task_id"]:

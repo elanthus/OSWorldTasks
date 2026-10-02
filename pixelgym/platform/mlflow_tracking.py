@@ -253,9 +253,9 @@ class InMemoryTracking:
         )
         run.artifacts["summary.json"] = canonical_json_bytes(summary.to_dict()) + b"\n"
         run.artifacts["gate-report.json"] = canonical_json_bytes(gate_report.to_dict()) + b"\n"
-        run.artifacts["immutable-artifact-index.json"] = canonical_json_bytes(
-            [reference.to_dict() for reference in artifacts]
-        ) + b"\n"
+        run.artifacts["immutable-artifact-index.json"] = (
+            canonical_json_bytes([reference.to_dict() for reference in artifacts]) + b"\n"
+        )
         for name, payload in _artifact_category_payloads(artifacts).items():
             run.artifacts[name] = canonical_json_bytes(payload) + b"\n"
 
@@ -359,9 +359,7 @@ def _summary_metrics(summary: RunSummary, report: GateReport) -> dict[str, float
         "invalid_count": float(summary.invalid_count),
         "request_failure_count": float(summary.request_failure_count),
         "invalid_rate": (
-            float(summary.invalid_count) / summary.expected_count
-            if summary.expected_count
-            else 0.0
+            float(summary.invalid_count) / summary.expected_count if summary.expected_count else 0.0
         ),
         "request_failure_rate": (
             float(summary.request_failure_count) / summary.expected_count
@@ -374,9 +372,7 @@ def _summary_metrics(summary: RunSummary, report: GateReport) -> dict[str, float
         "gate_overall_passed": float(report.overall_passed),
         "gate_accuracy_passed": float(report.accuracy.passed),
         "gate_cost_usd_per_100_passed": float(report.cost_usd_per_100.passed),
-        "gate_provider_latency_p95_ms_passed": float(
-            report.provider_latency_p95_ms.passed
-        ),
+        "gate_provider_latency_p95_ms_passed": float(report.provider_latency_p95_ms.passed),
         "gate_completeness_passed": float(report.completeness.passed),
         "gate_accuracy_threshold": report.accuracy.threshold,
         "gate_cost_usd_per_100_threshold": report.cost_usd_per_100.threshold,
@@ -386,9 +382,7 @@ def _summary_metrics(summary: RunSummary, report: GateReport) -> dict[str, float
     if report.accuracy.observed is not None:
         metrics["gate_accuracy_observed"] = float(report.accuracy.observed)
     if report.cost_usd_per_100.observed is not None:
-        metrics["gate_cost_usd_per_100_observed"] = float(
-            report.cost_usd_per_100.observed
-        )
+        metrics["gate_cost_usd_per_100_observed"] = float(report.cost_usd_per_100.observed)
     if report.provider_latency_p95_ms.observed is not None:
         metrics["gate_provider_latency_p95_ms_observed"] = float(
             report.provider_latency_p95_ms.observed
@@ -404,17 +398,13 @@ def _artifact_category_payloads(artifacts: list[ArtifactRef]) -> dict[str, Any]:
             item for item in artifacts if item.logical_key.endswith("/run-manifest.json")
         ),
         "raw-response-index-reference.json": tuple(
-            item
-            for item in artifacts
-            if item.logical_key.endswith("/raw-response-index.json")
+            item for item in artifacts if item.logical_key.endswith("/raw-response-index.json")
         ),
         "parsed-predictions-reference.json": tuple(
             item for item in artifacts if item.logical_key.endswith("/predictions.jsonl")
         ),
         "per-example-scores-reference.json": tuple(
-            item
-            for item in artifacts
-            if item.logical_key.endswith("/per-example-scores.jsonl")
+            item for item in artifacts if item.logical_key.endswith("/per-example-scores.jsonl")
         ),
         "summary-reference.json": tuple(
             item for item in artifacts if item.logical_key.endswith("/summary.json")
@@ -423,9 +413,7 @@ def _artifact_category_payloads(artifacts: list[ArtifactRef]) -> dict[str, Any]:
             item for item in artifacts if item.logical_key.endswith("/gate-report.json")
         ),
         "environment-manifest-reference.json": tuple(
-            item
-            for item in artifacts
-            if item.logical_key.endswith("/environment-manifest.json")
+            item for item in artifacts if item.logical_key.endswith("/environment-manifest.json")
         ),
         "policy-package-reference.json": tuple(
             item for item in artifacts if item.logical_key.startswith("policies/")
@@ -613,9 +601,7 @@ class MlflowTracking:
             "provider_latency_boundary",
             "request_dispatch_to_full_response_receipt",
         )
-        self.client.set_tag(
-            run_id, "end_to_end_boundary", "first_dispatch_to_last_receipt"
-        )
+        self.client.set_tag(run_id, "end_to_end_boundary", "first_dispatch_to_last_receipt")
         payloads = {
             "summary.json": summary.to_dict(),
             "gate-report.json": gate_report.to_dict(),
@@ -660,9 +646,7 @@ class MlflowTracking:
             run_id=run_id,
             tags={
                 "policy_id": manifest.policy_id,
-                "gate_status": self.client.get_run(run_id).data.tags.get(
-                    "gate_status", "unknown"
-                ),
+                "gate_status": self.client.get_run(run_id).data.tags.get("gate_status", "unknown"),
                 "approval_status": "pending",
             },
         )
@@ -670,9 +654,7 @@ class MlflowTracking:
 
     def _policy_version(self, policy_id: str) -> Any:
         matches = [
-            item
-            for item in self._all_policy_versions()
-            if item.tags.get("policy_id") == policy_id
+            item for item in self._all_policy_versions() if item.tags.get("policy_id") == policy_id
         ]
         if len(matches) != 1:
             raise ValueError(
@@ -756,9 +738,7 @@ class MlflowTracking:
         return [self._view(run) for run in runs]
 
     def get_run_view(self, run_id: str) -> TrackingRunView:
-        return self._view(
-            self.client.get_run(run_id), artifact_paths=self._artifact_paths(run_id)
-        )
+        return self._view(self.client.get_run(run_id), artifact_paths=self._artifact_paths(run_id))
 
     def _artifact_paths(self, run_id: str, path: str | None = None) -> tuple[str, ...]:
         paths: list[str] = []
@@ -769,9 +749,7 @@ class MlflowTracking:
                 paths.append(item.path)
         return tuple(sorted(paths))
 
-    def _view(
-        self, run: Any, *, artifact_paths: tuple[str, ...] = ()
-    ) -> TrackingRunView:
+    def _view(self, run: Any, *, artifact_paths: tuple[str, ...] = ()) -> TrackingRunView:
         return TrackingRunView(
             run_id=run.info.run_id,
             status=run.info.status,
@@ -779,9 +757,7 @@ class MlflowTracking:
             tags=dict(run.data.tags),
             metrics=dict(run.data.metrics),
             artifact_paths=artifact_paths,
-            dataset_inputs=tuple(
-                _dataset_contract(item) for item in run.inputs.dataset_inputs
-            ),
+            dataset_inputs=tuple(_dataset_contract(item) for item in run.inputs.dataset_inputs),
         )
 
     def finalize(self, run_id: str, status: str) -> None:
@@ -799,9 +775,7 @@ def _bounded_call(call: Callable[[], Any], *, timeout_seconds: float) -> Any:
     global _compatible_search_occupancy
 
     with _COMPATIBLE_SEARCH_OCCUPANCY_LOCK:
-        acquired = _COMPATIBLE_SEARCH_SLOTS.acquire(
-            timeout=COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS
-        )
+        acquired = _COMPATIBLE_SEARCH_SLOTS.acquire(timeout=COMPATIBLE_SEARCH_CAPACITY_WAIT_SECONDS)
         if acquired:
             _compatible_search_occupancy += 1
         occupancy = _compatible_search_occupancy

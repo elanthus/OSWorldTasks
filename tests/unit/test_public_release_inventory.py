@@ -59,9 +59,7 @@ def test_inventory_detects_public_release_regressions(tmp_path: Path) -> None:
     clean = module.build_inventory(root)
     assert clean["summary"]["passed"] is True
     assert clean["links"]["local_link_count"] == 2
-    assert all(
-        link["target"] != "not-a-real-file.json" for link in clean["links"]["failures"]
-    )
+    assert all(link["target"] != "not-a-real-file.json" for link in clean["links"]["failures"])
     assert clean["license_inventory"]["passed"] is True
     assert clean["redaction_and_asset_inventory"]["review_required_count"] == 0
 
@@ -272,15 +270,35 @@ def _assert_test_vector_is_exact_and_tests_only(
     _init_repository(root)
     subprocess.run(["git", "add", "."], cwd=root, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Release Fixture", "-c", "user.email=fixture@example.invalid",
-         "commit", "-qm", "credential classification fixtures"], cwd=root, check=True,
+        [
+            "git",
+            "-c",
+            "user.name=Release Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            "credential classification fixtures",
+        ],
+        cwd=root,
+        check=True,
     )
     # Remove from HEAD: history must still classify exact test values and reject other shapes.
     fixture.unlink()
     subprocess.run(["git", "add", "-u"], cwd=root, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=Release Fixture", "-c", "user.email=fixture@example.invalid",
-         "commit", "-qm", "remove test fixture"], cwd=root, check=True,
+        [
+            "git",
+            "-c",
+            "user.name=Release Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            "remove test fixture",
+        ],
+        cwd=root,
+        check=True,
     )
     _publish_head(root)
     history = module.scan_history(root)["categories"]["credential_or_token_shapes"]
@@ -294,7 +312,7 @@ def _assert_test_vector_is_exact_and_tests_only(
 def test_historical_curl_fixture_is_acknowledged_only_as_exact_test_vector(tmp_path: Path) -> None:
     module = _load_script()
     # Synthetic loopback TLS fixture; split so this source adds no token-shape occurrence.
-    value = 'Bearer ' + 'integration-fixture'
+    value = "Bearer " + "integration-fixture"
     assert module._fingerprint(value) == (
         "sha256:be14d3c75c6571ab2f0474ab8a80c9e4ac8e3700ec2cd202712ee50a07d25a36"
     )
@@ -384,7 +402,9 @@ def test_history_finding_identity_is_path_independent_and_paths_are_complete(
     _publish_head(root)
 
     findings = module.scan_history(root)["categories"]["private_paths"]["findings"]
-    finding = next(row for row in findings if row["value_fingerprint"] == module._fingerprint(value))
+    finding = next(
+        row for row in findings if row["value_fingerprint"] == module._fingerprint(value)
+    )
 
     assert finding["path"] == "legacy/fixture.txt"
     assert finding["paths"] == ["legacy/fixture.txt", "pixelgym/fixture.txt"]

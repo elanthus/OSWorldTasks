@@ -61,8 +61,10 @@ def main() -> None:
         if completed.returncode:
             control.mark_submission(submission_id, "Failed")
             raise SystemExit(completed.returncode)
-    print(f"Prepared scripted lifecycle fixture selection: {args.fixture}. "
-          "Approval, deployment, and rollback remain manual.")
+    print(
+        f"Prepared scripted lifecycle fixture selection: {args.fixture}. "
+        "Approval, deployment, and rollback remain manual."
+    )
 
 
 if __name__ == "__main__":

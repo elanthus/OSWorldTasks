@@ -135,14 +135,20 @@ def session_state(
         last_intent_status=(
             "issued"
             if phase is SessionResumePhase.INTENT_ISSUED
-            else "result_reported" if has_intent else "sealed" if sealed else "none"
+            else "result_reported"
+            if has_intent
+            else "sealed"
+            if sealed
+            else "none"
         ),
         last_action=ServedAction("CLICK", x=10, y=20) if has_intent else None,
         sealed_failure="parse_failure" if sealed else None,
         terminal_classification=(
             "parse_failure"
             if sealed
-            else "terminated" if phase is SessionResumePhase.CLOSED else None
+            else "terminated"
+            if phase is SessionResumePhase.CLOSED
+            else None
         ),
         model_attempts=2,
         provider_control_requests=0,

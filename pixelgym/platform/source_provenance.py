@@ -77,7 +77,9 @@ class SourceProvenance:
             raise ValueError("source provenance state must be clean, dirty, or unverifiable")
         if self.state == "unverifiable":
             if self.revision is not None or self.source_tree_sha256 is not None:
-                raise ValueError("unverifiable provenance must not claim a revision or source digest")
+                raise ValueError(
+                    "unverifiable provenance must not claim a revision or source digest"
+                )
             if self.verification_method != "none":
                 raise ValueError("unverifiable provenance must use verification method none")
             if self.failure_reason not in _FAILURE_REASONS:
@@ -86,8 +88,12 @@ class SourceProvenance:
         if self.failure_reason is not None:
             raise ValueError("verified provenance must not include a failure reason")
         if not self.revision or not _REVISION_RE.fullmatch(self.revision):
-            raise ValueError("source provenance revision must be a lowercase 40-character Git commit")
-        if not self.source_tree_sha256 or not re.fullmatch(r"[0-9a-f]{64}", self.source_tree_sha256):
+            raise ValueError(
+                "source provenance revision must be a lowercase 40-character Git commit"
+            )
+        if not self.source_tree_sha256 or not re.fullmatch(
+            r"[0-9a-f]{64}", self.source_tree_sha256
+        ):
             raise ValueError("source provenance digest must be a lowercase SHA-256 digest")
         if self.verification_method != "git-build-inputs-v1":
             raise ValueError("source provenance verification method is unsupported")

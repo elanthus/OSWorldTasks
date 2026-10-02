@@ -135,9 +135,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         info = {"episode_id": self._episode_id}
         return observation, info
 
-    def step(
-        self, action: Mapping[str, Any]
-    ) -> tuple[Frame, float, bool, bool, dict[str, Any]]:
+    def step(self, action: Mapping[str, Any]) -> tuple[Frame, float, bool, bool, dict[str, Any]]:
         if self._task is None or self._episode_ended:
             raise RuntimeError(
                 "step() called before reset() or after the episode already ended "

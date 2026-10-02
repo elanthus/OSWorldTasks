@@ -271,9 +271,7 @@ SUPPORTING_PATHS = (
     "deploy/README.md",
 )
 
-DOCUMENTATION_PATHS = (
-    "deploy/README.md",
-)
+DOCUMENTATION_PATHS = ("deploy/README.md",)
 
 
 def _sha256(path: Path) -> str:
@@ -297,9 +295,7 @@ def _require_git_revision(repository_root: Path, revision: str) -> None:
     except OSError as error:
         raise ValueError("could not inspect the repository with git") from error
     if revision_check.returncode != 0:
-        raise ValueError(
-            f"recorded evidence revision is not present in the repository: {revision}"
-        )
+        raise ValueError(f"recorded evidence revision is not present in the repository: {revision}")
 
 
 def _git_file_bytes(
@@ -326,9 +322,7 @@ def _git_file_bytes(
             f"path is not present at recorded evidence revision: {revision}:{relative}"
         )
     if object_type.stdout.strip() != b"blob":
-        raise ValueError(
-            f"path is not a blob at recorded evidence revision: {revision}:{relative}"
-        )
+        raise ValueError(f"path is not a blob at recorded evidence revision: {revision}:{relative}")
     try:
         result = subprocess.run(
             ["git", "cat-file", "blob", object_name],
@@ -354,19 +348,13 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def _git_json(repository_root: Path, revision: str, relative: str) -> Any:
-    return json.loads(
-        _git_file_bytes(
-            repository_root, revision, relative, revision_validated=True
-        )
+    return json.loads(_git_file_bytes(repository_root, revision, relative, revision_validated=True))
+
+
+def _git_jsonl(repository_root: Path, revision: str, relative: str) -> list[dict[str, Any]]:
+    data = _git_file_bytes(repository_root, revision, relative, revision_validated=True).decode(
+        "utf-8"
     )
-
-
-def _git_jsonl(
-    repository_root: Path, revision: str, relative: str
-) -> list[dict[str, Any]]:
-    data = _git_file_bytes(
-        repository_root, revision, relative, revision_validated=True
-    ).decode("utf-8")
     return [json.loads(line) for line in data.splitlines() if line.strip()]
 
 
@@ -394,9 +382,7 @@ def _index(path: Path, root: Path) -> dict[str, Any]:
 
 
 def _index_git_file(repository_root: Path, revision: str, relative: str) -> dict[str, Any]:
-    data = _git_file_bytes(
-        repository_root, revision, relative, revision_validated=True
-    )
+    data = _git_file_bytes(repository_root, revision, relative, revision_validated=True)
     return {
         "path": relative,
         "sha256": hashlib.sha256(data).hexdigest(),
@@ -658,27 +644,17 @@ def _validate_resume_ledgers(records: dict[str, dict[str, Any]]) -> dict[str, An
 
 
 def _reconcile(repository_root: Path, revision: str) -> dict[str, Any]:
-    manifests = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-run-manifests.jsonl"
-    )
-    lineage = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-mlflow-lineage.jsonl"
-    )
-    gates = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-gate-reports.jsonl"
-    )
+    manifests = _git_jsonl(repository_root, revision, "artifacts/platform/demo-run-manifests.jsonl")
+    lineage = _git_jsonl(repository_root, revision, "artifacts/platform/demo-mlflow-lineage.jsonl")
+    gates = _git_jsonl(repository_root, revision, "artifacts/platform/demo-gate-reports.jsonl")
     approvals = _git_jsonl(
         repository_root, revision, "artifacts/platform/demo-approval-events.jsonl"
     )
     deployments = _git_jsonl(
         repository_root, revision, "artifacts/platform/demo-deployment-events.jsonl"
     )
-    audit = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-audit-events.jsonl"
-    )
-    api = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl"
-    )
+    audit = _git_jsonl(repository_root, revision, "artifacts/platform/demo-audit-events.jsonl")
+    api = _git_jsonl(repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl")
     verification = _git_json(
         repository_root, revision, "artifacts/platform/immutable-artifact-verification.json"
     )
@@ -786,9 +762,7 @@ def _reconcile(repository_root: Path, revision: str) -> dict[str, Any]:
     }
 
 
-def _redaction_scan(
-    repository_root: Path, evidence_dir: Path, revision: str
-) -> dict[str, Any]:
+def _redaction_scan(repository_root: Path, evidence_dir: Path, revision: str) -> dict[str, Any]:
     paths = [path for path in evidence_dir.rglob("*") if path.is_file()]
     paths.extend(repository_root / path for path in SUPPORTING_PATHS)
     paths.extend((repository_root / "artifacts/platform/screenshots").glob("*.png"))
@@ -820,9 +794,7 @@ def _redaction_scan(
         except ValueError:
             relative = ""
         data = (
-            _git_file_bytes(
-                repository_root, revision, relative, revision_validated=True
-            )
+            _git_file_bytes(repository_root, revision, relative, revision_validated=True)
             if relative in SUPPORTING_PATHS
             else path.read_bytes()
         )
@@ -878,9 +850,7 @@ def _observations(
         "external_deployment": False,
     }:
         raise ValueError(f"unexpected stored provider environment: {provider}")
-    api = _git_jsonl(
-        repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl"
-    )
+    api = _git_jsonl(repository_root, revision, "artifacts/platform/demo-api-transcript.jsonl")
     blocked = [row for row in api if row["event"] == "blocked-approval"]
     if len(blocked) != 1 or blocked[0]["response"]["status"] != 409:
         raise ValueError("stored blocked-approval exchange is not exactly one HTTP 409")
@@ -1028,8 +998,7 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     _require_git_revision(repository_root, revision)
 
     supporting = [
-        _index_git_file(repository_root, revision, relative)
-        for relative in SUPPORTING_PATHS
+        _index_git_file(repository_root, revision, relative) for relative in SUPPORTING_PATHS
     ]
     screenshots = _git_json(
         repository_root, revision, "artifacts/platform/screenshots/manifest.json"

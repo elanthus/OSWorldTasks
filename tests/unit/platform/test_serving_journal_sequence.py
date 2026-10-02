@@ -50,9 +50,7 @@ def test_recovered_episode_journal_matches_pre_refactor_sequence(
 ) -> None:
     transport = ScriptedTransport()
     interrupted = _host(tmp_path, transport=transport, interrupt_after=boundary)
-    interrupted.create_episode(
-        task_instruction="Complete the form", client_episode_ref="client-1"
-    )
+    interrupted.create_episode(task_instruction="Complete the form", client_episode_ref="client-1")
     with pytest.raises(InjectedInterruption, match=boundary):
         interrupted.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
     recovered = _host(tmp_path, transport=transport)

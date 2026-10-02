@@ -36,6 +36,9 @@ jobs:
       - name: Run Ruff
         run: python -m ruff check .
 
+      - name: Check Ruff formatting
+        run: python -m ruff format --check pixelgym flows scripts tests
+
   type-check:
     name: Type check
     runs-on: ubuntu-latest

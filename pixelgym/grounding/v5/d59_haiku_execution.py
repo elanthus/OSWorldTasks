@@ -17,9 +17,7 @@ from pixelgym.grounding.v5.memory_generator import generate_memory_task
 
 EXECUTION_PLAN_PATH = "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json"
 OWNER_APPROVAL_PATH = "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json"
-EXECUTION_PLAN_DIGEST = (
-    "sha256:9523674b3cc8b9bca053072103ec885802ce5eec6109ca94fc843fa792c10a52"
-)
+EXECUTION_PLAN_DIGEST = "sha256:9523674b3cc8b9bca053072103ec885802ce5eec6109ca94fc843fa792c10a52"
 APPROVED_RUNTIME_HOURS = 168
 APPROVED_CAPS = CallCaps(12134, 24268, 0, 24268)
 EXECUTION_SOURCE_FILES = (
@@ -61,9 +59,7 @@ def expected_owner_approval(plan: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def validate_execution_authorization(
-    plan: dict[str, Any], approval: dict[str, Any]
-) -> None:
+def validate_execution_authorization(plan: dict[str, Any], approval: dict[str, Any]) -> None:
     body = {key: value for key, value in plan.items() if key != "execution_plan_digest"}
     if plan.get("execution_plan_digest") != content_digest(body):
         raise ValueError("frozen Haiku D5.9 execution-plan digest is invalid")
@@ -161,9 +157,7 @@ def execution_binding(
             "revision": subprocess.check_output(
                 ["git", "rev-parse", "HEAD"], cwd=root, text=True
             ).strip(),
-            "files": {
-                path: sha256_file(root / path) for path in EXECUTION_SOURCE_FILES
-            },
+            "files": {path: sha256_file(root / path) for path in EXECUTION_SOURCE_FILES},
         },
         "execution_plan": {
             "path": EXECUTION_PLAN_PATH,

@@ -32,7 +32,9 @@ D59_CONFIRMATORY_SEEDS = tuple(range(6000, 6192))
 HISTORICAL_SPEND_USD = Decimal("23.978227275")
 AGGREGATE_PLANNING_CAP_USD = Decimal("120.00")
 PRIMARY_PHASE_CAP_USD = Decimal("85.00")
-RELIABILITY_PHASE_CAP_USD = AGGREGATE_PLANNING_CAP_USD - HISTORICAL_SPEND_USD - PRIMARY_PHASE_CAP_USD
+RELIABILITY_PHASE_CAP_USD = (
+    AGGREGATE_PLANNING_CAP_USD - HISTORICAL_SPEND_USD - PRIMARY_PHASE_CAP_USD
+)
 MAX_MODEL_ATTEMPTS_PER_ACTION = 3
 RELIABILITY_REPEATS_PER_ARM = 2
 D59_ADMISSION_EVIDENCE_DIGEST = (
@@ -56,9 +58,7 @@ def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _artifact_binding(
-    *, path: str, value: dict[str, Any], digest_field: str
-) -> dict[str, Any]:
+def _artifact_binding(*, path: str, value: dict[str, Any], digest_field: str) -> dict[str, Any]:
     digest = value.get(digest_field)
     if not isinstance(digest, str) or not digest.startswith("sha256:"):
         raise ValueError(f"{path} lacks {digest_field}")
@@ -175,9 +175,7 @@ def task_manifest(root: Path, *, source_revision: str) -> dict[str, Any]:
 
 def admission_evidence() -> dict[str, Any]:
     tasks = confirmatory_tasks()
-    records = [
-        validate_task_admission(task, backend_factory=MemoryBackend) for task in tasks
-    ]
+    records = [validate_task_admission(task, backend_factory=MemoryBackend) for task in tasks]
     value = {
         "schema_version": "pixelgym-agent-v5-d59-admission-v1",
         "partition": "confirmatory",
@@ -213,9 +211,7 @@ def _caps(jobs: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
-def _validate_admission_evidence(
-    tasks: tuple[Any, ...], admission_value: dict[str, Any]
-) -> None:
+def _validate_admission_evidence(tasks: tuple[Any, ...], admission_value: dict[str, Any]) -> None:
     if admission_value.get("schema_version") != "pixelgym-agent-v5-d59-admission-v1":
         raise ValueError("D5.9 admission schema changed")
     if admission_value.get("partition") != "confirmatory":
@@ -232,12 +228,9 @@ def _validate_admission_evidence(
     if any(not isinstance(record, dict) for record in records):
         raise ValueError("D5.9 admission records must be objects")
     identities = [
-        (record.get("task_id"), record.get("seed"), record.get("family"))
-        for record in records
+        (record.get("task_id"), record.get("seed"), record.get("family")) for record in records
     ]
-    expected_identities = [
-        (task.task_id, task.seed, task.family.value) for task in tasks
-    ]
+    expected_identities = [(task.task_id, task.seed, task.family.value) for task in tasks]
     if identities != expected_identities:
         raise ValueError("D5.9 admission task order or identity changed")
     recomputed_digest = content_digest(records)
@@ -270,8 +263,9 @@ def execution_plan(
         for repeat in range(1, RELIABILITY_REPEATS_PER_ARM + 1)
     ]
     prior = json.loads(
-        (root / "artifacts/grounding-v5-d58-owner-budget-continuation/execution-plan.json")
-        .read_text(encoding="utf-8")
+        (
+            root / "artifacts/grounding-v5-d58-owner-budget-continuation/execution-plan.json"
+        ).read_text(encoding="utf-8")
     )
     policies = prior["policy_manifests"]
     if {value["policy_id"] for value in policies.values()} != {
@@ -298,8 +292,7 @@ def execution_plan(
         if not rate.is_finite() or rate < 0 or rate > ceiling:
             raise ValueError("D5.9 auxiliary prices exceed the reserved token rates")
     maximum_request_reservation = (
-        prompt_rate * MAX_WORKLOAD_INPUT_TOKENS
-        + completion_rate * MAX_OUTPUT_TOKENS
+        prompt_rate * MAX_WORKLOAD_INPUT_TOKENS + completion_rate * MAX_OUTPUT_TOKENS
     )
     if task_manifest_value["source_binding"] != source_binding(
         root, source_revision=source_revision
@@ -321,8 +314,9 @@ def execution_plan(
         "provider_calls_made": 0,
         "owner_selection_digest": content_digest(
             json.loads(
-                (root / "artifacts/grounding-v5-d59-freeze/owner-selection.json")
-                .read_text(encoding="utf-8")
+                (root / "artifacts/grounding-v5-d59-freeze/owner-selection.json").read_text(
+                    encoding="utf-8"
+                )
             )
         ),
         "source_binding": source_binding(root, source_revision=source_revision),

@@ -142,9 +142,7 @@ def _is_linkable_uri(uri: object) -> bool:
 
 def _page_href(request: Request, path: str, page: int) -> str:
     parameters = [
-        (key, value)
-        for key, value in request.query_params.multi_items()
-        if key != "page"
+        (key, value) for key, value in request.query_params.multi_items() if key != "page"
     ]
     parameters.append(("page", str(page)))
     return f"{path}?{urlencode(parameters)}"
@@ -184,9 +182,8 @@ def _candidate_badges(candidate: Any) -> list[tuple[str, str]]:
                 "bad",
             )
         )
-    unpriced = (
-        report.cost_usd_per_100.observed is None
-        or (summary is not None and summary.unpriced_call_count > 0)
+    unpriced = report.cost_usd_per_100.observed is None or (
+        summary is not None and summary.unpriced_call_count > 0
     )
     if unpriced:
         badges.append(("UNPRICED", "bad"))
@@ -198,7 +195,9 @@ def _invalid_count(candidate: Any) -> str:
 
 
 def _candidate_row(candidate: Any, mlflow_base_url: str) -> dict[str, Any]:
-    state_tone = "good" if candidate.state in {CandidateState.ELIGIBLE, CandidateState.APPROVED} else "bad"
+    state_tone = (
+        "good" if candidate.state in {CandidateState.ELIGIBLE, CandidateState.APPROVED} else "bad"
+    )
     return {
         "candidate": candidate,
         "badges": _candidate_badges(candidate),
@@ -213,7 +212,9 @@ def _evidence_links(candidate: Any, mlflow_base_url: str) -> dict[str, Any]:
     gate = _artifact(candidate, "/gate-report.json")
     return {
         "candidate_id": candidate.candidate_id,
-        "raw_count": sum(item.logical_key.startswith("raw-responses/") for item in candidate.artifacts),
+        "raw_count": sum(
+            item.logical_key.startswith("raw-responses/") for item in candidate.artifacts
+        ),
         "predictions_uri": None if predictions is None else predictions.uri,
         "gate_uri": None if gate is None else gate.uri,
         "mlflow_uri": _mlflow_run_uri(mlflow_base_url, candidate.source_run_id),
@@ -344,7 +345,9 @@ def create_control_app(
             ipaddress.ip_network(address, strict=False) for address in trusted_proxy_addresses
         )
     except ValueError as exc:
-        raise ValueError("trusted proxy allowlist must contain IP addresses or CIDR networks") from exc
+        raise ValueError(
+            "trusted proxy allowlist must contain IP addresses or CIDR networks"
+        ) from exc
     if any(network.prefixlen == 0 for network in trusted_proxies):
         raise ValueError("trusted proxy allowlist must not contain a default route")
     app = FastAPI(title="PixelGym Grounding Control Plane", docs_url=None, redoc_url=None)
@@ -462,7 +465,10 @@ def create_control_app(
             raise HTTPException(404, "candidate does not exist") from exc
 
     async def csrf_form_fields(request: Request) -> dict[str, str]:
-        if request.headers.get("content-type", "").split(";", 1)[0] != "application/x-www-form-urlencoded":
+        if (
+            request.headers.get("content-type", "").split(";", 1)[0]
+            != "application/x-www-form-urlencoded"
+        ):
             raise HTTPException(415, "forms must use application/x-www-form-urlencoded")
         body = await request.body()
         if len(body) > 32_768:
@@ -506,9 +512,13 @@ def create_control_app(
         if set(fields) != set(ALLOWED_SUBMISSION_FIELDS):
             raise HTTPException(422, "submission fields do not match the fixed flow contract")
         payload = fields
-        invalid = [key for key, value in payload.items() if value not in ALLOWED_SUBMISSION_FIELDS[key]]
+        invalid = [
+            key for key, value in payload.items() if value not in ALLOWED_SUBMISSION_FIELDS[key]
+        ]
         if invalid:
-            raise HTTPException(422, f"submission contains non-allowlisted options: {', '.join(invalid)}")
+            raise HTTPException(
+                422, f"submission contains non-allowlisted options: {', '.join(invalid)}"
+            )
         submission_id = await run_in_threadpool(control.submit, payload, actor=principal)
         if submit_callback is not None:
             submit_callback(submission_id, payload)
@@ -578,9 +588,7 @@ def create_control_app(
                 try:
                     parsed = date.fromisoformat(value)
                 except ValueError as exc:
-                    raise HTTPException(
-                        422, f"{label} must use a valid YYYY-MM-DD date"
-                    ) from exc
+                    raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date") from exc
                 if parsed.isoformat() != value:
                     raise HTTPException(422, f"{label} must use a valid YYYY-MM-DD date")
         if gate_result is not None and gate_result not in {"passed", "failed"}:
@@ -706,9 +714,7 @@ def create_control_app(
             "primary_metric": primary_metric,
         }
         if any(
-            not value
-            or len(value) > 256
-            or not re.fullmatch(r"[A-Za-z0-9:._-]+", value)
+            not value or len(value) > 256 or not re.fullmatch(r"[A-Za-z0-9:._-]+", value)
             for value in values.values()
         ):
             raise HTTPException(422, "tracking compatibility filters contain unsafe values")
@@ -752,17 +758,17 @@ def create_control_app(
             )
             for item in selected
         }
-        compatible = len(selected) >= 2 and len(comparison_keys) == 1 and all(
-            item.summary is not None for item in selected
+        compatible = (
+            len(selected) >= 2
+            and len(comparison_keys) == 1
+            and all(item.summary is not None for item in selected)
         )
         prompt_diff_query = (
             urlencode([("candidate", item.candidate_id) for item in selected[:2]])
             if len(selected) >= 2
             else None
         )
-        cards = [
-            _comparison_card(item, selected[0], mlflow_base_url) for item in selected
-        ]
+        cards = [_comparison_card(item, selected[0], mlflow_base_url) for item in selected]
         return render(
             request,
             "compare.html",
@@ -788,7 +794,9 @@ def create_control_app(
         try:
             return prompt_template(item.policy.prompt_version), True
         except ValueError as exc:
-            raise HTTPException(409, "recorded prompt version is unavailable for rendering") from exc
+            raise HTTPException(
+                409, "recorded prompt version is unavailable for rendering"
+            ) from exc
 
     @app.get("/compare/prompt-diff", response_class=HTMLResponse)
     def prompt_diff_view(
@@ -805,7 +813,11 @@ def create_control_app(
             # is_legacy mirrors _packaged_prompt_text's own (text, is_legacy) return:
             # tag the diff column so a reader can tell a packaged side from a
             # re-rendered one without re-deriving it from the candidate.
-            tag = " (legacy · re-rendered, no packaged prompt artifact)" if is_legacy else " (packaged)"
+            tag = (
+                " (legacy · re-rendered, no packaged prompt artifact)"
+                if is_legacy
+                else " (packaged)"
+            )
             return _escape(f"{item.candidate_id} · v{item.policy.prompt_version}{tag}")
 
         diff = HtmlDiff(wrapcolumn=88).make_table(
@@ -828,7 +840,11 @@ def create_control_app(
     @app.get("/candidates/{candidate_id}/evidence/raw-responses", response_class=HTMLResponse)
     def raw_response_index(candidate_id: str, request: Request) -> str:
         item = candidate_or_404(candidate_id)
-        raw = [reference for reference in item.artifacts if reference.logical_key.startswith("raw-responses/")]
+        raw = [
+            reference
+            for reference in item.artifacts
+            if reference.logical_key.startswith("raw-responses/")
+        ]
         return render(
             request,
             "raw_responses.html",

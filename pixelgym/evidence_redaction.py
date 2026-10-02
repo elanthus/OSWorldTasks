@@ -36,9 +36,7 @@ def standard_path_replacements(paths: Iterable[Path]) -> list[PathReplacement]:
 def _replace_path(value: str, source: str, replacement: str) -> str:
     # Do not replace a path inside a longer filename or path component. A slash
     # remains an allowed left boundary so file:///tmp still redacts /tmp.
-    pattern = re.compile(
-        rf"(?<![A-Za-z0-9._~-]){re.escape(source)}(?![A-Za-z0-9._~-])"
-    )
+    pattern = re.compile(rf"(?<![A-Za-z0-9._~-]){re.escape(source)}(?![A-Za-z0-9._~-])")
     return pattern.sub(lambda _match: replacement, value)
 
 

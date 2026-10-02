@@ -410,13 +410,7 @@ def _public_history_refs(root: Path) -> list[str]:
     )
     if result.returncode != 0:
         raise HistoryScanError("git_public_refs_list_failed")
-    refs = sorted(
-        {
-            ref
-            for ref in result.stdout.splitlines()
-            if ref and not ref.endswith("/HEAD")
-        }
-    )
+    refs = sorted({ref for ref in result.stdout.splitlines() if ref and not ref.endswith("/HEAD")})
     if not refs:
         raise HistoryScanError("git_public_refs_missing")
     return refs
@@ -461,9 +455,7 @@ def _history_blob_paths(root: Path, refs: list[str]) -> dict[str, set[str]]:
     return paths
 
 
-def _reachable_text_blobs(
-    root: Path, refs: list[str]
-) -> Iterable[tuple[str, list[str], str]]:
+def _reachable_text_blobs(root: Path, refs: list[str]) -> Iterable[tuple[str, list[str], str]]:
     objects = _history_objects(root, refs)
     if not objects:
         return

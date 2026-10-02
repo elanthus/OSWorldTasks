@@ -75,9 +75,7 @@ class DeterministicParityAdapter:
         del journal, approved_caps
         self.executed.append(assignment.ordinal)
         expected = self.results[assignment.ordinal]
-        return EpisodeResult(
-            **{key: value for key, value in expected.items() if key != "slot"}
-        )
+        return EpisodeResult(**{key: value for key, value in expected.items() if key != "slot"})
 
     def reconcile(
         self,
@@ -108,9 +106,7 @@ PANELS = ("claude_subscription", "codex_cli", "openrouter_http")
 
 
 @pytest.mark.parametrize("panel", PANELS)
-def test_manifest_runner_matches_legacy_result_aggregation(
-    tmp_path: Path, panel: str
-) -> None:
+def test_manifest_runner_matches_legacy_result_aggregation(tmp_path: Path, panel: str) -> None:
     fixture = _load(FIXTURE)["plans"][panel]
     execution = fixture["runner_execution"]
     root = tmp_path / panel
@@ -130,9 +126,7 @@ def test_manifest_runner_matches_legacy_result_aggregation(
     assert summary["outcome_denominators"] == execution["outcome_denominators"]
 
 
-def _runner_plan(
-    root: Path, fixture: dict[str, Any], execution: dict[str, Any]
-) -> CalibrationPlan:
+def _runner_plan(root: Path, fixture: dict[str, Any], execution: dict[str, Any]) -> CalibrationPlan:
     records = [
         {
             "task_id": task_id,
@@ -172,9 +166,7 @@ def _runner_plan(
             "family": family,
             "action_limit": limit,
         }
-        for ordinal, (seed, task_id, limit, family) in enumerate(
-            fixture["task_assignment"]
-        )
+        for ordinal, (seed, task_id, limit, family) in enumerate(fixture["task_assignment"])
     ]
     action_cap = sum(item["action_limit"] for item in assignments)
     value = {

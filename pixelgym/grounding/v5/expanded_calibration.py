@@ -34,12 +34,8 @@ from pixelgym.grounding.v5.runner import V5Runner
 PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-expanded-calibration-plan-v1"
 RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-expanded-calibration-result-v1"
 PILOT_PLAN = Path("artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-plan.json")
-PILOT_SUMMARY = Path(
-    "artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/summary.json"
-)
-PILOT_JOURNAL = Path(
-    "artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/attempts.sqlite"
-)
+PILOT_SUMMARY = Path("artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/summary.json")
+PILOT_JOURNAL = Path("artifacts/grounding-v5-qwen3-vl-8b-calibration-pilot-run/attempts.sqlite")
 APPROVED_PILOT_PLAN_DIGEST = (
     "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a"
 )
@@ -48,9 +44,7 @@ MAXIMUM_SPEND_USD = Decimal("5.00")
 PRIOR_AGGREGATE_SPEND_USD = Decimal("0.004228237")
 EXPECTED_PILOT_WIRE_REQUESTS = 20
 EXPECTED_TASK_COUNT = 10
-NORMAL_TERMINAL_CLASSIFICATIONS = frozenset(
-    {"success_termination", "step_limit_truncation"}
-)
+NORMAL_TERMINAL_CLASSIFICATIONS = frozenset({"success_termination", "step_limit_truncation"})
 
 
 def _git(repository_root: Path, *args: str) -> str:
@@ -80,9 +74,7 @@ def _completed_pilot_evidence(repository_root: Path) -> dict[str, Any]:
         raise ValueError("completed pilot summary approval mismatch")
     if summary.get("provider_wire_requests") != EXPECTED_PILOT_WIRE_REQUESTS:
         raise ValueError("completed pilot wire-request count mismatch")
-    if Decimal(str(summary.get("actual_aggregate_spend_usd"))) != (
-        PRIOR_AGGREGATE_SPEND_USD
-    ):
+    if Decimal(str(summary.get("actual_aggregate_spend_usd"))) != (PRIOR_AGGREGATE_SPEND_USD):
         raise ValueError("completed pilot aggregate spend mismatch")
     journal = V5AttemptJournal(pilot_journal_path)
     try:
@@ -244,16 +236,12 @@ def execute_expanded_run(
             episode_results.append(result.to_dict())
             if result.classification not in NORMAL_TERMINAL_CLASSIFICATIONS:
                 break
-        classifications = Counter(
-            result["classification"] for result in episode_results
-        )
+        classifications = Counter(result["classification"] for result in episode_results)
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "approved_plan_sha256": digest,
             "code_revision": plan["code_revision"],
-            "provider_calls_made": getattr(
-                provider, "wire_requests_sent", len(provider.records)
-            ),
+            "provider_calls_made": getattr(provider, "wire_requests_sent", len(provider.records)),
             "provider_wire_requests": getattr(
                 provider, "wire_requests_sent", len(provider.records)
             ),
@@ -261,12 +249,8 @@ def execute_expanded_run(
             "provider_control_requests": journal.call_counts()[1],
             "prior_aggregate_spend_usd": str(PRIOR_AGGREGATE_SPEND_USD),
             "actual_aggregate_spend_usd": str(provider.spent_usd),
-            "run_incremental_spend_usd": str(
-                provider.spent_usd - PRIOR_AGGREGATE_SPEND_USD
-            ),
-            "remaining_approved_spend_usd": str(
-                MAXIMUM_SPEND_USD - provider.spent_usd
-            ),
+            "run_incremental_spend_usd": str(provider.spent_usd - PRIOR_AGGREGATE_SPEND_USD),
+            "remaining_approved_spend_usd": str(MAXIMUM_SPEND_USD - provider.spent_usd),
             "maximum_spend_usd": str(MAXIMUM_SPEND_USD),
             "model": MODEL,
             "upstream_provider": UPSTREAM_PROVIDER,

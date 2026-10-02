@@ -21,9 +21,7 @@ def test_panel_smoke_plan_is_no_call_development_only_and_inside_cap() -> None:
         "C-llama-stateful",
         "D-qwen-stateless",
     ]
-    assert {record["task"]["partition"] for record in plan["policies"]} == {
-        "development"
-    }
+    assert {record["task"]["partition"] for record in plan["policies"]} == {"development"}
     assert len({record["task"]["task_id"] for record in plan["policies"]}) == 4
     assert [record["task"]["seed"] for record in plan["policies"]] == [
         5002,
@@ -43,20 +41,18 @@ def test_panel_smoke_price_records_fail_closed_and_bind_routes() -> None:
     plan = build_plan(ROOT)
     records = {record["slot"]: record for record in plan["policies"]}
 
-    assert records["A-gemini-stateful"]["provider"]["only"] == [
-        "google-vertex/global"
-    ]
+    assert records["A-gemini-stateful"]["provider"]["only"] == ["google-vertex/global"]
     assert records["A-gemini-stateful"]["provider"]["upstream_provider"] == "Google"
-    assert records["A-gemini-stateful"]["price_record"][
-        "per_request_theoretical_maximum_usd"
-    ] == "0.055296000"
+    assert (
+        records["A-gemini-stateful"]["price_record"]["per_request_theoretical_maximum_usd"]
+        == "0.055296000"
+    )
     assert records["B-qwen-stateful"]["provider"]["only"] == ["alibaba"]
     assert records["C-llama-stateful"]["provider"]["only"] == ["deepinfra"]
     assert records["C-llama-stateful"]["provider"]["quantizations"] == ["fp8"]
     assert records["D-qwen-stateless"]["provider"]["only"] == ["alibaba"]
     assert {
-        record["price_record"]["unknown_usage_or_price_rule"]
-        for record in plan["policies"]
+        record["price_record"]["unknown_usage_or_price_rule"] for record in plan["policies"]
     } == {"fail_closed"}
 
 

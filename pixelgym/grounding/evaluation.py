@@ -54,8 +54,7 @@ def validate_evaluation_versions(
     triple = (prompt_version, parser_version, prediction_schema_version)
     if triple not in _EVALUATION_VERSION_TRIPLES:
         raise ValueError(
-            "prompt, parser, and prediction schema versions are incompatible: "
-            f"{triple!r}"
+            f"prompt, parser, and prediction schema versions are incompatible: {triple!r}"
         )
 
 

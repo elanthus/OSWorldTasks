@@ -36,7 +36,9 @@ def _write_packaged_source_tree(root: Path, *, reverse_creation_order: bool = Fa
         path.write_text(content)
 
 
-def _write_manifest(root: Path, path: Path, *, state: str = "clean", digest: str | None = None) -> None:
+def _write_manifest(
+    root: Path, path: Path, *, state: str = "clean", digest: str | None = None
+) -> None:
     path.write_text(
         json.dumps(
             SourceProvenance(
@@ -67,7 +69,11 @@ def test_matching_clean_manifest_is_verified(repository_root: Path, tmp_path: Pa
     ],
 )
 def test_absent_or_non_file_manifest_has_a_safe_actionable_reason(
-    repository_root: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture, path_factory, reason: str
+    repository_root: Path,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    path_factory,
+    reason: str,
 ) -> None:
     with caplog.at_level("WARNING", logger="pixelgym.platform.source_provenance"):
         provenance = load_packaged_source_provenance(repository_root, path_factory(tmp_path))
@@ -109,7 +115,9 @@ def test_invalid_utf8_manifest_fails_closed_without_leaking_bytes(
 
 
 @pytest.mark.parametrize("state", ["dirty", "unverifiable"])
-def test_dirty_or_missing_provenance_is_not_clean(repository_root: Path, tmp_path: Path, state: str) -> None:
+def test_dirty_or_missing_provenance_is_not_clean(
+    repository_root: Path, tmp_path: Path, state: str
+) -> None:
     manifest = tmp_path / "source-provenance.json"
     if state == "dirty":
         _write_manifest(repository_root, manifest, state=state)
@@ -190,21 +198,26 @@ def test_source_digest_is_independent_of_filesystem_creation_order(tmp_path: Pat
     assert source_tree_sha256(first) == source_tree_sha256(second)
 
 
-def test_dockerignore_excludes_bytecode_without_excluding_platform_build_inputs(repository_root: Path) -> None:
+def test_dockerignore_excludes_bytecode_without_excluding_platform_build_inputs(
+    repository_root: Path,
+) -> None:
     patterns = {
         line.strip()
         for line in (repository_root / ".dockerignore").read_text().splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     }
     assert {"**/__pycache__/", "*.pyc", "*.pyo"} <= patterns
-    assert not {
-        "pyproject.toml",
-        "README.md",
-        "requirements/",
-        "requirements/platform-py312.lock",
-        "pixelgym/",
-        "flows/",
-        "config/",
-        "scripts/",
-        "artifacts/",
-    } & patterns
+    assert (
+        not {
+            "pyproject.toml",
+            "README.md",
+            "requirements/",
+            "requirements/platform-py312.lock",
+            "pixelgym/",
+            "flows/",
+            "config/",
+            "scripts/",
+            "artifacts/",
+        }
+        & patterns
+    )

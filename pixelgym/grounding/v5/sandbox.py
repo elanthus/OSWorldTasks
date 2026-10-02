@@ -117,11 +117,7 @@ class PolicyClaim:
             raise ValueError("declared unavailable capabilities must be sorted and unique")
 
     def to_dict(self) -> dict[str, object]:
-        return {
-            "declared_unavailable_capabilities": list(
-                self.declared_unavailable_capabilities
-            )
-        }
+        return {"declared_unavailable_capabilities": list(self.declared_unavailable_capabilities)}
 
 
 @dataclass(frozen=True)
@@ -312,25 +308,19 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
         schema_version=str(schema_version),
         runtime_digest=str(value.get("runtime_digest", "")),
         provider_endpoint=str(value.get("provider_endpoint", "")),
-        provider_endpoint_allowlist_digest=str(
-            value.get("provider_endpoint_allowlist_digest", "")
-        ),
+        provider_endpoint_allowlist_digest=str(value.get("provider_endpoint_allowlist_digest", "")),
         probe_result=ProbeResult(
             status=probe.get("status"),  # type: ignore[arg-type]
             mechanism_name=str(probe.get("mechanism_name", "")),
             profile_digest=(
-                str(probe["profile_digest"])
-                if probe.get("profile_digest") is not None
-                else None
+                str(probe["profile_digest"]) if probe.get("profile_digest") is not None else None
             ),
             applied_to_cli_launch=probe.get("applied_to_cli_launch"),  # type: ignore[arg-type]
         ),
         runtime_enforcement=RuntimeEnforcement(
             mechanism_name=enforcement.get("mechanism_name"),  # type: ignore[arg-type]
             argv_digest=str(enforcement.get("argv_digest", "")),
-            environment_allowlist_digest=str(
-                enforcement.get("environment_allowlist_digest", "")
-            ),
+            environment_allowlist_digest=str(enforcement.get("environment_allowlist_digest", "")),
             environment_variable_names=tuple(enforcement.get("environment_variable_names", ())),
             cli_restrictions_applied=enforcement.get(  # type: ignore[arg-type]
                 "cli_restrictions_applied"
@@ -340,9 +330,7 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
             ),
             os_sandbox_applied=enforcement.get("os_sandbox_applied"),  # type: ignore[arg-type]
         ),
-        policy_claim=PolicyClaim(
-            tuple(claim.get("declared_unavailable_capabilities", ()))
-        ),
+        policy_claim=PolicyClaim(tuple(claim.get("declared_unavailable_capabilities", ()))),
     )
     validate_runtime_enforcement(manifest.policy_claim, manifest.runtime_enforcement)
     return manifest

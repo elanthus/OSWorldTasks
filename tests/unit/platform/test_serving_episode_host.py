@@ -116,13 +116,12 @@ def test_fake_policy_serves_multiple_actions_and_applies_reported_result(tmp_pat
     records = host.session_store.records(EPISODE_ID)
     result_event = host.journal.event(f"{EPISODE_ID}/step-0000/result_reported")
     assert result_event is not None
-    assert records[0].checkpoints.post_dispatch == result_event.payload[
-        "post_dispatch_checkpoint_digest"
-    ]
+    assert (
+        records[0].checkpoints.post_dispatch
+        == result_event.payload["post_dispatch_checkpoint_digest"]
+    )
     assert records[1].checkpoints.post_dispatch is None
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "result_reported"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("result_reported") == 1
 
 
 def test_close_applies_the_outstanding_result_and_is_an_exactly_once_replay(
@@ -148,9 +147,7 @@ def test_close_applies_the_outstanding_result_and_is_an_exactly_once_replay(
     assert closed.terminal_classification.value == "terminated"
     assert closed.steps == 1
     assert host.get(EPISODE_ID).resume_phase is SessionResumePhase.CLOSED
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_closed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_closed") == 1
     with pytest.raises(EpisodeEndedError):
         host.act(episode_id=EPISODE_ID, screenshot=final_screen)
 
@@ -274,19 +271,13 @@ def test_restart_recovers_each_replayable_durable_boundary_without_duplicate_cal
     tmp_path: Path, boundary: str
 ) -> None:
     baseline = _host(tmp_path / "baseline")
-    baseline.create_episode(
-        task_instruction="Complete the form", client_episode_ref="client-1"
-    )
+    baseline.create_episode(task_instruction="Complete the form", client_episode_ref="client-1")
     baseline.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
     expected_checkpoint = baseline.get(EPISODE_ID).policy_checkpoint_sha256
 
     transport = ScriptedTransport()
-    interrupted = _host(
-        tmp_path / "recovered", transport=transport, interrupt_after=boundary
-    )
-    interrupted.create_episode(
-        task_instruction="Complete the form", client_episode_ref="client-1"
-    )
+    interrupted = _host(tmp_path / "recovered", transport=transport, interrupt_after=boundary)
+    interrupted.create_episode(task_instruction="Complete the form", client_episode_ref="client-1")
     with pytest.raises(InjectedInterruption, match=boundary):
         interrupted.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
 
@@ -299,9 +290,12 @@ def test_restart_recovers_each_replayable_durable_boundary_without_duplicate_cal
     assert len(recovered.session_store.records(EPISODE_ID)) == 1
     assert recovered.get(EPISODE_ID).policy_checkpoint_sha256 == expected_checkpoint
     checkpoints = recovered.session_store.records(EPISODE_ID)[0].checkpoints
-    assert checkpoints.pre_call == recovered.journal.event(
-        f"{EPISODE_ID}/step-0000/attempt-00/attempt_started"
-    ).payload["pre_call_checkpoint_digest"]
+    assert (
+        checkpoints.pre_call
+        == recovered.journal.event(f"{EPISODE_ID}/step-0000/attempt-00/attempt_started").payload[
+            "pre_call_checkpoint_digest"
+        ]
+    )
 
 
 def test_restart_after_initialized_boundary_uses_durable_reset_checkpoint(
@@ -322,9 +316,7 @@ def test_restart_after_initialized_boundary_uses_durable_reset_checkpoint(
 
 def test_restart_rejects_a_changed_in_progress_act_without_sealing(tmp_path: Path) -> None:
     interrupted = _host(tmp_path, interrupt_after="pre_call")
-    interrupted.create_episode(
-        task_instruction="Complete the form", client_episode_ref="client-1"
-    )
+    interrupted.create_episode(task_instruction="Complete the form", client_episode_ref="client-1")
     with pytest.raises(InjectedInterruption, match="pre_call"):
         interrupted.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
 
@@ -345,9 +337,7 @@ def test_restart_with_unknown_reserved_attempt_seals_infrastructure_failure_once
 ) -> None:
     transport = ScriptedTransport()
     interrupted = _host(tmp_path, transport=transport, interrupt_after=boundary)
-    interrupted.create_episode(
-        task_instruction="Complete the form", client_episode_ref="client-1"
-    )
+    interrupted.create_episode(task_instruction="Complete the form", client_episode_ref="client-1")
     with pytest.raises(InjectedInterruption, match=boundary):
         interrupted.act(episode_id=EPISODE_ID, screenshot=b"screen-0")
     assert len(transport.model_requests) == requests_before_restart
@@ -398,8 +388,9 @@ def test_result_reporting_boundaries_recover_without_reapplying_policy_result(
     ) == 1
     result_event = recovered.journal.event(f"{EPISODE_ID}/step-0000/result_reported")
     assert result_event is not None
-    assert recovered.session_store.records(EPISODE_ID)[0].checkpoints.post_dispatch == (
-        result_event.payload["post_dispatch_checkpoint_digest"]
+    assert (
+        recovered.session_store.records(EPISODE_ID)[0].checkpoints.post_dispatch
+        == (result_event.payload["post_dispatch_checkpoint_digest"])
     )
 
 
@@ -423,7 +414,11 @@ def test_result_reporting_boundaries_recover_without_reapplying_policy_result(
             SealedFailure.PARSE_FAILURE,
         ),
         ([], {"action_type": 1, "x": 1024, "y": 10, "key": 0}, SealedFailure.INVALID_ACTION),
-        ([TransportOutcome("pre_send_failure", failure_code="local-failure")], NOOP, SealedFailure.REQUEST_FAILURE),
+        (
+            [TransportOutcome("pre_send_failure", failure_code="local-failure")],
+            NOOP,
+            SealedFailure.REQUEST_FAILURE,
+        ),
     ],
 )
 def test_each_policy_failure_is_sealed_once_and_never_attempted_again(
@@ -439,9 +434,7 @@ def test_each_policy_failure_is_sealed_once_and_never_attempted_again(
     result = host.act(episode_id=EPISODE_ID, screenshot=b"screen")
     assert result.sealed_failure is expected
     assert len(host.session_store.records(EPISODE_ID)) == 1
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_sealed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_sealed") == 1
     requests = len(transport.model_requests)
     with pytest.raises(EpisodeEndedError):
         host.act(episode_id=EPISODE_ID, screenshot=b"screen")
@@ -474,9 +467,7 @@ def test_sealed_episode_can_close_once_with_valid_closed_state(tmp_path: Path) -
     assert closed.terminal_classification.value == "invalid_action"
     assert state.resume_phase is SessionResumePhase.CLOSED
     assert state.sealed_failure is None
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_closed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_closed") == 1
 
 
 def test_restart_after_sealed_event_rejects_changed_terminal_record_input(
@@ -490,9 +481,7 @@ def test_restart_after_sealed_event_rejects_changed_terminal_record_input(
         "usage": {"prompt_tokens": 1, "completion_tokens": 1},
     }
     transport = ScriptedTransport([TransportOutcome("response", response)])
-    interrupted = _host(
-        tmp_path, transport=transport, interrupt_after="sealed_event"
-    )
+    interrupted = _host(tmp_path, transport=transport, interrupt_after="sealed_event")
     interrupted.create_episode(task_instruction="Complete", client_episode_ref="client-1")
     with pytest.raises(InjectedInterruption, match="sealed_event"):
         interrupted.act(episode_id=EPISODE_ID, screenshot=b"original-screen")
@@ -526,9 +515,7 @@ def test_deployment_call_cap_is_checked_before_send_and_seals_open_episode(
     )
     assert capped.sealed_failure is SealedFailure.CAP_REACHED
     assert len(transport.model_requests) == 1
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_sealed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_sealed") == 1
     with pytest.raises(EpisodeEndedError):
         host.act(episode_id=EPISODE_ID, screenshot=screen)
     assert len(transport.model_requests) == 1
@@ -566,9 +553,7 @@ def test_per_action_attempt_cap_seals_the_second_retryable_response(tmp_path: Pa
     assert result.sealed_failure is SealedFailure.INFRASTRUCTURE_FAILURE
     assert result.attempt_count == 2
     assert len(transport.model_requests) == 2
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_sealed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_sealed") == 1
 
 
 def test_max_steps_seals_before_an_extra_provider_call(tmp_path: Path) -> None:
@@ -585,9 +570,7 @@ def test_max_steps_seals_before_an_extra_provider_call(tmp_path: Path) -> None:
     )
     assert result.sealed_failure is SealedFailure.MAX_STEPS_REACHED
     assert len(transport.model_requests) == 1
-    assert [event.kind for event in host.journal.events(EPISODE_ID)].count(
-        "episode_sealed"
-    ) == 1
+    assert [event.kind for event in host.journal.events(EPISODE_ID)].count("episode_sealed") == 1
     with pytest.raises(EpisodeEndedError):
         host.act(episode_id=EPISODE_ID, screenshot=screen)
     assert len(transport.model_requests) == 1

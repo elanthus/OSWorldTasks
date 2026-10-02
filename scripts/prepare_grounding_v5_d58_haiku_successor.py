@@ -45,7 +45,9 @@ def representative_outcomes(snapshot: dict[str, Any], seeds: list[int]) -> dict[
         if row["success"] != (row["classification"] == "success_termination"):
             raise ValueError("representative success disagrees with terminal classification")
         by_seed[row["seed"]][mode] = row
-    if set(by_seed) != wanted or any(set(pair) != {"history", "stateless"} for pair in by_seed.values()):
+    if set(by_seed) != wanted or any(
+        set(pair) != {"history", "stateless"} for pair in by_seed.values()
+    ):
         raise ValueError("representative outcomes are incomplete")
 
     counts = Counter()
@@ -149,8 +151,7 @@ def build_analysis() -> dict[str, Any]:
             "episodes_per_arm_with_robustness_twins": 192,
             "meets_power_at_observed_discordance": options[3]["power"]["observed_discordance"]
             >= 0.80,
-            "meets_power_at_upper_sensitivity": options[3]["power"]["upper_sensitivity"]
-            >= 0.80,
+            "meets_power_at_upper_sensitivity": options[3]["power"]["upper_sensitivity"] >= 0.80,
             "status": "analytical candidate; owner selection not recorded",
         },
         "execution_readiness": {

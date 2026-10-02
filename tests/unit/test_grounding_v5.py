@@ -94,9 +94,7 @@ def recorded_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         artifact_revision(CURRENT_PARTITION_MANIFEST_DIRECTORY),
         GENERATOR_SOURCE_FILES,
     )
-    monkeypatch.setattr(
-        manifests, "__file__", str(root / "pixelgym/grounding/v5/manifests.py")
-    )
+    monkeypatch.setattr(manifests, "__file__", str(root / "pixelgym/grounding/v5/manifests.py"))
     return root
 
 
@@ -148,12 +146,8 @@ def test_v5_d56_calibration_manifest_replaces_every_exposed_task(
     assert derived["derivation"]["source_manifest_digest"] == source["manifest_digest"]
     exposed = {*D56_EXCLUDED_CALIBRATION_SEEDS, *D56_CONSUMED_CALIBRATION_SEEDS}
     assert set(derived["derivation"]["excluded_seeds"]) == exposed
-    assert exposed.isdisjoint(
-        record["seed_record"]["seed"] for record in derived["records"]
-    )
-    assert derived["derivation"]["replacement_seeds"] == list(
-        D56_REPLACEMENT_CALIBRATION_SEEDS
-    )
+    assert exposed.isdisjoint(record["seed_record"]["seed"] for record in derived["records"])
+    assert derived["derivation"]["replacement_seeds"] == list(D56_REPLACEMENT_CALIBRATION_SEEDS)
     assert set(D56_REPLACEMENT_CALIBRATION_SEEDS).issubset(
         record["seed_record"]["seed"] for record in derived["records"]
     )
@@ -192,9 +186,7 @@ def test_v5_versioned_partition_manifests_preserve_task_records(
         (ROOT / HISTORICAL_MANIFEST_DIRECTORY / filename).read_text(encoding="utf-8")
     )
     current = json.loads(
-        (ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / filename).read_text(
-            encoding="utf-8"
-        )
+        (ROOT / CURRENT_PARTITION_MANIFEST_DIRECTORY / filename).read_text(encoding="utf-8")
     )
 
     assert current["generator_source_digest"] != historical["generator_source_digest"]
@@ -207,13 +199,9 @@ def test_v5_versioned_partition_manifests_preserve_task_records(
 
 def test_v5_versioned_d56_manifest_preserves_task_records_and_derivation() -> None:
     historical = json.loads(
-        (
-            ROOT / HISTORICAL_MANIFEST_DIRECTORY / "calibration-d56.json"
-        ).read_text(encoding="utf-8")
+        (ROOT / HISTORICAL_MANIFEST_DIRECTORY / "calibration-d56.json").read_text(encoding="utf-8")
     )
-    current = json.loads(
-        (ROOT / CURRENT_D56_CALIBRATION_MANIFEST).read_text(encoding="utf-8")
-    )
+    current = json.loads((ROOT / CURRENT_D56_CALIBRATION_MANIFEST).read_text(encoding="utf-8"))
 
     assert current["generator_source_digest"] != historical["generator_source_digest"]
     assert current["manifest_digest"] != historical["manifest_digest"]
@@ -234,9 +222,7 @@ def test_v5_generated_difficulty_bounds_and_exact_slack() -> None:
         assert 8 <= len(task.stages) <= 14
         assert 18 <= task.optimal_low_level_actions <= 40
         assert task.max_episode_steps == task.optimal_low_level_actions + task.correction_slack
-        assert task.correction_slack == max(
-            6, -(-task.optimal_low_level_actions // 4)
-        )
+        assert task.correction_slack == max(6, -(-task.optimal_low_level_actions // 4))
         assert sum(len(stage.required_text) for stage in task.stages) <= 12
         assert all(len(stage.required_text) <= 5 for stage in task.stages)
 
@@ -340,9 +326,7 @@ def test_v5_wrong_irreversible_commit_cannot_later_succeed() -> None:
 def test_v5_repair_control_only_appears_for_declared_recovery_error() -> None:
     tasks = (generate_task(record.seed) for record in SEED_RECORDS)
     task = next(task for task in tasks if any(stage.recovery_stage for stage in task.stages))
-    recovery_index = next(
-        index for index, stage in enumerate(task.stages) if stage.recovery_stage
-    )
+    recovery_index = next(index for index, stage in enumerate(task.stages) if stage.recovery_stage)
     backend = V5FakeBackend()
     backend.reset(task.seed)
     for stage in task.stages[:recovery_index]:
@@ -358,13 +342,9 @@ def test_v5_repair_control_only_appears_for_declared_recovery_error() -> None:
         control for control in recovery.controls if control.control_id != recovery.target_control_id
     )
     backend.click(*backend.control_center(wrong.control_id))
-    assert "repair_implicated" not in {
-        control.control_id for control in backend.visible_controls()
-    }
+    assert "repair_implicated" not in {control.control_id for control in backend.visible_controls()}
     backend.click(*backend.control_center(recovery.target_control_id))
-    assert [control.control_id for control in backend.visible_controls()] == [
-        "repair_implicated"
-    ]
+    assert [control.control_id for control in backend.visible_controls()] == ["repair_implicated"]
     checkpoint = backend.checkpoint()
     restored = V5FakeBackend()
     restored.restore(checkpoint)
@@ -394,9 +374,7 @@ def test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor() -> No
     assert record["golden"]["reward_sum"] == 1.0
     assert record["recovery"]["reward_sum"] == 1.0
     assert set(record["mutations"]) == {mutation.value for mutation in Mutation}
-    mutation_digests = {
-        mutation["trace_digest"] for mutation in record["mutations"].values()
-    }
+    mutation_digests = {mutation["trace_digest"] for mutation in record["mutations"].values()}
     assert len(mutation_digests) == len(Mutation)
     assert (
         record["mutations"][Mutation.STALE_TASK_SUBMISSION.value]["trace_digest"]
@@ -410,9 +388,10 @@ def test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor() -> No
         "success": False,
         "rejected": True,
     }
-    assert record["mutations"][Mutation.STEP_BUDGET_EXHAUSTION.value][
-        "stale_submission_validation"
-    ] is None
+    assert (
+        record["mutations"][Mutation.STEP_BUDGET_EXHAUSTION.value]["stale_submission_validation"]
+        is None
+    )
     assert record["random_floor_reward_sum"] == 0.0
 
 
@@ -513,9 +492,7 @@ def test_v5_publishable_derivative_requires_stored_authoritative_source(tmp_path
 
 
 def test_v5_packaged_task_schema_accepts_all_generated_tasks() -> None:
-    schema = json.loads(
-        (ROOT / "pixelgym/grounding/v5/schemas/task.schema.json").read_text()
-    )
+    schema = json.loads((ROOT / "pixelgym/grounding/v5/schemas/task.schema.json").read_text())
     for task in tasks_for_partition(Partition.DEVELOPMENT):
         jsonschema.validate(task.canonical_dict(), schema)
 
@@ -561,13 +538,17 @@ def test_core_fake_backend_v5_checkpoint_restores_exact_state() -> None:
     assert (restored.screenshot() == backend.screenshot()).all()
 
 
-@pytest.mark.parametrize("checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v1"}'])
+@pytest.mark.parametrize(
+    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v1"}']
+)
 def test_core_fake_backend_v5_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
     with pytest.raises(ValueError):
         FakeBackend().restore(checkpoint)
 
 
-@pytest.mark.parametrize("checkpoint", [b"[]", b'{"schema_version":"pixelgym-v5-fake-checkpoint-v1"}'])
+@pytest.mark.parametrize(
+    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-v5-fake-checkpoint-v1"}']
+)
 def test_v5_fake_backend_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
     with pytest.raises(ValueError):
         V5FakeBackend().restore(checkpoint)

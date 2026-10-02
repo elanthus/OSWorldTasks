@@ -44,11 +44,13 @@ class FrozenSmokeFixture:
             raise DeploymentSmokeError("frozen smoke fixture image digest mismatch")
         predictions = load_jsonl(repository_root / "artifacts/grounding-predictions.jsonl")
         raw = next(
-            row for row in predictions
+            row
+            for row in predictions
             if row["example_id"] == example["example_id"] and row["condition"] == "raw"
         )
         marks = next(
-            row for row in predictions
+            row
+            for row in predictions
             if row["example_id"] == example["example_id"] and row["condition"] == "marks"
         )
         return cls(
@@ -89,7 +91,8 @@ class CandidateServiceSmoke:
         ) as client:
             ready = client.get("/health/ready")
             if ready.status_code != 200 or ready.json() != {
-                "status": "ready", "policy_id": candidate.policy.policy_id
+                "status": "ready",
+                "policy_id": candidate.policy.policy_id,
             }:
                 raise DeploymentSmokeError("candidate readiness check failed")
             policy = client.get("/api/v1/policy")
@@ -116,8 +119,14 @@ class CandidateServiceSmoke:
             except ValueError as exc:
                 raise DeploymentSmokeError("candidate smoke response was not JSON") from exc
             expected_keys = {
-                "schema_version", "prediction", "parse_status", "parse_error", "policy_id",
-                "deployment_id", "exact_policy_version", "provider_request_id",
+                "schema_version",
+                "prediction",
+                "parse_status",
+                "parse_error",
+                "policy_id",
+                "deployment_id",
+                "exact_policy_version",
+                "provider_request_id",
             }
             if response.status_code != 200 or set(body) != expected_keys:
                 raise DeploymentSmokeError("candidate smoke response contract failed")

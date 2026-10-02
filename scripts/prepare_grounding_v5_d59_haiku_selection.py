@@ -84,8 +84,7 @@ def build_selection() -> dict[str, Any]:
             "independent_representatives": candidate["independent_pairs"],
             "episodes_per_arm": candidate["episodes_per_arm_with_robustness_twins"],
             "robustness_twins_per_arm": (
-                candidate["episodes_per_arm_with_robustness_twins"]
-                - candidate["independent_pairs"]
+                candidate["episodes_per_arm_with_robustness_twins"] - candidate["independent_pairs"]
             ),
             "power_at_observed_discordance": power["observed_discordance"],
             "power_at_upper_sensitivity": power["upper_sensitivity"],

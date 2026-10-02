@@ -71,9 +71,7 @@ def test_file_runtime_connection_applies_wal_and_configured_busy_timeout(
 def test_memory_and_file_uri_connections_use_documented_journal_modes(
     tmp_path: Path,
 ) -> None:
-    memory = ControlStore(
-        ":memory:", reviewer_identity="local-reviewer", busy_timeout_ms=149
-    )
+    memory = ControlStore(":memory:", reviewer_identity="local-reviewer", busy_timeout_ms=149)
     file_uri = ControlStore(
         f"{(tmp_path / 'uri-control.db').as_uri()}?mode=rwc",
         reviewer_identity="local-reviewer",
@@ -100,7 +98,9 @@ def test_memory_and_file_uri_connections_use_documented_journal_modes(
     assert file_uri.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
     assert named_shared_memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
     assert named_shared_memory.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 153
-    assert anonymous_shared_memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
+    assert (
+        anonymous_shared_memory.connection.execute("PRAGMA journal_mode").fetchone()[0] == "memory"
+    )
     assert anonymous_shared_memory.connection.execute("PRAGMA busy_timeout").fetchone()[0] == 155
 
 
@@ -523,6 +523,8 @@ def test_distinct_source_provenance_diagnostics_have_distinct_candidate_identiti
             summary=failed_summary,
         )
         assert candidate.policy.policy_id == policy.policy_id
+
+
 def test_approval_requires_server_identity_reason_and_exact_report_digest(
     tmp_path: Path, passing_evidence
 ) -> None:
@@ -532,12 +534,29 @@ def test_approval_requires_server_identity_reason_and_exact_report_digest(
         source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
     )
     with pytest.raises(AuthorizationError):
-        control.approve(candidate.candidate_id, actor="browser-field", reason="ok", gate_report_sha256=candidate.gate_report_sha256)
+        control.approve(
+            candidate.candidate_id,
+            actor="browser-field",
+            reason="ok",
+            gate_report_sha256=candidate.gate_report_sha256,
+        )
     with pytest.raises(ValueError, match="reason"):
-        control.approve(candidate.candidate_id, actor="local-reviewer", reason=" ", gate_report_sha256=candidate.gate_report_sha256)
+        control.approve(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason=" ",
+            gate_report_sha256=candidate.gate_report_sha256,
+        )
     with pytest.raises(TransitionError, match="digest"):
-        control.approve(candidate.candidate_id, actor="local-reviewer", reason="ok", gate_report_sha256="wrong")
-    approval = control.approve(candidate.candidate_id, actor="local-reviewer", reason="reviewed evidence", gate_report_sha256=candidate.gate_report_sha256)
+        control.approve(
+            candidate.candidate_id, actor="local-reviewer", reason="ok", gate_report_sha256="wrong"
+        )
+    approval = control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed evidence",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
     assert approval["actor"] == "local-reviewer"
     assert control.get_candidate(candidate.candidate_id).state.value == "Approved"
 
@@ -605,9 +624,7 @@ def test_serving_restore_rejects_unapproved_or_gate_failed_active_policy(
         on_activated=lambda deployment, prepared: activated.append(deployment),
     )
 
-    with pytest.raises(
-        (TransitionError, ContractValidationError), match="approved|gate.?report"
-    ):
+    with pytest.raises((TransitionError, ContractValidationError), match="approved|gate.?report"):
         restoring.restore_active()
     assert control.active()[0] == deployed
     assert not smoke_called
@@ -620,9 +637,9 @@ def test_serving_restore_rejects_gate_report_rewritten_after_approval(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     rewritten_report = {**candidate.gate_report.to_dict(), "run_id": "rewritten-after-approval"}
     encoded = canonical_json_bytes(rewritten_report)
     control.connection.execute(
@@ -636,9 +653,7 @@ def test_serving_restore_rejects_gate_report_rewritten_after_approval(
         smoke_called = True
         return True
 
-    restoring = DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=smoke
-    )
+    restoring = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
 
     with pytest.raises(ContractValidationError, match="run identity"):
         restoring.restore_active()
@@ -653,9 +668,9 @@ def test_serving_restore_uses_validated_candidate_snapshot_without_second_read(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     loaded: list[str] = []
 
     def reject_second_read(_candidate_id: str):
@@ -683,9 +698,9 @@ def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_sm
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     # A genuinely legacy-shaped fixture: schema_version pinned to v1 (matching the
     # legacy schema's own const) with no renderer keys, not merely a v2-labelled
     # document missing provenance -- that shape now fails schema validation outright
@@ -752,9 +767,9 @@ def test_serving_restore_rejects_malformed_approval_before_artifacts_or_smoke(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     _disable_approval_append_only_guards(control)
     control.connection.execute(
         "UPDATE approvals SET reason = '' WHERE candidate_id = ?",
@@ -804,7 +819,9 @@ def test_serving_restore_aborts_startup_when_active_policy_smoke_fails(
     assert not activated
 
 
-def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImmutableStore, suffix: str):
+def _approved_candidate(
+    control: ControlStore, passing_evidence, store: LocalImmutableStore, suffix: str
+):
     policy, summary, report = passing_evidence
     if suffix:
         from pixelgym.platform.policy import build_policy_manifest, prompt_template
@@ -821,21 +838,35 @@ def _approved_candidate(control: ControlStore, passing_evidence, store: LocalImm
             scorer_version=policy.scorer_version,
             overlay_version=policy.overlay_version,
             target_semantics=policy.target_semantics,
-            source_provenance=__import__("pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]).SourceProvenance(
-                "pixelgym-source-provenance-v1", policy.code_revision, policy.source_tree_sha256,
-                policy.code_state, "git-build-inputs-v1"
+            source_provenance=__import__(
+                "pixelgym.platform.source_provenance", fromlist=["SourceProvenance"]
+            ).SourceProvenance(
+                "pixelgym-source-provenance-v1",
+                policy.code_revision,
+                policy.source_tree_sha256,
+                policy.code_state,
+                "git-build-inputs-v1",
             ),
             dependency_lock_sha256=policy.dependency_lock_sha256,
             model_alias_disclosure=policy.model_alias_disclosure,
         )
-    reference = store.put_once(f"policy/{suffix or 'a'}.json", b"verified", media_type="application/json")
+    reference = store.put_once(
+        f"policy/{suffix or 'a'}.json", b"verified", media_type="application/json"
+    )
     candidate = control.register_candidate(
         source_run_id=summary.run_id + suffix,
         policy=policy,
-        gate_report=__import__("dataclasses").replace(report, policy_id=policy.policy_id, run_id=summary.run_id + suffix),
+        gate_report=__import__("dataclasses").replace(
+            report, policy_id=policy.policy_id, run_id=summary.run_id + suffix
+        ),
         artifacts=[reference],
     )
-    control.approve(candidate.candidate_id, actor="local-reviewer", reason="reviewed", gate_report_sha256=candidate.gate_report_sha256)
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="reviewed",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
     return candidate
 
 
@@ -894,9 +925,9 @@ def test_reconcile_tracking_mirrors_authoritative_status_and_active_alias(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="activate")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="activate"
+    )
     mirror = _LifecycleMirror()
 
     DeploymentCoordinator(
@@ -917,10 +948,14 @@ def test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_sourc
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     first = _approved_candidate(control, passing_evidence, store, "")
-    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
     deployed_first = coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
     second = _approved_candidate(control, passing_evidence, store, "second")
-    failing = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: False)
+    failing = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: False
+    )
     with pytest.raises(TransitionError, match="smoke"):
         failing.deploy(second.candidate_id, actor="local-reviewer", reason="bad")
     assert control.active()[0] == deployed_first
@@ -944,12 +979,8 @@ def test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_sourc
     ]
     rollback_audit = control.audit_events()[-1]
     assert rollback_audit["event_type"] == "deployment.rollback"
-    assert rollback_audit["details"]["abandoned_deployment_id"] == (
-        deployed_second.deployment_id
-    )
-    assert rollback_audit["details"]["restored_deployment_id"] == (
-        deployed_first.deployment_id
-    )
+    assert rollback_audit["details"]["abandoned_deployment_id"] == (deployed_second.deployment_id)
+    assert rollback_audit["details"]["restored_deployment_id"] == (deployed_first.deployment_id)
 
 
 def test_migrate_drops_legacy_deployment_link_without_losing_history(
@@ -969,9 +1000,7 @@ def test_migrate_drops_legacy_deployment_link_without_losing_history(
 
     control.migrate()
 
-    columns = {
-        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
-    }
+    columns = {row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")}
     assert "previous_deployment_id" not in columns
     control.require_migrated()
     assert control.active()[0] == deployed
@@ -1000,9 +1029,7 @@ def test_legacy_deployment_migration_rejects_schema_drift(
 
     with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
         control.migrate()
-    columns = {
-        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
-    }
+    columns = {row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")}
     assert "previous_deployment_id" in columns
     active_candidate = control.connection.execute(
         """SELECT deployments.candidate_id
@@ -1018,9 +1045,9 @@ def test_legacy_deployment_migration_preserves_unexpected_schema_and_data(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     control.connection.execute(
         "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
     )
@@ -1031,13 +1058,9 @@ def test_legacy_deployment_migration_preserves_unexpected_schema_and_data(
     with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
         control.migrate()
 
-    columns = {
-        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
-    }
+    columns = {row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")}
     assert {"previous_deployment_id", "release_channel"} <= columns
-    row = control.connection.execute(
-        "SELECT release_channel FROM deployments"
-    ).fetchone()
+    row = control.connection.execute("SELECT release_channel FROM deployments").fetchone()
     assert row["release_channel"] == "sentinel-channel"
     assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
@@ -1102,9 +1125,7 @@ def test_migration_rejects_hidden_generated_column_without_losing_history(
     with pytest.raises(RuntimeError, match=r"stale schema .*poison"):
         control.migrate()
 
-    row = control.connection.execute(
-        "SELECT deployment_id, poison FROM deployments"
-    ).fetchone()
+    row = control.connection.execute("SELECT deployment_id, poison FROM deployments").fetchone()
     assert (row["deployment_id"], row["poison"]) == (deployed.deployment_id, 2)
 
 
@@ -1168,9 +1189,9 @@ def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
     control.connection.execute(
         "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
     )
@@ -1183,9 +1204,7 @@ def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
     with pytest.raises(RuntimeError, match="violates foreign keys"):
         control.migrate()
 
-    columns = {
-        row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")
-    }
+    columns = {row["name"] for row in control.connection.execute("PRAGMA table_info(deployments)")}
     assert "previous_deployment_id" in columns
     assert control.connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
@@ -1198,7 +1217,9 @@ def test_rollback_fails_when_no_previous_deployment_event_exists(
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     first = _approved_candidate(control, passing_evidence, store, "")
-    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
     coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
 
     with pytest.raises(TransitionError, match="no eligible known-good"):
@@ -1220,9 +1241,7 @@ def test_repeated_rollbacks_follow_last_known_good_lineage(
     deployed_c = coordinator.deploy(
         candidate_c.candidate_id, actor="local-reviewer", reason="candidate C"
     )
-    coordinator.deploy(
-        candidate_a.candidate_id, actor="local-reviewer", reason="candidate A"
-    )
+    coordinator.deploy(candidate_a.candidate_id, actor="local-reviewer", reason="candidate A")
     deployed_b = coordinator.deploy(
         candidate_b.candidate_id, actor="local-reviewer", reason="candidate B"
     )
@@ -1244,21 +1263,13 @@ def test_repeated_rollbacks_follow_last_known_good_lineage(
         candidate_c.candidate_id,
     ]
     rollback_audits = [
-        event
-        for event in control.audit_events()
-        if event["event_type"] == "deployment.rollback"
+        event for event in control.audit_events() if event["event_type"] == "deployment.rollback"
     ]
-    assert rollback_audits[0]["details"]["abandoned_deployment_id"] == (
-        deployed_b.deployment_id
-    )
-    assert rollback_audits[1]["details"]["restored_deployment_id"] == (
-        deployed_c.deployment_id
-    )
+    assert rollback_audits[0]["details"]["abandoned_deployment_id"] == (deployed_b.deployment_id)
+    assert rollback_audits[1]["details"]["restored_deployment_id"] == (deployed_c.deployment_id)
 
 
-def test_fresh_deploy_resets_the_abandoned_rollback_chain(
-    tmp_path: Path, passing_evidence
-) -> None:
+def test_fresh_deploy_resets_the_abandoned_rollback_chain(tmp_path: Path, passing_evidence) -> None:
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate_c = _approved_candidate(control, passing_evidence, store, "candidate-c")
@@ -1366,9 +1377,10 @@ def test_pre_lineage_history_resolves_without_rewriting_stored_events(
         control=reopened, store=store, load_and_smoke=lambda policy: True
     )
     assert restarted.restore_active() == current
-    assert restarted.rollback(
-        actor="local-reviewer", reason="resolved after restart"
-    ).candidate_id == candidate_c.candidate_id
+    assert (
+        restarted.rollback(actor="local-reviewer", reason="resolved after restart").candidate_id
+        == candidate_c.candidate_id
+    )
 
 
 def test_store_rejects_rollback_to_any_candidate_except_known_good_target(
@@ -1411,13 +1423,9 @@ def test_rollback_reverifies_known_good_target_before_activation(
     store = LocalImmutableStore(tmp_path / "immutable")
     target = _approved_candidate(control, passing_evidence, store, "target")
     active_candidate = _approved_candidate(control, passing_evidence, store, "active")
-    setup = DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    )
+    setup = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
     setup.deploy(target.candidate_id, actor="local-reviewer", reason="target")
-    active = setup.deploy(
-        active_candidate.candidate_id, actor="local-reviewer", reason="active"
-    )
+    active = setup.deploy(active_candidate.candidate_id, actor="local-reviewer", reason="active")
     rollback_store: ImmutableStore = store
 
     if failure == "unapproved":
@@ -1427,9 +1435,7 @@ def test_rollback_reverifies_known_good_target_before_activation(
         )
     elif failure == "corrupt":
         artifact = target.artifacts[0]
-        (tmp_path / "immutable" / "objects" / artifact.logical_key).write_bytes(
-            b"corrupt"
-        )
+        (tmp_path / "immutable" / "objects" / artifact.logical_key).write_bytes(b"corrupt")
     elif failure == "missing":
         artifact = target.artifacts[0]
         (tmp_path / "immutable" / "objects" / artifact.logical_key).unlink()
@@ -1446,9 +1452,7 @@ def test_rollback_reverifies_known_good_target_before_activation(
             raise DeploymentSmokeError("candidate is incompatible with the serving API")
         return failure != "unhealthy"
 
-    coordinator = DeploymentCoordinator(
-        control=control, store=rollback_store, load_and_smoke=smoke
-    )
+    coordinator = DeploymentCoordinator(control=control, store=rollback_store, load_and_smoke=smoke)
     with pytest.raises(
         (TransitionError, ContractValidationError, ImmutableStoreError, DeploymentSmokeError)
     ):
@@ -1463,7 +1467,9 @@ def test_corrupt_artifact_blocks_activation(tmp_path: Path, passing_evidence) ->
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
     (tmp_path / "immutable/objects/policy/a.json").write_bytes(b"corrupt")
-    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True)
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda policy: True
+    )
     with pytest.raises(ImmutableStoreError):
         coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must fail")
     assert control.active()[0] is None
@@ -1472,8 +1478,15 @@ def test_corrupt_artifact_blocks_activation(tmp_path: Path, passing_evidence) ->
 def test_append_only_tables_reject_updates_and_deletes(tmp_path: Path, passing_evidence) -> None:
     policy, summary, report = passing_evidence
     control = _control(tmp_path)
-    candidate = control.register_candidate(source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[])
-    control.approve(candidate.candidate_id, actor="local-reviewer", reason="ok", gate_report_sha256=candidate.gate_report_sha256)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    control.approve(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="ok",
+        gate_report_sha256=candidate.gate_report_sha256,
+    )
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
         control.connection.execute("DELETE FROM approvals")
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
@@ -1484,9 +1497,23 @@ def test_stale_compare_and_swap_loses_cleanly(tmp_path: Path, passing_evidence) 
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    control.activate(candidate.candidate_id, actor="local-reviewer", reason="winner", action="deploy", expected_deployment_id=None, expected_generation=0)
+    control.activate(
+        candidate.candidate_id,
+        actor="local-reviewer",
+        reason="winner",
+        action="deploy",
+        expected_deployment_id=None,
+        expected_generation=0,
+    )
     with pytest.raises(ConflictError, match="concurrently"):
-        control.activate(candidate.candidate_id, actor="local-reviewer", reason="loser", action="deploy", expected_deployment_id=None, expected_generation=0)
+        control.activate(
+            candidate.candidate_id,
+            actor="local-reviewer",
+            reason="loser",
+            action="deploy",
+            expected_deployment_id=None,
+            expected_generation=0,
+        )
 
 
 def test_coordinator_rejects_stale_rendered_deploy_and_rollback_state(
@@ -1501,11 +1528,15 @@ def test_coordinator_rejects_stale_rendered_deploy_and_rollback_state(
     )
     deployed_first = coordinator.deploy(first.candidate_id, actor="local-reviewer", reason="first")
     _rendered_deployment, rendered_generation = control.active()
-    deployed_second = coordinator.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+    deployed_second = coordinator.deploy(
+        second.candidate_id, actor="local-reviewer", reason="second"
+    )
 
     with pytest.raises(ConflictError, match="changed concurrently"):
         coordinator.deploy(
-            first.candidate_id, actor="local-reviewer", reason="stale deploy form",
+            first.candidate_id,
+            actor="local-reviewer",
+            reason="stale deploy form",
             expected_deployment_id=deployed_first.deployment_id,
             expected_generation=rendered_generation,
         )
@@ -1514,7 +1545,8 @@ def test_coordinator_rejects_stale_rendered_deploy_and_rollback_state(
     rolled_back = coordinator.rollback(actor="local-reviewer", reason="first rollback")
     with pytest.raises(ConflictError, match="changed concurrently"):
         coordinator.rollback(
-            actor="local-reviewer", reason="stale rollback form",
+            actor="local-reviewer",
+            reason="stale rollback form",
             expected_deployment_id=deployed_second.deployment_id,
             expected_generation=deployed_second.generation,
         )
@@ -1529,18 +1561,12 @@ def test_concurrent_deploy_and_rollback_have_one_store_winner(
     candidate_a = _approved_candidate(primary, passing_evidence, store, "candidate-a")
     candidate_b = _approved_candidate(primary, passing_evidence, store, "candidate-b")
     candidate_c = _approved_candidate(primary, passing_evidence, store, "candidate-c")
-    setup = DeploymentCoordinator(
-        control=primary, store=store, load_and_smoke=lambda policy: True
-    )
+    setup = DeploymentCoordinator(control=primary, store=store, load_and_smoke=lambda policy: True)
     setup.deploy(candidate_a.candidate_id, actor="local-reviewer", reason="A")
-    current = setup.deploy(
-        candidate_b.candidate_id, actor="local-reviewer", reason="B"
-    )
+    current = setup.deploy(candidate_b.candidate_id, actor="local-reviewer", reason="B")
     _, generation = primary.active()
 
-    secondary = ControlStore(
-        tmp_path / "control.db", reviewer_identity="local-reviewer"
-    )
+    secondary = ControlStore(tmp_path / "control.db", reviewer_identity="local-reviewer")
     secondary.require_migrated()
     interleaved = threading.Barrier(2)
 
@@ -1548,12 +1574,8 @@ def test_concurrent_deploy_and_rollback_have_one_store_winner(
         interleaved.wait(timeout=2)
         return True
 
-    deploying = DeploymentCoordinator(
-        control=primary, store=store, load_and_smoke=smoke
-    )
-    rolling_back = DeploymentCoordinator(
-        control=secondary, store=store, load_and_smoke=smoke
-    )
+    deploying = DeploymentCoordinator(control=primary, store=store, load_and_smoke=smoke)
+    rolling_back = DeploymentCoordinator(control=secondary, store=store, load_and_smoke=smoke)
 
     def deploy() -> DeploymentRecord | None:
         try:
@@ -1588,12 +1610,13 @@ def test_concurrent_deploy_and_rollback_have_one_store_winner(
     active_secondary, secondary_generation = secondary.active()
     assert active_primary == active_secondary == winners[0]
     assert primary_generation == secondary_generation == generation + 1
-    assert primary.deployment_history()[-1]["deployment_id"] == (
-        winners[0].deployment_id
+    assert primary.deployment_history()[-1]["deployment_id"] == (winners[0].deployment_id)
+    assert (
+        primary.connection.execute(
+            "SELECT COUNT(*) FROM active_pointer WHERE singleton = 1"
+        ).fetchone()[0]
+        == 1
     )
-    assert primary.connection.execute(
-        "SELECT COUNT(*) FROM active_pointer WHERE singleton = 1"
-    ).fetchone()[0] == 1
 
 
 def test_identical_audit_events_with_fixed_clock_have_distinct_ids(tmp_path: Path) -> None:
@@ -1706,7 +1729,9 @@ def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
     coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=smoke)
 
     with pytest.raises(ValueError, match="missing packaged renderer identity"):
-        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+        coordinator.deploy(
+            candidate.candidate_id, actor="local-reviewer", reason="must not activate"
+        )
 
     assert not smoke_called
     assert control.active() == (None, 0)
@@ -1744,14 +1769,18 @@ def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
         "UPDATE approvals SET policy_id = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
         (tampered.policy_id, report_digest, candidate.candidate_id),
     )
-    coordinator = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
+    coordinator = DeploymentCoordinator(
+        control=control, store=store, load_and_smoke=lambda item: True
+    )
 
     # The schema only checks renderer_sha256 is digest-shaped (see
     # test_policy_schema_does_not_pin_renderer_identity_to_a_specific_value); it stays
     # readable through get_candidate/load_policy_manifest, so verify_renderer_binding is
     # what must reject it before activation.
     with pytest.raises(ValueError, match="renderer implementation digest mismatch"):
-        coordinator.deploy(candidate.candidate_id, actor="local-reviewer", reason="must not activate")
+        coordinator.deploy(
+            candidate.candidate_id, actor="local-reviewer", reason="must not activate"
+        )
 
     assert control.active() == (None, 0)
 
@@ -1764,9 +1793,9 @@ def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_s
     control = _control(tmp_path)
     store = LocalImmutableStore(tmp_path / "immutable")
     candidate = _approved_candidate(control, passing_evidence, store, "")
-    DeploymentCoordinator(
-        control=control, store=store, load_and_smoke=lambda policy: True
-    ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda policy: True).deploy(
+        candidate.candidate_id, actor="local-reviewer", reason="first"
+    )
 
     stripped = _renderer_less(candidate.policy)
     rewritten_report = {**candidate.gate_report.to_dict(), "policy_id": stripped.policy_id}

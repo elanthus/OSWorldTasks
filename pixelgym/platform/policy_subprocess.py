@@ -110,9 +110,7 @@ class PolicyWorkerSpec:
         return {
             "factory_module": self.factory_module,
             "factory_name": self.factory_name,
-            "factory_kwargs": _decode_canonical_object(
-                self.factory_kwargs_json, "factory kwargs"
-            ),
+            "factory_kwargs": _decode_canonical_object(self.factory_kwargs_json, "factory kwargs"),
         }
 
 
@@ -191,15 +189,11 @@ def darwin_serving_profile(
             + _escaped_sbpl(str(runtime_root.resolve()))
             + '"))'
         ),
-        '(allow file-read* (literal "'
-        + _escaped_sbpl(str(worker_path.resolve()))
-        + '"))',
+        '(allow file-read* (literal "' + _escaped_sbpl(str(worker_path.resolve())) + '"))',
     ]
     for root in _deduplicated_resolved(import_roots):
         lines.append(
-            '(allow file-read* file-map-executable (subpath "'
-            + _escaped_sbpl(str(root))
-            + '"))'
+            '(allow file-read* file-map-executable (subpath "' + _escaped_sbpl(str(root)) + '"))'
         )
     lines.extend(
         (
@@ -212,11 +206,7 @@ def darwin_serving_profile(
         )
     )
     for path in _deduplicated_resolved(protected_paths):
-        lines.append(
-            '(deny file-read* file-write* (subpath "'
-            + _escaped_sbpl(str(path))
-            + '"))'
-        )
+        lines.append('(deny file-read* file-write* (subpath "' + _escaped_sbpl(str(path)) + '"))')
     return "\n".join(lines)
 
 
@@ -337,9 +327,7 @@ def _read_response_line(stdout: BinaryIO, *, timeout_seconds: float) -> bytes:
         if newline >= 0:
             response.extend(chunk[:newline])
             if newline != len(chunk) - 1:
-                raise PolicySubprocessProtocolError(
-                    "policy RPC response contains trailing output"
-                )
+                raise PolicySubprocessProtocolError("policy RPC response contains trailing output")
             return bytes(response)
         response.extend(chunk)
         if len(response) >= MAX_POLICY_RPC_BYTES:
@@ -367,9 +355,7 @@ class SandboxedPolicyProcess:
         self._closed = False
         selected_launcher = launcher or DarwinPolicyWorkerLauncher()
         try:
-            launched = selected_launcher.launch(
-                spec=spec, workspace=Path(self._workspace.name)
-            )
+            launched = selected_launcher.launch(spec=spec, workspace=Path(self._workspace.name))
             self._launched = launched
             if require_os_sandbox and not launched.os_sandbox_applied:
                 raise PolicySubprocessUnavailableError(
@@ -501,9 +487,7 @@ class SandboxedPolicyProcess:
                 raise
             except (BrokenPipeError, OSError) as exc:
                 _stop_process(process)
-                raise PolicySubprocessUnavailableError(
-                    "policy subprocess is unavailable"
-                ) from exc
+                raise PolicySubprocessUnavailableError("policy subprocess is unavailable") from exc
             finally:
                 os.set_blocking(descriptor, was_blocking)
             try:
@@ -521,21 +505,18 @@ class SandboxedPolicyProcess:
                     or response.get("request_id") != request_id
                     or type(response.get("ok")) is not bool
                 ):
-                    raise PolicySubprocessProtocolError(
-                        "policy RPC response identity is invalid"
-                    )
+                    raise PolicySubprocessProtocolError("policy RPC response identity is invalid")
                 if response["ok"] is True:
                     if set(response) != required | {"result"}:
                         raise PolicySubprocessProtocolError(
                             "policy RPC response fields are invalid"
                         )
                     return response["result"]
-                if set(response) != required | {"error_code"} or response.get(
-                    "error_code"
-                ) != "policy_error":
-                    raise PolicySubprocessProtocolError(
-                        "policy RPC failure fields are invalid"
-                    )
+                if (
+                    set(response) != required | {"error_code"}
+                    or response.get("error_code") != "policy_error"
+                ):
+                    raise PolicySubprocessProtocolError("policy RPC failure fields are invalid")
             except PolicySubprocessProtocolError:
                 _stop_process(process)
                 raise

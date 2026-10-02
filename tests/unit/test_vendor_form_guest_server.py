@@ -30,11 +30,15 @@ def test_reset_is_idempotent_and_clears_submissions(state):
     first = state.reset(7)
     second = state.reset(7)
 
-    assert first == second == {
-        "task_id": task["task_id"],
-        "seed": 7,
-        "requires_reload": True,
-    }
+    assert (
+        first
+        == second
+        == {
+            "task_id": task["task_id"],
+            "seed": 7,
+            "requires_reload": True,
+        }
+    )
     assert state.privileged_state()["submissions"] == []
 
 

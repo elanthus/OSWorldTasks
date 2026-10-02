@@ -203,7 +203,11 @@ def _build_stages(record: SeedRecord) -> tuple[Stage, ...]:
             instruction="Resolve the consumer using the earlier verification reference.",
             facts=("Use the reference retained before the intervening decisions.",),
             target=f"join_{second_ref.lower()}",
-            labels=(f"Use verification {second_ref}", f"Use request {first_ref}", "Use latest record"),
+            labels=(
+                f"Use verification {second_ref}",
+                f"Use request {first_ref}",
+                "Use latest record",
+            ),
             twin=twin,
             critical=True,
             dependency_id="verification_ref",
@@ -282,7 +286,9 @@ def generate_task(seed: int) -> V5Task:
     title, instruction = _family_language(record.family)
     stages = _build_stages(record)
     recovery_actions = sum(stage.recovery_stage for stage in stages)
-    optimal = len(stages) + sum(len(stage.required_text) + 1 for stage in stages if stage.required_text)
+    optimal = len(stages) + sum(
+        len(stage.required_text) + 1 for stage in stages if stage.required_text
+    )
     optimal += recovery_actions
     slack = max(6, math.ceil(0.25 * optimal))
 
@@ -324,7 +330,9 @@ def generate_task(seed: int) -> V5Task:
 
 
 def tasks_for_partition(partition: Partition) -> tuple[V5Task, ...]:
-    return tuple(generate_task(record.seed) for record in SEED_RECORDS if record.partition is partition)
+    return tuple(
+        generate_task(record.seed) for record in SEED_RECORDS if record.partition is partition
+    )
 
 
 def validate_generator() -> dict[str, Any]:
@@ -344,7 +352,5 @@ def validate_generator() -> dict[str, Any]:
         **seed_summary,
         "task_count": len(tasks),
         "family_counts": dict(Counter(task.family.value for task in tasks)),
-        "generator_manifest_digest": content_digest(
-            [task.canonical_dict() for task in tasks]
-        ),
+        "generator_manifest_digest": content_digest([task.canonical_dict() for task in tasks]),
     }

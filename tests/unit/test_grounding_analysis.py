@@ -214,9 +214,7 @@ def test_analysis_rejects_missing_pair_and_taxonomy_record() -> None:
 
 
 @pytest.mark.parametrize("path", ["../outside.png", "/tmp/outside.png"])
-def test_error_review_image_path_cannot_escape_repository(
-    tmp_path: Path, path: str
-) -> None:
+def test_error_review_image_path_cannot_escape_repository(tmp_path: Path, path: str) -> None:
     review = {
         "example_id": "example-0",
         "condition": "raw",
@@ -297,10 +295,7 @@ def test_offline_results_package_is_reproducible_and_traceable(tmp_path: Path) -
     assert report_path.read_bytes() == first_report
     assert "No model or network calls" in report_path.read_text()
     assert "4 error records" in report_path.read_text()
-    assert (
-        "2 coordinate-scaling labels are reviewer inferences"
-        in report_path.read_text()
-    )
+    assert "2 coordinate-scaling labels are reviewer inferences" in report_path.read_text()
     assert "perfectly aliased" in report_path.read_text()
     assert "n/a" in report_path.read_text()
     assert first["latency"]["all"]["missing_count"] == 1
@@ -591,9 +586,7 @@ def test_analysis_accepts_separately_versioned_instruction_records() -> None:
                 "schema_version": INSTRUCTION_PREDICTION_SCHEMA_VERSION,
                 "parser_version": PARSER_VERSION_V2,
                 "instruction_mode": "semantic",
-                "original_target": examples[int(record["example_id"].split("-")[1])][
-                    "target"
-                ],
+                "original_target": examples[int(record["example_id"].split("-")[1])]["target"],
             }
         )
     reviews = _manual_reviews(examples, predictions)
@@ -614,9 +607,7 @@ def test_instruction_mode_marks_error_is_classified_as_coordinate_miss() -> None
                 "schema_version": INSTRUCTION_PREDICTION_SCHEMA_VERSION,
                 "parser_version": PARSER_VERSION_V2,
                 "instruction_mode": "semantic",
-                "original_target": examples[int(record["example_id"].split("-")[1])][
-                    "target"
-                ],
+                "original_target": examples[int(record["example_id"].split("-")[1])]["target"],
             }
         )
 

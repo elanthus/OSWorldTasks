@@ -46,9 +46,7 @@ def create_v5_capture_app() -> FastAPI:
                 "recovery_stages": [stage.recovery_stage for stage in task.stages],
             },
         }
-        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).replace(
-            "</", "<\\/"
-        )
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).replace("</", "<\\/")
         template = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
         return HTMLResponse(template.replace("__V5_TASK_JSON__", encoded))
 

@@ -136,9 +136,7 @@ def _assert_rect_matches_browser(name: str, actual: dict[str, float], expected: 
         )
 
 
-def _assert_layout_matches_browser(
-    page: Any, task: dict
-) -> tuple[Layout, list[dict[str, float]]]:
+def _assert_layout_matches_browser(page: Any, task: dict) -> tuple[Layout, list[dict[str, float]]]:
     layout = layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT)
     browser_widgets, browser_options = _browser_rects(page)
 
@@ -151,9 +149,7 @@ def _assert_layout_matches_browser(
     for index, (value, browser_rect, layout_rect) in enumerate(
         zip(payment_values, browser_options, layout.payment_options, strict=True)
     ):
-        _assert_rect_matches_browser(
-            f"payment_terms[{index}]={value}", browser_rect, layout_rect
-        )
+        _assert_rect_matches_browser(f"payment_terms[{index}]={value}", browser_rect, layout_rect)
 
     return layout, browser_options
 
@@ -347,9 +343,11 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
             page_ready_posts = []
             page.on(
                 "request",
-                lambda request: page_ready_posts.append(request)
-                if request.method == "POST" and request.url.endswith("/api/page-ready")
-                else None,
+                lambda request: (
+                    page_ready_posts.append(request)
+                    if request.method == "POST" and request.url.endswith("/api/page-ready")
+                    else None
+                ),
             )
             page.add_init_script(
                 """
@@ -369,6 +367,7 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
                 }, { once: true });
                 """
             )
+
             def hold_font(route):
                 held_font_routes[route.request.url.rsplit("/", 1)[-1]] = route
 
@@ -400,12 +399,8 @@ def test_ready_waits_for_exact_deterministic_fonts_and_rendered_text() -> None:
             assert page.evaluate("() => getComputedStyle(document.body).fontFamily") == (
                 _DETERMINISTIC_FONT
             )
-            assert page.evaluate(
-                "() => document.fonts.check('14px \\\"PixelGym Sans\\\"')"
-            )
-            assert page.evaluate(
-                "() => document.fonts.check('bold 14px \\\"PixelGym Sans\\\"')"
-            )
+            assert page.evaluate("() => document.fonts.check('14px \\\"PixelGym Sans\\\"')")
+            assert page.evaluate("() => document.fonts.check('bold 14px \\\"PixelGym Sans\\\"')")
 
             screenshot = page.screenshot(type="png", animations="disabled")
             request_label_box = page.locator('label[for="rc-company_name"]').bounding_box()
@@ -435,9 +430,7 @@ def test_missing_font_faces_end_in_font_load_error_never_ready() -> None:
 
             page.route("**/static/style.css", remove_font_faces)
             page.goto(base_url, wait_until="domcontentloaded")
-            page.locator(
-                'body[data-pixelgym-ready-error="font-load"]'
-            ).wait_for(state="attached")
+            page.locator('body[data-pixelgym-ready-error="font-load"]').wait_for(state="attached")
 
             assert page.locator(READY_SELECTOR).count() == 0
             assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
@@ -473,9 +466,9 @@ def test_initialization_failure_never_sets_ready(failure_stage: str) -> None:
                 page.route("**/api/page-ready", lambda route: route.abort())
 
             page.goto(base_url, wait_until="domcontentloaded")
-            page.locator(
-                f'body[data-pixelgym-ready-error="{failure_stage}"]'
-            ).wait_for(state="attached")
+            page.locator(f'body[data-pixelgym-ready-error="{failure_stage}"]').wait_for(
+                state="attached"
+            )
 
             assert page.locator(READY_SELECTOR).count() == 0
             assert _json_request(f"{base_url}/api/page-ready") == {"ready": False}
