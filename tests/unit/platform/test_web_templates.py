@@ -10,6 +10,7 @@ Record a new fixture only for an intentional, reviewed change to user-visible HT
 from __future__ import annotations
 
 import dataclasses
+import difflib
 import hashlib
 import hmac
 import json
@@ -300,6 +301,9 @@ def small_pages(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(web_app, "RUNS_PAGE_SIZE", 2)
     monkeypatch.setattr(web_app, "AUDIT_HISTORY_PAGE_SIZE", 3)
     monkeypatch.setattr(web_app, "DEPLOYMENT_AUDIT_WINDOW", 4)
+    # difflib.HtmlDiff numbers its anchor ids from a process-wide class counter, so the
+    # prompt-diff page depends on how many diffs earlier tests in the same worker rendered.
+    monkeypatch.setattr(difflib.HtmlDiff, "_default_prefix", 0)
 
 
 @pytest.fixture
