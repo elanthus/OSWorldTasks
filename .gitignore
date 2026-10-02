@@ -43,9 +43,9 @@ env/
 # Grounding evaluation response cache
 .grounding-cache/
 
-# Local platform state and Metaflow artifacts
+# Local caches, platform state, and Metaflow artifacts (calibration and grounding run caches live under .cache/)
 .metaflow/
-.cache/platform/
+.cache/
 mlruns/
 
 # Restricted evaluation attempt journals: provider responses, screenshots, and private
