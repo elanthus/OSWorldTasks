@@ -1,0 +1,13 @@
+{#- Shared fragments. Every value is autoescaped; macro output is already-escaped markup. -#}
+{% macro badge(label, tone="neutral") %}<span class="badge badge--{{ tone }}">{{ label }}</span>{% endmacro %}
+
+{% macro candidate_badges(badges) %}{% for label, tone in badges %}{% if not loop.first %} {% endif %}{{ badge(label, tone) }}{% endfor %}{% endmacro %}
+
+{#- Render only stored external evidence URIs with a non-scriptable scheme. -#}
+{% macro safe_link(uri, label) %}{% if uri is linkable_uri %}<a href="{{ uri }}">{{ label }} ↗</a>{% else %}<span class="muted">{{ label }} unavailable</span>{% endif %}{% endmacro %}
+
+{% macro evidence_links(evidence) %}<div class="evidence-links">{% if evidence.raw_count %}<a href="/candidates/{{ evidence.candidate_id }}/evidence/raw-responses">Raw-response index ({{ evidence.raw_count }})</a>{% else %}<span class="muted">Raw-response index unavailable</span>{% endif %} · {% if evidence.predictions_uri is not none %}{{ safe_link(evidence.predictions_uri, "Per-example errors") }}{% else %}<span class="muted">Per-example errors unavailable</span>{% endif %} · {% if evidence.gate_uri is not none %}{{ safe_link(evidence.gate_uri, "Gate report") }}{% else %}<span class="muted">Gate report unavailable</span>{% endif %} · {{ safe_link(evidence.mlflow_uri, "MLflow run") }}</div>{% endmacro %}
+
+{% macro timeline(events) %}{% for event in events %}<li><span>{{ event.created_at_utc }}</span><strong>{{ event.event_type }}</strong><p>{{ event.subject_id }}</p><p>Actor: {{ event.actor_label }}</p></li>{% endfor %}{% endmacro %}
+
+{% macro pagination(label, previous_href, next_href) %}{% if previous_href or next_href %}<nav aria-label="{{ label }}">{% if previous_href %}<a href="{{ previous_href }}">← Previous page</a>{% endif %}{% if previous_href and next_href %} · {% endif %}{% if next_href %}<a href="{{ next_href }}">Next page →</a>{% endif %}</nav>{% endif %}{% endmacro %}

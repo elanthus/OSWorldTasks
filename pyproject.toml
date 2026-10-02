@@ -30,6 +30,7 @@ platform = [
     "psycopg2-binary==2.9.10",
     "greenlet==3.5.4",  # SQLAlchemy requires this on x86_64 but not on arm64 lock hosts
     "httpx2==2.9.1",  # deployment smoke uses Starlette's TestClient at runtime
+    "jinja2==3.1.6",  # control-plane web templates (pixelgym.platform.web)
 ]
 dev = [
     "coverage==7.16.0",
@@ -46,6 +47,7 @@ dev = [
     "metaflow==2.19.35",  # flow graph and direct orchestration tests are part of the fast suite
     "httpx2",  # fastapi.testclient.TestClient requires this on current starlette
     "httpx>=0.27,<1",  # platform web tests directly import httpx.AsyncClient/ASGITransport
+    "jinja2==3.1.6",  # platform web templates are rendered by the fast suite
     "playwright>=1.52",  # deterministic grounding-dataset browser capture tooling
     "setuptools>=77",  # supports SPDX license metadata and no-isolation wheel tests
 ]
@@ -60,7 +62,7 @@ include = ["pixelgym*"]
 [tool.setuptools.package-data]
 "pixelgym.tasks.vendor_form.app" = ["static/*", "static/fonts/*"]
 "pixelgym.tasks.vendor_form" = ["guest_programs/*.py"]
-"pixelgym.platform.web" = ["static/*"]
+"pixelgym.platform.web" = ["static/*", "templates/*.html"]
 "pixelgym.platform.schemas" = ["*.json"]
 "pixelgym.grounding.v5.schemas" = ["*.json"]
 "pixelgym.grounding.v5.v5_app" = ["static/*"]

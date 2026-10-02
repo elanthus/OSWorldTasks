@@ -22,6 +22,8 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from markupsafe import Markup
 from pydantic import BaseModel, ConfigDict, Field
 
 from pixelgym.platform.contracts import CandidateState, GateObservation
@@ -83,8 +85,16 @@ def _escape(value: object) -> str:
     return html.escape(str(value), quote=True)
 
 
-def _badge(label: str, tone: str = "neutral") -> str:
-    return f'<span class="badge badge--{_escape(tone)}">{_escape(label)}</span>'
+def _finalize(value: object) -> object:
+    """Escape every non-markup template expression with ``html.escape(..., quote=True)``.
+
+    Autoescape stays on; this only keeps the entity spelling (``&#x27;``, ``&quot;``) that the
+    pre-template renderer emitted, so rendered pages stay byte-identical. Markup values (macro
+    output and the explicitly trusted disclosure) pass through unchanged.
+    """
+    if isinstance(value, Markup):
+        return value
+    return Markup(_escape(value))
 
 
 def _actor_label(actor: object, details: dict[str, Any]) -> str:
@@ -115,17 +125,6 @@ def _milliseconds(value: object) -> str:
     return "missing" if value is None else f"{_numeric(value):.1f} ms"
 
 
-def _layout(title: str, body: str, *, csrf: str = "", principal: str = "unverified") -> str:
-    return f"""<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{_escape(title)} · PixelGym Control</title><link rel="stylesheet" href="/static/platform.css">
-<meta name="csrf-token" content="{_escape(csrf)}"></head>
-<body><header class="shell"><a class="brand" href="/">PIXELGYM <span>CONTROL</span></a>
-<nav aria-label="Primary"><a href="/">Submit</a><a href="/runs">Runs</a><a href="/compare">Compare</a><a href="/deployment">Deployment</a></nav></header>
-<main class="shell">{body}</main><footer class="shell">Reviewer: {_escape(principal)} · Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
-</body></html>"""
-
-
 def _token(secret: bytes, session: str) -> bytes:
     return hmac.new(secret, session.encode(), hashlib.sha256).digest()
 
@@ -136,11 +135,9 @@ def _short_digest(value: str | None, *, width: int = 12) -> str:
     return value.removeprefix("sha256:")[:width]
 
 
-def _safe_link(uri: str, label: str) -> str:
-    """Render only stored external evidence URIs with a non-scriptable scheme."""
-    if urlsplit(uri).scheme not in {"http", "https", "s3"}:
-        return f'<span class="muted">{_escape(label)} unavailable</span>'
-    return f'<a href="{_escape(uri)}">{_escape(label)} ↗</a>'
+def _is_linkable_uri(uri: object) -> bool:
+    """Only stored external evidence URIs with a non-scriptable scheme become links."""
+    return urlsplit(str(uri)).scheme in {"http", "https", "s3"}
 
 
 def _page_href(request: Request, path: str, page: int) -> str:
@@ -153,11 +150,16 @@ def _page_href(request: Request, path: str, page: int) -> str:
     return f"{path}?{urlencode(parameters)}"
 
 
+def _mlflow_run_uri(mlflow_base_url: str, run_id: object) -> str:
+    return f"{mlflow_base_url}/#/experiments/0/runs/{run_id}"
+
+
 def _artifact(candidate: Any, suffix: str) -> Any | None:
     return next((item for item in candidate.artifacts if item.logical_key.endswith(suffix)), None)
 
 
-def _candidate_badges(candidate: Any) -> str:
+def _candidate_badges(candidate: Any) -> list[tuple[str, str]]:
+    """Return the candidate's (label, tone) badges in display order."""
     report = candidate.gate_report
     summary = candidate.summary
     # A candidate imported without a run summary falls back to its recorded provider;
@@ -167,17 +169,17 @@ def _candidate_badges(candidate: Any) -> str:
         if summary is not None
         else candidate.policy.provider == "scripted-demo"
     )
-    badges = [_badge("DEMO PROVIDER" if synthetic else "REAL PROVIDER", "demo" if synthetic else "real")]
+    badges = [("DEMO PROVIDER", "demo") if synthetic else ("REAL PROVIDER", "real")]
     if not report.completeness.passed:
-        badges.append(_badge("INCOMPLETE", "bad"))
+        badges.append(("INCOMPLETE", "bad"))
     if candidate.policy.code_state == "dirty":
-        badges.append(_badge("UNCOMMITTED CHANGES", "bad"))
+        badges.append(("UNCOMMITTED CHANGES", "bad"))
     elif candidate.policy.code_state != "clean":
         # "unverifiable" and any value outside the schema: never claim a dirty tree.
-        badges.append(_badge("UNVERIFIED SOURCE", "bad"))
+        badges.append(("UNVERIFIED SOURCE", "bad"))
     if candidate.policy.source_provenance_failure_reason is not None:
         badges.append(
-            _badge(
+            (
                 f"PROVENANCE: {candidate.policy.source_provenance_failure_reason.replace('_', ' ').upper()}",
                 "bad",
             )
@@ -187,47 +189,35 @@ def _candidate_badges(candidate: Any) -> str:
         or (summary is not None and summary.unpriced_call_count > 0)
     )
     if unpriced:
-        badges.append(_badge("UNPRICED", "bad"))
-    return " ".join(badges)
+        badges.append(("UNPRICED", "bad"))
+    return badges
 
 
-def _candidate_row(candidate: Any, mlflow_base_url: str) -> str:
-    report = candidate.gate_report
+def _invalid_count(candidate: Any) -> str:
+    return "missing" if candidate.summary is None else str(candidate.summary.invalid_count)
+
+
+def _candidate_row(candidate: Any, mlflow_base_url: str) -> dict[str, Any]:
     state_tone = "good" if candidate.state in {CandidateState.ELIGIBLE, CandidateState.APPROVED} else "bad"
-    summary = candidate.summary
-    invalid_count = "missing" if summary is None else str(summary.invalid_count)
-    return f"""<tr><td><a href="/candidates/{_escape(candidate.candidate_id)}">{_escape(candidate.candidate_id)}</a><br><span class="muted">{_escape(candidate.policy.provider)}</span><br>{_candidate_badges(candidate)}</td>
-<td>{_escape(candidate.policy.model)}<br><span class="muted">prompt v{candidate.policy.prompt_version}</span></td>
-<td class="number">{_percentage(report.accuracy.observed)}</td><td class="number">{_money(report.cost_usd_per_100.observed)}</td>
-<td class="number">{_milliseconds(report.provider_latency_p95_ms.observed)}</td><td>{_badge(candidate.state.value, state_tone)}</td>
-<td><span class="mono">{_escape(_short_digest(report.dataset_fingerprint))}</span><br><span class="muted">code {_escape(_short_digest(candidate.policy.code_revision))} · invalid {invalid_count}</span></td>
-<td>{_safe_link(f'{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}', 'MLflow')}</td></tr>"""
+    return {
+        "candidate": candidate,
+        "badges": _candidate_badges(candidate),
+        "state_tone": state_tone,
+        "invalid_count": _invalid_count(candidate),
+        "mlflow_uri": _mlflow_run_uri(mlflow_base_url, candidate.source_run_id),
+    }
 
 
-def _evidence_links(candidate: Any, mlflow_base_url: str) -> str:
-    raw_count = sum(item.logical_key.startswith("raw-responses/") for item in candidate.artifacts)
+def _evidence_links(candidate: Any, mlflow_base_url: str) -> dict[str, Any]:
     predictions = _artifact(candidate, "/predictions.jsonl")
     gate = _artifact(candidate, "/gate-report.json")
-    raw = (
-        f'<a href="/candidates/{_escape(candidate.candidate_id)}/evidence/raw-responses">'
-        f"Raw-response index ({raw_count})</a>"
-        if raw_count
-        else '<span class="muted">Raw-response index unavailable</span>'
-    )
-    per_example = (
-        _safe_link(predictions.uri, "Per-example errors")
-        if predictions is not None
-        else '<span class="muted">Per-example errors unavailable</span>'
-    )
-    gate_link = (
-        _safe_link(gate.uri, "Gate report")
-        if gate is not None
-        else '<span class="muted">Gate report unavailable</span>'
-    )
-    mlflow = _safe_link(
-        f"{mlflow_base_url}/#/experiments/0/runs/{candidate.source_run_id}", "MLflow run"
-    )
-    return f'<div class="evidence-links">{raw} · {per_example} · {gate_link} · {mlflow}</div>'
+    return {
+        "candidate_id": candidate.candidate_id,
+        "raw_count": sum(item.logical_key.startswith("raw-responses/") for item in candidate.artifacts),
+        "predictions_uri": None if predictions is None else predictions.uri,
+        "gate_uri": None if gate is None else gate.uri,
+        "mlflow_uri": _mlflow_run_uri(mlflow_base_url, candidate.source_run_id),
+    }
 
 
 # Trusted, source-controlled HTML keyed by (provider, model); never populated from runtime input.
@@ -243,49 +233,30 @@ CANDIDATE_DISCLOSURE_TRUSTED_HTML: Mapping[tuple[str, str], str] = MappingProxyT
 )
 
 
-def _candidate_disclosure(policy: Any) -> str:
+def _candidate_disclosure(policy: Any) -> Markup | None:
     body = CANDIDATE_DISCLOSURE_TRUSTED_HTML.get((policy.provider, policy.model))
-    return "" if body is None else f'<p class="disclosure">{body}</p>'
+    # The single place the disclosure bypasses autoescape: it is source-controlled HTML.
+    return None if body is None else Markup(body)
 
 
-def _candidate_header(candidate_id: str, candidate: Any, invalid: str, disclosure: str) -> str:
-    policy = candidate.policy
-    return (
-        f'<section class="page-title"><p class="eyebrow">CANDIDATE</p><h1>{_escape(candidate_id)}</h1>'
-        f'<p class="mono">{_escape(policy.policy_id)}</p>'
-        f"<p>{_escape(policy.provider)} · code {_escape(_short_digest(policy.code_revision))} · invalid outputs {invalid}</p>"
-        f"{_candidate_badges(candidate)}{disclosure}</section>"
-    )
+def _gate_metric(
+    label: str, observation: GateObservation, bound: str, formatter: Callable[[object], str]
+) -> dict[str, str]:
+    return {
+        "label": label,
+        "observed": formatter(observation.observed),
+        "bound": bound,
+        "threshold": formatter(observation.threshold),
+    }
 
 
-def _gate_metric(label: str, observation: GateObservation, bound: str, formatter: Callable[[object], str]) -> str:
-    return (
-        f"<div><span>{label}</span><strong>{formatter(observation.observed)}</strong>"
-        f"<small>{bound} {formatter(observation.threshold)}</small></div>"
-    )
-
-
-def _gate_report_panel(candidate: Any, reasons: str, mlflow_base_url: str) -> str:
+def _gate_metrics(candidate: Any) -> list[dict[str, str]]:
     report = candidate.gate_report
-    metrics = (
-        _gate_metric("Accuracy", report.accuracy, "minimum", _percentage)
-        + _gate_metric("Cost / 100", report.cost_usd_per_100, "maximum", _money)
-        + _gate_metric("Provider p95", report.provider_latency_p95_ms, "maximum", _milliseconds)
-    )
-    return (
-        f'<section class="panel"><h2>Gate report</h2><div class="metric-strip">{metrics}</div>'
-        f"<h3>Evidence</h3>{_evidence_links(candidate, mlflow_base_url)}"
-        f"<h3>Decision details</h3><ul>{reasons}</ul></section>"
-    )
-
-
-def _human_gate_panel(candidate: Any, controls: str) -> str:
-    return (
-        '<aside class="panel action-panel"><p class="eyebrow">HUMAN GATE</p>'
-        f"<h2>{_escape(candidate.state.value)}</h2>"
-        "<p>Passing gates creates eligibility only. Approval and deployment remain separate attributed actions.</p>"
-        f"{controls}</aside>"
-    )
+    return [
+        _gate_metric("Accuracy", report.accuracy, "minimum", _percentage),
+        _gate_metric("Cost / 100", report.cost_usd_per_100, "maximum", _money),
+        _gate_metric("Provider p95", report.provider_latency_p95_ms, "maximum", _milliseconds),
+    ]
 
 
 def _delta(value: object, baseline: object, *, kind: str) -> str:
@@ -299,10 +270,54 @@ def _delta(value: object, baseline: object, *, kind: str) -> str:
     return f"Δ {difference:+.1f} ms"
 
 
-def _comparison_card(candidate: Any, baseline: Any, mlflow_base_url: str) -> str:
+def _comparison_card(candidate: Any, baseline: Any, mlflow_base_url: str) -> dict[str, Any]:
     report = candidate.gate_report
     baseline_report = baseline.gate_report
-    return f"""<article class="metric-card"><p>{_escape(candidate.candidate_id)}</p><h3>{_percentage(report.accuracy.observed)}</h3><small>{_escape(_delta(report.accuracy.observed, baseline_report.accuracy.observed, kind='accuracy'))}</small><dl><dt>Cost / 100</dt><dd>{_money(report.cost_usd_per_100.observed)}<br><small>{_escape(_delta(report.cost_usd_per_100.observed, baseline_report.cost_usd_per_100.observed, kind='money'))}</small></dd><dt>Provider p95</dt><dd>{_milliseconds(report.provider_latency_p95_ms.observed)}<br><small>{_escape(_delta(report.provider_latency_p95_ms.observed, baseline_report.provider_latency_p95_ms.observed, kind='latency'))}</small></dd><dt>Gate state</dt><dd>{_escape(candidate.state.value)}</dd></dl>{_evidence_links(candidate, mlflow_base_url)}</article>"""
+    return {
+        "candidate": candidate,
+        "accuracy_delta": _delta(
+            report.accuracy.observed, baseline_report.accuracy.observed, kind="accuracy"
+        ),
+        "cost_delta": _delta(
+            report.cost_usd_per_100.observed,
+            baseline_report.cost_usd_per_100.observed,
+            kind="money",
+        ),
+        "latency_delta": _delta(
+            report.provider_latency_p95_ms.observed,
+            baseline_report.provider_latency_p95_ms.observed,
+            kind="latency",
+        ),
+        "evidence": _evidence_links(candidate, mlflow_base_url),
+    }
+
+
+def _timeline_events(events: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "created_at_utc": event["created_at_utc"],
+            "event_type": event["event_type"],
+            "subject_id": event["subject_id"],
+            "actor_label": _actor_label(event["actor"], event["details"]),
+        }
+        for event in events
+    ]
+
+
+TEMPLATES = Environment(
+    loader=FileSystemLoader(Path(__file__).with_name("templates")),
+    autoescape=True,
+    finalize=_finalize,
+    undefined=StrictUndefined,
+    keep_trailing_newline=False,
+)
+TEMPLATES.filters.update(
+    percentage=_percentage,
+    money=_money,
+    milliseconds=_milliseconds,
+    short_digest=_short_digest,
+)
+TEMPLATES.tests["linkable_uri"] = _is_linkable_uri
 
 
 def create_control_app(
@@ -414,7 +429,7 @@ def create_control_app(
             raise HTTPException(403, "verified reviewer principal is required")
         return principal
 
-    def layout(request: Request, title: str, body: str) -> str:
+    def render(request: Request, template: str, title: str, **context: Any) -> str:
         principal: VerifiedPrincipal | SyntheticDemoPrincipal | None = (
             request.state.reviewer_principal
         )
@@ -426,7 +441,9 @@ def create_control_app(
                 {ACTOR_VERIFICATION_SOURCE_KEY: principal.verification_source},
             )
         )
-        return _layout(title, body, csrf=request.state.csrf, principal=label)
+        return TEMPLATES.get_template(template).render(
+            title=title, csrf=request.state.csrf, principal=label, **context
+        )
 
     def require_csrf(request: Request, supplied: Sequence[str]) -> None:
         if len(supplied) != 1:
@@ -472,19 +489,14 @@ def create_control_app(
 
     @app.get("/", response_class=HTMLResponse)
     def submit_view(request: Request) -> str:
-        body = f"""<section class="hero"><div><p class="eyebrow">GROUNDING EVALUATION</p><h1>Grounding evaluation</h1>
-<p class="lede">Submit one frozen, attributable evaluation. Every response is preserved before scoring; every gate must pass together.</p></div>
-<aside><div class="signal"><span>DATASET</span><strong>100</strong><small>frozen examples</small></div><div class="signal"><span>SPEND CAP</span><strong>$0</strong><small>scripted demo only</small></div></aside></section>
-<section class="panel"><div class="panel__heading"><div><p class="eyebrow">NEW EXPERIMENT</p><h2>Resolve every input before execution</h2></div>{_badge('DEMO PROVIDER', 'demo')}</div>
-<form method="post" action="/experiments" class="form-grid"><input type="hidden" name="csrf_token" value="{request.state.csrf}">
-<label>Dataset snapshot<select name="dataset">{''.join(f'<option value="{key}">{value}</option>' for key,value in DATASET_OPTIONS.items())}</select></label>
-<label>Prompt version<select name="prompt_version">{''.join(f'<option value="{key}">{value}</option>' for key,value in PROMPT_OPTIONS.items())}</select></label>
-<label>Provider model<select name="model">{''.join(f'<option value="{key}">{value}</option>' for key,value in MODEL_OPTIONS.items())}</select></label>
-<label>Condition<input name="condition" value="raw" readonly></label><label>Maximum calls<input name="maximum_calls" value="100" readonly></label>
-<label>Price catalog<input name="price_catalog" value="pixelgym-demo-prices-v1" readonly></label>
-<div class="form-summary"><span>Maximum estimated spend</span><strong>$0.00</strong><small>No provider credentials or network calls.</small></div>
-<button type="submit">Submit fixed evaluation →</button></form></section>"""
-        return layout(request, "Submit experiment", body)
+        return render(
+            request,
+            "submit.html",
+            "Submit experiment",
+            dataset_options=DATASET_OPTIONS,
+            prompt_options=PROMPT_OPTIONS,
+            model_options=MODEL_OPTIONS,
+        )
 
     @app.post("/experiments")
     async def submit_experiment(request: Request) -> RedirectResponse:
@@ -508,24 +520,20 @@ def create_control_app(
             submission = control.get_submission(submission_id)
         except KeyError as exc:
             raise HTTPException(404, "submission does not exist") from exc
-        run_link = (
-            _safe_link(
-                f"{mlflow_base_url}/#/experiments/0/runs/{submission['mlflow_run_id']}",
-                "MLflow run",
-            )
+        mlflow_uri = (
+            _mlflow_run_uri(mlflow_base_url, submission["mlflow_run_id"])
             if submission["mlflow_run_id"]
-            else '<span class="muted">MLflow run pending</span>'
+            else None
         )
-        pathspec = submission["metaflow_pathspec"] or "pending"
-        cancellation = '<p class="muted">Cancellation is no longer available for this terminal run.</p>'
-        if submission["status"] in {"Submitted", "Running"}:
-            cancellation = f"""<form method="post" action="/submissions/{_escape(submission_id)}/cancel"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Cancellation reason<textarea name="reason" required minlength="1"></textarea></label><button class="secondary" type="submit">Cancel experiment</button><p class="muted">Cancellation records the authoritative state immediately; the local flow stops at its next durable step boundary while retaining partial immutable evidence.</p></form>"""
-        request_rows = "".join(
-            f"<dt>{_escape(key)}</dt><dd>{_escape(value)}</dd>"
-            for key, value in submission["request"].items()
+        return render(
+            request,
+            "submission.html",
+            "Submission",
+            submission_id=submission_id,
+            submission=submission,
+            mlflow_uri=mlflow_uri,
+            cancellable=submission["status"] in {"Submitted", "Running"},
         )
-        body = f"""<section class="page-title"><p class="eyebrow">SUBMISSION</p><h1>{_escape(submission_id)}</h1><p>{_badge(submission['status'], 'good' if submission['status'] == 'Complete' else 'neutral')}</p></section><div class="detail-grid"><section class="panel"><h2>Execution lineage</h2><dl><dt>Status</dt><dd>{_escape(submission['status'])}</dd><dt>Metaflow pathspec</dt><dd class="mono">{_escape(pathspec)}</dd><dt>Tracking</dt><dd>{run_link}</dd></dl><h3>Resolved request</h3><dl>{request_rows}</dl></section><aside class="panel action-panel"><h2>Cancellation</h2>{cancellation}</aside></div>"""
-        return layout(request, "Submission", body)
 
     @app.post("/submissions/{submission_id}/cancel")
     async def cancel_submission(submission_id: str, request: Request) -> RedirectResponse:
@@ -658,31 +666,29 @@ def create_control_app(
             candidate_window = candidates[offset : offset + RUNS_PAGE_SIZE + 1]
             has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
             candidates = candidate_window[:RUNS_PAGE_SIZE]
-        notice = f'<div class="notice">Submission {_escape(submitted)} accepted.</div>' if submitted else ""
-        rows = "".join(_candidate_row(item, mlflow_base_url) for item in candidates)
-        if not rows:
-            rows = '<tr><td colspan="8" class="empty">No evaluated candidates match these filters.</td></tr>'
-        lifecycle_options = [item.value for item in CandidateState]
-        filter_form = f"""<form method="get" action="/runs" class="filter-grid"><label>Provider<select name="provider"><option value="">All providers</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == provider else ''}>{_escape(value)}</option>' for value in provider_options)}</select></label>
-<label>Lifecycle<select name="lifecycle"><option value="">All states</option>{''.join(f'<option value="{_escape(value)}" {'selected' if value == lifecycle else ''}>{_escape(value)}</option>' for value in lifecycle_options)}</select></label>
-<label>Dataset fingerprint prefix<input name="dataset" value="{_escape(dataset or '')}" pattern="[0-9a-f]*" maxlength="64"></label>
-<label>Prompt version<input name="prompt_version" type="number" min="1" value="{_escape(prompt_version or '')}"></label><label>Model<input name="model" value="{_escape(model or '')}"></label>
-<label>Submission status<input name="status" value="{_escape(status or '')}"></label><label>From date<input name="date_from" type="date" value="{_escape(date_from or '')}"></label><label>Through date<input name="date_to" type="date" value="{_escape(date_to or '')}"></label><label>Gate result<select name="gate_result"><option value="">All results</option><option value="passed" {'selected' if gate_result == 'passed' else ''}>Passed</option><option value="failed" {'selected' if gate_result == 'failed' else ''}>Failed</option></select></label>
-<label>Code revision prefix<input name="code_revision" value="{_escape(code_revision or '')}" pattern="[0-9a-f]*" maxlength="40"></label><button type="submit">Filter runs</button></form>"""
-        previous_link = (
-            f'<a href="{_escape(_page_href(request, "/runs", page - 1))}">← Previous page</a>'
-            if page > 1
-            else ""
+        return render(
+            request,
+            "runs.html",
+            "Runs",
+            submitted=submitted,
+            rows=[_candidate_row(item, mlflow_base_url) for item in candidates],
+            provider_options=provider_options,
+            lifecycle_options=[item.value for item in CandidateState],
+            filters={
+                "provider": provider,
+                "lifecycle": lifecycle,
+                "dataset": dataset,
+                "code_revision": code_revision,
+                "prompt_version": prompt_version,
+                "model": model,
+                "status": status,
+                "date_from": date_from,
+                "date_to": date_to,
+                "gate_result": gate_result,
+            },
+            previous_href=_page_href(request, "/runs", page - 1) if page > 1 else None,
+            next_href=_page_href(request, "/runs", page + 1) if has_next_page else None,
         )
-        next_link = (
-            f'<a href="{_escape(_page_href(request, "/runs", page + 1))}">Next page →</a>'
-            if has_next_page
-            else ""
-        )
-        pagination = " · ".join(link for link in (previous_link, next_link) if link)
-        body = f"""<section class="page-title"><p class="eyebrow">RUN HISTORY</p><h1>Run history</h1><p>Failures, invalid outputs, and incomplete runs are retained—not repaired or hidden.</p></section>{notice}
-<section class="panel"><h2>Filter stored runs</h2>{filter_form}</section><section class="panel table-panel"><table><thead><tr><th>Candidate</th><th>Policy</th><th>Accuracy</th><th>Cost / 100</th><th>Provider p95</th><th>Lifecycle</th><th>Dataset / code / invalid</th><th>Evidence</th></tr></thead><tbody>{rows}</tbody></table>{f'<nav aria-label="Run pages">{pagination}</nav>' if pagination else ''}</section>"""
-        return layout(request, "Runs", body)
 
     @app.get("/api/tracking/runs/compatible")
     def compatible_tracking_runs(
@@ -736,10 +742,6 @@ def create_control_app(
         if len(selected_ids) > 4:
             raise HTTPException(422, "compare accepts at most four candidates")
         all_candidates = control.list_candidates()
-        chooser = "".join(
-            f'<label class="check"><input type="checkbox" name="candidate" value="{_escape(item.candidate_id)}" {'checked' if item.candidate_id in selected_ids else ''}>{_escape(item.candidate_id)} · prompt v{item.policy.prompt_version}</label>'
-            for item in all_candidates
-        ) or '<p class="muted">Evaluate candidates to enable comparison.</p>'
         selected = [candidate_or_404(item) for item in selected_ids]
         comparison_keys = {
             (
@@ -753,22 +755,24 @@ def create_control_app(
         compatible = len(selected) >= 2 and len(comparison_keys) == 1 and all(
             item.summary is not None for item in selected
         )
-        comparison = ""
-        if selected:
-            baseline = selected[0]
-            cards = "".join(
-                _comparison_card(item, baseline, mlflow_base_url)
-                for item in selected
-            )
-            warning = _badge("COMPATIBLE", "good") if compatible else _badge("PROMOTION COMPARISON BLOCKED", "bad")
-            explanation = "Same dataset fingerprint, scorer, target semantics, and primary metric." if compatible else "Select 2–4 runs with the same dataset fingerprint, scorer, target semantics, and recorded primary metric."
-            prompt_diff = ""
-            if len(selected) >= 2:
-                query = urlencode([( "candidate", item.candidate_id) for item in selected[:2]])
-                prompt_diff = f'<p><a href="/compare/prompt-diff?{_escape(query)}">Prompt diff (recorded versions)</a></p>'
-            comparison = f'<section class="comparison-head">{warning}<p>{explanation}</p>{prompt_diff}</section><div class="metric-grid">{cards}</div>'
-        body = f"""<section class="page-title"><p class="eyebrow">COMPATIBLE COMPARISON</p><h1>Compatible comparison</h1><p>Accuracy, cost, and latency always appear together.</p></section><section class="panel"><form method="get" action="/compare"><fieldset><legend>Select two to four candidates</legend>{chooser}</fieldset><button type="submit">Compare selected →</button></form></section>{comparison}"""
-        return layout(request, "Compare", body)
+        prompt_diff_query = (
+            urlencode([("candidate", item.candidate_id) for item in selected[:2]])
+            if len(selected) >= 2
+            else None
+        )
+        cards = [
+            _comparison_card(item, selected[0], mlflow_base_url) for item in selected
+        ]
+        return render(
+            request,
+            "compare.html",
+            "Compare",
+            all_candidates=all_candidates,
+            selected_ids=selected_ids,
+            cards=cards,
+            compatible=compatible,
+            prompt_diff_query=prompt_diff_query,
+        )
 
     def _packaged_prompt_text(item: Any) -> tuple[str, bool]:
         """Return (prompt text, is_legacy) reading the candidate's own immutable package.
@@ -811,55 +815,55 @@ def create_control_app(
             todesc=_label(after, after_legacy),
             context=True,
         )
-        if before_legacy or after_legacy:
-            explanation = (
-                "At least one selected candidate predates renderer identity and carries no "
-                "packaged prompt artifact; its side is re-rendered from the frozen local "
-                "templates instead of read from its immutable package."
-            )
-        else:
-            explanation = (
-                "Both sides are read directly from each candidate's immutable policy "
-                "package (<code>prompt_template_text</code>), not re-rendered from code."
-            )
-        body = f"""<section class="page-title"><p class="eyebrow">PROMPT COMPARISON</p><h1>Recorded prompt versions.</h1><p>{explanation}</p></section><section class="panel diff-table">{diff}</section>"""
-        return layout(request, "Prompt diff", body)
+        return render(
+            request,
+            "prompt_diff.html",
+            "Prompt diff",
+            includes_legacy=before_legacy or after_legacy,
+            # difflib.HtmlDiff output is library-generated markup: difflib escapes every
+            # prompt line itself and the column labels are escaped above.
+            diff_table=Markup(diff),
+        )
 
     @app.get("/candidates/{candidate_id}/evidence/raw-responses", response_class=HTMLResponse)
     def raw_response_index(candidate_id: str, request: Request) -> str:
         item = candidate_or_404(candidate_id)
         raw = [reference for reference in item.artifacts if reference.logical_key.startswith("raw-responses/")]
-        rows = "".join(
-            f"<li><span class=\"mono\">{_escape(reference.logical_key)}</span> · {_safe_link(reference.uri, 'immutable object')}</li>"
-            for reference in raw
-        ) or "<li>No raw-response references were stored for this candidate.</li>"
-        body = f"""<section class="page-title"><p class="eyebrow">IMMUTABLE EVIDENCE</p><h1>Raw-response index.</h1><p>{len(raw)} stored raw-response object references for {_escape(candidate_id)}.</p></section><section class="panel"><ul class="evidence-index">{rows}</ul></section>"""
-        return layout(request, "Raw-response index", body)
+        return render(
+            request,
+            "raw_responses.html",
+            "Raw-response index",
+            candidate_id=candidate_id,
+            references=raw,
+        )
 
     @app.get("/candidates/{candidate_id}", response_class=HTMLResponse)
     def candidate_view(candidate_id: str, request: Request) -> str:
         item = candidate_or_404(candidate_id)
-        report = item.gate_report
-        reasons = "".join(f"<li>{_escape(reason)}</li>" for reason in report.reasons) or "<li>All automated gates passed.</li>"
-        controls = ""
+        action = "blocked"
+        active_deployment_id = ""
+        generation = 0
         if item.state is CandidateState.ELIGIBLE:
-            controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/approve"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><label>Approval reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Approve exact candidate</button></form>"""
+            action = "approve"
         elif item.state is CandidateState.APPROVED and coordinator is not None:
+            action = "deploy"
             active, generation = control.active()
-            active_id = active.deployment_id if active is not None else ""
-            controls = f"""<form method="post" action="/candidates/{_escape(candidate_id)}/deploy"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Deployment reason<textarea name="reason" required minlength="1"></textarea></label><button type="submit">Deploy approved version</button></form>"""
-        else:
-            controls = '<div class="blocked"><strong>Approval unavailable</strong><p>A failed gate is terminal for this candidate. Revise the policy and create a new run.</p></div>'
-        invalid = "missing" if item.summary is None else str(item.summary.invalid_count)
-        disclosure = _candidate_disclosure(item.policy)
-        body = (
-            _candidate_header(candidate_id, item, invalid, disclosure)
-            + '<div class="detail-grid">'
-            + _gate_report_panel(item, reasons, mlflow_base_url)
-            + _human_gate_panel(item, controls)
-            + "</div>"
+            active_deployment_id = active.deployment_id if active is not None else ""
+        return render(
+            request,
+            "candidate.html",
+            "Candidate",
+            candidate_id=candidate_id,
+            candidate=item,
+            invalid_count=_invalid_count(item),
+            badges=_candidate_badges(item),
+            disclosure=_candidate_disclosure(item.policy),
+            gate_metrics=_gate_metrics(item),
+            evidence=_evidence_links(item, mlflow_base_url),
+            action=action,
+            active_deployment_id=active_deployment_id,
+            generation=generation,
         )
-        return layout(request, "Candidate", body)
 
     def _approve(
         candidate_id: str,
@@ -951,21 +955,24 @@ def create_control_app(
             limit=DEPLOYMENT_AUDIT_WINDOW,
             newest_first=True,
         )
-        active_html = '<div class="empty">No policy is active.</div>'
-        rollback = ""
+        rollback_available = False
         if active:
-            active_html = f'<h2>{_escape(active.policy_id)}</h2><p>Deployment {_escape(active.deployment_id)} · generation {active.generation}</p>'
             try:
                 control.previous_target(active)
             except TransitionError:
                 has_rollback_target = False
             else:
                 has_rollback_target = True
-            if has_rollback_target and coordinator is not None:
-                rollback = f'<form method="post" action="/rollback"><input type="hidden" name="csrf_token" value="{request.state.csrf}"><input type="hidden" name="expected_deployment_id" value="{_escape(active.deployment_id)}"><input type="hidden" name="expected_generation" value="{generation}"><label>Rollback reason<textarea name="reason" required></textarea></label><button class="secondary" type="submit">Rollback to previous approved version</button></form>'
-        timeline = "".join(f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>' for event in events)
-        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Delivery ledger</h1><p>Activation changes one transactional pointer. History is append-only.</p></section><div class="detail-grid"><section class="panel"><p class="eyebrow">ACTIVE DEPLOYMENT</p>{active_html}{rollback}</section><section class="panel"><h2>Recent audit trail</h2><ol class="timeline">{timeline or '<li>No lifecycle events yet.</li>'}</ol><p><a href="/deployment/audit">View full audit history →</a></p></section></div>"""
-        return layout(request, "Deployment", body)
+            rollback_available = has_rollback_target and coordinator is not None
+        return render(
+            request,
+            "deployment.html",
+            "Deployment",
+            active=active,
+            generation=generation,
+            rollback_available=rollback_available,
+            events=_timeline_events(events),
+        )
 
     @app.get("/deployment/audit", response_class=HTMLResponse)
     def deployment_audit_view(
@@ -979,23 +986,18 @@ def create_control_app(
         )
         has_next_page = len(event_window) > AUDIT_HISTORY_PAGE_SIZE
         events = event_window[:AUDIT_HISTORY_PAGE_SIZE]
-        timeline = "".join(
-            f'<li><span>{_escape(event["created_at_utc"])}</span><strong>{_escape(event["event_type"])}</strong><p>{_escape(event["subject_id"])}</p><p>Actor: {_escape(_actor_label(event["actor"], event["details"]))}</p></li>'
-            for event in events
+        return render(
+            request,
+            "deployment_audit.html",
+            "Audit history",
+            events=_timeline_events(events),
+            previous_href=(
+                _page_href(request, "/deployment/audit", page - 1) if page > 1 else None
+            ),
+            next_href=(
+                _page_href(request, "/deployment/audit", page + 1) if has_next_page else None
+            ),
         )
-        previous_link = (
-            f'<a href="{_escape(_page_href(request, "/deployment/audit", page - 1))}">← Previous page</a>'
-            if page > 1
-            else ""
-        )
-        next_link = (
-            f'<a href="{_escape(_page_href(request, "/deployment/audit", page + 1))}">Next page →</a>'
-            if has_next_page
-            else ""
-        )
-        pagination = " · ".join(link for link in (previous_link, next_link) if link)
-        body = f"""<section class="page-title"><p class="eyebrow">DELIVERY LEDGER</p><h1>Full audit history.</h1><p>Newest lifecycle events appear first.</p></section><section class="panel"><ol class="timeline">{timeline or '<li>No lifecycle events on this page.</li>'}</ol>{f'<nav aria-label="Audit pages">{pagination}</nav>' if pagination else ''}<p><a href="/deployment">← Back to deployment</a></p></section>"""
-        return layout(request, "Audit history", body)
 
     @app.exception_handler(TransitionError)
     @app.exception_handler(ConflictError)
@@ -1011,7 +1013,7 @@ def create_control_app(
         else:
             status = 409
         return HTMLResponse(
-            layout(request, "Action blocked", f'<section class="error-summary"><h1>Action blocked</h1><p>{_escape(exc)}</p><a href="/runs">Return to runs</a></section>'),
+            render(request, "action_blocked.html", "Action blocked", message=str(exc)),
             status_code=status,
         )
 

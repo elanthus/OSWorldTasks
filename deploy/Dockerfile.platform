@@ -2,10 +2,10 @@ FROM python:3.12.11-slim-bookworm
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 COPY pyproject.toml README.md ./
-COPY requirements/platform-py312-v2.lock ./requirements/platform-py312-v2.lock
+COPY requirements/platform-py312-v3.lock ./requirements/platform-py312-v3.lock
 COPY pixelgym/platform/dependency_lock.py ./pixelgym/platform/dependency_lock.py
 RUN python pixelgym/platform/dependency_lock.py --repository-root /app
-RUN pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v2.lock
+RUN pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v3.lock
 COPY pixelgym ./pixelgym
 COPY flows ./flows
 COPY config ./config

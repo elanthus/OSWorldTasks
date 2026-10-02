@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -252,9 +253,11 @@ def _render_pages(tmp_path: Path, gate_policy: Any) -> dict[str, tuple[int, byte
         "runs_page_2": (populated, "/runs?page=2&provider="),
         "runs_filtered": (
             populated,
-            "/runs?submitted=%3Cs%3E&provider=scripted-demo&lifecycle=Approved&dataset=%22x"
-            "&code_revision=a&prompt_version=1&model=m%27&status=Running&date_from=2026-01-01"
-            "&date_to=2026-12-31&gate_result=passed",
+            (
+                "/runs?submitted=%3Cs%3E&provider=scripted-demo&lifecycle=Approved&dataset=%22x"
+                "&code_revision=a&prompt_version=1&model=m%27&status=Running&date_from=2026-01-01"
+                "&date_to=2026-12-31&gate_result=passed"
+            ),
         ),
         "runs_gate_failed": (populated, "/runs?gate_result=failed&lifecycle=GateFailed"),
         "compare": (populated, "/compare"),
@@ -316,3 +319,89 @@ def test_every_page_matches_the_pre_template_digest(
     if os.environ.get("PIXELGYM_RECORD_WEB_PAGE_DIGESTS") == "1":
         FIXTURE.write_text(json.dumps(observed, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     assert observed == json.loads(FIXTURE.read_text(encoding="utf-8"))
+
+
+TEMPLATE_DIR = Path(web_app.__file__).with_name("templates")
+SCRIPT = "<script>alert(1)</script>"
+ESCAPED_SCRIPT = "&lt;script&gt;alert(1)&lt;/script&gt;"
+
+
+def test_template_environment_autoescapes_everything() -> None:
+    assert web_app.TEMPLATES.autoescape is True
+    for path in TEMPLATE_DIR.glob("*.html"):
+        source = path.read_text(encoding="utf-8")
+        assert "|safe" not in source.replace(" ", ""), path.name
+        assert "{% autoescape" not in source, path.name
+    policy = dataclasses.make_dataclass("Policy", ["provider", "model"])(
+        "scripted-demo", "day3-replay-revised-v2"
+    )
+    rendered = web_app.TEMPLATES.from_string("{{ value }}|{{ trusted }}").render(
+        value="<b>'\"&", trusted=web_app._candidate_disclosure(policy)
+    )
+    value, trusted = rendered.split("|", 1)
+    assert value == "&lt;b&gt;&#x27;&quot;&amp;"
+    assert trusted.startswith("<strong>Synthetic fixture disclosure:</strong>")
+
+
+def test_hostile_policy_and_query_strings_are_escaped_on_every_page_that_shows_them(
+    tmp_path: Path, gate_policy: Any
+) -> None:
+    control, ids, _ = _populated_control(tmp_path, gate_policy)
+    client = _client(
+        web_app.create_control_app(
+            control,
+            coordinator=_LedgerCoordinator(control),  # type: ignore[arg-type]
+            csrf_secret=SECRET,
+        )
+    )
+    hostile = "%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+    pages = [
+        "/runs",  # provider and model of the hostile candidate
+        f"/candidates/{ids['c']}",  # provider in the candidate header
+        f"/runs?submitted={hostile}",  # submission notice
+        f"/runs?model={hostile}&status={hostile}&dataset={hostile}&code_revision={hostile}",
+        f"/runs?provider={hostile}",
+    ]
+    for path in pages:
+        response = client.get(path)
+        assert response.status_code == 200, path
+        assert SCRIPT not in response.text, path
+        assert ESCAPED_SCRIPT in response.text, path
+    # Candidate identifiers are hash-derived; a hostile one can only arrive through the URL and
+    # is rejected before any page is rendered.
+    for path in (f"/candidates/{hostile}", f"/candidates/{hostile}/evidence/raw-responses"):
+        response = client.get(path)
+        assert response.status_code == 404, path
+        assert SCRIPT not in response.text, path
+    blocked = client.post(
+        "/rollback",
+        data={
+            "csrf_token": _csrf(),
+            "reason": "x",
+            "expected_deployment_id": "",
+            "expected_generation": "0",
+        },
+    )
+    assert blocked.status_code == 409
+    assert "<blocked>" not in blocked.text
+    assert "rollback &lt;blocked&gt; &amp; refused for &#x27;fixture&#x27;" in blocked.text
+    # The trusted disclosure is the one policy-keyed value rendered as markup.
+    disclosed = client.get(f"/candidates/{ids['b']}")
+    assert '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong>' in disclosed.text
+
+
+def test_every_template_is_rendered_by_exactly_one_handler_or_shared_by_pages() -> None:
+    source = Path(web_app.__file__).read_text(encoding="utf-8")
+    rendered = re.findall(r'render\(\s*request,\s*"([a-z_]+\.html)"', source)
+    templates = {
+        path.name: path.read_text(encoding="utf-8") for path in TEMPLATE_DIR.glob("*.html")
+    }
+    pages = {name for name in templates if name != "base.html" and not name.startswith("_")}
+    assert len(rendered) == len(set(rendered))
+    assert set(rendered) == pages
+    for name in pages:
+        assert templates[name].startswith('{% extends "base.html" %}'), name
+    for partial in (name for name in templates if name.startswith("_")):
+        assert any(f'from "{partial}" import' in templates[name] for name in pages), partial
+    # Every HTML route renders one page template; the lifecycle error handler renders the last.
+    assert source.count("response_class=HTMLResponse") + 1 == len(pages)

@@ -167,7 +167,7 @@ python3.12 scripts/platform_compose.py up --build --wait
 
 ## Platform dependency lock
 
-`requirements/platform-py312-v2.lock` is the complete, hash-verified Python 3.12 runtime graph
+`requirements/platform-py312-v3.lock` is the complete, hash-verified Python 3.12 runtime graph
 for the platform image. The image verifies that the lock still corresponds to the platform inputs in
 `pyproject.toml`, installs it with `pip --require-hashes`, then installs this repository with
 `--no-deps`; it never resolves `.[platform]` during an ordinary build. The evaluation flow records
@@ -180,7 +180,7 @@ When an intentional platform-runtime dependency change is approved, regenerate t
 Python 3.12 and the `pip-tools` included in the documented editable developer setup:
 
 ```bash
-.venv/bin/pip-compile --extra platform --generate-hashes --resolver=backtracking --output-file requirements/platform-py312-v2.lock pyproject.toml
+.venv/bin/pip-compile --extra platform --generate-hashes --resolver=backtracking --output-file requirements/platform-py312-v3.lock pyproject.toml
 ```
 
 Regenerate the MLflow lock the same way when its pins change:

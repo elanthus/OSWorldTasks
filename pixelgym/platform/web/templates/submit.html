@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge %}
+{% block body %}<section class="hero"><div><p class="eyebrow">GROUNDING EVALUATION</p><h1>Grounding evaluation</h1>
+<p class="lede">Submit one frozen, attributable evaluation. Every response is preserved before scoring; every gate must pass together.</p></div>
+<aside><div class="signal"><span>DATASET</span><strong>100</strong><small>frozen examples</small></div><div class="signal"><span>SPEND CAP</span><strong>$0</strong><small>scripted demo only</small></div></aside></section>
+<section class="panel"><div class="panel__heading"><div><p class="eyebrow">NEW EXPERIMENT</p><h2>Resolve every input before execution</h2></div>{{ badge("DEMO PROVIDER", "demo") }}</div>
+<form method="post" action="/experiments" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf }}">
+<label>Dataset snapshot<select name="dataset">{% for key, value in dataset_options.items() %}<option value="{{ key }}">{{ value }}</option>{% endfor %}</select></label>
+<label>Prompt version<select name="prompt_version">{% for key, value in prompt_options.items() %}<option value="{{ key }}">{{ value }}</option>{% endfor %}</select></label>
+<label>Provider model<select name="model">{% for key, value in model_options.items() %}<option value="{{ key }}">{{ value }}</option>{% endfor %}</select></label>
+<label>Condition<input name="condition" value="raw" readonly></label><label>Maximum calls<input name="maximum_calls" value="100" readonly></label>
+<label>Price catalog<input name="price_catalog" value="pixelgym-demo-prices-v1" readonly></label>
+<div class="form-summary"><span>Maximum estimated spend</span><strong>$0.00</strong><small>No provider credentials or network calls.</small></div>
+<button type="submit">Submit fixed evaluation →</button></form></section>{% endblock %}

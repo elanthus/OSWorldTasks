@@ -3878,7 +3878,7 @@ def test_code_state_badge_covers_every_schema_value_and_unknown(
 ) -> None:
     from pixelgym.platform.web.app import _candidate_badges
 
-    badges = _candidate_badges(_badge_candidate(code_state))
+    badges = [label for label, _tone in _candidate_badges(_badge_candidate(code_state))]
     if expected is not None:
         assert expected in badges
     for label in absent:

@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} · PixelGym Control</title><link rel="stylesheet" href="/static/platform.css">
+<meta name="csrf-token" content="{{ csrf }}"></head>
+<body><header class="shell"><a class="brand" href="/">PIXELGYM <span>CONTROL</span></a>
+<nav aria-label="Primary"><a href="/">Submit</a><a href="/runs">Runs</a><a href="/compare">Compare</a><a href="/deployment">Deployment</a></nav></header>
+<main class="shell">{% block body %}{% endblock %}</main><footer class="shell">Reviewer: {{ principal }} · Local scripted-provider environment · synthetic metrics are not model-quality evidence.</footer>
+</body></html>
