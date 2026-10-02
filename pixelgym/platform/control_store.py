@@ -91,7 +91,7 @@ class CandidateRecord:
     candidate_id: str
     source_run_id: str
     policy: PolicyManifest
-    gate_report: dict[str, Any]
+    gate_report: GateReport
     gate_report_sha256: str
     artifacts: tuple[ArtifactRef, ...]
     summary: RunSummary | None
@@ -942,11 +942,13 @@ class ControlStore:
         return self.get_candidate(candidate_id)
 
     def _candidate_record(self, row: sqlite3.Row) -> CandidateRecord:
+        gate_report_value = json.loads(row["gate_report_json"])
+        self.schemas.validate("gate_report", gate_report_value)
         return CandidateRecord(
             candidate_id=row["candidate_id"],
             source_run_id=row["source_run_id"],
             policy=load_policy_manifest(self.schemas, json.loads(row["policy_json"])),
-            gate_report=json.loads(row["gate_report_json"]),
+            gate_report=GateReport.from_dict(gate_report_value),
             gate_report_sha256=row["gate_report_sha256"],
             artifacts=tuple(
                 ArtifactRef(**value) for value in json.loads(row["artifacts_json"])
@@ -1018,13 +1020,14 @@ class ControlStore:
             raise ContractValidationError("stored gate_report digest does not verify")
         if policy.policy_id != row["policy_id"]:
             raise ContractValidationError("stored policy identity does not match candidate")
-        if gate_report["policy_id"] != row["policy_id"]:
+        report = GateReport.from_dict(gate_report)
+        if report.policy_id != row["policy_id"]:
             raise ContractValidationError("stored gate_report policy identity does not match candidate")
-        if gate_report["run_id"] != row["source_run_id"]:
+        if report.run_id != row["source_run_id"]:
             raise ContractValidationError("stored gate_report run identity does not match candidate")
-        if not gate_report["overall_passed"]:
+        if not report.overall_passed:
             raise ContractValidationError("stored candidate no longer has passing gates")
-        if not policy.source_provenance_verified or not gate_report["code_revision_passed"]:
+        if not policy.source_provenance_verified or not report.code_revision_passed:
             raise ContractValidationError("stored candidate source provenance is not promotable")
 
     def _validate_candidate_approval_evidence(

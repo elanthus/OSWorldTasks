@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import concurrent.futures
 import copy
-import dataclasses
 import json
 import threading
 from pathlib import Path
@@ -457,13 +456,15 @@ def test_invalid_stored_gate_report_fails_before_export_derivation(
         gate_report=report,
         artifacts=[],
     )
-    invalid_report = dict(candidate.gate_report)
+    invalid_report = candidate.gate_report.to_dict()
     invalid_report.pop("dataset_fingerprint")
-    monkeypatch.setattr(
-        control,
-        "list_candidates",
-        lambda: [dataclasses.replace(candidate, gate_report=invalid_report)],
+    # The typed record cannot hold a malformed report, so corrupt the stored row; the
+    # control store's persistence boundary must reject it before export derives anything.
+    control.connection.execute(
+        "UPDATE candidates SET gate_report_json = ? WHERE candidate_id = ?",
+        (json.dumps(invalid_report), candidate.candidate_id),
     )
+    del monkeypatch
     output = tmp_path / "export"
 
     with pytest.raises(ContractValidationError, match="gate_report"):
@@ -503,7 +504,7 @@ def test_stored_gate_report_digest_mismatch_blocks_export_before_derivation(
         gate_report=report,
         artifacts=[],
     )
-    tampered_report = copy.deepcopy(candidate.gate_report)
+    tampered_report = candidate.gate_report.to_dict()
     tampered_report["accuracy"]["observed"] = 0.01
     control.connection.execute(
         "UPDATE candidates SET gate_report_json = ? WHERE candidate_id = ?",
@@ -530,7 +531,7 @@ def test_passing_gate_report_with_reasons_blocks_export_before_derivation(
         gate_report=report,
         artifacts=[],
     )
-    invalid_report = {**candidate.gate_report, "reasons": ["blocking evidence retained"]}
+    invalid_report = {**candidate.gate_report.to_dict(), "reasons": ["blocking evidence retained"]}
     encoded = canonical_json_bytes(invalid_report)
     control.connection.execute(
         "UPDATE candidates SET gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",

@@ -52,7 +52,7 @@ class DeploymentCoordinator[PreparedCandidate]:
             return True
         failures = False
         for candidate in self.control.list_candidates():
-            gate_status = "eligible" if candidate.gate_report["overall_passed"] else "failed"
+            gate_status = "eligible" if candidate.gate_report.overall_passed else "failed"
             approval_status = (
                 "approved"
                 if candidate.state.value == "Approved"
@@ -101,8 +101,8 @@ class DeploymentCoordinator[PreparedCandidate]:
         # match the renderer code actually running. Older evidence lacking renderer
         # identity stays readable elsewhere; it simply cannot reach traffic again.
         verify_renderer_binding(candidate.policy)
-        report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report))
-        if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.get("overall_passed"):
+        report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report.to_dict()))
+        if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.overall_passed:
             raise TransitionError("approved gate report is corrupt or failed")
         for reference in candidate.artifacts:
             self.store.get_verified(reference)

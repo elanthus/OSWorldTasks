@@ -405,6 +405,41 @@ class ScriptedStatefulPolicy:
         self.closed = True
 
 
+class ExternalDispatchBoundary(Protocol):
+    """Caller-owned dispatch boundary composed into :class:`V5Runner`.
+
+    Stateful serving supplies one of these instead of subclassing the runner: a validated
+    action becomes an external intent rather than an environment dispatch.  Attempt
+    settlement, parsing, candidate persistence, and validation stay in the runner.
+    """
+
+    def on_boundary(self, runner: V5Runner, name: str) -> None: ...
+
+    def seal_validated_action(
+        self,
+        runner: V5Runner,
+        *,
+        trial_id: str,
+        step_index: int,
+        action: dict[str, int],
+        candidate_digest: str,
+        post_parse_state: bytes,
+    ) -> dict[str, Any]: ...
+
+    def recover_intent(
+        self, runner: V5Runner, *, by_kind: Mapping[str, JournalEvent]
+    ) -> dict[str, Any] | None: ...
+
+    def recover_candidate(
+        self,
+        runner: V5Runner,
+        *,
+        trial_id: str,
+        step_index: int,
+        candidate_event: JournalEvent,
+    ) -> dict[str, Any] | None: ...
+
+
 class V5Runner:
     def __init__(
         self,
@@ -416,9 +451,11 @@ class V5Runner:
         approved_caps: CallCaps,
         interrupt_after: str | None = None,
         deadline_executor: DeadlineExecutor | None = None,
+        external_dispatch: ExternalDispatchBoundary | None = None,
     ) -> None:
         self.journal = journal
         self.manifest = manifest
+        self.external_dispatch = external_dispatch
         self.transport = transport
         self.policy = policy
         self.approved_caps = approved_caps
@@ -901,10 +938,20 @@ class V5Runner:
     ) -> dict[str, Any]:
         """Seal and dispatch a validated action.
 
-        Stateful serving overrides this one boundary because the caller, rather than the
+        Stateful serving replaces this one boundary (via ``external_dispatch``) because the caller, rather than the
         runner, owns dispatch.  Attempt settlement, parsing, candidate persistence, and action
         validation remain the exact runner transaction above.
         """
+
+        if self.external_dispatch is not None:
+            return self.external_dispatch.seal_validated_action(
+                self,
+                trial_id=trial_id,
+                step_index=step_index,
+                action=action,
+                candidate_digest=candidate_digest,
+                post_parse_state=post_parse_state,
+            )
 
         resume_checkpoint = backend.checkpoint()
         resume_checkpoint_digest = self.journal.put_object(
@@ -1222,6 +1269,8 @@ class V5Runner:
             callback(idempotency_key=idempotency_key, reason=reason)
 
     def _boundary(self, name: str) -> None:
+        if self.external_dispatch is not None:
+            self.external_dispatch.on_boundary(self, name)
         if self.interrupt_after == name:
             raise InjectedInterruption(name)
 
@@ -1233,10 +1282,12 @@ class V5Runner:
         events: Sequence[JournalEvent],
         by_kind: Mapping[str, JournalEvent],
     ) -> dict[str, Any] | None:
-        """Extension point for a caller-owned dispatch boundary."""
+        """Delegate to the caller-owned dispatch boundary, if one is composed in."""
 
-        del trial_id, step_index, events, by_kind
-        return None
+        del trial_id, step_index, events
+        if self.external_dispatch is None:
+            return None
+        return self.external_dispatch.recover_intent(self, by_kind=by_kind)
 
     def _recover_external_candidate(
         self,
@@ -1245,10 +1296,16 @@ class V5Runner:
         step_index: int,
         candidate_event: JournalEvent,
     ) -> dict[str, Any] | None:
-        """Extension point for validating a recovered candidate without a backend."""
+        """Delegate backend-free candidate recovery to the caller-owned boundary."""
 
-        del trial_id, step_index, candidate_event
-        return None
+        if self.external_dispatch is None:
+            return None
+        return self.external_dispatch.recover_candidate(
+            self,
+            trial_id=trial_id,
+            step_index=step_index,
+            candidate_event=candidate_event,
+        )
 
     def recover_step(
         self,

@@ -104,11 +104,19 @@ extend-exclude = ["artifacts", "pixelgym/tasks/vendor_form/guest_programs"]
 
 [tool.mypy]
 python_version = "3.12"
-files = ["pixelgym"]
+files = ["pixelgym", "flows"]
 exclude = ["^pixelgym/tasks/vendor_form/guest_programs/"]
 strict = true
+# Metaflow's FlowSpec constructor and CLI entry points are unannotated.
+untyped_calls_exclude = ["metaflow"]
 show_error_codes = true
 pretty = true
+
+[[tool.mypy.overrides]]
+# Metaflow re-exports FlowSpec, Parameter, current, and step from its package root
+# without an explicit __all__.
+module = ["metaflow"]
+implicit_reexport = true
 
 [[tool.mypy.overrides]]
 # Optional integrations are intentionally isolated from the core install and

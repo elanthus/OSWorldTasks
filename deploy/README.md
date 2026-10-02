@@ -167,18 +167,31 @@ python3.12 scripts/platform_compose.py up --build --wait
 
 ## Platform dependency lock
 
-`requirements/platform-py312.lock` is the complete, hash-verified Python 3.12 runtime graph for
-the platform image. The image verifies that the lock still corresponds to the platform inputs in
+`requirements/platform-py312-v2.lock` is the complete, hash-verified Python 3.12 runtime graph
+for the platform image. The image verifies that the lock still corresponds to the platform inputs in
 `pyproject.toml`, installs it with `pip --require-hashes`, then installs this repository with
 `--no-deps`; it never resolves `.[platform]` during an ordinary build. The evaluation flow records
 the SHA-256 of this exact consumed lock in its policy and run manifests.
+
+`requirements/mlflow-py312.lock` is the matching hash-verified graph for the MLflow image. It is
+compiled from `requirements/mlflow-py312.in` and installed with `pip --require-hashes`.
 
 When an intentional platform-runtime dependency change is approved, regenerate the lock with
 Python 3.12 and the `pip-tools` included in the documented editable developer setup:
 
 ```bash
-.venv/bin/pip-compile --extra platform --generate-hashes --resolver=backtracking --output-file requirements/platform-py312.lock pyproject.toml
+.venv/bin/pip-compile --extra platform --generate-hashes --resolver=backtracking --output-file requirements/platform-py312-v2.lock pyproject.toml
 ```
+
+Regenerate the MLflow lock the same way when its pins change:
+
+```bash
+.venv/bin/pip-compile --generate-hashes --strip-extras --output-file requirements/mlflow-py312.lock requirements/mlflow-py312.in
+```
+
+`pip-compile` relies on pip internals, so the installed `pip-tools` must match the installed `pip`.
+If `pip-compile` fails on import or option parsing after a `pip` upgrade, see the pip-tools
+compatibility notes before changing either version.
 
 Replace the `pixelgym-platform-input-sha256` header with the value printed by:
 
@@ -195,6 +208,19 @@ python3.12 -m pytest tests/unit/platform/test_dependency_lock.py -q
 
 This does not change the documented developer setup: `python3.12 -m venv .venv && pip install -e
 ".[dev]"` remains the sole setup step for the fast suite and lint.
+
+### Container user and existing volumes
+
+The platform and MLflow containers run as the unprivileged user uid 10001 (gid 10001). A
+`control-data` volume created while the containers still ran as root is owned by root, and the
+control service cannot write to it. Either recreate the volume, which discards its local control
+database, or change its ownership once:
+
+```bash
+docker compose -f deploy/compose.yaml run --rm --no-deps --user 0 --entrypoint chown migrate -R 10001:10001 /state
+```
+
+The Compose project is `pixelgym-platform`, so the volume is `pixelgym-platform_control-data`.
 
 ## Serving request and provider bounds
 

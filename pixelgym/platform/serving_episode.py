@@ -315,36 +315,31 @@ class SQLiteServingSessionStore:
         return tuple(_decode_step_record(json.loads(bytes(row[0]))) for row in rows)
 
 
-class _ServingTransaction(V5Runner):
-    """V5 transaction whose validated-action boundary issues an external intent."""
+class _ServingDispatch:
+    """External dispatch boundary composed into a v5 runner.
 
-    def __init__(
-        self,
-        *,
-        boundary_callback: Callable[[str], None],
-        **kwargs: Any,
-    ) -> None:
+    A validated action becomes an issued intent; the API caller owns environment dispatch.
+    """
+
+    def __init__(self, *, boundary_callback: Callable[[str], None]) -> None:
         self._boundary_callback = boundary_callback
         self._serving_action_space = build_action_space(SCREEN_WIDTH, SCREEN_HEIGHT)
-        super().__init__(**kwargs)
 
-    def _boundary(self, name: str) -> None:
+    def on_boundary(self, runner: V5Runner, name: str) -> None:
+        del runner
         self._boundary_callback(name)
-        super()._boundary(name)
 
-    def _seal_validated_action(
+    def seal_validated_action(
         self,
+        runner: V5Runner,
         *,
         trial_id: str,
         step_index: int,
-        env: Any,
-        backend: Any,
         action: dict[str, int],
         candidate_digest: str,
         post_parse_state: bytes,
     ) -> dict[str, Any]:
-        del env, backend
-        action_digest = self.journal.put_object(
+        action_digest = runner.journal.put_object(
             "sealed_action", canonical_json_bytes(action)
         )
         intent_material = {
@@ -352,11 +347,11 @@ class _ServingTransaction(V5Runner):
             "step_index": step_index,
             "candidate_digest": candidate_digest,
             "action_digest": action_digest,
-            "policy_id": self.manifest.policy_id,
+            "policy_id": runner.manifest.policy_id,
         }
         intent_id = "intent-" + sha256_bytes(canonical_json_bytes(intent_material))[:32]
-        checkpoint_digest = self.journal.put_object("policy_checkpoint", post_parse_state)
-        self.journal.append_event(
+        checkpoint_digest = runner.journal.put_object("policy_checkpoint", post_parse_state)
+        runner.journal.append_event(
             event_key=f"{trial_id}/step-{step_index:04d}/intent_issued",
             kind="intent_issued",
             trial_id=trial_id,
@@ -367,7 +362,7 @@ class _ServingTransaction(V5Runner):
                 "post_parse_checkpoint_digest": checkpoint_digest,
             },
         )
-        self._boundary("intent_issued")
+        runner._boundary("intent_issued")
         return {
             "classification": "intent_issued",
             "state": post_parse_state,
@@ -376,24 +371,18 @@ class _ServingTransaction(V5Runner):
             "redispatched": False,
         }
 
-    def _recover_external_intent(
-        self,
-        *,
-        trial_id: str,
-        step_index: int,
-        events: Sequence[JournalEvent],
-        by_kind: Mapping[str, JournalEvent],
+    def recover_intent(
+        self, runner: V5Runner, *, by_kind: Mapping[str, JournalEvent]
     ) -> dict[str, Any] | None:
-        del trial_id, step_index, events
         intent = by_kind.get("intent_issued")
         if intent is None:
             return None
-        state = self.journal.get_object(
+        state = runner.journal.get_object(
             intent.payload["post_parse_checkpoint_digest"],
             expected_kind="policy_checkpoint",
         )
         action = json.loads(
-            self.journal.get_object(
+            runner.journal.get_object(
                 intent.payload["action_digest"], expected_kind="sealed_action"
             )
         )
@@ -405,27 +394,28 @@ class _ServingTransaction(V5Runner):
             "redispatched": False,
         }
 
-    def _recover_external_candidate(
+    def recover_candidate(
         self,
+        runner: V5Runner,
         *,
         trial_id: str,
         step_index: int,
         candidate_event: JournalEvent,
     ) -> dict[str, Any] | None:
         candidate = json.loads(
-            self.journal.get_object(
+            runner.journal.get_object(
                 candidate_event.payload["candidate_digest"],
                 expected_kind="parsed_action_candidate",
             )
         )
-        post_parse_state = self.journal.get_object(
+        post_parse_state = runner.journal.get_object(
             candidate_event.payload["post_parse_checkpoint_digest"],
             expected_kind="policy_checkpoint",
         )
         try:
             validated = validate_action(self._serving_action_space, candidate)
         except InvalidActionError as exc:
-            self.journal.append_event(
+            runner.journal.append_event(
                 event_key=f"{trial_id}/step-{step_index:04d}/sealed_invalid_candidate",
                 kind="sealed_unsuccessful_result",
                 trial_id=trial_id,
@@ -442,11 +432,10 @@ class _ServingTransaction(V5Runner):
                 "state": post_parse_state,
                 "redispatched": False,
             }
-        return self._seal_validated_action(
+        return self.seal_validated_action(
+            runner,
             trial_id=trial_id,
             step_index=step_index,
-            env=None,
-            backend=None,
             action={
                 "action_type": validated.action_type,
                 "x": validated.x,
@@ -816,7 +805,7 @@ class ServingEpisodeHost:
                 )
                 self._interrupt("pre_call")
             self._active_state = state
-            transaction = _ServingTransaction(
+            transaction = V5Runner(
                 journal=self.journal,
                 manifest=self.manifest,
                 transport=self.transport,
@@ -824,7 +813,9 @@ class ServingEpisodeHost:
                 approved_caps=self._caps,
                 interrupt_after=self.interrupt_after,
                 deadline_executor=self.deadline_executor,
-                boundary_callback=self._transaction_boundary,
+                external_dispatch=_ServingDispatch(
+                    boundary_callback=self._transaction_boundary
+                ),
             )
             if has_transaction:
                 outcome = transaction.recover_step(

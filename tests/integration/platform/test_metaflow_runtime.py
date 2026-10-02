@@ -247,7 +247,7 @@ def _final_evidence(result: RuntimeResult) -> tuple[bytes, bytes, bytes, bytes, 
     policy = store.get_verified(policy_ref)
 
     gate["run_id"] = "<run-id>"
-    candidate_gate = dict(candidate.gate_report)
+    candidate_gate = candidate.gate_report.to_dict()
     candidate_gate["run_id"] = "<run-id>"
     artifact_values = [artifact.to_dict() for artifact in candidate.artifacts]
     summary_ref = next(

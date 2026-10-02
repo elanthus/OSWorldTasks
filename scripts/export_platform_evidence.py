@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import asdict
 from pathlib import Path
 
 from pixelgym.platform.control_store import ControlStore
@@ -29,7 +30,7 @@ def export_evidence(control: ControlStore, output: Path) -> None:
         request_digest = sha256_bytes(canonical_json_bytes(submission["request"]))
         if request_digest != submission["request_sha256"]:
             raise ContractValidationError("stored submission digest does not verify")
-    gate_reports = [candidate.gate_report for candidate in candidates]
+    gate_reports = [candidate.gate_report.to_dict() for candidate in candidates]
     for candidate, report in zip(candidates, gate_reports, strict=True):
         schemas.validate("gate_report", report)
         report_digest = sha256_bytes(canonical_json_bytes(report))
@@ -46,7 +47,7 @@ def export_evidence(control: ControlStore, output: Path) -> None:
             "mlflow_run_id": row["mlflow_run_id"],
             "metaflow_pathspec": row["metaflow_pathspec"],
             "dataset_fingerprint": (
-                candidates_by_run[row["mlflow_run_id"]].gate_report["dataset_fingerprint"]
+                candidates_by_run[row["mlflow_run_id"]].gate_report.dataset_fingerprint
                 if row["mlflow_run_id"] in candidates_by_run
                 else None
             ),
@@ -93,10 +94,10 @@ def export_evidence(control: ControlStore, output: Path) -> None:
                 "candidate_id": item.candidate_id,
                 "policy_id": item.policy.policy_id,
                 "state": item.state.value,
-                "dataset_fingerprint": item.gate_report["dataset_fingerprint"],
-                "accuracy": item.gate_report["accuracy"],
-                "cost_usd_per_100": item.gate_report["cost_usd_per_100"],
-                "provider_latency_p95_ms": item.gate_report["provider_latency_p95_ms"],
+                "dataset_fingerprint": item.gate_report.dataset_fingerprint,
+                "accuracy": asdict(item.gate_report.accuracy),
+                "cost_usd_per_100": asdict(item.gate_report.cost_usd_per_100),
+                "provider_latency_p95_ms": asdict(item.gate_report.provider_latency_p95_ms),
             }
             for item in candidates
         ],

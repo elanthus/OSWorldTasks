@@ -8,7 +8,7 @@ import platform
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import metaflow
 from metaflow import FlowSpec, Parameter, current, step
@@ -16,6 +16,7 @@ from metaflow import FlowSpec, Parameter, current, step
 from pixelgym.platform.contracts import GatePolicy, PolicyManifest
 from pixelgym.platform.evaluation import (
     EvaluationRunner,
+    PlatformProvider,
     PlatformProviderResponse,
     ScriptedReplayProvider,
 )
@@ -71,7 +72,7 @@ class _OutcomeProvider:
         )
 
 
-def _provider(policy: PolicyManifest) -> object:
+def _provider(policy: PolicyManifest) -> PlatformProvider:
     behavior = _MODEL_BEHAVIOR.get(policy.model)
     if behavior is None:
         raise ValueError("matrix policy model is outside the scripted allowlist")
@@ -87,6 +88,11 @@ def _provider(policy: PolicyManifest) -> object:
             model=policy.model,
             ledger_path=Path(ledger),
             concurrency_barrier=int(os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER", "1")),
+            # The flow step is a separate process, so the test-hook environment is read
+            # here, behind the explicit test-hook gate, and injected into the fixture.
+            concurrency_barrier_timeout_seconds=float(
+                os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS", "10")
+            ),
         )
     if behavior in {"baseline", "revised"}:
         return ScriptedReplayProvider(
@@ -97,7 +103,7 @@ def _provider(policy: PolicyManifest) -> object:
     return _OutcomeProvider(model=policy.model, outcome=behavior)
 
 
-def _runner(flow: object, policy: PolicyManifest) -> EvaluationRunner:
+def _runner(flow: SeedPolicyFanoutFlow, policy: PolicyManifest) -> EvaluationRunner:
     return EvaluationRunner(
         repository_root=_root(),
         store=_store(),
@@ -138,9 +144,16 @@ def _now() -> str:
 
 
 class SeedPolicyFanoutFlow(FlowSpec):
-    plan_file = Parameter("plan-file", required=True)
-    output_file = Parameter("output-file", required=True)
-    worker_cap = Parameter("worker-cap", type=int, default=4)
+    if TYPE_CHECKING:
+        # Metaflow replaces each Parameter with its parsed value on the running flow; the
+        # type checker sees those values. The runtime branch below is the real declaration.
+        plan_file: str
+        output_file: str
+        worker_cap: int
+    else:
+        plan_file = Parameter("plan-file", required=True)
+        output_file = Parameter("output-file", required=True)
+        worker_cap = Parameter("worker-cap", type=int, default=4)
 
     @step
     def start(self) -> None:
@@ -174,13 +187,16 @@ class SeedPolicyFanoutFlow(FlowSpec):
 
     @step
     def evaluate_shard(self) -> None:
+        shard = self.input
+        if shard is None:
+            raise RuntimeError("evaluate_shard runs only as a foreach branch")
         started_at = _now()
         started_monotonic = time.monotonic()
-        policy = PolicyManifest(**self.input["policy"])
+        policy = PolicyManifest(**shard["policy"])
         runner = _runner(self, policy)
         raw = runner.evaluate_shard(
-            {"index": 0, "example_ids": self.input["example_ids"]},
-            max_calls=len(self.input["example_ids"]),
+            {"index": 0, "example_ids": shard["example_ids"]},
+            max_calls=len(shard["example_ids"]),
         )
         verified = runner.verify_raw_artifacts(raw, require_complete=False)
         records = runner.parse_and_score(verified, require_complete=False)
@@ -204,18 +220,18 @@ class SeedPolicyFanoutFlow(FlowSpec):
         ended_at = _now()
         self.branch_result = {
             "content": {
-                "assignment_id": self.input["assignment_id"],
+                "assignment_id": shard["assignment_id"],
                 "correct_count": sum(row["correct"] is True for row in records),
-                "expected_count": len(self.input["example_ids"]),
+                "expected_count": len(shard["example_ids"]),
                 "invalid_count": invalid_count,
                 "outcome": outcome,
-                "policy_id": self.input["policy_id"],
+                "policy_id": shard["policy_id"],
                 "records": canonical_records,
                 "request_failure_count": failure_count,
-                "seed": self.input["seed"],
+                "seed": shard["seed"],
             },
             "timing": {
-                "assignment_id": self.input["assignment_id"],
+                "assignment_id": shard["assignment_id"],
                 "attempt": int(getattr(current, "retry_count", 0)),
                 "ended_at_utc": ended_at,
                 "queue_duration_ms": round(
@@ -233,7 +249,7 @@ class SeedPolicyFanoutFlow(FlowSpec):
                 "task_id": str(current.task_id),
             },
         }
-        _fail_branch_once(self.input["assignment_id"])
+        _fail_branch_once(shard["assignment_id"])
         self.next(self.join_shards)
 
     @step
@@ -335,4 +351,5 @@ class SeedPolicyFanoutFlow(FlowSpec):
 
 
 if __name__ == "__main__":
-    SeedPolicyFanoutFlow()
+    # Metaflow's FlowSpec.__init__ is unannotated; the CLI entry point is its only caller.
+    SeedPolicyFanoutFlow()  # type: ignore[no-untyped-call]

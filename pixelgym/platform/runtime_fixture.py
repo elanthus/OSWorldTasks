@@ -60,6 +60,7 @@ class LedgeredScriptedReplayProvider:
         model: str | None = None,
         ledger_path: Path,
         concurrency_barrier: int = 1,
+        concurrency_barrier_timeout_seconds: float = 10.0,
     ) -> None:
         if concurrency_barrier <= 0:
             raise ValueError("concurrency barrier must be positive")
@@ -87,6 +88,7 @@ class LedgeredScriptedReplayProvider:
         self.variant = variant
         self.ledger_path = ledger_path
         self.concurrency_barrier = concurrency_barrier
+        self.concurrency_barrier_timeout_seconds = concurrency_barrier_timeout_seconds
         ledger_path.parent.mkdir(parents=True, exist_ok=True)
         descriptor = os.open(
             ledger_path.with_name(ledger_path.name + ".init.lock"),
@@ -110,9 +112,7 @@ class LedgeredScriptedReplayProvider:
     def _wait_for_concurrency_barrier(self) -> None:
         if self.concurrency_barrier == 1:
             return
-        timeout_seconds = float(
-            os.environ.get("PIXELGYM_TEST_CONCURRENCY_BARRIER_TIMEOUT_SECONDS", "10")
-        )
+        timeout_seconds = float(self.concurrency_barrier_timeout_seconds)
         if timeout_seconds <= 0:
             raise ValueError("provider concurrency barrier timeout must be positive")
         deadline = time.monotonic() + timeout_seconds
