@@ -27,8 +27,8 @@ def _seed(root: Path, run_id: str, *, journal_bytes: bytes = b"sqlite-bytes") ->
             "policy_manifest_digest": "sha256:" + "b" * 64,
             "provider": {"name": "openrouter", "upstream_provider": "Example"},
         },
-        "journal_path": f"/Users/operator/checkout/artifacts/grounding-v5-d56-{run_id}-run/attempts.sqlite",
-        "summary_path": f"/Users/operator/checkout/artifacts/grounding-v5-d56-{run_id}-run/summary.json",
+        "journal_path": f"/Users/operator/checkout/artifacts/grounding-v5-d56-{run_id}-run/attempts.sqlite",  # noqa: E501
+        "summary_path": f"/Users/operator/checkout/artifacts/grounding-v5-d56-{run_id}-run/summary.json",  # noqa: E501
     }
     summary = {
         "approved_plan_sha256": content_digest(plan),

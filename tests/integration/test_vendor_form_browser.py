@@ -105,7 +105,8 @@ def _browser_rects(page: Any) -> tuple[dict[WidgetId, dict[str, float]], list[di
 
 def _assert_fixed_width_controls_do_not_clip(page: Any, values: list[str]) -> None:
     widths = page.locator("#payment_terms label").evaluate_all(
-        "elements => elements.map(element => ({scroll: element.scrollWidth, client: element.clientWidth}))"
+        "elements => elements.map(element => ({scroll: element.scrollWidth, client: "
+        "element.clientWidth}))"
     )
     assert len(widths) == len(values)
     for index, (value, width) in enumerate(zip(values, widths, strict=True)):

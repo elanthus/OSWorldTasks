@@ -94,7 +94,11 @@ def canonical_plan() -> dict[str, Any]:
         "phase_id": PHASE,
         "owner_approval": "go ahead with calibration",
         "assignment_approval": "All 50 tasks, 100 episodes (recommended)",
-        "approval_scope": "fresh end-to-end calibration after the focus/timeout repair diagnostic; existing USD 20 aggregate cap; no confirmatory calls or final D5.8 verdict",
+        "approval_scope": (
+            "fresh end-to-end calibration after the focus/timeout repair "
+            "diagnostic; existing USD 20 aggregate cap; no confirmatory "
+            "calls or final D5.8 verdict"
+        ),
         "execution_enabled": True,
         "aggregate_ceiling_usd": str(CEILING),
         "jobs": jobs,
@@ -138,14 +142,29 @@ def canonical_plan() -> dict[str, Any]:
             "next reservation would exceed USD 20 aggregate",
             "90 minutes since durable phase start; stop before the next model action",
         ],
-        "interruption_rule": "never resend a started episode; preserve interrupted and unrun assignments; closed phases cannot restart; transport retirement survives process restart",
-        "unknown_charge_rule": "retain request-sized holds until billing evidence resolves them; holds are not billed charges",
-        "analysis_rule": "standalone fresh cohort, all episodes start at reset; no scripted prefixes, pooling with predecessors, or selecting favorable tasks; retain all failures and unrun assignments",
+        "interruption_rule": (
+            "never resend a started episode; preserve interrupted and "
+            "unrun assignments; closed phases cannot restart; "
+            "transport retirement survives process restart"
+        ),
+        "unknown_charge_rule": (
+            "retain request-sized holds until billing evidence "
+            "resolves them; holds are not billed charges"
+        ),
+        "analysis_rule": (
+            "standalone fresh cohort, all episodes start at reset; no "
+            "scripted prefixes, pooling with predecessors, or selecting "
+            "favorable tasks; retain all failures and unrun assignments"
+        ),
         "calibration_criteria": {
             "history_reaches_both_consumers_minimum_assigned": 40,
             "history_terminal_success_fraction_range": [0.2, 0.8],
             "memory_effect_significance_required": False,
-            "stateless_exposure": "report observed exposure and first-attempt choices separately; a floor before memory prevents interpreting the comparison",
+            "stateless_exposure": (
+                "report observed exposure and first-attempt choices "
+                "separately; a floor before memory prevents "
+                "interpreting the comparison"
+            ),
         },
         "completion_within_budget_guaranteed": False,
     }
@@ -180,23 +199,51 @@ def render_report(value: dict[str, Any]) -> str:
         "",
         f"Complete: **{value['complete']}**. Stop: `{value['stop_reason']}`.",
         "",
-        "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | Correct first memory attempts / attempted |",
+        (
+            "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | "
+            "Correct first memory attempts / attempted |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for mode, row in value["scores"].items():
         lines.append(
-            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | {row['terminal_successes']} | {row['reached_both_consumers']} | {row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
+            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | "
+            f"{row['terminal_successes']} | {row['reached_both_consumers']} | "
+            f"{row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
         )
     spend = value["aggregate_spend"]
     lines += [
         "",
-        f"New phase: {value['new_phase_wire_requests']} wire requests; USD {value['new_phase_known_spend_usd']} known charges. Aggregate known charges: USD {spend['spent_usd']}; unknown holds: USD {spend['unknown_reservation_usd']}; in-flight holds: USD {spend['in_flight_reservation_usd']}. Shared ceiling: USD 20.00.",
+        (
+            f"New phase: {value['new_phase_wire_requests']} wire requests; USD "
+            f"{value['new_phase_known_spend_usd']} known charges. Aggregate known charges: "
+            f"USD {spend['spent_usd']}; unknown holds: USD "
+            f"{spend['unknown_reservation_usd']}; in-flight holds: USD "
+            f"{spend['in_flight_reservation_usd']}. Shared ceiling: USD 20.00."
+        ),
         "",
-        "All episodes start at reset with model actions only. The task seeds, order, generator, delayed feedback and matched screenshot policies remain fixed. The focus cue and request-local transport match the completed diagnostic. Historical cohorts remain separate; every failed and unrun assignment remains in the denominator.",
+        (
+            "All episodes start at reset with model actions only. The task seeds, order, "
+            "generator, delayed feedback and matched screenshot policies remain fixed. The "
+            "focus cue and request-local transport match the completed diagnostic. "
+            "Historical cohorts remain separate; every failed and unrun assignment remains "
+            "in the denominator."
+        ),
         "",
-        "Exposure means reaching memory consumers, separately from correctness and terminal success. Proposed calibration criteria are history exposure of at least 40/50 and terminal success between 20% and 80%; a positive or significant memory effect is not required. Incomplete observations cannot establish complete-cohort rates or confirmatory power. D5.8 final approval remains an owner decision.",
+        (
+            "Exposure means reaching memory consumers, separately from correctness and "
+            "terminal success. Proposed calibration criteria are history exposure of at "
+            "least 40/50 and terminal success between 20% and 80%; a positive or "
+            "significant memory effect is not required. Incomplete observations cannot "
+            "establish complete-cohort rates or confirmatory power. D5.8 final approval "
+            "remains an owner decision."
+        ),
         "",
-        "[Stored summary](summary.json), [execution plan](execution-plan.json), [price snapshot](price-recheck.json). Provider responses and checkpoints remain in the ignored aggregate journal.",
+        (
+            "[Stored summary](summary.json), [execution plan](execution-plan.json), [price "
+            "snapshot](price-recheck.json). Provider responses and checkpoints remain in "
+            "the ignored aggregate journal."
+        ),
         "",
     ]
     return "\n".join(lines)

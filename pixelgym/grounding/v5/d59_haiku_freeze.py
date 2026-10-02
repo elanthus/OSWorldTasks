@@ -87,9 +87,15 @@ def owner_exception() -> dict[str, Any]:
             "OS-enforced policy isolation or independent denial of local process capabilities."
         ),
         "residual_risks": [
-            "CLI flags and environment filtering, rather than an OS boundary, enforce the local capability restrictions.",
+            (
+                "CLI flags and environment filtering, rather than an OS boundary, enforce "
+                "the local capability restrictions."
+            ),
             "A Claude CLI defect could exceed the declared local capability boundary.",
-            "The existing macOS Keychain-backed Max credential remains available to the unsandboxed CLI process.",
+            (
+                "The existing macOS Keychain-backed Max credential remains available to "
+                "the unsandboxed CLI process."
+            ),
         ],
         "execution_boundary": {
             "execution_enabled": False,

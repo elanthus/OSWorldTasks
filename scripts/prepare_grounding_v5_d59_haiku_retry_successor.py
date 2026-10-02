@@ -152,9 +152,18 @@ def audit_discarded_run(evidence: Path) -> dict[str, Any]:
             },
         },
         "limitations": [
-            "The predecessor result is invalid infrastructure evidence and contributes no benchmark score.",
-            "The old runner counted CLI processes, not the hidden API retries inside a process; minimum provider API attempts are therefore reported separately.",
-            "Raw prompts, screenshots, provider responses, session identifiers, process IDs, and private paths are excluded from this public receipt.",
+            (
+                "The predecessor result is invalid infrastructure evidence and contributes "
+                "no benchmark score."
+            ),
+            (
+                "The old runner counted CLI processes, not the hidden API retries inside a "
+                "process; minimum provider API attempts are therefore reported separately."
+            ),
+            (
+                "Raw prompts, screenshots, provider responses, session identifiers, "
+                "process IDs, and private paths are excluded from this public receipt."
+            ),
         ],
         "human_gate": "D5.10_not_evaluated_human_owned",
     }

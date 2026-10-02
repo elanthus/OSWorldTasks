@@ -117,10 +117,20 @@ def analyze(summary, plan):
             scores["history"]["reached_both_consumers"] + missing_history_exposure
         ),
         "planned_mixed_terminal_outcome_range": [10, 40],
-        "calibration_threshold_scope": "Compare history consumer exposure with 40/50 and history terminal success with 10..40/50; these are planning thresholds, not a milestone verdict. Missing episodes do not count as observed model failures.",
+        "calibration_threshold_scope": (
+            "Compare history consumer exposure with 40/50 "
+            "and history terminal success with 10..40/50; "
+            "these are planning thresholds, not a milestone "
+            "verdict. Missing episodes do not count as "
+            "observed model failures."
+        ),
         "inferential_test": None,
         "confirmatory_power_estimate": None,
-        "interpretation": "Descriptive Gemini 3.8 cohort only; do not pool with 3.7 or its scripted-prefix pilot. Infrastructure failures are retained. Final confirmation remains unapproved.",
+        "interpretation": (
+            "Descriptive Gemini 3.8 cohort only; do not pool with 3.7 or "
+            "its scripted-prefix pilot. Infrastructure failures are "
+            "retained. Final confirmation remains unapproved."
+        ),
         "provider_calls": 0,
     }
 

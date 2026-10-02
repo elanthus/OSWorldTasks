@@ -355,7 +355,10 @@ def build_benchmark_v2(repository_root: Path) -> dict[str, Any]:
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "protocol_version": PROTOCOL_VERSION,
         "status": "dataset_ready_evaluation_not_run",
-        "design": "20 seeds x 5 screen states; one target per screenshot; two seed replicates per target-by-state cell",
+        "design": (
+            "20 seeds x 5 screen states; one target per screenshot; two seed "
+            "replicates per target-by-state cell"
+        ),
         **allocation,
         "source_v1": {
             name: {

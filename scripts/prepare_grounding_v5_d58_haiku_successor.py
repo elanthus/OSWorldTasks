@@ -138,13 +138,22 @@ def build_analysis() -> dict[str, Any]:
             "all_pairs": snapshot["fresh_cohort"]["conditions"]["history"],
             "independent_representatives": paired,
         },
-        "method": "Unconditional power: M~Bin(n,q), B|M~Bin(M,(q+delta)/(2q)); sum the two-sided exact McNemar rejection probability over M.",
+        "method": (
+            "Unconditional power: M~Bin(n,q), B|M~Bin(M,(q+delta)/(2q)); sum the "
+            "two-sided exact McNemar rejection probability over M."
+        ),
         "method_reference": "https://pubmed.ncbi.nlm.nih.gov/1509223/",
         "alpha": 0.05,
         "minimum_relevant_absolute_difference": 0.20,
         "power_target": 0.80,
         "discordance_scenarios": scenarios,
-        "sensitivity_scope": "Wilson endpoints are a disclosed planning range, not a guarantee for the fixed family mix or a formal confidence bound on prospective power. No observed-effect power or calibration significance test is reported.",
+        "sensitivity_scope": (
+            "Wilson endpoints are a disclosed planning range, not a "
+            "guarantee for the fixed family mix or a formal "
+            "confidence bound on prospective power. No "
+            "observed-effect power or calibration significance test "
+            "is reported."
+        ),
         "options": options,
         "carry_forward_candidate": {
             "independent_pairs": 168,
@@ -157,7 +166,12 @@ def build_analysis() -> dict[str, Any]:
         "execution_readiness": {
             "os_sandbox_applied": sandbox_applied,
             "confirmatory_ready": False,
-            "reason": "The calibration manifests record that OS sandbox enforcement was not applied to either Claude Code CLI launch. A confirmatory successor also requires newly frozen caps, runtime, admission, and exact approval.",
+            "reason": (
+                "The calibration manifests record that OS sandbox enforcement "
+                "was not applied to either Claude Code CLI launch. A "
+                "confirmatory successor also requires newly frozen caps, "
+                "runtime, admission, and exact approval."
+            ),
         },
         "owner_selection": None,
         "paid_or_subscription_execution_authorized": False,
@@ -171,15 +185,32 @@ def render_report(data: dict[str, Any]) -> str:
     lines = [
         "# Haiku D5.8 successor power check",
         "",
-        "This response-free successor recomputes the D5.8 paired-power inputs from the fresh Haiku Claude Code CLI calibration. It uses the 44 representatives selected before the Haiku outcomes were observed; it does not treat all 50 seed pairs as independent.",
+        (
+            "This response-free successor recomputes the D5.8 paired-power inputs from the "
+            "fresh Haiku Claude Code CLI calibration. It uses the 44 representatives "
+            "selected before the Haiku outcomes were observed; it does not treat all 50 "
+            "seed pairs as independent."
+        ),
         "",
         "## Independent calibration outcomes",
         "",
-        f"The representatives contain {outcomes['both_success']} both-success, {outcomes['history_only']} history-only, {outcomes['stateless_only']} stateless-only, and {outcomes['neither_success']} neither-success pairs. That is {paired['discordant']}/{paired['pairs']} discordant representatives ({data['discordance_scenarios']['observed_discordance']:.4%}).",
+        (
+            f"The representatives contain {outcomes['both_success']} both-success, "
+            f"{outcomes['history_only']} history-only, {outcomes['stateless_only']} "
+            f"stateless-only, and {outcomes['neither_success']} neither-success pairs. That "
+            f"is {paired['discordant']}/{paired['pairs']} discordant representatives "
+            f"({data['discordance_scenarios']['observed_discordance']:.4%})."
+        ),
         "",
-        "At the unchanged 20-point minimum relevant difference, two-sided exact McNemar alpha 0.05, and 80% target power:",
+        (
+            "At the unchanged 20-point minimum relevant difference, two-sided exact "
+            "McNemar alpha 0.05, and 80% target power:"
+        ),
         "",
-        "| Independent pairs | Episodes / arm with 24 twins | Power at observed discordance | Power at upper sensitivity | All-discordant stress |",
+        (
+            "| Independent pairs | Episodes / arm with 24 twins | Power at observed "
+            "discordance | Power at upper sensitivity | All-discordant stress |"
+        ),
         "|---:|---:|---:|---:|---:|",
     ]
     for row in data["options"]:
@@ -193,11 +224,16 @@ def render_report(data: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            f"The conventional 95% Wilson planning range is {scenarios['lower_sensitivity']:.4%}–{scenarios['upper_sensitivity']:.4%}. {data['sensitivity_scope']}",
+            (
+                "The conventional 95% Wilson planning range is "
+                f"{scenarios['lower_sensitivity']:.4%}–{scenarios['upper_sensitivity']:.4%}. "
+                f"{data['sensitivity_scope']}"
+            ),
             "",
             (
                 "The prior 168-independent-pair choice remains an analytical candidate: it yields "
-                f"{candidate['power']['observed_discordance']:.1%} power at observed discordance and "
+                f"{candidate['power']['observed_discordance']:.1%} power at observed "
+                "discordance and "
                 f"{candidate['power']['upper_sensitivity']:.1%} at the upper sensitivity endpoint. "
                 "This recomputation does not carry forward the prior Gemini owner selection "
                 "automatically."
@@ -205,9 +241,18 @@ def render_report(data: dict[str, Any]) -> str:
             "",
             "## Remaining boundary",
             "",
-            "No provider call was made and no confirmatory task was generated. Owner selection remains unset. D5.9 is not ready to execute: the calibration manifests record that OS sandbox enforcement was not applied to either Claude Code CLI launch, and a Haiku successor still needs frozen admission, caps, runtime, and exact execution approval.",
+            (
+                "No provider call was made and no confirmatory task was generated. Owner "
+                "selection remains unset. D5.9 is not ready to execute: the calibration "
+                "manifests record that OS sandbox enforcement was not applied to either "
+                "Claude Code CLI launch, and a Haiku successor still needs frozen "
+                "admission, caps, runtime, and exact execution approval."
+            ),
             "",
-            "The structured analysis records every representative seed and source digest in [`analysis.json`](analysis.json).",
+            (
+                "The structured analysis records every representative seed and source "
+                "digest in [`analysis.json`](analysis.json)."
+            ),
             "",
         ]
     )

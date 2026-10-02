@@ -246,7 +246,8 @@ class S3ImmutableStore:
             or (retry_max_attempts is not None and retry_max_attempts < 1)
         ):
             raise ValueError(
-                "bucket, positive retention_days and operation timeout, and a positive retry maximum are required"
+                "bucket, positive retention_days and operation timeout, and a positive "
+                "retry maximum are required"
             )
         if client is None:
             try:

@@ -347,7 +347,14 @@ def render(data: dict) -> str:
     lines = [
         "# Fresh Haiku Claude Code CLI calibration",
         "",
-        "The fresh matched calibration completed all 100 assignments: 50 screenshot-history and 50 stateless episodes on the PR196 calibration task panel. It used the exact `claude-haiku-4-5-20251001` model through Claude Code CLI 2.1.267 with default reasoning effort. These are calibration observations, not confirmatory results, a model ranking, or a human milestone verdict.",
+        (
+            "The fresh matched calibration completed all 100 assignments: 50 "
+            "screenshot-history and 50 stateless episodes on the PR196 calibration task "
+            "panel. It used the exact `claude-haiku-4-5-20251001` model through Claude "
+            "Code CLI 2.1.267 with default reasoning effort. These are calibration "
+            "observations, not confirmatory results, a model ranking, or a human milestone "
+            "verdict."
+        ),
         "",
         "## Outcomes",
         "",
@@ -357,16 +364,26 @@ def render(data: dict) -> str:
     for mode in ("history", "stateless"):
         row = data["conditions"][mode]
         lines.append(
-            f"| {mode} | {row['episodes']} | {row['successes']} | {row['classifications'].get('step_limit_truncation', 0)} | {row['classifications'].get('invalid_output', 0)} |"
+            f"| {mode} | {row['episodes']} | {row['successes']} | "
+            f"{row['classifications'].get('step_limit_truncation', 0)} | "
+            f"{row['classifications'].get('invalid_output', 0)} |"
         )
     paired_outcomes = data["paired"]["outcomes"]
     lines += [
         "",
-        "Every assignment contributes its first terminal outcome. Invalid outputs remain failures; none was discarded or rescored. The matched pairs comprise 0 both-success, 28 history-only, 5 stateless-only, and 17 neither-success outcomes.",
+        (
+            "Every assignment contributes its first terminal outcome. Invalid outputs "
+            "remain failures; none was discarded or rescored. The matched pairs comprise 0 "
+            "both-success, 28 history-only, 5 stateless-only, and 17 neither-success "
+            "outcomes."
+        ),
         "",
         "## Memory observations",
         "",
-        "| Condition | Reached both consumers | Correct first choices / attempted | Valid first choices | Actions | Model attempts |",
+        (
+            "| Condition | Reached both consumers | Correct first choices / attempted | "
+            "Valid first choices | Actions | Model attempts |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     require(
@@ -376,33 +393,82 @@ def render(data: dict) -> str:
     for mode in ("history", "stateless"):
         row = data["conditions"][mode]
         lines.append(
-            f"| {mode} | {row['reached_both_consumers']}/{row['episodes']} | {row['first_choices_correct']}/{row['first_choices_attempted']} | {row['first_choices_valid']} | {row['actions']} | {row['model_attempts']} |"
+            f"| {mode} | {row['reached_both_consumers']}/{row['episodes']} | "
+            f"{row['first_choices_correct']}/{row['first_choices_attempted']} | "
+            f"{row['first_choices_valid']} | {row['actions']} | {row['model_attempts']} "
+            "|"
         )
     accounting = data["accounting"]
     caps = data["caps"]
     lines += [
         "",
-        "First-choice denominators count observed consumer-choice attempts. Episodes that never reached a consumer remain in the episode denominator but cannot contribute a choice observation. Measurements come from stored host checkpoints and committed dispatches, not model self-reports.",
+        (
+            "First-choice denominators count observed consumer-choice attempts. Episodes "
+            "that never reached a consumer remain in the episode denominator but cannot "
+            "contribute a choice observation. Measurements come from stored host "
+            "checkpoints and committed dispatches, not model self-reports."
+        ),
         "",
         "## Execution and caps",
         "",
-        f"The run used {accounting['environment_actions']} of {caps['environment_action_cap']} allowed environment actions and {accounting['model_attempts']} of {caps['model_attempt_cap']} allowed model attempts. It recorded {accounting['provider_wire_requests']} of {caps['provider_wire_request_cap']} allowed CLI wire requests and {accounting['provider_control_requests']} of {caps['provider_control_request_cap']} provider-control requests. All {accounting['provider_processes_started']} started CLI processes have terminal response records; unresolved invocations are zero and subprocess closure is recorded.",
+        (
+            f"The run used {accounting['environment_actions']} of "
+            f"{caps['environment_action_cap']} allowed environment actions and "
+            f"{accounting['model_attempts']} of {caps['model_attempt_cap']} allowed model "
+            f"attempts. It recorded {accounting['provider_wire_requests']} of "
+            f"{caps['provider_wire_request_cap']} allowed CLI wire requests and "
+            f"{accounting['provider_control_requests']} of "
+            f"{caps['provider_control_request_cap']} provider-control requests. All "
+            f"{accounting['provider_processes_started']} started CLI processes have "
+            "terminal response records; unresolved invocations are zero and subprocess "
+            "closure is recorded."
+        ),
         "",
-        f"Elapsed execution time was {data['elapsed_seconds'] / 3600:.2f} hours within the approved 12-hour window. Incremental experiment charge is recorded as USD {data['incremental_experiment_charge_usd']} under the existing Max subscription; that excludes the subscription fee and is not a zero inference-cost claim.",
+        (
+            f"Elapsed execution time was {data['elapsed_seconds'] / 3600:.2f} hours within "
+            "the approved 12-hour window. Incremental experiment charge is recorded as USD "
+            f"{data['incremental_experiment_charge_usd']} under the existing Max "
+            "subscription; that excludes the subscription fee and is not a zero "
+            "inference-cost claim."
+        ),
         "",
         "## Provenance and limits",
         "",
-        f"The execution plan digest is `{data['plan_digest']}` and the adapter revision is `{data['adapter_revision']}`. The task identities exactly match the checked-in PR196 calibration plan and preserve its frozen benchmark revision `{data['frozen_benchmark_revision']}`. The fresh cohort reused no prior outcome and exposed no confirmatory task.",
+        (
+            f"The execution plan digest is `{data['plan_digest']}` and the adapter revision "
+            f"is `{data['adapter_revision']}`. The task identities exactly match the "
+            "checked-in PR196 calibration plan and preserve its frozen benchmark revision "
+            f"`{data['frozen_benchmark_revision']}`. The fresh cohort reused no prior "
+            "outcome and exposed no confirmatory task."
+        ),
         "",
-        "The private audit opened both SQLite journals read-only, verified every stored-object and event-chain digest, matched all result events to the sealed summary, recomputed episode measurements, checked success against privileged host dispatches, verified every invocation receipt, and checked the exact caps. It made zero provider calls and did not replay an episode or reinterpret an invalid output.",
+        (
+            "The private audit opened both SQLite journals read-only, verified every "
+            "stored-object and event-chain digest, matched all result events to the sealed "
+            "summary, recomputed episode measurements, checked success against privileged "
+            "host dispatches, verified every invocation receipt, and checked the exact "
+            "caps. It made zero provider calls and did not replay an episode or "
+            "reinterpret an invalid output."
+        ),
         "",
-        "The checked-in snapshot excludes raw provider responses, prompts, screenshots, checkpoint contents, credentials, private paths, and process IDs. Public verification checks its hash, task-panel binding, response-free derivation, and deterministic report bytes; it cannot repeat the private-journal audit without the retained local journals.",
+        (
+            "The checked-in snapshot excludes raw provider responses, prompts, "
+            "screenshots, checkpoint contents, credentials, private paths, and process "
+            "IDs. Public verification checks its hash, task-panel binding, response-free "
+            "derivation, and deterministic report bytes; it cannot repeat the "
+            "private-journal audit without the retained local journals."
+        ),
         "",
         "```sh",
         ".venv/bin/python -m scripts.publish_haiku_cli_replication --verify",
         "```",
         "",
-        "The earlier consolidated PR196 Haiku result combined interrupted and successor CLI/API cohorts. This fresh result uses one Claude Code route and should remain separately identified. No D5.9 execution is authorized, and no human gate is declared here.",
+        (
+            "The earlier consolidated PR196 Haiku result combined interrupted and "
+            "successor CLI/API cohorts. This fresh result uses one Claude Code route and "
+            "should remain separately identified. No D5.9 execution is authorized, and no "
+            "human gate is declared here."
+        ),
         "",
     ]
     return "\n".join(lines)

@@ -142,7 +142,12 @@ def canonical_plan() -> dict[str, Any]:
         "runtime_approval_digest": content_digest(approval),
         "runtime_started_at": runtime_start,
         "runtime_deadline": runtime_start + 21600,
-        "approval_scope": "continue only untouched assignments after the prior time-limited phase; six hours total from the original start, unchanged USD 28 aggregate cap; no episode replay or confirmatory tasks",
+        "approval_scope": (
+            "continue only untouched assignments after the prior "
+            "time-limited phase; six hours total from the original "
+            "start, unchanged USD 28 aggregate cap; no episode replay or "
+            "confirmatory tasks"
+        ),
         "execution_enabled": True,
         "aggregate_ceiling_usd": str(CEILING),
         "phase_cap_usd": str(CEILING - Decimal(prior_spend["budget_accounted_spend_usd"])),
@@ -185,14 +190,24 @@ def canonical_plan() -> dict[str, Any]:
         "maximum_total_runtime_seconds": 21600,
         "stop_rules": [
             "all remaining untouched assignments recorded; preserve every prior result",
-            "no consecutive-episode-failure stop; transient retries remain bounded to two per action",
+            (
+                "no consecutive-episode-failure stop; transient retries remain bounded to "
+                "two per action"
+            ),
             "retired transport or provider identity/price violation",
             "next actual request reservation exceeds USD 28 aggregate or phase wire cap",
-            "six hours from the original reliable-continuation start, including setup time; honor server cooldowns in full",
+            (
+                "six hours from the original reliable-continuation start, including setup "
+                "time; honor server cooldowns in full"
+            ),
         ],
         "interruption_rule": old["interruption_rule"],
         "unknown_charge_rule": old["unknown_charge_rule"],
-        "analysis_rule": "retain all 100 assignments and report execution phases separately; no reruns, scripted prefixes, or pooling with diagnostics or older renderers",
+        "analysis_rule": (
+            "retain all 100 assignments and report execution phases "
+            "separately; no reruns, scripted prefixes, or pooling with "
+            "diagnostics or older renderers"
+        ),
         "calibration_criteria": old["calibration_criteria"],
         "completion_within_budget_guaranteed": False,
     }
@@ -227,23 +242,51 @@ def render_report(value: dict[str, Any]) -> str:
         "",
         f"Complete: **{value['complete']}**. Stop: `{value['stop_reason']}`.",
         "",
-        "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | Correct first memory choices / attempted |",
+        (
+            "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | "
+            "Correct first memory choices / attempted |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for mode, r in value["scores"].items():
         lines.append(
-            f"| {mode} | {r['assigned']} | {r['attempted_episodes']} | {r['terminal_successes']} | {r['reached_both_consumers']} | {r['correct_first_memory_attempts']} / {r['first_memory_attempts']} |"
+            f"| {mode} | {r['assigned']} | {r['attempted_episodes']} | "
+            f"{r['terminal_successes']} | {r['reached_both_consumers']} | "
+            f"{r['correct_first_memory_attempts']} / {r['first_memory_attempts']} |"
         )
     spend = value["aggregate_spend"]
     lines += [
         "",
-        f"New phase: {value['new_phase_wire_requests']} wire requests; USD {value['new_phase_known_spend_usd']} confirmed charges and USD {value['new_phase_unknown_holds_usd']} new unknown holds. Aggregate: USD {spend['spent_usd']} confirmed, USD {spend['unknown_reservation_usd']} held, USD {spend['in_flight_reservation_usd']} in flight; USD {spend['budget_accounted_spend_usd']} accounted against USD 28.",
+        (
+            f"New phase: {value['new_phase_wire_requests']} wire requests; USD "
+            f"{value['new_phase_known_spend_usd']} confirmed charges and USD "
+            f"{value['new_phase_unknown_holds_usd']} new unknown holds. Aggregate: USD "
+            f"{spend['spent_usd']} confirmed, USD {spend['unknown_reservation_usd']} held, "
+            f"USD {spend['in_flight_reservation_usd']} in flight; USD "
+            f"{spend['budget_accounted_spend_usd']} accounted against USD 28."
+        ),
         "",
-        "All prior outcomes remain unchanged. This phase continues only untouched assignments with the same repaired curl transport, with an initial send and at most two same-request retries. Episodes start from reset with model actions only. Seeds, order, screenshots, generator, focus cue and delayed correctness are preserved. The six-hour limit starts at the original reliable continuation, including intervening setup time. Every failed and unrun assignment remains in the evidence.",
+        (
+            "All prior outcomes remain unchanged. This phase continues only untouched "
+            "assignments with the same repaired curl transport, with an initial send and "
+            "at most two same-request retries. Episodes start from reset with model "
+            "actions only. Seeds, order, screenshots, generator, focus cue and delayed "
+            "correctness are preserved. The six-hour limit starts at the original reliable "
+            "continuation, including intervening setup time. Every failed and unrun "
+            "assignment remains in the evidence."
+        ),
         "",
-        "Consumer exposure, first-choice correctness and terminal success are distinct measures. Supplied-state diagnostics add no episodes. No confirmatory tasks or final D5.8 verdict are included.",
+        (
+            "Consumer exposure, first-choice correctness and terminal success are distinct "
+            "measures. Supplied-state diagnostics add no episodes. No confirmatory tasks "
+            "or final D5.8 verdict are included."
+        ),
         "",
-        "[Summary](summary.json), [execution plan](execution-plan.json), and [prices](price-recheck.json). Response envelopes and checkpoints remain in the ignored authoritative journal.",
+        (
+            "[Summary](summary.json), [execution plan](execution-plan.json), and "
+            "[prices](price-recheck.json). Response envelopes and checkpoints remain in "
+            "the ignored authoritative journal."
+        ),
         "",
     ]
     return "\n".join(lines)

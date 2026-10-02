@@ -81,7 +81,10 @@ def diagnose() -> dict[str, Any]:
             counts = {"text_stage_actions": 0, "clicks_on_focused_empty_input": 0, "key_actions": 0}
             keys = []
             for key, payload in connection.execute(
-                "SELECT event_key,payload FROM events WHERE trial_id=? AND kind='sealed_action_intent' ORDER BY sequence",
+                (
+                    "SELECT event_key,payload FROM events WHERE trial_id=? AND "
+                    "kind='sealed_action_intent' ORDER BY sequence"
+                ),
                 (row["trial_id"],),
             ):
                 event = json.loads(payload)
@@ -125,8 +128,16 @@ def diagnose() -> dict[str, Any]:
             name: sum(row[name] for row in rows)
             for name in ("text_stage_actions", "clicks_on_focused_empty_input", "key_actions")
         },
-        "observation": "All stateless action-limit episodes repeatedly clicked an already-focused empty field. Focus changed only the fill; the old empty placeholder continued to instruct clicking.",
-        "inference": "A clear visible focus cue may break the loop. This causal explanation requires the separate diagnostic; the traces alone do not prove it.",
+        "observation": (
+            "All stateless action-limit episodes repeatedly clicked an "
+            "already-focused empty field. Focus changed only the fill; the "
+            "old empty placeholder continued to instruct clicking."
+        ),
+        "inference": (
+            "A clear visible focus cue may break the loop. This causal "
+            "explanation requires the separate diagnostic; the traces alone "
+            "do not prove it."
+        ),
         "provider_calls": 0,
     }
     write(PUBLIC / "diagnosis.json", value)
@@ -217,7 +228,12 @@ def admission() -> dict[str, Any]:
         "tasks": rows,
         "provider_calls": 0,
         "confirmatory_tasks": 0,
-        "scope": "72 development golden replays: exact state/submission equality; changed pixels confined to focused input; all consumer pixels identical to the admitted predecessor. Existing generator and deferred-feedback semantics are inherited unchanged.",
+        "scope": (
+            "72 development golden replays: exact state/submission equality; "
+            "changed pixels confined to focused input; all consumer pixels "
+            "identical to the admitted predecessor. Existing generator and "
+            "deferred-feedback semantics are inherited unchanged."
+        ),
     }
     write(PUBLIC / "admission.json", value)
     return value
@@ -260,7 +276,11 @@ def canonical_plan() -> dict[str, Any]:
         "owner_approval": "go ahead with the repair and diagnosis, the run the diagnostic",
         "execution_enabled": True,
         "aggregate_ceiling_usd": str(CEILING),
-        "purpose": "10 scripted-prefix states x 2 matched modes, one model action per condition; 6 text-entry states and 4 deferred-choice states; no end-to-end or confirmatory execution",
+        "purpose": (
+            "10 scripted-prefix states x 2 matched modes, one model action per "
+            "condition; 6 text-entry states and 4 deferred-choice states; no "
+            "end-to-end or confirmatory execution"
+        ),
         "jobs": jobs,
         "model_call_cap": 20,
         "provider_wire_call_cap": 20,
@@ -300,8 +320,15 @@ def canonical_plan() -> dict[str, Any]:
             "provider identity or price violation",
             "next reservation would exceed USD 20 aggregate",
         ],
-        "interruption_rule": "never resend a started condition; preserve prefix, response, failed and unrun conditions; closed phases cannot restart",
-        "unknown_charge_rule": "retain request-sized holds until billing evidence resolves them; no zero-charge assumption",
+        "interruption_rule": (
+            "never resend a started condition; preserve prefix, "
+            "response, failed and unrun conditions; closed phases "
+            "cannot restart"
+        ),
+        "unknown_charge_rule": (
+            "retain request-sized holds until billing evidence "
+            "resolves them; no zero-charge assumption"
+        ),
     }
     return {**value, "execution_plan_digest": content_digest(value)}
 
@@ -362,24 +389,47 @@ def publish(value: dict[str, Any]) -> None:
     lines = [
         "# D5.8 focus and timeout repair diagnostic",
         "",
-        "Scripted prefixes supplied every test state. These single-action checks do not measure end-to-end memory exposure or terminal success.",
+        (
+            "Scripted prefixes supplied every test state. These single-action checks do "
+            "not measure end-to-end memory exposure or terminal success."
+        ),
         "",
-        "| Mode | Attempted / 10 | Desired text transition / 6 | Valid memory choices / 4 | Correct memory choices / 4 |",
+        (
+            "| Mode | Attempted / 10 | Desired text transition / 6 | Valid memory choices "
+            "/ 4 | Correct memory choices / 4 |"
+        ),
         "|---|---:|---:|---:|---:|",
     ]
     for mode, score in value["scores"].items():
         lines.append(
-            f"| {mode} | {score['attempted']} | {score['text_transitions']} | {score['memory_valid']} | {score['memory_correct']} |"
+            f"| {mode} | {score['attempted']} | {score['text_transitions']} | "
+            f"{score['memory_valid']} | {score['memory_correct']} |"
         )
     lines += [
         "",
-        f"Stop: `{value['stop_reason']}`. New requests: {value['new_wire_requests']}. New known charges: USD {value['new_known_spend_usd']}.",
+        (
+            f"Stop: `{value['stop_reason']}`. New requests: {value['new_wire_requests']}. "
+            f"New known charges: USD {value['new_known_spend_usd']}."
+        ),
         "",
-        f"Aggregate accounting: `{json.dumps(value['aggregate_spend'], sort_keys=True)}`. The shared ceiling remains USD 20; holds are not confirmed charges.",
+        (
+            "Aggregate accounting: "
+            f"`{json.dumps(value['aggregate_spend'], sort_keys=True)}`. The shared ceiling "
+            "remains USD 20; holds are not confirmed charges."
+        ),
         "",
-        "All failures and unrun assignments remain in [the summary](summary.json). [Execution plan](execution-plan.json), [historical diagnosis](diagnosis.json), [development renderer checks](admission.json), [before](focused-before.png), [after](focused-after.png).",
+        (
+            "All failures and unrun assignments remain in [the summary](summary.json). "
+            "[Execution plan](execution-plan.json), [historical "
+            "diagnosis](diagnosis.json), [development renderer checks](admission.json), "
+            "[before](focused-before.png), [after](focused-after.png)."
+        ),
         "",
-        "Repeated development seeds and supplied prefixes make this a diagnostic, not an independent memory-effect estimate. The old stopped cohort is unchanged. Full calibration and final D5.8 approval remain open.",
+        (
+            "Repeated development seeds and supplied prefixes make this a diagnostic, not "
+            "an independent memory-effect estimate. The old stopped cohort is unchanged. "
+            "Full calibration and final D5.8 approval remain open."
+        ),
         "",
     ]
     (PUBLIC / "report.md").write_text("\n".join(lines))

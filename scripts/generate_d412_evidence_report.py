@@ -121,7 +121,10 @@ CHECKLIST: tuple[tuple[str, tuple[str, ...], str], ...] = (
         "fast_suite",
     ),
     (
-        "Platform unit tests run without network, OSWorld, provider credentials, or wall-clock sleeps.",
+        (
+            "Platform unit tests run without network, OSWorld, provider credentials, or "
+            "wall-clock sleeps."
+        ),
         (
             "commands/11-platform-unit-boundaries.json",
             "commands/15-boundary-inventory.json",
@@ -1097,7 +1100,11 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         "",
         "Verdict owner: project owner",
         "",
-        "This index copies and links stored observations only. It does not rerun tests, reinterpret gate semantics, declare a milestone verdict, or change human-owned checklist state.",
+        (
+            "This index copies and links stored observations only. It does not rerun "
+            "tests, reinterpret gate semantics, declare a milestone verdict, or change "
+            "human-owned checklist state."
+        ),
         "",
         "## Checklist evidence",
         "",
@@ -1109,14 +1116,19 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
         if item["missing_evidence"]:
             links += "; missing: " + ", ".join(item["missing_evidence"])
         report_lines.append(
-            f"| {item['number']} | {item['checklist_text']} | {item['observed_raw_result']} | {links} |"
+            f"| {item['number']} | {item['checklist_text']} | "
+            f"{item['observed_raw_result']} | {links} |"
         )
     report_lines.extend(
         [
             "",
             "## Raw command inventory",
             "",
-            "Each JSON record stores the exact argv/command, cwd, public environment, UTC timestamps, process runtime, exit status, and complete combined output. Expected sandbox and no-match observations remain visible.",
+            (
+                "Each JSON record stores the exact argv/command, cwd, public environment, "
+                "UTC timestamps, process runtime, exit status, and complete combined "
+                "output. Expected sandbox and no-match observations remain visible."
+            ),
             "",
             "| Record | Exit | Runtime (s) | Parsed pytest summary |",
             "| --- | ---: | ---: | --- |",
@@ -1125,14 +1137,19 @@ def generate(repository_root: Path, evidence_dir: Path) -> dict[str, Any]:
     for entry in commands:
         summary = json.dumps(entry.get("observed_test_summary"), sort_keys=True)
         report_lines.append(
-            f"| `{entry['path']}` | {entry['exit_status']} | {entry['duration_seconds']} | `{summary}` |"
+            f"| `{entry['path']}` | {entry['exit_status']} | "
+            f"{entry['duration_seconds']} | `{summary}` |"
         )
     report_lines.extend(
         [
             "",
             "## Identity and redaction indexes",
             "",
-            "See `identity-reconciliation.json` for stored cross-file identities and counts, `redaction-scan.json` for prohibited-pattern counts, and `evidence-manifest.json` for SHA-256 and size metadata.",
+            (
+                "See `identity-reconciliation.json` for stored cross-file identities and "
+                "counts, `redaction-scan.json` for prohibited-pattern counts, and "
+                "`evidence-manifest.json` for SHA-256 and size metadata."
+            ),
             "",
         ]
     )

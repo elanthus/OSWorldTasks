@@ -208,7 +208,8 @@ def audit(directory, name):
                 )
             finally:
                 connection.close()
-    # Explicitly selected publication fields: no provider text, prompts, images, paths or process IDs.
+    # Explicitly selected publication fields: no provider text, prompts, images, paths or
+    # process IDs.
     return {
         "cohort": name,
         "model": summary["model"],
@@ -406,7 +407,11 @@ def render(data):
     lines = [
         "# PR196 Luna and Haiku calibration",
         "",
-        "All 100 final assignments per model have terminal outcomes. These are calibration results, not a confirmatory benchmark, model ranking, or human-gate verdict. The task bank stays frozen at PR196 revision `"
+        (
+            "All 100 final assignments per model have terminal outcomes. These are "
+            "calibration results, not a confirmatory benchmark, model ranking, or "
+            "human-gate verdict. The task bank stays frozen at PR196 revision `"
+        )
         + FROZEN
         + "`.",
         "",
@@ -418,11 +423,19 @@ def render(data):
     for model, m in data["models"].items():
         for mode, r in m["conditions"].items():
             lines.append(
-                f"| {model} / {mode} | {r['episodes']} | {r['successes']} | {r['classifications'].get('step_limit_truncation', 0)} | {r['classifications'].get('invalid_output', 0)} |"
+                f"| {model} / {mode} | {r['episodes']} | {r['successes']} | "
+                f"{r['classifications'].get('step_limit_truncation', 0)} | "
+                f"{r['classifications'].get('invalid_output', 0)} |"
             )
     lines += [
         "",
-        "The final-outcome view retains every normal terminal result, including invalid output. Only missing or infrastructure-interrupted assignments were restarted under explicit owner approval. It is a continuation view, not an intention-to-treat estimate of a single fixed policy. Earlier interrupted attempts remain below and in the snapshots.",
+        (
+            "The final-outcome view retains every normal terminal result, including "
+            "invalid output. Only missing or infrastructure-interrupted assignments were "
+            "restarted under explicit owner approval. It is a continuation view, not an "
+            "intention-to-treat estimate of a single fixed policy. Earlier interrupted "
+            "attempts remain below and in the snapshots."
+        ),
         "",
         "## Paired outcomes",
         "",
@@ -437,41 +450,75 @@ def render(data):
             p = m[key]
             o = p["outcomes"]
             lines.append(
-                f"| {model} / {label} | {p['pairs']} | {o['both']} | {o['history_only']} | {o['stateless_only']} | {o['neither']} |"
+                f"| {model} / {label} | {p['pairs']} | {o['both']} | "
+                f"{o['history_only']} | {o['stateless_only']} | {o['neither']} |"
             )
     lines += [
         "",
-        "The fifty seed pairs contain 44 logical clusters. Representatives come from the pre-existing Gemini calibration analysis, not from these outcomes. No significance test, new power analysis, or independent-sample claim is made.",
+        (
+            "The fifty seed pairs contain 44 logical clusters. Representatives come from "
+            "the pre-existing Gemini calibration analysis, not from these outcomes. No "
+            "significance test, new power analysis, or independent-sample claim is made."
+        ),
         "",
         "## Memory observations",
         "",
-        "| Model / condition | Reached both consumers | Correct first choices / attempted | Valid first choices | Actions | Model attempts |",
+        (
+            "| Model / condition | Reached both consumers | Correct first choices / "
+            "attempted | Valid first choices | Actions | Model attempts |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for model, m in data["models"].items():
         for mode, r in m["conditions"].items():
             lines.append(
-                f"| {model} / {mode} | {r['reached_both_consumers']}/{r['episodes']} | {r['first_choices_correct']}/{r['first_choices_attempted']} | {r['first_choices_valid']} | {r['actions']} | {r['model_attempts']} |"
+                f"| {model} / {mode} | {r['reached_both_consumers']}/{r['episodes']} | "
+                f"{r['first_choices_correct']}/{r['first_choices_attempted']} | "
+                f"{r['first_choices_valid']} | {r['actions']} | {r['model_attempts']} |"
             )
     lines += [
         "",
-        "First-choice denominators count attempted memory choices, including attempts without a valid choice. Episodes that never reach a consumer contribute to the episode denominator but cannot supply a choice observation. These measurements come from stored host checkpoints and dispatches; they are not model self-reports.",
+        (
+            "First-choice denominators count attempted memory choices, including attempts "
+            "without a valid choice. Episodes that never reach a consumer contribute to "
+            "the episode denominator but cannot supply a choice observation. These "
+            "measurements come from stored host checkpoints and dispatches; they are not "
+            "model self-reports."
+        ),
         "",
         "## Cohorts and reliability",
         "",
-        "| Cohort | Recorded / assigned | History terminal successes / terminal episodes | Stateless terminal successes / terminal episodes | Elapsed minutes |",
+        (
+            "| Cohort | Recorded / assigned | History terminal successes / terminal "
+            "episodes | Stateless terminal successes / terminal episodes | Elapsed minutes "
+            "|"
+        ),
         "|---|---:|---:|---:|---:|",
     ]
     for name, c in data["cohorts"].items():
         h, s = c["terminal_conditions"]["history"], c["terminal_conditions"]["stateless"]
         lines.append(
-            f"| [{name}]({name}.json) | {c['recorded']}/{c['assigned']} | {h['successes']}/{h['episodes']} | {s['successes']}/{s['episodes']} | {c['accounting']['elapsed_seconds'] / 60:.1f} |"
+            f"| [{name}]({name}.json) | {c['recorded']}/{c['assigned']} | "
+            f"{h['successes']}/{h['episodes']} | {s['successes']}/{s['episodes']} | "
+            f"{c['accounting']['elapsed_seconds'] / 60:.1f} |"
         )
     lines += [
         "",
-        "Haiku v1 stopped on isolated authentication; v2 stopped on stream parsing. Haiku v3 recorded 100 invalid outputs before the versioned whole-JSON-fence parser repair. Those outcomes are preserved separately and have not been rescored. The owner approved a fresh v4 run; the final Haiku view starts there.",
+        (
+            "Haiku v1 stopped on isolated authentication; v2 stopped on stream parsing. "
+            "Haiku v3 recorded 100 invalid outputs before the versioned whole-JSON-fence "
+            "parser repair. Those outcomes are preserved separately and have not been "
+            "rescored. The owner approved a fresh v4 run; the final Haiku view starts "
+            "there."
+        ),
         "",
-        "The Luna continuation adds one retry after a CLI timeout whose process is confirmed stopped. Haiku’s CLI continuation uses the same repair; its last interruption was malformed CLI telemetry. The OpenRouter successor allows one recorded transient-transport retry and keeps unknown charges reserved. Earlier source versions and policy identities remain in each cohort snapshot.",
+        (
+            "The Luna continuation adds one retry after a CLI timeout whose process is "
+            "confirmed stopped. Haiku’s CLI continuation uses the same repair; its last "
+            "interruption was malformed CLI telemetry. The OpenRouter successor allows one "
+            "recorded transient-transport retry and keeps unknown charges reserved. "
+            "Earlier source versions and policy identities remain in each cohort snapshot."
+        ),
         "",
         "| Model | Interrupted attempt | Classification |",
         "|---|---|---|",
@@ -483,40 +530,111 @@ def render(data):
             )
     lines += [
         "",
-        "These interrupted attempts are excluded only from the final replacement view. `results.json` also reports all attempted episodes in the continuation chain, without deleting failures; their repeated seeds are not independent observations.",
+        (
+            "These interrupted attempts are excluded only from the final replacement view. "
+            "`results.json` also reports all attempted episodes in the continuation chain, "
+            "without deleting failures; their repeated seeds are not independent "
+            "observations."
+        ),
         "",
         "## Provider comparability and cost",
         "",
-        "Luna uses Codex CLI with medium effort. Haiku’s retained CLI outcomes use Claude Code with default effort; the final 23 assignments use direct Anthropic through OpenRouter with API thinking enabled and no native effort parameter. Different wrappers, prompts added by the CLIs, retry settings, token limits and provider aliases prevent treating this as a controlled model ranking. Haiku’s provider switch was selected for unfinished assignments, not randomized.",
+        (
+            "Luna uses Codex CLI with medium effort. Haiku’s retained CLI outcomes use "
+            "Claude Code with default effort; the final 23 assignments use direct "
+            "Anthropic through OpenRouter with API thinking enabled and no native effort "
+            "parameter. Different wrappers, prompts added by the CLIs, retry settings, "
+            "token limits and provider aliases prevent treating this as a controlled model "
+            "ranking. Haiku’s provider switch was selected for unfinished assignments, not "
+            "randomized."
+        ),
         "",
-        "Haiku’s 77 retained CLI terminal outcomes and 23 OpenRouter outcomes remain separately identifiable. Pair provenance, including pairs whose two arms crossed cohorts, is available in `results.json`. The OpenRouter subset is not an independent full-panel replication.",
+        (
+            "Haiku’s 77 retained CLI terminal outcomes and 23 OpenRouter outcomes remain "
+            "separately identifiable. Pair provenance, including pairs whose two arms "
+            "crossed cohorts, is available in `results.json`. The OpenRouter subset is not "
+            "an independent full-panel replication."
+        ),
         "",
     ]
     spend = data["cohorts"]["haiku-openrouter"]["accounting"]["spend"]
     lines += [
-        f"OpenRouter reported **USD {spend['spent_usd']}** in confirmed charges, plus **USD {spend['unknown_reservation_usd']}** reserved for {spend['unknown_charge_outcomes']} unknown outcomes: **USD {spend['budget_accounted_spend_usd']}** accounted against the approved USD 20 cap. There are no in-flight reservations. The {spend['wire_requests_sent']} wire requests include the recorded retries. Reservations are conservative budget accounting, not confirmed bills.",
+        (
+            f"OpenRouter reported **USD {spend['spent_usd']}** in confirmed charges, plus "
+            f"**USD {spend['unknown_reservation_usd']}** reserved for "
+            f"{spend['unknown_charge_outcomes']} unknown outcomes: **USD "
+            f"{spend['budget_accounted_spend_usd']}** accounted against the approved USD 20 "
+            f"cap. There are no in-flight reservations. The {spend['wire_requests_sent']} "
+            "wire requests include the recorded retries. Reservations are conservative "
+            "budget accounting, not confirmed bills."
+        ),
         "",
-        "CLI runs recorded zero incremental experiment charges under existing subscriptions. That excludes subscription fees and is not a zero inference-cost claim. CLI cost telemetry is not pooled with API bills. Cohort elapsed times include setup, provider waits and failures, so they are not model-latency comparisons.",
+        (
+            "CLI runs recorded zero incremental experiment charges under existing "
+            "subscriptions. That excludes subscription fees and is not a zero "
+            "inference-cost claim. CLI cost telemetry is not pooled with API bills. Cohort "
+            "elapsed times include setup, provider waits and failures, so they are not "
+            "model-latency comparisons."
+        ),
         "",
         "## Historical Gemini context",
         "",
-        "The [earlier Gemini report](../grounding-v5-d58-owner-budget-continuation/report.md) and [final-design package](../../plans/grounding-v5-d58-final-design.md) remain unchanged. They retain infrastructure failures in their denominator, unlike this explicitly labelled final-outcome continuation view. Do not pool the cohorts or directly compare their percentages as if they shared execution and failure handling.",
+        (
+            "The [earlier Gemini "
+            "report](../grounding-v5-d58-owner-budget-continuation/report.md) and "
+            "[final-design package](../../plans/grounding-v5-d58-final-design.md) remain "
+            "unchanged. They retain infrastructure failures in their denominator, unlike "
+            "this explicitly labelled final-outcome continuation view. Do not pool the "
+            "cohorts or directly compare their percentages as if they shared execution and "
+            "failure handling."
+        ),
         "",
         "## Provenance, verification and remaining work",
         "",
-        "Each response-free snapshot binds the original plan and summary digests, exact policy manifests, adapter revision, assignments, all recorded outcomes, and private audit receipt. Adapter commits are included in this review branch; benchmark generator/backend/history source bytes are checked against PR196. No confirmatory tasks were generated or inspected.",
+        (
+            "Each response-free snapshot binds the original plan and summary digests, "
+            "exact policy manifests, adapter revision, assignments, all recorded outcomes, "
+            "and private audit receipt. Adapter commits are included in this review "
+            "branch; benchmark generator/backend/history source bytes are checked against "
+            "PR196. No confirmatory tasks were generated or inspected."
+        ),
         "",
-        "The private audit opens SQLite read-only, verifies every stored-object digest and the event-chain digest, matches result events to summaries, remeasures exposure and memory choices, checks success against host dispatches, verifies CLI invocation receipts, and reconstructs the OpenRouter ledger. It does not rerun an episode or reinterpret a previously invalid response. It is not a full independent replay of all request construction, parser behavior, or backend evaluation.",
+        (
+            "The private audit opens SQLite read-only, verifies every stored-object digest "
+            "and the event-chain digest, matches result events to summaries, remeasures "
+            "exposure and memory choices, checks success against host dispatches, verifies "
+            "CLI invocation receipts, and reconstructs the OpenRouter ledger. It does not "
+            "rerun an episode or reinterpret a previously invalid response. It is not a "
+            "full independent replay of all request construction, parser behavior, or "
+            "backend evaluation."
+        ),
         "",
-        "The public verifier checks snapshot hashes, assignment identities, continuation coverage, retained invalid outcomes, model-panel equality, and deterministic report generation. It cannot repeat the private journal audit without the restricted journals. Raw responses, screenshots, checkpoint contents, credentials and operator paths are excluded.",
+        (
+            "The public verifier checks snapshot hashes, assignment identities, "
+            "continuation coverage, retained invalid outcomes, model-panel equality, and "
+            "deterministic report generation. It cannot repeat the private journal audit "
+            "without the restricted journals. Raw responses, screenshots, checkpoint "
+            "contents, credentials and operator paths are excluded."
+        ),
         "",
         "```sh",
         ".venv/bin/python -m scripts.publish_pr196_calibration --verify",
         "```",
         "",
-        "To repeat the private audit, supply `--export /path/to/cohort-directories.json`, a local mapping from the eight cohort IDs above to their original directories. Export requires original adapter commits and journals; verification does not require provider access. The output is deterministic and makes zero model calls.",
+        (
+            "To repeat the private audit, supply `--export "
+            "/path/to/cohort-directories.json`, a local mapping from the eight cohort IDs "
+            "above to their original directories. Export requires original adapter commits "
+            "and journals; verification does not require provider access. The output is "
+            "deterministic and makes zero model calls."
+        ),
         "",
-        "Next is the D5.8 owner decision on candidate policy, consistent execution route, sample size and budget. This report does not select them, authorize paid execution, change difficulty, declare a milestone, or complete v5 serving.",
+        (
+            "Next is the D5.8 owner decision on candidate policy, consistent execution "
+            "route, sample size and budget. This report does not select them, authorize "
+            "paid execution, change difficulty, declare a milestone, or complete v5 "
+            "serving."
+        ),
         "",
     ]
     return "\n".join(lines)
@@ -552,7 +670,7 @@ def main():
                 {
                     "snapshot_sha256": hashes,
                     "benchmark_revision": FROZEN,
-                    "representatives_source": "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json",
+                    "representatives_source": "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json",  # noqa: E501
                     "representatives_source_sha256": "sha256:"
                     + sha256_bytes(
                         (

@@ -359,7 +359,8 @@ def render_report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]
         (
             f"Raw-coordinate accuracy was **{raw['correct_count']}/{raw['record_count']} "
             f"({_percent(raw['accuracy'])})**. Set-of-marks accuracy was "
-            f"**{marks['correct_count']}/{marks['record_count']} ({_percent(marks['accuracy'])})**. "
+            f"**{marks['correct_count']}/{marks['record_count']} "
+            f"({_percent(marks['accuracy'])})**. "
             f"The paired difference was **{paired['delta_percentage_points']:+.1f} percentage "
             f"points** with a percentile-bootstrap 95% CI of **[{low:+.1f}, {high:+.1f}]** "
             f"and a two-sided exact McNemar p-value of "
@@ -495,7 +496,10 @@ def render_report_markdown(results: dict[str, Any], gallery: list[dict[str, Any]
             "",
             "## Limitations",
             "",
-            "- One synthetic vendor-onboarding task family, one resolution, and one model were used.",
+            (
+                "- One synthetic vendor-onboarding task family, one resolution, and one "
+                "model were used."
+            ),
             (
                 "- Target identity is perfectly aliased with screen state in the frozen dataset, "
                 "so control-type slices are descriptive and do not identify a control-type effect."

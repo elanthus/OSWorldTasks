@@ -68,9 +68,23 @@ def payloads() -> dict[str, dict[str, Any]]:
                 for path in inputs
             },
             "corrections": [
-                "The historical provider_calls=0 describes the analysis process, not pilot execution. The corrected analysis separately reports provider_control_requests, wire_requests_sent, and provider_calls_by_analysis.",
-                "Development summary denominators are derived from stored task and choice rows. The active admission builder now records these counts for report rendering.",
-                "Use scripts.verify_grounding_v5_full_calibration for explicit verification checks that remain active with Python -O. The old verifier remains reproduction-only inside its hash-bound historical bundle.",
+                (
+                    "The historical provider_calls=0 describes the analysis process, not "
+                    "pilot execution. The corrected analysis separately reports "
+                    "provider_control_requests, wire_requests_sent, and "
+                    "provider_calls_by_analysis."
+                ),
+                (
+                    "Development summary denominators are derived from stored task and "
+                    "choice rows. The active admission builder now records these counts "
+                    "for report rendering."
+                ),
+                (
+                    "Use scripts.verify_grounding_v5_full_calibration for explicit "
+                    "verification checks that remain active with Python -O. The old "
+                    "verifier remains reproduction-only inside its hash-bound historical "
+                    "bundle."
+                ),
             ],
             "original_artifacts_replaced": False,
             "provider_calls": 0,

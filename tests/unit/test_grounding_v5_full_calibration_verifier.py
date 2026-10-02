@@ -20,7 +20,10 @@ def test_public_verifier_under_optimization(tmp_path: Path, corruption: str) -> 
     if corruption != "none":
         with (directory / "report.md").open("a") as stream:
             stream.write("\ncorrupted report\n")
-    code = "from pathlib import Path\nfrom scripts import verify_grounding_v5_full_calibration as v\nimport json\n"
+    code = (
+        "from pathlib import Path\nfrom scripts import "
+        "verify_grounding_v5_full_calibration as v\nimport json\n"
+    )
     code += f"v.DIRECTORY = Path({str(directory)!r})\n"
     if corruption == "report":
         code += "(v.DIRECTORY / 'files.json').write_text(json.dumps(v.hashes()))\n"
@@ -45,7 +48,10 @@ def test_journal_verifier_rejects_wrong_amendment_under_optimization(tmp_path: P
         "from pathlib import Path\nfrom scripts import verify_grounding_v5_full_calibration as v\n"
     )
     code += f"v.JOURNAL = Path({str(journal)!r})\n"
-    code += "v.canonical_plan = lambda: {}\nv.execution_amendment = lambda *args: {'wrong': True}\nv.audit_journal()\n"
+    code += (
+        "v.canonical_plan = lambda: {}\nv.execution_amendment = lambda *args: "
+        "{'wrong': True}\nv.audit_journal()\n"
+    )
     result = subprocess.run(
         [sys.executable, "-O", "-c", code], cwd=ROOT, capture_output=True, text=True, check=False
     )

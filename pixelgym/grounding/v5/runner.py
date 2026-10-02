@@ -920,7 +920,7 @@ class V5Runner:
         Stateful serving replaces this one boundary (via ``external_dispatch``) because the caller, rather than the
         runner, owns dispatch.  Attempt settlement, parsing, candidate persistence, and action
         validation remain the exact runner transaction above.
-        """
+        """  # noqa: E501
 
         if self.external_dispatch is not None:
             return self.external_dispatch.seal_validated_action(

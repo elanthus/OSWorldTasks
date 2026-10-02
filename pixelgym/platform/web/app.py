@@ -178,7 +178,10 @@ def _candidate_badges(candidate: Any) -> list[tuple[str, str]]:
     if candidate.policy.source_provenance_failure_reason is not None:
         badges.append(
             (
-                f"PROVENANCE: {candidate.policy.source_provenance_failure_reason.replace('_', ' ').upper()}",
+                (
+                    "PROVENANCE: "
+                    f"{candidate.policy.source_provenance_failure_reason.replace('_', ' ').upper()}"
+                ),
                 "bad",
             )
         )
@@ -225,8 +228,10 @@ def _evidence_links(candidate: Any, mlflow_base_url: str) -> dict[str, Any]:
 CANDIDATE_DISCLOSURE_TRUSTED_HTML: Mapping[tuple[str, str], str] = MappingProxyType(
     {
         ("scripted-demo", "day3-replay-revised-v2"): (
-            "<strong>Synthetic fixture disclosure:</strong> Candidate B's scripted revised responses "
-            'are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled '
+            "<strong>Synthetic fixture disclosure:</strong> Candidate B's scripted "
+            "revised responses "
+            'are derived from the frozen Day 3 <code>condition == "marks"</code> rows, '
+            "then relabeled "
             "for this policy's raw-condition demonstration. They are not results from the recorded "
             "raw prompt."
         ),

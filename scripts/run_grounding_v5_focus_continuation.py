@@ -138,7 +138,12 @@ def canonical_plan() -> dict[str, Any]:
         "owner_approval": approval["owner_approval"],
         "assignment_approval": approval["assignment_selection"],
         "approval_digest": content_digest(approval),
-        "approval_scope": "retain five failed episodes and execute only 95 untouched assignments; USD 28 aggregate including all previous D5.8 charges and holds; no confirmatory calls or final D5.8 verdict",
+        "approval_scope": (
+            "retain five failed episodes and execute only 95 untouched "
+            "assignments; USD 28 aggregate including all previous D5.8 "
+            "charges and holds; no confirmatory calls or final D5.8 "
+            "verdict"
+        ),
         "execution_enabled": True,
         "aggregate_ceiling_usd": str(CEILING),
         "jobs": jobs,
@@ -184,7 +189,13 @@ def canonical_plan() -> dict[str, Any]:
         ],
         "interruption_rule": old["interruption_rule"],
         "unknown_charge_rule": old["unknown_charge_rule"],
-        "analysis_rule": "retain all five original failures and 95 untouched assignments in one 100-assignment cohort; disclose the continuation boundary and transport diagnostics; no reruns or pooling with earlier renderers or supplied-state diagnostics",
+        "analysis_rule": (
+            "retain all five original failures and 95 untouched "
+            "assignments in one 100-assignment cohort; disclose the "
+            "continuation boundary and transport diagnostics; no reruns "
+            "or pooling with earlier renderers or supplied-state "
+            "diagnostics"
+        ),
         "calibration_criteria": old["calibration_criteria"],
         "completion_within_budget_guaranteed": False,
         "connectivity_check_digest": content_digest(read(PUBLIC / "connectivity-check.json")),
@@ -227,23 +238,53 @@ def render_report(value: dict[str, Any]) -> str:
         "",
         f"Complete: **{value['complete']}**. Stop: `{value['stop_reason']}`.",
         "",
-        "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | Correct first memory attempts / attempted |",
+        (
+            "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | "
+            "Correct first memory attempts / attempted |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for mode, row in value["scores"].items():
         lines.append(
-            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | {row['terminal_successes']} | {row['reached_both_consumers']} | {row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
+            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | "
+            f"{row['terminal_successes']} | {row['reached_both_consumers']} | "
+            f"{row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
         )
     spend = value["aggregate_spend"]
     lines += [
         "",
-        f"New phase: {value['new_phase_wire_requests']} wire requests; USD {value['new_phase_known_spend_usd']} known charges. Aggregate known charges: USD {spend['spent_usd']}; unknown holds: USD {spend['unknown_reservation_usd']}; in-flight holds: USD {spend['in_flight_reservation_usd']}. Shared ceiling: USD 28.00.",
+        (
+            f"New phase: {value['new_phase_wire_requests']} wire requests; USD "
+            f"{value['new_phase_known_spend_usd']} known charges. Aggregate known charges: "
+            f"USD {spend['spent_usd']}; unknown holds: USD "
+            f"{spend['unknown_reservation_usd']}; in-flight holds: USD "
+            f"{spend['in_flight_reservation_usd']}. Shared ceiling: USD 28.00."
+        ),
         "",
-        "The cohort retains five original infrastructure failures; this continuation executes only the 95 untouched assignments. All episodes start at reset with model actions only. The task seeds, order, generator, delayed feedback and matched screenshot policies remain fixed. The focus cue and request-local transport match the completed diagnostic. Credential-free exception diagnostics add no retries or request changes. Earlier renderer cohorts remain separate; every failed and unrun assignment remains in the denominator.",
+        (
+            "The cohort retains five original infrastructure failures; this continuation "
+            "executes only the 95 untouched assignments. All episodes start at reset with "
+            "model actions only. The task seeds, order, generator, delayed feedback and "
+            "matched screenshot policies remain fixed. The focus cue and request-local "
+            "transport match the completed diagnostic. Credential-free exception "
+            "diagnostics add no retries or request changes. Earlier renderer cohorts "
+            "remain separate; every failed and unrun assignment remains in the denominator."
+        ),
         "",
-        "Exposure means reaching memory consumers, separately from correctness and terminal success. Proposed calibration criteria are history exposure of at least 40/50 and terminal success between 20% and 80%; a positive or significant memory effect is not required. Incomplete observations cannot establish complete-cohort rates or confirmatory power. D5.8 final approval remains an owner decision.",
+        (
+            "Exposure means reaching memory consumers, separately from correctness and "
+            "terminal success. Proposed calibration criteria are history exposure of at "
+            "least 40/50 and terminal success between 20% and 80%; a positive or "
+            "significant memory effect is not required. Incomplete observations cannot "
+            "establish complete-cohort rates or confirmatory power. D5.8 final approval "
+            "remains an owner decision."
+        ),
         "",
-        "[Stored summary](summary.json), [execution plan](execution-plan.json), [price snapshot](price-recheck.json). Provider responses and checkpoints remain in the ignored aggregate journal.",
+        (
+            "[Stored summary](summary.json), [execution plan](execution-plan.json), [price "
+            "snapshot](price-recheck.json). Provider responses and checkpoints remain in "
+            "the ignored aggregate journal."
+        ),
         "",
     ]
     return "\n".join(lines)

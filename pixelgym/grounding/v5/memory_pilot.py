@@ -379,5 +379,8 @@ def summarize(
         ),
         "journal_integrity": journal.integrity_report(),
         "confirmatory_tasks_evaluated": 0,
-        "publication_policy": "provider text, images and private checkpoints remain in the ignored authoritative journal",
+        "publication_policy": (
+            "provider text, images and private checkpoints remain in "
+            "the ignored authoritative journal"
+        ),
     }

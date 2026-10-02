@@ -158,7 +158,8 @@ def generate_memory_task(seed: int) -> MemoryTask:
     ]
     title, instruction = _family_language(record.family)
     instruction += (
-        " Remember the request and verification references. Each recorded reference choice is final;"
+        " Remember the request and verification references. Each recorded reference "
+        "choice is final;"
         " its correctness is checked only when the onboarding is submitted."
     )
     optimal = len(stages) + sum(

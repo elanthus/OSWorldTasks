@@ -270,7 +270,9 @@ def _build_stages(record: SeedRecord) -> tuple[Stage, ...]:
             **{
                 **stages[review_index].__dict__,
                 "heading": "Revise after the exception reveal",
-                "instruction": "Replace the provisional base-rule route with the revealed exception.",
+                "instruction": (
+                    "Replace the provisional base-rule route with the revealed exception."
+                ),
             }
         )
     return tuple(stages)

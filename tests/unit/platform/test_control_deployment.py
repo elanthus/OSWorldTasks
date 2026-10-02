@@ -725,7 +725,10 @@ def test_serving_restore_rejects_legacy_policy_provenance_before_artifacts_or_sm
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
     control.connection.execute(
-        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, "
+            "gate_report_sha256 = ? WHERE candidate_id = ?"
+        ),
         (
             legacy_policy_id,
             canonical_json_bytes(legacy_policy).decode(),
@@ -993,7 +996,8 @@ def test_migrate_drops_legacy_deployment_link_without_losing_history(
         control=control, store=store, load_and_smoke=lambda policy: True
     ).deploy(candidate.candidate_id, actor="local-reviewer", reason="first")
     control.connection.execute(
-        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES "
+        "deployments(deployment_id)"
     )
     with pytest.raises(RuntimeError, match="legacy deployment links"):
         control.require_migrated()
@@ -1019,11 +1023,15 @@ def test_legacy_deployment_migration_rejects_schema_drift(
         candidate.candidate_id, actor="local-reviewer", reason="first"
     )
     control.connection.execute(
-        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES "
+        "deployments(deployment_id)"
     )
     changed_schema = control_store.SCHEMA.replace(
         "  generation INTEGER NOT NULL UNIQUE\n);",
-        "  generation INTEGER NOT NULL UNIQUE,\n  release_channel TEXT NOT NULL DEFAULT 'stable'\n);",
+        (
+            "  generation INTEGER NOT NULL UNIQUE,\n  release_channel TEXT NOT NULL "
+            "DEFAULT 'stable'\n);"
+        ),
     )
     monkeypatch.setattr(control_store, "SCHEMA", changed_schema)
 
@@ -1049,10 +1057,12 @@ def test_legacy_deployment_migration_preserves_unexpected_schema_and_data(
         candidate.candidate_id, actor="local-reviewer", reason="first"
     )
     control.connection.execute(
-        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES "
+        "deployments(deployment_id)"
     )
     control.connection.execute(
-        "ALTER TABLE deployments ADD COLUMN release_channel TEXT NOT NULL DEFAULT 'sentinel-channel'"
+        "ALTER TABLE deployments ADD COLUMN release_channel TEXT NOT NULL DEFAULT "
+        "'sentinel-channel'"
     )
 
     with pytest.raises(RuntimeError, match=r"stale schema .*release_channel"):
@@ -1193,7 +1203,8 @@ def test_legacy_deployment_migration_rolls_back_on_foreign_key_violation(
         candidate.candidate_id, actor="local-reviewer", reason="first"
     )
     control.connection.execute(
-        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES deployments(deployment_id)"
+        "ALTER TABLE deployments ADD COLUMN previous_deployment_id TEXT REFERENCES "
+        "deployments(deployment_id)"
     )
     control.connection.execute("PRAGMA foreign_keys = OFF")
     control.connection.execute(
@@ -1706,7 +1717,10 @@ def test_deploy_rejects_a_candidate_missing_renderer_identity_before_smoke(
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
     control.connection.execute(
-        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, "
+            "gate_report_sha256 = ? WHERE candidate_id = ?"
+        ),
         (
             stripped.policy_id,
             canonical_json_bytes(stripped.to_dict()).decode(),
@@ -1756,7 +1770,10 @@ def test_deploy_rejects_a_candidate_with_a_mismatched_renderer_digest(
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
     control.connection.execute(
-        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, "
+            "gate_report_sha256 = ? WHERE candidate_id = ?"
+        ),
         (
             tampered.policy_id,
             canonical_json_bytes(tampered.to_dict()).decode(),
@@ -1803,7 +1820,10 @@ def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_s
     report_digest = sha256_bytes(report_bytes)
     _disable_approval_append_only_guards(control)
     control.connection.execute(
-        "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+        (
+            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, "
+            "gate_report_sha256 = ? WHERE candidate_id = ?"
+        ),
         (
             stripped.policy_id,
             canonical_json_bytes(stripped.to_dict()).decode(),
