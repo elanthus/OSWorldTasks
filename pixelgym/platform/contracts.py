@@ -179,9 +179,7 @@ class GateReport:
                 **value,
                 "accuracy": GateObservation(**value["accuracy"]),
                 "cost_usd_per_100": GateObservation(**value["cost_usd_per_100"]),
-                "provider_latency_p95_ms": GateObservation(
-                    **value["provider_latency_p95_ms"]
-                ),
+                "provider_latency_p95_ms": GateObservation(**value["provider_latency_p95_ms"]),
                 "completeness": CompletenessObservation(**value["completeness"]),
                 "confidence_bound": (
                     ConfidenceBoundObservation(**value["confidence_bound"])
@@ -227,7 +225,9 @@ class PolicyManifest:
         if any(item is not None for item in renderer_fields) and any(
             item is None for item in renderer_fields
         ):
-            raise ValueError("policy manifest renderer identity fields must be all present or all absent")
+            raise ValueError(
+                "policy manifest renderer identity fields must be all present or all absent"
+            )
         if self.prompt_template_text is not None and self.prompt_sha256 != sha256_bytes(
             self.prompt_template_text.encode("utf-8")
         ):

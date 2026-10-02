@@ -15,9 +15,7 @@ from pixelgym.tasks.vendor_form.ui import TEXT_WIDGETS, WidgetId
 _KEY_INDEX = {value: index for index, value in enumerate(KEY_ALLOWLIST)}
 
 
-def _action(
-    action_type: ActionType, *, x: int = 0, y: int = 0, key: int = 0
-) -> dict[str, int]:
+def _action(action_type: ActionType, *, x: int = 0, y: int = 0, key: int = 0) -> dict[str, int]:
     return {"action_type": int(action_type), "x": x, "y": y, "key": key}
 
 

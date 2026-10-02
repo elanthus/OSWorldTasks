@@ -69,15 +69,11 @@ class GoldenPilotTransport:
             },
         )
 
-    def cancel(
-        self, *, idempotency_key: str, mode: str
-    ) -> Literal["cancelled", "unknown"]:
+    def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
         del idempotency_key, mode
         return "unknown"
 
-    def reconcile(
-        self, *, idempotency_key: str, deadline_seconds: float
-    ) -> TransportOutcome:
+    def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="disabled")
 

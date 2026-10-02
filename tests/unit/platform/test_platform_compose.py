@@ -40,7 +40,9 @@ def test_platform_startup_docs_use_the_provenance_wrapper() -> None:
     assert documented_wrapper_commands(root_readme) == []
     assert "deploy/README.md#test-suite-boundaries" in root_readme
     assert documented_wrapper_commands(deploy_readme) == [expected[0], expected[1], *expected[::-1]]
-    assert "docker compose --env-file deploy/.env.example -f deploy/compose.yaml up" not in root_readme
+    assert (
+        "docker compose --env-file deploy/.env.example -f deploy/compose.yaml up" not in root_readme
+    )
     assert "Do not invoke `docker compose`" in deploy_readme
 
 
@@ -59,12 +61,8 @@ def test_unauthenticated_demo_uis_are_loopback_only_and_documented() -> None:
                 return json.loads(line.removeprefix("    ports: "))
         raise AssertionError(f"{service} has no published ports")
 
-    assert service_ports("mlflow") == [
-        "127.0.0.1:${PIXELGYM_MLFLOW_PORT:-5500}:5000"
-    ]
-    assert service_ports("platform") == [
-        "127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"
-    ]
+    assert service_ports("mlflow") == ["127.0.0.1:${PIXELGYM_MLFLOW_PORT:-5500}:5000"]
+    assert service_ports("platform") == ["127.0.0.1:${PIXELGYM_PLATFORM_PORT:-5800}:8000"]
     warnings = [
         next(
             " ".join(paragraph.split())
@@ -86,9 +84,7 @@ def test_manual_platform_workflow_excludes_compose_lifecycle_suite() -> None:
     assert "tests/integration/platform/test_metaflow_runtime.py" in workflow
     assert "tests/integration/platform/test_mlflow_tracking.py" in workflow
     assert "test_compose_lifecycle.py" not in workflow
-    assert "does **not** run the Docker/Playwright lifecycle suite" in " ".join(
-        root_readme.split()
-    )
+    assert "does **not** run the Docker/Playwright lifecycle suite" in " ".join(root_readme.split())
     assert "does not run the fresh-stack Docker/Playwright lifecycle" in " ".join(
         deploy_readme.split()
     )
@@ -120,7 +116,9 @@ def test_prepare_source_provenance_replaces_an_existing_file(script, tmp_path, m
     path.parent.mkdir(parents=True)
     path.write_text("stale manifest\n")
     written: list[Path] = []
-    monkeypatch.setattr(script, "write_source_provenance", lambda root, output: written.append(output))
+    monkeypatch.setattr(
+        script, "write_source_provenance", lambda root, output: written.append(output)
+    )
 
     result = script.prepare_source_provenance(tmp_path)
 
@@ -133,7 +131,9 @@ def test_prepare_source_provenance_refuses_a_directory(script, tmp_path, monkeyp
     path.mkdir(parents=True)
     monkeypatch.setattr(script, "write_source_provenance", pytest.fail)
 
-    with pytest.raises(RuntimeError, match="directory, not the required provenance file") as exc_info:
+    with pytest.raises(
+        RuntimeError, match="directory, not the required provenance file"
+    ) as exc_info:
         script.prepare_source_provenance(tmp_path)
 
     assert f"rmdir {path}" in str(exc_info.value)
@@ -190,18 +190,24 @@ def test_compose_timeout_reports_redacted_scoped_diagnostics(monkeypatch) -> Non
 
 
 @pytest.mark.parametrize("command", ["up", "start", "restart", "run"])
-def test_container_start_commands_prepare_source_provenance(script, tmp_path, monkeypatch, command: str) -> None:
+def test_container_start_commands_prepare_source_provenance(
+    script, tmp_path, monkeypatch, command: str
+) -> None:
     prepared: list[Path] = []
     monkeypatch.setattr(script, "ROOT", tmp_path)
     monkeypatch.setattr(script, "prepare_source_provenance", lambda root: prepared.append(root))
-    monkeypatch.setattr(script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})())
+    monkeypatch.setattr(
+        script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})()
+    )
 
     assert script.main([command]) == 0
     assert prepared == [tmp_path]
 
 
 @pytest.mark.parametrize("command", ["up", "start", "restart", "run"])
-def test_container_start_commands_refuse_the_directory_trap(script, tmp_path, monkeypatch, capsys, command: str) -> None:
+def test_container_start_commands_refuse_the_directory_trap(
+    script, tmp_path, monkeypatch, capsys, command: str
+) -> None:
     (tmp_path / script.PROVENANCE_RELATIVE_PATH).mkdir(parents=True)
     monkeypatch.setattr(script, "ROOT", tmp_path)
     monkeypatch.setattr(script.subprocess, "run", pytest.fail)
@@ -217,6 +223,8 @@ def test_non_start_commands_skip_provenance_so_directory_trap_can_be_recovered(
     (tmp_path / script.PROVENANCE_RELATIVE_PATH).mkdir(parents=True)
     monkeypatch.setattr(script, "ROOT", tmp_path)
     monkeypatch.setattr(script, "prepare_source_provenance", pytest.fail)
-    monkeypatch.setattr(script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})())
+    monkeypatch.setattr(
+        script.subprocess, "run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})()
+    )
 
     assert script.main([command]) == 0

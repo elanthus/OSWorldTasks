@@ -351,9 +351,7 @@ def test_policy_visible_result_has_one_strict_authorized_schema() -> None:
             step_index=0,
         )
     with pytest.raises(TypeError, match="screenshot digest"):
-        PolicyVisibleResult.from_dict(
-            {**value.to_dict(), "screenshot_digest": 7}
-        )
+        PolicyVisibleResult.from_dict({**value.to_dict(), "screenshot_digest": 7})
     with pytest.raises(TypeError, match="episode flags"):
         PolicyVisibleResult(
             screenshot_digest=value.screenshot_digest,
@@ -387,9 +385,7 @@ def test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook(
 
     assert result.classification == "pilot_action_limit"
     received_result = next(
-        values[2]
-        for hook, values in policy.received
-        if hook == "post_dispatch_state"
+        values[2] for hook, values in policy.received if hook == "post_dispatch_state"
     )
     assert isinstance(received_result, PolicyVisibleResult)
     assert not hasattr(received_result, "__dict__")
@@ -436,21 +432,20 @@ def test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook(
     ):
         assert forbidden not in checkpoint
 
-    diagnostic_event = journal.event(
-        dispatch.payload["privileged_diagnostic_event_key"]
-    )
+    diagnostic_event = journal.event(dispatch.payload["privileged_diagnostic_event_key"])
     assert diagnostic_event is not None
     assert diagnostic_event.kind == "privileged_dispatch_diagnostic"
     assert diagnostic_event.payload["diagnostic"]["stage_index"] == 1
     assert (
-        diagnostic_event.payload["diagnostic"]["expected_values"]
-        == "host-only-expected-value-7dfc"
+        diagnostic_event.payload["diagnostic"]["expected_values"] == "host-only-expected-value-7dfc"
     )
-    assert diagnostic_event.payload["policy_visible_result_digest"] == (
-        dispatch.payload["commit_result_digest"]
+    assert (
+        diagnostic_event.payload["policy_visible_result_digest"]
+        == (dispatch.payload["commit_result_digest"])
     )
-    assert diagnostic_event.payload["diagnostic_digest"] == (
-        dispatch.payload["privileged_diagnostic_digest"]
+    assert (
+        diagnostic_event.payload["diagnostic_digest"]
+        == (dispatch.payload["privileged_diagnostic_digest"])
     )
 
 
@@ -541,9 +536,7 @@ def test_v5_runner_supports_a_bounded_multi_task_pilot_horizon(tmp_path: Path) -
 
 
 @pytest.mark.parametrize("action_limit", [0, -1, 10_000, 1.5, True])
-def test_v5_runner_rejects_invalid_pilot_action_limit(
-    tmp_path: Path, action_limit: object
-) -> None:
+def test_v5_runner_rejects_invalid_pilot_action_limit(tmp_path: Path, action_limit: object) -> None:
     seed = 5000
     task = generate_task(seed)
     runner = V5Runner(
@@ -576,12 +569,16 @@ def test_v5_deadline_settles_once_without_hidden_retry(tmp_path: Path) -> None:
             journal.events("trial-timeout")[1].payload["idempotency_key"],
         )
     ]
-    assert Counter(event.kind for event in journal.events("trial-timeout"))[
-        "confirmed_cancellation"
-    ] == 1
-    assert Counter(event.kind for event in journal.events("trial-timeout"))[
-        "sealed_unsuccessful_result"
-    ] == 1
+    assert (
+        Counter(event.kind for event in journal.events("trial-timeout"))["confirmed_cancellation"]
+        == 1
+    )
+    assert (
+        Counter(event.kind for event in journal.events("trial-timeout"))[
+            "sealed_unsuccessful_result"
+        ]
+        == 1
+    )
 
 
 @pytest.mark.parametrize(
@@ -610,17 +607,13 @@ def test_v5_runner_settles_spend_when_provider_controls_are_disabled(
             deadline_seconds: float,
         ) -> TransportOutcome:
             del deadline_seconds
-            self.model_requests.append(
-                {"idempotency_key": idempotency_key, "request": request}
-            )
+            self.model_requests.append({"idempotency_key": idempotency_key, "request": request})
             return TransportOutcome(transport_status)  # type: ignore[arg-type]
 
         def settle_unknown_spend(self, *, idempotency_key: str) -> None:
             self.settlements.append(("unknown", idempotency_key))
 
-        def settle_zero_charge_spend(
-            self, *, idempotency_key: str, reason: str
-        ) -> None:
+        def settle_zero_charge_spend(self, *, idempotency_key: str, reason: str) -> None:
             del reason
             self.settlements.append(("zero", idempotency_key))
 
@@ -663,9 +656,7 @@ def test_v5_hanging_transport_cannot_extend_runner_or_start_retry(tmp_path: Path
             self, request: dict[str, object], *, idempotency_key: str, deadline_seconds: float
         ) -> TransportOutcome:
             del deadline_seconds
-            self.model_requests.append(
-                {"idempotency_key": idempotency_key, "request": request}
-            )
+            self.model_requests.append({"idempotency_key": idempotency_key, "request": request})
             self.release.wait(timeout=5.0)
             return TransportOutcome("unknown", failure_code="released_after_deadline")
 
@@ -690,9 +681,10 @@ def test_v5_hanging_transport_cannot_extend_runner_or_start_retry(tmp_path: Path
     assert result.classification == "request_failure"
     assert len(transport.model_requests) == 1
     assert [kind for kind, _identity in transport.control_requests] == ["cancel"]
-    assert Counter(event.kind for event in journal.events("trial-hanging"))[
-        "confirmed_cancellation"
-    ] == 1
+    assert (
+        Counter(event.kind for event in journal.events("trial-hanging"))["confirmed_cancellation"]
+        == 1
+    )
 
 
 def test_v5_unknown_post_send_outcome_is_not_retried(tmp_path: Path) -> None:
@@ -794,14 +786,10 @@ def test_v5_recover_step_preserves_old_sealed_terminal_event_chain(
     journal.seal_attempt_terminal(
         identity,
         kind="unknown_outcome_infrastructure_failure",
-        post_attempt_checkpoint=policy.failure_state(
-            pre_state, "http_400_bad_request"
-        ),
+        post_attempt_checkpoint=policy.failure_state(pre_state, "http_400_bad_request"),
         failure_code="http_400_bad_request",
     )
-    assert "sealed_unsuccessful_result" not in {
-        event.kind for event in journal.events(trial_id)
-    }
+    assert "sealed_unsuccessful_result" not in {event.kind for event in journal.events(trial_id)}
     before = journal.integrity_report()
     before_event_chain_digest = before["event_chain_digest"]
     transport = ScriptedTransport()
@@ -860,9 +848,7 @@ def test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts(
     events = journal.events("trial-retry-success")
     assert [event.kind for event in events].count("attempt_started") == 2
     assert [event.kind for event in events].count("attempt_completed") == 2
-    retry_event = next(
-        event for event in events if event.kind == "retryable_provider_response"
-    )
+    retry_event = next(event for event in events if event.kind == "retryable_provider_response")
     assert retry_event.payload["failure_code"] == "zero_completion_error"
     assert retry_event.payload["next_attempt_permitted"] is True
     assert retry_event.payload["retry_rule"] == "one-same-route-zero-completion-error-v1"
@@ -912,9 +898,7 @@ def test_v5_runner_retries_one_429_as_a_new_journaled_attempt(tmp_path: Path) ->
         "failure_code": "http_429_rate_limit",
         "retry_after_seconds": 3.0,
         "backoff_source": "retry_after",
-        "retry_rule": (
-            "one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"
-        ),
+        "retry_rule": ("one-same-route-zero-completion-or-http-429-after-bounded-backoff-v2"),
         "next_attempt_permitted": True,
         "bounded_retries_used": 0,
         "bounded_retry_budget": 1,
@@ -996,9 +980,7 @@ def test_v5_runner_stops_after_second_zero_completion_error(tmp_path: Path) -> N
     assert result.model_attempts == result.provider_wire_requests == 2
     events = journal.events("trial-retry-exhausted")
     assert [event.kind for event in events].count("retryable_provider_response") == 2
-    failure = next(
-        event for event in events if event.kind == "sealed_unsuccessful_result"
-    )
+    failure = next(event for event in events if event.kind == "sealed_unsuccessful_result")
     assert failure.payload["failure_code"] == "retryable_response_exhausted"
 
 
@@ -1019,9 +1001,7 @@ def test_v5_parse_failure_after_retry_binds_both_attempts(tmp_path: Path) -> Non
         manifest=retry_manifest(),
         transport=ScriptedTransport(
             [
-                TransportOutcome(
-                    "response", zero_completion_error_response("empty-first")
-                ),
+                TransportOutcome("response", zero_completion_error_response("empty-first")),
                 TransportOutcome("response", malformed_response),
             ]
         ),
@@ -1081,9 +1061,7 @@ def test_v5_recovery_never_issues_an_unrecorded_retry(tmp_path: Path) -> None:
     assert recovered["reason"] == "retry_interrupted_before_next_attempt"
     assert len(transport.model_requests) == 1
     failure = next(
-        event
-        for event in journal.events(trial_id)
-        if event.kind == "sealed_unsuccessful_result"
+        event for event in journal.events(trial_id) if event.kind == "sealed_unsuccessful_result"
     )
     assert failure.payload["failure_code"] == "retry_interrupted_before_next_attempt"
 
@@ -1149,9 +1127,7 @@ def test_v5_recovery_seals_parse_failure_without_dispatch(tmp_path: Path) -> Non
     assert recovered["classification"] == "invalid_output"
     assert recovered["redispatched"] is False
     assert backend.action_count == 0
-    assert [event.kind for event in journal.events(trial_id)][-1] == (
-        "sealed_unsuccessful_result"
-    )
+    assert [event.kind for event in journal.events(trial_id)][-1] == ("sealed_unsuccessful_result")
     assert len(transport.model_requests) == 1
 
 
@@ -1262,9 +1238,7 @@ def test_v5_journal_object_and_role_insert_roll_back_together(tmp_path: Path) ->
     )
     with pytest.raises(sqlite3.IntegrityError, match="injected interruption"):
         journal.put_object("policy_checkpoint", b"transactional-object")
-    object_count = journal._connection.execute(
-        "SELECT COUNT(*) FROM objects"
-    ).fetchone()[0]
+    object_count = journal._connection.execute("SELECT COUNT(*) FROM objects").fetchone()[0]
     assert object_count == 0
 
 
@@ -1299,15 +1273,12 @@ def test_v5_plan_only_command_formula_makes_no_provider_calls() -> None:
     plan = call_cap_plan(
         manifest,
         partition_manifests=partitions,
-        approved_calibration_manifest_digest=(
-            partitions[Partition.CALIBRATION]["manifest_digest"]
-        ),
+        approved_calibration_manifest_digest=(partitions[Partition.CALIBRATION]["manifest_digest"]),
     )
     assert plan["provider_calls_made"] == 0
     assert plan["policy_manifest_digest"] == content_digest(manifest.to_dict())
     assert plan["partition_manifest_digests"] == {
-        partition.value: partitions[partition]["manifest_digest"]
-        for partition in Partition
+        partition.value: partitions[partition]["manifest_digest"] for partition in Partition
     }
     for phase in plan["phases"].values():
         assert phase["provider_wire_request_cap"] == (
@@ -1330,9 +1301,7 @@ def test_v5_call_plan_rejects_tampered_partition_manifest() -> None:
 
 def test_v5_call_plan_rejects_unapproved_calibration_manifest_digest() -> None:
     partitions = {partition: partition_manifest(partition) for partition in Partition}
-    with pytest.raises(
-        ValueError, match="approved calibration partition manifest digest mismatch"
-    ):
+    with pytest.raises(ValueError, match="approved calibration partition manifest digest mismatch"):
         call_cap_plan(
             policy_manifest(),
             partition_manifests=partitions,
@@ -1362,20 +1331,16 @@ def test_v5_call_plan_uses_sealed_partition_action_caps() -> None:
 def test_v5_checked_in_scripted_cap_plan_uses_checked_in_partition_bytes() -> None:
     partitions = {
         partition: json.loads(
-            (
-                ROOT
-                / "artifacts/grounding-v5-manifests"
-                / f"{partition.value}.json"
-            ).read_text(encoding="utf-8")
+            (ROOT / "artifacts/grounding-v5-manifests" / f"{partition.value}.json").read_text(
+                encoding="utf-8"
+            )
         )
         for partition in Partition
     }
     expected = call_cap_plan(
         scripted_policy_manifest(),
         partition_manifests=partitions,
-        approved_calibration_manifest_digest=(
-            partitions[Partition.CALIBRATION]["manifest_digest"]
-        ),
+        approved_calibration_manifest_digest=(partitions[Partition.CALIBRATION]["manifest_digest"]),
     )
     stored = ROOT / "artifacts/grounding-v5-scripted-call-cap-plan.json"
     assert stored.read_bytes() == canonical_json_bytes(expected) + b"\n"
@@ -1395,9 +1360,7 @@ def test_v5_model_cap_is_checked_before_attempt_started_or_transport(tmp_path: P
             approved_caps=CallCaps(task.max_episode_steps, 0, 0, 0),
         ).run(trial_id="trial-zero-cap", task=task)
     assert not transport.model_requests
-    assert "attempt_started" not in {
-        event.kind for event in journal.events("trial-zero-cap")
-    }
+    assert "attempt_started" not in {event.kind for event in journal.events("trial-zero-cap")}
 
 
 def test_v5_control_reservation_is_checked_before_attempt_started_or_transport(
@@ -1406,9 +1369,7 @@ def test_v5_control_reservation_is_checked_before_attempt_started_or_transport(
     seed = 5000
     task = generate_task(seed)
     journal = V5AttemptJournal(tmp_path / "control-reservation-cap.sqlite")
-    transport = ScriptedTransport(
-        [TransportOutcome("deadline", failure_code="request_deadline")]
-    )
+    transport = ScriptedTransport([TransportOutcome("deadline", failure_code="request_deadline")])
     runner = V5Runner(
         journal=journal,
         manifest=policy_manifest(),
@@ -1432,9 +1393,7 @@ def test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap(
     task = generate_task(seed)
     trial_id = "trial-control-reservation-recovery"
     journal = V5AttemptJournal(tmp_path / "control-reservation-recovery.sqlite")
-    transport = ScriptedTransport(
-        [TransportOutcome("deadline", failure_code="request_deadline")]
-    )
+    transport = ScriptedTransport([TransportOutcome("deadline", failure_code="request_deadline")])
     runner = V5Runner(
         journal=journal,
         manifest=policy_manifest(),
@@ -1445,9 +1404,7 @@ def test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap(
 
     with pytest.raises(CallCapExceededError, match="provider-wire-request cap"):
         runner.run(trial_id=trial_id, task=task, action_limit=1)
-    wire_requests_before_recovery = len(transport.model_requests) + len(
-        transport.control_requests
-    )
+    wire_requests_before_recovery = len(transport.model_requests) + len(transport.control_requests)
 
     recovered = runner.recover_step(
         trial_id=trial_id,
@@ -1495,9 +1452,7 @@ def test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap(
     with pytest.raises(CallCapExceededError, match="model-attempt cap"):
         restarted.run(trial_id="after-restart", task=task)
     assert not transport.model_requests
-    assert "attempt_started" not in {
-        event.kind for event in journal.events("after-restart")
-    }
+    assert "attempt_started" not in {event.kind for event in journal.events("after-restart")}
 
 
 def test_v5_restart_never_reissues_durably_reserved_control_request(tmp_path: Path) -> None:
@@ -1687,9 +1642,7 @@ def legacy_post_dispatch_journal(
             "history": [{"result_digest": "sha256:" + "9" * 64}],
         }
     )
-    screenshot_digest = journal.put_object(
-        "screenshot", backend.screenshot().tobytes()
-    )
+    screenshot_digest = journal.put_object("screenshot", backend.screenshot().tobytes())
     environment_checkpoint_digest = journal.put_object(
         "environment_checkpoint", backend.checkpoint()
     )
@@ -1778,9 +1731,7 @@ def test_resume_rejects_tampered_legacy_embedded_diagnostic(
     connection.close()
     tampered = V5AttemptJournal(journal_path)
 
-    with pytest.raises(
-        RuntimeError, match="legacy committed dispatch result digest mismatch"
-    ):
+    with pytest.raises(RuntimeError, match="legacy committed dispatch result digest mismatch"):
         V5Runner(
             journal=tampered,
             manifest=policy_manifest(),
@@ -1949,9 +1900,7 @@ def test_v5_recovery_rejects_tampered_environment_binding(tmp_path: Path) -> Non
         transport=ScriptedTransport(),
         policy=scripted_policy(seed),
         approved_caps=episode_caps(seed),
-    ).recover_step(
-        trial_id="trial-tampered", step_index=0, task=task, backend=backend
-    )
+    ).recover_step(trial_id="trial-tampered", step_index=0, task=task, backend=backend)
     assert recovered["classification"] == "dispatched"
     assert backend.task.task_id == task.task_id
 
@@ -2037,9 +1986,7 @@ def test_summary_separates_failure_denominators(
     outcomes = (
         ScriptedTransport(),
         ScriptedTransport([TransportOutcome("response", response)]),
-        ScriptedTransport(
-            [TransportOutcome("transport_fault", failure_code="connection_reset")]
-        ),
+        ScriptedTransport([TransportOutcome("transport_fault", failure_code="connection_reset")]),
     )
     results = []
     for index, transport in enumerate(outcomes):
@@ -2152,11 +2099,7 @@ def test_v5_runner_settles_after_the_bounded_retry_budget_is_spent(tmp_path: Pat
     assert len(transport.model_requests) == 4
     events = journal.events("trial-fault-exhausted")
     assert [event.kind for event in events].count("retryable_transport_fault") == 4
-    sealed = next(
-        event
-        for event in events
-        if event.kind == "sealed_unsuccessful_result"
-    )
+    sealed = next(event for event in events if event.kind == "sealed_unsuccessful_result")
     assert sealed.payload["failure_code"] == "transport_fault_retry_exhausted"
     journal.close()
 
@@ -2209,9 +2152,7 @@ def test_v5_runner_recovers_final_transport_fault_as_retry_exhausted(
     assert recovered["redispatched"] is False
     assert len(transport.model_requests) == 4
     sealed = next(
-        event
-        for event in journal.events(trial_id)
-        if event.kind == "sealed_unsuccessful_result"
+        event for event in journal.events(trial_id) if event.kind == "sealed_unsuccessful_result"
     )
     assert sealed.payload["failure_code"] == "transport_fault_retry_exhausted"
     assert sealed.payload["policy_checkpoint_digest"].startswith("sha256:")
@@ -2282,13 +2223,9 @@ def test_spend_reservation_replay_neither_duplicates_nor_loses_exposure(
     ledger = SpendLedger(request_maximum, Decimal(0), journal=journal)
     assert ledger.reserve_wire("attempt-one", request_maximum)
     if settlement == "reconciled_known":
-        assert ledger.reserve_unknown_charge(
-            "attempt-one", request_maximum
-        ) == request_maximum
+        assert ledger.reserve_unknown_charge("attempt-one", request_maximum) == request_maximum
     if settlement != "in_flight":
-        assert ledger.record_cost(
-            "attempt-one", Decimal("0.25"), request_maximum
-        )
+        assert ledger.record_cost("attempt-one", Decimal("0.25"), request_maximum)
     journal.close()
     del ledger
 
@@ -2303,7 +2240,5 @@ def test_spend_reservation_replay_neither_duplicates_nor_loses_exposure(
     else:
         assert resumed.in_flight_reservation_usd == request_maximum
         assert resumed.spent_usd == 0
-    assert (resumed.in_flight_reservation_usd > 0) is not (
-        resumed.spent_usd > 0
-    )
+    assert (resumed.in_flight_reservation_usd > 0) is not (resumed.spent_usd > 0)
     resumed_journal.close()

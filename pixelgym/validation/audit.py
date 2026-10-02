@@ -99,9 +99,7 @@ def validate_reward_hacking(
     browser_source_hashes_match = browser_boundary_source_hashes_match(
         browser_boundary, repository_root
     )
-    guest_browser_evidence_passed = guest_browser_boundary_evidence_passed(
-        guest_browser_boundary
-    )
+    guest_browser_evidence_passed = guest_browser_boundary_evidence_passed(guest_browser_boundary)
     guest_browser_source_hashes_match = guest_browser_boundary_source_hashes_match(
         guest_browser_boundary, repository_root
     )

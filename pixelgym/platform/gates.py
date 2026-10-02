@@ -27,7 +27,9 @@ def _one_sided_normal_quantile(confidence_level: float) -> float:
     return NormalDist().inv_cdf(confidence_level)
 
 
-def _wilson_lower_bound(*, successes: int, sample_size: int, confidence_level: float) -> float | None:
+def _wilson_lower_bound(
+    *, successes: int, sample_size: int, confidence_level: float
+) -> float | None:
     """One-sided Wilson score lower bound for Bernoulli accuracy observations."""
     if not (_is_count(successes) and _is_count(sample_size) and 0 < sample_size):
         return None
@@ -82,7 +84,9 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
         and accuracy >= policy.minimum_accuracy
     )
     if not accuracy_passed:
-        reasons.append("accuracy is missing, inconsistent with counts, non-finite, or below the minimum")
+        reasons.append(
+            "accuracy is missing, inconsistent with counts, non-finite, or below the minimum"
+        )
 
     cost_usd_per_100 = summary.cost_usd_per_100
     cost_evidence = (
@@ -111,7 +115,9 @@ def evaluate_gates(policy: GatePolicy, summary: RunSummary) -> GateReport:
         and provider_latency_p95_ms <= policy.maximum_provider_latency_p95_ms
     )
     if not latency_passed:
-        reasons.append("latency evidence is missing, insufficient, non-finite, or above the maximum")
+        reasons.append(
+            "latency evidence is missing, insufficient, non-finite, or above the maximum"
+        )
 
     completeness_passed = (
         count_evidence

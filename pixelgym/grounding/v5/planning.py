@@ -92,8 +92,7 @@ def _validated_records(
             or not isinstance(excluded_task_ids, list)
             or derivation.get("excluded_episode_count") != len(excluded_seeds)
             or len(excluded_task_ids) != len(excluded_seeds)
-            or set(excluded_seeds)
-            & {record["seed_record"]["seed"] for record in validated}
+            or set(excluded_seeds) & {record["seed_record"]["seed"] for record in validated}
         ):
             raise ValueError("derived calibration exclusion evidence is inconsistent")
         if manifest.get("schema_version") == "pixelgym-agent-v5-partition-v4":
@@ -102,16 +101,13 @@ def _validated_records(
             if (
                 not isinstance(replacement_seeds, list)
                 or not isinstance(replacement_task_ids, list)
-                or derivation.get("replacement_episode_count")
-                != len(replacement_seeds)
+                or derivation.get("replacement_episode_count") != len(replacement_seeds)
                 or len(replacement_task_ids) != len(replacement_seeds)
                 or not set(replacement_seeds).issubset(
                     record["seed_record"]["seed"] for record in validated
                 )
             ):
-                raise ValueError(
-                    "derived calibration replacement evidence is inconsistent"
-                )
+                raise ValueError("derived calibration replacement evidence is inconsistent")
     return tuple(validated)
 
 
@@ -122,9 +118,7 @@ def _family_stratified_subset(
         record
         for family in WorkflowFamily
         for record in tuple(
-            candidate
-            for candidate in records
-            if candidate["seed_record"]["family"] == family.value
+            candidate for candidate in records if candidate["seed_record"]["family"] == family.value
         )[:per_family]
     )
     expected = len(WorkflowFamily) * per_family
@@ -147,9 +141,7 @@ def call_cap_plan(
         partition: _validated_records(partition_manifests[partition], partition=partition)
         for partition in Partition
     }
-    calibration_manifest_digest = partition_manifests[Partition.CALIBRATION][
-        "manifest_digest"
-    ]
+    calibration_manifest_digest = partition_manifests[Partition.CALIBRATION]["manifest_digest"]
     if approved_calibration_manifest_digest != calibration_manifest_digest:
         raise ValueError("approved calibration partition manifest digest mismatch")
     calibration = records[Partition.CALIBRATION]
@@ -157,18 +149,16 @@ def call_cap_plan(
     stateless_subset = _family_stratified_subset(confirmatory, per_family=4)
     reliability_subset = _family_stratified_subset(confirmatory, per_family=2)
 
-    def calculate(task_records: tuple[dict[str, Any], ...], *, repetitions: int = 1) -> dict[str, int]:
+    def calculate(
+        task_records: tuple[dict[str, Any], ...], *, repetitions: int = 1
+    ) -> dict[str, int]:
         steps = tuple(
-            record["max_episode_steps"]
-            for record in task_records
-            for _ in range(repetitions)
+            record["max_episode_steps"] for record in task_records for _ in range(repetitions)
         )
         return CallCaps.calculate(
             max_episode_steps=steps,
             max_model_attempts_per_action=manifest.max_model_attempts_per_action,
-            max_cancellation_requests_per_attempt=(
-                manifest.max_cancellation_requests_per_attempt
-            ),
+            max_cancellation_requests_per_attempt=(manifest.max_cancellation_requests_per_attempt),
             max_reconciliation_requests_per_attempt=(
                 manifest.max_reconciliation_requests_per_attempt
             ),
@@ -184,9 +174,7 @@ def call_cap_plan(
             partition.value: partition_manifests[partition]["manifest_digest"]
             for partition in Partition
         },
-        "approved_calibration_partition_manifest_digest": (
-            approved_calibration_manifest_digest
-        ),
+        "approved_calibration_partition_manifest_digest": (approved_calibration_manifest_digest),
         "phases": {
             "calibration": calculate(calibration),
             "confirmatory_primary": calculate(confirmatory),

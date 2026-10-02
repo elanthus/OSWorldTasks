@@ -17,8 +17,7 @@ DEFAULT_REPOSITORY = "elanthus/OSWorldTasks"
 DEFAULT_END_REF = "origin/main"
 PR_QUERY_LIMIT = 1000
 PR_FIELDS = (
-    "number,title,url,state,isDraft,headRefName,baseRefName,createdAt,"
-    "mergedAt,closedAt,mergeCommit"
+    "number,title,url,state,isDraft,headRefName,baseRefName,createdAt,mergedAt,closedAt,mergeCommit"
 )
 GIT_FIELD_SEPARATOR = "\x1f"
 GIT_RECORD_SEPARATOR = "\x1e"
@@ -45,9 +44,7 @@ def parse_git_log(raw: str) -> list[dict[str, Any]]:
             continue
         fields = record.split(GIT_FIELD_SEPARATOR)
         if len(fields) != 5:
-            raise ValueError(
-                f"git log record {record_number} has {len(fields)} fields; expected 5"
-            )
+            raise ValueError(f"git log record {record_number} has {len(fields)} fields; expected 5")
         sha, authored_at, committed_at, raw_parents, subject = fields
         if re.fullmatch(r"[0-9a-f]{40}", sha) is None:
             raise ValueError(f"git log record {record_number} has an invalid SHA: {sha!r}")
@@ -161,9 +158,7 @@ def aggregate_history(
     window_pull_requests = [
         pull_request
         for pull_request in pull_requests
-        if start_time
-        <= _timestamp(pull_request["createdAt"], "createdAt")
-        <= end_time
+        if start_time <= _timestamp(pull_request["createdAt"], "createdAt") <= end_time
     ]
     prefix_counts: Counter[str] = Counter()
     base_branch_counts: Counter[str] = Counter()

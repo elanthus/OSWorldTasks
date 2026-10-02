@@ -20,13 +20,9 @@ from pixelgym.grounding.v5.generator import generate_task, tasks_for_partition
 from pixelgym.grounding.v5.seeds import D56_REPLACEMENT_CALIBRATION_SEEDS
 
 CURRENT_PARTITION_MANIFEST_DIRECTORY = Path("artifacts/grounding-v5-manifests/v2")
-CURRENT_D56_CALIBRATION_MANIFEST = (
-    CURRENT_PARTITION_MANIFEST_DIRECTORY / "calibration-d56.json"
-)
+CURRENT_D56_CALIBRATION_MANIFEST = CURRENT_PARTITION_MANIFEST_DIRECTORY / "calibration-d56.json"
 
-D56_PILOT_PLAN_DIGEST = (
-    "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a"
-)
+D56_PILOT_PLAN_DIGEST = "sha256:fe6e9b03fd5b4c13d417596d1712073e2d375de03711a3aeca6e04cf2f55fd7a"
 D56_EXCLUDED_CALIBRATION_SEEDS = (
     5100,
     5110,
@@ -115,9 +111,7 @@ def d56_calibration_manifest() -> dict[str, Any]:
         *D56_CONSUMED_CALIBRATION_SEEDS,
     )
     excluded_seeds = set(excluded_seed_order)
-    source_by_seed = {
-        record["seed_record"]["seed"]: record for record in source["records"]
-    }
+    source_by_seed = {record["seed_record"]["seed"]: record for record in source["records"]}
     excluded = [source_by_seed[seed] for seed in excluded_seed_order]
     records = [
         record
@@ -125,8 +119,7 @@ def d56_calibration_manifest() -> dict[str, Any]:
         if record["seed_record"]["seed"] not in excluded_seeds
     ]
     replacement_records = [
-        _task_manifest_record(generate_task(seed))
-        for seed in D56_REPLACEMENT_CALIBRATION_SEEDS
+        _task_manifest_record(generate_task(seed)) for seed in D56_REPLACEMENT_CALIBRATION_SEEDS
     ]
     records.extend(replacement_records)
     if len(excluded) != len(excluded_seed_order):
@@ -153,17 +146,11 @@ def d56_calibration_manifest() -> dict[str, Any]:
                 "outcome"
             ),
             "pilot_plan_digest": D56_PILOT_PLAN_DIGEST,
-            "consumed_calibration_plan_digest": (
-                D56_CONSUMED_CALIBRATION_PLAN_DIGEST
-            ),
-            "consumed_calibration_summary_sha256": (
-                D56_CONSUMED_CALIBRATION_SUMMARY_SHA256
-            ),
+            "consumed_calibration_plan_digest": (D56_CONSUMED_CALIBRATION_PLAN_DIGEST),
+            "consumed_calibration_summary_sha256": (D56_CONSUMED_CALIBRATION_SUMMARY_SHA256),
             "replacement_episode_count": len(replacement_records),
             "replacement_seeds": list(D56_REPLACEMENT_CALIBRATION_SEEDS),
-            "replacement_task_ids": [
-                record["task_id"] for record in replacement_records
-            ],
+            "replacement_task_ids": [record["task_id"] for record in replacement_records],
         },
     }
     return {**manifest, "manifest_digest": content_digest(manifest)}
@@ -184,7 +171,6 @@ def generator_source_digest() -> str:
     package = Path(__file__).parent
     files = ("contracts.py", "generator.py", "seeds.py")
     content = b"".join(
-        name.encode("utf-8") + b"\0" + (package / name).read_bytes() + b"\0"
-        for name in files
+        name.encode("utf-8") + b"\0" + (package / name).read_bytes() + b"\0" for name in files
     )
     return "sha256:" + sha256_bytes(content)

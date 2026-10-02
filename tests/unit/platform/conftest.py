@@ -34,7 +34,8 @@ def policy_factory(repository_root: Path, gate_policy: GatePolicy):
     ):
         return build_policy_manifest(
             provider=provider,
-            model=model or ("day3-replay-baseline-v1" if version == 1 else "day3-replay-revised-v2"),
+            model=model
+            or ("day3-replay-baseline-v1" if version == 1 else "day3-replay-revised-v2"),
             prompt_name=PROMPT_NAME,
             prompt_version=version,
             prompt=prompt_template(version),
@@ -45,7 +46,11 @@ def policy_factory(repository_root: Path, gate_policy: GatePolicy):
             overlay_version="none-raw-coordinate-policy",
             target_semantics=gate_policy.required_target_semantics,
             source_provenance=SourceProvenance(
-                SOURCE_PROVENANCE_SCHEMA_VERSION, revision, "b" * 64, code_state, "git-build-inputs-v1"
+                SOURCE_PROVENANCE_SCHEMA_VERSION,
+                revision,
+                "b" * 64,
+                code_state,
+                "git-build-inputs-v1",
             ),
             dependency_lock_sha256=dependency_lock_sha256(repository_root),
         )

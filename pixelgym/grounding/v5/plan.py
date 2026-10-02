@@ -16,9 +16,7 @@ RUNNER_PLAN_SCHEMA_VERSION = "pixelgym-agent-v5-runner-plan-v1"
 RUNNER_RESULT_SCHEMA_VERSION = "pixelgym-agent-v5-runner-result-v1"
 _SCHEMA_PATH = Path(__file__).with_name("schemas") / "runner-plan.schema.json"
 
-ProviderAdapterName = Literal[
-    "openrouter_http", "codex_cli", "claude_cli", "deterministic_fake"
-]
+ProviderAdapterName = Literal["openrouter_http", "codex_cli", "claude_cli", "deterministic_fake"]
 TransportName = Literal["http", "cli_subprocess", "deterministic_fake"]
 ResumeMode = Literal["forbid", "reconcile_existing"]
 
@@ -157,9 +155,7 @@ class CalibrationPlan:
         _validate_caps(policies, assignments, budgets.caps)
         breaker_value = cast(Mapping[str, Any], raw["retry_breaker"])
         breaker = RetryBreakerPlan(
-            max_bounded_retries_per_action=int(
-                breaker_value["max_bounded_retries_per_action"]
-            ),
+            max_bounded_retries_per_action=int(breaker_value["max_bounded_retries_per_action"]),
             consecutive_failure_limit=int(breaker_value["consecutive_failure_limit"]),
             continue_classifications=tuple(
                 cast(Sequence[str], breaker_value["continue_classifications"])
@@ -318,7 +314,10 @@ def _validate_caps(
         model_attempts = manifest.get("max_model_attempts_per_action")
         cancellations = manifest.get("max_cancellation_requests_per_attempt")
         reconciliations = manifest.get("max_reconciliation_requests_per_attempt")
-        if any(type(value) is not int or value < 0 for value in (model_attempts, cancellations, reconciliations)):
+        if any(
+            type(value) is not int or value < 0
+            for value in (model_attempts, cancellations, reconciliations)
+        ):
             raise ValueError(f"policy slot {item.slot!r} has invalid call-cap fields")
         assert isinstance(model_attempts, int)
         assert isinstance(cancellations, int)

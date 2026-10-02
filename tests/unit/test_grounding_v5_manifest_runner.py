@@ -92,9 +92,7 @@ class FakeAdapter:
     @staticmethod
     def _result(assignment: Any, classification: str) -> EpisodeResult:
         return EpisodeResult(
-            trial_id=(
-                f"manifest-{assignment.slot}-{assignment.ordinal:04d}-{assignment.task_id}"
-            ),
+            trial_id=(f"manifest-{assignment.slot}-{assignment.ordinal:04d}-{assignment.task_id}"),
             task_id=assignment.task_id,
             success=classification == "success_termination",
             classification=classification,
@@ -363,9 +361,7 @@ def test_completed_summary_is_idempotent_and_mismatched_digest_fails_closed(
     )
     second = FakeAdapter(["infrastructure_failure"])
     assert (
-        run_calibration_plan(
-            tmp_path, plan=plan, approved_plan_sha256=plan.digest, adapter=second
-        )
+        run_calibration_plan(tmp_path, plan=plan, approved_plan_sha256=plan.digest, adapter=second)
         == summary
     )
     assert second.executed == [] and second.closed
@@ -471,8 +467,7 @@ class JournalSpendAdapter(FakeAdapter):
         return SpendSnapshot(
             known_spend_usd=self.ledger.spent_usd,
             unknown_reservation_usd=(
-                self.ledger.unknown_reservation_usd
-                + self.ledger.in_flight_reservation_usd
+                self.ledger.unknown_reservation_usd + self.ledger.in_flight_reservation_usd
             ),
             budget_accounted_spend_usd=self.ledger.budget_accounted_spend_usd,
             blocked=self.ledger.blocked,
@@ -491,9 +486,7 @@ def test_resume_replays_spend_when_every_assignment_is_already_complete(
         adapter=JournalSpendAdapter(),
     )
     tampered = {**original, "spend": SpendSnapshot.zero().to_dict()}
-    (tmp_path / "run/summary.json").write_text(
-        json.dumps(tampered), encoding="utf-8"
-    )
+    (tmp_path / "run/summary.json").write_text(json.dumps(tampered), encoding="utf-8")
     with pytest.raises(ValueError, match="completed summary spend does not match"):
         run_calibration_plan(
             tmp_path,
@@ -711,14 +704,21 @@ def test_resume_forbid_and_replayed_episode_identity_fail_closed(tmp_path: Path)
         )
 
 
-@pytest.mark.parametrize("enabled,code,blocked,expected", [
-    (True, "transport_fault_retry_exhausted", False, 4),
-    (False, "transport_fault_retry_exhausted", False, 1),
-    (True, "different_infrastructure_failure", False, 1),
-    (True, "transport_fault_retry_exhausted", True, 1),
-])
+@pytest.mark.parametrize(
+    "enabled,code,blocked,expected",
+    [
+        (True, "transport_fault_retry_exhausted", False, 4),
+        (False, "transport_fault_retry_exhausted", False, 1),
+        (True, "different_infrastructure_failure", False, 1),
+        (True, "transport_fault_retry_exhausted", True, 1),
+    ],
+)
 def test_transport_exhaustion_continuation_is_narrow_and_preserves_failures(
-    tmp_path, enabled, code, blocked, expected,
+    tmp_path,
+    enabled,
+    code,
+    blocked,
+    expected,
 ):
     classifications = ["infrastructure_failure"] * 3 + ["success_termination"]
     _, value = _plan_value(tmp_path, classifications)
@@ -733,16 +733,27 @@ def test_transport_exhaustion_continuation_is_narrow_and_preserves_failures(
             result = super().execute(assignment, journal=journal, approved_caps=approved_caps)
             if result.classification == "infrastructure_failure":
                 journal.append_event(
-                    event_key=f"{result.trial_id}/exhausted", kind="sealed_unsuccessful_result",
-                    trial_id=result.trial_id, step_index=0, payload={"failure_code": code},
+                    event_key=f"{result.trial_id}/exhausted",
+                    kind="sealed_unsuccessful_result",
+                    trial_id=result.trial_id,
+                    step_index=0,
+                    payload={"failure_code": code},
                 )
             return result
 
     summary = run_calibration_plan(
-        tmp_path, plan=plan, approved_plan_sha256=plan.digest,
-        adapter=ExhaustedAdapter(classifications, spend=SpendSnapshot(
-            Decimal("0.1"), Decimal("0.2"), Decimal("0.3"), blocked=blocked,
-        )),
+        tmp_path,
+        plan=plan,
+        approved_plan_sha256=plan.digest,
+        adapter=ExhaustedAdapter(
+            classifications,
+            spend=SpendSnapshot(
+                Decimal("0.1"),
+                Decimal("0.2"),
+                Decimal("0.3"),
+                blocked=blocked,
+            ),
+        ),
     )
     assert summary["attempted_policy_task_pairs"] == expected
     assert summary["classifications"]["infrastructure_failure"] == min(expected, 3)

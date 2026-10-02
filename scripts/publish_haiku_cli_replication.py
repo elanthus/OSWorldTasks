@@ -68,12 +68,33 @@ def audit(private_directory: Path) -> dict:
     summary = read(private_directory / "summary.json")
     require(content_digest(plan) == PLAN_DIGEST == summary["plan_digest"], "plan binding mismatch")
     require(plan["adapter_revision"] == summary["adapter_revision"], "revision mismatch")
-    require(plan["frozen_benchmark_revision"] == summary["frozen_benchmark_revision"] == FROZEN, "benchmark revision mismatch")
+    require(
+        plan["frozen_benchmark_revision"] == summary["frozen_benchmark_revision"] == FROZEN,
+        "benchmark revision mismatch",
+    )
     expected_conditions = dict(sorted(Counter(job["mode"] for job in plan["jobs"]).items()))
-    require(plan["fresh_cohort"] == {"assignments": len(plan["jobs"]), "conditions": expected_conditions, "confirmatory_tasks_exposed": 0, "prior_outcomes_reused": 0}, "fresh-cohort contract mismatch")
-    require(summary["completed"] == summary["assigned"] == 100 and summary["unrun"] == 0, "cohort is incomplete")
-    require(summary["stop_reason"] == "completed_all_assignments" and summary["error"] is None, "cohort did not finish cleanly")
-    require(summary["subprocesses_closed"] and summary["unresolved_invocations"] == 0, "provider process remains unresolved")
+    require(
+        plan["fresh_cohort"]
+        == {
+            "assignments": len(plan["jobs"]),
+            "conditions": expected_conditions,
+            "confirmatory_tasks_exposed": 0,
+            "prior_outcomes_reused": 0,
+        },
+        "fresh-cohort contract mismatch",
+    )
+    require(
+        summary["completed"] == summary["assigned"] == 100 and summary["unrun"] == 0,
+        "cohort is incomplete",
+    )
+    require(
+        summary["stop_reason"] == "completed_all_assignments" and summary["error"] is None,
+        "cohort did not finish cleanly",
+    )
+    require(
+        summary["subprocesses_closed"] and summary["unresolved_invocations"] == 0,
+        "provider process remains unresolved",
+    )
 
     approval = validate_fresh_approval(
         private_directory / "owner-approval.json",
@@ -82,7 +103,9 @@ def audit(private_directory: Path) -> dict:
     )
 
     source_plan = read(SOURCE_PLAN)
-    require(content_digest(source_plan) == plan["source_plan_digest"], "source-plan digest mismatch")
+    require(
+        content_digest(source_plan) == plan["source_plan_digest"], "source-plan digest mismatch"
+    )
     require(
         [_assignment_identity(row) for row in plan["jobs"]]
         == [_assignment_identity(row) for row in source_plan["jobs"]],
@@ -120,17 +143,40 @@ def audit(private_directory: Path) -> dict:
             seen.add(key)
             require(row["classification"] in TERMINAL, "nonterminal result retained")
             task = generate_memory_task(row["seed"])
-            require(task.task_id == row["task_id"] == jobs[key]["task_id"], "task identity mismatch")
-            require(content_digest(task.canonical_dict()) == row["task_digest"] == jobs[key]["task_digest"], "task digest mismatch")
-            require(task.max_episode_steps == row["action_limit"] == jobs[key]["action_limit"], "action cap mismatch")
+            require(
+                task.task_id == row["task_id"] == jobs[key]["task_id"], "task identity mismatch"
+            )
+            require(
+                content_digest(task.canonical_dict())
+                == row["task_digest"]
+                == jobs[key]["task_digest"],
+                "task digest mismatch",
+            )
+            require(
+                task.max_episode_steps == row["action_limit"] == jobs[key]["action_limit"],
+                "action cap mismatch",
+            )
             measured = episode_measurements(journal, row["trial_id"], row["seed"])
-            require(all(row[name] == value for name, value in measured.items()), "stored episode measurements differ")
-            dispatches = [e for e in events if e.trial_id == row["trial_id"] and e.kind == "dispatch_committed"]
+            require(
+                all(row[name] == value for name, value in measured.items()),
+                "stored episode measurements differ",
+            )
+            dispatches = [
+                e
+                for e in events
+                if e.trial_id == row["trial_id"] and e.kind == "dispatch_committed"
+            ]
             require(len(dispatches) == row["environment_actions"], "action count mismatch")
             success = any(e.payload["terminated"] and e.payload["reward"] == 1 for e in dispatches)
-            require(success == row["success"] == (row["classification"] == "success_termination"), "success disagrees with host dispatch")
+            require(
+                success == row["success"] == (row["classification"] == "success_termination"),
+                "success disagrees with host dispatch",
+            )
             if row["classification"] == "step_limit_truncation":
-                require(dispatches[-1].payload["truncated"] and len(dispatches) == row["action_limit"], "step limit mismatch")
+                require(
+                    dispatches[-1].payload["truncated"] and len(dispatches) == row["action_limit"],
+                    "step limit mismatch",
+                )
     finally:
         journal.close()
 
@@ -141,8 +187,12 @@ def audit(private_directory: Path) -> dict:
         invocation = object.__new__(ClaudeInvocationJournal)
         invocation._connection = connection
         invocation_integrity = invocation.integrity_report()
-        require(invocation_integrity == summary["invocation_integrity"], "invocation integrity mismatch")
-        statuses = dict(connection.execute("SELECT status, COUNT(*) FROM invocations GROUP BY status"))
+        require(
+            invocation_integrity == summary["invocation_integrity"], "invocation integrity mismatch"
+        )
+        statuses = dict(
+            connection.execute("SELECT status, COUNT(*) FROM invocations GROUP BY status")
+        )
         require(statuses == {"response": 2416}, "unexpected invocation status")
     finally:
         connection.close()
@@ -154,10 +204,19 @@ def audit(private_directory: Path) -> dict:
         "provider_wire_requests": sum(row["provider_wire_requests"] for row in results),
     }
     caps = plan["caps"]
-    require(totals["environment_actions"] <= caps["environment_action_cap"], "environment-action cap exceeded")
+    require(
+        totals["environment_actions"] <= caps["environment_action_cap"],
+        "environment-action cap exceeded",
+    )
     require(totals["model_attempts"] <= caps["model_attempt_cap"], "model-attempt cap exceeded")
-    require(totals["provider_control_requests"] <= caps["provider_control_request_cap"], "provider-control cap exceeded")
-    require(totals["provider_wire_requests"] <= caps["provider_wire_request_cap"], "provider-wire cap exceeded")
+    require(
+        totals["provider_control_requests"] <= caps["provider_control_request_cap"],
+        "provider-control cap exceeded",
+    )
+    require(
+        totals["provider_wire_requests"] <= caps["provider_wire_request_cap"],
+        "provider-wire cap exceeded",
+    )
 
     snapshot = {
         "schema_version": "pixelgym-pr196-haiku-cli-replication-snapshot-v1",
@@ -204,7 +263,10 @@ def audit(private_directory: Path) -> dict:
         },
     }
     text = encoded(snapshot)
-    require("/Users/" not in text and "/private/" not in text and "data:image/" not in text, "private surface in snapshot")
+    require(
+        "/Users/" not in text and "/private/" not in text and "data:image/" not in text,
+        "private surface in snapshot",
+    )
     return snapshot
 
 
@@ -226,11 +288,21 @@ def paired(rows: list[dict]) -> dict:
     for pair in by_seed.values():
         history = pair["history"]["success"]
         stateless = pair["stateless"]["success"]
-        label = "both" if history and stateless else "history_only" if history else "stateless_only" if stateless else "neither"
+        label = (
+            "both"
+            if history and stateless
+            else "history_only"
+            if history
+            else "stateless_only"
+            if stateless
+            else "neither"
+        )
         outcomes[label] += 1
     return {
         "pairs": len(by_seed),
-        "outcomes": {name: outcomes[name] for name in ("both", "history_only", "stateless_only", "neither")},
+        "outcomes": {
+            name: outcomes[name] for name in ("both", "history_only", "stateless_only", "neither")
+        },
     }
 
 
@@ -239,11 +311,20 @@ def build(directory: Path = DIRECTORY) -> tuple[dict, str]:
     raw = (directory / "snapshot.json").read_bytes()
     require("sha256:" + sha256_bytes(raw) == sources["snapshot_sha256"], "snapshot digest mismatch")
     snapshot = json.loads(raw)
-    require(snapshot["plan_digest"] == PLAN_DIGEST and snapshot["frozen_benchmark_revision"] == FROZEN, "snapshot identity mismatch")
-    require(content_digest(read(SOURCE_PLAN)) == snapshot["source_plan_digest"], "source-plan binding mismatch")
+    require(
+        snapshot["plan_digest"] == PLAN_DIGEST and snapshot["frozen_benchmark_revision"] == FROZEN,
+        "snapshot identity mismatch",
+    )
+    require(
+        content_digest(read(SOURCE_PLAN)) == snapshot["source_plan_digest"],
+        "source-plan binding mismatch",
+    )
     require(snapshot["completed"] == 100 and snapshot["unrun"] == 0, "snapshot is incomplete")
     rows = snapshot["results"]
-    conditions = {mode: metrics([row for row in rows if row["mode"] == mode]) for mode in ("history", "stateless")}
+    conditions = {
+        mode: metrics([row for row in rows if row["mode"] == mode])
+        for mode in ("history", "stateless")
+    }
     result = {
         "schema_version": "pixelgym-pr196-haiku-cli-replication-report-v1",
         "provider_calls_made": 0,
@@ -275,7 +356,9 @@ def render(data: dict) -> str:
     ]
     for mode in ("history", "stateless"):
         row = data["conditions"][mode]
-        lines.append(f"| {mode} | {row['episodes']} | {row['successes']} | {row['classifications'].get('step_limit_truncation', 0)} | {row['classifications'].get('invalid_output', 0)} |")
+        lines.append(
+            f"| {mode} | {row['episodes']} | {row['successes']} | {row['classifications'].get('step_limit_truncation', 0)} | {row['classifications'].get('invalid_output', 0)} |"
+        )
     paired_outcomes = data["paired"]["outcomes"]
     lines += [
         "",
@@ -286,10 +369,15 @@ def render(data: dict) -> str:
         "| Condition | Reached both consumers | Correct first choices / attempted | Valid first choices | Actions | Model attempts |",
         "|---|---:|---:|---:|---:|---:|",
     ]
-    require(paired_outcomes == {"both": 0, "history_only": 28, "stateless_only": 5, "neither": 17}, "unexpected paired outcome")
+    require(
+        paired_outcomes == {"both": 0, "history_only": 28, "stateless_only": 5, "neither": 17},
+        "unexpected paired outcome",
+    )
     for mode in ("history", "stateless"):
         row = data["conditions"][mode]
-        lines.append(f"| {mode} | {row['reached_both_consumers']}/{row['episodes']} | {row['first_choices_correct']}/{row['first_choices_attempted']} | {row['first_choices_valid']} | {row['actions']} | {row['model_attempts']} |")
+        lines.append(
+            f"| {mode} | {row['reached_both_consumers']}/{row['episodes']} | {row['first_choices_correct']}/{row['first_choices_attempted']} | {row['first_choices_valid']} | {row['actions']} | {row['model_attempts']} |"
+        )
     accounting = data["accounting"]
     caps = data["caps"]
     lines += [
@@ -332,10 +420,20 @@ def main() -> None:
         snapshot_text = encoded(snapshot)
         snapshot_path = DIRECTORY / "snapshot.json"
         if snapshot_path.exists():
-            require(snapshot_path.read_text() == snapshot_text, "refuse to overwrite changed snapshot")
+            require(
+                snapshot_path.read_text() == snapshot_text, "refuse to overwrite changed snapshot"
+            )
         else:
             snapshot_path.write_text(snapshot_text)
-        (DIRECTORY / "sources.json").write_text(encoded({"snapshot_sha256": "sha256:" + sha256_bytes(snapshot_text.encode()), "plan_digest": PLAN_DIGEST, "provider_calls_made": 0}))
+        (DIRECTORY / "sources.json").write_text(
+            encoded(
+                {
+                    "snapshot_sha256": "sha256:" + sha256_bytes(snapshot_text.encode()),
+                    "plan_digest": PLAN_DIGEST,
+                    "provider_calls_made": 0,
+                }
+            )
+        )
     result, report = build()
     for name, text in {"results.json": encoded(result), "report.md": report}.items():
         path = DIRECTORY / name

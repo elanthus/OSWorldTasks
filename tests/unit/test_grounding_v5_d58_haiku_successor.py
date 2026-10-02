@@ -96,14 +96,19 @@ def test_independent_outcomes_and_power_are_derived_not_all_pair_counts():
 @pytest.mark.parametrize("damage", ["duplicate", "missing", "classification", "success"])
 def test_representative_outcomes_rejects_invalid_evidence(damage):
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
-    seeds = [row["seed"] for row in build_analysis()["calibration"]["independent_representatives"]["rows"]]
+    seeds = [
+        row["seed"]
+        for row in build_analysis()["calibration"]["independent_representatives"]["rows"]
+    ]
     changed = copy.deepcopy(snapshot)
     if damage == "duplicate":
         changed["results"].append(copy.deepcopy(changed["results"][0]))
     elif damage == "missing":
         changed["results"] = [row for row in changed["results"] if row["seed"] != seeds[0]]
     elif damage == "classification":
-        next(row for row in changed["results"] if row["seed"] == seeds[0])["classification"] = "request_failure"
+        next(row for row in changed["results"] if row["seed"] == seeds[0])["classification"] = (
+            "request_failure"
+        )
     else:
         row = next(row for row in changed["results"] if row["seed"] == seeds[0])
         row["success"] = not row["success"]

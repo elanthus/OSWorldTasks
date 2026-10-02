@@ -153,7 +153,9 @@ def _client(app: Any) -> TestClient:
 HOSTILE_PROVIDER = "real-<script>alert(1)</script>"
 
 
-def _populated_control(tmp_path: Path, gate_policy: Any) -> tuple[ControlStore, dict[str, str], str]:
+def _populated_control(
+    tmp_path: Path, gate_policy: Any
+) -> tuple[ControlStore, dict[str, str], str]:
     control = ControlStore(
         tmp_path / "control.db", reviewer_identity=REVIEWER, now=lambda: FIXED_NOW
     )
@@ -168,7 +170,7 @@ def _populated_control(tmp_path: Path, gate_policy: Any) -> tuple[ControlStore, 
             2,
             revision="c" * 40,
             provider=HOSTILE_PROVIDER,
-            model="model's \"<script>x</script>\"",
+            model='model\'s "<script>x</script>"',
             code_state="dirty",
         ),
         "run-c",
@@ -185,7 +187,11 @@ def _populated_control(tmp_path: Path, gate_policy: Any) -> tuple[ControlStore, 
         code_state="dirty",
     )
     eligible = _register(
-        control, gate_policy, _policy(gate_policy, 1, revision="d" * 40), "run-d", with_summary=False
+        control,
+        gate_policy,
+        _policy(gate_policy, 1, revision="d" * 40),
+        "run-d",
+        with_summary=False,
     )
     for item in (baseline, revised):
         control.approve(

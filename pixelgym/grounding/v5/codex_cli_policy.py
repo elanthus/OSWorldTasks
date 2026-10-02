@@ -111,9 +111,7 @@ TERRA_MEDIUM = CodexPolicyConfig(
     model="gpt-5.6-terra",
     model_reasoning_effort="medium",
 )
-CODEX_POLICY_BY_SLOT = {
-    config.slot: config for config in (LUNA_LOW, LUNA_MEDIUM, TERRA_MEDIUM)
-}
+CODEX_POLICY_BY_SLOT = {config.slot: config for config in (LUNA_LOW, LUNA_MEDIUM, TERRA_MEDIUM)}
 DEFAULT_CODEX_POLICY = LUNA_LOW
 
 # Compatibility aliases for the default policy. New campaign code passes an
@@ -202,6 +200,7 @@ _DISABLED_FEATURES = (
     "workspace_dependencies",
 )
 
+
 def _config_overrides(config: CodexPolicyConfig) -> tuple[str, ...]:
     return (
         'approval_policy="never"',
@@ -228,6 +227,7 @@ def _config_overrides(config: CodexPolicyConfig) -> tuple[str, ...]:
         "features.rollout_budget.sampling_token_weight=1.0",
         "features.rollout_budget.prefill_token_weight=1.0",
     )
+
 
 _ALLOWED_EVENT_TYPES = frozenset(
     {
@@ -294,9 +294,7 @@ class CodexRuntimeIdentity:
         }
 
 
-def _validate_runtime_identity(
-    identity: CodexRuntimeIdentity, config: CodexPolicyConfig
-) -> None:
+def _validate_runtime_identity(identity: CodexRuntimeIdentity, config: CodexPolicyConfig) -> None:
     CodexPolicyConfig(**config.__dict__)
     if (
         identity.model != config.model
@@ -469,9 +467,7 @@ _ALLOWED_ENVIRONMENT_VARIABLES = (
 
 def _minimal_environment(environment: Mapping[str, str]) -> dict[str, str]:
     return {
-        name: environment[name]
-        for name in _ALLOWED_ENVIRONMENT_VARIABLES
-        if environment.get(name)
+        name: environment[name] for name in _ALLOWED_ENVIRONMENT_VARIABLES if environment.get(name)
     }
 
 
@@ -927,9 +923,7 @@ class ParsedCliStream:
     accepted_cli_diagnostic_count: int
 
 
-def _is_allowed_disabled_code_mode_diagnostic(
-    event_type: str, item: Mapping[str, Any]
-) -> bool:
+def _is_allowed_disabled_code_mode_diagnostic(event_type: str, item: Mapping[str, Any]) -> bool:
     if event_type != "item.completed" or set(item) != {"id", "type", "message"}:
         return False
     if item.get("type") != "error" or not isinstance(item.get("id"), str):
@@ -1037,9 +1031,7 @@ def _codex_parse_envelope(
     parsed = _parse_cli_stream(raw_stdout, context_window_tokens=context_window_tokens)
     return StreamParseEnvelope(
         parsed=parsed,
-        stream_malformed=bool(
-            _MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)
-        ),
+        stream_malformed=bool(_MALFORMED_STREAM_VIOLATIONS.intersection(parsed.policy_violations)),
         usage_observed=parsed.usage is not None,
         cost_observed=parsed.usage is not None,
     )
@@ -1109,16 +1101,12 @@ class CodexCliTransport:
             return cli_fault_outcome(cli_pre_send_fault(failure))
         request_digest = content_digest(request)
         if not self.ledger.reserve(idempotency_key):
-            return cli_fault_outcome(
-                cli_pre_send_fault("subscription_exempt_invocation_guard")
-            )
+            return cli_fault_outcome(cli_pre_send_fault("subscription_exempt_invocation_guard"))
         if not self.invocation_journal.reserve(
             idempotency_key=idempotency_key, request_digest=request_digest
         ):
             self.ledger.release_pre_send(idempotency_key)
-            return cli_fault_outcome(
-                cli_pre_send_fault("duplicate_invocation_blocked")
-            )
+            return cli_fault_outcome(cli_pre_send_fault("duplicate_invocation_blocked"))
 
         with tempfile.TemporaryDirectory(prefix="pixelgym-codex-cli-") as temporary:
             temporary_root = Path(temporary)
@@ -1173,6 +1161,7 @@ class CodexCliTransport:
                 )
                 self.records.append(self._record(idempotency_key, "pre_send_failure", outcome))
                 return transport_outcome
+
             def mark_started(started: RunningProcess) -> None:
                 self.ledger.mark_process_started()
                 self.invocation_journal.mark_running(idempotency_key, started.pid)
@@ -1209,9 +1198,7 @@ class CodexCliTransport:
                     raw_stderr=execution.stderr,
                     outcome=interrupt_outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, "interrupted", interrupt_outcome)
-                )
+                self.records.append(self._record(idempotency_key, "interrupted", interrupt_outcome))
                 raise interrupted.cause
 
             execution_fault = execution.fault
@@ -1250,9 +1237,7 @@ class CodexCliTransport:
                     raw_stderr=execution.stderr,
                     outcome=failure_outcome,
                 )
-                self.records.append(
-                    self._record(idempotency_key, failure_status, failure_outcome)
-                )
+                self.records.append(self._record(idempotency_key, failure_status, failure_outcome))
                 return transport_outcome
             if execution.parsed is None:
                 self.ledger.retain_unresolved_and_block(idempotency_key)
@@ -1277,9 +1262,7 @@ class CodexCliTransport:
         if not accounting_ok:
             policy_violations.append("cost_accounting_failure")
         violation_value = (
-            "none"
-            if not policy_violations
-            else ",".join(sorted(set(policy_violations)))
+            "none" if not policy_violations else ",".join(sorted(set(policy_violations)))
         )
         if completed_fault is not None:
             fault = completed_fault
@@ -1295,9 +1278,7 @@ class CodexCliTransport:
                 "price_guard": "subscription_exempt",
                 "experiment_charge_usd": str(LUNA_EXPERIMENT_CHARGE_USD),
                 "informational_list_price_equivalent_usd": (
-                    str(list_price_equivalent)
-                    if list_price_equivalent is not None
-                    else None
+                    str(list_price_equivalent) if list_price_equivalent is not None else None
                 ),
                 "usage_telemetry_status": parsed.usage_telemetry_status,
                 "transport_outcome": transport_outcome.to_dict(),
@@ -1310,9 +1291,7 @@ class CodexCliTransport:
                 raw_stderr=execution.stderr,
                 outcome=outcome_record,
             )
-            self.records.append(
-                self._record(idempotency_key, fault.classification, outcome_record)
-            )
+            self.records.append(self._record(idempotency_key, fault.classification, outcome_record))
             return transport_outcome
         usage_record: dict[str, Any] = {
             **(parsed.usage or {}),
@@ -1384,9 +1363,7 @@ class CodexCliTransport:
         if record is None or record["status"] in {"reserved", "running"}:
             return TransportOutcome("unknown", failure_code="invocation_outcome_unresolved")
         outcome = record.get("outcome")
-        if isinstance(outcome, dict) and isinstance(
-            outcome.get("transport_outcome"), dict
-        ):
+        if isinstance(outcome, dict) and isinstance(outcome.get("transport_outcome"), dict):
             return TransportOutcome.from_dict(outcome["transport_outcome"])
         if isinstance(outcome, dict) and isinstance(outcome.get("canonical_response"), dict):
             return TransportOutcome("response", outcome["canonical_response"])
@@ -1472,9 +1449,7 @@ class CodexCliTransport:
             "type": outcome.get("type"),
             "cli_fault": outcome.get("cli_fault"),
             "price_guard": outcome.get("price_guard"),
-            "usage_telemetry_status": outcome.get(
-                "usage_telemetry_status", "unavailable"
-            ),
+            "usage_telemetry_status": outcome.get("usage_telemetry_status", "unavailable"),
             "accepted_cli_diagnostic_count": outcome.get("accepted_cli_diagnostic_count"),
             "runtime_enforcement": outcome.get("runtime_enforcement"),
         }

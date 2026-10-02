@@ -38,9 +38,7 @@ CHROMIUM_RENDERER_ARGS = (
     "--force-device-scale-factor=1",
 )
 
-PLAYWRIGHT_PRESENTATION_ARGS = (
-    "--hide-scrollbars",
-)
+PLAYWRIGHT_PRESENTATION_ARGS = ("--hide-scrollbars",)
 
 GUEST_CHROMIUM_EXECUTABLE = "google-chrome"
 GUEST_VENDOR_FORM_PORT = 3000

@@ -24,8 +24,7 @@ class DeploymentCoordinator[PreparedCandidate]:
         control: ControlStore,
         store: ImmutableStore,
         load_and_smoke: Callable[[CandidateRecord], PreparedCandidate | bool],
-        on_activated: Callable[[DeploymentRecord, PreparedCandidate | bool], None]
-        | None = None,
+        on_activated: Callable[[DeploymentRecord, PreparedCandidate | bool], None] | None = None,
         tracking: Tracking | None = None,
     ) -> None:
         self.control = control
@@ -53,11 +52,7 @@ class DeploymentCoordinator[PreparedCandidate]:
         failures = False
         for candidate in self.control.list_candidates():
             gate_status = "eligible" if candidate.gate_report.overall_passed else "failed"
-            approval_status = (
-                "approved"
-                if candidate.state.value == "Approved"
-                else "pending"
-            )
+            approval_status = "approved" if candidate.state.value == "Approved" else "pending"
             try:
                 self.tracking.mirror_candidate_status(
                     candidate.policy.policy_id,

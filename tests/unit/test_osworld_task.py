@@ -238,9 +238,7 @@ def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch
     assert controller.launches[1][0:2] == ["bash", "-lc"]
     guest_command = controller.launches[1][2]
     assert "--user-data-dir=/dev/shm/pixelgym-chrome-profile" in guest_command
-    assert not any(
-        "/tmp/" in token for token in task.browser_launch_metadata["effective_argv"]
-    )
+    assert not any("/tmp/" in token for token in task.browser_launch_metadata["effective_argv"])
     assert "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus" in controller.launches[1][2]
     assert "http://127.0.0.1:3000/" in controller.launches[1][2]
     assert "--app=http://127.0.0.1:3000/" in guest_command
@@ -259,9 +257,7 @@ def test_custom_task_setup_accepts_reload_contract_and_opens_browser(monkeypatch
     ]
     assert len(page_ready_commands) == 1
     assert "ready_streak == 2" in page_ready_commands[0][0][2]
-    assert page_ready_commands[0][1]["stderr"] == (
-        "pixelgym-vendor-form-page-ready-error.txt"
-    )
+    assert page_ready_commands[0][1]["stderr"] == ("pixelgym-vendor-form-page-ready-error.txt")
     assert all("DONE" not in str(command) for command, _kwargs in controller.commands)
 
 
@@ -341,8 +337,7 @@ def test_guest_launch_contains_each_canonical_renderer_flag_once(monkeypatch, tm
         build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST)
     )
     assert not any(
-        flag.startswith("--app=")
-        for flag in build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)[1:]
+        flag.startswith("--app=") for flag in build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)[1:]
     )
 
 

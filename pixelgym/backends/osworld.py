@@ -117,9 +117,7 @@ def _portable_docker_available_port(
     """Find an unused host port without macOS's privileged process scan."""
 
     if not 1 <= start_port <= _MAX_VALID_TCP_PORT:
-        raise ValueError(
-            f"start_port must be between 1 and {_MAX_VALID_TCP_PORT} inclusive"
-        )
+        raise ValueError(f"start_port must be between 1 and {_MAX_VALID_TCP_PORT} inclusive")
 
     docker_ports = published_port_source(provider)
 

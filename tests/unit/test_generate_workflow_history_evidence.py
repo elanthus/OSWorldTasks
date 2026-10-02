@@ -29,9 +29,10 @@ def history_fixture() -> tuple[str, str]:
         parents: str,
         subject: str,
     ) -> str:
-        return GIT_FIELD_SEPARATOR.join(
-            (sha, authored_at, committed_at, parents, subject)
-        ) + GIT_RECORD_SEPARATOR
+        return (
+            GIT_FIELD_SEPARATOR.join((sha, authored_at, committed_at, parents, subject))
+            + GIT_RECORD_SEPARATOR
+        )
 
     git_log = "\n".join(
         (

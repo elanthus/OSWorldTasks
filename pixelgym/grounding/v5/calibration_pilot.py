@@ -85,9 +85,7 @@ def _load_calibration_records(repository_root: Path) -> tuple[dict[str, Any], ..
             if allocation_index == 1 and family_index >= 4:
                 continue
             family_records = [
-                record
-                for record in records
-                if record["seed_record"]["family"] == family.value
+                record for record in records if record["seed_record"]["family"] == family.value
             ]
             selected.append(family_records[allocation_index])
     if len(selected) != TASK_COUNT:
@@ -103,9 +101,7 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
     aggregate_upper_bound = PRIOR_DIAGNOSTIC_SPEND_USD + theoretical_pilot
     if aggregate_upper_bound > MAXIMUM_SPEND_USD:
         raise ValueError("calibration pilot can exceed the approved aggregate spend cap")
-    partition = json.loads(
-        (repository_root / CALIBRATION_MANIFEST).read_text(encoding="utf-8")
-    )
+    partition = json.loads((repository_root / CALIBRATION_MANIFEST).read_text(encoding="utf-8"))
     plan = {
         "schema_version": PLAN_SCHEMA_VERSION,
         "purpose": (
@@ -238,18 +234,14 @@ def execute_pilot(
         summary = {
             "schema_version": RESULT_SCHEMA_VERSION,
             "approved_plan_sha256": digest,
-            "provider_calls_made": getattr(
-                provider, "wire_requests_sent", len(provider.records)
-            ),
+            "provider_calls_made": getattr(provider, "wire_requests_sent", len(provider.records)),
             "provider_wire_requests": getattr(
                 provider, "wire_requests_sent", len(provider.records)
             ),
             "model_attempt_reservations": journal.call_counts()[0],
             "provider_control_requests": journal.call_counts()[1],
             "actual_aggregate_spend_usd": str(provider.spent_usd),
-            "pilot_incremental_spend_usd": str(
-                provider.spent_usd - PRIOR_DIAGNOSTIC_SPEND_USD
-            ),
+            "pilot_incremental_spend_usd": str(provider.spent_usd - PRIOR_DIAGNOSTIC_SPEND_USD),
             "maximum_spend_usd": str(MAXIMUM_SPEND_USD),
             "model": MODEL,
             "upstream_provider": UPSTREAM_PROVIDER,

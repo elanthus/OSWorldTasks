@@ -150,9 +150,7 @@ def stratified_cluster_resample_estimates(
     if isinstance(resamples, bool) or not isinstance(resamples, int) or resamples <= 0:
         raise ValueError("resamples must be a positive integer")
     grouped = _group(rows, strata_key, cluster_key, first_field, second_field)
-    ordered = [
-        (sorted(clusters), clusters) for _, clusters in sorted(grouped.items())
-    ]
+    ordered = [(sorted(clusters), clusters) for _, clusters in sorted(grouped.items())]
     rng = random.Random(seed)
     estimates: list[float] = []
     for _ in range(resamples):

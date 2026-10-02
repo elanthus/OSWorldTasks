@@ -198,9 +198,7 @@ def _wait_at_barrier(
         barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
     except BrokenBarrierError as exc:
         exit_codes = {process.name: process.exitcode for process in processes}
-        raise AssertionError(
-            f"{phase} barrier timed out; child exit codes: {exit_codes}"
-        ) from exc
+        raise AssertionError(f"{phase} barrier timed out; child exit codes: {exit_codes}") from exc
 
 
 def _prepare_approved_candidate(database: Path) -> str:

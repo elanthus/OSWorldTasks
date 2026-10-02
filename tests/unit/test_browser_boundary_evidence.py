@@ -258,9 +258,7 @@ def test_guest_navigation_evidence_requires_every_named_check(tmp_path: Path) ->
 
 
 @pytest.mark.parametrize("mutation", ["missing", "false"])
-def test_guest_navigation_evidence_requires_page_ready_check(
-    tmp_path: Path, mutation: str
-) -> None:
+def test_guest_navigation_evidence_requires_page_ready_check(tmp_path: Path, mutation: str) -> None:
     for relative in GUEST_SOURCE_PATHS:
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -330,9 +328,7 @@ def test_guest_cli_fails_closed_for_stale_guest_source_hashes(
     assert exit_status == 1
 
 
-def test_guest_cli_restores_pending_alarm(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_guest_cli_restores_pending_alarm(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     repository_root = Path(__file__).resolve().parents[2]
     local_path = tmp_path / "local.json"
     local_path.write_text(json.dumps(_evidence(repository_root)), encoding="utf-8")
@@ -353,9 +349,7 @@ def test_guest_cli_restores_pending_alarm(
         return 30 if len(alarm_calls) == 1 else 0
 
     monkeypatch.setattr(browser_boundary_module.signal, "alarm", alarm)
-    monkeypatch.setattr(
-        browser_boundary_module.time, "monotonic", lambda: next(monotonic_values)
-    )
+    monkeypatch.setattr(browser_boundary_module.time, "monotonic", lambda: next(monotonic_values))
 
     exit_status = browser_boundary_module._guest_cli(
         [

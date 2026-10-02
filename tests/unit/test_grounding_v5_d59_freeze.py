@@ -106,15 +106,11 @@ def test_d59_selected_seed_allocation_is_balanced_and_versioned() -> None:
 
 
 def test_d59_execution_plan_is_exact_but_non_executable(recorded_root: Path) -> None:
-    price = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
-    )
+    price = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text())
     manifest = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
     )
-    admission = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
-    )
+    admission = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text())
     source_revision = manifest["source_binding"]["source_revision"]
     plan = execution_plan(
         recorded_root,
@@ -132,9 +128,10 @@ def test_d59_execution_plan_is_exact_but_non_executable(recorded_root: Path) -> 
     assert plan["phase_caps"]["aggregate"]["environment_action_cap"] == sum(
         job["action_limit"] for job in plan["primary_jobs"] + plan["reliability_jobs"]
     )
-    assert plan["phase_caps"]["aggregate"]["model_attempt_cap"] == 3 * plan[
-        "phase_caps"
-    ]["aggregate"]["environment_action_cap"]
+    assert (
+        plan["phase_caps"]["aggregate"]["model_attempt_cap"]
+        == 3 * plan["phase_caps"]["aggregate"]["environment_action_cap"]
+    )
     budget = plan["budget"]
     assert (
         Decimal(budget["historical_confirmed_spend_usd"])
@@ -163,15 +160,11 @@ def test_d59_execution_plan_is_exact_but_non_executable(recorded_root: Path) -> 
 
 
 def test_d59_execution_plan_rejects_changed_admission_records(recorded_root: Path) -> None:
-    price = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
-    )
+    price = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text())
     manifest = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
     )
-    admission = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
-    )
+    admission = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text())
 
     def assert_rejected(value: dict[str, object], match: str) -> None:
         with pytest.raises(ValueError, match=match):
@@ -222,9 +215,7 @@ def test_d59_checked_in_artifacts_verify_without_provider_access() -> None:
     manifest = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
     )
-    admission = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
-    )
+    admission = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text())
     assert execution["source_binding"] == manifest["source_binding"]
     assert manifest["manifest_digest"]
     assert admission["task_count"] == 192
@@ -233,15 +224,11 @@ def test_d59_checked_in_artifacts_verify_without_provider_access() -> None:
 
 
 def test_d59_source_mutation_at_recorded_revision_is_rejected(recorded_root: Path) -> None:
-    price = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text()
-    )
+    price = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/price-recheck.json").read_text())
     manifest = json.loads(
         (ROOT / "artifacts/grounding-v5-d59-freeze/task-manifest.json").read_text()
     )
-    admission = json.loads(
-        (ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text()
-    )
+    admission = json.loads((ROOT / "artifacts/grounding-v5-d59-freeze/admission.json").read_text())
     with (recorded_root / "pixelgym/grounding/v5/contracts.py").open("a") as handle:
         handle.write("# mutated\n")
     with pytest.raises(ValueError, match="different source binding"):

@@ -94,9 +94,7 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
                     "image_input_billing": "provider input tokens at prompt_per_token",
                     "max_prompt_tokens": 126_976,
                     "max_output_tokens": 4_096,
-                    "per_request_theoretical_maximum_usd": str(
-                        config.request_maximum_usd
-                    ),
+                    "per_request_theoretical_maximum_usd": str(config.request_maximum_usd),
                     "unknown_usage_or_price_rule": "fail_closed",
                 },
                 "task": {
@@ -131,12 +129,8 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
             "runner.py": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
         },
         "prior_evidence": {
-            "consumed_calibration_plan_digest": (
-                D56_CONSUMED_CALIBRATION_PLAN_DIGEST
-            ),
-            "consumed_calibration_summary_sha256": (
-                D56_CONSUMED_CALIBRATION_SUMMARY_SHA256
-            ),
+            "consumed_calibration_plan_digest": (D56_CONSUMED_CALIBRATION_PLAN_DIGEST),
+            "consumed_calibration_summary_sha256": (D56_CONSUMED_CALIBRATION_SUMMARY_SHA256),
             "actual_aggregate_spend_usd": str(PRIOR_AGGREGATE_SPEND_USD),
         },
         "policies": policies,
@@ -232,9 +226,7 @@ def execute_smoke(
             "provider_control_requests": journal.call_counts()[1],
             "prior_aggregate_spend_usd": str(PRIOR_AGGREGATE_SPEND_USD),
             "actual_aggregate_spend_usd": str(ledger.spent_usd),
-            "smoke_incremental_spend_usd": str(
-                ledger.spent_usd - PRIOR_AGGREGATE_SPEND_USD
-            ),
+            "smoke_incremental_spend_usd": str(ledger.spent_usd - PRIOR_AGGREGATE_SPEND_USD),
             "maximum_aggregate_spend_usd": str(PANEL_MAXIMUM_SPEND_USD),
             "episode_results": episode_results,
             "transport_records": transport_records,

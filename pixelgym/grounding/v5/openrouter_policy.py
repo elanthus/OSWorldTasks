@@ -336,15 +336,11 @@ class OpenRouterV5Transport:
         )
         return TransportOutcome("response", canonical)
 
-    def cancel(
-        self, *, idempotency_key: str, mode: str
-    ) -> Literal["cancelled", "unknown"]:
+    def cancel(self, *, idempotency_key: str, mode: str) -> Literal["cancelled", "unknown"]:
         del idempotency_key, mode
         return "unknown"
 
-    def reconcile(
-        self, *, idempotency_key: str, deadline_seconds: float
-    ) -> TransportOutcome:
+    def reconcile(self, *, idempotency_key: str, deadline_seconds: float) -> TransportOutcome:
         del idempotency_key, deadline_seconds
         return TransportOutcome("unknown", failure_code="reconciliation_disabled")
 
@@ -371,9 +367,7 @@ def build_policy_manifest(repository_root: Path, *, code_revision: str) -> Polic
         model=MODEL,
         exact_snapshot=False,
         harness_digest=_file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-        dependency_lock_digest=_file_digest(
-            repository_root / "requirements/platform-py312.lock"
-        ),
+        dependency_lock_digest=_file_digest(repository_root / "requirements/platform-py312.lock"),
         system_prompt_digest=content_digest(system_prompt()),
         task_renderer_version=TASK_RENDERER_VERSION,
         response_schema_version=RESPONSE_SCHEMA_VERSION,

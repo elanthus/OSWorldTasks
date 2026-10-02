@@ -319,8 +319,7 @@ _PREDICTION_CONTRACTS = {
     INSTRUCTION_PREDICTION_SCHEMA_VERSION: (
         PROMPT_VERSION_V2,
         PARSER_VERSION_V2,
-        _BASE_PREDICTION_FIELDS
-        | {"parser_version", "instruction_mode", "original_target"},
+        _BASE_PREDICTION_FIELDS | {"parser_version", "instruction_mode", "original_target"},
     ),
 }
 
@@ -341,9 +340,7 @@ def _validate_and_pair(
         schema_version = record.get("schema_version")
         if schema_version not in _PREDICTION_CONTRACTS:
             raise ValueError("prediction schema version does not match")
-        expected_prompt, expected_parser, expected_fields = _PREDICTION_CONTRACTS[
-            schema_version
-        ]
+        expected_prompt, expected_parser, expected_fields = _PREDICTION_CONTRACTS[schema_version]
         if set(record) != expected_fields:
             raise ValueError("prediction fields do not match the declared schema")
         if record.get("protocol_version") != PROTOCOL_VERSION:

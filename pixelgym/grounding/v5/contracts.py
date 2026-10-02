@@ -133,9 +133,7 @@ class CliFault:
             code=str(value["code"]),
             phase=value["phase"],
             classification=value["classification"],
-            model_attempt_consumption=ModelAttemptConsumption(
-                value["model_attempt_consumption"]
-            ),
+            model_attempt_consumption=ModelAttemptConsumption(value["model_attempt_consumption"]),
             cost_knowledge=CostKnowledge(value["cost_knowledge"]),
         )
 
@@ -182,17 +180,11 @@ class TransportOutcome:
             failure_code=value.get("failure_code"),
             retry_after_seconds=value.get("retry_after_seconds"),
             backoff_source=value.get("backoff_source"),
-            fault=(
-                CliFault.from_dict(raw_fault)
-                if isinstance(raw_fault, dict)
-                else None
-            ),
+            fault=(CliFault.from_dict(raw_fault) if isinstance(raw_fault, dict) else None),
         )
 
 
-def cli_pre_send_fault(
-    code: str, *, kind: CliFaultKind = CliFaultKind.PRE_SEND
-) -> CliFault:
+def cli_pre_send_fault(code: str, *, kind: CliFaultKind = CliFaultKind.PRE_SEND) -> CliFault:
     """Describe a failure proven to occur before a CLI process can send a request."""
 
     return CliFault(
@@ -266,8 +258,7 @@ def classify_cli_process_fault(
         kind = CliFaultKind.TLS_FAILURE
         code = "cli_tls_failure"
     elif any(marker in diagnostic for marker in _CONNECTION_RESET_MARKERS) or (
-        error_type is not None
-        and error_type.lower() in {"connectionreseterror", "brokenpipeerror"}
+        error_type is not None and error_type.lower() in {"connectionreseterror", "brokenpipeerror"}
     ):
         kind = CliFaultKind.CONNECTION_RESET
         code = "cli_connection_reset"
@@ -291,9 +282,7 @@ def classify_cli_process_fault(
         phase="post_send",
         classification="infrastructure_failure",
         model_attempt_consumption=(
-            ModelAttemptConsumption.CONSUMED
-            if usage_observed
-            else ModelAttemptConsumption.UNKNOWN
+            ModelAttemptConsumption.CONSUMED if usage_observed else ModelAttemptConsumption.UNKNOWN
         ),
         cost_knowledge=(CostKnowledge.KNOWN if cost_observed else CostKnowledge.UNKNOWN),
     )

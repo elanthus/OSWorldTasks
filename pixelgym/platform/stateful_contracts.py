@@ -133,9 +133,7 @@ def _decode_v5_manifest(value: dict[str, Any]) -> V5PolicyManifest:
             for item in inference_parameters
         ):
             raise ValueError("policy_manifest inference_parameters are malformed")
-        fields["inference_parameters"] = tuple(
-            (item[0], item[1]) for item in inference_parameters
-        )
+        fields["inference_parameters"] = tuple((item[0], item[1]) for item in inference_parameters)
         return V5PolicyManifest(**fields)
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError("policy_manifest violates the frozen v5 contract") from exc
@@ -596,9 +594,7 @@ class EpisodeSessionState:
             "last_action": None if self.last_action is None else self.last_action.to_dict(),
             "sealed_failure": None if self.sealed_failure is None else self.sealed_failure.value,
             "terminal_classification": (
-                None
-                if self.terminal_classification is None
-                else self.terminal_classification.value
+                None if self.terminal_classification is None else self.terminal_classification.value
             ),
             "model_attempts": self.model_attempts,
             "provider_control_requests": self.provider_control_requests,

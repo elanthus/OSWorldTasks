@@ -11,15 +11,9 @@ from pixelgym.grounding.v5 import d59_haiku_execution as historical_execution
 from pixelgym.grounding.v5.cli_memory_calibration import build_memory_manifest
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, content_digest
 
-EXECUTION_PLAN_PATH = (
-    "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json"
-)
-OWNER_APPROVAL_PATH = (
-    "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json"
-)
-EXECUTION_PLAN_DIGEST = (
-    "sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7"
-)
+EXECUTION_PLAN_PATH = "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json"
+OWNER_APPROVAL_PATH = "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json"
+EXECUTION_PLAN_DIGEST = "sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7"
 APPROVED_RUNTIME_HOURS = 168
 APPROVED_CAPS = CallCaps(12134, 24268, 0, 24268)
 EXECUTION_SOURCE_FILES = (
@@ -64,9 +58,7 @@ def expected_owner_approval(plan: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def validate_execution_authorization(
-    plan: dict[str, Any], approval: dict[str, Any]
-) -> None:
+def validate_execution_authorization(plan: dict[str, Any], approval: dict[str, Any]) -> None:
     body = {key: value for key, value in plan.items() if key != "execution_plan_digest"}
     if plan.get("execution_plan_digest") != content_digest(body):
         raise ValueError("frozen Haiku D5.9 successor-plan digest is invalid")
@@ -114,9 +106,7 @@ def validated_live_manifests(
     }
     for mode, manifest in live.items():
         if manifest.to_dict() != frozen[mode]:
-            raise ValueError(
-                f"live {mode} policy differs from the frozen successor manifest"
-            )
+            raise ValueError(f"live {mode} policy differs from the frozen successor manifest")
     return live
 
 

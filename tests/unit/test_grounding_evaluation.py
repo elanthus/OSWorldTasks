@@ -493,6 +493,4 @@ def test_pilot_selection_is_independent_of_jsonl_row_order() -> None:
     examples = [{"example_id": f"example-{index:04d}"} for index in range(100)]
 
     assert pilot_example_ids(examples) == pilot_example_ids(list(reversed(examples)))
-    assert pilot_example_ids(examples) == [
-        f"example-{index:04d}" for index in range(0, 100, 11)
-    ]
+    assert pilot_example_ids(examples) == [f"example-{index:04d}" for index in range(0, 100, 11)]

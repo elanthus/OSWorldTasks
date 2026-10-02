@@ -301,18 +301,14 @@ def test_successful_invocation_is_isolated_schema_constrained_and_cost_accounted
         assert record is not None
         assert record["status"] == "response"
         recorded_enforcement = record["outcome"]["runtime_enforcement"]
-        assert recorded_enforcement["mechanism_name"] == (
-            "cli_flags_and_environment_allowlist"
-        )
+        assert recorded_enforcement["mechanism_name"] == ("cli_flags_and_environment_allowlist")
         assert recorded_enforcement["argv_digest"] == policy.content_digest(
             list(policy.sanitized_command_contract())
         )
         assert recorded_enforcement["environment_allowlist_digest"] == (
             environment_allowlist_digest(captured["environment"])
         )
-        assert recorded_enforcement["environment_variable_names"] == sorted(
-            captured["environment"]
-        )
+        assert recorded_enforcement["environment_variable_names"] == sorted(captured["environment"])
         assert recorded_enforcement["os_sandbox_applied"] is False
         assert "private-thread-id" in record["raw_stdout"]
         assert "private-thread-id" not in json.dumps(transport.records)
@@ -524,9 +520,10 @@ def test_connection_reset_after_possible_send_is_journaled_and_recoverable(
         assert outcome.fault.model_attempt_consumption is ModelAttemptConsumption.UNKNOWN
         assert outcome.fault.cost_knowledge is CostKnowledge.UNKNOWN
         assert ledger.unresolved == {"sha256:connection-reset"}
-        assert transport.reconcile(
-            idempotency_key="sha256:connection-reset", deadline_seconds=1
-        ) == outcome
+        assert (
+            transport.reconcile(idempotency_key="sha256:connection-reset", deadline_seconds=1)
+            == outcome
+        )
     finally:
         transport.close()
         invocation_journal.close()
@@ -662,9 +659,7 @@ def test_unmatched_or_repeated_error_items_remain_fail_closed(
         "ALLOWED_DISABLED_CODE_MODE_DIAGNOSTIC_SHA256",
         "sha256:" + hashlib.sha256(allowed.encode("utf-8")).hexdigest(),
     )
-    process = FakeProcess(
-        cli_stream(diagnostic_message=diagnostic, diagnostic_count=count)
-    )
+    process = FakeProcess(cli_stream(diagnostic_message=diagnostic, diagnostic_count=count))
     transport, _ledger, invocation_journal, _captured = make_transport(tmp_path, process)
     try:
         outcome = transport.send(
@@ -676,9 +671,7 @@ def test_unmatched_or_repeated_error_items_remain_fail_closed(
         assert outcome.response is not None
         assert expected_violation in outcome.response["usage"]["policy_violation"]
         with pytest.raises(ValueError, match="policy boundary"):
-            policy.CodexCliPolicy().parse(
-                policy.canonical_json_bytes(outcome.response), b"{}"
-            )
+            policy.CodexCliPolicy().parse(policy.canonical_json_bytes(outcome.response), b"{}")
     finally:
         transport.close()
         invocation_journal.close()

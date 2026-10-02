@@ -79,9 +79,9 @@ def test_codex_provider_does_not_cache_unredacted_cli_stdout(tmp_path: Path) -> 
         )
         return subprocess.CompletedProcess(command, 0, stdout, "")
 
-    response = CodexCLIProvider(
-        executable="codex-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="prompt", schema=RAW_SCHEMA)
+    response = CodexCLIProvider(executable="codex-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="prompt", schema=RAW_SCHEMA
+    )
     cached = json.dumps(response.to_cache_dict())
 
     assert response.usage == {"input_tokens": 3, "output_tokens": 1}
@@ -252,12 +252,12 @@ def test_claude_provider_passes_print_model_schema_and_reads_image(tmp_path: Pat
         commands.append((command, kwargs))
         if "--version" in command:
             return subprocess.CompletedProcess(command, 0, "2.1.224 (Claude Code)\n", "")
-        return subprocess.CompletedProcess(
-            command, 0, _claude_json_result('{"x":42,"y":99}'), ""
-        )
+        return subprocess.CompletedProcess(command, 0, _claude_json_result('{"x":42,"y":99}'), "")
 
     provider = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner)
-    response = provider.invoke(image_path=image_path, prompt="Locate the target.", schema=RAW_SCHEMA)
+    response = provider.invoke(
+        image_path=image_path, prompt="Locate the target.", schema=RAW_SCHEMA
+    )
 
     command = commands[0][0]
     assert command[0] == "claude-test"
@@ -288,9 +288,9 @@ def test_claude_provider_extracts_usage_from_json_envelope(tmp_path: Path) -> No
             command, 0, _claude_json_result('{"x":1,"y":1}', cost=0.005), ""
         )
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     assert response.provider_metadata["cost_usd"] == 0.005
     assert response.provider_metadata["num_turns"] == 1
@@ -306,9 +306,9 @@ def test_claude_provider_handles_nonzero_exit(tmp_path: Path) -> None:
             return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
         return subprocess.CompletedProcess(command, 1, "", "error details at /Users/private")
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     assert response.request_failure == "claude CLI exited with status 1"
     assert response.raw_response is None
@@ -325,9 +325,9 @@ def test_claude_provider_handles_process_exception(tmp_path: Path) -> None:
             return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
         raise OSError("cannot launch /Users/private/claude")
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     assert response.request_failure == "OSError: provider process failed"
     cached = json.dumps(response.to_cache_dict())
@@ -356,18 +356,16 @@ def test_claude_provider_handles_is_error_response(tmp_path: Path) -> None:
             return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
         return subprocess.CompletedProcess(command, 0, error_result, "")
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     assert response.request_failure == "claude CLI reported an error result"
     assert response.raw_response is None
 
 
 @pytest.mark.parametrize("stdout", ["[]", '"scalar"', "42", "null"])
-def test_claude_provider_records_non_object_json_as_failure(
-    tmp_path: Path, stdout: str
-) -> None:
+def test_claude_provider_records_non_object_json_as_failure(tmp_path: Path, stdout: str) -> None:
     image_path = tmp_path / "image.png"
     Image.new("RGB", (2, 2), "white").save(image_path)
 
@@ -376,9 +374,9 @@ def test_claude_provider_records_non_object_json_as_failure(
             return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
         return subprocess.CompletedProcess(command, 0, stdout, "")
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     assert response.request_failure == "claude CLI produced non-object JSON output"
     assert response.raw_response is None
@@ -391,13 +389,11 @@ def test_claude_provider_does_not_leak_private_paths_in_cache(tmp_path: Path) ->
     def runner(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         if "--version" in command:
             return subprocess.CompletedProcess(command, 0, "2.1.224\n", "")
-        return subprocess.CompletedProcess(
-            command, 0, _claude_json_result('{"x":1,"y":1}'), ""
-        )
+        return subprocess.CompletedProcess(command, 0, _claude_json_result('{"x":1,"y":1}'), "")
 
-    response = ClaudeCodeCLIProvider(
-        executable="claude-test", command_runner=runner
-    ).invoke(image_path=image_path, prompt="p", schema=RAW_SCHEMA)
+    response = ClaudeCodeCLIProvider(executable="claude-test", command_runner=runner).invoke(
+        image_path=image_path, prompt="p", schema=RAW_SCHEMA
+    )
 
     cached = json.dumps(response.to_cache_dict())
     assert response.provider_trace == []

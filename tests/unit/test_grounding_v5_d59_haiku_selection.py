@@ -77,8 +77,6 @@ def test_selection_rejects_changed_source_analysis(
     target[path[-1]] = value
     damaged = tmp_path / "analysis.json"
     damaged.write_text(json.dumps(changed), encoding="utf-8")
-    monkeypatch.setattr(
-        "scripts.prepare_grounding_v5_d59_haiku_selection.ANALYSIS", damaged
-    )
+    monkeypatch.setattr("scripts.prepare_grounding_v5_d59_haiku_selection.ANALYSIS", damaged)
     with pytest.raises(ValueError, match=message):
         build_selection()

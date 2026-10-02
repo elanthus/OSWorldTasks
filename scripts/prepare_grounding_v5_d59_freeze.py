@@ -42,9 +42,7 @@ def expected(*, source_revision: str, include_admission: bool) -> dict[str, byte
     return outputs
 
 
-def write_outputs(
-    outputs: dict[str, bytes], *, verify: bool, public: Path = PUBLIC
-) -> None:
+def write_outputs(outputs: dict[str, bytes], *, verify: bool, public: Path = PUBLIC) -> None:
     paths = {name: public / name for name in outputs}
     if not verify:
         existing = [path for path in paths.values() if path.exists()]

@@ -76,9 +76,7 @@ def _responses(
     return {name: client.post(path, json=json) for name, client in clients.items()}
 
 
-def _assert_matching_status(
-    responses: Mapping[str, _Response], expected_status: int
-) -> None:
+def _assert_matching_status(responses: Mapping[str, _Response], expected_status: int) -> None:
     statuses = {name: response.status_code for name, response in responses.items()}
     assert len(set(statuses.values())) == 1, statuses
     assert next(iter(statuses.values())) == expected_status
@@ -165,9 +163,7 @@ def test_submit_contract_matches_between_servers(
         }
         states = _responses(server_clients, "GET", "/api/state")
         _assert_matching_status(states, 200)
-        submissions = {
-            name: response.json()["submissions"] for name, response in states.items()
-        }
+        submissions = {name: response.json()["submissions"] for name, response in states.items()}
         assert submissions["fastapi"] == submissions["guest"]
     else:
         states = _responses(server_clients, "GET", "/api/state")
@@ -200,9 +196,7 @@ def test_single_task_guest_deliberately_differs_on_lifecycle_endpoints(
     }
 
     # The guest cannot generate tasks, while FastAPI accepts any valid integer seed.
-    other_seed = _responses(
-        server_clients, "POST", "/api/reset", json={"seed": _SEED + 1}
-    )
+    other_seed = _responses(server_clients, "POST", "/api/reset", json={"seed": _SEED + 1})
     assert {name: response.status_code for name, response in other_seed.items()} == {
         "fastapi": 200,
         "guest": 409,
@@ -214,9 +208,7 @@ def test_page_ready_contract_matches_before_and_after_reset(
 ) -> None:
     reset_payloads = _reset(server_clients)
     mark_responses = {
-        name: client.post(
-            "/api/page-ready", json={"task_id": reset_payloads[name]["task_id"]}
-        )
+        name: client.post("/api/page-ready", json={"task_id": reset_payloads[name]["task_id"]})
         for name, client in server_clients.items()
     }
     _assert_matching_status(mark_responses, 200)

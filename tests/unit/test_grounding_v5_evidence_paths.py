@@ -67,9 +67,9 @@ def test_posix_separators_are_used_so_the_value_is_platform_stable(tmp_path: Pat
 
 def test_publication_audit_records_version_for_frozen_v1_journal_report() -> None:
     summary = json.loads(
-        (
-            ROOT / "artifacts/grounding-v5-d56-panel-smoke-run/summary.json"
-        ).read_text(encoding="utf-8")
+        (ROOT / "artifacts/grounding-v5-d56-panel-smoke-run/summary.json").read_text(
+            encoding="utf-8"
+        )
     )
     frozen = summary["journal_integrity"]
 
@@ -119,10 +119,7 @@ LOCAL_PATH_ALLOWLIST: dict[tuple[str, str], str] = {
     ): "private-surface check on the published snapshot",
     (
         "scripts/publish_haiku_cli_replication.py",
-        (
-            'require("/Users/" not in text and "/private/" not in text and "data:image/" not in text,'
-            ' "private surface in snapshot")'
-        ),
+        '"/Users/" not in text and "/private/" not in text and "data:image/" not in text,',
     ): "private-surface check on the published snapshot",
 }
 

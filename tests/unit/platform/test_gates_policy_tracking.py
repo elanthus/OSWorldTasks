@@ -88,9 +88,7 @@ def test_accuracy_and_measurement_counts_must_be_internally_consistent(
     passing_evidence, gate_policy
 ) -> None:
     _, summary, _ = passing_evidence
-    inconsistent_accuracy = evaluate_gates(
-        gate_policy, dataclasses.replace(summary, accuracy=0.9)
-    )
+    inconsistent_accuracy = evaluate_gates(gate_policy, dataclasses.replace(summary, accuracy=0.9))
     extra_latency = evaluate_gates(
         gate_policy, dataclasses.replace(summary, latency_measured_count=101)
     )
@@ -121,7 +119,9 @@ def _prompt_template_text_only_mutation(base):
     check via object.__setattr__ (as verify_renderer_binding's own tests already do),
     so this row isolates the field instead of also perturbing prompt_sha256."""
     mutated = dataclasses.replace(base)
-    object.__setattr__(mutated, "prompt_template_text", "a completely different packaged prompt template")
+    object.__setattr__(
+        mutated, "prompt_template_text", "a completely different packaged prompt template"
+    )
     return mutated
 
 
@@ -134,28 +134,63 @@ def _prompt_sha256_only_mutation(base):
 @pytest.mark.parametrize(
     ("field", "mutate"),
     [
-        ("schema_version", lambda base: dataclasses.replace(base, schema_version="other-schema-version")),
+        (
+            "schema_version",
+            lambda base: dataclasses.replace(base, schema_version="other-schema-version"),
+        ),
         ("provider", lambda base: dataclasses.replace(base, provider="other-provider")),
         ("model", lambda base: dataclasses.replace(base, model="other-model")),
-        ("model_alias_disclosure", lambda base: dataclasses.replace(base, model_alias_disclosure="alias")),
+        (
+            "model_alias_disclosure",
+            lambda base: dataclasses.replace(base, model_alias_disclosure="alias"),
+        ),
         ("prompt_name", lambda base: dataclasses.replace(base, prompt_name="other-prompt-name")),
-        ("prompt_version", lambda base: dataclasses.replace(base, prompt_version=base.prompt_version + 1)),
+        (
+            "prompt_version",
+            lambda base: dataclasses.replace(base, prompt_version=base.prompt_version + 1),
+        ),
         ("condition", lambda base: dataclasses.replace(base, condition="marks")),
-        ("parameters", lambda base: dataclasses.replace(base, parameters={**base.parameters, "extra": True})),
-        ("parser_version", lambda base: dataclasses.replace(base, parser_version="other-parser-version")),
-        ("scorer_version", lambda base: dataclasses.replace(base, scorer_version="other-scorer-version")),
-        ("overlay_version", lambda base: dataclasses.replace(base, overlay_version="other-overlay-version")),
-        ("target_semantics", lambda base: dataclasses.replace(base, target_semantics="other-target-semantics")),
+        (
+            "parameters",
+            lambda base: dataclasses.replace(base, parameters={**base.parameters, "extra": True}),
+        ),
+        (
+            "parser_version",
+            lambda base: dataclasses.replace(base, parser_version="other-parser-version"),
+        ),
+        (
+            "scorer_version",
+            lambda base: dataclasses.replace(base, scorer_version="other-scorer-version"),
+        ),
+        (
+            "overlay_version",
+            lambda base: dataclasses.replace(base, overlay_version="other-overlay-version"),
+        ),
+        (
+            "target_semantics",
+            lambda base: dataclasses.replace(base, target_semantics="other-target-semantics"),
+        ),
         ("code_revision", lambda base: dataclasses.replace(base, code_revision="b" * 40)),
         ("code_state", lambda base: dataclasses.replace(base, code_state="dirty")),
         ("source_tree_sha256", lambda base: dataclasses.replace(base, source_tree_sha256="c" * 64)),
-        ("source_provenance_verified", lambda base: dataclasses.replace(base, source_provenance_verified=False)),
-        ("dependency_lock_sha256", lambda base: dataclasses.replace(base, dependency_lock_sha256="d" * 64)),
+        (
+            "source_provenance_verified",
+            lambda base: dataclasses.replace(base, source_provenance_verified=False),
+        ),
+        (
+            "dependency_lock_sha256",
+            lambda base: dataclasses.replace(base, dependency_lock_sha256="d" * 64),
+        ),
         (
             "source_provenance_failure_reason",
-            lambda base: dataclasses.replace(base, source_provenance_failure_reason="test-failure-reason"),
+            lambda base: dataclasses.replace(
+                base, source_provenance_failure_reason="test-failure-reason"
+            ),
         ),
-        ("renderer_version", lambda base: dataclasses.replace(base, renderer_version="other-renderer-version")),
+        (
+            "renderer_version",
+            lambda base: dataclasses.replace(base, renderer_version="other-renderer-version"),
+        ),
         ("renderer_sha256", lambda base: dataclasses.replace(base, renderer_sha256="e" * 64)),
         ("prompt_template_text", _prompt_template_text_only_mutation),
         ("prompt_sha256", _prompt_sha256_only_mutation),
@@ -199,7 +234,9 @@ def test_prompt_for_frozen_base_text_is_byte_identical_after_constant_extraction
         "Return only a JSON object with integer x and y screenshot-pixel coordinates. "
         "The origin is the upper-left. Do not explain your answer and do not use tools."
     )
-    assert prompt_for(example, "raw", prompt_version=PROMPT_VERSION_V2) == prompt_for(example, "raw")
+    assert prompt_for(example, "raw", prompt_version=PROMPT_VERSION_V2) == prompt_for(
+        example, "raw"
+    )
     assert prompt_for(example, "marks", prompt_version=PROMPT_VERSION) == (
         "Locate the requested control in the attached screenshot. "
         "Target: Company name field. "
@@ -273,7 +310,9 @@ def test_verify_renderer_binding_fails_closed_on_missing_mismatched_or_corrupt_r
         verify_renderer_binding(legacy)
 
     with pytest.raises(ValueError, match="unsupported renderer version"):
-        verify_renderer_binding(dataclasses.replace(base, renderer_version="some-other-renderer-v1"))
+        verify_renderer_binding(
+            dataclasses.replace(base, renderer_version="some-other-renderer-v1")
+        )
 
     with pytest.raises(ValueError, match="renderer implementation digest mismatch"):
         verify_renderer_binding(dataclasses.replace(base, renderer_sha256="0" * 64))
@@ -294,7 +333,9 @@ def test_policy_manifest_rejects_partial_renderer_identity_at_construction(polic
         dataclasses.replace(base, prompt_template_text=None)
 
 
-def test_policy_manifest_rejects_prompt_digest_bytes_mismatch_at_construction(policy_factory) -> None:
+def test_policy_manifest_rejects_prompt_digest_bytes_mismatch_at_construction(
+    policy_factory,
+) -> None:
     base = policy_factory()
     with pytest.raises(ValueError, match="packaged prompt digest does not match"):
         dataclasses.replace(base, prompt_template_text="a different prompt template")
@@ -304,20 +345,18 @@ def test_policy_manifest_rejects_prompt_digest_bytes_mismatch_at_construction(po
     ("revision", "expected"),
     [("a" * 40, True), ("ABCDEF" * 7, False), ("clean-main", False), ("unknown-dirty", False)],
 )
-def test_only_exact_lowercase_git_commit_has_valid_format(
-    revision: str, expected: bool
-) -> None:
+def test_only_exact_lowercase_git_commit_has_valid_format(revision: str, expected: bool) -> None:
     assert is_verified_clean_revision(revision) is expected
 
 
-def test_unverifiable_revision_fails_the_clean_code_gate(
-    passing_evidence, gate_policy
-) -> None:
+def test_unverifiable_revision_fails_the_clean_code_gate(passing_evidence, gate_policy) -> None:
     policy, summary, _ = passing_evidence
     assert is_verified_clean_revision(policy.code_revision)
     report = evaluate_gates(
         gate_policy,
-        dataclasses.replace(summary, dirty_code=False, code_state="clean", code_provenance_verified=False),
+        dataclasses.replace(
+            summary, dirty_code=False, code_state="clean", code_provenance_verified=False
+        ),
     )
     assert not report.code_revision_passed
 
@@ -332,9 +371,7 @@ def test_confidence_bound_can_pass_with_complete_auditable_evidence(
     passing_evidence, gate_policy
 ) -> None:
     _, summary, _ = passing_evidence
-    policy = dataclasses.replace(
-        gate_policy, confidence_bound_required=True, minimum_accuracy=0.70
-    )
+    policy = dataclasses.replace(gate_policy, confidence_bound_required=True, minimum_accuracy=0.70)
 
     report = evaluate_gates(policy, summary)
 
@@ -447,7 +484,9 @@ def test_confidence_bound_report_round_trips_and_old_reports_remain_readable(
 
 
 @pytest.mark.parametrize("confidence_level", [0.0, 1.0, math.nan, math.inf])
-def test_confidence_level_must_be_a_finite_open_probability(gate_policy, confidence_level: float) -> None:
+def test_confidence_level_must_be_a_finite_open_probability(
+    gate_policy, confidence_level: float
+) -> None:
     with pytest.raises(ValueError, match="confidence level"):
         dataclasses.replace(gate_policy, confidence_level=confidence_level)
 
@@ -555,9 +594,7 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
     release = threading.Event()
     calls_lock = threading.Lock()
     baseline_threads = {
-        thread
-        for thread in threading.enumerate()
-        if thread.name == "mlflow-compatible-run-search"
+        thread for thread in threading.enumerate() if thread.name == "mlflow-compatible-run-search"
     }
 
     class BlockingClient:
@@ -601,8 +638,7 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
             worker_threads = [
                 thread
                 for thread in threading.enumerate()
-                if thread.name == "mlflow-compatible-run-search"
-                and thread not in baseline_threads
+                if thread.name == "mlflow-compatible-run-search" and thread not in baseline_threads
             ]
             assert len(worker_threads) == COMPATIBLE_SEARCH_CAPACITY
 
@@ -619,8 +655,7 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
             threads_after_rejection = [
                 thread
                 for thread in threading.enumerate()
-                if thread.name == "mlflow-compatible-run-search"
-                and thread not in baseline_threads
+                if thread.name == "mlflow-compatible-run-search" and thread not in baseline_threads
             ]
             assert len(threads_after_rejection) == COMPATIBLE_SEARCH_CAPACITY
     finally:
@@ -629,9 +664,7 @@ def test_compatible_search_caps_timed_out_workers_and_recovers_threads(caplog) -
             thread.join(timeout=10)
 
     current_threads = {
-        thread
-        for thread in threading.enumerate()
-        if thread.name == "mlflow-compatible-run-search"
+        thread for thread in threading.enumerate() if thread.name == "mlflow-compatible-run-search"
     }
     assert current_threads == baseline_threads
     capacity_records = [

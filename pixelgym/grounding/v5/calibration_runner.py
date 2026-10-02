@@ -41,9 +41,7 @@ class SpendSnapshot:
         )
         if any(not amount.is_finite() or amount < 0 for amount in amounts):
             raise ValueError("adapter spend snapshot must contain finite non-negative values")
-        if self.budget_accounted_spend_usd < (
-            self.known_spend_usd + self.unknown_reservation_usd
-        ):
+        if self.budget_accounted_spend_usd < (self.known_spend_usd + self.unknown_reservation_usd):
             raise ValueError("budget-accounted spend omits known spend or unknown reservations")
 
     def to_dict(self) -> dict[str, Any]:
@@ -300,9 +298,7 @@ def _validate_completed_summary(
     }
     evidence = {
         "attempted_policy_task_pairs": attempted,
-        "successful_policy_task_pairs": sum(
-            bool(result["success"]) for result in journal_results
-        ),
+        "successful_policy_task_pairs": sum(bool(result["success"]) for result in journal_results),
         "completed_all_assigned_pairs": len(journal_results) == len(plan.assignments),
         "classifications": dict(sorted(classifications.items())),
         "outcome_denominators": denominators,

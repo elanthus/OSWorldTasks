@@ -111,9 +111,7 @@ def _validate_selection(selection: dict[str, Any]) -> None:
     pair = selection.get("selected_pair")
     design = selection.get("selected_design")
     boundary = selection.get("execution_boundary")
-    if not isinstance(pair, dict) or not isinstance(design, dict) or not isinstance(
-        boundary, dict
-    ):
+    if not isinstance(pair, dict) or not isinstance(design, dict) or not isinstance(boundary, dict):
         raise TypeError("Haiku owner selection is incomplete")
     expected_pair = {
         "cli_version": "2.1.267 (Claude Code)",
@@ -153,8 +151,7 @@ def _validate_policies(calibration: dict[str, Any]) -> dict[str, dict[str, Any]]
             policy.get("policy_id") != expected_ids[mode]
             or policy.get("model") != MODEL
             or policy.get("provider") != PROVIDER
-            or policy.get("max_model_attempts_per_action")
-            != MAX_MODEL_ATTEMPTS_PER_ACTION
+            or policy.get("max_model_attempts_per_action") != MAX_MODEL_ATTEMPTS_PER_ACTION
         ):
             raise ValueError("Haiku calibration policy identity changed")
         sandbox = policy.get("sandbox")
@@ -204,9 +201,7 @@ def _runtime_evidence(root: Path) -> dict[str, Any]:
         )
     return {
         "observations": rows,
-        "conservative_seconds_per_attempt": max(
-            row["seconds_per_attempt"] for row in rows
-        ),
+        "conservative_seconds_per_attempt": max(row["seconds_per_attempt"] for row in rows),
         "margin_multiplier": RUNTIME_MARGIN,
     }
 
@@ -237,16 +232,13 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
     if (
         historical_task_binding.get("path") != task_binding["path"]
         or historical_task_binding.get("file_sha256") != task_binding["file_sha256"]
-        or task_manifest.get("manifest_digest")
-        != historical_task_binding.get("manifest_digest")
+        or task_manifest.get("manifest_digest") != historical_task_binding.get("manifest_digest")
     ):
         raise ValueError("historical D5.9 task manifest binding changed")
     if (
         historical_admission_binding.get("path") != admission_binding["path"]
-        or historical_admission_binding.get("file_sha256")
-        != admission_binding["file_sha256"]
-        or admission.get("evidence_digest")
-        != historical_admission_binding.get("evidence_digest")
+        or historical_admission_binding.get("file_sha256") != admission_binding["file_sha256"]
+        or admission.get("evidence_digest") != historical_admission_binding.get("evidence_digest")
     ):
         raise ValueError("historical D5.9 admission binding changed")
     if historical.get("allocation") != task_manifest.get("allocation"):
@@ -254,9 +246,7 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
 
     def successor_job(job: dict[str, Any]) -> dict[str, Any]:
         value = dict(job)
-        value["trial_id"] = str(value["trial_id"]).replace(
-            "d59-", "d59-haiku-", 1
-        )
+        value["trial_id"] = str(value["trial_id"]).replace("d59-", "d59-haiku-", 1)
         return value
 
     primary_jobs = [successor_job(job) for job in historical["primary_jobs"]]
@@ -320,9 +310,7 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
             "approval_required": True,
             "derivation": {
                 **runtime_evidence,
-                "mechanical_attempt_cap": phase_caps["aggregate"][
-                    "model_attempt_cap"
-                ],
+                "mechanical_attempt_cap": phase_caps["aggregate"]["model_attempt_cap"],
                 "estimated_cap_hours_with_margin": estimated_cap_hours,
             },
         },
@@ -347,6 +335,4 @@ def expected_outputs(root: Path, *, source_revision: str) -> dict[str, bytes]:
         "owner-exception.json": owner_exception(),
         "execution-plan.json": execution_plan(root, source_revision=source_revision),
     }
-    return {
-        name: canonical_json_bytes(value) + b"\n" for name, value in values.items()
-    }
+    return {name: canonical_json_bytes(value) + b"\n" for name, value in values.items()}

@@ -21,7 +21,9 @@ requires-python = ">=3.12"
 dependencies = ["base-lib>=1"]
 
 [project.optional-dependencies]
-platform = [""" + repr(platform_requirement) + "]\n"
+platform = ["""
+        + repr(platform_requirement)
+        + "]\n"
     )
 
 
@@ -30,7 +32,9 @@ def _write_lock(root: Path, entries: list[str] | None = None) -> Path:
     lock.parent.mkdir()
     digest = platform_input_sha256(root / "pyproject.toml")
     lock.write_text(
-        "# pixelgym-platform-input-sha256: " + digest + "\n"
+        "# pixelgym-platform-input-sha256: "
+        + digest
+        + "\n"
         + "\n".join(
             entries
             or [
@@ -60,11 +64,19 @@ def test_repository_lock_is_exact_hashed_and_is_the_manifest_digest(repository_r
     assert "--hash=sha256:" in text
 
 
-def test_platform_container_verifies_and_installs_only_the_exact_lock(repository_root: Path) -> None:
+def test_platform_container_verifies_and_installs_only_the_exact_lock(
+    repository_root: Path,
+) -> None:
     dockerfile = (repository_root / "deploy/Dockerfile.platform").read_text()
-    assert "COPY requirements/platform-py312-v3.lock ./requirements/platform-py312-v3.lock" in dockerfile
+    assert (
+        "COPY requirements/platform-py312-v3.lock ./requirements/platform-py312-v3.lock"
+        in dockerfile
+    )
     assert "dependency_lock.py --repository-root /app" in dockerfile
-    assert "pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v3.lock" in dockerfile
+    assert (
+        "pip install --no-cache-dir --require-hashes -r requirements/platform-py312-v3.lock"
+        in dockerfile
+    )
     assert "pip install --no-cache-dir --no-deps ." in dockerfile
     assert ".[platform]" not in dockerfile
 
@@ -77,7 +89,9 @@ def test_missing_lock_fails_closed(tmp_path: Path) -> None:
 
 def test_modified_lock_without_hash_fails_closed(tmp_path: Path) -> None:
     _write_project(tmp_path)
-    _write_lock(tmp_path, ["base-lib==1.0", "platform-lib==2.0 \\", "    --hash=sha256:" + "b" * 64])
+    _write_lock(
+        tmp_path, ["base-lib==1.0", "platform-lib==2.0 \\", "    --hash=sha256:" + "b" * 64]
+    )
     with pytest.raises(ValueError, match="lacks a SHA-256 hash"):
         verify_platform_lock(tmp_path)
 

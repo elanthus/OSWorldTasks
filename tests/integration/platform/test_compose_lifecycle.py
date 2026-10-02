@@ -165,9 +165,14 @@ def _control_count(stack, table: str) -> int:
     if table not in {"candidates", "approvals", "deployments"}:
         raise ValueError("control table is not allowlisted")
     completed = stack.compose(
-        "exec", "-T", "platform", "python", "-c",
+        "exec",
+        "-T",
+        "platform",
+        "python",
+        "-c",
         "import sqlite3,sys; c=sqlite3.connect('/state/control.db'); print(c.execute(f'SELECT COUNT(*) FROM {sys.argv[1]}').fetchone()[0])",
-        table, timeout=30,
+        table,
+        timeout=30,
     )
     return int(completed.stdout.strip())
 
@@ -187,19 +192,29 @@ def _reviewer_audit_attribution(stack) -> list[list[str]]:
 
 def _candidate_evidence(stack, candidate_id: str) -> tuple[PolicyManifest, list[ArtifactRef]]:
     completed = stack.compose(
-        "exec", "-T", "platform", "python", "-c",
+        "exec",
+        "-T",
+        "platform",
+        "python",
+        "-c",
         "import json,sqlite3,sys; c=sqlite3.connect('/state/control.db'); r=c.execute('SELECT policy_json,artifacts_json FROM candidates WHERE candidate_id=?',(sys.argv[1],)).fetchone(); print(json.dumps({'policy':json.loads(r[0]),'artifacts':json.loads(r[1])}))",
-        candidate_id, timeout=30,
+        candidate_id,
+        timeout=30,
     )
     payload = json.loads(completed.stdout)
-    return PolicyManifest(**payload["policy"]), [ArtifactRef(**item) for item in payload["artifacts"]]
+    return PolicyManifest(**payload["policy"]), [
+        ArtifactRef(**item) for item in payload["artifacts"]
+    ]
 
 
 def _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_id: str) -> None:
     policy, artifacts = _candidate_evidence(stack, candidate_id)
     store = S3ImmutableStore(
-        bucket="pixelgym-immutable", prefix="platform", client=_s3_client(stack),
-        object_lock=True, retention_days=30,
+        bucket="pixelgym-immutable",
+        prefix="platform",
+        client=_s3_client(stack),
+        object_lock=True,
+        retention_days=30,
     )
     raw_reference = next(
         item for item in artifacts if item.logical_key.startswith("raw-responses/")
@@ -214,7 +229,8 @@ def _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_id: s
         tracking=None,
         provider=ScriptedReplayProvider(
             stack.repository_root / "artifacts/grounding-predictions.jsonl",
-            variant="revised", model=policy.model,
+            variant="revised",
+            model=policy.model,
         ),
         policy=policy,
         gate_policy=gate_policy,
@@ -229,9 +245,14 @@ def _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_id: s
 
     def put_version(data: bytes) -> str:
         result = s3.put_object(
-            Bucket="pixelgym-immutable", Key=key, Body=data,
+            Bucket="pixelgym-immutable",
+            Key=key,
+            Body=data,
             ContentType=raw_reference.media_type,
-            Metadata={"sha256": hashlib.sha256(data).hexdigest(), "media-type": raw_reference.media_type},
+            Metadata={
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "media-type": raw_reference.media_type,
+            },
             ObjectLockMode="GOVERNANCE",
             ObjectLockRetainUntilDate=datetime.now(UTC) + timedelta(days=1),
         )
@@ -270,7 +291,9 @@ def _assert_real_s3_raw_tamper_blocks_before_registration(stack, candidate_id: s
     finally:
         for version_id in created_versions:
             s3.delete_object(
-                Bucket="pixelgym-immutable", Key=key, VersionId=version_id,
+                Bucket="pixelgym-immutable",
+                Key=key,
+                VersionId=version_id,
                 BypassGovernanceRetention=True,
             )
 
@@ -295,12 +318,12 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
         browser = playwright.chromium.launch(headless=True)
         page = browser.new_page()
         try:
-            seed_id = _candidate(
-                page, stack, "day3-replay-revised-rollback-seed-v1", "Eligible"
-            )
+            seed_id = _candidate(page, stack, "day3-replay-revised-rollback-seed-v1", "Eligible")
             seed_policy = _approve_and_deploy(page, stack, seed_id, "rollback seed")
             page.goto(f"{stack.platform_url}/deployment")
-            playwright_api.expect(page.get_by_text("Reviewer: synthetic-demo", exact=False)).to_be_visible()
+            playwright_api.expect(
+                page.get_by_text("Reviewer: synthetic-demo", exact=False)
+            ).to_be_visible()
             assert _reviewer_audit_attribution(stack)[-2:] == [
                 ["synthetic-demo", "synthetic_demo"],
                 ["synthetic-demo", "synthetic_demo"],
@@ -312,9 +335,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 prompt_version="1",
                 model="day3-replay-baseline-v1",
             )
-            candidate_a = _candidate(
-                page, stack, "day3-replay-baseline-v1", "GateFailed"
-            )
+            candidate_a = _candidate(page, stack, "day3-replay-baseline-v1", "GateFailed")
             page.goto(f"{stack.platform_url}/candidates/{candidate_a}")
             playwright_api.expect(page.get_by_text("Approval unavailable")).to_be_visible()
             assert page.locator('form[action$="/approve"]').count() == 0
@@ -331,9 +352,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 prompt_version="2",
                 model="day3-replay-revised-v2",
             )
-            candidate_b = _candidate(
-                page, stack, "day3-replay-revised-v2", "Eligible"
-            )
+            candidate_b = _candidate(page, stack, "day3-replay-revised-v2", "Eligible")
             page.goto(f"{stack.platform_url}/deployment")
             generation_match = re.search(r"generation ([0-9]+)", page.locator("main").inner_text())
             assert generation_match is not None
@@ -344,7 +363,8 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
                 data=urlencode(
                     {
-                        "csrf_token": csrf, "reason": "approval must come first",
+                        "csrf_token": csrf,
+                        "reason": "approval must come first",
                         "expected_deployment_id": seed_policy["deployment_id"],
                         "expected_generation": generation_match.group(1),
                     }
@@ -355,9 +375,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
 
             page.goto(
                 f"{stack.platform_url}/compare?"
-                + urlencode(
-                    [("candidate", candidate_a), ("candidate", candidate_b)]
-                )
+                + urlencode([("candidate", candidate_a), ("candidate", candidate_b)])
             )
             playwright_api.expect(page.get_by_text("COMPATIBLE", exact=True)).to_be_visible()
             playwright_api.expect(page.locator("main")).to_contain_text("Accuracy")
@@ -390,9 +408,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 ],
             )
             assert sorted(concurrent_deploys) == [303, 409]
-            race_deployed = page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json()
+            race_deployed = page.context.request.get(f"{stack.platform_url}/api/v1/policy").json()
             assert race_deployed["exact_policy_version"] == candidate_b
 
             concurrent_rollbacks = _race_forms(
@@ -407,9 +423,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 ],
             )
             assert sorted(concurrent_rollbacks) == [303, 409]
-            race_active = page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json()
+            race_active = page.context.request.get(f"{stack.platform_url}/api/v1/policy").json()
             assert race_active["exact_policy_version"] == seed_id
             active_rows = stack.compose(
                 "exec",
@@ -453,9 +467,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 "integration rollback"
             )
             page.locator('form[action="/rollback"] button').click()
-            rolled_back = page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json()
+            rolled_back = page.context.request.get(f"{stack.platform_url}/api/v1/policy").json()
             assert rolled_back["policy_id"] == seed_policy["policy_id"]
             assert rolled_back["deployment_id"] not in {
                 seed_policy["deployment_id"],
@@ -464,9 +476,7 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
 
             stack.compose("restart", "platform", timeout=180)
             stack.wait_http("/health/live")
-            restored = page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json()
+            restored = page.context.request.get(f"{stack.platform_url}/api/v1/policy").json()
             assert restored == rolled_back
         finally:
             browser.close()
@@ -486,24 +496,23 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
     experiment = tracking.get_experiment_by_name("pixelgym-grounding")
     assert experiment is not None
     runs = tracking.search_runs([experiment.experiment_id], max_results=20)
-    revised = next(
-        run for run in runs if run.data.params.get("model") == "day3-replay-revised-v2"
-    )
+    revised = next(run for run in runs if run.data.params.get("model") == "day3-replay-revised-v2")
     assert set(revised.data.params) == set(RUN_PARAM_KEYS)
     assert revised.data.tags["mlflow.run_id"] == revised.info.run_id
     assert revised.data.tags["metaflow.pathspec"].startswith("GroundingEvaluationFlow/")
 
-    with psycopg2.connect(
-        host="127.0.0.1",
-        port=stack.postgres_port,
-        dbname="mlflow",
-        user=stack.environment["PIXELGYM_POSTGRES_USER"],
-        password=stack.environment["PIXELGYM_POSTGRES_PASSWORD"],
-        connect_timeout=5,
-    ) as connection, connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT COUNT(*) FROM runs WHERE run_uuid = %s", (revised.info.run_id,)
-        )
+    with (
+        psycopg2.connect(
+            host="127.0.0.1",
+            port=stack.postgres_port,
+            dbname="mlflow",
+            user=stack.environment["PIXELGYM_POSTGRES_USER"],
+            password=stack.environment["PIXELGYM_POSTGRES_PASSWORD"],
+            connect_timeout=5,
+        ) as connection,
+        connection.cursor() as cursor,
+    ):
+        cursor.execute("SELECT COUNT(*) FROM runs WHERE run_uuid = %s", (revised.info.run_id,))
         assert cursor.fetchone()[0] == 1
 
     stack.compose("stop", "platform", timeout=60)
@@ -517,16 +526,14 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
         (
             "import sqlite3; "
             "connection=sqlite3.connect('/state/control.db'); "
-            "connection.execute(\"ALTER TABLE deployments ADD COLUMN "
-            "previous_deployment_id TEXT REFERENCES deployments(deployment_id)\"); "
+            'connection.execute("ALTER TABLE deployments ADD COLUMN '
+            'previous_deployment_id TEXT REFERENCES deployments(deployment_id)"); '
             "connection.commit(); connection.close()"
         ),
         timeout=120,
     )
     stack.compose("run", "--rm", "--no-deps", "migrate", timeout=120)
-    stack.compose(
-        "up", "-d", "--wait", "--wait-timeout", "120", "platform", timeout=180
-    )
+    stack.compose("up", "-d", "--wait", "--wait-timeout", "120", "platform", timeout=180)
     stack.wait_http("/health/live")
     with playwright_api.sync_playwright() as playwright:
         request = playwright.request.new_context()
@@ -553,24 +560,20 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
             )
             page.locator('form[action$="/deploy"] button').click()
             playwright_api.expect(page.locator("main")).to_contain_text("Action blocked")
-            still_active = page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json()
+            still_active = page.context.request.get(f"{stack.platform_url}/api/v1/policy").json()
             assert still_active == restored
 
             page.goto(f"{stack.platform_url}/deployment")
             assert page.locator('form[action="/rollback"]').count() == 0
-            assert page.context.request.get(
-                f"{stack.platform_url}/api/v1/policy"
-            ).json() == restored
+            assert (
+                page.context.request.get(f"{stack.platform_url}/api/v1/policy").json() == restored
+            )
         finally:
             browser.close()
 
 
 def test_compose_diagnostics_redact_credentials_and_host_paths(compose_stack) -> None:
-    assert compose_stack.environment["PIXELGYM_POSTGRES_PASSWORD"] == (
-        "local_demo_postgres_only"
-    )
+    assert compose_stack.environment["PIXELGYM_POSTGRES_PASSWORD"] == ("local_demo_postgres_only")
     assert compose_stack.environment["PIXELGYM_MINIO_PASSWORD"] == "local_demo_minio_only"
     assert compose_stack.environment["PIXELGYM_CSRF_SECRET"] == (
         "local-demo-csrf-secret-change-before-any-shared-use"

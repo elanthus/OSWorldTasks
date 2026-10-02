@@ -189,13 +189,13 @@ class V5EvidenceStore:
         return reference
 
     def put_bytes(self, logical_key: str, data: bytes, *, media_type: str) -> ArtifactRef:
-        reference = self.store.put_once(
-            f"authoritative/{logical_key}", data, media_type=media_type
-        )
+        reference = self.store.put_once(f"authoritative/{logical_key}", data, media_type=media_type)
         self._references.append(reference)
         return reference
 
-    def publish_derivative(self, logical_key: str, authoritative: Any) -> tuple[ArtifactRef, ArtifactRef]:
+    def publish_derivative(
+        self, logical_key: str, authoritative: Any
+    ) -> tuple[ArtifactRef, ArtifactRef]:
         validate_credential_free(authoritative)
         authoritative_ref = self.store.get_reference(f"authoritative/{logical_key}")
         if authoritative_ref is None:

@@ -203,7 +203,14 @@ def test_rejects_transcript_field(tmp_path: Path) -> None:
 def _temp_repo(tmp_path: Path) -> tuple[Path, str, str]:
     repo = tmp_path / "repo"
     repo.mkdir()
-    env_args = ("-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false")
+    env_args = (
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+    )
 
     def run(*args: str) -> str:
         return subprocess.run(

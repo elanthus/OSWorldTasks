@@ -80,15 +80,11 @@ def test_inventory_prefers_origin_main_and_allows_future_runs(
     monkeypatch.setattr(publication, "_git_ref_exists", lambda repository_root, ref: True)
     assert publication._inventory_ref(ROOT) == "refs/remotes/origin/main"
 
-    future_summary = (
-        "artifacts/grounding-v5-d56-future-full-calibration-run/summary.json"
-    )
+    future_summary = "artifacts/grounding-v5-d56-future-full-calibration-run/summary.json"
     monkeypatch.setattr(
         publication,
         "_git",
-        lambda repository_root, *args: "\n".join(
-            (*EXPECTED_MAIN_SUMMARIES, future_summary)
-        ),
+        lambda repository_root, *args: "\n".join((*EXPECTED_MAIN_SUMMARIES, future_summary)),
     )
     inventory = inventory_main(ROOT)
     assert set(EXPECTED_MAIN_SUMMARIES) <= set(inventory)
@@ -128,9 +124,7 @@ def test_completed_table_preserves_all_terminal_classifications_and_spend() -> N
         "success": 0,
         "truncation": 47,
     }
-    assert by_run["qwen-v3"]["spend"]["unknown_charge_reservation_usd"] == (
-        "0.000000000"
-    )
+    assert by_run["qwen-v3"]["spend"]["unknown_charge_reservation_usd"] == ("0.000000000")
 
 
 def test_policy_versions_publish_shared_partition_and_comparability_limits() -> None:
@@ -139,9 +133,10 @@ def test_policy_versions_publish_shared_partition_and_comparability_limits() -> 
     gemini = by_run["gemini-v3b"]["versions"]
     qwen = by_run["qwen-v3"]["versions"]
 
-    assert gemini["calibration_partition_manifest_digest"] == qwen[
-        "calibration_partition_manifest_digest"
-    ]
+    assert (
+        gemini["calibration_partition_manifest_digest"]
+        == qwen["calibration_partition_manifest_digest"]
+    )
     assert gemini["policy_manifest_digest"] != qwen["policy_manifest_digest"]
     assert gemini["code_revision"] != qwen["code_revision"]
     assert gemini["runtime_digest"] != qwen["runtime_digest"]
@@ -202,9 +197,7 @@ def test_publish_builds_every_output_before_writing(
         "_build_outputs",
         lambda repository_root: (_ for _ in ()).throw(PublicationError("audit failed")),
     )
-    monkeypatch.setattr(
-        publication, "_write_new", lambda path, text: writes.append(path)
-    )
+    monkeypatch.setattr(publication, "_write_new", lambda path, text: writes.append(path))
 
     with pytest.raises(PublicationError, match="audit failed"):
         publish(tmp_path)
@@ -276,11 +269,7 @@ def test_unexpected_classification_is_a_named_failed_check(
 
 
 def test_unknown_outcome_classification_populates_infrastructure_count() -> None:
-    summary = {
-        "episode_results": [
-            {"classification": "unknown_outcome_infrastructure_failure"}
-        ]
-    }
+    summary = {"episode_results": [{"classification": "unknown_outcome_infrastructure_failure"}]}
 
     assert _classification_counts(summary) == {
         "attempted": 1,
@@ -333,32 +322,36 @@ def test_relation_binds_sources_and_excludes_both_restricted_journals() -> None:
         and row["size_bytes"] > 0
         for row in registry_rows
     )
-    assert relation["authoritative"]["retained_development_runs_path"] == (
-        RETAINED_PATH.as_posix()
-    )
+    assert relation["authoritative"]["retained_development_runs_path"] == (RETAINED_PATH.as_posix())
     assert relation["authoritative"]["retained_development_runs_file_sha256"] == (
         _file_digest(ROOT / RETAINED_PATH)
     )
     for row in exclusions:
-        assert subprocess.run(
-            ["git", "check-ignore", "--quiet", "--no-index", "--", row["path"]],
-            cwd=ROOT,
-            check=False,
-        ).returncode == 0
-        assert subprocess.run(
-            ["git", "ls-files", "--error-unmatch", "--", row["path"]],
-            cwd=ROOT,
-            check=False,
-            capture_output=True,
-        ).returncode != 0
+        assert (
+            subprocess.run(
+                ["git", "check-ignore", "--quiet", "--no-index", "--", row["path"]],
+                cwd=ROOT,
+                check=False,
+            ).returncode
+            == 0
+        )
+        assert (
+            subprocess.run(
+                ["git", "ls-files", "--error-unmatch", "--", row["path"]],
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+            ).returncode
+            != 0
+        )
 
 
 def test_outputs_are_redacted_and_report_is_derivative_only() -> None:
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
     rendered = render_report(derivative, derivative_sha256=_file_digest(ROOT / DERIVATIVE_PATH))
-    calibration_table = rendered.split("## Calibration table", 1)[1].split(
-        "## Policy identity", 1
-    )[0]
+    calibration_table = rendered.split("## Calibration table", 1)[1].split("## Policy identity", 1)[
+        0
+    ]
 
     assert rendered == (ROOT / REPORT_PATH).read_text(encoding="utf-8")
     assert calibration_table.count("| `A-gemini-stateful-v3` |") == 1
@@ -444,7 +437,9 @@ def test_retained_development_runs_are_digest_only_entries() -> None:
         assert row["classification_counts"]["attempted"] >= 1
         assert row["provider_calls_made"] >= 1
     # Nothing beyond digests, counts, and identities is published for these runs.
-    assert not ({"episode_results", "transport_records", "journal_path", "summary_path"} & _keys(retained))
+    assert not (
+        {"episode_results", "transport_records", "journal_path", "summary_path"} & _keys(retained)
+    )
     report = (ROOT / REPORT_PATH).read_text(encoding="utf-8")
     for run in registry["runs"]:
         assert f"| `{run['run_id']}` |" in report
@@ -478,4 +473,6 @@ def test_missing_registry_keeps_the_derivative_shape() -> None:
     derivative = build_derivative(audits, None)
 
     assert derivative["unpublished_retained_plans"] == []
-    assert all("authoritative_digests" not in row for row in derivative["unpublished_retained_runs"])
+    assert all(
+        "authoritative_digests" not in row for row in derivative["unpublished_retained_runs"]
+    )

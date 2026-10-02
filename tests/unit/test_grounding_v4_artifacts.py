@@ -15,9 +15,7 @@ from tests.support.evidence_images import requires_images
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 CAPTURE_RELATIVE_PATH = Path("artifacts/grounding-v4-pilot-capture.json")
-PROVENANCE_RELATIVE_PATH = Path(
-    "artifacts/grounding-v4-pilot-capture.provenance.json"
-)
+PROVENANCE_RELATIVE_PATH = Path("artifacts/grounding-v4-pilot-capture.provenance.json")
 PROVENANCE_SCHEMA_VERSION = "pixelgym-grounding-capture-provenance-v1"
 GIT_REVISION_PATTERN = re.compile(r"[0-9a-f]{40}")
 PROVENANCE_SHA256 = "e65c50d51b01b5a5b230e782aae17ea9aaedb5542d73d523a16d336b82de86e4"
@@ -33,9 +31,8 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def _overlaps(first: list[int], second: list[int]) -> bool:
-    return (
-        max(first[0], second[0]) < min(first[2], second[2])
-        and max(first[1], second[1]) < min(first[3], second[3])
+    return max(first[0], second[0]) < min(first[2], second[2]) and max(first[1], second[1]) < min(
+        first[3], second[3]
     )
 
 
@@ -45,15 +42,11 @@ def _load_json_object(path: Path, description: str) -> dict[str, Any]:
     except UnicodeDecodeError as exc:
         raise AssertionError(f"{description} contains malformed UTF-8: {path}") from exc
     except OSError as exc:
-        raise AssertionError(
-            f"{description} is missing or unreadable: {path}: {exc}"
-        ) from exc
+        raise AssertionError(f"{description} is missing or unreadable: {path}: {exc}") from exc
     try:
         value = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise AssertionError(
-            f"{description} contains malformed JSON: {path}: {exc}"
-        ) from exc
+        raise AssertionError(f"{description} contains malformed JSON: {path}: {exc}") from exc
     assert isinstance(value, dict), f"{description} must contain a JSON object: {path}"
     return value
 
@@ -108,9 +101,7 @@ def _require_git_checkout(repository_root: Path) -> None:
         pytest.skip("v4 capture source verification requires a Git checkout")
 
 
-def _require_source_revision(
-    repository_root: Path, revision: str, revision_field: str
-) -> None:
+def _require_source_revision(repository_root: Path, revision: str, revision_field: str) -> None:
     result = subprocess.run(
         ["git", "-C", str(repository_root), "cat-file", "-e", f"{revision}^{{commit}}"],
         check=False,
@@ -165,21 +156,13 @@ def test_v4_capture_source_hashes_match_earliest_matching_revision() -> None:
     provenance = _load_provenance(REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH)
     _require_git_checkout(REPOSITORY_ROOT)
     for revision_field in PROVENANCE_REVISION_FIELDS:
-        _require_source_revision(
-            REPOSITORY_ROOT, provenance[revision_field], revision_field
-        )
-    evidence = _load_json_object(
-        REPOSITORY_ROOT / CAPTURE_RELATIVE_PATH, "v4 pilot capture"
-    )
-    _assert_source_hashes_at_earliest_matching_revision(
-        evidence, provenance, REPOSITORY_ROOT
-    )
+        _require_source_revision(REPOSITORY_ROOT, provenance[revision_field], revision_field)
+    evidence = _load_json_object(REPOSITORY_ROOT / CAPTURE_RELATIVE_PATH, "v4 pilot capture")
+    _assert_source_hashes_at_earliest_matching_revision(evidence, provenance, REPOSITORY_ROOT)
 
 
 def test_v4_capture_provenance_sidecar_is_frozen() -> None:
-    actual = hashlib.sha256(
-        (REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH).read_bytes()
-    ).hexdigest()
+    actual = hashlib.sha256((REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH).read_bytes()).hexdigest()
     assert actual == PROVENANCE_SHA256, "v4 capture provenance sidecar hash changed"
 
 
@@ -222,9 +205,7 @@ def test_v4_capture_provenance_sidecar_is_frozen() -> None:
         ),
     ],
 )
-def test_v4_capture_provenance_fails_closed(
-    tmp_path: Path, case: str, message: str
-) -> None:
+def test_v4_capture_provenance_fails_closed(tmp_path: Path, case: str, message: str) -> None:
     sidecar = tmp_path / PROVENANCE_RELATIVE_PATH.name
     if case == "malformed_json":
         sidecar.write_text("{", encoding="utf-8")
@@ -278,9 +259,7 @@ def test_v4_capture_provenance_rejects_absent_earliest_revision(tmp_path: Path) 
 def test_v4_capture_source_hash_mismatch_names_path(tmp_path: Path) -> None:
     provenance = _load_provenance(REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH)
     _require_git_checkout(REPOSITORY_ROOT)
-    evidence = _load_json_object(
-        REPOSITORY_ROOT / CAPTURE_RELATIVE_PATH, "v4 pilot capture"
-    )
+    evidence = _load_json_object(REPOSITORY_ROOT / CAPTURE_RELATIVE_PATH, "v4 pilot capture")
     tampered_path = "pixelgym/serialization.py"
     evidence["source_sha256"] = dict(evidence["source_sha256"])
     evidence["source_sha256"][tampered_path] = "0" * 64
@@ -288,34 +267,25 @@ def test_v4_capture_source_hash_mismatch_names_path(tmp_path: Path) -> None:
     capture_copy.write_text(json.dumps(evidence), encoding="utf-8")
 
     tampered = _load_json_object(capture_copy, "tampered v4 pilot capture")
-    mismatch = (
-        rf"{re.escape(tampered_path)}: source hash mismatch at earliest matching revision"
-    )
+    mismatch = rf"{re.escape(tampered_path)}: source hash mismatch at earliest matching revision"
     with pytest.raises(AssertionError, match=mismatch):
-        _assert_source_hashes_at_earliest_matching_revision(
-            tampered, provenance, REPOSITORY_ROOT
-        )
+        _assert_source_hashes_at_earliest_matching_revision(tampered, provenance, REPOSITORY_ROOT)
 
 
 def test_v4_capture_is_bitwise_repeatable_and_manifest_hashes_match() -> None:
     evidence = json.loads(
-        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-capture.json").read_text(
-            encoding="utf-8"
-        )
+        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-capture.json").read_text(encoding="utf-8")
     )
     repeatability = evidence["repeatability"]
     assert repeatability["byte_identical_file_count"] == repeatability["file_count"] == 10
     assert repeatability["differing_file_count"] == 0
     assert repeatability["differing_pixel_count"] == 0
     assert (
-        repeatability["reference_aggregate_sha256"]
-        == repeatability["candidate_aggregate_sha256"]
+        repeatability["reference_aggregate_sha256"] == repeatability["candidate_aggregate_sha256"]
     )
 
     manifest = json.loads(
-        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-manifest.json").read_text(
-            encoding="utf-8"
-        )
+        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-manifest.json").read_text(encoding="utf-8")
     )
     for output in manifest["outputs"].values():
         if output["path"].endswith(".png"):
@@ -326,9 +296,7 @@ def test_v4_capture_is_bitwise_repeatable_and_manifest_hashes_match() -> None:
 
 def _v4_png_outputs() -> dict[str, str]:
     manifest = json.loads(
-        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-manifest.json").read_text(
-            encoding="utf-8"
-        )
+        (REPOSITORY_ROOT / "artifacts/grounding-v4-pilot-manifest.json").read_text(encoding="utf-8")
     )
     return {
         output["path"]: output["sha256"]
@@ -385,9 +353,7 @@ def test_v4_overlay_badges_do_not_overlap_candidates_or_each_other() -> None:
         element_boxes = [mark["bbox"] for mark in record["marks"]]
         badge_boxes = [mark["badge_bbox"] for mark in record["marks"]]
         assert all(
-            not _overlaps(badge, element)
-            for badge in badge_boxes
-            for element in element_boxes
+            not _overlaps(badge, element) for badge in badge_boxes for element in element_boxes
         ), record["example_id"]
         assert all(
             not _overlaps(first, second)

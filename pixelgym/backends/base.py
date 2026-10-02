@@ -171,8 +171,6 @@ class ResumableBackend(Backend, Protocol):
         """Return the content-addressed binding for the current state."""
         ...
 
-    def verify_resume_record(
-        self, record: EnvironmentResumeRecord, /, *, step_count: int
-    ) -> None:
+    def verify_resume_record(self, record: EnvironmentResumeRecord, /, *, step_count: int) -> None:
         """Raise if the current state does not match `record` at `step_count`."""
         ...

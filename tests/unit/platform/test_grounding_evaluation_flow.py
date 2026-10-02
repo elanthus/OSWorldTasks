@@ -287,9 +287,7 @@ def uninterrupted_flow_bytes(tmp_path_factory: pytest.TempPathFactory) -> tuple[
     repository_root = Path(__file__).parents[3]
     temporary_root = tmp_path_factory.mktemp("uninterrupted-flow")
     try:
-        store, _, _, _, submission_id = _configure(
-            monkeypatch, repository_root, temporary_root
-        )
+        store, _, _, _, submission_id = _configure(monkeypatch, repository_root, temporary_root)
         _run_flow(submission_id)
         return _final_bytes(store, submission_id)
     finally:
@@ -468,9 +466,7 @@ def test_tracking_finalization_failure_cannot_leave_an_eligible_candidate(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _, tracking, _, control, submission_id = _configure(
-        monkeypatch, repository_root, tmp_path
-    )
+    _, tracking, _, control, submission_id = _configure(monkeypatch, repository_root, tmp_path)
 
     def fail_finalization(*args: Any, **kwargs: Any) -> Any:
         raise RuntimeError("tracking finalization unavailable")
@@ -489,9 +485,7 @@ def test_candidate_registration_failure_finalizes_terminal_state(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _, tracking, _, control, submission_id = _configure(
-        monkeypatch, repository_root, tmp_path
-    )
+    _, tracking, _, control, submission_id = _configure(monkeypatch, repository_root, tmp_path)
 
     def fail_registration(*args: Any, **kwargs: Any) -> Any:
         raise RuntimeError("candidate registry unavailable")
@@ -510,9 +504,7 @@ def test_candidate_and_submission_completion_are_atomic(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _, tracking, _, control, submission_id = _configure(
-        monkeypatch, repository_root, tmp_path
-    )
+    _, tracking, _, control, submission_id = _configure(monkeypatch, repository_root, tmp_path)
     control.connection.executescript(
         """
         CREATE TRIGGER fail_submission_completion

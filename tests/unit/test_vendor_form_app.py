@@ -28,9 +28,9 @@ def _submit_payload(task: dict, **overrides) -> dict:
 
 
 def test_ready_sentinel_follows_render_and_exact_font_loads():
-    app_source = (
-        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
-    ).read_text(encoding="utf-8")
+    app_source = (REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js").read_text(
+        encoding="utf-8"
+    )
 
     render_positions = [
         app_source.index("renderRequestCard(task.fields);"),
@@ -44,13 +44,11 @@ def test_ready_sentinel_follows_render_and_exact_font_loads():
 
 
 def test_incomplete_submission_message_matches_browser_app_literal():
-    app_source = (
-        REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js"
-    ).read_text()
+    app_source = (REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js").read_text()
     uncommented_source = re.sub(r"/\*.*?\*/", "", app_source, flags=re.DOTALL)
     matches = list(
         re.finditer(
-            r'^\s*(?:var|let|const)\s+INCOMPLETE_SUBMISSION_MESSAGE\s*=\s*'
+            r"^\s*(?:var|let|const)\s+INCOMPLETE_SUBMISSION_MESSAGE\s*=\s*"
             r'(?P<quote>["\'])(?P<message>[^\r\n]*?)(?P=quote);\s*$',
             uncommented_source,
             re.MULTILINE,
@@ -136,9 +134,7 @@ def test_page_ready_requires_reload_with_the_active_task_id_after_reset():
         "seed": 7,
         "requires_reload": True,
     }
-    marked_before_reset = client.post(
-        "/api/page-ready", json={"task_id": before_reset["task_id"]}
-    )
+    marked_before_reset = client.post("/api/page-ready", json={"task_id": before_reset["task_id"]})
     assert marked_before_reset.status_code == 200
     assert marked_before_reset.json() == {"ready": True}
 

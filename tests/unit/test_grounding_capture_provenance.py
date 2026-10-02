@@ -128,9 +128,7 @@ def test_grounding_capture_source_hashes_match_historical_revision() -> None:
 
 
 def test_grounding_capture_provenance_sidecar_is_frozen() -> None:
-    actual = hashlib.sha256(
-        (REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH).read_bytes()
-    ).hexdigest()
+    actual = hashlib.sha256((REPOSITORY_ROOT / PROVENANCE_RELATIVE_PATH).read_bytes()).hexdigest()
     assert actual == PROVENANCE_SHA256, "grounding capture provenance sidecar hash changed"
 
 

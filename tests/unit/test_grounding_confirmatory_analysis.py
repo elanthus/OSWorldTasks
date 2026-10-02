@@ -77,7 +77,12 @@ ROWS = (
     {"family": "fam-c", "cluster": "c6", "first": True, "second": True},
 )
 CLUSTER_TABLE = {
-    "c1": (1, 1), "c2": (1, 2), "c3": (0, 1), "c4": (-1, 1), "c5": (1, 1), "c6": (0, 1),
+    "c1": (1, 1),
+    "c2": (1, 2),
+    "c3": (0, 1),
+    "c4": (-1, 1),
+    "c5": (1, 1),
+    "c6": (0, 1),
 }
 STRATA_ORDER = (("c1", "c2"), ("c3", "c4"), ("c5", "c6"))
 
@@ -140,8 +145,12 @@ def test_single_stratum_equals_unstratified_bootstrap() -> None:
     40 * 0.025 = 1 and 40 * 0.975 = 39; nearest-rank floor(1.025) = 1 and ceil(39.975) - 1 = 39.
     """
     tuples = (
-        ("p1", True, False), ("p1", True, True), ("s2", False, True),
-        ("s3", True, False), ("s4", False, False), ("s5", True, True),
+        ("p1", True, False),
+        ("p1", True, True),
+        ("s2", False, True),
+        ("s3", True, False),
+        ("s4", False, False),
+        ("s5", True, True),
     )
     rows = [{"f": "only", "c": c, "first": a, "second": b} for c, a, b in tuples]
     stratified = stratified_cluster_bootstrap(
@@ -160,9 +169,15 @@ def test_deterministic_across_calls_and_preregistered_defaults() -> None:
         list(reversed(ROWS)), strata_key=lambda r: r["family"], cluster_key="cluster"
     )
     assert a == b
-    assert (a.seed, a.resamples, a.level) == (
-        PREREGISTERED_SEED, PREREGISTERED_RESAMPLES, PREREGISTERED_LEVEL,
-    ) == (20260911, 10_000, 0.95)
+    assert (
+        (a.seed, a.resamples, a.level)
+        == (
+            PREREGISTERED_SEED,
+            PREREGISTERED_RESAMPLES,
+            PREREGISTERED_LEVEL,
+        )
+        == (20260911, 10_000, 0.95)
+    )
     assert a.to_dict()["interval"] == list(a.interval)
 
 

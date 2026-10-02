@@ -74,9 +74,7 @@ def export_evidence(control: ControlStore, output: Path) -> None:
     try:
         audit_events = control.audit_events()
     except (json.JSONDecodeError, TypeError) as exc:
-        raise ContractValidationError(
-            "audit_event details_json is not strict JSON"
-        ) from exc
+        raise ContractValidationError("audit_event details_json is not strict JSON") from exc
     for manifest in manifests:
         schemas.validate("run_manifest", manifest)
     for approval in approvals:

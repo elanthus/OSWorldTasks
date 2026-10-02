@@ -110,7 +110,9 @@ def replay_actions(
 
 
 def recovery_actions(
-    task: V5Task, *, backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
+    task: V5Task,
+    *,
+    backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
 ) -> tuple[Action, ...]:
     planner = backend_factory()
     planner.reset(task.seed)
@@ -166,7 +168,9 @@ def random_floor_actions(task: V5Task, *, seed: int) -> tuple[Action, ...]:
 
 
 def validate_task_admission(
-    task: V5Task, *, backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
+    task: V5Task,
+    *,
+    backend_factory: Callable[[], V5FakeBackend] = V5FakeBackend,
 ) -> dict[str, Any]:
     backend = backend_factory()
     first_record = backend.reset(task.seed)
@@ -244,8 +248,9 @@ def validate_task_admission(
                 }
             ),
         }
-    floor = replay_actions(task, random_floor_actions(task, seed=task.seed ^ 0x5A5A),
-                           backend_factory=backend_factory)
+    floor = replay_actions(
+        task, random_floor_actions(task, seed=task.seed ^ 0x5A5A), backend_factory=backend_factory
+    )
     if any(floor.rewards):
         raise ValueError("frozen random-action floor unexpectedly succeeded")
     return {

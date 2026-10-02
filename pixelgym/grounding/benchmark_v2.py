@@ -59,9 +59,7 @@ def target_for_seed_state(seed: int, screen_state: str) -> TargetSpec:
     return TARGET_SPECS[(seed + state_index) % len(TARGET_SPECS)]
 
 
-def _index_by_example_id(
-    rows: list[dict[str, Any]], *, label: str
-) -> dict[str, dict[str, Any]]:
+def _index_by_example_id(rows: list[dict[str, Any]], *, label: str) -> dict[str, dict[str, Any]]:
     indexed: dict[str, dict[str, Any]] = {}
     for row in rows:
         identifier = row.get("example_id")
@@ -136,9 +134,7 @@ def derive_records(
         if len(target_candidates) != 1:
             raise ValueError("balanced target does not match exactly one target-neutral candidate")
         target_candidate = target_candidates[0]
-        example_id = (
-            f"vendor-form-v2-{number:04d}-{target.semantic_id.replace('_', '-')}"
-        )
+        example_id = f"vendor-form-v2-{number:04d}-{target.semantic_id.replace('_', '-')}"
         example = {
             **source,
             "schema_version": EXAMPLE_SCHEMA_VERSION,
@@ -157,7 +153,9 @@ def derive_records(
             "candidates": candidate_set,
         }
         source_overlay = overlay_by_id[source["example_id"]]
-        target_proposed, target_mark_id = proposal_match(target.semantic_id, source_overlay["marks"])
+        target_proposed, target_mark_id = proposal_match(
+            target.semantic_id, source_overlay["marks"]
+        )
         overlay = {
             **source_overlay,
             "schema_version": OVERLAY_SCHEMA_VERSION,
@@ -187,7 +185,11 @@ def validate_records(
     ids = [row.get("example_id") for row in examples]
     if not all(isinstance(identifier, str) and identifier for identifier in ids):
         raise ValueError("v2 example IDs must be nonempty strings")
-    if len(set(ids)) != expected_count or set(candidate_by_id) != set(ids) or set(overlay_by_id) != set(ids):
+    if (
+        len(set(ids)) != expected_count
+        or set(candidate_by_id) != set(ids)
+        or set(overlay_by_id) != set(ids)
+    ):
         raise ValueError("v2 examples, candidates, and overlays must join one-to-one")
 
     cell_counts: Counter[tuple[str, str]] = Counter()
@@ -197,9 +199,10 @@ def validate_records(
     seed_state_counts: Counter[tuple[int, str]] = Counter()
     image_paths: set[str] = set()
     for example in examples:
-        if example.get("schema_version") != EXAMPLE_SCHEMA_VERSION or example.get(
-            "protocol_version"
-        ) != PROTOCOL_VERSION:
+        if (
+            example.get("schema_version") != EXAMPLE_SCHEMA_VERSION
+            or example.get("protocol_version") != PROTOCOL_VERSION
+        ):
             raise ValueError("v2 example version does not match")
         seed, state = example.get("task_seed"), example.get("screen_state")
         if type(seed) is not int or not isinstance(state, str):
@@ -225,28 +228,27 @@ def validate_records(
             raise ValueError("v2 CSS-to-screenshot box transformation does not match")
 
         candidate = candidate_by_id[example["example_id"]]
-        if candidate.get("schema_version") != CANDIDATE_SCHEMA_VERSION or candidate.get(
-            "protocol_version"
-        ) != PROTOCOL_VERSION:
+        if (
+            candidate.get("schema_version") != CANDIDATE_SCHEMA_VERSION
+            or candidate.get("protocol_version") != PROTOCOL_VERSION
+        ):
             raise ValueError("v2 candidate version does not match")
         validate_candidate_set(candidate.get("candidates"), width=width, height=height)
         matches = [
-            item
-            for item in candidate["candidates"]
-            if item["semantic_id"] == example["target_id"]
+            item for item in candidate["candidates"] if item["semantic_id"] == example["target_id"]
         ]
         if len(matches) != 1 or matches[0]["bbox"] != example["bbox"]:
             raise ValueError("v2 target box does not match its target-neutral candidate")
 
         overlay = overlay_by_id[example["example_id"]]
-        if overlay.get("schema_version") != OVERLAY_SCHEMA_VERSION or overlay.get(
-            "protocol_version"
-        ) != PROTOCOL_VERSION:
-            raise ValueError("v2 overlay version does not match")
         if (
-            overlay.get("raw_image_path") != example.get("image_path")
-            or overlay.get("raw_image_sha256") != example.get("image_sha256")
+            overlay.get("schema_version") != OVERLAY_SCHEMA_VERSION
+            or overlay.get("protocol_version") != PROTOCOL_VERSION
         ):
+            raise ValueError("v2 overlay version does not match")
+        if overlay.get("raw_image_path") != example.get("image_path") or overlay.get(
+            "raw_image_sha256"
+        ) != example.get("image_sha256"):
             raise ValueError("v2 overlay does not reference the example's raw image")
         validate_marks(overlay.get("marks"), width=width, height=height)
         proposed, mark_id = proposal_match(example["target_id"], overlay["marks"])
@@ -374,5 +376,7 @@ def build_benchmark_v2(repository_root: Path) -> dict[str, Any]:
         "model_calls_performed": 0,
     }
     manifest_path = artifact_root / "grounding-v2-manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return manifest

@@ -73,8 +73,7 @@ def generate_episode_gif(
     backend_metadata = evidence.get("backend_metadata")
     if (
         not isinstance(backend_metadata, dict)
-        or backend_metadata.get("upstream_repository")
-        != "https://github.com/xlang-ai/OSWorld-V2"
+        or backend_metadata.get("upstream_repository") != "https://github.com/xlang-ai/OSWorld-V2"
         or not str(backend_metadata.get("release", "")).startswith("osworld-v2-")
         or not str(backend_metadata.get("upstream_tag", "")).startswith("v")
     ):

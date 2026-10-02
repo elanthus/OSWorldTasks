@@ -105,9 +105,9 @@ def test_v5_browser_and_fake_backend_control_geometry_and_recovery_are_equivalen
                     assert [row["control_id"] for row in browser_controls] == [
                         control.control_id for control in backend.visible_controls()
                     ]
-                    assert [tuple(round(value) for value in row["bbox"]) for row in browser_controls] == [
-                        control.bbox for control in backend.visible_controls()
-                    ]
+                    assert [
+                        tuple(round(value) for value in row["bbox"]) for row in browser_controls
+                    ] == [control.bbox for control in backend.visible_controls()]
                     if stage.required_text:
                         page.locator('[data-control-id="text_input"]').click()
                         backend.click(*backend.control_center("text_input"))

@@ -84,15 +84,11 @@ def resolve_deployment_exposure(bind_address: str | None = None) -> DeploymentEx
         if bind_address is not None
         else os.environ.get("PIXELGYM_BIND_ADDRESS") or "127.0.0.1"
     )
-    loopback_only_attested = (
-        _environment_bool("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT") or False
-    )
+    loopback_only_attested = _environment_bool("PIXELGYM_LOOPBACK_ONLY_DEPLOYMENT") or False
     return DeploymentExposure(
         bind_address=resolved_bind_address,
         loopback_only_attested=loopback_only_attested,
-        treated_as_loopback=(
-            loopback_only_attested or _is_loopback_address(resolved_bind_address)
-        ),
+        treated_as_loopback=(loopback_only_attested or _is_loopback_address(resolved_bind_address)),
     )
 
 

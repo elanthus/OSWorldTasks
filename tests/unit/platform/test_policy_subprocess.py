@@ -187,9 +187,7 @@ def test_worker_bootstrap_has_no_pixelgym_application_imports() -> None:
 
     assert all(not module.startswith("pixelgym") for module in imported_modules)
     namespace = runpy.run_path(str(worker_path), run_name="_policy_worker_contract")
-    assert namespace["POLICY_WORKER_PROTOCOL_VERSION"] == (
-        "pixelgym-serving-policy-worker-v1"
-    )
+    assert namespace["POLICY_WORKER_PROTOCOL_VERSION"] == ("pixelgym-serving-policy-worker-v1")
 
 
 def test_unenforced_launcher_is_rejected_by_default() -> None:

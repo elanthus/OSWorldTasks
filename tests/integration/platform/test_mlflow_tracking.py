@@ -100,15 +100,15 @@ def test_real_mlflow_adapter_logs_complete_linked_contract(tmp_path) -> None:
     }
     run_id = tracking.create_or_recover_run("submission-integration", params)
     dataset_input = DatasetInputContract(
-            name=params["dataset_name"],
-            fingerprint=params["dataset_fingerprint"],
-            mlflow_digest=params["mlflow_dataset_digest"],
-            manifest_uri=params["dataset_manifest_uri"],
-            manifest_version=params["dataset_manifest_version"],
-            schema=params["dataset_schema"],
-            protocol_version=params["dataset_protocol_version"],
-            example_count=100,
-        )
+        name=params["dataset_name"],
+        fingerprint=params["dataset_fingerprint"],
+        mlflow_digest=params["mlflow_dataset_digest"],
+        manifest_uri=params["dataset_manifest_uri"],
+        manifest_version=params["dataset_manifest_version"],
+        schema=params["dataset_schema"],
+        protocol_version=params["dataset_protocol_version"],
+        example_count=100,
+    )
     tracking.log_dataset_input(run_id, dataset_input)
     tracking.log_dataset_input(run_id, dataset_input)
     tracking.link_prompt_to_run(run_id, policy.prompt_name, policy.prompt_version)

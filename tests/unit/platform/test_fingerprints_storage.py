@@ -43,8 +43,16 @@ def test_frozen_dataset_has_reproducible_authoritative_fingerprint(repository_ro
 def test_line_key_and_absolute_path_reordering_do_not_change_identity(
     repository_root: Path, tmp_path: Path
 ) -> None:
-    examples = [json.loads(line) for line in (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()]
-    overlays = [json.loads(line) for line in (repository_root / "artifacts/grounding-overlays.jsonl").read_text().splitlines()]
+    examples = [
+        json.loads(line)
+        for line in (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()
+    ]
+    overlays = [
+        json.loads(line)
+        for line in (repository_root / "artifacts/grounding-overlays.jsonl")
+        .read_text()
+        .splitlines()
+    ]
     for row in examples:
         row["image_path"] = str((repository_root / row["image_path"]).resolve())
         row = {key: row[key] for key in reversed(row)}
@@ -61,9 +69,19 @@ def test_line_key_and_absolute_path_reordering_do_not_change_identity(
     assert fingerprint == EXPECTED_FINGERPRINT
 
 
-def test_schema_valid_record_mutation_changes_fingerprint(repository_root: Path, tmp_path: Path) -> None:
-    examples = [json.loads(line) for line in (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()]
-    overlays = [json.loads(line) for line in (repository_root / "artifacts/grounding-overlays.jsonl").read_text().splitlines()]
+def test_schema_valid_record_mutation_changes_fingerprint(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    examples = [
+        json.loads(line)
+        for line in (repository_root / "artifacts/grounding-dataset.jsonl").read_text().splitlines()
+    ]
+    overlays = [
+        json.loads(line)
+        for line in (repository_root / "artifacts/grounding-overlays.jsonl")
+        .read_text()
+        .splitlines()
+    ]
     examples[0]["screen_state"] = "completed_review"
     dataset = tmp_path / "dataset.jsonl"
     overlay_path = tmp_path / "overlays.jsonl"
@@ -78,7 +96,9 @@ def test_schema_valid_record_mutation_changes_fingerprint(repository_root: Path,
 def test_local_store_is_put_once_and_verifies_readback(tmp_path: Path) -> None:
     store = LocalImmutableStore(tmp_path)
     reference = store.put_once("raw/a.json", b'{"answer":1}\n', media_type="application/json")
-    assert store.put_once("raw/a.json", b'{"answer":1}\n', media_type="application/json") == reference
+    assert (
+        store.put_once("raw/a.json", b'{"answer":1}\n', media_type="application/json") == reference
+    )
     assert store.get_verified(reference) == b'{"answer":1}\n'
     assert store.get_reference("raw/a.json") == reference
     with pytest.raises(ImmutableStoreError, match="conflicting"):
@@ -118,9 +138,7 @@ def test_interrupted_commit_is_repaired_by_a_new_store_instance(
     assert not (tmp_path / "metadata/raw/retry.json.metadata.json").exists()
 
     second_store = LocalImmutableStore(tmp_path)
-    reference = second_store.put_once(
-        "raw/retry.json", b"evidence", media_type="application/json"
-    )
+    reference = second_store.put_once("raw/retry.json", b"evidence", media_type="application/json")
     assert second_store.get_verified(reference) == b"evidence"
 
 

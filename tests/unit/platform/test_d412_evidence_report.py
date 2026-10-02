@@ -29,9 +29,7 @@ LEGACY_MANIFEST_KNOWN_LIMITATIONS = {
     "size": 1440,
 }
 D412_ROOT = Path(__file__).parents[3] / "artifacts/platform/d4.12"
-COMMITTED_REVISIONS = tuple(
-    path.name for path in sorted(D412_ROOT.iterdir()) if path.is_dir()
-)
+COMMITTED_REVISIONS = tuple(path.name for path in sorted(D412_ROOT.iterdir()) if path.is_dir())
 MISSING_COMMITTED_REVISIONS = tuple(
     revision
     for revision in COMMITTED_REVISIONS
@@ -75,9 +73,7 @@ def _isolated_evidence(
         relative = Path("artifacts/platform/screenshots") / item["path"]
         destination = isolated_root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(
-            _git_file_bytes(repository_root, revision, relative.as_posix())
-        )
+        destination.write_bytes(_git_file_bytes(repository_root, revision, relative.as_posix()))
     (isolated_root / ".git").symlink_to(
         repository_root / ".git", target_is_directory=(repository_root / ".git").is_dir()
     )
@@ -91,10 +87,7 @@ def _artifact_entries(manifest: dict[str, object], path: str) -> list[dict[str, 
     assert isinstance(checklist, list)
     entries = [entry for entry in supporting if entry["path"] == path]
     entries.extend(
-        entry
-        for item in checklist
-        for entry in item["evidence"]
-        if entry["path"] == path
+        entry for item in checklist for entry in item["evidence"] if entry["path"] == path
     )
     return entries
 
@@ -183,10 +176,7 @@ def test_generator_reproduces_committed_manifest(
 
     generated_path = evidence_dir / "evidence-manifest.json"
     committed_path = (
-        repository_root
-        / "artifacts/platform/d4.12"
-        / revision
-        / "evidence-manifest.json"
+        repository_root / "artifacts/platform/d4.12" / revision / "evidence-manifest.json"
     )
     if revision != REVISION:
         assert generated_path.read_bytes() == committed_path.read_bytes()
@@ -201,9 +191,10 @@ def test_generator_reproduces_committed_manifest(
         "size": len(recorded_data),
     }
     assert _artifact_entries(generated, KNOWN_LIMITATIONS_PATH) == [recorded_entry] * 2
-    assert _artifact_entries(committed, KNOWN_LIMITATIONS_PATH) == [
-        LEGACY_MANIFEST_KNOWN_LIMITATIONS
-    ] * 2
+    assert (
+        _artifact_entries(committed, KNOWN_LIMITATIONS_PATH)
+        == [LEGACY_MANIFEST_KNOWN_LIMITATIONS] * 2
+    )
     for entry in _artifact_entries(committed, KNOWN_LIMITATIONS_PATH):
         entry.update(recorded_entry)
     generated_bytes = (json.dumps(generated, indent=2, sort_keys=True) + "\n").encode()
@@ -231,10 +222,7 @@ def test_generator_reproduces_manifest_with_modified_live_supporting_artifact(
     generate(isolated_root, evidence_dir)
 
     assert (evidence_dir / "evidence-manifest.json").read_bytes() == (
-        repository_root
-        / "artifacts/platform/d4.12"
-        / revision
-        / "evidence-manifest.json"
+        repository_root / "artifacts/platform/d4.12" / revision / "evidence-manifest.json"
     ).read_bytes()
 
 
@@ -355,14 +343,10 @@ def test_generator_rejects_policy_mapped_to_multiple_candidates(
     lineage_path = "artifacts/platform/demo-mlflow-lineage.jsonl"
     rows = [
         json.loads(line)
-        for line in _git_file_bytes(repository_root, REVISION, lineage_path)
-        .decode()
-        .splitlines()
+        for line in _git_file_bytes(repository_root, REVISION, lineage_path).decode().splitlines()
     ]
     rows[1]["policy_id"] = rows[0]["policy_id"]
-    tampered_lineage = "".join(
-        json.dumps(row, sort_keys=True) + "\n" for row in rows
-    ).encode()
+    tampered_lineage = "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows).encode()
     original_git_file_bytes = d412_report._git_file_bytes
 
     def git_file_bytes_with_conflicting_lineage(
@@ -381,9 +365,7 @@ def test_generator_rejects_policy_mapped_to_multiple_candidates(
             revision_validated=revision_validated,
         )
 
-    monkeypatch.setattr(
-        d412_report, "_git_file_bytes", git_file_bytes_with_conflicting_lineage
-    )
+    monkeypatch.setattr(d412_report, "_git_file_bytes", git_file_bytes_with_conflicting_lineage)
 
     with pytest.raises(ValueError, match="multiple candidates"):
         generate(isolated_root, evidence_dir)

@@ -22,9 +22,7 @@ pytestmark = [
     pytest.mark.osworld_integration,
     pytest.mark.skipif(
         os.environ.get("PIXELGYM_RUN_OSWORLD_TESTS") != "1" or not GUEST_IMAGE.is_file(),
-        reason=(
-            "set PIXELGYM_RUN_OSWORLD_TESTS=1 after preparing the pinned local OSWorld image"
-        ),
+        reason=("set PIXELGYM_RUN_OSWORLD_TESTS=1 after preparing the pinned local OSWorld image"),
     ),
 ]
 

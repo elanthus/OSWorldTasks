@@ -148,8 +148,7 @@ def browser_boundary_evidence_passed(evidence: dict[str, Any] | None) -> bool:
         or not isinstance(browser.get("version"), str)
         or not browser["version"]
         or browser.get("renderer_contract") != chromium_renderer_contract()
-        or browser.get("args")
-        != list(build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)[1:])
+        or browser.get("args") != list(build_chromium_argv(ChromiumLaunchPath.PLAYWRIGHT)[1:])
     ):
         return False
     task_id = evidence.get("task_id")
@@ -248,9 +247,7 @@ def inspect_navigation_surface(
             active = matches[0]
     properties = window_state.get("active_window_properties")
     chromium_class = active.get("class", "") if isinstance(active, dict) else ""
-    fullscreen = (
-        isinstance(properties, str) and "_NET_WM_STATE_FULLSCREEN" in properties
-    )
+    fullscreen = isinstance(properties, str) and "_NET_WM_STATE_FULLSCREEN" in properties
     expected_bounds = {
         "x": 0,
         "y": 0,
@@ -258,9 +255,7 @@ def inspect_navigation_surface(
         "height": CSS_HEIGHT,
     }
     bounds = (
-        {name: active.get(name) for name in expected_bounds}
-        if isinstance(active, dict)
-        else None
+        {name: active.get(name) for name in expected_bounds} if isinstance(active, dict) else None
     )
     shape_exact = screenshot.shape == (CSS_HEIGHT, CSS_WIDTH, 3)
     anchors = []
@@ -328,9 +323,7 @@ def guest_browser_boundary_evidence_passed(evidence: dict[str, Any] | None) -> b
     renderer = launch.get("renderer_contract")
     if renderer != chromium_renderer_contract():
         return False
-    if launch.get("effective_argv") != list(
-        build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST)
-    ):
+    if launch.get("effective_argv") != list(build_chromium_argv(ChromiumLaunchPath.OSWORLD_GUEST)):
         return False
     checks = evidence.get("checks")
     if not isinstance(checks, list):

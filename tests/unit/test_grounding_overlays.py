@@ -71,17 +71,14 @@ def test_badges_do_not_overlap_any_candidate_or_prior_badge() -> None:
     _, marks = render_overlay(Image.new("RGB", (200, 100), "white"), candidates)
 
     def overlaps(first: list[int], second: list[int]) -> bool:
-        return (
-            max(first[0], second[0]) < min(first[2], second[2])
-            and max(first[1], second[1]) < min(first[3], second[3])
-        )
+        return max(first[0], second[0]) < min(first[2], second[2]) and max(
+            first[1], second[1]
+        ) < min(first[3], second[3])
 
     candidate_boxes = [candidate["bbox"] for candidate in candidates]
     badge_boxes = [mark["badge_bbox"] for mark in marks]
     assert all(
-        not overlaps(badge, candidate)
-        for badge in badge_boxes
-        for candidate in candidate_boxes
+        not overlaps(badge, candidate) for badge in badge_boxes for candidate in candidate_boxes
     )
     assert all(
         not overlaps(first, second)

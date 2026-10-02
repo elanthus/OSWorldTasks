@@ -60,9 +60,7 @@ def test_qwen_integrity_audit_is_no_call_and_has_no_failed_checks() -> None:
     }
     assert all(check["verified"] is True for check in audit["checks"])
     checks = {check["name"]: check for check in audit["checks"]}
-    assert checks["assignment_and_episode_reconciliation"][
-        "step_limit_horizons_exhausted"
-    ] == 12
+    assert checks["assignment_and_episode_reconciliation"]["step_limit_horizons_exhausted"] == 12
     assert checks["terminal_invalid_output_route"] == {
         "attempt_index": 0,
         "environment_actions": 9,
@@ -111,19 +109,16 @@ def test_qwen_derivative_reconciles_negative_result_and_excludes_payloads() -> N
     assert derivative["cost"]["budget_accounted_aggregate_spend_usd"] == "4.778164718"
     assert len(derivative["tasks"]) == 50
     assert sum(task["attempted"] for task in derivative["tasks"]) == 13
-    assert (
-        derivative["failure_routes"]["invalid_output"]["response_structure"]
-        == {
-            "begins_with_opening_brace": True,
-            "closing_brace_count": 0,
-            "completion_tokens": 192,
-            "content_characters": 504,
-            "finish_reason": "stop",
-            "meaningful_characters": 56,
-            "opening_brace_count": 1,
-            "trailing_json_whitespace_characters": 448,
-        }
-    )
+    assert derivative["failure_routes"]["invalid_output"]["response_structure"] == {
+        "begins_with_opening_brace": True,
+        "closing_brace_count": 0,
+        "completion_tokens": 192,
+        "content_characters": 504,
+        "finish_reason": "stop",
+        "meaningful_characters": 56,
+        "opening_brace_count": 1,
+        "trailing_json_whitespace_characters": 448,
+    }
     assert not {
         "content",
         "idempotency_key",

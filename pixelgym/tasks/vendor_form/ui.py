@@ -264,9 +264,7 @@ class Layout:
             form_x, checkbox_top, _CHECKBOX_ROW_WIDTH, _CHECKBOX_ROW_HEIGHT
         )
 
-        submit_top = (
-            checkbox_top + _CHECKBOX_FIELD_HEIGHT + _ROW_MARGIN + _SUBMIT_TOP_MARGIN
-        )
+        submit_top = checkbox_top + _CHECKBOX_FIELD_HEIGHT + _ROW_MARGIN + _SUBMIT_TOP_MARGIN
         self.controls[WidgetId.SUBMIT] = self._rect(
             form_x, submit_top, _SUBMIT_WIDTH, _SUBMIT_HEIGHT
         )

@@ -36,7 +36,9 @@ def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str
     ]
     human_gate = report.get("human_gate")
     if human_gate is not None:
-        verdict_line = f"**Human {human_gate.get('gate', 'D2.11')} verdict: {human_gate['verdict']}.**"
+        verdict_line = (
+            f"**Human {human_gate.get('gate', 'D2.11')} verdict: {human_gate['verdict']}.**"
+        )
         # The historical record carries a Day 3 authorization flag; later
         # re-grade records name the evidence revision they graded instead.
         if "day3_authorized" in human_gate:
@@ -102,7 +104,10 @@ def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str
         )
     lines.extend([f"- Host Python: `{report['runtime']['python_version']}`", ""])
     stop_loss = report["runtime"].get("provider_stop_loss")
-    if stop_loss is not None and stop_loss.get("schema_version") == "pixelgym-provider-stop-loss-v1":
+    if (
+        stop_loss is not None
+        and stop_loss.get("schema_version") == "pixelgym-provider-stop-loss-v1"
+    ):
         # Evidence revisions record an allocation ledger rather than a blocker narrative.
         lines.extend(
             [

@@ -612,9 +612,7 @@ def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
                 "provider": config.response_provider,
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],
@@ -635,12 +633,8 @@ def test_panel_transport_honors_retry_after_before_the_next_wire_send() -> None:
     )
     request = policy.build_request(policy.reset("task"), bytes(1024 * 768 * 3))
 
-    first = transport.send(
-        request, idempotency_key="attempt-1", deadline_seconds=10.0
-    )
-    second = transport.send(
-        request, idempotency_key="attempt-2", deadline_seconds=10.0
-    )
+    first = transport.send(request, idempotency_key="attempt-1", deadline_seconds=10.0)
+    second = transport.send(request, idempotency_key="attempt-2", deadline_seconds=10.0)
 
     assert first == TransportOutcome(
         "rate_limited",
@@ -876,9 +870,7 @@ def test_dropped_request_is_retryable_and_does_not_block_the_ledger(
     assert not ledger.blocked
     # ... while the possibly-billed send is charged at its worst case.
     assert ledger.unknown_charge_outcomes == 1
-    assert ledger.unknown_reservation_usd == (
-        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
-    )
+    assert ledger.unknown_reservation_usd == (GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd)
     assert ledger.budget_accounted_spend_usd == ledger.unknown_reservation_usd
 
 
@@ -1019,9 +1011,7 @@ def test_unreadable_charge_reserves_worst_case_instead_of_blocking() -> None:
     assert outcome.failure_code == "provider_response_envelope_incomplete"
     assert not ledger.blocked
     assert ledger.unknown_charge_outcomes == 1
-    assert ledger.unknown_reservation_usd == (
-        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
-    )
+    assert ledger.unknown_reservation_usd == (GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd)
 
 
 def test_identified_response_with_unreadable_charge_fails_only_that_request() -> None:
@@ -1049,9 +1039,7 @@ def test_identified_response_with_unreadable_charge_fails_only_that_request() ->
     assert outcome.response is not None
     assert outcome.response["usage"]["price_guard"] == "missing_or_invalid_cost"
     assert not ledger.blocked
-    assert ledger.unknown_reservation_usd == (
-        GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
-    )
+    assert ledger.unknown_reservation_usd == (GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd)
 
 
 def test_a_charge_above_the_per_request_maximum_still_blocks() -> None:
@@ -1128,9 +1116,7 @@ def test_observed_ceiling_reservation_matches_the_v3b_run_shape() -> None:
     request_maximum = GEMINI_STATEFUL_FULL_CALIBRATION.request_maximum_usd
     ledger = SpendLedger(Decimal("7.00"), Decimal(0))
     assert ledger.reserve_wire("priced", request_maximum)
-    assert ledger.record_cost(
-        "priced", Decimal("0.011250"), request_maximum
-    )  # the run's priciest
+    assert ledger.record_cost("priced", Decimal("0.011250"), request_maximum)  # the run's priciest
 
     for index in range(20):
         key = f"unknown-{index}"
@@ -1190,12 +1176,8 @@ def test_proven_zero_charge_releases_hold_and_unknown_outcome_converts_it() -> N
     assert ledger.release_wire("pre-send", reason="confirmed_pre_send_failure")
     assert ledger.release_wire("pre-send", reason="duplicate_callback")
     assert ledger.reserve_wire("unknown", Decimal("1.00"))
-    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal(
-        "1.00"
-    )
-    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal(
-        "1.00"
-    )
+    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal("1.00")
+    assert ledger.reserve_unknown_charge("unknown", Decimal("1.00")) == Decimal("1.00")
 
     assert ledger.spent_usd == 0
     assert ledger.in_flight_reservation_usd == 0
@@ -1214,9 +1196,7 @@ def test_reconciliation_handles_pre_reservation_crash_and_converts_existing_hold
 
     assert ledger.reserve_wire("possibly-sent", request_maximum)
     first = transport.reconcile(idempotency_key="possibly-sent", deadline_seconds=1.0)
-    duplicate = transport.reconcile(
-        idempotency_key="possibly-sent", deadline_seconds=1.0
-    )
+    duplicate = transport.reconcile(idempotency_key="possibly-sent", deadline_seconds=1.0)
 
     assert first == duplicate
     assert ledger.in_flight_reservation_usd == 0
@@ -1227,9 +1207,7 @@ def test_reconciliation_handles_pre_reservation_crash_and_converts_existing_hold
 def test_late_confirmed_zero_charge_replaces_unknown_reservation_once() -> None:
     ledger = SpendLedger(Decimal("1.00"), Decimal(0))
     assert ledger.reserve_wire("late-zero", Decimal("1.00"))
-    assert ledger.reserve_unknown_charge("late-zero", Decimal("1.00")) == Decimal(
-        "1.00"
-    )
+    assert ledger.reserve_unknown_charge("late-zero", Decimal("1.00")) == Decimal("1.00")
 
     assert ledger.release_wire("late-zero", reason="late_http_429")
     assert ledger.release_wire("late-zero", reason="duplicate_callback")
@@ -1256,9 +1234,7 @@ def test_concurrent_reserve_and_complete_keep_projection_within_cap() -> None:
 
     def complete_first() -> None:
         assert completion_allowed.wait(timeout=1.0)
-        results.append(
-            ledger.record_cost("first", Decimal("0.25"), Decimal("1.00"))
-        )
+        results.append(ledger.record_cost("first", Decimal("0.25"), Decimal("1.00")))
         completion_done.set()
 
     reserver = threading.Thread(target=reserve_contender)
@@ -1293,9 +1269,7 @@ def test_abandoned_streaming_send_blocks_immediate_retry_at_cap() -> None:
                 "provider": "Google",
                 "choices": [
                     {
-                        "message": {
-                            "content": '{"action_type":0,"x":0,"y":0,"key":0}'
-                        },
+                        "message": {"content": '{"action_type":0,"x":0,"y":0,"key":0}'},
                         "finish_reason": "stop",
                     }
                 ],

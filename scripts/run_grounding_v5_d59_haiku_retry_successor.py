@@ -38,9 +38,7 @@ def main() -> None:
     runner.CLI_API_RETRY_LIMIT = 0
     runner.execution_binding = authorization.execution_binding
     runner.validate_assignments = authorization.validate_assignments
-    runner.validate_execution_authorization = (
-        authorization.validate_execution_authorization
-    )
+    runner.validate_execution_authorization = authorization.validate_execution_authorization
     runner.validated_live_manifests = validated_transport_manifests
     runner.main()
 
