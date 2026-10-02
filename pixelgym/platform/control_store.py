@@ -783,7 +783,10 @@ class ControlStore:
     def link_run(self, submission_id: str, *, metaflow_pathspec: str, mlflow_run_id: str) -> None:
         with self.transaction() as connection:
             row = connection.execute(
-                "SELECT metaflow_pathspec, mlflow_run_id, status FROM submissions WHERE submission_id = ?",
+                (
+                    "SELECT metaflow_pathspec, mlflow_run_id, status FROM submissions "
+                    "WHERE submission_id = ?"
+                ),
                 (submission_id,),
             ).fetchone()
             if row is None:
@@ -795,7 +798,10 @@ class ControlStore:
             ] not in {None, mlflow_run_id}:
                 raise ConflictError("submission lineage cannot be changed")
             connection.execute(
-                "UPDATE submissions SET metaflow_pathspec = ?, mlflow_run_id = ?, status = 'Running' WHERE submission_id = ?",
+                (
+                    "UPDATE submissions SET metaflow_pathspec = ?, mlflow_run_id = ?, "
+                    "status = 'Running' WHERE submission_id = ?"
+                ),
                 (metaflow_pathspec, mlflow_run_id, submission_id),
             )
 
@@ -909,7 +915,12 @@ class ControlStore:
                     raise ConflictError("candidate identity already has different evidence")
             else:
                 connection.execute(
-                    "INSERT INTO candidates(candidate_id, source_run_id, policy_id, policy_json, gate_report_json, gate_report_sha256, artifacts_json, summary_json, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        "INSERT INTO candidates(candidate_id, source_run_id, policy_id, "
+                        "policy_json, gate_report_json, gate_report_sha256, "
+                        "artifacts_json, summary_json, state) VALUES (?, ?, ?, ?, ?, ?, ?, "
+                        "?, ?)"
+                    ),
                     values,
                 )
                 self._audit(
@@ -1132,7 +1143,10 @@ class ControlStore:
                 ),
             )
             connection.execute(
-                "UPDATE candidates SET state = ?, version = version + 1 WHERE candidate_id = ? AND state = ?",
+                (
+                    "UPDATE candidates SET state = ?, version = version + 1 WHERE "
+                    "candidate_id = ? AND state = ?"
+                ),
                 (CandidateState.APPROVED.value, candidate_id, CandidateState.ELIGIBLE.value),
             )
             self._audit(
@@ -1316,7 +1330,10 @@ class ControlStore:
                 ),
             )
             changed = connection.execute(
-                "UPDATE active_pointer SET deployment_id = ?, generation = ? WHERE singleton = 1 AND generation = ?",
+                (
+                    "UPDATE active_pointer SET deployment_id = ?, generation = ? WHERE "
+                    "singleton = 1 AND generation = ?"
+                ),
                 (deployment_id, generation, expected_generation),
             ).rowcount
             if changed != 1:

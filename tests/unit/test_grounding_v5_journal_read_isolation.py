@@ -100,7 +100,10 @@ def test_all_journal_readers_wait_for_transaction_rollback(tmp_path, monkeypatch
         try:
             with pytest.raises(Rollback), journal._write_transaction():
                 journal._connection.execute(
-                    "INSERT INTO events(event_key, kind, trial_id, step_index, attempt_index, payload) VALUES (?, ?, ?, ?, ?, ?)",
+                    (
+                        "INSERT INTO events(event_key, kind, trial_id, step_index, "
+                        "attempt_index, payload) VALUES (?, ?, ?, ?, ?, ?)"
+                    ),
                     ("uncommitted", "attempt_completed", "trial", 0, 0, b"{}"),
                 )
                 journal._connection.execute(

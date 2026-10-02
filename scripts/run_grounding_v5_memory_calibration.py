@@ -183,7 +183,11 @@ def canonical_plan() -> dict[str, Any]:
         "schema_version": "pixelgym-d58-full-memory-calibration-plan-v1",
         "phase_id": PHASE,
         "owner_approval": "ok, please proceed with the full run",
-        "approval_scope": "full end-to-end matched Gemini calibration using the remaining existing USD 5 aggregate ceiling; no Qwen, Mistral, reliability or confirmatory calls",
+        "approval_scope": (
+            "full end-to-end matched Gemini calibration using the "
+            "remaining existing USD 5 aggregate ceiling; no Qwen, "
+            "Mistral, reliability or confirmatory calls"
+        ),
         "execution_enabled": True,
         "jobs": jobs,
         "assigned_episodes": len(jobs),
@@ -205,15 +209,28 @@ def canonical_plan() -> dict[str, Any]:
         "pilot_ledger_prefix_digest": prefix,
         "pilot_ledger_event_count": pilot["journal_integrity"]["event_count"],
         "per_request_reservation_usd": str(config.request_maximum_usd),
-        "unknown_charge_reservation_rule": "full request maximum, irrespective of prior observed charges",
+        "unknown_charge_reservation_rule": (
+            "full request maximum, irrespective of prior observed charges"
+        ),
         "maximum_phase_cost_without_aggregate_guard_usd": str(actions * config.request_maximum_usd),
         "pilot_average_request_cost_projection_usd": str(
             Decimal(pilot["spend"]["spent_usd"]) * actions / pilot["spend"]["wire_requests_sent"]
         ),
         "completion_within_budget_guaranteed": False,
-        "measurements": "host evaluator terminal success; reached both consumers; first model attempt at each consumer including misses/invalid outputs as incorrect; all assignments retained",
-        "analysis_rule": "report incomplete coverage explicitly; do not estimate confirmatory power from a budget-truncated calibration; twins remain logical clusters",
-        "ordering": "round-robin families from the previous fifty-seed calibration; alternate first policy by task index; sequential requests",
+        "measurements": (
+            "host evaluator terminal success; reached both consumers; "
+            "first model attempt at each consumer including misses/invalid "
+            "outputs as incorrect; all assignments retained"
+        ),
+        "analysis_rule": (
+            "report incomplete coverage explicitly; do not estimate "
+            "confirmatory power from a budget-truncated calibration; "
+            "twins remain logical clusters"
+        ),
+        "ordering": (
+            "round-robin families from the previous fifty-seed calibration; "
+            "alternate first policy by task index; sequential requests"
+        ),
         "stop_rules": [
             "before any request whose full reservation exceeds shared USD 5 ceiling",
             "phase call/action caps",
@@ -221,7 +238,11 @@ def canonical_plan() -> dict[str, Any]:
             "provider identity or price guard mismatch",
             "evidence integrity failure",
         ],
-        "interruption_rule": "retain terminal committed outcomes; classify other interrupted episodes as failed without restarting or resending; retain unknown/in-flight holds",
+        "interruption_rule": (
+            "retain terminal committed outcomes; classify other "
+            "interrupted episodes as failed without restarting or "
+            "resending; retain unknown/in-flight holds"
+        ),
         "provider_retries": 0,
         "confirmatory_call_cap": 0,
     }
@@ -284,23 +305,48 @@ def render_report(summary: dict[str, Any]) -> str:
         "",
         f"Run complete: **{summary['complete']}**. Stop reason: `{summary['stop_reason']}`.",
         "",
-        "| Mode | Assigned | Attempted episodes | Terminal successes | Reached both consumers | Correct first memory attempts / attempted |",
+        (
+            "| Mode | Assigned | Attempted episodes | Terminal successes | Reached both "
+            "consumers | Correct first memory attempts / attempted |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for mode, row in sorted(summary["scores"].items()):
         lines.append(
-            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | {row['terminal_successes']} | {row['reached_both_consumers']} | {row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
+            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | "
+            f"{row['terminal_successes']} | {row['reached_both_consumers']} | "
+            f"{row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
         )
     spend = summary["aggregate_spend"]
     lines += [
         "",
-        f"Aggregate known spend (including the prior pilot): **USD {spend['spent_usd']}**. Unknown reservations: **USD {spend['unknown_reservation_usd']}**. In-flight reservations: **USD {spend['in_flight_reservation_usd']}**. Total wire requests including the pilot: **{spend['wire_requests_sent']}**. Shared ceiling: **USD 5.00**.",
+        (
+            "Aggregate known spend (including the prior pilot): **USD "
+            f"{spend['spent_usd']}**. Unknown reservations: **USD "
+            f"{spend['unknown_reservation_usd']}**. In-flight reservations: **USD "
+            f"{spend['in_flight_reservation_usd']}**. Total wire requests including the "
+            f"pilot: **{spend['wire_requests_sent']}**. Shared ceiling: **USD 5.00**."
+        ),
         "",
-        "Every assignment remains in the denominator; unrun assignments are explicit. Failures, missed clicks and invalid responses are retained. This phase starts each episode at reset and uses no scripted prefix. The frozen policies share all settings except screenshot retention.",
+        (
+            "Every assignment remains in the denominator; unrun assignments are explicit. "
+            "Failures, missed clicks and invalid responses are retained. This phase starts "
+            "each episode at reset and uses no scripted prefix. The frozen policies share "
+            "all settings except screenshot retention."
+        ),
         "",
-        "A budget-truncated campaign cannot establish complete calibration rates, paired terminal discordance, or confirmatory power. D5.8 final approval remains open; no confirmatory task was evaluated.",
+        (
+            "A budget-truncated campaign cannot establish complete calibration rates, "
+            "paired terminal discordance, or confirmatory power. D5.8 final approval "
+            "remains open; no confirmatory task was evaluated."
+        ),
         "",
-        "[Stored summary](summary.json), [execution approval](execution-plan.json), [task admission](admission.json), [price recheck](price-recheck.json). Provider response text, screenshots and checkpoints remain in the existing ignored authoritative aggregate journal.",
+        (
+            "[Stored summary](summary.json), [execution approval](execution-plan.json), "
+            "[task admission](admission.json), [price recheck](price-recheck.json). "
+            "Provider response text, screenshots and checkpoints remain in the existing "
+            "ignored authoritative aggregate journal."
+        ),
         "",
     ]
     return "\n".join(lines)
@@ -323,8 +369,16 @@ def execution_amendment(original: dict[str, Any], current: dict[str, Any]) -> di
         "original_driver_source_digest": original["driver_source_digest"],
         "driver_source_digest": current["driver_source_digest"],
         "driver_code_revision": current["driver_code_revision"],
-        "reason": "Correct the canonical_provider_response object-role check in post-episode auditing; preserve every request, outcome and unknown-charge hold already recorded",
-        "approval_scope": "implementation repair within the owner's approved full run; no change to model policies, task assignments, retry rules or shared USD 5 cap",
+        "reason": (
+            "Correct the canonical_provider_response object-role check in "
+            "post-episode auditing; preserve every request, outcome and "
+            "unknown-charge hold already recorded"
+        ),
+        "approval_scope": (
+            "implementation repair within the owner's approved full run; "
+            "no change to model policies, task assignments, retry rules "
+            "or shared USD 5 cap"
+        ),
     }
     return {**value, "amendment_digest": content_digest(value)}
 

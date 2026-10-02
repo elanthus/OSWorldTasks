@@ -272,5 +272,7 @@ def summarize(
         "provider_control_requests": journal.call_counts()[1],
         "journal_integrity": journal.integrity_report(),
         "confirmatory_tasks_evaluated": 0,
-        "publication_policy": "provider text, screenshots and checkpoints remain in the ignored authoritative journal",
+        "publication_policy": (
+            "provider text, screenshots and checkpoints remain in the ignored authoritative journal"
+        ),
     }

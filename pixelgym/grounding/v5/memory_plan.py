@@ -115,7 +115,9 @@ def pilot_plan(root: Path, *, snapshot: dict[str, Any], code_revision: str) -> d
         "schema_version": "pixelgym-v5-d58-memory-diagnostic-plan-v1",
         "status": "plan_only_requires_exact_execution_approval",
         "execution_enabled": False,
-        "purpose": "scripted-prefix first-attempt memory diagnostic; not an end-to-end calibration score",
+        "purpose": (
+            "scripted-prefix first-attempt memory diagnostic; not an end-to-end calibration score"
+        ),
         "cases": cases,
         "policy_manifests": manifests,
         "price_snapshot_digest": content_digest(snapshot),
@@ -130,8 +132,14 @@ def pilot_plan(root: Path, *, snapshot: dict[str, Any], code_revision: str) -> d
             "uncapped_twenty_request_bound_usd": str(requests * config.request_maximum_usd),
             "all_requests_guaranteed_to_fit": requests * config.request_maximum_usd
             <= TOTAL_REPAIR_BUDGET_USD,
-            "ledger_scope": "one durable ledger shared across both arms and every subsequent D5.8 phase",
-            "stop_rule": "reserve full request bound before send; stop before a reservation exceeds USD 5; retain unknown charges at the full bound; never start a new per-arm or per-phase allowance",
+            "ledger_scope": (
+                "one durable ledger shared across both arms and every subsequent D5.8 phase"
+            ),
+            "stop_rule": (
+                "reserve full request bound before send; stop before a "
+                "reservation exceeds USD 5; retain unknown charges at the "
+                "full bound; never start a new per-arm or per-phase allowance"
+            ),
         },
         "confirmatory_request_cap": 0,
         "provider_calls_made": 0,

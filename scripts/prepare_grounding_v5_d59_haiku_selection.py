@@ -111,7 +111,10 @@ def build_selection() -> dict[str, Any]:
             "os_sandbox_applied": sandbox,
             "blockers": [
                 "Apply and verify OS-level sandbox enforcement for both Claude Code CLI policies.",
-                "Create a versioned D5.9 freeze binding admitted tasks, source and runtime digests, caps, runtime window, and subscription boundary.",
+                (
+                    "Create a versioned D5.9 freeze binding admitted tasks, source and "
+                    "runtime digests, caps, runtime window, and subscription boundary."
+                ),
                 "Obtain separate exact execution approval before any provider call.",
             ],
         },

@@ -199,7 +199,9 @@ def validate_reward_hacking(
         {
             "attack": "Out-of-bounds clicks",
             "disposition": "tested",
-            "evidence": "All four coordinate boundary violations were rejected before backend calls.",
+            "evidence": (
+                "All four coordinate boundary violations were rejected before backend calls."
+            ),
             "evidence_passed": all(
                 record["rejected"] and record["rejected_before_backend_execution"]
                 for record in out_of_bounds
@@ -227,7 +229,9 @@ def validate_reward_hacking(
         {
             "attack": "Guess or alter a task identifier",
             "disposition": "tested",
-            "evidence": "The stale-task fixture was rejected by the current host-side task identity.",
+            "evidence": (
+                "The stale-task fixture was rejected by the current host-side task identity."
+            ),
             "evidence_passed": stale["passed"],
         },
         {
@@ -286,13 +290,16 @@ def validate_reward_hacking(
             "slow or fail even when the adapter is correct."
         ),
         (
-            "The privileged /api/state endpoint exists inside the guest. The tested app-mode contract "
-            "removes browser navigation affordances from the bounded-click observation; containment "
+            "The privileged /api/state endpoint exists inside the guest. The tested "
+            "app-mode contract "
+            "removes browser navigation affordances from the bounded-click "
+            "observation; containment "
             "against a browser or guest OS exploit remains outside this benchmark's threat model."
         ),
         (
             "OSWorld's structured computer action controller internally generates fixed pyautogui "
-            "Python calls. PixelGym never accepts or forwards agent-supplied Python, but it inherits "
+            "Python calls. PixelGym never accepts or forwards agent-supplied Python, "
+            "but it inherits "
             "bugs in that upstream structured-action implementation."
         ),
     ]

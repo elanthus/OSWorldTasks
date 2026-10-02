@@ -130,7 +130,10 @@ def render(report: dict[str, Any]) -> str:
             lines.append(f"| {phase} | {mode} | " + " | ".join(map(str, values)) + " |")
     lines += [
         "",
-        "Reliability assignments are repeated cases and are shown separately from the primary comparison.",
+        (
+            "Reliability assignments are repeated cases and are shown separately from the "
+            "primary comparison."
+        ),
         "",
         (
             "The owner authorized continuation after malformed output and, later, after exhausted "
@@ -141,7 +144,8 @@ def render(report: dict[str, Any]) -> str:
         "",
         (
             f"The journals record {report['provider_processes_started']} provider processes. "
-            f"All local subprocesses are closed; {report['unresolved_invocations']} timed-out calls "
+            f"All local subprocesses are closed; {report['unresolved_invocations']} "
+            "timed-out calls "
             "retain unknown provider completion. Recorded incremental experiment charge: "
             f"${report['incremental_experiment_charge_usd']}."
         ),

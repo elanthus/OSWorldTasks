@@ -231,7 +231,10 @@ def generate_pilot_review(repository_root: Path, predictions_path: Path) -> dict
         f"- Request failures: {audit['request_failure_count']}",
         f"- Raw accuracy: {audit['raw_correct_count']}/10 ({audit['raw_accuracy']:.0%})",
         f"- Marks accuracy: {audit['marks_correct_count']}/10 ({audit['marks_accuracy']:.0%})",
-        f"- Proposal coverage: {audit['proposal_covered_count']}/10 ({audit['proposal_coverage']:.0%})",
+        (
+            f"- Proposal coverage: {audit['proposal_covered_count']}/10 "
+            f"({audit['proposal_coverage']:.0%})"
+        ),
         f"- Same target text in both prompts: {audit['all_targets_equivalent_between_conditions']}",
         f"- Raw coordinate bounds valid: {audit['all_raw_points_in_bounds']}",
         f"- Selected mark IDs exist: {audit['all_selected_marks_exist']}",

@@ -168,8 +168,14 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
         "completed_pilot_evidence": _completed_pilot_evidence(repository_root),
         "stop_rules": [
             "stop after the approved model-attempt reservation cap",
-            "continue after a scored success or step-limit truncation so every assigned task remains in the denominator",
-            "stop after the first transport, identity, cost, parse, invalid-action, or evidence-integrity failure",
+            (
+                "continue after a scored success or step-limit truncation so every "
+                "assigned task remains in the denominator"
+            ),
+            (
+                "stop after the first transport, identity, cost, parse, invalid-action, or "
+                "evidence-integrity failure"
+            ),
             "do not retry or replace a failed or incomplete task",
             "do not expose confirmatory tasks",
         ],

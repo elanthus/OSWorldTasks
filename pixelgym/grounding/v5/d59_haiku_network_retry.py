@@ -71,8 +71,15 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
         schema_version="pixelgym-agent-v5-d59-haiku-network-retry-plan-v1",
         owner_direction={
             "recorded_at": "2026-09-23",
-            "statement": "I would like retries to be allowed, these are just intermittent network issues. Only count errors as failures.",
-            "interpretation": "One counted retry for a stopped timeout or connection reset. A recovered error is not an episode failure; an unrecovered error is retained.",
+            "statement": (
+                "I would like retries to be allowed, these are just "
+                "intermittent network issues. Only count errors as failures."
+            ),
+            "interpretation": (
+                "One counted retry for a stopped timeout or connection "
+                "reset. A recovered error is not an episode failure; an "
+                "unrecovered error is retained."
+            ),
         },
         predecessor={
             "execution_plan": _binding(root, PREDECESSOR_PATH, predecessor),
@@ -88,7 +95,10 @@ def execution_plan(root: Path, *, source_revision: str) -> dict[str, Any]:
             ).items()
         },
         change_control={
-            "changed_behavior": "Allow one runner-counted connection-reset retry in the existing timeout retry budget.",
+            "changed_behavior": (
+                "Allow one runner-counted connection-reset retry in "
+                "the existing timeout retry budget."
+            ),
             "cli_api_retry_limit": 0,
             "max_bounded_retries_per_action": 1,
             "recovered_error_is_episode_failure": False,

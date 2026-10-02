@@ -335,7 +335,9 @@ def execution_plan(
         "primary_comparison": {
             "conditions": ["history", "stateless"],
             "paired_task_seeds": list(D59_CONFIRMATORY_SEEDS),
-            "independent_representative_rule": "all singleton tasks and twin_a from every robustness pair",
+            "independent_representative_rule": (
+                "all singleton tasks and twin_a from every robustness pair"
+            ),
             "test": "two-sided exact McNemar",
             "alpha": 0.05,
             "minimum_relevant_absolute_difference": 0.2,
@@ -375,6 +377,10 @@ def execution_plan(
         },
         "primary_jobs": primary_jobs,
         "reliability_jobs": reliability_jobs,
-        "failure_rule": "retain every assigned failure and unrun assignment; no post-result tuning or replay outside the frozen reliability schedule",
+        "failure_rule": (
+            "retain every assigned failure and unrun assignment; no "
+            "post-result tuning or replay outside the frozen reliability "
+            "schedule"
+        ),
     }
     return {**value, "execution_plan_digest": content_digest(value)}

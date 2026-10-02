@@ -270,7 +270,9 @@ def summarize_comparison(plan: CalibrationPlan, summary: dict[str, Any]) -> dict
         "schema_version": "pixelgym-controlled-comparison-summary-v1",
         "plan_sha256": plan.digest,
         "source_summary_sha256": content_digest(summary),
-        "evidence_scope": "stored summary only; restricted attempt journal not independently audited",
+        "evidence_scope": (
+            "stored summary only; restricted attempt journal not independently audited"
+        ),
         "complete_assigned_denominator": complete,
         "full_episode_comparison": full_episodes,
         "assigned_pairs": len(tasks),

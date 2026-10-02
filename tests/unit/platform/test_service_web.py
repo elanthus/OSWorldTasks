@@ -1965,7 +1965,10 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
         control.connection.execute("DROP TRIGGER approvals_no_update")
         control.connection.execute("DROP TRIGGER approvals_no_delete")
         control.connection.execute(
-            "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = ?, gate_report_sha256 = ? WHERE candidate_id = ?",
+            (
+                "UPDATE candidates SET policy_id = ?, policy_json = ?, gate_report_json = "
+                "?, gate_report_sha256 = ? WHERE candidate_id = ?"
+            ),
             (
                 tampered.policy_id,
                 canonical_json_bytes(tampered.to_dict()).decode(),
@@ -3886,7 +3889,14 @@ def test_every_page_renders_descriptive_heading_without_slogans(
 
 
 # Copied verbatim from the pre-WP9b inline special case in the candidate view.
-_DEMO_DISCLOSURE_HTML = '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong> Candidate B\'s scripted revised responses are derived from the frozen Day 3 <code>condition == "marks"</code> rows, then relabeled for this policy\'s raw-condition demonstration. They are not results from the recorded raw prompt.</p>'
+_DEMO_DISCLOSURE_HTML = (
+    '<p class="disclosure"><strong>Synthetic fixture '
+    "disclosure:</strong> Candidate B's scripted revised "
+    "responses are derived from the frozen Day 3 <code>condition "
+    '== "marks"</code> rows, then relabeled for this policy\'s '
+    "raw-condition demonstration. They are not results from the "
+    "recorded raw prompt.</p>"
+)
 
 
 def _candidate_page_for(tmp_path: Path, gate_policy, summary, provider: str, model: str) -> str:

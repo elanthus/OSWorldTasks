@@ -116,7 +116,8 @@ class PolicyRuntime:
             self.activate(loaded)
 
     def activate(self, loaded: LoadedPolicy) -> None:
-        # Production activation is sanctioned only through DeploymentCoordinator; direct use is smoke-only.
+        # Production activation is sanctioned only through DeploymentCoordinator; direct use is
+        # smoke-only.
         if loaded.manifest.condition != "raw":
             raise ValueError("serving v1 supports raw-coordinate policies only")
         self.loaded = loaded

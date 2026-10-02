@@ -854,7 +854,9 @@ def build_derivative(
         },
         "date_provenance": {
             "run_execution_dates": "not recorded in committed plans or summaries",
-            "source_commit_dates": "author dates derived from immutable committed history; not execution timestamps",
+            "source_commit_dates": (
+                "author dates derived from immutable committed history; not execution timestamps"
+            ),
             "endpoint_record_dates": "copied from each approved plan",
         },
         "runs": [_published_row(row) for row in publishable],
@@ -880,11 +882,25 @@ def build_derivative(
             "Calibration is development evidence, not a benchmark score or milestone-gate verdict.",
             "Gemini v3b reserves USD 1.990656000 for 20 outcomes whose charges are unknown.",
             "Qwen v3 completed 50 assignments with zero exact-success terminations.",
-            "The two completed slots use different model/provider routes and are descriptive, not a controlled model comparison.",
-            "The completed slots bind the same calibration-partition manifest, prompt, memory, parser, response-schema, coordinate-adapter, and retry-policy versions.",
+            (
+                "The two completed slots use different model/provider routes and are "
+                "descriptive, not a controlled model comparison."
+            ),
+            (
+                "The completed slots bind the same calibration-partition manifest, prompt, "
+                "memory, parser, response-schema, coordinate-adapter, and retry-policy "
+                "versions."
+            ),
             "Their policy-manifest digests, code revisions, and runtime digests differ.",
-            "Qwen v3 records temperature 0 while Gemini v3b records no temperature; Gemini v3b records strict upstream json_schema response validation while Qwen v3 has no response_validation block.",
-            "Execution dates and restricted-journal file hashes were not retained in committed evidence.",
+            (
+                "Qwen v3 records temperature 0 while Gemini v3b records no temperature; "
+                "Gemini v3b records strict upstream json_schema response validation while "
+                "Qwen v3 has no response_validation block."
+            ),
+            (
+                "Execution dates and restricted-journal file hashes were not retained in "
+                "committed evidence."
+            ),
             "The historical classification labels are preserved without reinterpretation.",
         ],
     }
@@ -907,7 +923,10 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     lines = [
         "# Completed D5.6 V5 Calibration Results",
         "",
-        "**Status:** descriptive completed calibration evidence; not a benchmark score or milestone-gate verdict",
+        (
+            "**Status:** descriptive completed calibration evidence; not a benchmark score "
+            "or milestone-gate verdict"
+        ),
         "",
         (
             "This report publishes every retained D5.6 full-calibration run that completed its "
@@ -917,7 +936,10 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
         "",
         "## Calibration table",
         "",
-        "| Policy slot | Assigned | Attempted | Success | Invalid output | Request failure | Infrastructure failure | Policy violation | Truncation |",
+        (
+            "| Policy slot | Assigned | Attempted | Success | Invalid output | Request "
+            "failure | Infrastructure failure | Policy violation | Truncation |"
+        ),
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for run in derivative["runs"]:
@@ -932,7 +954,10 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     lines.extend(
         [
             "",
-            "Null and negative results are shown unchanged. Attempted is kept separate from every terminal classification.",
+            (
+                "Null and negative results are shown unchanged. Attempted is kept separate "
+                "from every terminal classification."
+            ),
             "",
             "## Policy identity, dates, spend, and stopping",
             "",
@@ -960,15 +985,43 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
                 "",
                 f"- Provider/model alias: `{run['provider_alias']}` / `{run['model_alias']}`",
                 f"- Execution date: {run['run_execution_date_disclosure']}",
-                f"- Endpoint record observed: `{run['endpoint_record_observed_at_utc']}`; source evidence author date: `{run['source_commit_date']}` ({run['source_commit_date_disclosure']})",
-                f"- Policy manifest / code revision / runtime: `{versions['policy_manifest_digest']}` / `{versions['code_revision']}` / `{versions['runtime_digest']}`",
-                f"- Calibration-partition manifest: `{versions['calibration_partition_manifest_digest']}`",
+                (
+                    "- Endpoint record observed: "
+                    f"`{run['endpoint_record_observed_at_utc']}`; source evidence author "
+                    f"date: `{run['source_commit_date']}` "
+                    f"({run['source_commit_date_disclosure']})"
+                ),
+                (
+                    "- Policy manifest / code revision / runtime: "
+                    f"`{versions['policy_manifest_digest']}` / "
+                    f"`{versions['code_revision']}` / `{versions['runtime_digest']}`"
+                ),
+                (
+                    "- Calibration-partition manifest: "
+                    f"`{versions['calibration_partition_manifest_digest']}`"
+                ),
                 f"- Prompt digest: `{versions['system_prompt_digest']}`",
-                f"- Memory/parser/response policy: `{versions['memory_policy_version']}` / `{versions['parser_version']}` / `{versions['response_schema_version']}`",
-                f"- Coordinate/retry policy: `{versions['coordinate_adapter']}` / `{versions['transport_retry_rule']}`",
+                (
+                    "- Memory/parser/response policy: "
+                    f"`{versions['memory_policy_version']}` / "
+                    f"`{versions['parser_version']}` / "
+                    f"`{versions['response_schema_version']}`"
+                ),
+                (
+                    f"- Coordinate/retry policy: `{versions['coordinate_adapter']}` / "
+                    f"`{versions['transport_retry_rule']}`"
+                ),
                 f"- Temperature: `{temperature}`; response validation: `{response_validation}`",
-                f"- Known run spend: `${spend['known_run_spend_usd']}`; unknown-charge reservation: `${spend['unknown_charge_reservation_usd']}` across {spend['unknown_charge_outcomes']} outcomes; budget-accounted run spend: `${spend['budget_accounted_run_spend_usd']}`",
-                f"- Observed stop: `{stop['observed_stop']}`; stop guard tripped: `{stop['tripped']}`; trip reason: `{stop['trip_reason']}`",
+                (
+                    f"- Known run spend: `${spend['known_run_spend_usd']}`; unknown-charge "
+                    f"reservation: `${spend['unknown_charge_reservation_usd']}` across "
+                    f"{spend['unknown_charge_outcomes']} outcomes; budget-accounted run "
+                    f"spend: `${spend['budget_accounted_run_spend_usd']}`"
+                ),
+                (
+                    f"- Observed stop: `{stop['observed_stop']}`; stop guard tripped: "
+                    f"`{stop['tripped']}`; trip reason: `{stop['trip_reason']}`"
+                ),
                 f"- Approved hard stops: {', '.join(f'`{item}`' for item in stop['approved'])}",
                 "",
             ]
@@ -990,7 +1043,12 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
     lines.extend(
         [
             "",
-            "Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked. The older Qwen v2 run stopped after 13 of 50 assignments under its approved first-invalid-output rule. Neither incomplete run is included in the calibration table.",
+            (
+                "Gemini v3 stopped after 5 of 50 assignments when its run ledger blocked. "
+                "The older Qwen v2 run stopped after 13 of 50 assignments under its "
+                "approved first-invalid-output rule. Neither incomplete run is included in "
+                "the calibration table."
+            ),
         ]
     )
     retained_runs = [
@@ -1060,14 +1118,22 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             lines.append(f"- `{run['run_id']}` policy predecessor: none recorded")
         else:
             lines.append(
-                f"- `{run['run_id']}` policy predecessor: distinct successor bound to frozen plan `{policy_predecessor['frozen_plan_sha256']}` and summary `{policy_predecessor['frozen_summary_sha256']}`; stored rule: {policy_predecessor['rule']}"
+                f"- `{run['run_id']}` policy predecessor: distinct successor bound to "
+                f"frozen plan `{policy_predecessor['frozen_plan_sha256']}` and summary "
+                f"`{policy_predecessor['frozen_summary_sha256']}`; stored rule: "
+                f"{policy_predecessor['rule']}"
             )
         if frozen_predecessor is None:
             lines.append(f"- `{run['run_id']}` frozen infrastructure predecessor: none recorded")
         else:
             terminal = frozen_predecessor["terminal"]
             lines.append(
-                f"- `{run['run_id']}` frozen infrastructure predecessor: {frozen_predecessor['attempted_policy_task_pairs']} attempted pair ended as `{terminal['classification']}` after HTTP {terminal['http_status']} with request outcome `{terminal['request_outcome']}`; predecessor summary `{frozen_predecessor['summary_sha256']}`"
+                f"- `{run['run_id']}` frozen infrastructure predecessor: "
+                f"{frozen_predecessor['attempted_policy_task_pairs']} attempted pair "
+                f"ended as `{terminal['classification']}` after HTTP "
+                f"{terminal['http_status']} with request outcome "
+                f"`{terminal['request_outcome']}`; predecessor summary "
+                f"`{frozen_predecessor['summary_sha256']}`"
             )
     lines.extend(
         [
@@ -1078,7 +1144,10 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             f"- Publishable derivative: `{derivative_sha256}`",
             "- [Publishable derivative](grounding-v5-d56-completed-calibrations-publishable.json)",
             "- [Integrity audit](grounding-v5-d56-completed-calibrations-integrity-audit.json)",
-            "- [Publication relation](grounding-v5-d56-completed-calibrations-publication-relation.json)",
+            (
+                "- [Publication "
+                "relation](grounding-v5-d56-completed-calibrations-publication-relation.json)"
+            ),
             "- [Evidence errata](grounding-v5-d56-gemini-qwen-v3-calibration-evidence-errata.json)",
             "- [V5 protocol](../plans/grounding-v5-agent-benchmark.md)",
             "",
@@ -1095,7 +1164,11 @@ def render_report(derivative: dict[str, Any], *, derivative_sha256: str) -> str:
             "",
             derivative["redaction"]["public_verification_limit"],
             "",
-            "The derivative and report contain no response bodies, request bodies, screenshots, checkpoint contents, credentials, or absolute operator paths. Restricted journals remain untracked and ignored.",
+            (
+                "The derivative and report contain no response bodies, request bodies, "
+                "screenshots, checkpoint contents, credentials, or absolute operator "
+                "paths. Restricted journals remain untracked and ignored."
+            ),
             "",
             "## Limitations",
             "",
@@ -1139,7 +1212,9 @@ def build_relation_sources(
                 "size_bytes": None,
                 "reason": "restricted raw provider responses, screenshots, and private checkpoints",
                 "git_status": "must_not_commit",
-                "public_verification_limit": "file hash and size are not recorded in committed v3 evidence",
+                "public_verification_limit": (
+                    "file hash and size are not recorded in committed v3 evidence"
+                ),
             }
         )
     authoritative: dict[str, Any] = {
@@ -1492,7 +1567,8 @@ def render_verification(result: dict[str, Any]) -> str:
                     f"truncation={counts['truncation']} success={counts['success']}"
                 ),
                 (
-                    f"DIGEST {row['run_id']} computed_plan={binding['computed_plan_content_sha256']} "
+                    f"DIGEST {row['run_id']} "
+                    f"computed_plan={binding['computed_plan_content_sha256']} "
                     f"summary_plan={binding['summary_approved_plan_sha256']} "
                     f"plan_file={binding['plan_file_sha256']} "
                     f"summary_file={binding['summary_file_sha256']}"
@@ -1516,13 +1592,16 @@ def render_verification(result: dict[str, Any]) -> str:
                     f"code={versions['code_revision']} runtime={versions['runtime_digest']} "
                     f"partition={versions['calibration_partition_manifest_digest']} "
                     f"prompt={versions['system_prompt_digest']} "
-                    f"memory={versions['memory_policy_version']} parser={versions['parser_version']} "
+                    f"memory={versions['memory_policy_version']} "
+                    f"parser={versions['parser_version']} "
                     f"response={versions['response_schema_version']} "
                     f"coordinate={versions['coordinate_adapter']} "
                     f"retry={versions['transport_retry_rule']} "
                     f"temperature={json.dumps(versions['temperature'])} "
                     "response_validation="
-                    f"{json.dumps(versions['response_validation'], sort_keys=True, separators=(',', ':'))}"
+                    + json.dumps(
+                        versions["response_validation"], sort_keys=True, separators=(",", ":")
+                    )
                 ),
                 (
                     f"STOP {row['run_id']} observed={stop['observed_stop']} "
@@ -1534,13 +1613,20 @@ def render_verification(result: dict[str, Any]) -> str:
                     "legacy_cli_process_failures_recorded_as_invalid_output="
                     f"{taxonomy['legacy_cli_process_failures_recorded_as_invalid_output']} "
                     f"bound={json.dumps(taxonomy['bound'])} "
-                    f"inputs={json.dumps(taxonomy['inputs'], sort_keys=True, separators=(',', ':'))}"
+                    "inputs="
+                    + json.dumps(taxonomy["inputs"], sort_keys=True, separators=(",", ":"))
                 ),
                 (
-                    f"PREDECESSORS {row['run_id']} "
-                    f"policy={json.dumps(predecessors['policy_predecessor'], sort_keys=True, separators=(',', ':'))} "
-                    "frozen_infrastructure="
-                    f"{json.dumps(predecessors['frozen_infrastructure_predecessor'], sort_keys=True, separators=(',', ':'))}"
+                    f"PREDECESSORS {row['run_id']} policy="
+                    + json.dumps(
+                        predecessors["policy_predecessor"], sort_keys=True, separators=(",", ":")
+                    )
+                    + " frozen_infrastructure="
+                    + json.dumps(
+                        predecessors["frozen_infrastructure_predecessor"],
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
                 ),
                 (
                     f"RELATION {row['run_id']} path={relation['path']} "
@@ -1556,7 +1642,8 @@ def render_verification(result: dict[str, Any]) -> str:
     lines.append(
         "RESULT artifacts_reproducible=True published_run_ids="
         + json.dumps(result["publication"]["published_run_ids"], separators=(",", ":"))
-        + f" checks_failed_for_published_runs={result['publication']['checks_failed_for_published_runs']}"
+        + " checks_failed_for_published_runs="
+        + f"{result['publication']['checks_failed_for_published_runs']}"
         + f" milestone_gate_verdict={result['publication']['milestone_gate_verdict']}"
     )
     return "\n".join(lines)

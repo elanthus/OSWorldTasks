@@ -252,7 +252,10 @@ def main():
         "incremental_experiment_charge_usd": "0.00",
         "billing": "authenticated subscriptions only",
         "execution_authorized": False,
-        "stop_rule": "stop on infrastructure/request/policy failures or unresolved invocations; retain invalid outputs; no silent retries",
+        "stop_rule": (
+            "stop on infrastructure/request/policy failures or unresolved "
+            "invocations; retain invalid outputs; no silent retries"
+        ),
     }
     if predecessor is not None:
         # Unknown provider completion stays recorded; exited CLI cannot dispatch later.
@@ -261,7 +264,10 @@ def main():
             "plan_digest": predecessor["plan_digest"],
             "completed": predecessor["completed"],
             "stop_reason": predecessor["stop_reason"],
-            "rule": "retain finished outcomes; interrupted episodes reset; preserve prior timeouts and disclose changed retry policy",
+            "rule": (
+                "retain finished outcomes; interrupted episodes reset; preserve "
+                "prior timeouts and disclose changed retry policy"
+            ),
             "unresolved_provider_outcomes_retained": predecessor["unresolved_invocations"],
         }
     else:

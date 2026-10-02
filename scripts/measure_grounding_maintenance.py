@@ -143,7 +143,9 @@ def main(argv: Sequence[str] | None = None) -> None:
                 "revision) are outside that tree."
             ),
             "top_level_python_script_count": "Tracked .py files directly under scripts/.",
-            "package_contents": "File names read from wheels built offline with pip --no-build-isolation.",
+            "package_contents": (
+                "File names read from wheels built offline with pip --no-build-isolation."
+            ),
             "maintenance_surface": (
                 "Shipped d56_/calibration_v3*/calibration_v4* grounding modules plus top-level "
                 "run_grounding_v4*/run_grounding_v5_d56* wrappers."

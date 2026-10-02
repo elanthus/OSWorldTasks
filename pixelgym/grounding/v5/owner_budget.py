@@ -90,7 +90,10 @@ class OwnerZeroHoldLedger(ReboundedMemoryLedger):
                     "rule": OWNER_BUDGET_RULE,
                     "previous_budget_hold_usd": str(amount),
                     "budget_hold_usd": "0",
-                    "basis": "owner activity check and explicit budget instruction; not a provider-reported zero charge",
+                    "basis": (
+                        "owner activity check and explicit budget instruction; "
+                        "not a provider-reported zero charge"
+                    ),
                 }
                 self.journal.append_event(
                     event_key=f"spend/{rid}/owner-budget-waiver",

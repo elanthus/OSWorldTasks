@@ -196,7 +196,9 @@ def _summary(plan: CalibrationPlan, *, count: int | None = None) -> dict:
             {
                 "slot": assignment.slot,
                 "task_id": assignment.task_id,
-                "trial_id": f"manifest-{assignment.slot}-{assignment.ordinal:04d}-{assignment.task_id}",
+                "trial_id": (
+                    f"manifest-{assignment.slot}-{assignment.ordinal:04d}-{assignment.task_id}"
+                ),
                 "success": success,
                 "classification": "success_termination" if success else "invalid_output",
             }

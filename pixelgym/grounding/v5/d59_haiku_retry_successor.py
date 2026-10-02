@@ -236,9 +236,19 @@ def execution_plan(
                 "Set CLAUDE_CODE_MAX_RETRIES=0 in the sanitized Claude child environment."
             ),
             "unchanged_behavior": [
-                "The parser continues to classify every api_retry system event as a policy violation.",
-                "The model, prompt, action parser, task manifest, admission, history reducer, runner retry, reliability schedule, caps, and sandbox exception are unchanged.",
-                "Successful one-request Claude responses follow the same request and action contracts.",
+                (
+                    "The parser continues to classify every api_retry system event as a "
+                    "policy violation."
+                ),
+                (
+                    "The model, prompt, action parser, task manifest, admission, history "
+                    "reducer, runner retry, reliability schedule, caps, and sandbox "
+                    "exception are unchanged."
+                ),
+                (
+                    "Successful one-request Claude responses follow the same request and "
+                    "action contracts."
+                ),
             ],
             "reason": (
                 "The predecessor exposed two hidden Claude CLI API retries inside one runner "

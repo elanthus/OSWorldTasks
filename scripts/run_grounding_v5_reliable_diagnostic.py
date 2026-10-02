@@ -68,8 +68,16 @@ def canonical_plan() -> dict[str, Any]:
     value = {
         "schema_version": "pixelgym-d58-reliable-diagnostic-plan-v1",
         "phase_id": PHASE,
-        "owner_approval": "go ahead with the repairs. I don't want the tests stopping incessantly from random, retryable network issues.",
-        "approval_scope": "approved proposed repair and bounded reliability diagnostic; 20 wire calls or USD 1 within existing USD 28 aggregate; preserve prior ten failures; no confirmatory evaluation",
+        "owner_approval": (
+            "go ahead with the repairs. I don't want the tests stopping "
+            "incessantly from random, retryable network issues."
+        ),
+        "approval_scope": (
+            "approved proposed repair and bounded reliability "
+            "diagnostic; 20 wire calls or USD 1 within existing USD 28 "
+            "aggregate; preserve prior ten failures; no confirmatory "
+            "evaluation"
+        ),
         "execution_enabled": True,
         "aggregate_cap_usd": "28",
         "phase_cap_usd": "1",
@@ -99,8 +107,14 @@ def canonical_plan() -> dict[str, Any]:
             for m in ("history", "stateless")
         },
         "curl_identity": read(PUBLIC / "curl-identity.json"),
-        "acceptance": "all ten logical actions dispatch once, caps honored, no active child or in-flight hold; report every recovered failure; not a full-run reliability guarantee",
-        "interruption": "close phase and retain every attempt; never restart diagnostic assignments",
+        "acceptance": (
+            "all ten logical actions dispatch once, caps honored, no active "
+            "child or in-flight hold; report every recovered failure; not a "
+            "full-run reliability guarantee"
+        ),
+        "interruption": (
+            "close phase and retain every attempt; never restart diagnostic assignments"
+        ),
     }
     return {**value, "execution_plan_digest": content_digest(value)}
 
@@ -151,22 +165,37 @@ def publish(summary: dict[str, Any]) -> None:
     lines = [
         "# D5.8 transport reliability diagnostic",
         "",
-        "Ten supplied-state logical actions; retries keep the same request. These are not end-to-end calibration episodes.",
+        (
+            "Ten supplied-state logical actions; retries keep the same request. These are "
+            "not end-to-end calibration episodes."
+        ),
         "",
-        f"Stop: `{summary['stop_reason']}`. Actions dispatched: {summary['dispatched']}/10. Wire calls: {summary['new_wire_requests']}/20.",
+        (
+            f"Stop: `{summary['stop_reason']}`. Actions dispatched: "
+            f"{summary['dispatched']}/10. Wire calls: {summary['new_wire_requests']}/20."
+        ),
         "",
-        f"New known charges: USD {summary['new_known_spend_usd']}; new unknown holds: USD {summary['new_unknown_holds_usd']}.",
+        (
+            f"New known charges: USD {summary['new_known_spend_usd']}; new unknown holds: "
+            f"USD {summary['new_unknown_holds_usd']}."
+        ),
         "",
         "| Case | Mode | Classification | Attempts |",
         "|---|---|---|---:|",
     ]
     for row in summary["conditions"]:
         lines.append(
-            f"| {row['case_id']} | {row['mode']} | {row['classification']} | {row['model_attempts']} |"
+            f"| {row['case_id']} | {row['mode']} | {row['classification']} | "
+            f"{row['model_attempts']} |"
         )
     lines += [
         "",
-        "All raw attempts and response envelopes remain in the private journal. [Summary](summary.json) and [plan](execution-plan.json) preserve caps and provenance. The ten prior failed calibration assignments remain unchanged; 90 remain unrun.",
+        (
+            "All raw attempts and response envelopes remain in the private journal. "
+            "[Summary](summary.json) and [plan](execution-plan.json) preserve caps and "
+            "provenance. The ten prior failed calibration assignments remain unchanged; 90 "
+            "remain unrun."
+        ),
         "",
     ]
     (PUBLIC / "report.md").write_text("\n".join(lines))

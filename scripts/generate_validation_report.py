@@ -23,7 +23,7 @@ def _value(value: Any) -> str:
 
 
 def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str:
-    """Render the report; ``raw_link_prefix`` is the raw-evidence directory relative to the output."""
+    """Render the report; ``raw_link_prefix`` is the raw-evidence directory relative to the output."""  # noqa: E501
     automated = report["automated_validation"]
     evidence = report["evidence"]
     lines = [
@@ -83,7 +83,10 @@ def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str
                     f"- Docker allocation: `{runtime['engine_cpus']}` CPUs / "
                     f"`{runtime['engine_memory_bytes']}` bytes RAM"
                 ),
-                f"- Guest artifact: `{guest['repository']}@{guest['tag']}/{Path(guest['archive']).name}`",
+                (
+                    "- Guest artifact: "
+                    f"`{guest['repository']}@{guest['tag']}/{Path(guest['archive']).name}`"
+                ),
                 f"- Guest archive SHA-256: `{guest['archive_sha256']}`",
                 f"- Preparation timestamp: `{preparation['prepared_at']}`",
             ]
@@ -116,12 +119,16 @@ def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str
                 (
                     f"Local Docker consumed {stop_loss['consumed_seconds']:.2f} of the authorized "
                     f"{stop_loss['budget_seconds']} seconds across {len(stop_loss['commands'])} "
-                    "serialized real-guest commands; each command's provider closure is recorded below."
+                    "serialized real-guest commands; each command's provider closure "
+                    "is recorded below."
                 ),
                 "",
                 f"Accounting basis: {stop_loss['accounting_basis']}",
                 "",
-                "| Command record | Exit status | Real seconds | Hard limit (s) | Provider closed |",
+                (
+                    "| Command record | Exit status | Real seconds | Hard limit (s) | "
+                    "Provider closed |"
+                ),
                 "|---|---:|---:|---:|---|",
             ]
         )
@@ -284,7 +291,10 @@ def render(report: dict[str, Any], *, raw_link_prefix: str = "day-2/raw") -> str
                     f"failed: {reward['summary']['failed_count']}."
                 ),
                 "",
-                "| Trajectory | First reward | Terminal | Truncated | Expected | Observed | Passed |",
+                (
+                    "| Trajectory | First reward | Terminal | Truncated | Expected | "
+                    "Observed | Passed |"
+                ),
                 "|---|---:|---:|---:|---|---|---|",
             ]
         )

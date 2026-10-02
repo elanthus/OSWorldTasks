@@ -101,14 +101,22 @@ def canonical_plan() -> dict[str, Any]:
         "price_recheck_digest": content_digest(recheck),
         "execution_enabled": True,
         "owner_approval": OWNER_APPROVAL,
-        "approval_scope": "the previously presented ten-example, twenty-condition-call diagnostic under the existing shared USD 5 cap; no full episode or confirmatory run",
+        "approval_scope": (
+            "the previously presented ten-example, twenty-condition-call "
+            "diagnostic under the existing shared USD 5 cap; no full "
+            "episode or confirmatory run"
+        ),
         "jobs": jobs,
         "caps": PILOT_CAPS.to_dict(),
         "aggregate_ceiling_usd": str(TOTAL_REPAIR_BUDGET_USD),
         "ledger_location": ".cache/d58-memory-calibration/aggregate.sqlite",
         "provider_retries": 0,
         "confirmatory_call_cap": 0,
-        "stop_rule": "complete twenty assigned conditions or stop before the aggregate reservation exceeds USD 5; never resend an uncertain request; retain all errors and unrun assignments",
+        "stop_rule": (
+            "complete twenty assigned conditions or stop before the aggregate "
+            "reservation exceeds USD 5; never resend an uncertain request; "
+            "retain all errors and unrun assignments"
+        ),
     }
     return {**value, "execution_plan_digest": content_digest(value)}
 
@@ -118,7 +126,10 @@ def render_report(summary: dict[str, Any]) -> str:
     lines = [
         "# D5.8 revised memory calibration pilot",
         "",
-        "This is a scripted-prefix, first-attempt memory diagnostic. It is not an end-to-end episode score.",
+        (
+            "This is a scripted-prefix, first-attempt memory diagnostic. It is not an "
+            "end-to-end episode score."
+        ),
         "",
         "| Condition | Assigned | Attempted | Correct first choices | Valid consumer choices |",
         "|---|---:|---:|---:|---:|",
@@ -126,7 +137,8 @@ def render_report(summary: dict[str, Any]) -> str:
     for mode in ("history", "stateless"):
         row = summary["scores"][mode]
         lines.append(
-            f"| {mode} | {row['assigned']} | {row['attempted']} | {row['first_attempt_correct']} | {row['valid_consumer_choices']} |"
+            f"| {mode} | {row['assigned']} | {row['attempted']} | "
+            f"{row['first_attempt_correct']} | {row['valid_consumer_choices']} |"
         )
     spend = summary["spend"]
     lines += [
@@ -143,24 +155,32 @@ def render_report(summary: dict[str, Any]) -> str:
         "",
         (
             "Every assigned condition remains in the stored summary, including invalid outputs, "
-            "infrastructure failures and assignments not run. No retry or response-dependent task selection is permitted."
+            "infrastructure failures and assignments not run. No retry or "
+            "response-dependent task selection is permitted."
         ),
         "",
         (
-            "Both conditions use the same admitted consumer screen and scripted lead-in. The history condition "
-            "receives the chronologically observed screenshots and executed actions; the stateless condition "
-            "receives only the consumer screenshot. Condition order alternates by the frozen case index."
+            "Both conditions use the same admitted consumer screen and scripted "
+            "lead-in. The history condition "
+            "receives the chronologically observed screenshots and executed actions; "
+            "the stateless condition "
+            "receives only the consumer screenshot. Condition order alternates by the "
+            "frozen case index."
         ),
         "",
         (
             "[Stored summary](summary.json), [execution approval and caps](execution-plan.json), "
-            "[price recheck](price-recheck.json). Provider text and private checkpoints remain in the ignored "
-            "authoritative journal. The ledger is shared with future D5.8 phases and must be preserved."
+            "[price recheck](price-recheck.json). Provider text and private "
+            "checkpoints remain in the ignored "
+            "authoritative journal. The ledger is shared with future D5.8 phases and "
+            "must be preserved."
         ),
         "",
         (
-            "These ten paired diagnostic cases cannot estimate end-to-end consumer reachability, terminal "
-            "success, or confirmatory power. A full calibration requires the next explicit approval; "
+            "These ten paired diagnostic cases cannot estimate end-to-end consumer "
+            "reachability, terminal "
+            "success, or confirmatory power. A full calibration requires the next "
+            "explicit approval; "
             "the final D5.8 freeze and confirmatory execution remain open."
         ),
         "",

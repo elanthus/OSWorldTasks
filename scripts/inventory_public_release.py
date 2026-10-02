@@ -57,7 +57,8 @@ SAFE_EMAIL_DOMAINS = {
 }
 # Deliberate token-shape fixtures live in tests/unit/test_grounding_v5.py and
 # tests/unit/test_grounding_v5_d56_completed_calibration_publication.py, and
-# tests/unit/platform/test_policy_subprocess.py::test_policy_request_cannot_carry_transport_credentials.
+# tests/unit/platform/test_policy_subprocess.py::
+# test_policy_request_cannot_carry_transport_credentials.
 # The latter writes a literal into a temporary LeakingPolicy and expects rejection before transport.
 # The local HTTPS fixture in tests/integration/test_grounding_v5_curl_wire.py
 # (historical blob 2328db232ab70c096d4a5fbcee7d499a741a9fea, lines 54 and 91)

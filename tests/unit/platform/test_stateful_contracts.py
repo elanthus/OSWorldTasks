@@ -1,4 +1,4 @@
-"""S2 of the v5 stateful serving design (docs/platform-design.md): frozen stateful package, session, and record contracts."""
+"""S2 of the v5 stateful serving design (docs/platform-design.md): frozen stateful package, session, and record contracts."""  # noqa: E501
 
 from __future__ import annotations
 

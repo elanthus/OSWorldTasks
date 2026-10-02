@@ -170,7 +170,10 @@ def _control_count(stack, table: str) -> int:
         "platform",
         "python",
         "-c",
-        "import sqlite3,sys; c=sqlite3.connect('/state/control.db'); print(c.execute(f'SELECT COUNT(*) FROM {sys.argv[1]}').fetchone()[0])",
+        (
+            "import sqlite3,sys; c=sqlite3.connect('/state/control.db'); "
+            "print(c.execute(f'SELECT COUNT(*) FROM {sys.argv[1]}').fetchone()[0])"
+        ),
         table,
         timeout=30,
     )
@@ -184,7 +187,15 @@ def _reviewer_audit_attribution(stack) -> list[list[str]]:
         "platform",
         "python",
         "-c",
-        "import json,sqlite3; c=sqlite3.connect('/state/control.db'); print(json.dumps([[r[0],json.loads(r[1]).get('actor_verification_source')] for r in c.execute(\"SELECT actor,details_json FROM audit_events WHERE event_type IN ('candidate.approved','deployment.deploy','deployment.rollback','submission.cancelled','submission.created','submission.resubmitted') ORDER BY rowid\")]))",
+        (
+            "import json,sqlite3; c=sqlite3.connect('/state/control.db'); "
+            "print(json.dumps([[r[0],json.loads(r[1]).get('actor_verification_source')] "
+            'for r in c.execute("SELECT actor,details_json FROM audit_events WHERE '
+            "event_type IN "
+            "('candidate.approved','deployment.deploy','deployment.rollback',"
+            "'submission.cancelled','submission.created','submission.resubmitted') "
+            'ORDER BY rowid")]))'
+        ),
         timeout=30,
     )
     return json.loads(completed.stdout)
@@ -197,7 +208,12 @@ def _candidate_evidence(stack, candidate_id: str) -> tuple[PolicyManifest, list[
         "platform",
         "python",
         "-c",
-        "import json,sqlite3,sys; c=sqlite3.connect('/state/control.db'); r=c.execute('SELECT policy_json,artifacts_json FROM candidates WHERE candidate_id=?',(sys.argv[1],)).fetchone(); print(json.dumps({'policy':json.loads(r[0]),'artifacts':json.loads(r[1])}))",
+        (
+            "import json,sqlite3,sys; c=sqlite3.connect('/state/control.db'); "
+            "r=c.execute('SELECT policy_json,artifacts_json FROM candidates WHERE "
+            "candidate_id=?',(sys.argv[1],)).fetchone(); "
+            "print(json.dumps({'policy':json.loads(r[0]),'artifacts':json.loads(r[1])}))"
+        ),
         candidate_id,
         timeout=30,
     )
@@ -433,7 +449,8 @@ def test_fresh_compose_browser_lifecycle_and_real_service_integrity(compose_stac
                 "-c",
                 (
                     "import sqlite3; c=sqlite3.connect('/state/control.db'); "
-                    "print(c.execute('SELECT COUNT(*) FROM active_pointer WHERE singleton=1').fetchone()[0])"
+                    "print(c.execute('SELECT COUNT(*) FROM active_pointer WHERE "
+                    "singleton=1').fetchone()[0])"
                 ),
                 timeout=30,
             )

@@ -151,7 +151,11 @@ def canonical_plan() -> dict[str, Any]:
         "phase_id": PHASE,
         "owner_approval": "switch to gemini 3.8, increase the budget up to 20 dollars",
         "assignment_approval": "All 50 tasks, 100 episodes (recommended)",
-        "approval_scope": "fresh matched Gemini 3.8 full calibration; USD 20 aggregate including all previous D5.8 charges and bounded unknown outcomes; no confirmatory calls",
+        "approval_scope": (
+            "fresh matched Gemini 3.8 full calibration; USD 20 aggregate "
+            "including all previous D5.8 charges and bounded unknown "
+            "outcomes; no confirmatory calls"
+        ),
         "execution_enabled": True,
         "aggregate_ceiling_usd": str(CEILING),
         "jobs": jobs,
@@ -185,10 +189,22 @@ def canonical_plan() -> dict[str, Any]:
             old_summary["aggregate_spend"]["wire_requests_sent"] + actions,
         ).to_dict(),
         "budget_rule": BUDGET_VERSION,
-        "budget_assumptions": "4096 tokens per unchanged 1024x768 PNG (Google documents 2240 at ultra-high), UTF-8 byte count of remaining request metadata, 8192 framing tokens, at most 163840 input allowance and 4096 output; cached-input discounts ignored; only declared Vertex route and explicit max-price cap; stop on a returned charge above its reservation",
+        "budget_assumptions": (
+            "4096 tokens per unchanged 1024x768 PNG (Google "
+            "documents 2240 at ultra-high), UTF-8 byte count of "
+            "remaining request metadata, 8192 framing tokens, at "
+            "most 163840 input allowance and 4096 output; "
+            "cached-input discounts ignored; only declared Vertex "
+            "route and explicit max-price cap; stop on a returned "
+            "charge above its reservation"
+        ),
         "budget_source": "https://ai.google.dev/gemini-api/docs/media-resolution",
         "maximum_request_reservation_usd": str(config.request_maximum_usd),
-        "unknown_charge_rule": "retain each request-sized reservation unless a confirmed charge replaces it; no assumption that a failed request costs zero",
+        "unknown_charge_rule": (
+            "retain each request-sized reservation unless a "
+            "confirmed charge replaces it; no assumption that a "
+            "failed request costs zero"
+        ),
         "provider_retries": 0,
         "provider_control_call_cap": 0,
         "confirmatory_call_cap": 0,
@@ -196,7 +212,11 @@ def canonical_plan() -> dict[str, Any]:
         "interruption_rule": old_plan["interruption_rule"],
         "stop_rules": old_plan["stop_rules"][1:]
         + ["before the next worst-case workload reservation exceeds USD 20 total"],
-        "analysis_rule": "standalone Gemini 3.8 cohort; never pool terminal results with Gemini 3.7 or its scripted-prefix pilot; retain all failures and unrun assignments",
+        "analysis_rule": (
+            "standalone Gemini 3.8 cohort; never pool terminal results "
+            "with Gemini 3.7 or its scripted-prefix pilot; retain all "
+            "failures and unrun assignments"
+        ),
         "completion_within_budget_guaranteed": False,
     }
     return {**value, "execution_plan_digest": content_digest(value)}
@@ -226,23 +246,47 @@ def render_report(summary: dict[str, Any]) -> str:
         "",
         f"Complete: **{summary['complete']}**. Stop: `{summary['stop_reason']}`.",
         "",
-        "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | Correct first memory attempts / attempted |",
+        (
+            "| Mode | Assigned | Attempted | Terminal successes | Reached both consumers | "
+            "Correct first memory attempts / attempted |"
+        ),
         "|---|---:|---:|---:|---:|---:|",
     ]
     for mode, row in sorted(summary["scores"].items()):
         lines.append(
-            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | {row['terminal_successes']} | {row['reached_both_consumers']} | {row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
+            f"| {mode} | {row['assigned']} | {row['attempted_episodes']} | "
+            f"{row['terminal_successes']} | {row['reached_both_consumers']} | "
+            f"{row['correct_first_memory_attempts']} / {row['first_memory_attempts']} |"
         )
     spend = summary["aggregate_spend"]
     lines += [
         "",
-        f"New phase: {summary['new_phase_wire_requests']} requests and USD {summary['new_phase_known_spend_usd']} known charges. Aggregate known charges: USD {spend['spent_usd']}; unknown holds: USD {spend['unknown_reservation_usd']}; in-flight holds: USD {spend['in_flight_reservation_usd']}. Shared ceiling: USD 20.00.",
+        (
+            f"New phase: {summary['new_phase_wire_requests']} requests and USD "
+            f"{summary['new_phase_known_spend_usd']} known charges. Aggregate known "
+            f"charges: USD {spend['spent_usd']}; unknown holds: USD "
+            f"{spend['unknown_reservation_usd']}; in-flight holds: USD "
+            f"{spend['in_flight_reservation_usd']}. Shared ceiling: USD 20.00."
+        ),
         "",
-        "The fresh Gemini 3.8 cohort starts all episodes at reset with no scripted prefixes. All assignments and failures remain explicit. Gemini 3.7 results stay separate. Unknown holds are conservative request-size estimates, not billed charges; they are not set to zero. No retries, provider control calls, or confirmatory calls are authorized by this phase.",
+        (
+            "The fresh Gemini 3.8 cohort starts all episodes at reset with no scripted "
+            "prefixes. All assignments and failures remain explicit. Gemini 3.7 results "
+            "stay separate. Unknown holds are conservative request-size estimates, not "
+            "billed charges; they are not set to zero. No retries, provider control calls, "
+            "or confirmatory calls are authorized by this phase."
+        ),
         "",
-        "D5.8 final approval remains an owner decision. Incomplete coverage cannot establish complete calibration rates or confirmatory power.",
+        (
+            "D5.8 final approval remains an owner decision. Incomplete coverage cannot "
+            "establish complete calibration rates or confirmatory power."
+        ),
         "",
-        "[Stored summary](summary.json), [approved execution plan](execution-plan.json), [prices](price-recheck.json). Original private responses and checkpoints remain in the ignored aggregate journal.",
+        (
+            "[Stored summary](summary.json), [approved execution "
+            "plan](execution-plan.json), [prices](price-recheck.json). Original private "
+            "responses and checkpoints remain in the ignored aggregate journal."
+        ),
         "",
     ]
     return "\n".join(lines)

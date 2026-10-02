@@ -144,7 +144,10 @@ def build_plan(repository_root: Path) -> dict[str, Any]:
         "stop_rules": [
             "run policies sequentially in slot order",
             "stop after eight total model-attempt reservations",
-            "stop after the first transport, identity, cost, parse, adapter, action, or evidence failure",
+            (
+                "stop after the first transport, identity, cost, parse, adapter, action, "
+                "or evidence failure"
+            ),
             BOUNDED_RETRY_STOP_RULE,
             "retain both attempts and stop after a repeated retryable provider error",
             "do not retry any parse, action, unknown-outcome, or other provider failure",

@@ -74,5 +74,8 @@ def test_process_has_no_argv_secret_no_hidden_retries_and_is_reaped(timeout):
 
 
 def test_only_last_http_headers_control_retry_delay():
-    raw = b"HTTP/1.1 200 Connection established\r\nRetry-After: 1\r\n\r\nHTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 429 Limited\r\nRetry-After: 300\r\n\r\n"
+    raw = (
+        b"HTTP/1.1 200 Connection established\r\nRetry-After: 1\r\n\r\nHTTP/1.1 100 "
+        b"Continue\r\n\r\nHTTP/1.1 429 Limited\r\nRetry-After: 300\r\n\r\n"
+    )
     assert response_headers(raw) == {"retry-after": "300"}

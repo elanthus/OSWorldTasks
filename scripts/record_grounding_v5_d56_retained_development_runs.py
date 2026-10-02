@@ -8,7 +8,7 @@ digests that later summaries cite. This script reads the sealed local originals,
 plan's content digest against its summary, and writes a registry that carries only digests,
 counts, identities, and ledger values. ``scripts/publish_grounding_v5_d56_completed_calibrations.py``
 consumes that registry; the originals stay local and are declared ``must_not_commit``.
-"""
+"""  # noqa: E501
 
 from __future__ import annotations
 

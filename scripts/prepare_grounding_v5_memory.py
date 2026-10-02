@@ -133,23 +133,27 @@ def render_report(value: dict[str, Any]) -> str:
         f"Generator: `{value['generator_version']}`. Provider calls: **0**. New spend: **USD 0**.",
         "",
         (
-            f"{summary['admitted_task_count']} development tasks completed deterministic golden and recovery replays, "
+            f"{summary['admitted_task_count']} development tasks completed "
+            "deterministic golden and recovery replays, "
             "six mutation replays each, and the random-action floor check. "
             "No confirmatory task was generated or evaluated."
         ),
         "",
         (
-            f"All {summary['counterfactual_pair_count']} source interventions changed the required answer "
+            f"All {summary['counterfactual_pair_count']} source interventions changed "
+            "the required answer "
             "while retaining exactly identical consumer pixels and task instruction. "
             "Every source image changed. Consumer differing-pixel count and maximum channel delta "
             "are both zero, with no masking or tolerance."
         ),
         "",
         (
-            f"Correct memory-choice positions in the {summary['base_task_count']} base development tasks "
+            f"Correct memory-choice positions in the {summary['base_task_count']} base "
+            "development tasks "
             f"({summary['base_choice_count']} choices): "
             f"`{json.dumps(summary['memory_target_positions'], sort_keys=True)}`. "
-            "The layout uses a target-independent deterministic permutation; finite samples need not balance exactly."
+            "The layout uses a target-independent deterministic permutation; finite "
+            "samples need not balance exactly."
         ),
         "",
         "## Scripted construct diagnostics",
@@ -173,7 +177,8 @@ def render_report(value: dict[str, Any]) -> str:
         (
             "The counterfactual pairs establish that the current image cannot uniquely determine "
             "the answer. They do not establish model ability, the size of a memory benefit, or "
-            "confirmatory power. Human usability review and fresh end-to-end calibration remain open."
+            "confirmatory power. Human usability review and fresh end-to-end "
+            "calibration remain open."
         ),
         "",
         "## Review artifacts",
@@ -186,7 +191,8 @@ def render_report(value: dict[str, Any]) -> str:
         "",
         (
             "The approved USD 5 ceiling is shared across all successor phases. The conservative "
-            "full-context reservation does not guarantee completion of twenty requests under that ceiling. "
+            "full-context reservation does not guarantee completion of twenty requests "
+            "under that ceiling. "
             "An execution driver enforcing the shared durable ledger is required before any call."
         ),
         "",
@@ -197,7 +203,8 @@ def render_report(value: dict[str, Any]) -> str:
         "",
         (
             "Source images: [base](base-source.png), [changed fact](counterfactual-source.png). "
-            "Consumer images: [base](base-consumer.png), [changed fact](counterfactual-consumer.png)."
+            "Consumer images: [base](base-consumer.png), [changed "
+            "fact](counterfactual-consumer.png)."
         ),
         "",
     ]
@@ -348,7 +355,8 @@ def verify() -> None:
     if render_report(value) != (OUTPUT / "report.md").read_text():
         raise ValueError("report does not match stored evidence")
     print(
-        "verified artifact hashes, current source binding, and evidence-only report; provider calls: 0"
+        "verified artifact hashes, current source binding, and evidence-only report; "
+        "provider calls: 0"
     )
 
 
