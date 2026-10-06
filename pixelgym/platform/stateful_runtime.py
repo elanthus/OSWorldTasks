@@ -540,7 +540,7 @@ class KindAwareRuntime:
         if isinstance(prepared, PreparedStatefulPolicy):
             StatefulRuntime.check_activatable(prepared)
             return
-        raise CandidateKindMismatchError("activation received a policy of an unknown kind")
+        raise TypeError("activation received a policy of an unknown kind")
 
     def activate(self, deployment: DeploymentRecord, prepared: object) -> None:
         if isinstance(prepared, LoadedPolicy):
@@ -552,4 +552,4 @@ class KindAwareRuntime:
             self.grounding.deactivate()
             self.stateful.activate(deployment, prepared)
             return
-        raise CandidateKindMismatchError("activation received a policy of an unknown kind")
+        raise TypeError("activation received a policy of an unknown kind")

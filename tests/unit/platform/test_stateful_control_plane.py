@@ -641,11 +641,11 @@ def test_runtimes_refuse_prepared_policies_of_the_other_kind(
             PolicyRuntime.check_activatable(prepared)  # type: ignore[arg-type]
         with pytest.raises(CandidateKindMismatchError):
             StatefulRuntime.check_activatable(loaded)
-        with pytest.raises(CandidateKindMismatchError):
+        with pytest.raises(TypeError):
             plane.kinds.check_activatable(object())
         plane.kinds.check_activatable(prepared)
         plane.kinds.check_activatable(loaded)
-        with pytest.raises(CandidateKindMismatchError):
+        with pytest.raises(TypeError):
             plane.kinds.activate(
                 _deployment_record(stateful.candidate_id, stateful.policy_id), object()
             )
