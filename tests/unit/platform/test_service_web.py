@@ -1996,6 +1996,122 @@ def test_assembled_app_pre_activation_failures_preserve_active_pointer_and_runti
     assert runtime.manifest.policy_id == first.policy.policy_id
 
 
+def _second_approved_candidate(control: ControlStore, passing_evidence):
+    policy, summary, report = passing_evidence
+    second_policy = build_policy_manifest(
+        provider=policy.provider,
+        model=policy.model + "-second",
+        prompt_name=policy.prompt_name,
+        prompt_version=policy.prompt_version,
+        prompt=prompt_template(policy.prompt_version),
+        condition=policy.condition,
+        parameters=policy.parameters,
+        parser_version=policy.parser_version,
+        scorer_version=policy.scorer_version,
+        overlay_version=policy.overlay_version,
+        target_semantics=policy.target_semantics,
+        source_provenance=SourceProvenance(
+            SOURCE_PROVENANCE_SCHEMA_VERSION,
+            policy.code_revision,
+            policy.source_tree_sha256,
+            policy.code_state,
+            "git-build-inputs-v1",
+        ),
+        dependency_lock_sha256=policy.dependency_lock_sha256,
+    )
+    second_summary = dataclasses.replace(summary, run_id="run-2", policy_id=second_policy.policy_id)
+    second_report = dataclasses.replace(report, run_id="run-2", policy_id=second_policy.policy_id)
+    return _approved_candidate(control, second_policy, second_summary, second_report)
+
+
+@pytest.mark.parametrize(
+    ("prepared_kind", "expected_exception"),
+    [("not-loaded", TypeError), ("non-raw", ValueError)],
+)
+def test_assembled_app_validates_runtime_handoff_before_compare_and_swap(
+    tmp_path: Path,
+    repository_root: Path,
+    monkeypatch,
+    passing_evidence,
+    prepared_kind: str,
+    expected_exception: type[Exception],
+) -> None:
+    """Every rejection the post-CAS runtime handoff could raise happens before the CAS."""
+    app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
+    policy, summary, report = passing_evidence
+    first = _approved_candidate(control, policy, summary, report)
+    coordinator = app.state.deployment_coordinator
+    active = coordinator.deploy(first.candidate_id, actor=SyntheticDemoPrincipal(), reason="first")
+    second = _second_approved_candidate(control, passing_evidence)
+
+    def prepared_for(candidate):
+        if prepared_kind == "not-loaded":
+            return True
+        return LoadedPolicy(
+            manifest=dataclasses.replace(candidate.policy, condition="som"),
+            deployment_id="smoke-" + candidate.candidate_id,
+            exact_policy_version=candidate.candidate_id,
+            provider=ServingFake(),
+        )
+
+    monkeypatch.setattr(coordinator, "load_and_smoke", prepared_for)
+    with pytest.raises(expected_exception):
+        coordinator.deploy(
+            second.candidate_id, actor=SyntheticDemoPrincipal(), reason="must not activate"
+        )
+
+    assert control.active() == (active, 1)
+    assert len(control.deployment_history()) == 1
+    loaded = app.state.policy_runtime.loaded
+    assert loaded is not None and loaded.deployment_id == active.deployment_id
+    failure = control.audit_events()[-1]
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["actor"] == "synthetic-demo"
+    assert failure["details"]["stage"] == "preactivation"
+    assert failure["details"]["error_class"] == expected_exception.__name__
+    assert failure["details"]["authoritative_commit"] is False
+
+
+def test_assembled_app_post_cas_activation_failure_is_recorded_and_restart_converges(
+    tmp_path: Path, repository_root: Path, monkeypatch, passing_evidence
+) -> None:
+    app, control = _assembled_platform_app(tmp_path, repository_root, monkeypatch)
+    policy, summary, report = passing_evidence
+    first = _approved_candidate(control, policy, summary, report)
+    coordinator = app.state.deployment_coordinator
+    active = coordinator.deploy(first.candidate_id, actor=SyntheticDemoPrincipal(), reason="first")
+    second = _second_approved_candidate(control, passing_evidence)
+    runtime = app.state.policy_runtime
+
+    def injected_failure(_loaded: LoadedPolicy) -> None:
+        raise RuntimeError("injected post-CAS runtime failure")
+
+    monkeypatch.setattr(runtime, "activate", injected_failure)
+    with pytest.raises(RuntimeError, match="injected post-CAS"):
+        coordinator.deploy(second.candidate_id, actor=SyntheticDemoPrincipal(), reason="second")
+
+    committed, generation = control.active()
+    assert committed is not None and committed.candidate_id == second.candidate_id
+    assert generation == 2
+    assert runtime.loaded is not None
+    assert runtime.loaded.deployment_id == active.deployment_id
+    failure = control.audit_events()[-1]
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["details"]["stage"] == "runtime_activation"
+    assert failure["details"]["authoritative_commit"] is True
+    assert failure["details"]["committed_deployment_id"] == committed.deployment_id
+
+    # A restarted process restores exactly the ledger's active deployment.
+    from pixelgym.platform import bootstrap
+
+    restarted = bootstrap.create_app(bind_address="127.0.0.1")
+    restored = restarted.state.policy_runtime.loaded
+    assert restored is not None
+    assert restored.deployment_id == committed.deployment_id
+    assert restored.manifest.policy_id == second.policy.policy_id
+    assert control.active() == (committed, 2)
+
+
 def _csrf(text: str) -> str:
     return re.search(r'<meta name="csrf-token" content="([0-9a-f]+)">', text).group(1)
 
