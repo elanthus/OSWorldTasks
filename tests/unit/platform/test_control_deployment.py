@@ -1016,10 +1016,23 @@ def test_deploy_failure_preserves_active_and_repeated_rollback_refuses_bad_sourc
         "deploy",
         "rollback",
     ]
-    rollback_audit = control.audit_events()[-1]
-    assert rollback_audit["event_type"] == "deployment.rollback"
-    assert rollback_audit["details"]["abandoned_deployment_id"] == (deployed_second.deployment_id)
-    assert rollback_audit["details"]["restored_deployment_id"] == (deployed_first.deployment_id)
+    events = control.audit_events()
+    rollback_audit = [event for event in events if event["event_type"] == "deployment.rollback"]
+    assert len(rollback_audit) == 1
+    assert rollback_audit[0]["details"]["abandoned_deployment_id"] == (
+        deployed_second.deployment_id
+    )
+    assert rollback_audit[0]["details"]["restored_deployment_id"] == (deployed_first.deployment_id)
+    failures = [
+        (event["event_type"], event["details"]["stage"], event["details"]["error_class"])
+        for event in events
+        if event["event_type"].endswith("_failed")
+    ]
+    assert failures == [
+        ("deployment.deploy_failed", "preactivation", "TransitionError"),
+        ("deployment.rollback_failed", "preactivation", "TransitionError"),
+    ]
+    assert events[-1]["event_type"] == "deployment.rollback_failed"
 
 
 def test_migrate_drops_legacy_deployment_link_without_losing_history(
@@ -1891,3 +1904,391 @@ def test_serving_restore_rejects_missing_renderer_identity_before_artifacts_or_s
         restoring.restore_active()
     assert not artifact_called
     assert not smoke_called
+
+
+# --- Failed-transition audit events and the post-CAS handoff (issue #166) -----------------
+
+
+def _failure_events(control: ControlStore) -> list[dict]:
+    return [event for event in control.audit_events() if event["event_type"].endswith("_failed")]
+
+
+def _ledger_snapshot(control: ControlStore) -> tuple:
+    return (control.active(), control.deployment_history(), control.approval_events())
+
+
+class _InjectedActivationError(RuntimeError):
+    """Stands in for any failure escaping the post-CAS runtime handoff."""
+
+
+def test_preactivation_failures_append_attributable_failed_events_without_ledger_change(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+
+    # Rollback with nothing active: the subject is the (empty) active pointer.
+    healthy = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
+    with pytest.raises(TransitionError, match="no active deployment"):
+        healthy.rollback(actor="local-reviewer", reason="nothing to restore")
+    deployed = healthy.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+    _, generation = control.active()
+    before = _ledger_snapshot(control)
+
+    def leaky_loader(_candidate):
+        raise RuntimeError("provider said: token=do-not-store")
+
+    with pytest.raises(RuntimeError, match="do-not-store"):
+        DeploymentCoordinator(control=control, store=store, load_and_smoke=leaky_loader).deploy(
+            second.candidate_id, actor="local-reviewer", reason="loader explodes"
+        )
+    with pytest.raises(ConflictError, match="changed concurrently"):
+        healthy.deploy(
+            second.candidate_id,
+            actor="local-reviewer",
+            reason="stale form",
+            expected_deployment_id=None,
+            expected_generation=0,
+        )
+    rejected_handoff: list[object] = []
+
+    def reject_handoff(prepared) -> None:
+        raise ValueError("prepared runtime cannot be installed")
+
+    with pytest.raises(ValueError, match="cannot be installed"):
+        DeploymentCoordinator(
+            control=control,
+            store=store,
+            load_and_smoke=lambda item: True,
+            on_activated=lambda deployment, prepared: rejected_handoff.append(deployment),
+            validate_activation=reject_handoff,
+        ).deploy(second.candidate_id, actor="local-reviewer", reason="handoff rejected")
+
+    assert _ledger_snapshot(control) == before
+    assert rejected_handoff == []
+    failures = _failure_events(control)
+    assert [
+        (
+            event["event_type"],
+            event["actor"],
+            event["subject_id"],
+            event["details"]["stage"],
+            event["details"]["candidate_id"],
+            event["details"]["error_class"],
+            event["details"]["error_message"],
+            event["details"]["expected_generation"],
+            event["details"]["authoritative_commit"],
+            event["details"]["committed_deployment_id"],
+        )
+        for event in failures
+    ] == [
+        (
+            "deployment.rollback_failed",
+            "local-reviewer",
+            "active-pointer",
+            "preactivation",
+            None,
+            "TransitionError",
+            "there is no active deployment",
+            None,
+            False,
+            None,
+        ),
+        (
+            "deployment.deploy_failed",
+            "local-reviewer",
+            second.candidate_id,
+            "preactivation",
+            second.candidate_id,
+            "RuntimeError",
+            # Non-control-plane messages are never copied into the append-only ledger.
+            None,
+            None,
+            False,
+            None,
+        ),
+        (
+            "deployment.deploy_failed",
+            "local-reviewer",
+            second.candidate_id,
+            "preactivation",
+            second.candidate_id,
+            "ConflictError",
+            "active deployment changed concurrently",
+            0,
+            False,
+            None,
+        ),
+        (
+            "deployment.deploy_failed",
+            "local-reviewer",
+            second.candidate_id,
+            "preactivation",
+            second.candidate_id,
+            "ValueError",
+            None,
+            None,
+            False,
+            None,
+        ),
+    ]
+    assert all(event["details"]["action"] in {"deploy", "rollback"} for event in failures)
+    assert failures[2]["details"]["reason"] == "stale form"
+    assert "do-not-store" not in str(control.audit_events())
+    assert control.active() == (deployed, generation)
+
+
+def test_transaction_failure_appends_failed_event_and_keeps_concurrent_winner(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    winner: list[DeploymentRecord] = []
+
+    def smoke_while_another_reviewer_wins(_candidate) -> bool:
+        # Another transition commits between this attempt's preflight and its CAS.
+        winner.append(
+            control.activate(
+                first.candidate_id,
+                actor="local-reviewer",
+                reason="concurrent winner",
+                action="deploy",
+                expected_deployment_id=None,
+                expected_generation=0,
+            )
+        )
+        return True
+
+    activated: list[DeploymentRecord] = []
+    losing = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=smoke_while_another_reviewer_wins,
+        on_activated=lambda deployment, prepared: activated.append(deployment),
+    )
+    with pytest.raises(ConflictError, match="changed concurrently"):
+        losing.deploy(second.candidate_id, actor="local-reviewer", reason="loses the CAS")
+
+    assert control.active() == (winner[0], 1)
+    assert [row["deployment_id"] for row in control.deployment_history()] == [
+        winner[0].deployment_id
+    ]
+    assert activated == []
+    (failure,) = _failure_events(control)
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["details"]["stage"] == "transaction"
+    assert failure["details"]["error_class"] == "ConflictError"
+    # The precondition the losing CAS used, not the winner's state, is what gets recorded.
+    assert failure["details"]["expected_deployment_id"] is None
+    assert failure["details"]["expected_generation"] == 0
+    assert failure["details"]["authoritative_commit"] is False
+
+
+def test_unverified_actor_is_rejected_before_preflight_without_ledger_rows(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    candidate = _approved_candidate(control, passing_evidence, store, "")
+    smoked: list[str] = []
+    coordinator = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda item: smoked.append(item.candidate_id) or True,
+    )
+    events_before = control.audit_events()
+
+    with pytest.raises(AuthorizationError):
+        coordinator.deploy(candidate.candidate_id, actor="mallory", reason="not a reviewer")
+    with pytest.raises(AuthorizationError):
+        coordinator.rollback(actor="mallory", reason="not a reviewer")
+    with pytest.raises(AuthorizationError):
+        control.record_deployment_failure(
+            action="deploy",
+            stage="preactivation",
+            actor="mallory",
+            reason="forged",
+            subject_id=candidate.candidate_id,
+            candidate_id=candidate.candidate_id,
+            error_class="TransitionError",
+            error_message=None,
+            expected_deployment_id=None,
+            expected_generation=None,
+        )
+
+    assert smoked == []
+    assert control.audit_events() == events_before
+    assert control.active() == (None, 0)
+
+
+def test_failure_recorder_rejects_inconsistent_stage_and_commit_claims(
+    tmp_path: Path,
+) -> None:
+    control = _control(tmp_path)
+    common = {
+        "action": "deploy",
+        "actor": "local-reviewer",
+        "reason": "r",
+        "subject_id": "candidate-x",
+        "candidate_id": "candidate-x",
+        "error_class": "RuntimeError",
+        "error_message": None,
+        "expected_deployment_id": None,
+        "expected_generation": 0,
+    }
+    with pytest.raises(ValueError, match="committed deployment"):
+        control.record_deployment_failure(stage="runtime_activation", **common)
+    with pytest.raises(ValueError, match="committed deployment"):
+        control.record_deployment_failure(
+            stage="transaction", committed_deployment_id="deployment-x", **common
+        )
+    with pytest.raises(ValueError, match="stage"):
+        control.record_deployment_failure(stage="compensation", **common)
+    with pytest.raises(ValueError, match="action"):
+        control.record_deployment_failure(stage="preactivation", **{**common, "action": "promote"})
+    assert control.audit_events() == []
+
+
+@pytest.mark.parametrize("injected", [_InjectedActivationError, KeyboardInterrupt])
+def test_post_cas_runtime_activation_failure_is_durable_and_restart_converges(
+    tmp_path: Path, passing_evidence, injected: type[BaseException]
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    serving: list[str] = []
+
+    def install(deployment: DeploymentRecord, prepared) -> None:
+        serving.append(deployment.deployment_id)
+
+    mirror = _LifecycleMirror()
+    healthy = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda item: True,
+        on_activated=install,
+        tracking=mirror,
+    )
+    deployed_first = healthy.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+
+    def failing_install(deployment: DeploymentRecord, prepared) -> None:
+        raise injected("runtime handoff failed")
+
+    broken = DeploymentCoordinator(
+        control=control,
+        store=store,
+        load_and_smoke=lambda item: True,
+        on_activated=failing_install,
+        tracking=mirror,
+    )
+    with pytest.raises(injected, match="runtime handoff failed"):
+        broken.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+
+    committed, generation = control.active()
+    assert committed is not None and committed.candidate_id == second.candidate_id
+    assert generation == 2
+    # The runtime still serves the previous deployment, and the mismatch is on the ledger.
+    assert serving == [deployed_first.deployment_id]
+    # The champion alias is not mirrored for a handoff that did not complete.
+    assert mirror.champions == [first.policy.policy_id]
+    (failure,) = _failure_events(control)
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["subject_id"] == second.candidate_id
+    assert failure["details"]["stage"] == "runtime_activation"
+    assert failure["details"]["authoritative_commit"] is True
+    assert failure["details"]["committed_deployment_id"] == committed.deployment_id
+    assert failure["details"]["error_class"] == injected.__name__
+    assert failure["details"]["error_message"] is None
+    assert failure["details"]["expected_deployment_id"] == deployed_first.deployment_id
+    assert failure["details"]["expected_generation"] == 1
+
+    # Restart: serving-startup restore loads exactly the ledger's active deployment and
+    # re-mirrors the alias without creating any approval or deployment.
+    history = control.deployment_history()
+    approvals = control.approval_events()
+    restored = healthy.restore_active()
+    assert restored == committed
+    assert serving[-1] == committed.deployment_id
+    assert mirror.champions[-1] == second.policy.policy_id
+    assert control.deployment_history() == history
+    assert control.approval_events() == approvals
+
+
+def test_post_cas_rollback_activation_failure_records_rollback_failed_event(
+    tmp_path: Path, passing_evidence
+) -> None:
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    healthy = DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True)
+    healthy.deploy(first.candidate_id, actor="local-reviewer", reason="first")
+    deployed_second = healthy.deploy(second.candidate_id, actor="local-reviewer", reason="second")
+
+    def failing_install(deployment: DeploymentRecord, prepared) -> None:
+        raise _InjectedActivationError("rollback handoff failed")
+
+    with pytest.raises(_InjectedActivationError):
+        DeploymentCoordinator(
+            control=control,
+            store=store,
+            load_and_smoke=lambda item: True,
+            on_activated=failing_install,
+        ).rollback(actor="local-reviewer", reason="restore first")
+
+    committed, _generation = control.active()
+    assert committed is not None and committed.action == "rollback"
+    (failure,) = _failure_events(control)
+    assert failure["event_type"] == "deployment.rollback_failed"
+    assert failure["subject_id"] == deployed_second.deployment_id
+    assert failure["details"]["candidate_id"] == first.candidate_id
+    assert failure["details"]["stage"] == "runtime_activation"
+    assert failure["details"]["committed_deployment_id"] == committed.deployment_id
+
+
+def test_compensation_boundary_never_masks_activation_error_or_rewrites_ledger(
+    tmp_path: Path, passing_evidence, monkeypatch
+) -> None:
+    """The chosen strategy has no automatic compensating transition.
+
+    When the post-CAS handoff fails *and* the durable failure record cannot be written, the
+    original handoff error still surfaces (with a note), and the coordinator neither rolls the
+    pointer back nor appends any compensating deployment.
+    """
+    control = _control(tmp_path)
+    store = LocalImmutableStore(tmp_path / "immutable")
+    first = _approved_candidate(control, passing_evidence, store, "first")
+    second = _approved_candidate(control, passing_evidence, store, "second")
+    DeploymentCoordinator(control=control, store=store, load_and_smoke=lambda item: True).deploy(
+        first.candidate_id, actor="local-reviewer", reason="first"
+    )
+
+    def failing_install(deployment: DeploymentRecord, prepared) -> None:
+        raise _InjectedActivationError("runtime handoff failed")
+
+    def unavailable_ledger(**_kwargs) -> None:
+        raise control_store.ContentionError("control database is temporarily busy")
+
+    monkeypatch.setattr(control, "record_deployment_failure", unavailable_ledger)
+    with pytest.raises(_InjectedActivationError) as raised:
+        DeploymentCoordinator(
+            control=control,
+            store=store,
+            load_and_smoke=lambda item: True,
+            on_activated=failing_install,
+        ).deploy(second.candidate_id, actor="local-reviewer", reason="second")
+
+    assert raised.value.__notes__ == ["deployment failure event was not recorded: ContentionError"]
+    committed, generation = control.active()
+    assert committed is not None and committed.candidate_id == second.candidate_id
+    assert generation == 2
+    assert [(row["action"], row["candidate_id"]) for row in control.deployment_history()] == [
+        ("deploy", first.candidate_id),
+        ("deploy", second.candidate_id),
+    ]
+    assert _failure_events(control) == []

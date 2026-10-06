@@ -115,11 +115,20 @@ class PolicyRuntime:
         if loaded is not None:
             self.activate(loaded)
 
+    @staticmethod
+    def check_activatable(loaded: LoadedPolicy) -> None:
+        """Raise for any policy ``activate`` would reject; pure, with no side effects.
+
+        The deployment coordinator runs this before its compare-and-swap so the post-commit
+        ``activate`` call re-checks only facts already proven about the same frozen manifest.
+        """
+        if loaded.manifest.condition != "raw":
+            raise ValueError("serving v1 supports raw-coordinate policies only")
+
     def activate(self, loaded: LoadedPolicy) -> None:
         # Production activation is sanctioned only through DeploymentCoordinator; direct use is
         # smoke-only.
-        if loaded.manifest.condition != "raw":
-            raise ValueError("serving v1 supports raw-coordinate policies only")
+        self.check_activatable(loaded)
         self.loaded = loaded
 
 

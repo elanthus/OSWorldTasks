@@ -11,6 +11,20 @@ reviewer actions. Deployment history, approvals, and audit events are append-onl
 deployment changes through a compare-and-swap generation. The serving API receives the exact
 approved policy from that activation and discloses policy and deployment identity on every call.
 
+Every failed deploy or rollback appends a `deployment.deploy_failed` or
+`deployment.rollback_failed` audit event whose stage is `preactivation`, `transaction`, or
+`runtime_activation`; failure events never move the active pointer. The runtime handoff after the
+compare-and-swap is total by construction: all checks that could reject the prepared policy run
+before the commit, and the handoff only installs the validated value. There is no automatic
+compensating rollback. If the handoff still raises, the failure event names the committed
+deployment, and serving-startup restore loads that deployment on the next start.
+
+MLflow tags and the `champion` alias mirror the ledger. Each mirror write runs after its
+authoritative transaction commits; a failed write appends `tracking.reconciliation_required` and
+changes no control or serving state. Startup reconciliation derives the desired tags and alias from
+the ledger alone and rewrites them idempotently. The full contract is in the
+[deployment guide](../../deploy/README.md#control-ledger-mlflow-mirror-and-reconciliation).
+
 The Compose demo uses PostgreSQL for MLflow metadata and versioned MinIO buckets for artifacts and
 immutable response envelopes. Production should replace MinIO governance retention with an
 approved S3 Object Lock compliance policy, backup, replication, access controls, and recovery
