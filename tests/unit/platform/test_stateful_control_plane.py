@@ -182,6 +182,7 @@ def _plane(
     *,
     control: ControlStore | None = None,
     preparer_enabled: bool = True,
+    preparer_override: Any | None = None,
     launcher: Any | None = None,
     require_os_sandbox: bool = False,
 ) -> Plane:
@@ -212,7 +213,14 @@ def _plane(
         store=store,
         load_and_smoke=_v1_load_and_smoke,
         on_activated=kinds.activate,
-        stateful_load_and_smoke=recording_preparer if preparer_enabled else None,
+        validate_activation=kinds.check_activatable,
+        stateful_load_and_smoke=(
+            preparer_override
+            if preparer_override is not None
+            else recording_preparer
+            if preparer_enabled
+            else None
+        ),
     )
     records = MemoryEpisodeOperationalLog()
     app = create_serving_app(
@@ -629,10 +637,14 @@ def test_runtimes_refuse_prepared_policies_of_the_other_kind(
             StatefulRuntime().activate(
                 _deployment_record(grounding.candidate_id, grounding.policy.policy_id), prepared
             )
-        with pytest.raises(TransitionError, match="does not match"):
-            plane.kinds.activate(
-                _deployment_record(stateful.candidate_id, stateful.policy_id), loaded
-            )
+        with pytest.raises(TypeError, match="grounding"):
+            PolicyRuntime.check_activatable(prepared)  # type: ignore[arg-type]
+        with pytest.raises(CandidateKindMismatchError):
+            StatefulRuntime.check_activatable(loaded)
+        with pytest.raises(CandidateKindMismatchError):
+            plane.kinds.check_activatable(object())
+        plane.kinds.check_activatable(prepared)
+        plane.kinds.check_activatable(loaded)
         with pytest.raises(CandidateKindMismatchError):
             plane.kinds.activate(
                 _deployment_record(stateful.candidate_id, stateful.policy_id), object()
@@ -814,6 +826,62 @@ def test_lost_activation_race_releases_the_prepared_worker(
     assert plane.prepared[0]._closed
     assert plane.prepared[0].loaded.policy._launched.process.poll() is not None
     assert plane.kinds.active_kind is None
+    failure = plane.control.audit_events()[-1]
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["details"]["stage"] == "transaction"
+    assert failure["details"]["candidate_id"] == stateful.candidate_id
+
+
+def test_stateful_kind_mismatch_is_rejected_before_the_cas(
+    tmp_path: Path, passing_evidence
+) -> None:
+    holder: dict[str, Plane] = {}
+
+    def wrong_kind(candidate: Any, terms: Any) -> LoadedPolicy:
+        # A misconfigured preparer hands back a grounding runtime for a stateful candidate.
+        return _v1_load_and_smoke(holder["grounding"])
+
+    plane = _plane(tmp_path, preparer_override=wrong_kind)
+    grounding = _grounding_candidate(plane, passing_evidence)
+    holder["grounding"] = grounding
+    stateful = _stateful_candidate(plane)
+    active = plane.coordinator.deploy(grounding.candidate_id, actor=REVIEWER, reason="v1")
+    pointer_before = plane.control.active()
+
+    with pytest.raises(CandidateKindMismatchError, match="kind or identity"):
+        plane.coordinator.deploy(stateful.candidate_id, actor=REVIEWER, reason="wrong kind")
+
+    assert plane.control.active() == pointer_before
+    assert plane.control.active()[0] == active
+    assert plane.kinds.active_kind.value == "grounding"
+    assert plane.grounding.loaded.deployment_id == active.deployment_id
+    failure = plane.control.audit_events()[-1]
+    assert failure["event_type"] == "deployment.deploy_failed"
+    assert failure["details"]["stage"] == "preactivation"
+    assert failure["details"]["candidate_id"] == stateful.candidate_id
+    assert failure["details"]["error_class"] == "CandidateKindMismatchError"
+    assert failure["details"]["authoritative_commit"] is False
+
+
+def test_stateful_rollback_failure_records_a_preactivation_event(
+    tmp_path: Path, passing_evidence
+) -> None:
+    plane = _plane(tmp_path)
+    stateful = _stateful_candidate(plane, cap=1)
+    grounding = _grounding_candidate(plane, passing_evidence)
+    plane.coordinator.deploy(stateful.candidate_id, actor=REVIEWER, reason="v5")
+    episode_id = _create(plane).json()["episode_id"]
+    assert _act(plane, episode_id).json()["sealed_failure"] is None
+    current = plane.coordinator.deploy(grounding.candidate_id, actor=REVIEWER, reason="v1")
+
+    with pytest.raises(StatefulLoadError):
+        plane.coordinator.rollback(actor=REVIEWER, reason="cap exhausted")
+
+    assert plane.control.active()[0] == current
+    failure = plane.control.audit_events()[-1]
+    assert failure["event_type"] == "deployment.rollback_failed"
+    assert failure["details"]["stage"] == "preactivation"
+    assert failure["details"]["candidate_id"] == stateful.candidate_id
 
 
 def test_withdrawn_gate_policy_blocks_activation(tmp_path: Path) -> None:
@@ -939,7 +1007,7 @@ def test_bootstrap_mounts_api_v2_closed_until_stateful_serving_is_configured(
     candidate = _register_approved_with_terms(control, tmp_path)
     with pytest.raises(TransitionError, match="approved v5 gate policy"):
         app.state.deployment_coordinator.deploy(
-            candidate.candidate_id, actor=REVIEWER, reason="not configured"
+            candidate.candidate_id, actor=SyntheticDemoPrincipal(), reason="not configured"
         )
     assert control.active()[0] is None
 

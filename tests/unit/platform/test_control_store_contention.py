@@ -56,6 +56,39 @@ def _race_activation(
         _close_store(store)
 
 
+def _race_approval(
+    database: str,
+    candidate_id: str,
+    gate_report_sha256: str,
+    reason: str,
+    barrier: Barrier,
+    results: Any,
+) -> None:
+    from pixelgym.platform.control_store import ConflictError, ControlStore
+
+    store: ControlStore | None = None
+    try:
+        store = ControlStore(
+            database,
+            reviewer_identity="local-reviewer",
+            busy_timeout_ms=1_000,
+        )
+        barrier.wait(timeout=_SYNC_TIMEOUT_SECONDS)
+        approval = store.approve(
+            candidate_id,
+            actor="local-reviewer",
+            reason=reason,
+            gate_report_sha256=gate_report_sha256,
+        )
+        results.put(("approved", approval["approval_id"], approval["reason"]))
+    except ConflictError as exc:
+        results.put(("conflict", str(exc)))
+    except Exception as exc:  # noqa: BLE001 - child must return unexpected failures.
+        results.put(("unexpected", type(exc).__name__, str(exc)))
+    finally:
+        _close_store(store)
+
+
 def _hold_uncommitted_write(
     database: str,
     barrier: Barrier,
@@ -201,7 +234,7 @@ def _wait_at_barrier(
         raise AssertionError(f"{phase} barrier timed out; child exit codes: {exit_codes}") from exc
 
 
-def _prepare_approved_candidate(database: Path) -> str:
+def _prepare_candidate(database: Path, *, approve: bool) -> tuple[str, str]:
     from pixelgym.platform.contracts import RunSummary
     from pixelgym.platform.control_store import ControlStore
     from pixelgym.platform.dependency_lock import dependency_lock_sha256
@@ -268,15 +301,21 @@ def _prepare_approved_candidate(database: Path) -> str:
             gate_report=evaluate_gates(gate_policy, summary),
             artifacts=[],
         )
-        store.approve(
-            candidate.candidate_id,
-            actor="local-reviewer",
-            reason="contention fixture",
-            gate_report_sha256=candidate.gate_report_sha256,
-        )
-        return candidate.candidate_id
+        if approve:
+            store.approve(
+                candidate.candidate_id,
+                actor="local-reviewer",
+                reason="contention fixture",
+                gate_report_sha256=candidate.gate_report_sha256,
+            )
+        return candidate.candidate_id, candidate.gate_report_sha256
     finally:
         store.connection.close()
+
+
+def _prepare_approved_candidate(database: Path) -> str:
+    candidate_id, _gate_report_sha256 = _prepare_candidate(database, approve=True)
+    return candidate_id
 
 
 def _get_result(results: Any) -> tuple[Any, ...]:
@@ -323,6 +362,91 @@ def test_two_processes_racing_activation_yield_one_winner_and_one_conflict(
         assert len(reopened.deployment_history()) == 1
     finally:
         reopened.connection.close()
+
+
+def _run_approval_race(
+    database: Path, reasons: tuple[str, str]
+) -> tuple[str, list[tuple[Any, ...]]]:
+    candidate_id, gate_report_sha256 = _prepare_candidate(database, approve=False)
+    context = multiprocessing.get_context("spawn")
+    barrier = context.Barrier(3)
+    results = context.Queue()
+    processes = [
+        context.Process(
+            target=_race_approval,
+            args=(str(database), candidate_id, gate_report_sha256, reason, barrier, results),
+        )
+        for reason in reasons
+    ]
+    started: list[multiprocessing.Process] = []
+    try:
+        for process in processes:
+            process.start()
+            started.append(process)
+        _wait_at_barrier(barrier, started, phase="approval race startup")
+        outcomes = [_get_result(results), _get_result(results)]
+    finally:
+        _finish_processes(started)
+    return candidate_id, outcomes
+
+
+def _assert_single_attributable_approval(database: Path, candidate_id: str) -> dict[str, Any]:
+    from pixelgym.platform.contracts import CandidateState
+    from pixelgym.platform.control_store import ControlStore
+
+    reopened = ControlStore(database, reviewer_identity="local-reviewer")
+    try:
+        approvals = reopened.approval_events()
+        approved_events = [
+            event
+            for event in reopened.audit_events()
+            if event["event_type"] == "candidate.approved"
+        ]
+        candidate = reopened.get_candidate(candidate_id)
+    finally:
+        reopened.connection.close()
+    assert len(approvals) == 1
+    assert len(approved_events) == 1
+    approval = approvals[0]
+    assert approval["candidate_id"] == candidate_id
+    assert approved_events[0]["subject_id"] == candidate_id
+    assert approved_events[0]["actor"] == "local-reviewer"
+    assert approved_events[0]["details"]["approval_id"] == approval["approval_id"]
+    assert approved_events[0]["details"]["reason"] == approval["reason"]
+    assert candidate.state is CandidateState.APPROVED
+    # Exactly one Eligible -> Approved transition bumped the optimistic version.
+    assert candidate.version == 2
+    return approval
+
+
+def test_two_processes_racing_same_evidence_approval_are_idempotent(tmp_path: Path) -> None:
+    database = tmp_path / "control.db"
+    candidate_id, outcomes = _run_approval_race(
+        database, ("same reviewed evidence", "same reviewed evidence")
+    )
+
+    assert all(outcome[0] != "unexpected" for outcome in outcomes), outcomes
+    assert [outcome[0] for outcome in outcomes] == ["approved", "approved"]
+    approval = _assert_single_attributable_approval(database, candidate_id)
+    # Both callers observe the one durable approval, not two independently minted rows.
+    assert {outcome[1] for outcome in outcomes} == {approval["approval_id"]}
+
+
+def test_two_processes_racing_different_evidence_approval_yield_one_winner(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "control.db"
+    candidate_id, outcomes = _run_approval_race(
+        database, ("first reviewer reason", "second reviewer reason")
+    )
+
+    assert all(outcome[0] != "unexpected" for outcome in outcomes), outcomes
+    assert sorted(outcome[0] for outcome in outcomes) == ["approved", "conflict"]
+    winner = next(outcome for outcome in outcomes if outcome[0] == "approved")
+    loser = next(outcome for outcome in outcomes if outcome[0] == "conflict")
+    assert "already approved with different evidence" in loser[1]
+    approval = _assert_single_attributable_approval(database, candidate_id)
+    assert (approval["approval_id"], approval["reason"]) == (winner[1], winner[2])
 
 
 def test_reader_completes_while_other_process_holds_immediate_write(

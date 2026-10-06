@@ -355,10 +355,17 @@ def create_app(
         FrozenSmokeFixture.load(repository_root), serving_provider
     )
 
+    def validate_runtime_activation(prepared: object) -> None:
+        # Runs before the database CAS. Every way the post-CAS handoff below could reject
+        # the prepared candidate, for either policy kind, is checked here, so a rejection
+        # leaves traffic unchanged.
+        kind_runtime.check_activatable(prepared)
+
     def activate_runtime(deployment: DeploymentRecord, prepared: object) -> None:
-        # The only mutation of the traffic runtime happens after the database CAS succeeds.
-        # The kind-aware runtime refuses a prepared policy whose kind or identity does not
-        # match the activated deployment.
+        # Total by construction (issue #166): validate_runtime_activation already proved the
+        # prepared value's kind and installability, and the coordinator checked its identity
+        # against the verified candidate. The only mutation of the traffic runtime happens
+        # after the database CAS succeeds.
         kind_runtime.activate(deployment, prepared)
 
     coordinator = DeploymentCoordinator(
@@ -367,6 +374,7 @@ def create_app(
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
         tracking=tracking,
+        validate_activation=validate_runtime_activation,
         stateful_load_and_smoke=stateful_config.preparer,
     )
     coordinator.restore_active()

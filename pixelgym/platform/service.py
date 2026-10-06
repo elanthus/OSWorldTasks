@@ -115,14 +115,23 @@ class PolicyRuntime:
         if loaded is not None:
             self.activate(loaded)
 
-    def activate(self, loaded: LoadedPolicy) -> None:
-        # Production activation is sanctioned only through DeploymentCoordinator; direct use is
-        # smoke-only.
+    @staticmethod
+    def check_activatable(loaded: LoadedPolicy) -> None:
+        """Raise for any policy ``activate`` would reject; pure, with no side effects.
+
+        The deployment coordinator runs this before its compare-and-swap so the post-commit
+        ``activate`` call re-checks only facts already proven about the same frozen manifest.
+        """
         if not isinstance(loaded, LoadedPolicy):
             # A stateful-v5 package is served only by the kind-aware stateful runtime.
             raise TypeError("serving v1 accepts only loaded grounding policies")
         if loaded.manifest.condition != "raw":
             raise ValueError("serving v1 supports raw-coordinate policies only")
+
+    def activate(self, loaded: LoadedPolicy) -> None:
+        # Production activation is sanctioned only through DeploymentCoordinator; direct use is
+        # smoke-only.
+        self.check_activatable(loaded)
         self.loaded = loaded
 
     def deactivate(self) -> None:

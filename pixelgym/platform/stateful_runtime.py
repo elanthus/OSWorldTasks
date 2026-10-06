@@ -404,11 +404,18 @@ class StatefulRuntime:
         with self._lock:
             return self._active
 
-    def activate(self, deployment: DeploymentRecord, prepared: object) -> None:
+    @staticmethod
+    def check_activatable(prepared: object) -> None:
+        """Raise for any value ``activate`` would reject by kind; pure, with no side effects."""
         if not isinstance(prepared, PreparedStatefulPolicy):
             raise CandidateKindMismatchError(
                 "the stateful runtime accepts only prepared stateful-v5 packages"
             )
+
+    def activate(self, deployment: DeploymentRecord, prepared: object) -> None:
+        self.check_activatable(prepared)
+        assert isinstance(prepared, PreparedStatefulPolicy)
+        # Backstop only: the coordinator proves this identity before the compare-and-swap.
         if (
             deployment.candidate_id != prepared.candidate_id
             or deployment.policy_id != prepared.package.policy_id
@@ -525,10 +532,18 @@ class KindAwareRuntime:
             return PolicyKind.STATEFUL_V5
         return None
 
+    def check_activatable(self, prepared: object) -> None:
+        """Pre-CAS validation for both kinds; ``activate`` then only installs (issue #166)."""
+        if isinstance(prepared, LoadedPolicy):
+            PolicyRuntime.check_activatable(prepared)
+            return
+        if isinstance(prepared, PreparedStatefulPolicy):
+            StatefulRuntime.check_activatable(prepared)
+            return
+        raise CandidateKindMismatchError("activation received a policy of an unknown kind")
+
     def activate(self, deployment: DeploymentRecord, prepared: object) -> None:
         if isinstance(prepared, LoadedPolicy):
-            if prepared.manifest.policy_id != deployment.policy_id:
-                raise TransitionError("loaded policy does not match the activated deployment")
             self.stateful.deactivate()
             # The only mutation of the traffic runtime happens after the database CAS succeeds.
             self.grounding.activate(replace(prepared, deployment_id=deployment.deployment_id))

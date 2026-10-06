@@ -146,6 +146,76 @@ billing in that bounded local runtime. A remote scheduler that loses its parent 
 still leave an orphan run; production use needs a separate orphan-run reconciler and this test does
 not claim otherwise.
 
+## Control ledger, MLflow mirror, and reconciliation
+
+The SQLite control store is the only authority for candidate state, approvals, deployments, the
+active pointer, and audit events. MLflow model-version tags and the `champion` alias are a mirror
+of that ledger for discovery. MLflow never drives a transition, and nothing reads MLflow to decide
+what to approve, deploy, or serve.
+
+**Mirror writes.** Each mirror write runs only after its authoritative transaction commits:
+
+| Ledger transition | MLflow write | Operation name on failure |
+| --- | --- | --- |
+| Approval commits | `gate_status` and `approval_status` tags on the policy's model version | `mirror_approval_tags` |
+| Deploy or rollback commits and the runtime handoff completes | `champion` alias to the active policy's model version | `set_champion_alias` |
+| Serving startup restores the active deployment | `champion` alias | `set_champion_alias` |
+
+A failed mirror write never fails the transition and never changes candidate, deployment, or
+serving state. It appends a `tracking.reconciliation_required` audit event with the subject, the
+operation name, and a fixed error string (`TrackingMirrorError: failed to mirror ...`); no
+credentials or MLflow response bodies are stored. A tracking client that cannot be created at
+startup is recorded the same way with operation `initialize_tracking`.
+
+**Reconciliation.** When `MLFLOW_TRACKING_URI` is set, startup runs
+`DeploymentCoordinator.reconcile_tracking()` on a background thread. It derives the desired mirror
+from the ledger alone: for every candidate, `gate_status` is `eligible` or `failed` and
+`approval_status` is `approved` or `pending`; the `champion` alias names the active deployment's
+policy. The writes are idempotent, so a repeated run converges to the same state and creates no
+approval or deployment. Each write that fails appends `tracking.reconciliation_required`
+(`reconcile_candidate_status` or `reconcile_champion_alias`). A run with no failures appends one
+`tracking.reconciliation_resolved` event (`reconcile_lifecycle_mirror`). An unexpected error in
+the reconciler is recorded as `startup_reconciliation`.
+
+Mirror state is therefore stale in two visible cases: between a failed write and the next
+successful reconciliation, and after an OS crash loses a committed WAL transaction that MLflow had
+already mirrored (see above). In both cases the ledger wins. The deployment page's audit timeline
+shows the `tracking.*` events.
+
+### Failed deploy and rollback events
+
+Every failed deploy or rollback by a verified reviewer appends one `deployment.deploy_failed` or
+`deployment.rollback_failed` audit event. Its `details.stage` says where the attempt stopped:
+
+| Stage | What failed | Ledger effect |
+| --- | --- | --- |
+| `preactivation` | Stale form precondition, approval or evidence verification, renderer binding, artifact verification, load, smoke, or runtime-handoff validation | None; traffic unchanged |
+| `transaction` | The compare-and-swap transaction (lost race, contention, rejected target) | None; the transaction rolled back |
+| `runtime_activation` | The serving-runtime handoff after the compare-and-swap committed | The new deployment is active in the ledger; `details.committed_deployment_id` names it |
+
+The event also records the actor, reason, target candidate, the expected deployment and generation
+used for the compare-and-swap, and the exception class. Only control-plane exception messages are
+copied into `details.error_message`; for any other exception it is `null`. A failure event never
+changes candidates, deployments, or the active pointer. An unverified actor is rejected before any
+verification work and leaves no row. If the failure event itself cannot be written, the original
+error is still raised, with a note.
+
+### Runtime handoff after the compare-and-swap
+
+The post-commit runtime handoff is total by construction. Every check that could reject a prepared
+candidate runs before the compare-and-swap: load and smoke, then `validate_activation`, which in the
+assembled app requires a `LoadedPolicy` that `PolicyRuntime.check_activatable` accepts. After the
+commit, the handoff only sets the committed deployment ID on that already-validated frozen value and
+installs it. The platform does not run an automatic compensating rollback, because automatic
+rollback is out of scope and compensation would need its own post-commit handoff that could fail
+the same way.
+
+If the handoff raises anyway (for example, an interpreter-level error), the coordinator appends a
+`runtime_activation` failure event and re-raises. The ledger is not rewritten, the champion alias
+is not mirrored for that attempt, and the runtime keeps serving the previous policy until the
+process restarts. On restart, serving-startup restore re-verifies and loads exactly the ledger's
+active deployment, then re-mirrors the alias.
+
 ## Recover a directory created by a direct Compose invocation
 
 If the wrapper reports that `.cache/platform/source-provenance.json` is a directory, first stop
