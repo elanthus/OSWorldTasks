@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixelgym.local/schemas/stateful-control-v1.json",
+  "title": "PixelGym stateful (v5) control-plane records",
+  "description": "Control-plane records for the stateful-v5 policy kind: the gate report a candidate is registered with, and the human-approved serving terms (deployment attempt cap and tier) for one exact package version. Which observations a v5 gate reads and their thresholds are fixed by the separately approved gate policy whose digest the report binds.",
+  "oneOf": [
+    {"$ref": "#/$defs/gate_report"},
+    {"$ref": "#/$defs/serving_terms"}
+  ],
+  "$defs": {
+    "prefixed_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "bare_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "observed", "threshold", "comparator", "passed"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$"},
+        "observed": {"type": ["number", "null"]},
+        "threshold": {"type": "number"},
+        "comparator": {"enum": ["at_least", "at_most"]},
+        "passed": {"type": "boolean"}
+      }
+    },
+    "gate_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "gate_policy_version",
+        "gate_policy_sha256",
+        "policy_id",
+        "run_reference",
+        "evidence_class",
+        "evidence_plan_sha256",
+        "evidence_summary_sha256",
+        "observations",
+        "code_revision_passed",
+        "overall_passed",
+        "reasons"
+      ],
+      "properties": {
+        "schema_version": {"const": "pixelgym-stateful-gate-report-v1"},
+        "kind": {"const": "stateful-v5"},
+        "gate_policy_version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "gate_policy_sha256": {"$ref": "#/$defs/bare_digest"},
+        "policy_id": {"$ref": "#/$defs/prefixed_digest"},
+        "run_reference": {"type": "string", "minLength": 1},
+        "evidence_class": {"enum": ["calibration", "confirmatory"]},
+        "evidence_plan_sha256": {"$ref": "#/$defs/prefixed_digest"},
+        "evidence_summary_sha256": {"$ref": "#/$defs/prefixed_digest"},
+        "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}},
+        "code_revision_passed": {"type": "boolean"},
+        "overall_passed": {"type": "boolean"},
+        "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "serving_terms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "terms_id",
+        "candidate_id",
+        "policy_id",
+        "deployment_attempt_cap",
+        "deployment_tier",
+        "actor",
+        "reason",
+        "created_at_utc"
+      ],
+      "properties": {
+        "terms_id": {"type": "string", "minLength": 1},
+        "candidate_id": {"type": "string", "minLength": 1},
+        "policy_id": {"$ref": "#/$defs/prefixed_digest"},
+        "deployment_attempt_cap": {"type": "integer", "minimum": 1},
+        "deployment_tier": {"enum": ["demo", "standard"]},
+        "actor": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "created_at_utc": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

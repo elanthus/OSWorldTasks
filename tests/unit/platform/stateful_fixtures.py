@@ -23,6 +23,11 @@ from pixelgym.platform.stateful_contracts import (
     StatefulPolicyPackage,
     StepCheckpoints,
 )
+from pixelgym.platform.stateful_control import (
+    ServingTerms,
+    StatefulGateObservation,
+    StatefulGateReport,
+)
 
 D = "sha256:" + "a" * 64
 EPISODE = "ep-" + "0" * 32
@@ -93,6 +98,51 @@ def package(kind: EvidenceClass = EvidenceClass.CALIBRATION) -> StatefulPolicyPa
         source_tree_sha256="7" * 64,
         source_provenance_verified=True,
         source_provenance_failure_reason=None,
+    )
+
+
+GATE_POLICY_SHA256 = "6" * 64
+
+
+def gate_report(
+    target: StatefulPolicyPackage | None = None, *, passed: bool = True
+) -> StatefulGateReport:
+    """A schema-valid stateful gate report; observation names and thresholds are placeholders."""
+
+    bound = target or package()
+    return StatefulGateReport(
+        gate_policy_version="test-only-stateful-gate-policy",
+        gate_policy_sha256=GATE_POLICY_SHA256,
+        policy_id=bound.policy_id,
+        run_reference=bound.evidence.run_reference,
+        evidence_class=bound.evidence_class,
+        evidence_plan_sha256=bound.evidence.plan_sha256,
+        evidence_summary_sha256=bound.evidence.summary_sha256,
+        observations=(
+            StatefulGateObservation(
+                name="exact_episode_success",
+                observed=0.7 if passed else 0.1,
+                threshold=0.5,
+                comparator="at_least",
+                passed=passed,
+            ),
+        ),
+        code_revision_passed=True,
+        overall_passed=passed,
+        reasons=() if passed else ("exact_episode_success below threshold",),
+    )
+
+
+def serving_terms() -> ServingTerms:
+    return ServingTerms(
+        terms_id="terms-" + "0" * 24,
+        candidate_id="candidate-" + "0" * 24,
+        policy_id=package().policy_id,
+        deployment_attempt_cap=500,
+        deployment_tier="demo",
+        actor="local-reviewer",
+        reason="demo cap reviewed",
+        created_at_utc="2026-09-09T00:00:00+00:00",
     )
 
 
@@ -185,6 +235,8 @@ def stateful_representatives() -> dict[str, dict[str, Any]]:
     ident = identity().to_dict()
     return {
         "stateful_policy_package": package().to_dict(),
+        "stateful_gate_report": gate_report().to_dict(),
+        "stateful_serving_terms": serving_terms().to_dict(),
         "serving_create_request": {
             "schema_version": "pixelgym-serving-session-v2",
             "task_instruction": "Fill in the vendor form.",

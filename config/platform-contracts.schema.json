@@ -33,7 +33,9 @@
         "episode_session_state": "pixelgym-serving-session-v2",
         "episode_opened_record": "pixelgym-serving-episode-record-v1",
         "episode_step_record": "pixelgym-serving-episode-record-v1",
-        "episode_closed_record": "pixelgym-serving-episode-record-v1"
+        "episode_closed_record": "pixelgym-serving-episode-record-v1",
+        "stateful_gate_report": "pixelgym-stateful-gate-report-v1",
+        "stateful_serving_terms": "pixelgym-stateful-serving-terms-v1"
       }
     }
   }
