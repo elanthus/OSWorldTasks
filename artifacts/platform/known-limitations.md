@@ -15,6 +15,17 @@
   observations; the bounded synthetic demo policy leaves this optional gate disabled.
 - The serving v1 boundary supports raw-coordinate policies. A deployable live set-of-marks policy
   would need a target-neutral proposal generator that does not expose build-time boxes.
+- Stateful-v5 (`/api/v2`) serving shares the single active pointer with grounding serving, so
+  only one kind serves at a time. Stateful candidates have no web UI surface; they are registered,
+  approved, given serving terms, and deployed through the Python control-store and coordinator
+  API, although the existing rollback form works across kinds. The default bootstrap configures
+  no stateful preparer and no approved v5 gate policy, so it refuses every stateful candidate.
+- A stateful package's `package_source_sha256` is bound to an operator-registered policy-worker
+  spec; S6 does not recompute it from worker code bytes. MLflow champion aliases are not mirrored
+  for stateful packages and keep pointing at the last grounding champion while one is active.
+- A retired stateful deployment's policy worker is stopped when another deployment activates; an
+  act already in flight on it seals `infrastructure_failure`. Its session-store and journal
+  connections stay open until the process exits.
 - Runtime policy activation is process-local in the MVP combined control/serving process. A
   multi-replica deployment requires an authenticated activation channel and readiness-aware router.
 - The approved real-provider path admits only the OpenRouter transport, the `raw` condition, and

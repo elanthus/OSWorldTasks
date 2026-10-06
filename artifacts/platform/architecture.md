@@ -45,3 +45,13 @@ artifact. It then re-runs `CandidateServiceSmoke` against the frozen smoke fixtu
 the policy into the traffic runtime. Any failure aborts application construction, so the process
 never accepts traffic with an unverified policy. With no active deployment, the service starts
 with no policy loaded.
+
+Stateful-v5 policies (v5 serving stage S6) share the same ledger and active pointer. A
+`stateful-v5` candidate needs a gate report from an approved v5 gate policy, human approval, and
+append-only serving terms (deployment attempt cap and tier) for its exact version. Deploy,
+rollback, and startup restore reverify those records and every pinned artifact, run a no-cost
+fake-policy `/api/v2` episode in an isolated app, and load the candidate's policy into the
+credential-free worker before the compare-and-swap. A kind-aware runtime then serves exactly one
+kind: `/api/v1/ground` for a grounding deployment or `/api/v2/episodes` for a stateful one. The
+caller owns the environment; the server validates each action against the PixelGym action
+contract and never executes it.

@@ -11,7 +11,7 @@
 | Grounding v3, v3a, v3b, v3c | Historical prompt-v2 calibration experiments with Haiku and Gemini. v3a uses the vendor form, v3b a dense form with near-duplicate labels and small controls, and v3c a data table with repeated identical buttons. |
 | Grounding v4, v4b, v4c | Multi-step pilots on the vendor form: v4 the first pilot, v4b a multistep pilot, and v4c a longer-horizon pilot whose saturation motivated v5. |
 | Grounding v5 | The stateful end-to-end agent benchmark (`pixelgym-agent-v5`); see the [v5 benchmark design](v5-benchmark-design.md). Its deliverables are D5.1–D5.10. |
-| S1–S8 | Stages of the v5 stateful serving extension (`/api/v2`); S1–S5 are delivered. See the [platform design](platform-design.md#current-status). |
+| S1–S8 | Stages of the v5 stateful serving extension (`/api/v2`); S1–S6 are delivered. See the [platform design](platform-design.md#current-status). |
 | Slot C | The third policy slot in the D5.6 calibration panel, after slot A (Gemini) and slot B (Qwen). It was planned for Llama and later filled by Mistral Small 4. |
 | r1, r2, r3 | Trial-ID generations for the D5.9 Haiku runs: r1 is the original `d59-haiku-` prefix, r2 (`d59-haiku-r2-`) the zero-API-retry successor, and r3 (`d59-haiku-r3-`) the counted network-retry candidate. Each generation keeps its attempts separate from earlier ones. |
 | Successor | A new, versioned freeze or plan that replaces an earlier one after a change. The predecessor and its evidence are kept unchanged. |

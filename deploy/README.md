@@ -278,6 +278,18 @@ evidence, with the configured 30-day governance retention. Local filesystem runs
 application put-once adapter and do **not** claim storage-enforced WORM retention. Restrict object
 read access to the operational-review role; records are not exposed through the serving API.
 
+## Stateful serving (`/api/v2`)
+
+The application mounts the `/api/v2/episodes` routes. They serve only while a `stateful-v5`
+deployment holds the active pointer; otherwise they return `503 no_active_deployment`, and an
+episode whose deployment has since been replaced returns `409 deployment_changed`. The default
+`create_app()` configures no stateful preparer and no approved v5 gate policy, so the control
+plane refuses to register or deploy a stateful package. Enabling it requires passing
+`StatefulServingConfig` (approved gate-policy digests and a preparer) to `create_app`; the gate
+policy, the first package, and its attempt cap are human decisions (v5 serving stage S7), and any
+real provider transport needs its own approval. Episode records and final screenshots are written
+put-once under `serving-episode-records/` and `serving-final-screenshots/`.
+
 ## Approved real-provider evaluations
 
 The evaluation flow's default and only web-submittable provider is the no-cost scripted replay.
