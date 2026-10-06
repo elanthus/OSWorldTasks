@@ -200,7 +200,7 @@ def _expect(condition: bool, message: str) -> None:
 
 
 def _identity_headers_match(response: Any, identity: ServingIdentity) -> bool:
-    return (
+    return bool(
         response.headers.get("X-PixelGym-API-Version") == SESSION_SCHEMA_VERSION
         and response.headers.get("X-PixelGym-Policy-ID") == identity.policy_id
         and response.headers.get("X-PixelGym-Deployment-ID") == identity.deployment_id
