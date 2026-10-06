@@ -1,7 +1,9 @@
 """Rendered-page identity, autoescape, and template-inventory checks for the control web app.
 
 The digest fixture was recorded from the inline f-string renderer at revision 2e22ab6, before the
-Jinja2 template migration. The migrated renderer must reproduce every page byte for byte.
+Jinja2 template migration, and re-recorded once for the intentional issue #165 HTML changes
+(submission history, nav link, status polling script, error-summary focus, rollback label).
+The renderer must reproduce every recorded page byte for byte.
 Record a new fixture only for an intentional, reviewed change to user-visible HTML:
 
     PIXELGYM_RECORD_WEB_PAGE_DIGESTS=1 pytest tests/unit/platform/test_web_templates.py
@@ -257,6 +259,9 @@ def _render_pages(tmp_path: Path, gate_policy: Any) -> dict[str, tuple[int, byte
         "submit": (populated, "/"),
         "submission": (populated, f"/submissions/{submission_id}"),
         "runs": (populated, "/runs"),
+        "runs_submitted_link": (populated, f"/runs?submitted={submission_id}"),
+        "submissions": (populated, "/submissions"),
+        "submissions_filtered": (populated, "/submissions?status=Submitted"),
         "runs_page_2": (populated, "/runs?page=2&provider="),
         "runs_filtered": (
             populated,
@@ -281,6 +286,7 @@ def _render_pages(tmp_path: Path, gate_policy: Any) -> dict[str, tuple[int, byte
         "deployment_audit": (populated, "/deployment/audit"),
         "deployment_audit_page_2": (populated, "/deployment/audit?page=2"),
         "empty_runs": (empty, "/runs"),
+        "empty_submissions": (empty, "/submissions"),
         "empty_compare": (empty, "/compare"),
         "empty_deployment": (empty, "/deployment"),
         "empty_deployment_audit": (empty, "/deployment/audit"),

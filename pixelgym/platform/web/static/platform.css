@@ -161,13 +161,16 @@ textarea {
   font: inherit;
 }
 
+/* Ink focus ring with an acid halo: the ring keeps >= 3:1 contrast on paper, panel, and acid. */
 input:focus,
 select:focus,
 textarea:focus,
 button:focus,
-a:focus {
-  outline: 4px solid var(--acid);
-  outline-offset: 2px;
+a:focus,
+.error-summary:focus {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 9px var(--acid);
 }
 
 textarea {
