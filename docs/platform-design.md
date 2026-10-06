@@ -112,6 +112,28 @@ validates every action against the PixelGym action contract, never executes an a
 the task application, and caps provider spend per episode and per deployment. Policy code runs in
 a credential-free subprocess under OS-level egress enforcement.
 
+Control-plane wiring (S6) keeps one ledger and one active pointer for both kinds:
+
+- A `stateful-v5` candidate is a row in the same candidates table, discriminated by the stored
+  package's `kind`. It registers only with a gate report whose gate-policy digest is in an
+  operator-configured approved set, which is empty by default; the v5 gate policy itself is the
+  human S7 decision. Its immutable artifacts must include the evidence plan and summary the
+  package binds.
+- After approval, a reviewer records append-only serving terms for the exact version: the
+  deployment attempt cap and a tier. Calibration-class evidence permits only the `demo` tier.
+- Deploy and rollback reverify approval, gate report, terms, gate-policy approval, and every
+  artifact, then run a no-cost fake-policy `/api/v2` episode in an isolated app, load the
+  candidate's own policy into the credential-free worker, and check its `reset` before the
+  compare-and-swap. The activation audit event records kind, terms, cap, and tier.
+- The attempt journal is per exact version, so the cap counts across every deployment of that
+  version; redeploying or rolling back cannot reset spend.
+- A kind-aware runtime serves one kind at a time. Activating one kind unloads the other first, and
+  each runtime refuses the other kind. An episode opened under a deployment that no longer holds
+  the pointer is refused with `deployment_changed`; with no stateful deployment active, `/api/v2`
+  returns `no_active_deployment`.
+- A control plane without a configured stateful preparer refuses stateful candidates before any
+  load. The default bootstrap configures none, so no package loader or provider transport ships.
+
 ## Analysis and evidence
 
 Platform evidence comes from the deterministic `scripted-demo` provider. It validates controls and
@@ -137,11 +159,14 @@ latency, cost, and redaction, and a second approval before any full run.
 | S3: durable episode host with fake-policy coverage | Delivered (`pixelgym/platform/serving_episode.py`) |
 | S4: `/api/v2` HTTP adapter and operational records | Delivered (`pixelgym/platform/stateful_service.py`) |
 | S5: credential-free policy subprocess with local egress-denial proof | Delivered (`pixelgym/platform/policy_subprocess.py`) |
-| S6: control-plane wiring and kind-aware runtime | Not delivered |
+| S6: control-plane wiring and kind-aware runtime | Delivered (`pixelgym/platform/stateful_control.py`, `pixelgym/platform/stateful_runtime.py`) |
 | S7–S8: v5 gate policy, first package, rehearsal, and gate | Not delivered; human-owned |
 
 Known limitations: single-user local control plane; provider aliases can drift; write-once
 retention protects versions but not availability; one synthetic form cannot establish general
 grounding performance; approval is only as strong as the deployment's identity and access control;
-local Compose does not demonstrate cloud availability or recovery. The control plane has no caller
+local Compose does not demonstrate cloud availability or recovery. Stateful packages have
+no UI surface yet and are registered, approved, and deployed through the Python control-store
+and coordinator API; the package source digest is bound to an operator-registered worker spec
+rather than recomputed from worker code; MLflow aliases are not mirrored for stateful packages. The control plane has no caller
 authentication and must stay on loopback ([deployment guide](../deploy/README.md)).

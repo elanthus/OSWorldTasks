@@ -11,7 +11,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from pixelgym.platform.control_store import CandidateRecord
+from pixelgym.platform.control_store import CandidateKindMismatchError, CandidateRecord
 from pixelgym.platform.operational_log import MemoryOperationalLog
 from pixelgym.platform.service import (
     LoadedPolicy,
@@ -72,6 +72,8 @@ class CandidateServiceSmoke:
         self.provider = provider
 
     def __call__(self, candidate: CandidateRecord) -> LoadedPolicy:
+        if not isinstance(candidate, CandidateRecord):
+            raise CandidateKindMismatchError("grounding smoke accepts only grounding candidates")
         expected = self.fixture.expected_by_prompt_version.get(candidate.policy.prompt_version)
         if expected is None:
             raise DeploymentSmokeError("candidate has no frozen smoke expectation")

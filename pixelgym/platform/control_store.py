@@ -7,7 +7,7 @@ import json
 import os
 import sqlite3
 import threading
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,6 +26,18 @@ from pixelgym.platform.schema_validation import (
     ContractValidationError,
     PlatformSchemas,
     load_policy_manifest,
+)
+from pixelgym.platform.stateful_contracts import StatefulPolicyPackage
+from pixelgym.platform.stateful_control import (
+    DeploymentTier,
+    PolicyKind,
+    ServingTerms,
+    StatefulCandidateRecord,
+    StatefulGateReport,
+    artifact_digest,
+    stateful_package_from_dict,
+    stored_policy_kind,
+    tier_permits_evidence,
 )
 
 
@@ -84,6 +96,10 @@ SYSTEM_ACTOR = _InternalActor("system")
 
 class TransitionError(RuntimeError):
     pass
+
+
+class CandidateKindMismatchError(TransitionError):
+    """A lifecycle path for one policy kind was asked to handle a different kind."""
 
 
 @dataclass(frozen=True)
@@ -294,7 +310,40 @@ CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit_events
 BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
 CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit_events
 BEGIN SELECT RAISE(ABORT, 'audit events are append-only'); END;
+CREATE TABLE IF NOT EXISTS stateful_serving_terms (
+  terms_id TEXT PRIMARY KEY,
+  candidate_id TEXT NOT NULL UNIQUE REFERENCES candidates(candidate_id),
+  policy_id TEXT NOT NULL,
+  deployment_attempt_cap INTEGER NOT NULL CHECK(deployment_attempt_cap > 0),
+  deployment_tier TEXT NOT NULL CHECK(deployment_tier IN ('demo', 'standard')),
+  actor TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  created_at_utc TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS stateful_terms_no_update BEFORE UPDATE ON stateful_serving_terms
+BEGIN SELECT RAISE(ABORT, 'stateful serving terms are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS stateful_terms_no_delete BEFORE DELETE ON stateful_serving_terms
+BEGIN SELECT RAISE(ABORT, 'stateful serving terms are append-only'); END;
 """
+
+# Stored policy documents carry an explicit ``kind`` only for stateful packages. The CASE guard
+# keeps malformed JSON on the grounding path, where lazy validation reports it as before.
+_GROUNDING_ROW_SQL = (
+    "(CASE WHEN json_valid(policy_json) THEN json_extract(policy_json, '$.kind') END) "
+    "IS NOT 'stateful-v5'"
+)
+_STATEFUL_ROW_SQL = (
+    "(CASE WHEN json_valid(policy_json) THEN json_extract(policy_json, '$.kind') END) "
+    "IS 'stateful-v5'"
+)
+
+
+def _row_policy_kind(row: sqlite3.Row) -> PolicyKind:
+    try:
+        value = json.loads(row["policy_json"])
+    except (json.JSONDecodeError, TypeError):
+        return PolicyKind.GROUNDING
+    return stored_policy_kind(value)
 
 
 def _deployment_columns(connection: sqlite3.Connection) -> set[str]:
@@ -474,6 +523,7 @@ class ControlStore:
         reviewer_identity: str | None = None,
         now: Callable[[], str] | None = None,
         busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
+        approved_stateful_gate_policy_sha256s: Iterable[str] = (),
     ) -> None:
         if reviewer_identity == "":
             raise ValueError("reviewer identity cannot be empty")
@@ -484,6 +534,18 @@ class ControlStore:
         ):
             raise ValueError("busy timeout must be a positive integer number of milliseconds")
         self.reviewer_identity = reviewer_identity
+        approved_gate_policies = frozenset(approved_stateful_gate_policy_sha256s)
+        if any(
+            not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+            for digest in approved_gate_policies
+        ):
+            raise ValueError("approved stateful gate policies must be bare SHA-256 digests")
+        # Empty by default: no stateful-v5 candidate can be registered, approved, or activated
+        # until a person freezes a v5 gate policy (v5 serving stage S7) and the operator
+        # configures its digest here.
+        self.approved_stateful_gate_policy_sha256s = approved_gate_policies
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
         self.schemas = PlatformSchemas()
@@ -1037,13 +1099,25 @@ class ControlStore:
         )
 
     def get_candidate(self, candidate_id: str) -> CandidateRecord:
+        """Return one grounding candidate; stateful-v5 rows are read through their own path."""
         with self._lock:
             row = self.connection.execute(
-                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+                f"SELECT * FROM candidates WHERE candidate_id = ? AND {_GROUNDING_ROW_SQL}",
+                (candidate_id,),
             ).fetchone()
             if row is None:
                 raise KeyError(candidate_id)
             return self._candidate_record(row)
+
+    def candidate_kind(self, candidate_id: str) -> PolicyKind:
+        """Return the stored policy kind of any candidate without validating its evidence."""
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT policy_json FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+        if row is None:
+            raise KeyError(candidate_id)
+        return _row_policy_kind(row)
 
     def list_candidates(
         self, *, limit: int | None = None, offset: int = 0
@@ -1052,7 +1126,9 @@ class ControlStore:
             raise ValueError("candidate limit must be positive")
         if offset < 0:
             raise ValueError("candidate offset must be non-negative")
-        query = "SELECT * FROM candidates ORDER BY rowid DESC"
+        # Grounding views and the MLflow mirror are unchanged by S6: stateful-v5 rows are listed
+        # only through list_stateful_candidates.
+        query = f"SELECT * FROM candidates WHERE {_GROUNDING_ROW_SQL} ORDER BY rowid DESC"
         parameters: tuple[int, ...] = ()
         if limit is not None:
             query += " LIMIT ? OFFSET ?"
@@ -1070,14 +1146,17 @@ class ControlStore:
     def list_candidate_providers(self) -> list[str]:
         with self._lock:
             rows = self.connection.execute(
-                """SELECT DISTINCT json_extract(policy_json, '$.provider') AS provider
+                f"""SELECT DISTINCT json_extract(policy_json, '$.provider') AS provider
                 FROM candidates
-                WHERE json_type(policy_json, '$.provider') = 'text'
+                WHERE json_type(policy_json, '$.provider') = 'text' AND {_GROUNDING_ROW_SQL}
                 ORDER BY provider"""
             ).fetchall()
         return [row["provider"] for row in rows]
 
     def _validate_candidate_evidence(self, row: sqlite3.Row) -> None:
+        if _row_policy_kind(row) is PolicyKind.STATEFUL_V5:
+            self._validate_stateful_candidate_evidence(row)
+            return
         try:
             policy_value = json.loads(row["policy_json"])
             gate_report = json.loads(row["gate_report_json"])
@@ -1130,6 +1209,10 @@ class ControlStore:
             ).fetchone()
             if candidate is None:
                 raise KeyError(candidate_id)
+            if _row_policy_kind(candidate) is not PolicyKind.GROUNDING:
+                raise CandidateKindMismatchError(
+                    "candidate is a stateful-v5 package; the grounding lifecycle cannot load it"
+                )
             if candidate["state"] != CandidateState.APPROVED.value:
                 raise TransitionError("candidate must be approved before activation")
             approval = self.connection.execute(
@@ -1231,6 +1314,358 @@ class ControlStore:
                     "SELECT * FROM approvals WHERE approval_id = ?", (approval_id,)
                 ).fetchone()
             )
+
+    def _require_stateful_tables(self, connection: sqlite3.Connection) -> None:
+        exists = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'stateful_serving_terms'"
+        ).fetchone()
+        if exists is None:
+            raise RuntimeError(
+                "control database is not migrated for stateful-v5 serving; "
+                "run scripts/platform_migrate.py"
+            )
+
+    def _require_approved_gate_policy(self, report: StatefulGateReport) -> None:
+        if report.gate_policy_sha256 not in self.approved_stateful_gate_policy_sha256s:
+            raise TransitionError(
+                "stateful gate report was not evaluated under an approved v5 gate policy"
+            )
+
+    def register_stateful_candidate(
+        self,
+        *,
+        package: StatefulPolicyPackage,
+        gate_report: StatefulGateReport,
+        artifacts: list[ArtifactRef],
+    ) -> StatefulCandidateRecord:
+        """Register one stateful-v5 package with its gate report on the shared ledger.
+
+        The rules mirror grounding registration: schema-valid, self-consistent, identity-bound
+        evidence; a passing report makes the candidate Eligible and never approves it. In
+        addition the report must come from an operator-approved v5 gate policy, and the
+        candidate's immutable artifacts must include the evidence plan and summary the
+        package binds.
+        """
+        package_value = package.to_dict()
+        report_value = gate_report.to_dict()
+        self.schemas.validate("stateful_policy_package", package_value)
+        self.schemas.validate("stateful_gate_report", report_value)
+        stateful_package_from_dict(package_value)
+        errors = gate_report.binding_errors(package)
+        if errors:
+            raise ValueError("; ".join(errors))
+        self._require_approved_gate_policy(gate_report)
+        if gate_report.code_revision_passed and not package.source_provenance_verified:
+            raise ValueError("gate report passed code provenance the package does not verify")
+        bound_digests = {artifact_digest(reference) for reference in artifacts}
+        if (
+            not {
+                package.evidence.plan_sha256,
+                package.evidence.summary_sha256,
+            }
+            <= bound_digests
+        ):
+            raise ValueError(
+                "candidate artifacts must include the evidence plan and summary the package binds"
+            )
+        report_bytes = canonical_json_bytes(report_value)
+        report_sha = sha256_bytes(report_bytes)
+        candidate_id = "candidate-" + package.policy_id.removeprefix("sha256:")[:24]
+        state = (
+            CandidateState.ELIGIBLE if gate_report.overall_passed else CandidateState.GATE_FAILED
+        )
+        values = (
+            candidate_id,
+            package.evidence.run_reference,
+            package.policy_id,
+            canonical_json_bytes(package_value).decode(),
+            report_bytes.decode(),
+            report_sha,
+            canonical_json_bytes([item.to_dict() for item in artifacts]).decode(),
+            canonical_json_bytes({}).decode(),
+            state.value,
+        )
+        with self.transaction() as connection:
+            existing = connection.execute(
+                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if existing:
+                actual = tuple(
+                    existing[key]
+                    for key in (
+                        "source_run_id",
+                        "policy_id",
+                        "policy_json",
+                        "gate_report_json",
+                        "gate_report_sha256",
+                        "artifacts_json",
+                        "summary_json",
+                    )
+                )
+                if actual != values[1:8] or existing["state"] not in {
+                    state.value,
+                    CandidateState.APPROVED.value,
+                }:
+                    raise ConflictError("candidate identity already has different evidence")
+            else:
+                connection.execute(
+                    (
+                        "INSERT INTO candidates(candidate_id, source_run_id, policy_id, "
+                        "policy_json, gate_report_json, gate_report_sha256, "
+                        "artifacts_json, summary_json, state) VALUES (?, ?, ?, ?, ?, ?, ?, "
+                        "?, ?)"
+                    ),
+                    values,
+                )
+                self._audit(
+                    connection,
+                    "candidate.gates_evaluated",
+                    SYSTEM_ACTOR,
+                    candidate_id,
+                    {
+                        "state": state.value,
+                        "gate_report_sha256": report_sha,
+                        "kind": PolicyKind.STATEFUL_V5.value,
+                        "gate_policy_sha256": gate_report.gate_policy_sha256,
+                        "evidence_class": package.evidence_class.value,
+                    },
+                )
+        return self.get_stateful_candidate(candidate_id)
+
+    def _stateful_candidate_record(self, row: sqlite3.Row) -> StatefulCandidateRecord:
+        policy_value = json.loads(row["policy_json"])
+        report_value = json.loads(row["gate_report_json"])
+        self.schemas.validate("stateful_policy_package", policy_value)
+        self.schemas.validate("stateful_gate_report", report_value)
+        try:
+            package = stateful_package_from_dict(policy_value)
+            report = StatefulGateReport.from_dict(report_value)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ContractValidationError(
+                "stored stateful candidate evidence violates its contract"
+            ) from exc
+        return StatefulCandidateRecord(
+            candidate_id=row["candidate_id"],
+            source_run_id=row["source_run_id"],
+            package=package,
+            gate_report=report,
+            gate_report_sha256=row["gate_report_sha256"],
+            artifacts=tuple(ArtifactRef(**value) for value in json.loads(row["artifacts_json"])),
+            state=CandidateState(row["state"]),
+            version=row["version"],
+        )
+
+    def get_stateful_candidate(self, candidate_id: str) -> StatefulCandidateRecord:
+        with self._lock:
+            row = self.connection.execute(
+                f"SELECT * FROM candidates WHERE candidate_id = ? AND {_STATEFUL_ROW_SQL}",
+                (candidate_id,),
+            ).fetchone()
+        if row is None:
+            raise KeyError(candidate_id)
+        return self._stateful_candidate_record(row)
+
+    def list_stateful_candidates(self) -> list[StatefulCandidateRecord]:
+        with self._lock:
+            rows = list(
+                self.connection.execute(
+                    f"SELECT * FROM candidates WHERE {_STATEFUL_ROW_SQL} ORDER BY rowid DESC"
+                )
+            )
+        return [self._stateful_candidate_record(row) for row in rows]
+
+    def _validate_stateful_candidate_evidence(self, row: sqlite3.Row) -> None:
+        try:
+            policy_value = json.loads(row["policy_json"])
+            report_value = json.loads(row["gate_report_json"])
+            artifacts_value = json.loads(row["artifacts_json"])
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise ContractValidationError("stored candidate evidence is not strict JSON") from exc
+        self.schemas.validate("stateful_policy_package", policy_value)
+        self.schemas.validate("stateful_gate_report", report_value)
+        try:
+            package = stateful_package_from_dict(policy_value)
+            report = StatefulGateReport.from_dict(report_value)
+            artifacts = tuple(ArtifactRef(**value) for value in artifacts_value)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ContractValidationError(
+                "stored stateful candidate evidence violates its contract"
+            ) from exc
+        if sha256_bytes(canonical_json_bytes(report_value)) != row["gate_report_sha256"]:
+            raise ContractValidationError("stored gate_report digest does not verify")
+        if package.policy_id != row["policy_id"]:
+            raise ContractValidationError("stored policy identity does not match candidate")
+        if row["source_run_id"] != package.evidence.run_reference:
+            raise ContractValidationError("stored candidate run does not match package evidence")
+        errors = report.binding_errors(package)
+        if errors:
+            raise ContractValidationError("; ".join(errors))
+        if not report.overall_passed:
+            raise ContractValidationError("stored candidate no longer has passing gates")
+        if not package.source_provenance_verified or not report.code_revision_passed:
+            raise ContractValidationError("stored candidate source provenance is not promotable")
+        if not {
+            package.evidence.plan_sha256,
+            package.evidence.summary_sha256,
+        } <= {artifact_digest(reference) for reference in artifacts}:
+            raise ContractValidationError("stored candidate artifacts omit bound evidence")
+        self._require_approved_gate_policy(report)
+
+    def _verified_serving_terms(
+        self, connection: sqlite3.Connection, candidate: sqlite3.Row
+    ) -> ServingTerms:
+        self._require_stateful_tables(connection)
+        row = connection.execute(
+            "SELECT * FROM stateful_serving_terms WHERE candidate_id = ?",
+            (candidate["candidate_id"],),
+        ).fetchone()
+        if row is None:
+            raise TransitionError("stateful candidate has no approved serving terms")
+        self.schemas.validate("stateful_serving_terms", dict(row))
+        try:
+            terms = ServingTerms(**dict(row))
+        except (TypeError, ValueError) as exc:
+            raise ContractValidationError("stored serving terms violate their contract") from exc
+        if terms.policy_id != candidate["policy_id"]:
+            raise ContractValidationError("serving terms policy identity does not match candidate")
+        package = stateful_package_from_dict(json.loads(candidate["policy_json"]))
+        if not tier_permits_evidence(terms.deployment_tier, package.evidence_class):
+            raise TransitionError("calibration-class evidence permits only a demo deployment")
+        return terms
+
+    def verify_stateful_candidate_approval(
+        self, candidate_id: str
+    ) -> tuple[StatefulCandidateRecord, dict[str, Any], ServingTerms]:
+        """Validate a stateful candidate, its approval, and its serving terms before loading."""
+        with self._lock:
+            candidate = self.connection.execute(
+                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if candidate is None:
+                raise KeyError(candidate_id)
+            if _row_policy_kind(candidate) is not PolicyKind.STATEFUL_V5:
+                raise CandidateKindMismatchError(
+                    "candidate is a grounding policy; the stateful-v5 lifecycle cannot load it"
+                )
+            if candidate["state"] != CandidateState.APPROVED.value:
+                raise TransitionError("candidate must be approved before activation")
+            approval = self.connection.execute(
+                "SELECT * FROM approvals WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if approval is None:
+                raise TransitionError("candidate approval evidence is missing")
+            self._validate_candidate_approval_evidence(candidate, approval)
+            terms = self._verified_serving_terms(self.connection, candidate)
+            return self._stateful_candidate_record(candidate), dict(approval), terms
+
+    def approve_stateful_serving_terms(
+        self,
+        candidate_id: str,
+        *,
+        actor: str,
+        reason: str,
+        deployment_attempt_cap: int,
+        deployment_tier: DeploymentTier | str,
+    ) -> ServingTerms:
+        """Record the human-approved attempt cap and tier for one approved stateful version.
+
+        Terms are append-only and bound to the exact package version. A calibration-class
+        package may only receive demo terms.
+        """
+        self._require_reviewer_actor(actor)
+        if not reason.strip():
+            raise ValueError("serving terms reason is required")
+        if type(deployment_attempt_cap) is not int or deployment_attempt_cap <= 0:
+            raise ValueError("deployment attempt cap must be a positive integer")
+        tier = DeploymentTier(deployment_tier)
+        with self.transaction() as connection:
+            self._require_stateful_tables(connection)
+            candidate = connection.execute(
+                "SELECT * FROM candidates WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if candidate is None:
+                raise KeyError(candidate_id)
+            if _row_policy_kind(candidate) is not PolicyKind.STATEFUL_V5:
+                raise CandidateKindMismatchError("serving terms apply only to stateful-v5 packages")
+            if candidate["state"] != CandidateState.APPROVED.value:
+                raise TransitionError("serving terms require an approved candidate")
+            approval = connection.execute(
+                "SELECT * FROM approvals WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if approval is None:
+                raise TransitionError("candidate approval evidence is missing")
+            self._validate_candidate_approval_evidence(candidate, approval)
+            package = stateful_package_from_dict(json.loads(candidate["policy_json"]))
+            if not tier_permits_evidence(tier, package.evidence_class):
+                raise TransitionError("calibration-class evidence permits only a demo deployment")
+            existing = connection.execute(
+                "SELECT * FROM stateful_serving_terms WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+            if existing is not None:
+                terms = ServingTerms(**dict(existing))
+                if (
+                    terms.deployment_attempt_cap == deployment_attempt_cap
+                    and terms.deployment_tier is tier
+                    and terms.actor == actor
+                    and terms.reason == reason.strip()
+                ):
+                    return terms
+                raise ConflictError("candidate already has different serving terms")
+            created = self._now()
+            terms_id = (
+                "terms-"
+                + sha256_bytes(
+                    canonical_json_bytes(
+                        {
+                            "candidate_id": candidate_id,
+                            "deployment_attempt_cap": deployment_attempt_cap,
+                            "deployment_tier": tier.value,
+                            "actor": str(actor),
+                            "reason": reason.strip(),
+                            "created": created,
+                        }
+                    )
+                )[:24]
+            )
+            terms = ServingTerms(
+                terms_id=terms_id,
+                candidate_id=candidate_id,
+                policy_id=candidate["policy_id"],
+                deployment_attempt_cap=deployment_attempt_cap,
+                deployment_tier=tier,
+                actor=str(actor),
+                reason=reason.strip(),
+                created_at_utc=created,
+            )
+            self.schemas.validate("stateful_serving_terms", terms.to_dict())
+            connection.execute(
+                "INSERT INTO stateful_serving_terms VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                tuple(terms.to_dict().values()),
+            )
+            self._audit(
+                connection,
+                "candidate.serving_terms_approved",
+                actor,
+                candidate_id,
+                {
+                    "terms_id": terms_id,
+                    "deployment_attempt_cap": deployment_attempt_cap,
+                    "deployment_tier": tier.value,
+                    "evidence_class": package.evidence_class.value,
+                    "reason": reason.strip(),
+                },
+            )
+        return terms
+
+    def get_stateful_serving_terms(self, candidate_id: str) -> ServingTerms:
+        with self._lock:
+            self._require_stateful_tables(self.connection)
+            row = self.connection.execute(
+                "SELECT * FROM stateful_serving_terms WHERE candidate_id = ?", (candidate_id,)
+            ).fetchone()
+        if row is None:
+            raise KeyError(candidate_id)
+        return ServingTerms(**dict(row))
 
     def get_approval(self, candidate_id: str) -> dict[str, Any]:
         with self._lock:
@@ -1336,6 +1771,17 @@ class ControlStore:
             ):
                 raise TransitionError("deployment target is not approved")
             self._validate_candidate_approval_evidence(candidate, approval)
+            kind_details: dict[str, Any] = {}
+            if _row_policy_kind(candidate) is PolicyKind.STATEFUL_V5:
+                # Reverify the exact serving terms inside the activation transaction; the
+                # activation event records which cap and tier this deployment serves under.
+                terms = self._verified_serving_terms(connection, candidate)
+                kind_details = {
+                    "kind": PolicyKind.STATEFUL_V5.value,
+                    "serving_terms_id": terms.terms_id,
+                    "deployment_attempt_cap": terms.deployment_attempt_cap,
+                    "deployment_tier": terms.deployment_tier.value,
+                }
             if (
                 pointer["deployment_id"] != expected_deployment_id
                 or pointer["generation"] != expected_generation
@@ -1413,7 +1859,7 @@ class ControlStore:
                 f"deployment.{action}",
                 actor,
                 deployment_id,
-                {**material, **rollback_lineage, "reason": reason.strip()},
+                {**material, **rollback_lineage, **kind_details, "reason": reason.strip()},
             )
         return self.get_deployment(deployment_id)
 

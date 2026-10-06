@@ -56,6 +56,8 @@ WRONG_TYPE_FIELDS = {
     "episode_opened_record": "max_steps",
     "episode_step_record": "step_index",
     "episode_closed_record": "steps",
+    "stateful_gate_report": "gate_policy_sha256",
+    "stateful_serving_terms": "deployment_tier",
 }
 
 
@@ -161,6 +163,8 @@ def test_registry_inventory_matches_every_d41_contract(repository_root: Path) ->
         "episode_opened_record": "pixelgym-serving-episode-record-v1",
         "episode_step_record": "pixelgym-serving-episode-record-v1",
         "episode_closed_record": "pixelgym-serving-episode-record-v1",
+        "stateful_gate_report": "pixelgym-stateful-gate-report-v1",
+        "stateful_serving_terms": "pixelgym-stateful-serving-terms-v1",
     }
 
 

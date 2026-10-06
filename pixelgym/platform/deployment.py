@@ -15,6 +15,16 @@ ledger is never rewritten; serving-startup restore converges the runtime to the 
 Every failed deploy or rollback by an authorized reviewer appends one
 ``deployment.deploy_failed`` or ``deployment.rollback_failed`` audit event whose ``stage`` is
 ``preactivation``, ``transaction``, or ``runtime_activation``.
+
+The coordinator is kind-aware (v5 serving stage S6). Grounding candidates follow the
+Milestone 4 path unchanged. A ``stateful-v5`` candidate is verified through its own stored
+contracts, approval, and serving terms, then prepared by a separately injected
+``stateful_load_and_smoke``. Before the compare-and-swap the coordinator also proves that the
+prepared value's kind and identity match the verified candidate, and ``validate_activation``
+runs for both kinds, so the post-CAS handoff stays total. Both kinds activate through the same
+pointer, so deploy and rollback may cross kinds; failures of either kind record the same
+failure events. A coordinator without a stateful preparer refuses stateful candidates before
+any load. A prepared candidate that never reaches traffic is released.
 """
 
 from __future__ import annotations
@@ -23,6 +33,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from pixelgym.platform.control_store import (
+    CandidateKindMismatchError,
     CandidateRecord,
     ConflictError,
     ContentionError,
@@ -35,6 +46,11 @@ from pixelgym.platform.immutable_store import ImmutableStore, ImmutableStoreErro
 from pixelgym.platform.mlflow_tracking import Tracking, TrackingMirrorError
 from pixelgym.platform.policy import verify_policy_manifest, verify_renderer_binding
 from pixelgym.platform.schema_validation import ContractValidationError
+from pixelgym.platform.stateful_control import (
+    PolicyKind,
+    ServingTerms,
+    StatefulCandidateRecord,
+)
 
 # Control-plane exceptions whose messages are fixed, credential-free strings. Any other
 # exception is recorded by class name only, so provider or library detail never enters the
@@ -46,6 +62,13 @@ _DESCRIBED_FAILURES: tuple[type[BaseException], ...] = (
     ContractValidationError,
     ImmutableStoreError,
 )
+
+
+def _discard_prepared(prepared: object) -> None:
+    """Release resources a prepared candidate holds when it never reaches traffic."""
+    close = getattr(prepared, "close", None)
+    if callable(close):
+        close()
 
 
 @dataclass(frozen=True)
@@ -69,6 +92,9 @@ class DeploymentCoordinator[PreparedCandidate]:
         on_activated: Callable[[DeploymentRecord, PreparedCandidate | bool], None] | None = None,
         tracking: Tracking | None = None,
         validate_activation: Callable[[PreparedCandidate | bool], None] | None = None,
+        stateful_load_and_smoke: (
+            Callable[[StatefulCandidateRecord, ServingTerms], PreparedCandidate] | None
+        ) = None,
     ) -> None:
         """Coordinate verified activation.
 
@@ -81,6 +107,7 @@ class DeploymentCoordinator[PreparedCandidate]:
         self.load_and_smoke = load_and_smoke
         self.on_activated = on_activated or (lambda deployment, prepared: None)
         self.validate_activation = validate_activation or (lambda prepared: None)
+        self.stateful_load_and_smoke = stateful_load_and_smoke
         self.tracking = tracking
 
     def _record_failure(
@@ -129,6 +156,10 @@ class DeploymentCoordinator[PreparedCandidate]:
     def _mirror_activation(self, deployment: DeploymentRecord) -> None:
         if self.tracking is None:
             return
+        if self.control.candidate_kind(deployment.candidate_id) is PolicyKind.STATEFUL_V5:
+            # Stateful packages are not registered in the MLflow grounding registry, so there is
+            # no champion version to mirror; the control plane remains the ledger.
+            return
         try:
             self.tracking.set_champion(deployment.policy_id)
         except TrackingMirrorError as exc:
@@ -161,7 +192,10 @@ class DeploymentCoordinator[PreparedCandidate]:
                     resolved=False,
                 )
         active, _generation = self.control.active()
-        if active is not None:
+        if (
+            active is not None
+            and self.control.candidate_kind(active.candidate_id) is PolicyKind.GROUNDING
+        ):
             try:
                 self.tracking.set_champion(active.policy_id)
             except TrackingMirrorError as exc:
@@ -182,6 +216,8 @@ class DeploymentCoordinator[PreparedCandidate]:
         return not failures
 
     def _verify_candidate(self, candidate_id: str) -> PreparedCandidate | bool:
+        if self.control.candidate_kind(candidate_id) is PolicyKind.STATEFUL_V5:
+            return self._verify_stateful_candidate(candidate_id)
         candidate, _approval = self.control.verify_candidate_approval(candidate_id)
         verify_policy_manifest(candidate.policy)
         # Blocks activation -- deploy, rollback, and the serving-startup restore below --
@@ -197,7 +233,51 @@ class DeploymentCoordinator[PreparedCandidate]:
         prepared = self.load_and_smoke(candidate)
         if not prepared:
             raise TransitionError("candidate failed load or deterministic smoke check")
-        self.validate_activation(prepared)
+        try:
+            if getattr(prepared, "kind", None) is PolicyKind.STATEFUL_V5:
+                raise CandidateKindMismatchError(
+                    "a grounding candidate was prepared as a stateful-v5 policy"
+                )
+            self.validate_activation(prepared)
+        except BaseException:
+            _discard_prepared(prepared)
+            raise
+        return prepared
+
+    def _verify_stateful_candidate(self, candidate_id: str) -> PreparedCandidate:
+        """Reverify a stateful candidate's stored evidence and serving terms, then prepare it.
+
+        Verification order matches the grounding path: approval and contract evidence, the
+        approved gate-report digest, every immutable artifact, and only then the load and
+        no-cost smoke. The prepared value's kind and identity are then checked against the
+        verified candidate, followed by ``validate_activation``. Nothing here changes traffic.
+        """
+        candidate, _approval, terms = self.control.verify_stateful_candidate_approval(candidate_id)
+        report_sha = sha256_bytes(canonical_json_bytes(candidate.gate_report.to_dict()))
+        if report_sha != candidate.gate_report_sha256 or not candidate.gate_report.overall_passed:
+            raise TransitionError("approved gate report is corrupt or failed")
+        for reference in candidate.artifacts:
+            self.store.get_verified(reference)
+        if self.stateful_load_and_smoke is None:
+            raise CandidateKindMismatchError(
+                "this control plane is not configured to serve stateful-v5 packages"
+            )
+        prepared = self.stateful_load_and_smoke(candidate, terms)
+        try:
+            if not prepared:
+                raise TransitionError("candidate failed load or deterministic smoke check")
+            if (
+                getattr(prepared, "kind", None) is not PolicyKind.STATEFUL_V5
+                or getattr(prepared, "candidate_id", None) != candidate.candidate_id
+                or getattr(prepared, "policy_id", None) != candidate.policy_id
+            ):
+                raise CandidateKindMismatchError(
+                    "prepared policy kind or identity does not match the stateful candidate"
+                )
+            self.validate_activation(prepared)
+        except BaseException:
+            _discard_prepared(prepared)
+            raise
         return prepared
 
     def deploy(
@@ -250,6 +330,7 @@ class DeploymentCoordinator[PreparedCandidate]:
             )
         except Exception as exc:
             self._record_failure(attempt, "transaction", exc)
+            _discard_prepared(prepared)
             raise
         self._activate_runtime(attempt, result, prepared)
         self._mirror_activation(result)
@@ -322,6 +403,7 @@ class DeploymentCoordinator[PreparedCandidate]:
             )
         except Exception as exc:
             self._record_failure(attempt, "transaction", exc)
+            _discard_prepared(prepared)
             raise
         self._activate_runtime(attempt, result, prepared)
         self._mirror_activation(result)

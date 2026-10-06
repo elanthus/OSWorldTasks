@@ -51,6 +51,8 @@ CONTRACT_SCHEMA_FILES = {
     "episode_opened_record": "stateful-serving.schema.json",
     "episode_step_record": "stateful-serving.schema.json",
     "episode_closed_record": "stateful-serving.schema.json",
+    "stateful_gate_report": "stateful-control.schema.json",
+    "stateful_serving_terms": "stateful-control.schema.json",
 }
 # Contracts that live under a shared file's ``$defs`` rather than at its root.
 CONTROL_EVENT_DEFINITIONS = {
@@ -68,6 +70,8 @@ CONTROL_EVENT_DEFINITIONS = {
     "episode_opened_record": "episode_opened_record",
     "episode_step_record": "episode_step_record",
     "episode_closed_record": "episode_closed_record",
+    "stateful_gate_report": "gate_report",
+    "stateful_serving_terms": "serving_terms",
 }
 PRICE_CATALOG_SCHEMA_FILE = "price-catalog.schema.json"
 REGISTRY_SCHEMA_FILE = "platform-contracts.schema.json"

@@ -87,6 +87,14 @@ class DeploymentAttemptCapError(ServingEpisodeError):
     pass
 
 
+class NoActiveStatefulDeploymentError(ServingEpisodeError):
+    """No approved stateful-v5 deployment currently holds the active pointer."""
+
+
+class DeploymentChangedError(ServingEpisodeError):
+    """An episode belongs to a deployment that no longer holds the active pointer."""
+
+
 @dataclass(frozen=True)
 class ServingActResult:
     episode_id: str
