@@ -36,9 +36,11 @@ from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.serving_episode import (
     DeploymentAttemptCapError,
+    DeploymentChangedError,
     EpisodeEndedError,
     EpisodeNotFoundError,
     IntentReferenceError,
+    NoActiveStatefulDeploymentError,
     ServingActResult,
     ServingEpisodeError,
     SessionConflictError,
@@ -452,6 +454,14 @@ def _map_host_error(exc: Exception) -> _ApiError:
         return _ApiError(409, "intent_reference_invalid", "intent reference is invalid")
     if isinstance(exc, SessionConflictError):
         return _ApiError(409, "session_conflict", "episode session changed concurrently")
+    if isinstance(exc, NoActiveStatefulDeploymentError):
+        return _ApiError(503, "no_active_deployment", "no approved stateful policy is active")
+    if isinstance(exc, DeploymentChangedError):
+        return _ApiError(
+            409,
+            "deployment_changed",
+            "the episode belongs to a deployment that is no longer active",
+        )
     if isinstance(exc, DeploymentAttemptCapError):
         return _ApiError(
             429,

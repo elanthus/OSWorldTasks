@@ -118,9 +118,16 @@ class PolicyRuntime:
     def activate(self, loaded: LoadedPolicy) -> None:
         # Production activation is sanctioned only through DeploymentCoordinator; direct use is
         # smoke-only.
+        if not isinstance(loaded, LoadedPolicy):
+            # A stateful-v5 package is served only by the kind-aware stateful runtime.
+            raise TypeError("serving v1 accepts only loaded grounding policies")
         if loaded.manifest.condition != "raw":
             raise ValueError("serving v1 supports raw-coordinate policies only")
         self.loaded = loaded
+
+    def deactivate(self) -> None:
+        """Stop serving v1 traffic because another policy kind now holds the active pointer."""
+        self.loaded = None
 
 
 @dataclass
@@ -293,6 +300,7 @@ def create_serving_app(
     *,
     operational_log: OperationalLog,
     episode_router: APIRouter | None = None,
+    stateful_readiness: Callable[[], dict[str, str] | None] | None = None,
     operational_audit_concurrency: int = 4,
     provider_timeout_seconds: float = DEFAULT_PROVIDER_TIMEOUT_SECONDS,
     provider_concurrency: int = DEFAULT_PROVIDER_CONCURRENCY,
@@ -450,6 +458,9 @@ def create_serving_app(
     @app.get("/health/ready")
     def ready(response: Response) -> dict[str, str]:
         if runtime.loaded is None:
+            stateful = stateful_readiness() if stateful_readiness is not None else None
+            if stateful is not None:
+                return stateful
             response.status_code = 503
             return {"status": "not-ready"}
         return {"status": "ready", "policy_id": runtime.loaded.manifest.policy_id}

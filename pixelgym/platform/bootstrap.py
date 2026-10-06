@@ -10,7 +10,8 @@ import os
 import subprocess
 import sys
 import threading
-from dataclasses import dataclass, replace
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -33,14 +34,37 @@ from pixelgym.platform.service import (
     DEFAULT_PROVIDER_CONCURRENCY,
     DEFAULT_PROVIDER_QUEUE_TIMEOUT_SECONDS,
     DEFAULT_PROVIDER_TIMEOUT_SECONDS,
-    LoadedPolicy,
     PolicyRuntime,
     create_serving_app,
+)
+from pixelgym.platform.stateful_control import ServingTerms, StatefulCandidateRecord
+from pixelgym.platform.stateful_runtime import (
+    ActiveDeploymentEpisodeRegistry,
+    KindAwareRuntime,
+    StatefulRuntime,
+)
+from pixelgym.platform.stateful_service import (
+    ImmutableEpisodeOperationalLog,
+    create_episode_router,
 )
 from pixelgym.platform.web import create_control_app
 from pixelgym.serialization import load_jsonl
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class StatefulServingConfig:
+    """Operator wiring that enables stateful-v5 deployments on this control plane.
+
+    Without it, ``/api/v2`` is mounted but refuses every episode, and the coordinator refuses
+    to deploy or roll back to a stateful-v5 candidate. The approved gate-policy digests come
+    from the human S7 decision; the preparer loads a package into its credential-free worker
+    (see ``pixelgym.platform.stateful_runtime.StatefulCandidatePreparer``).
+    """
+
+    approved_gate_policy_sha256s: frozenset[str] = field(default_factory=frozenset)
+    preparer: Callable[[StatefulCandidateRecord, ServingTerms], object] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,7 +173,9 @@ def _repository_root() -> Path:
     return Path(os.environ.get("PIXELGYM_REPOSITORY_ROOT", Path.cwd())).resolve()
 
 
-def _build_control(repository_root: Path) -> ControlStore:
+def _build_control(
+    repository_root: Path, *, approved_stateful_gate_policy_sha256s: frozenset[str] = frozenset()
+) -> ControlStore:
     database = os.environ.get(
         "PIXELGYM_CONTROL_DB", str(repository_root / ".cache/platform/control.db")
     )
@@ -158,6 +184,7 @@ def _build_control(repository_root: Path) -> ControlStore:
     control = ControlStore(
         database,
         busy_timeout_ms=configured_busy_timeout_ms(),
+        approved_stateful_gate_policy_sha256s=approved_stateful_gate_policy_sha256s,
     )
     control.require_migrated()
     return control
@@ -269,6 +296,7 @@ def create_app(
     bind_address: str | None = None,
     *,
     session_cookie_secure: bool | None = None,
+    stateful_serving: StatefulServingConfig | None = None,
 ) -> FastAPI:
     """Construct dependencies, validate migrated state, and return the mounted application."""
     exposure = resolve_deployment_exposure(bind_address)
@@ -298,7 +326,11 @@ def create_app(
     if not csrf_secret:
         raise RuntimeError("PIXELGYM_CSRF_SECRET is required")
 
-    control = _build_control(repository_root)
+    stateful_config = stateful_serving or StatefulServingConfig()
+    control = _build_control(
+        repository_root,
+        approved_stateful_gate_policy_sha256s=stateful_config.approved_gate_policy_sha256s,
+    )
     immutable_store = _build_immutable_store(repository_root)
     tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
     tracking = None
@@ -315,17 +347,19 @@ def create_app(
                 resolved=False,
             )
     runtime = PolicyRuntime()
+    stateful_runtime = StatefulRuntime()
+    kind_runtime = KindAwareRuntime(runtime, stateful_runtime)
     serving_provider = DemoReplayServingProvider(repository_root)
 
     smoke_candidate = CandidateServiceSmoke(
         FrozenSmokeFixture.load(repository_root), serving_provider
     )
 
-    def activate_runtime(deployment: DeploymentRecord, prepared: LoadedPolicy | bool) -> None:
-        if not isinstance(prepared, LoadedPolicy):
-            raise TypeError("deployment activation did not receive a loaded candidate runtime")
+    def activate_runtime(deployment: DeploymentRecord, prepared: object) -> None:
         # The only mutation of the traffic runtime happens after the database CAS succeeds.
-        runtime.activate(replace(prepared, deployment_id=deployment.deployment_id))
+        # The kind-aware runtime refuses a prepared policy whose kind or identity does not
+        # match the activated deployment.
+        kind_runtime.activate(deployment, prepared)
 
     coordinator = DeploymentCoordinator(
         control=control,
@@ -333,6 +367,7 @@ def create_app(
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
         tracking=tracking,
+        stateful_load_and_smoke=stateful_config.preparer,
     )
     coordinator.restore_active()
 
@@ -390,6 +425,12 @@ def create_app(
         create_serving_app(
             runtime,
             operational_log=ImmutableOperationalLog(immutable_store),
+            episode_router=create_episode_router(
+                host_factory=stateful_runtime.host_factory,
+                session_registry=ActiveDeploymentEpisodeRegistry(stateful_runtime),
+                operational_log=ImmutableEpisodeOperationalLog(immutable_store),
+            ),
+            stateful_readiness=stateful_runtime.readiness,
             provider_timeout_seconds=float(
                 os.environ.get(
                     "PIXELGYM_PROVIDER_TIMEOUT_SECONDS",
@@ -418,6 +459,8 @@ def create_app(
     )
     app.state.deployment_coordinator = coordinator
     app.state.policy_runtime = runtime
+    app.state.stateful_runtime = stateful_runtime
+    app.state.kind_runtime = kind_runtime
     if tracking is not None:
 
         def run_reconciliation() -> None:

@@ -377,6 +377,10 @@ class SandboxedPolicyProcess:
     def sandbox_mechanism(self) -> str:
         return self._launched.mechanism
 
+    @property
+    def os_sandbox_applied(self) -> bool:
+        return self._launched.os_sandbox_applied
+
     def _initialize(self) -> None:
         result = self._call("initialize", self.spec.factory_payload())
         if result != {"ready": True}:
