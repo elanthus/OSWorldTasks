@@ -895,6 +895,52 @@ class ControlStore:
                 )
             ]
 
+    def submission_history(
+        self, *, limit: int, offset: int = 0, status: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Return one bounded page of submissions, newest first, with any registered candidate.
+
+        ``candidate_id`` is the first candidate whose source run matches the submission's linked
+        MLflow run, or ``None`` when the submission never registered one (submitted, running,
+        failed, or cancelled before registration). Rows are read-only views of the ledger.
+        """
+        if limit <= 0:
+            raise ValueError("submission limit must be positive")
+        if offset < 0:
+            raise ValueError("submission offset must be non-negative")
+        query = """SELECT submissions.*, (
+                SELECT candidates.candidate_id FROM candidates
+                WHERE submissions.mlflow_run_id IS NOT NULL
+                  AND candidates.source_run_id = submissions.mlflow_run_id
+                ORDER BY candidates.rowid LIMIT 1
+            ) AS candidate_id
+            FROM submissions"""
+        parameters: tuple[Any, ...] = ()
+        if status is not None:
+            query += " WHERE submissions.status = ?"
+            parameters = (status,)
+        query += (
+            " ORDER BY submissions.created_at_utc DESC, submissions.rowid DESC LIMIT ? OFFSET ?"
+        )
+        parameters = (*parameters, limit, offset)
+        with self._lock:
+            return [
+                {**dict(row), "request": json.loads(row["request_json"])}
+                for row in self.connection.execute(query, parameters)
+            ]
+
+    def candidate_id_for_run(self, mlflow_run_id: str | None) -> str | None:
+        """Return the first candidate registered from ``mlflow_run_id``, if any."""
+        if not mlflow_run_id:
+            return None
+        with self._lock:
+            row = self.connection.execute(
+                "SELECT candidate_id FROM candidates WHERE source_run_id = ? "
+                "ORDER BY rowid LIMIT 1",
+                (mlflow_run_id,),
+            ).fetchone()
+        return None if row is None else str(row["candidate_id"])
+
     def mark_submission(self, submission_id: str, status: str) -> None:
         allowed = {"Submitted", "Running", "Complete", "Failed"}
         if status not in allowed:
