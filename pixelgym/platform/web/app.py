@@ -26,7 +26,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from markupsafe import Markup
 from pydantic import BaseModel, ConfigDict, Field
 
-from pixelgym.platform.contracts import CandidateState, GateObservation
+from pixelgym.platform.contracts import CandidateState, GateObservation, RunStatus
 from pixelgym.platform.control_store import (
     ACTOR_VERIFICATION_SOURCE_KEY,
     RESERVED_ACTOR_NAMES,
@@ -71,9 +71,12 @@ CSRF_TOKEN_BYTES = hashlib.sha256().digest_size
 CSRF_TOKEN_HEX_LENGTH = CSRF_TOKEN_BYTES * 2
 CSRF_TOKEN_PATTERN = re.compile(rf"[0-9a-fA-F]{{{CSRF_TOKEN_HEX_LENGTH}}}")
 RUNS_PAGE_SIZE = 50
+SUBMISSIONS_PAGE_SIZE = 50
 DEPLOYMENT_AUDIT_WINDOW = 25
 AUDIT_HISTORY_PAGE_SIZE = 100
 PRINCIPAL_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@:/+-]{0,254}")
+SUBMISSION_STATUS_OPTIONS = tuple(item.value for item in RunStatus)
+CANCELLABLE_SUBMISSION_STATUSES = frozenset({RunStatus.SUBMITTED.value, RunStatus.RUNNING.value})
 
 
 class ApprovalBody(BaseModel):
@@ -150,6 +153,28 @@ def _page_href(request: Request, path: str, page: int) -> str:
 
 def _mlflow_run_uri(mlflow_base_url: str, run_id: object) -> str:
     return f"{mlflow_base_url}/#/experiments/0/runs/{run_id}"
+
+
+def _submission_mlflow_uri(mlflow_base_url: str, submission: Mapping[str, Any]) -> str | None:
+    run_id = submission["mlflow_run_id"]
+    return _mlflow_run_uri(mlflow_base_url, run_id) if run_id else None
+
+
+def _submission_status_tone(status: str) -> str:
+    if status == RunStatus.COMPLETE.value:
+        return "good"
+    if status in {RunStatus.FAILED.value, RunStatus.CANCELLED.value}:
+        return "bad"
+    return "neutral"
+
+
+def _submission_row(submission: Mapping[str, Any], mlflow_base_url: str) -> dict[str, Any]:
+    return {
+        "submission": submission,
+        "status_tone": _submission_status_tone(submission["status"]),
+        "mlflow_uri": _submission_mlflow_uri(mlflow_base_url, submission),
+        "candidate_id": submission["candidate_id"],
+    }
 
 
 def _artifact(candidate: Any, suffix: str) -> Any | None:
@@ -535,19 +560,62 @@ def create_control_app(
             submission = control.get_submission(submission_id)
         except KeyError as exc:
             raise HTTPException(404, "submission does not exist") from exc
-        mlflow_uri = (
-            _mlflow_run_uri(mlflow_base_url, submission["mlflow_run_id"])
-            if submission["mlflow_run_id"]
-            else None
-        )
         return render(
             request,
             "submission.html",
             "Submission",
             submission_id=submission_id,
             submission=submission,
-            mlflow_uri=mlflow_uri,
-            cancellable=submission["status"] in {"Submitted", "Running"},
+            status_tone=_submission_status_tone(submission["status"]),
+            mlflow_uri=_submission_mlflow_uri(mlflow_base_url, submission),
+            candidate_id=control.candidate_id_for_run(submission["mlflow_run_id"]),
+            cancellable=submission["status"] in CANCELLABLE_SUBMISSION_STATUSES,
+        )
+
+    @app.get("/api/submissions/{submission_id}/status")
+    def submission_status(submission_id: str) -> dict[str, Any]:
+        """Bounded single-read status for page polling; never waits on the evaluation."""
+        try:
+            submission = control.get_submission(submission_id)
+        except KeyError as exc:
+            raise HTTPException(404, "submission does not exist") from exc
+        mlflow_uri = _submission_mlflow_uri(mlflow_base_url, submission)
+        return {
+            "submission_id": submission_id,
+            "status": submission["status"],
+            "metaflow_pathspec": submission["metaflow_pathspec"],
+            "mlflow_uri": mlflow_uri if mlflow_uri and _is_linkable_uri(mlflow_uri) else None,
+            "cancellable": submission["status"] in CANCELLABLE_SUBMISSION_STATUSES,
+            "candidate_id": control.candidate_id_for_run(submission["mlflow_run_id"]),
+        }
+
+    @app.get("/submissions", response_class=HTMLResponse)
+    def submissions_view(
+        request: Request,
+        page: Annotated[int, Query(ge=1)] = 1,
+        status: str | None = None,
+    ) -> str:
+        if status is not None and status not in SUBMISSION_STATUS_OPTIONS:
+            raise HTTPException(
+                422, f"status must be one of: {', '.join(SUBMISSION_STATUS_OPTIONS)}"
+            )
+        window = control.submission_history(
+            limit=SUBMISSIONS_PAGE_SIZE + 1,
+            offset=(page - 1) * SUBMISSIONS_PAGE_SIZE,
+            status=status,
+        )
+        has_next_page = len(window) > SUBMISSIONS_PAGE_SIZE
+        return render(
+            request,
+            "submissions.html",
+            "Submissions",
+            rows=[
+                _submission_row(item, mlflow_base_url) for item in window[:SUBMISSIONS_PAGE_SIZE]
+            ],
+            status_options=SUBMISSION_STATUS_OPTIONS,
+            status_filter=status,
+            previous_href=_page_href(request, "/submissions", page - 1) if page > 1 else None,
+            next_href=_page_href(request, "/submissions", page + 1) if has_next_page else None,
         )
 
     @app.post("/submissions/{submission_id}/cancel")
@@ -679,11 +747,20 @@ def create_control_app(
             candidate_window = candidates[offset : offset + RUNS_PAGE_SIZE + 1]
             has_next_page = len(candidate_window) > RUNS_PAGE_SIZE
             candidates = candidate_window[:RUNS_PAGE_SIZE]
+        submitted_exists = False
+        if submitted:
+            try:
+                control.get_submission(submitted)
+            except KeyError:
+                submitted_exists = False
+            else:
+                submitted_exists = True
         return render(
             request,
             "runs.html",
             "Runs",
             submitted=submitted,
+            submitted_exists=submitted_exists,
             rows=[_candidate_row(item, mlflow_base_url) for item in candidates],
             provider_options=provider_options,
             lifecycle_options=[item.value for item in CandidateState],
