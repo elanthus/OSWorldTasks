@@ -21,3 +21,7 @@
   no coordinate rescaling; models that emit normalized coordinates cannot be evaluated on it until
   rescaling moves behind the parse boundary. The registry ships empty and no approved provider
   run has been executed.
+- Candidate identity includes the stored run summary. A candidate row migrated from a database
+  that predates `summary_json` carries the `'{}'` default, so registering the same policy and run
+  again with a real summary is rejected with "candidate identity already has different evidence"
+  instead of rewriting stored evidence. Re-registering it without a summary stays idempotent.

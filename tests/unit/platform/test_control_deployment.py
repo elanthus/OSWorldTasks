@@ -475,6 +475,42 @@ def test_candidate_reads_lazily_revalidate_a_manifest_corrupted_after_registrati
         control.list_candidates(limit=1)
 
 
+def test_candidate_migrated_with_empty_summary_conflicts_when_reregistered_with_summary(
+    tmp_path: Path, passing_evidence
+) -> None:
+    """Issue #167: summary_json is part of candidate identity. A row migrated from a database
+    that predates the column carries the '{}' default, so a later registration that supplies a
+    real RunSummary is a conflict, not a silent evidence rewrite."""
+    policy, summary, report = passing_evidence
+    control = _control(tmp_path)
+    candidate = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    # Rebuild the pre-summary schema, then let migrate() re-add the column with its default.
+    control.connection.execute("ALTER TABLE candidates DROP COLUMN summary_json")
+    control.migrate()
+    row = control.connection.execute(
+        "SELECT summary_json FROM candidates WHERE candidate_id = ?", (candidate.candidate_id,)
+    ).fetchone()
+    assert row["summary_json"] == "{}"
+    assert control.get_candidate(candidate.candidate_id).summary is None
+
+    with pytest.raises(ConflictError, match="candidate identity already has different evidence"):
+        control.register_candidate(
+            source_run_id=summary.run_id,
+            policy=policy,
+            gate_report=report,
+            artifacts=[],
+            summary=summary,
+        )
+    # Re-registering the migrated row without a summary is still idempotent.
+    again = control.register_candidate(
+        source_run_id=summary.run_id, policy=policy, gate_report=report, artifacts=[]
+    )
+    assert again == control.get_candidate(candidate.candidate_id)
+    assert again.summary is None
+
+
 def test_distinct_source_provenance_diagnostics_have_distinct_candidate_identities(
     tmp_path: Path, passing_evidence, gate_policy
 ) -> None:
