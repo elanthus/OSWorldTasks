@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "docker",
+    "version"
+  ],
+  "command": "docker version",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.024356,
+  "ended_at_utc": "2026-10-06T05:09:53.644314+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Client:\n Version:           29.6.1\n API version:       1.55\n Go version:        go1.26.4\n Git commit:        8900f1d\n Built:             Fri Jun 26 11:39:35 2026\n OS/Arch:           darwin/arm64\n Context:           desktop-linux\n\nServer: Docker Desktop 4.81.0 (232925)\n Engine:\n  Version:          29.6.1\n  API version:      1.55 (minimum version 1.40)\n  Go version:       go1.26.4\n  Git commit:       8ec5ab3\n  Built:            Fri Jun 26 11:39:58 2026\n  OS/Arch:          linux/arm64\n  Experimental:     false\n containerd:\n  Version:          v2.2.5\n  GitCommit:        e53c7c1516c3b2bff98eb76f1f4117477e6f4e66\n runc:\n  Version:          1.3.6\n  GitCommit:        v1.3.6-0-g491b69ba\n docker-init:\n  Version:          0.19.0\n  GitCommit:        de40ad0\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:09:53.618307+00:00"
+}

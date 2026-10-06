@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "<path-1>/probes/recorded_source_revisions.py"
+  ],
+  "command": "<path-2>/bin/python <path-1>/probes/recorded_source_revisions.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.060349,
+  "ended_at_utc": "2026-10-06T05:25:25.108037+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "# probe source follows\n# D5.10 probe: print this source, then the source_binding.source_revision stored in\n# each D5.9 artifact whose --verify command takes --source-revision. Reads files only.\nimport json\nfrom pathlib import Path\n\nprint(\"# probe source follows\")\nprint(Path(__file__).read_text(), end=\"\")\nprint(\"# probe output follows\")\nARTIFACTS = (\n    \"artifacts/grounding-v5-d59-freeze/task-manifest.json\",\n    \"artifacts/grounding-v5-d59-freeze/execution-plan.json\",\n    \"artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json\",\n    \"artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json\",\n    \"artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json\",\n)\nprint(\n    json.dumps(\n        {\n            path: json.loads(Path(path).read_text())[\"source_binding\"][\"source_revision\"]\n            for path in ARTIFACTS\n        },\n        indent=1,\n        sort_keys=True,\n    )\n)\n# probe output follows\n{\n \"artifacts/grounding-v5-d59-freeze/execution-plan.json\": \"f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3\",\n \"artifacts/grounding-v5-d59-freeze/task-manifest.json\": \"f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3\",\n \"artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json\": \"1201df8a773add79733d392f876b579752f797c5\",\n \"artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json\": \"ca1c98333cffb5f04beef1d4f56ed09f9840f538\",\n \"artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json\": \"b3167ff49576aec4001444ba3166d37cfc8dfda4\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:25:25.045274+00:00"
+}

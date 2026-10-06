@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "<path-2>/bin/mypy",
+    "pixelgym"
+  ],
+  "command": "<path-2>/bin/mypy pixelgym",
+  "cwd": "<path-0>",
+  "duration_seconds": 7.149322,
+  "ended_at_utc": "2026-10-06T05:12:41.508775+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "Success: no issues found in 136 source files\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:12:34.357367+00:00"
+}

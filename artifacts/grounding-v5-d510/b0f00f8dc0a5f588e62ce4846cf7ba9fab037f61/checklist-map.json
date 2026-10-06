@@ -1,0 +1,448 @@
+{
+  "schema_version": "pixelgym-d510-checklist-map-v1",
+  "gate": "D5.10",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "checklist_source": {
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5",
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/90-checklist-source.json"
+  },
+  "identity_records": {
+    "revision": "commands/00-git-revision.json",
+    "branch": "commands/05-evidence-branch.json",
+    "worktree_status": [
+      "commands/01-worktree-status.json",
+      "commands/54-worktree-status-after-verifiers.json",
+      "commands/89-worktree-status-after-integration.json",
+      "commands/92-worktree-status-before-redaction-scan.json"
+    ]
+  },
+  "public_wording_inventory_record": "commands/91-public-wording-inventory.json",
+  "placeholders": {
+    "<path-0>": "Evidence worktree (repository root) at the evidence revision.",
+    "<path-1>": "Collection directory outside the worktree that held the command records, probe scripts, and the two scratch virtual environments during collection.",
+    "<path-2>": "Scratch dev virtual environment: python3.12 -m venv, then pip install -e \".[dev]\" (records 06-07).",
+    "<path-3>": "Scratch integration virtual environment: python3.12 -m venv, then pip install -e \".[dev,osworld]\" playwright==1.62.0 (records 62-63).",
+    "<path-4>": "Session scratch directory.",
+    "<path-5>": "Session scratch directory, alternate spelling without the /private prefix.",
+    "<home>": "Home directory of the recording account.",
+    "<system-temp>": "System temporary directory of the recording process.",
+    ".venv": "In-tree dev virtual environment at the documented location, ignored by Git (records 79-81)."
+  },
+  "recording_notes": [
+    "Every record was written by scripts/record_gate_command.py at the evidence revision, run as /opt/homebrew/bin/python3.12 -m scripts.record_gate_command from <path-0> (schema pixelgym-d412-command-record-v1). Records are numbered in start order. Gaps in the numbering are the withdrawn records listed below.",
+    "Non-git commands were recorded under env -i with only PATH, HOME, TMPDIR, LANG, and LC_ALL passed through; records 11 and 66 list the environment variable names a child process observed. Git commands (records 00, 01, 05, 54, 89, 90, 92) are invoked as git -C <path-0> and were recorded without the env -i wrapper because the recording session's worktree guard rejected wrapped git invocations. Record 00 was recorded with only the --cwd path redaction; the later git records also pass the scratch and home --redact-path arguments.",
+    "Record 03 runs uname -mprsv instead of uname -a. It prints every uname -a field except the network node hostname.",
+    "Records 10, 11, 45, 64, 66, and 81 run probe scripts from <path-1>/probes. Each probe prints its own source before its output.",
+    "Record 61 ran the browser suites with Playwright 1.63.0 from the dev extra. The command output names a chromium_headless_shell-1243 executable that was absent from the local Playwright cache. No browser was downloaded. Record 67 ran the same pytest command in <path-3>, where record 63 installed playwright==1.62.0 (inside the declared playwright>=1.52); its browsers.json names chromium and chromium-headless-shell revision 1234, which were already in the local cache.",
+    "OSWorld: record 72 shows no guest image in the worktree and record 73 ran the suite in that state. Records 74-75 created the ignored .cache/osworld directory and linked the existing local guest image file from the primary checkout's ignored .cache/osworld directory; record 77 lists its size and modification time. The installed OSWorld Docker provider bind-mounts the image with \"mode\": \"ro\" (desktop_env/providers/docker/provider.py in <path-3>). Record 78 ran the suite with the link, and record 86 removed the link. Records 69-71 and 82-85 list Docker containers, images, and volumes; record 84 has no before-run counterpart. No image, VM disk, or browser was pulled or downloaded.",
+    "Records 79-81, 87, and 88 repeat the dev setup and both fast-suite invocations with the in-tree .venv. They replace withdrawn records 16 and 17, whose pytest warning summaries printed the scratch virtual environment path in a ../-relative form that the recorder's path redaction does not replace.",
+    "Records 55-59 select test node IDs chosen by reading test names in tests/unit. Each command lists its node IDs. Every test function in tests/unit/test_grounding_v5_runner.py (57) and tests/unit/test_grounding_v5.py (27) is listed in exactly one of the five groups; other files may also be covered by the fast-suite records.",
+    "Record 90 is git show of the retired plan at f0bcbd6f3e379f880baeca233d4b7e05528bcfc5. The generator checks every checklist entry against that record's text and line numbers.",
+    "Network use during collection: the pip installs in records 07, 63, and 80. No provider credential was present (records 11 and 66), no paid model call was made, and no evaluation was rerun.",
+    "The redaction scan (record 93, and redaction-scan.json for this directory) uses the seven D4.12 pattern categories from scripts/generate_d412_evidence_report.py plus system_temp_paths, provider_api_keys, and bearer_tokens."
+  ],
+  "items": [
+    {
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/54-worktree-status-after-verifiers.json",
+        "commands/89-worktree-status-after-integration.json",
+        "commands/91-public-wording-inventory.json",
+        "commands/92-worktree-status-before-redaction-scan.json",
+        "commands/93-redaction-scan-collected-records.json"
+      ],
+      "artifacts": [
+        "docs/v5-benchmark-design.md"
+      ],
+      "linked_records": [
+        {
+          "path": "docs/v5-benchmark-design.md",
+          "lines": "148",
+          "verbatim": "| D5.10: milestone verdict and public wording | Not declared; human-owned | — |"
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+          "verbatim": "\"claim_boundary\":\"The successor may support the matched model-quality comparison but cannot claim OS-enforced policy isolation or independent denial of local process capabilities.\""
+        },
+        {
+          "path": "docs/evidence-index.md",
+          "lines": "82-86",
+          "verbatim": "- **2026-09-30, D5.9 private journals.** The attempt and invocation journals for the D5.9 Haiku\n  execution were not retained after the public projection was published. They were untracked\n  files in a temporary checkout that was later removed. The digests recorded in `report.json`\n  under `source_artifacts` and `journal_integrity` were computed from those journals at\n  publication and cannot be re-verified against them. D5.9 closes on the published projection."
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+          "lines": "14",
+          "verbatim": "The owner authorized continuation after malformed output and, later, after exhausted connection resets. Each failed assignment remains in the results. Prior assignments were not replayed; retries kept the same per-action and aggregate caps. These are disclosed changes to the original campaign stop rule, made after observing failures."
+        }
+      ]
+    },
+    {
+      "id": "done-when-01",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:785",
+      "checklist_text": "The human explicitly approves D5.1 and sequencing relative to the separate D4.12 gate.",
+      "records": [],
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/decisions/d4.12.json"
+      ],
+      "linked_records": [
+        {
+          "path": "artifacts/grounding-v5-d56-calibration-approval.md",
+          "lines": "32",
+          "verbatim": "| D5.1 scope and sequencing | Explicit owner decision | Approved to proceed with v5 readiness work while D4.12 remains null |"
+        }
+      ]
+    },
+    {
+      "id": "done-when-02",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:786",
+      "checklist_text": "Versioned schemas and disjoint development, calibration, and confirmatory seed lists are committed before task capture or model calls.",
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-manifests/development.json",
+        "artifacts/grounding-v5-manifests/calibration.json",
+        "artifacts/grounding-v5-manifests/calibration-d56.json",
+        "artifacts/grounding-v5-manifests/confirmatory.json",
+        "pixelgym/grounding/v5/seeds.py",
+        "pixelgym/grounding/v5/schemas/task.schema.json",
+        "pixelgym/grounding/v5/schemas/policy.schema.json",
+        "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json"
+      ],
+      "source_end_line": 787
+    },
+    {
+      "id": "done-when-03",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:788",
+      "checklist_text": "Six generator families produce the frozen allocations and satisfy every admission rule.",
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json",
+        "commands/46-verify-d59-freeze.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d59-freeze/task-manifest.json"
+      ]
+    },
+    {
+      "id": "done-when-04",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:789",
+      "checklist_text": "Every declared valid and adversarial trace replays twice with identical semantic state and bitwise-identical corresponding screenshots.",
+      "records": [
+        "commands/61-browser-integration.json",
+        "commands/67-browser-integration-playwright-1-62-retry.json",
+        "commands/55-v5-group-generator-partitions-admission.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-development-sample/manifest.json"
+      ],
+      "source_end_line": 790
+    },
+    {
+      "id": "done-when-05",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:791",
+      "checklist_text": "Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking mutations remain at `0.0`.",
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json",
+        "commands/18-golden-trajectory-check.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json"
+      ],
+      "source_end_line": 792
+    },
+    {
+      "id": "done-when-06",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "records": [
+        "commands/56-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+        "commands/57-v5-group-credential-secret-redaction-integrity.json",
+        "commands/59-v5-group-call-cap-planning.json",
+        "commands/73-osworld-v5-integration.json",
+        "commands/78-osworld-v5-integration-linked-guest-image.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md"
+      ],
+      "source_end_line": 798
+    },
+    {
+      "id": "done-when-07",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:799",
+      "checklist_text": "No-cost OS-level integration evidence denies unauthorized policy egress and preserves required provider-fake, backend, application, and controller traffic without internet or real-provider calls.",
+      "records": [
+        "commands/60-v5-sandbox-integration.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json"
+      ],
+      "source_end_line": 800,
+      "linked_records": [
+        {
+          "path": "artifacts/grounding-v5-d56-calibration-approval.md",
+          "lines": "36",
+          "verbatim": "| OS-level policy isolation | Real OS enforcement test with an allowed fake endpoint and denied unauthorized channels | Implemented and exercised on Darwin |"
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+          "verbatim": "\"decision\":\"Waive OS-level sandbox enforcement for the exact selected Haiku D5.9 policy pair and retain the calibrated Claude Code CLI controls.\""
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+          "verbatim": "\"claim_boundary\":\"The successor may support the matched model-quality comparison but cannot claim OS-enforced policy isolation or independent denial of local process capabilities.\""
+        },
+        {
+          "path": "docs/v5-benchmark-design.md",
+          "lines": "150-153",
+          "verbatim": "Calibration results are descriptive and are not a model ranking. The D5.9 Haiku policies ran under\na recorded exception that waived OS-level sandbox enforcement, so that evidence cannot support an\nOS-enforced isolation claim\n([exception](../artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json))."
+        }
+      ]
+    },
+    {
+      "id": "done-when-08",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:801",
+      "checklist_text": "The documented fast suite passes without browser, network, OSWorld, provider credentials, or model calls.",
+      "records": [
+        "commands/11-boundary-inventory.json",
+        "commands/79-create-in-tree-dev-venv.json",
+        "commands/80-install-dev-in-tree-venv.json",
+        "commands/87-fast-suite-ci-invocation-in-tree-venv.json",
+        "commands/88-unit-suite-serial-in-tree-venv.json"
+      ],
+      "artifacts": [],
+      "source_end_line": 802
+    },
+    {
+      "id": "done-when-09",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:803",
+      "checklist_text": "A free plan-only command reports exact environment-action, model-attempt, provider-control, and total wire-request caps for each approved phase.",
+      "records": [
+        "commands/59-v5-group-call-cap-planning.json",
+        "commands/45-d59-recorded-source-revisions.json",
+        "commands/46-verify-d59-freeze.json",
+        "commands/48-verify-d59-haiku-freeze.json",
+        "commands/49-verify-d59-haiku-retry-successor.json",
+        "commands/50-verify-d59-haiku-network-retry.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-scripted-call-cap-plan.json",
+        "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json"
+      ],
+      "source_end_line": 804
+    },
+    {
+      "id": "done-when-10",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:805",
+      "checklist_text": "The agent stops for explicit calibration approval and again for explicit confirmatory approval.",
+      "records": [],
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d58-final-design/decision.json",
+        "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+        "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json"
+      ],
+      "source_end_line": 806,
+      "linked_records": [
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+          "lines": "14",
+          "verbatim": "The owner authorized continuation after malformed output and, later, after exhausted connection resets. Each failed assignment remains in the results. Prior assignments were not replayed; retries kept the same per-action and aggregate caps. These are disclosed changes to the original campaign stop rule, made after observing failures."
+        }
+      ]
+    },
+    {
+      "id": "done-when-11",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "records": [
+        "commands/52-check-d59-confirmatory-analysis.json",
+        "commands/51-report-d59-haiku-help.json",
+        "commands/53-d59-private-run-directories-present.json",
+        "commands/58-v5-group-metrics-statistics.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.json",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+        "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      ],
+      "source_end_line": 808,
+      "linked_records": [
+        {
+          "path": "docs/evidence-index.md",
+          "lines": "82-86",
+          "verbatim": "- **2026-09-30, D5.9 private journals.** The attempt and invocation journals for the D5.9 Haiku\n  execution were not retained after the public projection was published. They were untracked\n  files in a temporary checkout that was later removed. The digests recorded in `report.json`\n  under `source_artifacts` and `journal_integrity` were computed from those journals at\n  publication and cannot be re-verified against them. D5.9 closes on the published projection."
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+          "lines": "14",
+          "verbatim": "The owner authorized continuation after malformed output and, later, after exhausted connection resets. Each failed assignment remains in the results. Prior assignments were not replayed; retries kept the same per-action and aggregate caps. These are disclosed changes to the original campaign stop rule, made after observing failures."
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+          "lines": "126",
+          "verbatim": "The stop rule was amended after repeated intermittent network failures to allow for retries in the case of intermittent network issues. Each failed assignment remains in the results. No prior assignment was replayed."
+        },
+        {
+          "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+          "lines": "111-121",
+          "verbatim": "## Diagnostics not computable from the public projection\n\nThese are not estimated.\n\n- critical-decision accuracy: needs per-step decision annotations held in the private journals.\n- dependency retention: needs per-step state and response records held in the private journals.\n- recovery success: needs error-injection and recovery annotations held in the private journals.\n- irreversible-error rate: the projection does not distinguish wrong commits from other unsuccessful terminations.\n- path overhead: the projection carries action totals but not the action trace the diagnostic is defined over.\n- loop rate: needs the per-episode action trace held in the private journals.\n- latency: the projection carries no timing fields."
+        }
+      ]
+    },
+    {
+      "id": "done-when-12",
+      "kind": "done_when",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "records": [],
+      "artifacts": [],
+      "source_end_line": 810
+    }
+  ],
+  "not_run": [
+    {
+      "item": "scripts/build_grounding_benchmark_v2.py",
+      "reason": "Marked as a frozen reproduction entry point. It has no argument parser and no verify or check mode; any invocation, including --help, calls build_benchmark_v2 and writes the tracked v2 benchmark files. Not invoked."
+    },
+    {
+      "item": "scripts/generate_grounding_report.py (default mode)",
+      "reason": "No verify or check mode; the default invocation writes the tracked report and results. --help is recorded; the read-only verifier scripts/verify_grounding_report.py is recorded separately.",
+      "records": [
+        "commands/21-generate-grounding-report-v1-help.json",
+        "commands/19-verify-grounding-report-v1.json"
+      ]
+    },
+    {
+      "item": "scripts/generate_grounding_report_v2.py (default mode)",
+      "reason": "No verify or check mode; without --output-dir it writes the tracked report and provenance. --help is recorded; scripts/verify_grounding_report_v2.py is recorded separately.",
+      "records": [
+        "commands/22-generate-grounding-report-v2-help.json",
+        "commands/20-verify-grounding-report-v2.json"
+      ]
+    },
+    {
+      "item": "scripts/generate_grounding_clustered_analysis.py (default mode)",
+      "reason": "No verify or check mode; without --output-dir it writes the tracked supplement files. --help is recorded.",
+      "records": [
+        "commands/23-generate-grounding-clustered-analysis-help.json"
+      ]
+    },
+    {
+      "item": "scripts/record_grounding_v5_d56_retained_development_runs.py (default mode)",
+      "reason": "No verify or check mode; it reads ignored local originals and writes the registry. --help is recorded.",
+      "records": [
+        "commands/24-record-d56-retained-development-runs-help.json"
+      ]
+    },
+    {
+      "item": "scripts/report_grounding_v5_d59_haiku.py --verify",
+      "reason": "--verify requires --input, the private D5.9 run directory. Record 53 shows the ignored D5.9 run directories absent from the worktree. --help is recorded. No input was substituted.",
+      "records": [
+        "commands/51-report-d59-haiku-help.json",
+        "commands/53-d59-private-run-directories-present.json"
+      ],
+      "linked_records": [
+        {
+          "path": "docs/evidence-index.md",
+          "lines": "82-86",
+          "verbatim": "- **2026-09-30, D5.9 private journals.** The attempt and invocation journals for the D5.9 Haiku\n  execution were not retained after the public projection was published. They were untracked\n  files in a temporary checkout that was later removed. The digests recorded in `report.json`\n  under `source_artifacts` and `journal_integrity` were computed from those journals at\n  publication and cannot be re-verified against them. D5.9 closes on the published projection."
+        }
+      ]
+    },
+    {
+      "item": "D5.9 plan-only commands: scripts/run_grounding_v5_d59_haiku.py prepare, scripts/run_grounding_v5_d59_haiku_retry_successor.py prepare, scripts/run_grounding_v5_d59_haiku_network_retry.py prepare",
+      "reason": "All three call the shared runner's prepare, which calls probe_claude_runtime (claude --version, claude auth status --json, claude --help) and therefore needs a logged-in Claude Code credential, reads an owner approval file (the network-retry approval path is ignored and absent), and writes an output directory. Not run. The D5.9 --verify commands that recompute the execution plans are recorded as 46 and 48-50."
+    },
+    {
+      "item": "D5.8 runner prepare subcommands (run_grounding_v5_memory_calibration.py, run_grounding_v5_gemini38_calibration.py, run_grounding_v5_focus_calibration.py, run_grounding_v5_focus_continuation.py, run_grounding_v5_focus_diagnostic.py, run_grounding_v5_reliable_diagnostic.py, run_grounding_v5_reliable_continuation.py, run_grounding_v5_reliable_extension.py, run_grounding_v5_owner_budget_continuation.py, run_grounding_v5_memory_pilot.py)",
+      "reason": "Each prepare subcommand writes an execution plan into a tracked artifact directory; none is a no-write plan-only or validate-only mode. Not run. The D5.8 evidence verifiers are recorded as 27-44."
+    },
+    {
+      "item": "D5.6-era plan-only and validate-only modes (run_grounding_v5_calibration.py --validate-only, run_grounding_v5_provider_smoke.py, run_grounding_v5_calibration_pilot.py, run_grounding_v5_expanded_calibration.py, run_grounding_v5_panel_smoke.py --plan-only)",
+      "reason": "Outside the requested D5.9-freeze and D5.8-plan scope for plan-only commands. Not run."
+    },
+    {
+      "item": "scripts/fetch_evidence_images.py, scripts/generate_validation_report.py, scripts/generate_d412_evidence_report.py",
+      "reason": "Marked as frozen reproduction entry points but outside the grounding v1/v2 and v5 scope of this package; fetch_evidence_images.py also downloads a GitHub release. Not run. The unit-suite records report 6 skipped tests."
+    },
+    {
+      "item": "platform_compose_integration (tests/integration/platform/test_compose_lifecycle.py)",
+      "reason": "D4.12 scope; excluded by the collection instructions. Not run."
+    }
+  ],
+  "withdrawn_records": [
+    {
+      "record": "commands/09-dev-package-versions.json",
+      "sha256": "3329b317e87b5a5f0d9323fb8671e5cfe31813a33ab43f83b4497da1b862a557",
+      "exit_status": 0,
+      "reason": "pip freeze --all printed the editable install's Git remote in its git@host form, which matches the redaction scan's email pattern. Withdrawn before the redaction scan and retained outside the tree.",
+      "replacement_records": [
+        "commands/10-dev-package-versions.json"
+      ]
+    },
+    {
+      "record": "commands/16-fast-suite-ci-invocation.json",
+      "sha256": "b19752e3115d13f0273857f3f5c63f24083d5a37bebeb2f4e13a4d229864e9d4",
+      "exit_status": 0,
+      "summary_line": "2568 passed, 6 skipped, 12 warnings in 191.32s (0:03:11)",
+      "reason": "The pytest warning summary printed the scratch dev virtual environment path in a ../-relative form that the recorder does not redact (15 local_absolute_paths matches across records 16 and 17 in an unrecorded pre-check). Withdrawn before the recorded redaction scan and retained outside the tree.",
+      "replacement_records": [
+        "commands/87-fast-suite-ci-invocation-in-tree-venv.json"
+      ]
+    },
+    {
+      "record": "commands/17-unit-suite-serial.json",
+      "sha256": "cecd6875cbdfee4ab9db09e9ec73cdcbe22d017406def84eb6f5e6aef5a9ea78",
+      "exit_status": 0,
+      "summary_line": "2568 passed, 6 skipped, 1 deselected, 3 warnings in 420.72s (0:07:00)",
+      "reason": "Same ../-relative scratch path in the pytest warning summary as record 16. Withdrawn before the recorded redaction scan and retained outside the tree.",
+      "replacement_records": [
+        "commands/88-unit-suite-serial-in-tree-venv.json"
+      ]
+    },
+    {
+      "record": "commands/76-linked-guest-image-listing.json",
+      "sha256": "7347efb8ca1a8ba868f6ab8d88c529a4198549ab770a5505f47d60f0cd66c235",
+      "exit_status": 0,
+      "reason": "ls -lL printed the local account and group names. Withdrawn before the redaction scan and retained outside the tree.",
+      "replacement_records": [
+        "commands/77-linked-guest-image-size.json"
+      ]
+    }
+  ]
+}

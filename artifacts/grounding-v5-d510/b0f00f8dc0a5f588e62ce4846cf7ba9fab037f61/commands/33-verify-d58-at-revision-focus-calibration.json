@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.verify_d58_at_revision",
+    "grounding-v5-d58-focus-calibration"
+  ],
+  "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-focus-calibration",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.814857,
+  "ended_at_utc": "2026-10-06T05:24:46.422448+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"executed_revision\": \"e1ce36eb45c87f1a7f3d54a505f055404f7aa0ff\", \"verification\": {\"assigned_episodes_verified\": 100, \"execution_plan_digest\": \"sha256:ba18d81a153e09736681a2f8f323dc00c6f78aafd4555440914678f245603947\", \"private_journal_verified\": false, \"provider_calls\": 0, \"schema_version\": \"pixelgym-d58-focus-calibration-verification-v1\", \"summary_digest\": \"sha256:37e0944e614a507f20c13737170660978e05842bcef5612f44e5d6248496a59f\"}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:24:45.600550+00:00"
+}

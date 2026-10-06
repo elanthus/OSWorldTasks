@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.verify_d58_at_revision",
+    "grounding-v5-d58-owner-budget-continuation"
+  ],
+  "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-owner-budget-continuation",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.908335,
+  "ended_at_utc": "2026-10-06T05:25:05.562673+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"executed_revision\": \"85adb9b9000dea7860a6097a20b54f0e90158951\", \"verification\": {\"assigned_episodes_verified\": 100, \"execution_plan_digest\": \"sha256:cf01761a3daac6d1b33e0e35dcb147a57ff1fddc33fbf8c8186303058546190c\", \"owner_budget_reconciliation\": {\"approval_digest\": \"sha256:ea78d3f1d4ec0d28d1ad9980c451f45b60a16bfd9d1d104cec9458e4f1b2176f\", \"confirmed_charges_unchanged\": true, \"driver_code_revision\": \"85adb9b9000dea7860a6097a20b54f0e90158951\", \"failed_outcome_count_unchanged\": true, \"private_journal_verified\": false, \"provider_calls\": 0, \"reconciliation_digest\": \"sha256:30909b34d3ae7e323d20b559176e87e27876a3856ad606e23ed6b57858fce861\", \"schema_version\": \"pixelgym-d58-owner-reconciliation-verification-v1\", \"unresolved_budget_holds_usd\": \"0\", \"waivers_verified\": 90}, \"preserved_conditions_verified\": 96, \"private_journal_verified\": false, \"provider_calls\": 0, \"schema_version\": \"pixelgym-d58-owner-budget-continuation-verification-v1\", \"summary_digest\": \"sha256:a34cf83c3e10401f00216f02fbc23926da8d1d43aa677e71e95462c8fb84bf36\"}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:25:04.651954+00:00"
+}

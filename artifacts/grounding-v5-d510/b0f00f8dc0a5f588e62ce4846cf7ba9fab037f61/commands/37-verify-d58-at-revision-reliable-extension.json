@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.verify_d58_at_revision",
+    "grounding-v5-d58-reliable-extension"
+  ],
+  "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-extension",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.808401,
+  "ended_at_utc": "2026-10-06T05:25:04.518036+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"executed_revision\": \"1ca0433a84df167de5abde893dd3c5c8d474db83\", \"verification\": {\"assigned_episodes_verified\": 100, \"execution_plan_digest\": \"sha256:d60e7390fb91bfded91e26b127b7bb9e521c048e41e8e7d407294367c2d49ba9\", \"preserved_conditions_verified\": 32, \"private_journal_verified\": false, \"provider_calls\": 0, \"schema_version\": \"pixelgym-d58-reliable-extension-verification-v1\", \"summary_digest\": \"sha256:b2eb8014b0a84b9c0a8e0df4c25bed2d996637a0a6b67d6774c6469c0edc2eb0\"}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:25:03.706787+00:00"
+}

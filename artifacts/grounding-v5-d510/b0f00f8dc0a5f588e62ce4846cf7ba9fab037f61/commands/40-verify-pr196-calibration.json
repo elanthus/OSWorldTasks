@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.publish_pr196_calibration",
+    "--verify"
+  ],
+  "command": "<path-2>/bin/python -m scripts.publish_pr196_calibration --verify",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.360718,
+  "ended_at_utc": "2026-10-06T05:25:14.264984+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"verified\": true, \"models\": 2, \"final_episodes\": 200, \"provider_calls_made\": 0}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:25:13.901364+00:00"
+}
