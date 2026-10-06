@@ -36,3 +36,12 @@ Packaged source-provenance verification also fails closed. Its persisted policy/
 operator log use a bounded reason code such as `manifest_missing`, `manifest_schema_invalid`, or
 `manifest_invalid_utf8`/`revision_invalid`/`source_digest_mismatch`; they never include a provenance file path or its
 contents.
+
+Startup readiness contract: a persisted active-deployment pointer is not evidence that the policy
+may serve. When the combined control/serving process starts, `DeploymentCoordinator.restore_active`
+(`pixelgym/platform/deployment.py`) re-verifies the active candidate exactly as a deploy or rollback
+does: approval evidence, manifest and renderer binding, gate-report digest, and every pinned
+artifact. It then re-runs `CandidateServiceSmoke` against the frozen smoke fixture before loading
+the policy into the traffic runtime. Any failure aborts application construction, so the process
+never accepts traffic with an unverified policy. With no active deployment, the service starts
+with no policy loaded.

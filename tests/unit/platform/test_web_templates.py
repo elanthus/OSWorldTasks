@@ -400,6 +400,35 @@ def test_hostile_policy_and_query_strings_are_escaped_on_every_page_that_shows_t
     assert '<p class="disclosure"><strong>Synthetic fixture disclosure:</strong>' in disclosed.text
 
 
+def test_prompt_diff_header_escapes_a_hostile_candidate_id_exactly_once(
+    tmp_path: Path, gate_policy: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Issue #167: difflib.HtmlDiff.make_table interpolates fromdesc/todesc verbatim, and the
+    page marks the table as Markup, so the handler's single html.escape is the only escape."""
+    rendered = difflib.HtmlDiff().make_table([], [], fromdesc="<&", todesc="")
+    assert '<th colspan="2" class="diff_header"><&</th>' in rendered
+
+    control, ids, _ = _populated_control(tmp_path, gate_policy)
+    hostile = {ids["a"]: "cand<b>&x", ids["b"]: "cand<i>&y"}
+    real_get = control.get_candidate
+
+    def renamed(candidate_id: str) -> Any:
+        record = real_get(candidate_id)
+        return dataclasses.replace(record, candidate_id=hostile[candidate_id])
+
+    monkeypatch.setattr(control, "get_candidate", renamed)
+    client = _client(web_app.create_control_app(control, csrf_secret=SECRET))
+    response = client.get(f"/compare/prompt-diff?candidate={ids['a']}&candidate={ids['b']}")
+
+    assert response.status_code == 200
+    headers = re.findall(r'<th colspan="2" class="diff_header">([^<]*)</th>', response.text)
+    assert len(headers) == 2
+    assert headers[0].startswith("cand&lt;b&gt;&amp;x · v1 (")
+    assert headers[1].startswith("cand&lt;i&gt;&amp;y · v2 (")
+    for raw in ("cand<b>", "cand<i>", "&amp;lt;", "&amp;amp;"):
+        assert raw not in response.text
+
+
 def test_every_template_is_rendered_by_exactly_one_handler_or_shared_by_pages() -> None:
     source = Path(web_app.__file__).read_text(encoding="utf-8")
     rendered = re.findall(r'render\(\s*request,\s*"([a-z_]+\.html)"', source)

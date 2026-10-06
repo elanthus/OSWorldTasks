@@ -554,6 +554,8 @@ class ControlStore:
                 str(row["name"]) for row in self.connection.execute("PRAGMA table_info(candidates)")
             }
             if "summary_json" not in columns:
+                # Legacy rows get '{}' (no summary); see register_candidate for why that
+                # default then conflicts with a later re-registration that has a summary.
                 self.connection.execute(
                     "ALTER TABLE candidates ADD COLUMN summary_json TEXT NOT NULL DEFAULT '{}'"
                 )
@@ -895,6 +897,11 @@ class ControlStore:
                 state.value,
             )
             if existing:
+                # summary_json is deliberately part of candidate identity (issue #167). A row
+                # migrated from a pre-summary database carries the column default '{}', so
+                # re-registering it with a real RunSummary raises ConflictError rather than
+                # silently rewriting stored evidence; re-registering it without a summary
+                # stays idempotent. Backfilling a summary needs a new candidate identity.
                 expected = values[1:8]
                 actual = tuple(
                     existing[key]

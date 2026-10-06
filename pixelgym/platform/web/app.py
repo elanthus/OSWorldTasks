@@ -823,6 +823,8 @@ def create_control_app(
                 if is_legacy
                 else " (packaged)"
             )
+            # HtmlDiff.make_table interpolates fromdesc/todesc verbatim (unlike line text),
+            # and the table is rendered as Markup, so this is the label's only escape.
             return _escape(f"{item.candidate_id} · v{item.policy.prompt_version}{tag}")
 
         diff = HtmlDiff(wrapcolumn=88).make_table(
