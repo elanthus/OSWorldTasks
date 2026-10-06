@@ -12,7 +12,7 @@ import sys
 import threading
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastapi import FastAPI
 
@@ -321,11 +321,21 @@ def create_app(
         FrozenSmokeFixture.load(repository_root), serving_provider
     )
 
-    def activate_runtime(deployment: DeploymentRecord, prepared: LoadedPolicy | bool) -> None:
+    def validate_runtime_activation(prepared: LoadedPolicy | bool) -> None:
+        # Runs before the database CAS. Every way the post-CAS handoff below could reject
+        # the prepared candidate is checked here, so a rejection leaves traffic unchanged.
         if not isinstance(prepared, LoadedPolicy):
             raise TypeError("deployment activation did not receive a loaded candidate runtime")
-        # The only mutation of the traffic runtime happens after the database CAS succeeds.
-        runtime.activate(replace(prepared, deployment_id=deployment.deployment_id))
+        PolicyRuntime.check_activatable(prepared)
+
+    def activate_runtime(deployment: DeploymentRecord, prepared: LoadedPolicy | bool) -> None:
+        # Total by construction (issue #166): validate_runtime_activation already proved
+        # ``prepared`` is a LoadedPolicy whose frozen manifest passes check_activatable, and
+        # dataclasses.replace only swaps the deployment ID. The only mutation of the traffic
+        # runtime happens after the database CAS succeeds.
+        runtime.activate(
+            replace(cast(LoadedPolicy, prepared), deployment_id=deployment.deployment_id)
+        )
 
     coordinator = DeploymentCoordinator(
         control=control,
@@ -333,6 +343,7 @@ def create_app(
         load_and_smoke=smoke_candidate,
         on_activated=activate_runtime,
         tracking=tracking,
+        validate_activation=validate_runtime_activation,
     )
     coordinator.restore_active()
 

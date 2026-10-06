@@ -120,6 +120,19 @@ class _DeploymentSchema:
     triggers: frozenset[tuple[str, str]]
 
 
+DEPLOYMENT_FAILURE_STAGES = frozenset(
+    {
+        # Before the compare-and-swap: verification, load, smoke, stale precondition.
+        "preactivation",
+        # The authoritative compare-and-swap transaction itself rolled back.
+        "transaction",
+        # After the compare-and-swap committed: the serving-runtime handoff raised.
+        "runtime_activation",
+    }
+)
+MAX_FAILURE_MESSAGE_CHARS = 500
+
+
 DEFAULT_BUSY_TIMEOUT_MS = 5_000
 SQLITE_BUSY_TIMEOUT_ENV = "PIXELGYM_SQLITE_BUSY_TIMEOUT_MS"
 _CONTENTION_MESSAGE = "control database is temporarily busy; retry the request"
@@ -684,6 +697,10 @@ class ControlStore:
                 material["created_at_utc"],
             ),
         )
+
+    def require_reviewer_actor(self, actor: str) -> None:
+        """Raise ``AuthorizationError`` unless ``actor`` may perform reviewer transitions."""
+        self._require_reviewer_actor(actor)
 
     def _require_reviewer_actor(self, actor: str) -> None:
         if isinstance(actor, (VerifiedPrincipal, SyntheticDemoPrincipal)):
@@ -1399,6 +1416,52 @@ class ControlStore:
                 {**material, **rollback_lineage, "reason": reason.strip()},
             )
         return self.get_deployment(deployment_id)
+
+    def record_deployment_failure(
+        self,
+        *,
+        action: str,
+        stage: str,
+        actor: str,
+        reason: str,
+        subject_id: str,
+        candidate_id: str | None,
+        error_class: str,
+        error_message: str | None,
+        expected_deployment_id: str | None,
+        expected_generation: int | None,
+        committed_deployment_id: str | None = None,
+    ) -> None:
+        """Append one attributable ``deployment.<action>_failed`` audit event.
+
+        The event is evidence only: it never changes candidates, deployments, or the active
+        pointer. ``committed_deployment_id`` is set only for the ``runtime_activation`` stage,
+        where the authoritative compare-and-swap already committed and the serving runtime may
+        still hold the previous policy until a restart restores the ledger's active deployment.
+        """
+        self._require_reviewer_actor(actor)
+        if action not in {"deploy", "rollback"}:
+            raise ValueError("unknown deployment action")
+        if stage not in DEPLOYMENT_FAILURE_STAGES:
+            raise ValueError("unknown deployment failure stage")
+        if (stage == "runtime_activation") != (committed_deployment_id is not None):
+            raise ValueError("only a runtime-activation failure names a committed deployment")
+        details: dict[str, Any] = {
+            "action": action,
+            "stage": stage,
+            "candidate_id": candidate_id,
+            "error_class": error_class,
+            "error_message": (
+                None if error_message is None else error_message[:MAX_FAILURE_MESSAGE_CHARS]
+            ),
+            "expected_deployment_id": expected_deployment_id,
+            "expected_generation": expected_generation,
+            "authoritative_commit": committed_deployment_id is not None,
+            "committed_deployment_id": committed_deployment_id,
+            "reason": reason.strip(),
+        }
+        with self.transaction() as connection:
+            self._audit(connection, f"deployment.{action}_failed", actor, subject_id, details)
 
     def previous_target(self, current: DeploymentRecord) -> DeploymentRecord:
         """Return the latest explicit deploy outside the active rollback chain."""
