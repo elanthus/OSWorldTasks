@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "scripts/verify_grounding_report.py"
+  ],
+  "command": "<path-2>/bin/python scripts/verify_grounding_report.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.568686,
+  "ended_at_utc": "2026-10-06T05:23:42.683777+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"checked_file_count\": 212,\n  \"experiment_id\": \"pixelgym-grounding-v1-gpt-5.4-mini-2026-08-10\",\n  \"headline\": {\n    \"bootstrap_95_ci_percentage_points\": [\n      35.0,\n      54.0\n    ],\n    \"marks_correct_count\": 100,\n    \"mcnemar_exact_p_value\": 1.1368683772161603e-13,\n    \"paired_delta_percentage_points\": 44.0,\n    \"raw_correct_count\": 56\n  },\n  \"identity\": {\n    \"model\": \"gpt-5.4-mini\",\n    \"prompt_version\": \"pixelgym-grounding-prompt-v1\",\n    \"protocol_version\": \"pixelgym-grounding-v1\",\n    \"provider\": \"codex-cli\"\n  },\n  \"numerical_reproducibility\": \"recomputed from frozen JSONL evidence\",\n  \"rendered_image_reproducibility\": \"stored bytes verified by recorded SHA-256 only\",\n  \"sample\": {\n    \"condition_record_count\": 200,\n    \"example_count\": 100,\n    \"excluded_example_count\": 0\n  },\n  \"schema_version\": \"pixelgym-grounding-report-verification-v1\",\n  \"status\": \"verified\",\n  \"wrote_files\": false\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:23:42.112731+00:00"
+}

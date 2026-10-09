@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "docker",
+    "ps",
+    "-a",
+    "--no-trunc",
+    "--filter",
+    "ancestor=happysixd/osworld-docker:latest",
+    "--format",
+    "{{.ID}} {{.Image}} {{.CreatedAt}} {{.Status}}"
+  ],
+  "command": "docker ps -a --no-trunc --filter ancestor=happysixd/osworld-docker:latest --format '{{.ID}} {{.Image}} {{.CreatedAt}} {{.Status}}'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.029498,
+  "ended_at_utc": "2026-10-06T05:54:56.478164+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:54:56.445741+00:00"
+}

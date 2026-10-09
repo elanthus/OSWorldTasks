@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.record_grounding_v5_d56_retained_development_runs",
+    "--help"
+  ],
+  "command": "<path-2>/bin/python -m scripts.record_grounding_v5_d56_retained_development_runs --help",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.280072,
+  "ended_at_utc": "2026-10-06T05:24:03.176237+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "usage: record_grounding_v5_d56_retained_development_runs.py\n       [-h] [--repository-root REPOSITORY_ROOT]\n\nRecord digest-only entries for retained D5.6 development runs without provider\ncalls. The six runs and two plans listed here were recorded at runner\nrevisions that wrote absolute operator paths into the digest-bound\n``journal_path`` and ``summary_path`` fields. Committing those files would\npublish host identity; rewriting them would break the approved-plan content\ndigests that later summaries cite. This script reads the sealed local\noriginals, verifies each plan's content digest against its summary, and writes\na registry that carries only digests, counts, identities, and ledger values.\n``scripts/publish_grounding_v5_d56_completed_calibrations.py`` consumes that\nregistry; the originals stay local and are declared ``must_not_commit``.\n\noptions:\n  -h, --help            show this help message and exit\n  --repository-root REPOSITORY_ROOT\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:24:02.893787+00:00"
+}

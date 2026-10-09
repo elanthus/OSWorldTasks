@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.prepare_grounding_v5_memory",
+    "--verify"
+  ],
+  "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_memory --verify",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.350178,
+  "ended_at_utc": "2026-10-06T05:24:22.459881+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"<path-0>/scripts/prepare_grounding_v5_memory.py\", line 371, in <module>\n    main()\n  File \"<path-0>/scripts/prepare_grounding_v5_memory.py\", line 367, in main\n    verify() if args.verify else build()\n    ^^^^^^^^\n  File \"<path-0>/scripts/prepare_grounding_v5_memory.py\", line 353, in verify\n    raise ValueError(\"source binding is stale\")\nValueError: source binding is stale\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:24:22.107442+00:00"
+}

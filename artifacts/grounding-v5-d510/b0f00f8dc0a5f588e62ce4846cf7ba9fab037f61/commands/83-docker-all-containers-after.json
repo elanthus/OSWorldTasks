@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "docker",
+    "ps",
+    "-a",
+    "--no-trunc",
+    "--format",
+    "{{.ID}} {{.CreatedAt}} {{.Status}}"
+  ],
+  "command": "docker ps -a --no-trunc --format '{{.ID}} {{.CreatedAt}} {{.Status}}'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.050206,
+  "ended_at_utc": "2026-10-06T05:54:56.646724+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "53e2383b670029c65f4c031fadf1a4b3e25a7555475a7c1aa3a636e0775d168b 2026-08-14 22:43:24 -0700 PDT Exited (255) 5 weeks ago\n67f92073d67d726ae69743c101c3e3c54295360fe3342923d0dba6381aca86df 2026-08-14 22:43:24 -0700 PDT Exited (255) 5 weeks ago\n3ca476d9d3c8725920d251cafb5fd058f898de517714a3d059523c9334b63283 2026-08-14 22:43:24 -0700 PDT Exited (0) 7 weeks ago\ne52c6ec7ec6192a2af9d959b1b865238e0ea23ffcb9ba88e98f0af2cdd6dafc0 2026-08-14 22:43:23 -0700 PDT Exited (255) 5 weeks ago\n652dccbdffe117c586fb53ea0baae084f14c23b5858a55a6bdf489aeebf5b7c5 2026-08-14 22:43:23 -0700 PDT Exited (0) 7 weeks ago\n00eb6fcc5675d9ea0fa72b06ee91e09b813d32dd2e221e6b873abd8433c58b01 2026-08-14 22:43:23 -0700 PDT Exited (255) 5 weeks ago\n5ded90617b82b181f6e47edf8890074db445dc0c691a781f1d5f9ec4a484a554 2026-04-22 20:00:10 -0700 PDT Exited (137) 5 months ago\nd80e0f6dc04a60bab3081573fa4a9ae2e01c6eadd744834f45a7daf10753b28f 2026-04-16 23:05:43 -0700 PDT Exited (0) 4 months ago\n601f562de5b6b61de28014edd79f5fced45f30491169dc4a8e9a24742b07d469 2026-04-03 22:54:17 -0700 PDT Up 6 days (healthy)\n636047a0d1eac339cdafe4026059b35209ec54cf7a30b62b67fac667c426dff1 2026-04-03 22:54:16 -0700 PDT Up 6 days (healthy)\n825b4d31a4521e6d258a75e1d787d3c337039742bf83e8443362029dc987c988 2026-04-01 23:29:22 -0700 PDT Exited (137) 6 months ago\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:54:56.594147+00:00"
+}

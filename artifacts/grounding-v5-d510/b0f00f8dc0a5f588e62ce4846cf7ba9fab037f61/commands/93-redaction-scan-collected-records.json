@@ -1,0 +1,18 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "scripts/generate_d510_evidence_report.py",
+    "scan",
+    "--path",
+    "<path-1>/commands"
+  ],
+  "command": ".venv/bin/python scripts/generate_d510_evidence_report.py scan --path <path-1>/commands",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.104884,
+  "ended_at_utc": "2026-10-06T06:06:48.719733+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"files_scanned\": 89,\n  \"files_with_findings\": {},\n  \"finding_counts\": {\n    \"aws_access_keys\": 0,\n    \"bearer_tokens\": 0,\n    \"host_identity_paths_or_emails\": 0,\n    \"local_absolute_paths\": 0,\n    \"local_demo_credentials\": 0,\n    \"private_key_markers\": 0,\n    \"privileged_json_fields\": 0,\n    \"provider_api_keys\": 0,\n    \"system_temp_paths\": 0,\n    \"unredacted_image_payloads\": 0\n  },\n  \"schema_version\": \"pixelgym-d510-redaction-scan-v1\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T06:06:48.612214+00:00"
+}
