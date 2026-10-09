@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.report_grounding_v5_d59_haiku",
+    "--help"
+  ],
+  "command": "<path-2>/bin/python -m scripts.report_grounding_v5_d59_haiku --help",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.260608,
+  "ended_at_utc": "2026-10-06T05:33:14.153075+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "usage: report_grounding_v5_d59_haiku.py [-h] --input INPUT --output OUTPUT\n                                        [--verify]\n\nPublish an allowlisted D5.9 result projection without provider calls or raw\nresponses.\n\noptions:\n  -h, --help       show this help message and exit\n  --input INPUT\n  --output OUTPUT\n  --verify\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:33:13.890003+00:00"
+}

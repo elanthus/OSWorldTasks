@@ -1,0 +1,2019 @@
+{
+  "checklist_items": [
+    {
+      "artifacts": [
+        "docs/v5-benchmark-design.md"
+      ],
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "linked_records": [
+        "docs/v5-benchmark-design.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md"
+      ],
+      "number": 1,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/54-worktree-status-after-verifiers.json",
+        "commands/89-worktree-status-after-integration.json",
+        "commands/91-public-wording-inventory.json",
+        "commands/92-worktree-status-before-redaction-scan.json",
+        "commands/93-redaction-scan-collected-records.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`01-worktree-status`: exit 0<br>`54-worktree-status-after-verifiers`: exit 0<br>`89-worktree-status-after-integration`: exit 0<br>`91-public-wording-inventory`: exit 0<br>`92-worktree-status-before-redaction-scan`: exit 0<br>`93-redaction-scan-collected-records`: exit 0"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/decisions/d4.12.json"
+      ],
+      "checklist_text": "The human explicitly approves D5.1 and sequencing relative to the separate D4.12 gate.",
+      "id": "done-when-01",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md"
+      ],
+      "number": 2,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:785",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-manifests/development.json",
+        "artifacts/grounding-v5-manifests/calibration.json",
+        "artifacts/grounding-v5-manifests/calibration-d56.json",
+        "artifacts/grounding-v5-manifests/confirmatory.json",
+        "pixelgym/grounding/v5/seeds.py",
+        "pixelgym/grounding/v5/schemas/task.schema.json",
+        "pixelgym/grounding/v5/schemas/policy.schema.json",
+        "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json"
+      ],
+      "checklist_text": "Versioned schemas and disjoint development, calibration, and confirmatory seed lists are committed before task capture or model calls.",
+      "id": "done-when-02",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 3,
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:786",
+      "stored_raw_observation": "`55-v5-group-generator-partitions-admission`: exit 0; pytest {\"passed\": 49, \"runtime\": 8.94}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d59-freeze/task-manifest.json"
+      ],
+      "checklist_text": "Six generator families produce the frozen allocations and satisfy every admission rule.",
+      "id": "done-when-03",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 4,
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json",
+        "commands/46-verify-d59-freeze.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:788",
+      "stored_raw_observation": "`55-v5-group-generator-partitions-admission`: exit 0; pytest {\"passed\": 49, \"runtime\": 8.94}<br>`46-verify-d59-freeze`: exit 1"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-development-sample/manifest.json"
+      ],
+      "checklist_text": "Every declared valid and adversarial trace replays twice with identical semantic state and bitwise-identical corresponding screenshots.",
+      "id": "done-when-04",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 5,
+      "records": [
+        "commands/61-browser-integration.json",
+        "commands/67-browser-integration-playwright-1-62-retry.json",
+        "commands/55-v5-group-generator-partitions-admission.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:789",
+      "stored_raw_observation": "`61-browser-integration`: exit 1; pytest {\"failed\": 15, \"passed\": 1, \"runtime\": 12.65}<br>`67-browser-integration-playwright-1-62-retry`: exit 0; pytest {\"passed\": 16, \"runtime\": 155.46}<br>`55-v5-group-generator-partitions-admission`: exit 0; pytest {\"passed\": 49, \"runtime\": 8.94}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json"
+      ],
+      "checklist_text": "Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking mutations remain at `0.0`.",
+      "id": "done-when-05",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 6,
+      "records": [
+        "commands/55-v5-group-generator-partitions-admission.json",
+        "commands/18-golden-trajectory-check.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:791",
+      "stored_raw_observation": "`55-v5-group-generator-partitions-admission`: exit 0; pytest {\"passed\": 49, \"runtime\": 8.94}<br>`18-golden-trajectory-check`: exit 0"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md"
+      ],
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "id": "done-when-06",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 7,
+      "records": [
+        "commands/56-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+        "commands/57-v5-group-credential-secret-redaction-integrity.json",
+        "commands/59-v5-group-call-cap-planning.json",
+        "commands/73-osworld-v5-integration.json",
+        "commands/78-osworld-v5-integration-linked-guest-image.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "stored_raw_observation": "`56-v5-group-stateful-harness-journal-resume-dispatch-restore`: exit 0; pytest {\"passed\": 124, \"runtime\": 6.69}<br>`57-v5-group-credential-secret-redaction-integrity`: exit 0; pytest {\"passed\": 183, \"runtime\": 3.83}<br>`59-v5-group-call-cap-planning`: exit 0; pytest {\"passed\": 27, \"runtime\": 14.08}<br>`73-osworld-v5-integration`: exit 0; pytest {\"runtime\": 0.75, \"skipped\": 1}<br>`78-osworld-v5-integration-linked-guest-image`: exit 0; pytest {\"passed\": 1, \"runtime\": 398.09, \"warnings\": 6}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json"
+      ],
+      "checklist_text": "No-cost OS-level integration evidence denies unauthorized policy egress and preserves required provider-fake, backend, application, and controller traffic without internet or real-provider calls.",
+      "id": "done-when-07",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/v5-benchmark-design.md"
+      ],
+      "number": 8,
+      "records": [
+        "commands/60-v5-sandbox-integration.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:799",
+      "stored_raw_observation": "`60-v5-sandbox-integration`: exit 0; pytest {\"passed\": 2, \"runtime\": 1.67}"
+    },
+    {
+      "artifacts": [],
+      "checklist_text": "The documented fast suite passes without browser, network, OSWorld, provider credentials, or model calls.",
+      "id": "done-when-08",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 9,
+      "records": [
+        "commands/11-boundary-inventory.json",
+        "commands/79-create-in-tree-dev-venv.json",
+        "commands/80-install-dev-in-tree-venv.json",
+        "commands/87-fast-suite-ci-invocation-in-tree-venv.json",
+        "commands/88-unit-suite-serial-in-tree-venv.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:801",
+      "stored_raw_observation": "`11-boundary-inventory`: exit 0<br>`79-create-in-tree-dev-venv`: exit 0<br>`80-install-dev-in-tree-venv`: exit 0<br>`87-fast-suite-ci-invocation-in-tree-venv`: exit 0; pytest {\"passed\": 2568, \"runtime\": 162.54, \"skipped\": 6, \"warnings\": 12}<br>`88-unit-suite-serial-in-tree-venv`: exit 0; pytest {\"deselected\": 1, \"passed\": 2568, \"runtime\": 398.43, \"skipped\": 6, \"warnings\": 3}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-scripted-call-cap-plan.json",
+        "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json"
+      ],
+      "checklist_text": "A free plan-only command reports exact environment-action, model-attempt, provider-control, and total wire-request caps for each approved phase.",
+      "id": "done-when-09",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 10,
+      "records": [
+        "commands/59-v5-group-call-cap-planning.json",
+        "commands/45-d59-recorded-source-revisions.json",
+        "commands/46-verify-d59-freeze.json",
+        "commands/48-verify-d59-haiku-freeze.json",
+        "commands/49-verify-d59-haiku-retry-successor.json",
+        "commands/50-verify-d59-haiku-network-retry.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:803",
+      "stored_raw_observation": "`59-v5-group-call-cap-planning`: exit 0; pytest {\"passed\": 27, \"runtime\": 14.08}<br>`45-d59-recorded-source-revisions`: exit 0<br>`46-verify-d59-freeze`: exit 1<br>`48-verify-d59-haiku-freeze`: exit 1<br>`49-verify-d59-haiku-retry-successor`: exit 1<br>`50-verify-d59-haiku-network-retry`: exit 1"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d58-final-design/decision.json",
+        "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+        "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json"
+      ],
+      "checklist_text": "The agent stops for explicit calibration approval and again for explicit confirmatory approval.",
+      "id": "done-when-10",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md"
+      ],
+      "number": 11,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:805",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.json",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+        "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      ],
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "id": "done-when-11",
+      "kind": "done_when",
+      "linked_records": [
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md"
+      ],
+      "number": 12,
+      "records": [
+        "commands/52-check-d59-confirmatory-analysis.json",
+        "commands/51-report-d59-haiku-help.json",
+        "commands/53-d59-private-run-directories-present.json",
+        "commands/58-v5-group-metrics-statistics.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "stored_raw_observation": "`52-check-d59-confirmatory-analysis`: exit 0<br>`51-report-d59-haiku-help`: exit 0<br>`53-d59-private-run-directories-present`: exit 1<br>`58-v5-group-metrics-statistics`: exit 0; pytest {\"passed\": 48, \"runtime\": 1.47}"
+    },
+    {
+      "artifacts": [],
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "id": "done-when-12",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 13,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "stored_raw_observation": "no stored observation"
+    }
+  ],
+  "checklist_source": {
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/90-checklist-source.json",
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5"
+  },
+  "command_records": [
+    {
+      "command": "git -C <path-0> rev-parse HEAD",
+      "duration_seconds": 0.012257,
+      "ended_at_utc": "2026-10-06T05:09:16.522171+00:00",
+      "exit_status": 0,
+      "path": "commands/00-git-revision.json",
+      "sha256": "5d2ffa2d0d001e4be3ae67d4bdb64821d5942227ebf45a121f6e38ae83678c10",
+      "size": 449,
+      "started_at_utc": "2026-10-06T05:09:16.508748+00:00"
+    },
+    {
+      "command": "git -C <path-0> status --porcelain --untracked-files=all",
+      "duration_seconds": 0.034486,
+      "ended_at_utc": "2026-10-06T05:09:37.797148+00:00",
+      "exit_status": 0,
+      "path": "commands/01-worktree-status.json",
+      "sha256": "2f07d7a4ca17f4ce6806b06abaa6e27905b72f9eb248c09c9f67407fa6ac0c05",
+      "size": 466,
+      "started_at_utc": "2026-10-06T05:09:37.760286+00:00"
+    },
+    {
+      "command": "python3.12 --version",
+      "duration_seconds": 0.010275,
+      "ended_at_utc": "2026-10-06T05:09:53.443913+00:00",
+      "exit_status": 0,
+      "path": "commands/02-python-version.json",
+      "sha256": "f13361b2cf196e788f833448a3bafee41f6ebeed99a55c7d913bcd98c8ffc9ff",
+      "size": 382,
+      "started_at_utc": "2026-10-06T05:09:53.431872+00:00"
+    },
+    {
+      "command": "uname -mprsv",
+      "duration_seconds": 0.00356,
+      "ended_at_utc": "2026-10-06T05:09:53.537942+00:00",
+      "exit_status": 0,
+      "path": "commands/03-os-architecture.json",
+      "sha256": "2122d2b6e58a9dd5a85c56767cd7cc0ffcc79f68c08c50deef38f5aaee374234",
+      "size": 475,
+      "started_at_utc": "2026-10-06T05:09:53.532673+00:00"
+    },
+    {
+      "command": "docker version",
+      "duration_seconds": 0.024356,
+      "ended_at_utc": "2026-10-06T05:09:53.644314+00:00",
+      "exit_status": 0,
+      "path": "commands/04-docker-version.json",
+      "sha256": "48fe2f1283a0a1c212cc7cc97749698891b1fcc895c5ff8eb31ab6a2c3fa1db2",
+      "size": 1136,
+      "started_at_utc": "2026-10-06T05:09:53.618307+00:00"
+    },
+    {
+      "command": "git -C <path-0> branch --show-current",
+      "duration_seconds": 0.01428,
+      "ended_at_utc": "2026-10-06T05:10:03.219273+00:00",
+      "exit_status": 0,
+      "path": "commands/05-evidence-branch.json",
+      "sha256": "cbd8b58bc052a3228d8648f309dd23031cf41ac1b35c836a83d6c0490b60a75b",
+      "size": 444,
+      "started_at_utc": "2026-10-06T05:10:03.202874+00:00"
+    },
+    {
+      "command": "python3.12 -m venv <path-2>",
+      "duration_seconds": 1.835164,
+      "ended_at_utc": "2026-10-06T05:10:05.180342+00:00",
+      "exit_status": 0,
+      "path": "commands/06-create-dev-venv.json",
+      "sha256": "417dffaf49eab5552b6399ffcaf9241c0fb2bb02230a9ce5eacfbb1c23da9c92",
+      "size": 394,
+      "started_at_utc": "2026-10-06T05:10:03.342771+00:00"
+    },
+    {
+      "command": "<path-2>/bin/pip install -e '.[dev]'",
+      "duration_seconds": 32.636257,
+      "ended_at_utc": "2026-10-06T05:10:42.234597+00:00",
+      "exit_status": 0,
+      "path": "commands/07-install-dev.json",
+      "sha256": "e6fa974bd3949d17499031462914d39914796ed242af0ef6521c82ffbb13ebb5",
+      "size": 20342,
+      "started_at_utc": "2026-10-06T05:10:09.595728+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pip check",
+      "duration_seconds": 0.276086,
+      "ended_at_utc": "2026-10-06T05:10:58.986524+00:00",
+      "exit_status": 0,
+      "path": "commands/08-dev-pip-check.json",
+      "sha256": "520fdeabd3edbbe2a10af84e27abc0becca23a226173e1da3f76bb932c953ea6",
+      "size": 435,
+      "started_at_utc": "2026-10-06T05:10:58.708280+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python <path-1>/probes/package_versions.py",
+      "duration_seconds": 0.113393,
+      "ended_at_utc": "2026-10-06T05:12:18.322859+00:00",
+      "exit_status": 0,
+      "path": "commands/10-dev-package-versions.json",
+      "sha256": "ba8cf85aec72aa16317a510ee2c1090a3d9ebe17933880c4ba5448f41607e364",
+      "size": 3267,
+      "started_at_utc": "2026-10-06T05:12:18.207502+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python <path-1>/probes/boundary_inventory.py",
+      "duration_seconds": 0.031801,
+      "ended_at_utc": "2026-10-06T05:12:23.102141+00:00",
+      "exit_status": 0,
+      "path": "commands/11-boundary-inventory.json",
+      "sha256": "ae940bdbc8e8c39d6408e862006b44627a0bba864f57254ec60d968836ccb064",
+      "size": 2016,
+      "started_at_utc": "2026-10-06T05:12:23.068523+00:00"
+    },
+    {
+      "command": "<path-2>/bin/ruff check .",
+      "duration_seconds": 0.604644,
+      "ended_at_utc": "2026-10-06T05:12:28.862107+00:00",
+      "exit_status": 0,
+      "path": "commands/12-ruff-check.json",
+      "sha256": "f905c42af768e527a2f7b1ab7280efcf6059158894adb8a4483b2ffecc75bde0",
+      "size": 403,
+      "started_at_utc": "2026-10-06T05:12:28.255075+00:00"
+    },
+    {
+      "command": "<path-2>/bin/ruff format --check pixelgym flows scripts tests",
+      "duration_seconds": 0.044233,
+      "ended_at_utc": "2026-10-06T05:12:29.012894+00:00",
+      "exit_status": 0,
+      "path": "commands/13-ruff-format-check.json",
+      "sha256": "d07bb5fc96dd9a117e8cc43cffbe491412f39be83594366081edcf01ff5555d2",
+      "size": 512,
+      "started_at_utc": "2026-10-06T05:12:28.965840+00:00"
+    },
+    {
+      "command": "<path-2>/bin/mypy pixelgym",
+      "duration_seconds": 7.149322,
+      "ended_at_utc": "2026-10-06T05:12:41.508775+00:00",
+      "exit_status": 0,
+      "path": "commands/14-mypy-pixelgym.json",
+      "sha256": "2da4c87004ac82b5239680567cde7428d1ff3598ef8abbe5b1726094da7b2f0b",
+      "size": 424,
+      "started_at_utc": "2026-10-06T05:12:34.357367+00:00"
+    },
+    {
+      "command": "<path-2>/bin/mypy flows",
+      "duration_seconds": 1.022868,
+      "ended_at_utc": "2026-10-06T05:12:42.656811+00:00",
+      "exit_status": 0,
+      "path": "commands/15-mypy-flows.json",
+      "sha256": "ba6ccecbc721668e9214428ec5595d1f965b789e45af1b6922464179370f4968",
+      "size": 416,
+      "started_at_utc": "2026-10-06T05:12:41.632091+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/golden_trajectory.py check",
+      "duration_seconds": 2.934114,
+      "ended_at_utc": "2026-10-06T05:23:32.689073+00:00",
+      "exit_status": 0,
+      "path": "commands/18-golden-trajectory-check.json",
+      "sha256": "dcb58525741e5c2392f4cf048887c237bd8d1339b8ee14557f87cc0c4efb2c7b",
+      "size": 843,
+      "started_at_utc": "2026-10-06T05:23:29.752201+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/verify_grounding_report.py",
+      "duration_seconds": 0.568686,
+      "ended_at_utc": "2026-10-06T05:23:42.683777+00:00",
+      "exit_status": 0,
+      "path": "commands/19-verify-grounding-report-v1.json",
+      "sha256": "72ac205bf005294fd1e1185280ccb3cfe668e3afecac6de65e1408990efdc2e9",
+      "size": 1441,
+      "started_at_utc": "2026-10-06T05:23:42.112731+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/verify_grounding_report_v2.py",
+      "duration_seconds": 0.081428,
+      "ended_at_utc": "2026-10-06T05:23:55.035410+00:00",
+      "exit_status": 0,
+      "path": "commands/20-verify-grounding-report-v2.json",
+      "sha256": "a6b671a0eb989e7a8a22c10199ee7e9b33bdd55c9a19998842bf070a84027bf6",
+      "size": 997,
+      "started_at_utc": "2026-10-06T05:23:54.951955+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/generate_grounding_report.py --help",
+      "duration_seconds": 0.202852,
+      "ended_at_utc": "2026-10-06T05:23:55.365349+00:00",
+      "exit_status": 0,
+      "path": "commands/21-generate-grounding-report-v1-help.json",
+      "sha256": "0fc8567147cbd1b4c0b90b6e63f514a105d4d597692548f2e17345ab1e971c3c",
+      "size": 1064,
+      "started_at_utc": "2026-10-06T05:23:55.159785+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/generate_grounding_report_v2.py --help",
+      "duration_seconds": 0.085894,
+      "ended_at_utc": "2026-10-06T05:24:02.566897+00:00",
+      "exit_status": 0,
+      "path": "commands/22-generate-grounding-report-v2-help.json",
+      "sha256": "83dfc2b2c1fab2cf07791a4ed6ca96cce9c759080e9bd61def47e8af098fde0d",
+      "size": 955,
+      "started_at_utc": "2026-10-06T05:24:02.478097+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python scripts/generate_grounding_clustered_analysis.py --help",
+      "duration_seconds": 0.06224,
+      "ended_at_utc": "2026-10-06T05:24:02.771546+00:00",
+      "exit_status": 0,
+      "path": "commands/23-generate-grounding-clustered-analysis-help.json",
+      "sha256": "db04876fc347c0a35636235c7c5f08099c51c1fe055567134e9b9e7118b5aad3",
+      "size": 938,
+      "started_at_utc": "2026-10-06T05:24:02.706977+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.record_grounding_v5_d56_retained_development_runs --help",
+      "duration_seconds": 0.280072,
+      "ended_at_utc": "2026-10-06T05:24:03.176237+00:00",
+      "exit_status": 0,
+      "path": "commands/24-record-d56-retained-development-runs-help.json",
+      "sha256": "c1d14927abb3f116c1805d3613987cd81359b38491430c8769e47edccd3a99ad",
+      "size": 1485,
+      "started_at_utc": "2026-10-06T05:24:02.893787+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.publish_grounding_v5_d56_completed_calibrations --verify",
+      "duration_seconds": 4.891066,
+      "ended_at_utc": "2026-10-06T05:24:13.329484+00:00",
+      "exit_status": 0,
+      "path": "commands/25-verify-d56-completed-calibrations.json",
+      "sha256": "000a5d46f85cc414effa248421c43f91cf2cb058f57713cd855e99ec56a339e8",
+      "size": 18239,
+      "started_at_utc": "2026-10-06T05:24:08.435952+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.publish_grounding_v5_calibration_supplement --verify",
+      "duration_seconds": 1.079763,
+      "ended_at_utc": "2026-10-06T05:24:21.979692+00:00",
+      "exit_status": 0,
+      "path": "commands/26-verify-calibration-supplement.json",
+      "sha256": "0782ce475f5c357a74db3939f106427aebc47816c4ed49dfd338f24296794741",
+      "size": 573,
+      "started_at_utc": "2026-10-06T05:24:20.897465+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_memory --verify",
+      "duration_seconds": 0.350178,
+      "ended_at_utc": "2026-10-06T05:24:22.459881+00:00",
+      "exit_status": 1,
+      "path": "commands/27-verify-d58-memory-admission.json",
+      "sha256": "a7e7954f418f47acb1d737def8167107eb67841f0b7c6f082132ee044c98d6de",
+      "size": 1020,
+      "started_at_utc": "2026-10-06T05:24:22.107442+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_grounding_v5_full_calibration",
+      "duration_seconds": 0.359166,
+      "ended_at_utc": "2026-10-06T05:24:22.971067+00:00",
+      "exit_status": 0,
+      "path": "commands/28-verify-d58-full-calibration.json",
+      "sha256": "4678acc122e57d9ac4d689b2b809983ba96cf85693acff26a1fb8f876de72233",
+      "size": 548,
+      "started_at_utc": "2026-10-06T05:24:22.608991+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_gemini38_calibration",
+      "duration_seconds": 0.323609,
+      "ended_at_utc": "2026-10-06T05:24:30.135489+00:00",
+      "exit_status": 0,
+      "path": "commands/29-verify-d58-gemini38-calibration.json",
+      "sha256": "c48741997383b909aa6b4c5d8de30377de518a584c514876421b9ce4a8948713",
+      "size": 502,
+      "started_at_utc": "2026-10-06T05:24:29.809770+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_reliable_continuation",
+      "duration_seconds": 0.325897,
+      "ended_at_utc": "2026-10-06T05:24:30.590254+00:00",
+      "exit_status": 1,
+      "path": "commands/30-verify-d58-reliable-continuation.json",
+      "sha256": "a7f3f82b39c08ab3bec1536921206c4a3d7dc298bde89d99daac1360002cd5ff",
+      "size": 1025,
+      "started_at_utc": "2026-10-06T05:24:30.261892+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_owner_budget_continuation",
+      "duration_seconds": 0.408484,
+      "ended_at_utc": "2026-10-06T05:24:37.691177+00:00",
+      "exit_status": 1,
+      "path": "commands/31-verify-d58-owner-budget-continuation.json",
+      "sha256": "dc7a04ba0cdcdc37ddbd636d4687ddcb2d89c79c142c739aacd805fe70c6ab59",
+      "size": 1045,
+      "started_at_utc": "2026-10-06T05:24:37.280374+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_owner_budget_continuation --verify-reconciliation",
+      "duration_seconds": 0.352024,
+      "ended_at_utc": "2026-10-06T05:24:38.218768+00:00",
+      "exit_status": 1,
+      "path": "commands/32-verify-d58-owner-budget-reconciliation.json",
+      "sha256": "c03af895305290a97ab6e01d51710e60a1b172f33888b936687467d8763164ce",
+      "size": 1124,
+      "started_at_utc": "2026-10-06T05:24:37.864394+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-focus-calibration",
+      "duration_seconds": 0.814857,
+      "ended_at_utc": "2026-10-06T05:24:46.422448+00:00",
+      "exit_status": 0,
+      "path": "commands/33-verify-d58-at-revision-focus-calibration.json",
+      "sha256": "dfc6719d221eee7123340e42a71f6e2334a76aa296f475ab94c1bc3ad9d4e761",
+      "size": 977,
+      "started_at_utc": "2026-10-06T05:24:45.600550+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-focus-continuation",
+      "duration_seconds": 0.820214,
+      "ended_at_utc": "2026-10-06T05:24:47.391407+00:00",
+      "exit_status": 0,
+      "path": "commands/34-verify-d58-at-revision-focus-continuation.json",
+      "sha256": "ef86a6eacb8cb87b72c0c55a9dcdda6edf47eef513fcf5ebccd84a1aebe9ed9f",
+      "size": 980,
+      "started_at_utc": "2026-10-06T05:24:46.568455+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-diagnostic",
+      "duration_seconds": 0.836504,
+      "ended_at_utc": "2026-10-06T05:24:54.681974+00:00",
+      "exit_status": 0,
+      "path": "commands/35-verify-d58-at-revision-reliable-diagnostic.json",
+      "sha256": "ce533c3b2c3c78f3eec56488ef9d1cc39ad5685d610064c61f8863d2c91160f8",
+      "size": 983,
+      "started_at_utc": "2026-10-06T05:24:53.842330+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-continuation",
+      "duration_seconds": 0.839798,
+      "ended_at_utc": "2026-10-06T05:24:55.672839+00:00",
+      "exit_status": 0,
+      "path": "commands/36-verify-d58-at-revision-reliable-continuation.json",
+      "sha256": "1bd5432ea2efdc9018e6c5c4b11e875240f78ef99bd8f907852e285359d138d6",
+      "size": 1028,
+      "started_at_utc": "2026-10-06T05:24:54.829534+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-extension",
+      "duration_seconds": 0.808401,
+      "ended_at_utc": "2026-10-06T05:25:04.518036+00:00",
+      "exit_status": 0,
+      "path": "commands/37-verify-d58-at-revision-reliable-extension.json",
+      "sha256": "32478d7b6a8a0433c0ad8626b21d0ef59a85fd8f62b5a34b89b39cf474980860",
+      "size": 1019,
+      "started_at_utc": "2026-10-06T05:25:03.706787+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-owner-budget-continuation",
+      "duration_seconds": 0.908335,
+      "ended_at_utc": "2026-10-06T05:25:05.562673+00:00",
+      "exit_status": 0,
+      "path": "commands/38-verify-d58-at-revision-owner-budget-continuation.json",
+      "sha256": "971e935bdc31f6063ba47d7a6471cea3032bc95c465307227df8166cf3b6c705",
+      "size": 1631,
+      "started_at_utc": "2026-10-06T05:25:04.651954+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-owner-budget",
+      "duration_seconds": 0.853471,
+      "ended_at_utc": "2026-10-06T05:25:06.572611+00:00",
+      "exit_status": 0,
+      "path": "commands/39-verify-d58-at-revision-owner-budget.json",
+      "sha256": "ac42f34e02ad4bb66143754cb3808e96fee43e358c44dc1b3c572b8e1ae782e7",
+      "size": 1153,
+      "started_at_utc": "2026-10-06T05:25:05.716468+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.publish_pr196_calibration --verify",
+      "duration_seconds": 0.360718,
+      "ended_at_utc": "2026-10-06T05:25:14.264984+00:00",
+      "exit_status": 0,
+      "path": "commands/40-verify-pr196-calibration.json",
+      "sha256": "90dd3b906ca09191403cb064eae4893d893a6bfbe515812240467090a476d43c",
+      "size": 560,
+      "started_at_utc": "2026-10-06T05:25:13.901364+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.publish_haiku_cli_replication --verify",
+      "duration_seconds": 0.342205,
+      "ended_at_utc": "2026-10-06T05:25:14.760402+00:00",
+      "exit_status": 0,
+      "path": "commands/41-verify-haiku-cli-replication.json",
+      "sha256": "18b20ba733f4a13743bd4d99ce888c950f330b1fd55181a0338bb04cb4b495c9",
+      "size": 547,
+      "started_at_utc": "2026-10-06T05:25:14.414985+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_review_corrections --verify",
+      "duration_seconds": 0.252406,
+      "ended_at_utc": "2026-10-06T05:25:15.156612+00:00",
+      "exit_status": 1,
+      "path": "commands/42-verify-d58-review-corrections.json",
+      "sha256": "50d93b13965e55861a73580e2df5e89dec1917ceefdec981d0d20227a4e0685a",
+      "size": 967,
+      "started_at_utc": "2026-10-06T05:25:14.901237+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_power_report --verify",
+      "duration_seconds": 0.612836,
+      "ended_at_utc": "2026-10-06T05:25:24.352300+00:00",
+      "exit_status": 1,
+      "path": "commands/43-verify-d58-power-report.json",
+      "sha256": "540979485ef5dcdbad7a901d1e04a9e95ccba4229f3dfc2b3ece0c97fb0aa656",
+      "size": 967,
+      "started_at_utc": "2026-10-06T05:25:23.737049+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d58_haiku_successor --verify",
+      "duration_seconds": 0.369482,
+      "ended_at_utc": "2026-10-06T05:25:24.885151+00:00",
+      "exit_status": 1,
+      "path": "commands/44-verify-d58-haiku-successor.json",
+      "sha256": "f63f780dba6f6d308d29b2ee696b8c0b3aedfe610d23eb529a17965eae3a77cd",
+      "size": 995,
+      "started_at_utc": "2026-10-06T05:25:24.512595+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python <path-1>/probes/recorded_source_revisions.py",
+      "duration_seconds": 0.060349,
+      "ended_at_utc": "2026-10-06T05:25:25.108037+00:00",
+      "exit_status": 0,
+      "path": "commands/45-d59-recorded-source-revisions.json",
+      "sha256": "f5dcb38d3c85e9dfd22b3c7378b4001ff25a3803e0baf790c44a921e5ccfd060",
+      "size": 2015,
+      "started_at_utc": "2026-10-06T05:25:25.045274+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d59_freeze --source-revision f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3 --verify",
+      "duration_seconds": 418.566835,
+      "ended_at_utc": "2026-10-06T05:32:30.392421+00:00",
+      "exit_status": 1,
+      "path": "commands/46-verify-d59-freeze.json",
+      "sha256": "d7fddc07178ac44ffaea12bcdf73295c36e747e9358c7a1603de077a9b4a4b7b",
+      "size": 709,
+      "started_at_utc": "2026-10-06T05:25:31.819994+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d59_haiku_selection --verify",
+      "duration_seconds": 0.051479,
+      "ended_at_utc": "2026-10-06T05:32:44.744906+00:00",
+      "exit_status": 0,
+      "path": "commands/47-verify-d59-haiku-selection.json",
+      "sha256": "b5c72e28b76c0eec9f80358b688e68897b144c0ee456a203c238459fa6f476e4",
+      "size": 556,
+      "started_at_utc": "2026-10-06T05:32:44.691167+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d59_haiku_freeze --source-revision ca1c98333cffb5f04beef1d4f56ed09f9840f538 --verify",
+      "duration_seconds": 0.308171,
+      "ended_at_utc": "2026-10-06T05:32:45.157223+00:00",
+      "exit_status": 1,
+      "path": "commands/48-verify-d59-haiku-freeze.json",
+      "sha256": "43d0ef0b6a770b3c4b6c66f967674c3acb2c89e8eed550d2f8e9e6be54aaa66a",
+      "size": 732,
+      "started_at_utc": "2026-10-06T05:32:44.846509+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d59_haiku_retry_successor --source-revision 1201df8a773add79733d392f876b579752f797c5 --verify",
+      "duration_seconds": 0.568956,
+      "ended_at_utc": "2026-10-06T05:33:07.303031+00:00",
+      "exit_status": 1,
+      "path": "commands/49-verify-d59-haiku-retry-successor.json",
+      "sha256": "40197f4a236fd952be1a45cc0bcde2a981df31a0187b1a54c8305496b760ac2e",
+      "size": 1784,
+      "started_at_utc": "2026-10-06T05:33:06.731542+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.prepare_grounding_v5_d59_haiku_network_retry --source-revision b3167ff49576aec4001444ba3166d37cfc8dfda4 --verify",
+      "duration_seconds": 0.459468,
+      "ended_at_utc": "2026-10-06T05:33:07.872613+00:00",
+      "exit_status": 1,
+      "path": "commands/50-verify-d59-haiku-network-retry.json",
+      "sha256": "aa707159fa42021009ea609b8f336fbe8d25fbff368439cf2b45b4df110198a6",
+      "size": 1554,
+      "started_at_utc": "2026-10-06T05:33:07.410201+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.report_grounding_v5_d59_haiku --help",
+      "duration_seconds": 0.260608,
+      "ended_at_utc": "2026-10-06T05:33:14.153075+00:00",
+      "exit_status": 0,
+      "path": "commands/51-report-d59-haiku-help.json",
+      "sha256": "403701d00056eb038e5e5bbf2d19cdf6c08488ccdc9517df91b7662f5bb97a26",
+      "size": 805,
+      "started_at_utc": "2026-10-06T05:33:13.890003+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m scripts.analyze_grounding_v5_d59 --check",
+      "duration_seconds": 0.480918,
+      "ended_at_utc": "2026-10-06T05:33:14.741550+00:00",
+      "exit_status": 0,
+      "path": "commands/52-check-d59-confirmatory-analysis.json",
+      "sha256": "b8a6b5ba15e98eaac2ef994c2960918008ac4f49dc2fa9fd939c04fa23b950a7",
+      "size": 466,
+      "started_at_utc": "2026-10-06T05:33:14.258231+00:00"
+    },
+    {
+      "command": "ls -d artifacts/grounding-v5-d59-haiku-network-retry-execution artifacts/grounding-v5-d59-haiku-network-retry-continuation artifacts/grounding-v5-d59-haiku-reset-continuation",
+      "duration_seconds": 0.013499,
+      "ended_at_utc": "2026-10-06T05:33:40.361249+00:00",
+      "exit_status": 1,
+      "path": "commands/53-d59-private-run-directories-present.json",
+      "sha256": "161777e5b9f0dc4fc62362b706e6dfe8a5f28ba450edf263a736e9dbe30236e0",
+      "size": 960,
+      "started_at_utc": "2026-10-06T05:33:40.345302+00:00"
+    },
+    {
+      "command": "git -C <path-0> status --porcelain --untracked-files=all",
+      "duration_seconds": 0.043136,
+      "ended_at_utc": "2026-10-06T05:33:40.587646+00:00",
+      "exit_status": 0,
+      "path": "commands/54-worktree-status-after-verifiers.json",
+      "sha256": "af6bb8bb405a8e5058591ab802b86b4ed7509203a1af3b232b29386f993d51fa",
+      "size": 466,
+      "started_at_utc": "2026-10-06T05:33:40.541764+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/unit/test_grounding_v5.py::test_v5_seed_and_generator_contract_freezes_allocations tests/unit/test_grounding_v5.py::test_v5_checked_in_partition_manifests_match_current_sources tests/unit/test_grounding_v5.py::test_v5_d56_calibration_manifest_replaces_every_exposed_task tests/unit/test_grounding_v5.py::test_v5_generator_source_mutation_at_recorded_revision_is_detected tests/unit/test_grounding_v5.py::test_v5_historical_partition_manifests_remain_byte_stable tests/unit/test_grounding_v5.py::test_v5_versioned_partition_manifests_preserve_task_records tests/unit/test_grounding_v5.py::test_v5_versioned_d56_manifest_preserves_task_records_and_derivation tests/unit/test_grounding_v5.py::test_v5_generated_difficulty_bounds_and_exact_slack tests/unit/test_grounding_v5.py::test_v5_robustness_twins_share_semantics_but_not_task_identity tests/unit/test_grounding_v5.py::test_v5_policy_visible_task_excludes_privileged_annotations tests/unit/test_grounding_v5.py::test_v5_golden_policy_reaches_sparse_reward_once_for_every_family tests/unit/test_grounding_v5.py::test_v5_wrong_irreversible_commit_cannot_later_succeed tests/unit/test_grounding_v5.py::test_v5_repair_control_only_appears_for_declared_recovery_error tests/unit/test_grounding_v5.py::test_v5_text_control_order_and_geometry_follow_frozen_stage_controls tests/unit/test_grounding_v5.py::test_v5_no_cost_admission_covers_golden_recovery_mutations_and_floor tests/unit/test_grounding_v5.py::test_v5_browser_app_has_no_runtime_network_or_time_sources tests/unit/test_grounding_v5.py::test_v5_coordinate_adapters_cover_corners_and_reject_boundaries tests/unit/test_grounding_v5.py::test_v5_packaged_task_schema_accepts_all_generated_tasks tests/unit/test_grounding_v5_memory.py::test_reserved_seed_allocation_without_generating_confirmation tests/unit/test_grounding_v5_memory.py::test_versioned_generator_uniqueness_and_target_independent_layout tests/unit/test_grounding_v5_memory.py::test_counterfactual_consumer_pixels_identical_but_answers_differ tests/unit/test_grounding_v5_memory.py::test_wrong_deferred_choice_never_earns_reward_at_correct_commit tests/unit/test_grounding_v5_memory.py::test_successor_reuses_full_admission_semantics tests/unit/test_grounding_v5_confirmatory_subset_stratification.py tests/unit/test_grounding_v5_admission_report_corrections.py tests/unit/test_grounding_v5_source_cleanliness_guard.py tests/unit/test_grounding_v5_d59_freeze.py::test_d59_selected_seed_allocation_is_balanced_and_versioned tests/unit/test_grounding_v5_d59_freeze.py::test_d59_execution_plan_rejects_changed_admission_records",
+      "duration_seconds": 9.897569,
+      "ended_at_utc": "2026-10-06T05:34:08.931666+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 49,
+        "runtime": 8.94
+      },
+      "path": "commands/55-v5-group-generator-partitions-admission.json",
+      "sha256": "551d5837a5a68315153c77b12d3404f98e551383351f6c43d152e354c1d41011",
+      "size": 5899,
+      "started_at_utc": "2026-10-06T05:33:59.026766+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/unit/test_grounding_v5_runner.py::test_v5_runner_orders_canonical_attempt_candidate_and_dispatch_records tests/unit/test_grounding_v5_runner.py::test_v5_runner_reports_step_limit_truncation_from_the_environments_own_signal tests/unit/test_grounding_v5_runner.py::test_policy_visible_result_has_one_strict_authorized_schema tests/unit/test_grounding_v5_runner.py::test_runner_never_exposes_privileged_dispatch_state_to_any_policy_hook tests/unit/test_grounding_v5_runner.py::test_timeout_and_error_paths_checkpoint_only_policy_supplied_state tests/unit/test_grounding_v5_runner.py::test_v5_runner_binds_transport_spend_ledger_to_attempt_journal tests/unit/test_grounding_v5_runner.py::test_v5_runner_supports_a_bounded_multi_task_pilot_horizon tests/unit/test_grounding_v5_runner.py::test_v5_runner_rejects_invalid_pilot_action_limit tests/unit/test_grounding_v5_runner.py::test_v5_deadline_settles_once_without_hidden_retry tests/unit/test_grounding_v5_runner.py::test_v5_runner_settles_spend_when_provider_controls_are_disabled tests/unit/test_grounding_v5_runner.py::test_v5_hanging_transport_cannot_extend_runner_or_start_retry tests/unit/test_grounding_v5_runner.py::test_v5_unknown_post_send_outcome_is_not_retried tests/unit/test_grounding_v5_runner.py::test_v5_recover_step_returns_settled_failure_without_appending tests/unit/test_grounding_v5_runner.py::test_v5_recover_step_preserves_old_sealed_terminal_event_chain tests/unit/test_grounding_v5_runner.py::test_v5_runner_retries_one_zero_completion_error_and_retains_both_attempts tests/unit/test_grounding_v5_runner.py::test_v5_runner_retries_one_429_as_a_new_journaled_attempt tests/unit/test_grounding_v5_runner.py::test_v5_runner_does_not_reissue_429_retry_after_interruption tests/unit/test_grounding_v5_runner.py::test_v5_runner_stops_after_second_zero_completion_error tests/unit/test_grounding_v5_runner.py::test_v5_parse_failure_after_retry_binds_both_attempts tests/unit/test_grounding_v5_runner.py::test_v5_recovery_never_issues_an_unrecorded_retry tests/unit/test_grounding_v5_runner.py::test_v5_parse_failure_seals_failure_without_dispatch tests/unit/test_grounding_v5_runner.py::test_v5_recovery_seals_parse_failure_without_dispatch tests/unit/test_grounding_v5_runner.py::test_v5_recovery_preserves_policy_violation_classification tests/unit/test_grounding_v5_runner.py::test_v5_journal_enforces_one_terminal_record_and_verified_objects tests/unit/test_grounding_v5_runner.py::test_v5_journal_allows_one_content_object_to_have_multiple_roles tests/unit/test_grounding_v5_runner.py::test_v5_journal_object_and_role_insert_roll_back_together tests/unit/test_grounding_v5_runner.py::test_v5_policy_reset_discards_cross_episode_state tests/unit/test_grounding_v5_runner.py::test_v5_policy_manifest_identity_changes_with_adapter tests/unit/test_grounding_v5_runner.py::test_v5_capability_contract_rejects_all_forbidden_handles tests/unit/test_grounding_v5_runner.py::test_v5_recovery_with_reconciliation_disabled_sends_no_control_call tests/unit/test_grounding_v5_runner.py::test_resume_loads_pre_split_dispatch_evidence_without_replaying_diagnostic tests/unit/test_grounding_v5_runner.py::test_resume_rejects_tampered_legacy_embedded_diagnostic tests/unit/test_grounding_v5_runner.py::test_resume_validates_split_host_diagnostic_without_replaying_policy_hook tests/unit/test_grounding_v5_runner.py::test_v5_forced_interruption_recovers_without_duplicate_request_or_action tests/unit/test_grounding_v5_runner.py::test_v5_recovery_rejects_tampered_environment_binding tests/unit/test_grounding_v5_runner.py::test_v5_runner_retries_a_dropped_request_then_succeeds tests/unit/test_grounding_v5_runner.py::test_v5_recover_step_preserves_cli_fault_classification tests/unit/test_grounding_v5_runner.py::test_v5_runner_settles_after_the_bounded_retry_budget_is_spent tests/unit/test_grounding_v5_runner.py::test_v5_runner_recovers_final_transport_fault_as_retry_exhausted tests/unit/test_grounding_v5_runner.py::test_v5_runner_shares_one_retry_budget_across_429_and_transport_faults tests/unit/test_grounding_v5_runner.py::test_spend_reservation_replay_neither_duplicates_nor_loses_exposure tests/unit/test_grounding_v5.py::test_core_fake_backend_v5_checkpoint_restores_exact_state tests/unit/test_grounding_v5.py::test_core_fake_backend_v5_checkpoint_rejects_malformed_shape tests/unit/test_grounding_v5.py::test_v5_fake_backend_checkpoint_rejects_malformed_shape tests/unit/test_grounding_v5_memory.py::test_no_correctness_feedback_before_submission_and_resume tests/unit/test_grounding_v5_memory.py::test_screenshot_history_is_pure_bounded_and_reset_between_episodes tests/unit/test_grounding_v5_memory.py::test_screenshot_checkpoint_survives_interruption_without_hidden_cache tests/unit/test_grounding_v5_memory.py::test_second_step_recovery_retains_earlier_screenshot_and_dispatched_action tests/unit/test_grounding_v5_journal_integrity.py tests/unit/test_grounding_v5_journal_read_isolation.py tests/unit/test_grounding_v5_resume_record_decoding.py tests/unit/test_grounding_v5_memory_backend_checkpoints.py tests/unit/test_grounding_v5_timeout_reuse.py tests/unit/test_grounding_v5_reliable_transport.py tests/unit/test_grounding_v5_diagnostics.py tests/unit/test_resumable_backend_protocol.py tests/unit/test_osworld_backend.py::test_v5_live_reconnect_checkpoint_verifies_exact_osworld_session_state tests/unit/test_osworld_backend.py::test_v5_live_reconnect_checkpoint_rejects_non_object_json",
+      "duration_seconds": 7.753152,
+      "ended_at_utc": "2026-10-06T05:34:37.548077+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 124,
+        "runtime": 6.69
+      },
+      "path": "commands/56-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+      "sha256": "e6f6a8d143c14a5b86cec06d8010282c83df34e1a95e7aa0714dff8075804194",
+      "size": 11937,
+      "started_at_utc": "2026-10-06T05:34:29.782073+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/unit/test_grounding_v5.py::test_v5_credential_validator_fails_closed_without_echoing_candidate tests/unit/test_grounding_v5.py::test_v5_sandbox_manifest_rejects_non_origin_or_credential_endpoint tests/unit/test_grounding_v5.py::test_v5_sandbox_manifest_rejects_forged_endpoint_binding tests/unit/test_grounding_v5.py::test_v5_authoritative_redaction_binding_and_integrity tests/unit/test_grounding_v5.py::test_v5_publishable_derivative_requires_stored_authoritative_source tests/unit/test_grounding_v5_evidence_paths.py tests/unit/test_restricted_evidence_excluded.py tests/unit/test_evidence_redaction.py tests/unit/test_grounding_v5_sandbox_manifest_validation.py tests/unit/test_grounding_v5_os_sandbox_profile.py tests/unit/test_grounding_v5_diagnostic_leak_guard.py tests/unit/test_grounding_v5_panel_policy.py::test_panel_requests_pin_provider_and_are_credential_free tests/unit/test_grounding_v5_openrouter_policy.py::test_qwen_policy_request_is_credential_free_and_binds_normalized_schema tests/unit/test_grounding_v5_openrouter_policy.py::test_openrouter_transport_injects_secret_only_at_wire_and_accounts_cost tests/unit/test_grounding_v5_curl_wire.py::test_process_has_no_argv_secret_no_hidden_retries_and_is_reaped tests/unit/test_grounding_v5_claude_code_transport.py::test_claude_credential_shaped_raw_stdio_is_redacted_without_changing_outcome tests/unit/test_grounding_v5_codex_cli_policy.py::test_credential_shaped_raw_stdio_is_redacted_without_changing_outcome tests/unit/test_grounding_v5_d56_completed_calibration_publication.py::test_outputs_are_redacted_and_report_is_derivative_only tests/unit/test_grounding_v5_d56_completed_calibration_publication.py::test_redaction_scan_rejects_payloads_paths_and_credentials",
+      "duration_seconds": 4.537791,
+      "ended_at_utc": "2026-10-06T05:34:55.523075+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 183,
+        "runtime": 3.83
+      },
+      "path": "commands/57-v5-group-credential-secret-redaction-integrity.json",
+      "sha256": "e5495ecd12b8e8f7e7a33a74cd23cab93f4be8ba44e223fe2fe87fe7774811d3",
+      "size": 4285,
+      "started_at_utc": "2026-10-06T05:34:50.979616+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/unit/test_grounding_v5.py::test_v5_metric_denominators_paired_exact_and_clustered_bootstrap tests/unit/test_grounding_v5_runner.py::test_summary_separates_failure_denominators tests/unit/test_grounding_v5_runner.py::test_summary_counts_started_episode_without_completed_result tests/unit/test_grounding_v5_d59_confirmatory_analysis.py tests/unit/test_grounding_confirmatory_analysis.py tests/unit/test_grounding_v5_final_design_power.py tests/unit/test_grounding_analysis.py::test_exact_mcnemar_and_paired_bootstrap_are_deterministic",
+      "duration_seconds": 2.178809,
+      "ended_at_utc": "2026-10-06T05:34:57.806656+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 48,
+        "runtime": 1.47
+      },
+      "path": "commands/58-v5-group-metrics-statistics.json",
+      "sha256": "235f0302f0be5af9153a6ff6711b792a819925d1a400b47a8d021ef469c6e53f",
+      "size": 1634,
+      "started_at_utc": "2026-10-06T05:34:55.624196+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/unit/test_grounding_v5_runner.py::test_v5_plan_only_command_formula_makes_no_provider_calls tests/unit/test_grounding_v5_runner.py::test_v5_call_plan_rejects_tampered_partition_manifest tests/unit/test_grounding_v5_runner.py::test_v5_call_plan_rejects_unapproved_calibration_manifest_digest tests/unit/test_grounding_v5_runner.py::test_v5_call_plan_uses_sealed_partition_action_caps tests/unit/test_grounding_v5_runner.py::test_v5_checked_in_scripted_cap_plan_uses_checked_in_partition_bytes tests/unit/test_grounding_v5_runner.py::test_v5_model_cap_is_checked_before_attempt_started_or_transport tests/unit/test_grounding_v5_runner.py::test_v5_control_reservation_is_checked_before_attempt_started_or_transport tests/unit/test_grounding_v5_runner.py::test_v5_recovery_classifies_an_attempt_refused_by_control_reservation_cap tests/unit/test_grounding_v5_runner.py::test_v5_restart_reconstructs_run_wide_call_counts_and_enforces_cap tests/unit/test_grounding_v5_runner.py::test_v5_restart_never_reissues_durably_reserved_control_request tests/unit/test_grounding_v5_runner.py::test_v5_restart_enforces_durable_control_request_cap tests/unit/test_grounding_v5_runner.py::test_v5_restart_enforces_durable_total_wire_cap tests/unit/test_grounding_v5_runner.py::test_v5_concurrent_runners_cannot_overreserve_model_cap tests/unit/test_grounding_v5_runner.py::test_v5_runner_rejects_a_bounded_budget_wider_than_the_attempt_cap tests/unit/test_grounding_v5_planning.py tests/unit/test_grounding_v5_d59_freeze.py::test_d59_execution_plan_is_exact_but_non_executable tests/unit/test_grounding_v5_d59_haiku_execution.py::test_authorization_rejects_plan_cap_or_runtime_drift tests/unit/test_grounding_v5_d59_haiku_execution.py::test_all_assignments_reproduce_the_approved_caps tests/unit/test_grounding_v5_d59_haiku_network_retry.py::test_network_successor_is_reproducible_and_preserves_cohort_and_caps tests/unit/test_grounding_v5_manifest_runner.py::test_plan_rejects_call_caps_that_do_not_match_assignments",
+      "duration_seconds": 14.813159,
+      "ended_at_utc": "2026-10-06T05:35:23.325202+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 27,
+        "runtime": 14.08
+      },
+      "path": "commands/59-v5-group-call-cap-planning.json",
+      "sha256": "45f828bf67ae9b80c355433989aa7f06145a6bb6865444e7a9bac6e390ce051a",
+      "size": 4657,
+      "started_at_utc": "2026-10-06T05:35:08.505797+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q -m v5_sandbox_integration tests/integration/test_grounding_v5_sandbox.py tests/integration/test_stateful_serving_sandbox.py",
+      "duration_seconds": 2.047603,
+      "ended_at_utc": "2026-10-06T05:35:32.730028+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 2,
+        "runtime": 1.67
+      },
+      "path": "commands/60-v5-sandbox-integration.json",
+      "sha256": "d47c4c8186220ccd04f0db28f6e3e735d08a9d63882b67081d21d70858635229",
+      "size": 824,
+      "started_at_utc": "2026-10-06T05:35:30.678166+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q -m browser_integration tests/integration/test_grounding_v5_browser.py tests/integration/test_vendor_form_browser.py",
+      "duration_seconds": 13.125247,
+      "ended_at_utc": "2026-10-06T05:35:51.478200+00:00",
+      "exit_status": 1,
+      "observed_test_summary": {
+        "failed": 15,
+        "passed": 1,
+        "runtime": 12.65
+      },
+      "path": "commands/61-browser-integration.json",
+      "sha256": "224dafe62e8ee5f76f9f7592c0d2730da25e2ad386127ef237b6d906c550f7cb",
+      "size": 57746,
+      "started_at_utc": "2026-10-06T05:35:38.349670+00:00"
+    },
+    {
+      "command": "python3.12 -m venv <path-3>",
+      "duration_seconds": 1.53483,
+      "ended_at_utc": "2026-10-06T05:36:23.949987+00:00",
+      "exit_status": 0,
+      "path": "commands/62-create-integration-venv.json",
+      "sha256": "1267c929c52e19f2e9e8db3da9c4bee7eb27d204a46776d44ed03ac0838798ae",
+      "size": 393,
+      "started_at_utc": "2026-10-06T05:36:22.412907+00:00"
+    },
+    {
+      "command": "<path-3>/bin/pip install -e '.[dev,osworld]' playwright==1.62.0",
+      "duration_seconds": 350.135519,
+      "ended_at_utc": "2026-10-06T05:42:14.270893+00:00",
+      "exit_status": 0,
+      "path": "commands/63-install-integration-dev-osworld.json",
+      "sha256": "2aaf1a8d8d98332a53acf04f100d214047bc1b38ea084c9a9c1c0dac90904b7c",
+      "size": 177487,
+      "started_at_utc": "2026-10-06T05:36:24.130527+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python <path-1>/probes/package_versions.py",
+      "duration_seconds": 0.417539,
+      "ended_at_utc": "2026-10-06T05:43:22.319617+00:00",
+      "exit_status": 0,
+      "path": "commands/64-integration-package-versions.json",
+      "sha256": "b39ea2c64664e1958c553a3108eb01781d1863b04b737d36b96ee3350aa40aa6",
+      "size": 16750,
+      "started_at_utc": "2026-10-06T05:43:21.900044+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python -m pip check",
+      "duration_seconds": 0.697,
+      "ended_at_utc": "2026-10-06T05:43:23.142990+00:00",
+      "exit_status": 0,
+      "path": "commands/65-integration-pip-check.json",
+      "sha256": "81fb106bcdf47e3d18ea0737078a6493da16dd62b373da13013fbca4b1e1e905",
+      "size": 432,
+      "started_at_utc": "2026-10-06T05:43:22.443760+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python <path-1>/probes/boundary_inventory.py",
+      "duration_seconds": 0.039056,
+      "ended_at_utc": "2026-10-06T05:43:23.289081+00:00",
+      "exit_status": 0,
+      "path": "commands/66-integration-boundary-inventory.json",
+      "sha256": "d8c6f2783ec6d710c6dfeb8be5bf4adc9a14c7d36cfd537de099a13bddaa5238",
+      "size": 2015,
+      "started_at_utc": "2026-10-06T05:43:23.248252+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python -m pytest -q -m browser_integration tests/integration/test_grounding_v5_browser.py tests/integration/test_vendor_form_browser.py",
+      "duration_seconds": 157.849416,
+      "ended_at_utc": "2026-10-06T05:46:12.089633+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 16,
+        "runtime": 155.46
+      },
+      "path": "commands/67-browser-integration-playwright-1-62-retry.json",
+      "sha256": "e41df104919538b7ac0a1b5660130a3f25c2fd6c853be2f399f9392e03d69d15",
+      "size": 820,
+      "started_at_utc": "2026-10-06T05:43:34.235609+00:00"
+    },
+    {
+      "command": "<path-2>/bin/python -m pytest -q tests/integration/test_grounding_v5_curl_wire.py",
+      "duration_seconds": 28.080174,
+      "ended_at_utc": "2026-10-06T05:46:47.029345+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 1,
+        "runtime": 27.48
+      },
+      "path": "commands/68-curl-wire-integration.json",
+      "sha256": "77009dd116014db062949177061fd9bd021243ac6db777f85846957979bb3846",
+      "size": 611,
+      "started_at_utc": "2026-10-06T05:46:18.946000+00:00"
+    },
+    {
+      "command": "docker ps -a --no-trunc --filter ancestor=happysixd/osworld-docker:latest --format '{{.ID}} {{.Image}} {{.CreatedAt}} {{.Status}}'",
+      "duration_seconds": 0.03339,
+      "ended_at_utc": "2026-10-06T05:47:08.190046+00:00",
+      "exit_status": 0,
+      "path": "commands/69-docker-osworld-containers-before.json",
+      "sha256": "59df3c2c480311a53127e4b9e201110dece63e640753d903543db8ffa3825597",
+      "size": 625,
+      "started_at_utc": "2026-10-06T05:47:08.153507+00:00"
+    },
+    {
+      "command": "docker ps -a --no-trunc --format '{{.ID}} {{.CreatedAt}} {{.Status}}'",
+      "duration_seconds": 0.058479,
+      "ended_at_utc": "2026-10-06T05:47:08.357196+00:00",
+      "exit_status": 0,
+      "path": "commands/70-docker-all-containers-before.json",
+      "sha256": "3a794374eeb25847f3bc60ee133dfe528c2636c2fcd2b0a1bf7652e9ac7f2d8e",
+      "size": 1808,
+      "started_at_utc": "2026-10-06T05:47:08.296257+00:00"
+    },
+    {
+      "command": "docker images --no-trunc --format '{{.Repository}}:{{.Tag}} {{.ID}}' --filter reference=happysixd/osworld-docker --filter reference=pixelgym/osworld-qemu-arm64",
+      "duration_seconds": 0.039736,
+      "ended_at_utc": "2026-10-06T05:47:08.513320+00:00",
+      "exit_status": 0,
+      "path": "commands/71-docker-osworld-images.json",
+      "sha256": "7259b0a3db0fe97a49fad6a706cab21d24709c76afa76da51861b3049d80044a",
+      "size": 1127,
+      "started_at_utc": "2026-10-06T05:47:08.469802+00:00"
+    },
+    {
+      "command": "ls -l .cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "duration_seconds": 0.006602,
+      "ended_at_utc": "2026-10-06T05:47:15.875970+00:00",
+      "exit_status": 1,
+      "path": "commands/72-osworld-guest-image-in-worktree.json",
+      "sha256": "59450b3a9d95e6a97569fd6b95a35e26bb40f18b9e3b1b70a007faf7262df5c1",
+      "size": 504,
+      "started_at_utc": "2026-10-06T05:47:15.867301+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python -m pytest -q -rs -m osworld_integration tests/integration/test_grounding_v5_osworld.py",
+      "duration_seconds": 1.387345,
+      "ended_at_utc": "2026-10-06T05:47:17.375414+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "runtime": 0.75,
+        "skipped": 1
+      },
+      "path": "commands/73-osworld-v5-integration.json",
+      "sha256": "c5c4b90f6ff91a406372bd3c8f6e83b63d7c1c3f98b56cb6b47f3305d824124b",
+      "size": 948,
+      "started_at_utc": "2026-10-06T05:47:15.984704+00:00"
+    },
+    {
+      "command": "mkdir -p .cache/osworld",
+      "duration_seconds": 0.005184,
+      "ended_at_utc": "2026-10-06T05:47:32.581200+00:00",
+      "exit_status": 0,
+      "path": "commands/74-create-worktree-osworld-cache-dir.json",
+      "sha256": "a7d69eac077203e3cd5e51ce4f5f08e0fe90216241860ce5815c2efbffb0f5b9",
+      "size": 379,
+      "started_at_utc": "2026-10-06T05:47:32.573674+00:00"
+    },
+    {
+      "command": "ln -s <home>/dev/OSWorldTasks/.cache/osworld/osworld-v2-ubuntu-x86.qcow2 .cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "duration_seconds": 0.004784,
+      "ended_at_utc": "2026-10-06T05:47:32.712768+00:00",
+      "exit_status": 0,
+      "path": "commands/75-link-local-guest-image.json",
+      "sha256": "08c60caf70bcb371b257270aedd77fdab90a93e41ae880235301f34ee437db52",
+      "size": 570,
+      "started_at_utc": "2026-10-06T05:47:32.705672+00:00"
+    },
+    {
+      "command": "stat -L -f '%z bytes, modified %Sm' .cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "duration_seconds": 0.006971,
+      "ended_at_utc": "2026-10-06T05:47:45.604941+00:00",
+      "exit_status": 0,
+      "path": "commands/77-linked-guest-image-size.json",
+      "sha256": "e113f29b42de2ef178ea8372f69c17cc0da0133bf5c52b7a2ff3889dc2db3990",
+      "size": 551,
+      "started_at_utc": "2026-10-06T05:47:45.595194+00:00"
+    },
+    {
+      "command": "<path-3>/bin/python -m pytest -q -rs -m osworld_integration tests/integration/test_grounding_v5_osworld.py",
+      "duration_seconds": 399.061145,
+      "ended_at_utc": "2026-10-06T05:54:32.806913+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 1,
+        "runtime": 398.09,
+        "warnings": 6
+      },
+      "path": "commands/78-osworld-v5-integration-linked-guest-image.json",
+      "sha256": "66773933de6e8113eb37f15e2f7d12c3304a9083e831d23cfd1a01dab7dd98fc",
+      "size": 2244,
+      "started_at_utc": "2026-10-06T05:47:53.740326+00:00"
+    },
+    {
+      "command": "python3.12 -m venv .venv",
+      "duration_seconds": 2.304868,
+      "ended_at_utc": "2026-10-06T05:49:12.119230+00:00",
+      "exit_status": 0,
+      "path": "commands/79-create-in-tree-dev-venv.json",
+      "sha256": "17d8724f6c3461067e2f7e04fe5971e44a025eb0667cde21093ae0e73290c6bd",
+      "size": 388,
+      "started_at_utc": "2026-10-06T05:49:09.810129+00:00"
+    },
+    {
+      "command": ".venv/bin/pip install -e '.[dev]'",
+      "duration_seconds": 37.777186,
+      "ended_at_utc": "2026-10-06T05:49:50.211427+00:00",
+      "exit_status": 0,
+      "path": "commands/80-install-dev-in-tree-venv.json",
+      "sha256": "27702c33648a4f38d189ddef6e6daad2e72ecc7baa67fff4b349073e4de26725",
+      "size": 20335,
+      "started_at_utc": "2026-10-06T05:49:12.430594+00:00"
+    },
+    {
+      "command": ".venv/bin/python <path-1>/probes/package_versions.py",
+      "duration_seconds": 0.280979,
+      "ended_at_utc": "2026-10-06T05:49:58.751747+00:00",
+      "exit_status": 0,
+      "path": "commands/81-in-tree-venv-package-versions.json",
+      "sha256": "1d12f1321396fac20e6cd92c4330825db5bb9de5cb12ff23a4f95c3460b6340b",
+      "size": 3261,
+      "started_at_utc": "2026-10-06T05:49:58.468312+00:00"
+    },
+    {
+      "command": "docker ps -a --no-trunc --filter ancestor=happysixd/osworld-docker:latest --format '{{.ID}} {{.Image}} {{.CreatedAt}} {{.Status}}'",
+      "duration_seconds": 0.029498,
+      "ended_at_utc": "2026-10-06T05:54:56.478164+00:00",
+      "exit_status": 0,
+      "path": "commands/82-docker-osworld-containers-after.json",
+      "sha256": "5a693615539bbb91796386223d9b4210d80230d727060953e660c046088531af",
+      "size": 626,
+      "started_at_utc": "2026-10-06T05:54:56.445741+00:00"
+    },
+    {
+      "command": "docker ps -a --no-trunc --format '{{.ID}} {{.CreatedAt}} {{.Status}}'",
+      "duration_seconds": 0.050206,
+      "ended_at_utc": "2026-10-06T05:54:56.646724+00:00",
+      "exit_status": 0,
+      "path": "commands/83-docker-all-containers-after.json",
+      "sha256": "8966e50f38f8542dbc0e40574efa8decdd0a1eb8ffda5cb427c04fd5ff31501b",
+      "size": 1808,
+      "started_at_utc": "2026-10-06T05:54:56.594147+00:00"
+    },
+    {
+      "command": "docker volume ls --filter dangling=true --quiet",
+      "duration_seconds": 0.026385,
+      "ended_at_utc": "2026-10-06T05:55:07.615585+00:00",
+      "exit_status": 0,
+      "path": "commands/84-docker-dangling-volumes-after.json",
+      "sha256": "a467e44e0650448608b5bfaeae4094ea62f10371b26695ad2e3ac8695842d476",
+      "size": 3503,
+      "started_at_utc": "2026-10-06T05:55:07.586853+00:00"
+    },
+    {
+      "command": "docker image inspect --format '{{json .Config.Volumes}}' happysixd/osworld-docker:latest",
+      "duration_seconds": 0.030734,
+      "ended_at_utc": "2026-10-06T05:55:28.904090+00:00",
+      "exit_status": 0,
+      "path": "commands/85-osworld-image-declared-volumes.json",
+      "sha256": "c1261533d92d352e89d2a26e01e8b6dad24402a854a16bbc6e15737494cd25f3",
+      "size": 534,
+      "started_at_utc": "2026-10-06T05:55:28.870931+00:00"
+    },
+    {
+      "command": "unlink .cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "duration_seconds": 0.006344,
+      "ended_at_utc": "2026-10-06T05:55:43.828769+00:00",
+      "exit_status": 0,
+      "path": "commands/86-unlink-local-guest-image.json",
+      "sha256": "b482f226ef4fdc752a2d35f7761350b55ed0475834b3a81934f4d96802621d2a",
+      "size": 424,
+      "started_at_utc": "2026-10-06T05:55:43.820710+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -n 4 --dist worksteal --hypothesis-profile=ci --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit",
+      "duration_seconds": 172.240636,
+      "ended_at_utc": "2026-10-06T05:58:41.553247+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 2568,
+        "runtime": 162.54,
+        "skipped": 6,
+        "warnings": 12
+      },
+      "path": "commands/87-fast-suite-ci-invocation-in-tree-venv.json",
+      "sha256": "47eff90a7e3b185546ffb2527e03e248531c6e04dd5b0e6d5d30d59db67af296",
+      "size": 27379,
+      "started_at_utc": "2026-10-06T05:55:49.307679+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q tests/unit",
+      "duration_seconds": 399.940711,
+      "ended_at_utc": "2026-10-06T06:05:26.691409+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "deselected": 1,
+        "passed": 2568,
+        "runtime": 398.43,
+        "skipped": 6,
+        "warnings": 3
+      },
+      "path": "commands/88-unit-suite-serial-in-tree-venv.json",
+      "sha256": "19c7925dcf7a7962b4def5ec88aa38e5cc85a4d2464677a087f934164b250e7c",
+      "size": 4167,
+      "started_at_utc": "2026-10-06T05:58:46.745565+00:00"
+    },
+    {
+      "command": "git -C <path-0> status --porcelain --untracked-files=all",
+      "duration_seconds": 0.042114,
+      "ended_at_utc": "2026-10-06T06:05:43.353063+00:00",
+      "exit_status": 0,
+      "path": "commands/89-worktree-status-after-integration.json",
+      "sha256": "c56b88e5a71622aacd1bb7f30a0390b1f635367ce120396d798cccc4c78ec217",
+      "size": 466,
+      "started_at_utc": "2026-10-06T06:05:43.308617+00:00"
+    },
+    {
+      "command": "git -C <path-0> show f0bcbd6f3e379f880baeca233d4b7e05528bcfc5:plans/grounding-v5-agent-benchmark.md",
+      "duration_seconds": 0.020569,
+      "ended_at_utc": "2026-10-06T06:05:53.781396+00:00",
+      "exit_status": 0,
+      "path": "commands/90-checklist-source.json",
+      "sha256": "6b830a246af42848186ff8eeeabb0befa89cf6dd171a355d80878ae6f1aab8db",
+      "size": 55769,
+      "started_at_utc": "2026-10-06T06:05:53.758346+00:00"
+    },
+    {
+      "command": "grep -n -i -E 'v5|d5\\.9|d5\\.10' README.md docs/v5-benchmark-design.md docs/evidence-index.md",
+      "duration_seconds": 0.011686,
+      "ended_at_utc": "2026-10-06T06:05:59.483244+00:00",
+      "exit_status": 0,
+      "path": "commands/91-public-wording-inventory.json",
+      "sha256": "1a415de67af62f353161fa6fd44cd00454dad49952e4fcf5fe63e0901c81a002",
+      "size": 15076,
+      "started_at_utc": "2026-10-06T06:05:59.468763+00:00"
+    },
+    {
+      "command": "git -C <path-0> status --porcelain --untracked-files=all",
+      "duration_seconds": 0.027181,
+      "ended_at_utc": "2026-10-06T06:06:43.332187+00:00",
+      "exit_status": 0,
+      "path": "commands/92-worktree-status-before-redaction-scan.json",
+      "sha256": "f9f90e959cfc09fc0e04e1ca9e4c671b2c9f58cffed2203efb5673f18432c858",
+      "size": 577,
+      "started_at_utc": "2026-10-06T06:06:43.302541+00:00"
+    },
+    {
+      "command": ".venv/bin/python scripts/generate_d510_evidence_report.py scan --path <path-1>/commands",
+      "duration_seconds": 0.104884,
+      "ended_at_utc": "2026-10-06T06:06:48.719733+00:00",
+      "exit_status": 0,
+      "path": "commands/93-redaction-scan-collected-records.json",
+      "sha256": "fe7d0364a99aeec606dcc4350e5e6ae5f4e21029499c97778dc873bdfb4e482e",
+      "size": 1013,
+      "started_at_utc": "2026-10-06T06:06:48.612214+00:00"
+    }
+  ],
+  "evidence_branch": "evidence/d510-b0f00f8d",
+  "evidence_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+  "gate": "D5.10",
+  "not_run": [
+    {
+      "item": "scripts/build_grounding_benchmark_v2.py",
+      "reason": "Marked as a frozen reproduction entry point. It has no argument parser and no verify or check mode; any invocation, including --help, calls build_benchmark_v2 and writes the tracked v2 benchmark files. Not invoked."
+    },
+    {
+      "item": "scripts/generate_grounding_report.py (default mode)",
+      "reason": "No verify or check mode; the default invocation writes the tracked report and results. --help is recorded; the read-only verifier scripts/verify_grounding_report.py is recorded separately.",
+      "records": [
+        "commands/21-generate-grounding-report-v1-help.json",
+        "commands/19-verify-grounding-report-v1.json"
+      ]
+    },
+    {
+      "item": "scripts/generate_grounding_report_v2.py (default mode)",
+      "reason": "No verify or check mode; without --output-dir it writes the tracked report and provenance. --help is recorded; scripts/verify_grounding_report_v2.py is recorded separately.",
+      "records": [
+        "commands/22-generate-grounding-report-v2-help.json",
+        "commands/20-verify-grounding-report-v2.json"
+      ]
+    },
+    {
+      "item": "scripts/generate_grounding_clustered_analysis.py (default mode)",
+      "reason": "No verify or check mode; without --output-dir it writes the tracked supplement files. --help is recorded.",
+      "records": [
+        "commands/23-generate-grounding-clustered-analysis-help.json"
+      ]
+    },
+    {
+      "item": "scripts/record_grounding_v5_d56_retained_development_runs.py (default mode)",
+      "reason": "No verify or check mode; it reads ignored local originals and writes the registry. --help is recorded.",
+      "records": [
+        "commands/24-record-d56-retained-development-runs-help.json"
+      ]
+    },
+    {
+      "item": "scripts/report_grounding_v5_d59_haiku.py --verify",
+      "linked_records": [
+        {
+          "lines": "82-86",
+          "path": "docs/evidence-index.md",
+          "verbatim": "- **2026-09-30, D5.9 private journals.** The attempt and invocation journals for the D5.9 Haiku\n  execution were not retained after the public projection was published. They were untracked\n  files in a temporary checkout that was later removed. The digests recorded in `report.json`\n  under `source_artifacts` and `journal_integrity` were computed from those journals at\n  publication and cannot be re-verified against them. D5.9 closes on the published projection."
+        }
+      ],
+      "reason": "--verify requires --input, the private D5.9 run directory. Record 53 shows the ignored D5.9 run directories absent from the worktree. --help is recorded. No input was substituted.",
+      "records": [
+        "commands/51-report-d59-haiku-help.json",
+        "commands/53-d59-private-run-directories-present.json"
+      ]
+    },
+    {
+      "item": "D5.9 plan-only commands: scripts/run_grounding_v5_d59_haiku.py prepare, scripts/run_grounding_v5_d59_haiku_retry_successor.py prepare, scripts/run_grounding_v5_d59_haiku_network_retry.py prepare",
+      "reason": "All three call the shared runner's prepare, which calls probe_claude_runtime (claude --version, claude auth status --json, claude --help) and therefore needs a logged-in Claude Code credential, reads an owner approval file (the network-retry approval path is ignored and absent), and writes an output directory. Not run. The D5.9 --verify commands that recompute the execution plans are recorded as 46 and 48-50."
+    },
+    {
+      "item": "D5.8 runner prepare subcommands (run_grounding_v5_memory_calibration.py, run_grounding_v5_gemini38_calibration.py, run_grounding_v5_focus_calibration.py, run_grounding_v5_focus_continuation.py, run_grounding_v5_focus_diagnostic.py, run_grounding_v5_reliable_diagnostic.py, run_grounding_v5_reliable_continuation.py, run_grounding_v5_reliable_extension.py, run_grounding_v5_owner_budget_continuation.py, run_grounding_v5_memory_pilot.py)",
+      "reason": "Each prepare subcommand writes an execution plan into a tracked artifact directory; none is a no-write plan-only or validate-only mode. Not run. The D5.8 evidence verifiers are recorded as 27-44."
+    },
+    {
+      "item": "D5.6-era plan-only and validate-only modes (run_grounding_v5_calibration.py --validate-only, run_grounding_v5_provider_smoke.py, run_grounding_v5_calibration_pilot.py, run_grounding_v5_expanded_calibration.py, run_grounding_v5_panel_smoke.py --plan-only)",
+      "reason": "Outside the requested D5.9-freeze and D5.8-plan scope for plan-only commands. Not run."
+    },
+    {
+      "item": "scripts/fetch_evidence_images.py, scripts/generate_validation_report.py, scripts/generate_d412_evidence_report.py",
+      "reason": "Marked as frozen reproduction entry points but outside the grounding v1/v2 and v5 scope of this package; fetch_evidence_images.py also downloads a GitHub release. Not run. The unit-suite records report 6 skipped tests."
+    },
+    {
+      "item": "platform_compose_integration (tests/integration/platform/test_compose_lifecycle.py)",
+      "reason": "D4.12 scope; excluded by the collection instructions. Not run."
+    }
+  ],
+  "package_files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "b04a0e17c4270a1b7aff51a46f02465c144be7071d9a43c852d17218eb56ba77",
+      "size": 49032
+    },
+    {
+      "path": "checklist-map.json",
+      "sha256": "3a1f9a64a8f5d8e70912ae7a048f32e867a51f9b45aaefa5431e51114f49b249",
+      "size": 28719
+    },
+    {
+      "path": "commands/00-git-revision.json",
+      "sha256": "5d2ffa2d0d001e4be3ae67d4bdb64821d5942227ebf45a121f6e38ae83678c10",
+      "size": 449
+    },
+    {
+      "path": "commands/01-worktree-status.json",
+      "sha256": "2f07d7a4ca17f4ce6806b06abaa6e27905b72f9eb248c09c9f67407fa6ac0c05",
+      "size": 466
+    },
+    {
+      "path": "commands/02-python-version.json",
+      "sha256": "f13361b2cf196e788f833448a3bafee41f6ebeed99a55c7d913bcd98c8ffc9ff",
+      "size": 382
+    },
+    {
+      "path": "commands/03-os-architecture.json",
+      "sha256": "2122d2b6e58a9dd5a85c56767cd7cc0ffcc79f68c08c50deef38f5aaee374234",
+      "size": 475
+    },
+    {
+      "path": "commands/04-docker-version.json",
+      "sha256": "48fe2f1283a0a1c212cc7cc97749698891b1fcc895c5ff8eb31ab6a2c3fa1db2",
+      "size": 1136
+    },
+    {
+      "path": "commands/05-evidence-branch.json",
+      "sha256": "cbd8b58bc052a3228d8648f309dd23031cf41ac1b35c836a83d6c0490b60a75b",
+      "size": 444
+    },
+    {
+      "path": "commands/06-create-dev-venv.json",
+      "sha256": "417dffaf49eab5552b6399ffcaf9241c0fb2bb02230a9ce5eacfbb1c23da9c92",
+      "size": 394
+    },
+    {
+      "path": "commands/07-install-dev.json",
+      "sha256": "e6fa974bd3949d17499031462914d39914796ed242af0ef6521c82ffbb13ebb5",
+      "size": 20342
+    },
+    {
+      "path": "commands/08-dev-pip-check.json",
+      "sha256": "520fdeabd3edbbe2a10af84e27abc0becca23a226173e1da3f76bb932c953ea6",
+      "size": 435
+    },
+    {
+      "path": "commands/10-dev-package-versions.json",
+      "sha256": "ba8cf85aec72aa16317a510ee2c1090a3d9ebe17933880c4ba5448f41607e364",
+      "size": 3267
+    },
+    {
+      "path": "commands/11-boundary-inventory.json",
+      "sha256": "ae940bdbc8e8c39d6408e862006b44627a0bba864f57254ec60d968836ccb064",
+      "size": 2016
+    },
+    {
+      "path": "commands/12-ruff-check.json",
+      "sha256": "f905c42af768e527a2f7b1ab7280efcf6059158894adb8a4483b2ffecc75bde0",
+      "size": 403
+    },
+    {
+      "path": "commands/13-ruff-format-check.json",
+      "sha256": "d07bb5fc96dd9a117e8cc43cffbe491412f39be83594366081edcf01ff5555d2",
+      "size": 512
+    },
+    {
+      "path": "commands/14-mypy-pixelgym.json",
+      "sha256": "2da4c87004ac82b5239680567cde7428d1ff3598ef8abbe5b1726094da7b2f0b",
+      "size": 424
+    },
+    {
+      "path": "commands/15-mypy-flows.json",
+      "sha256": "ba6ccecbc721668e9214428ec5595d1f965b789e45af1b6922464179370f4968",
+      "size": 416
+    },
+    {
+      "path": "commands/18-golden-trajectory-check.json",
+      "sha256": "dcb58525741e5c2392f4cf048887c237bd8d1339b8ee14557f87cc0c4efb2c7b",
+      "size": 843
+    },
+    {
+      "path": "commands/19-verify-grounding-report-v1.json",
+      "sha256": "72ac205bf005294fd1e1185280ccb3cfe668e3afecac6de65e1408990efdc2e9",
+      "size": 1441
+    },
+    {
+      "path": "commands/20-verify-grounding-report-v2.json",
+      "sha256": "a6b671a0eb989e7a8a22c10199ee7e9b33bdd55c9a19998842bf070a84027bf6",
+      "size": 997
+    },
+    {
+      "path": "commands/21-generate-grounding-report-v1-help.json",
+      "sha256": "0fc8567147cbd1b4c0b90b6e63f514a105d4d597692548f2e17345ab1e971c3c",
+      "size": 1064
+    },
+    {
+      "path": "commands/22-generate-grounding-report-v2-help.json",
+      "sha256": "83dfc2b2c1fab2cf07791a4ed6ca96cce9c759080e9bd61def47e8af098fde0d",
+      "size": 955
+    },
+    {
+      "path": "commands/23-generate-grounding-clustered-analysis-help.json",
+      "sha256": "db04876fc347c0a35636235c7c5f08099c51c1fe055567134e9b9e7118b5aad3",
+      "size": 938
+    },
+    {
+      "path": "commands/24-record-d56-retained-development-runs-help.json",
+      "sha256": "c1d14927abb3f116c1805d3613987cd81359b38491430c8769e47edccd3a99ad",
+      "size": 1485
+    },
+    {
+      "path": "commands/25-verify-d56-completed-calibrations.json",
+      "sha256": "000a5d46f85cc414effa248421c43f91cf2cb058f57713cd855e99ec56a339e8",
+      "size": 18239
+    },
+    {
+      "path": "commands/26-verify-calibration-supplement.json",
+      "sha256": "0782ce475f5c357a74db3939f106427aebc47816c4ed49dfd338f24296794741",
+      "size": 573
+    },
+    {
+      "path": "commands/27-verify-d58-memory-admission.json",
+      "sha256": "a7e7954f418f47acb1d737def8167107eb67841f0b7c6f082132ee044c98d6de",
+      "size": 1020
+    },
+    {
+      "path": "commands/28-verify-d58-full-calibration.json",
+      "sha256": "4678acc122e57d9ac4d689b2b809983ba96cf85693acff26a1fb8f876de72233",
+      "size": 548
+    },
+    {
+      "path": "commands/29-verify-d58-gemini38-calibration.json",
+      "sha256": "c48741997383b909aa6b4c5d8de30377de518a584c514876421b9ce4a8948713",
+      "size": 502
+    },
+    {
+      "path": "commands/30-verify-d58-reliable-continuation.json",
+      "sha256": "a7f3f82b39c08ab3bec1536921206c4a3d7dc298bde89d99daac1360002cd5ff",
+      "size": 1025
+    },
+    {
+      "path": "commands/31-verify-d58-owner-budget-continuation.json",
+      "sha256": "dc7a04ba0cdcdc37ddbd636d4687ddcb2d89c79c142c739aacd805fe70c6ab59",
+      "size": 1045
+    },
+    {
+      "path": "commands/32-verify-d58-owner-budget-reconciliation.json",
+      "sha256": "c03af895305290a97ab6e01d51710e60a1b172f33888b936687467d8763164ce",
+      "size": 1124
+    },
+    {
+      "path": "commands/33-verify-d58-at-revision-focus-calibration.json",
+      "sha256": "dfc6719d221eee7123340e42a71f6e2334a76aa296f475ab94c1bc3ad9d4e761",
+      "size": 977
+    },
+    {
+      "path": "commands/34-verify-d58-at-revision-focus-continuation.json",
+      "sha256": "ef86a6eacb8cb87b72c0c55a9dcdda6edf47eef513fcf5ebccd84a1aebe9ed9f",
+      "size": 980
+    },
+    {
+      "path": "commands/35-verify-d58-at-revision-reliable-diagnostic.json",
+      "sha256": "ce533c3b2c3c78f3eec56488ef9d1cc39ad5685d610064c61f8863d2c91160f8",
+      "size": 983
+    },
+    {
+      "path": "commands/36-verify-d58-at-revision-reliable-continuation.json",
+      "sha256": "1bd5432ea2efdc9018e6c5c4b11e875240f78ef99bd8f907852e285359d138d6",
+      "size": 1028
+    },
+    {
+      "path": "commands/37-verify-d58-at-revision-reliable-extension.json",
+      "sha256": "32478d7b6a8a0433c0ad8626b21d0ef59a85fd8f62b5a34b89b39cf474980860",
+      "size": 1019
+    },
+    {
+      "path": "commands/38-verify-d58-at-revision-owner-budget-continuation.json",
+      "sha256": "971e935bdc31f6063ba47d7a6471cea3032bc95c465307227df8166cf3b6c705",
+      "size": 1631
+    },
+    {
+      "path": "commands/39-verify-d58-at-revision-owner-budget.json",
+      "sha256": "ac42f34e02ad4bb66143754cb3808e96fee43e358c44dc1b3c572b8e1ae782e7",
+      "size": 1153
+    },
+    {
+      "path": "commands/40-verify-pr196-calibration.json",
+      "sha256": "90dd3b906ca09191403cb064eae4893d893a6bfbe515812240467090a476d43c",
+      "size": 560
+    },
+    {
+      "path": "commands/41-verify-haiku-cli-replication.json",
+      "sha256": "18b20ba733f4a13743bd4d99ce888c950f330b1fd55181a0338bb04cb4b495c9",
+      "size": 547
+    },
+    {
+      "path": "commands/42-verify-d58-review-corrections.json",
+      "sha256": "50d93b13965e55861a73580e2df5e89dec1917ceefdec981d0d20227a4e0685a",
+      "size": 967
+    },
+    {
+      "path": "commands/43-verify-d58-power-report.json",
+      "sha256": "540979485ef5dcdbad7a901d1e04a9e95ccba4229f3dfc2b3ece0c97fb0aa656",
+      "size": 967
+    },
+    {
+      "path": "commands/44-verify-d58-haiku-successor.json",
+      "sha256": "f63f780dba6f6d308d29b2ee696b8c0b3aedfe610d23eb529a17965eae3a77cd",
+      "size": 995
+    },
+    {
+      "path": "commands/45-d59-recorded-source-revisions.json",
+      "sha256": "f5dcb38d3c85e9dfd22b3c7378b4001ff25a3803e0baf790c44a921e5ccfd060",
+      "size": 2015
+    },
+    {
+      "path": "commands/46-verify-d59-freeze.json",
+      "sha256": "d7fddc07178ac44ffaea12bcdf73295c36e747e9358c7a1603de077a9b4a4b7b",
+      "size": 709
+    },
+    {
+      "path": "commands/47-verify-d59-haiku-selection.json",
+      "sha256": "b5c72e28b76c0eec9f80358b688e68897b144c0ee456a203c238459fa6f476e4",
+      "size": 556
+    },
+    {
+      "path": "commands/48-verify-d59-haiku-freeze.json",
+      "sha256": "43d0ef0b6a770b3c4b6c66f967674c3acb2c89e8eed550d2f8e9e6be54aaa66a",
+      "size": 732
+    },
+    {
+      "path": "commands/49-verify-d59-haiku-retry-successor.json",
+      "sha256": "40197f4a236fd952be1a45cc0bcde2a981df31a0187b1a54c8305496b760ac2e",
+      "size": 1784
+    },
+    {
+      "path": "commands/50-verify-d59-haiku-network-retry.json",
+      "sha256": "aa707159fa42021009ea609b8f336fbe8d25fbff368439cf2b45b4df110198a6",
+      "size": 1554
+    },
+    {
+      "path": "commands/51-report-d59-haiku-help.json",
+      "sha256": "403701d00056eb038e5e5bbf2d19cdf6c08488ccdc9517df91b7662f5bb97a26",
+      "size": 805
+    },
+    {
+      "path": "commands/52-check-d59-confirmatory-analysis.json",
+      "sha256": "b8a6b5ba15e98eaac2ef994c2960918008ac4f49dc2fa9fd939c04fa23b950a7",
+      "size": 466
+    },
+    {
+      "path": "commands/53-d59-private-run-directories-present.json",
+      "sha256": "161777e5b9f0dc4fc62362b706e6dfe8a5f28ba450edf263a736e9dbe30236e0",
+      "size": 960
+    },
+    {
+      "path": "commands/54-worktree-status-after-verifiers.json",
+      "sha256": "af6bb8bb405a8e5058591ab802b86b4ed7509203a1af3b232b29386f993d51fa",
+      "size": 466
+    },
+    {
+      "path": "commands/55-v5-group-generator-partitions-admission.json",
+      "sha256": "551d5837a5a68315153c77b12d3404f98e551383351f6c43d152e354c1d41011",
+      "size": 5899
+    },
+    {
+      "path": "commands/56-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+      "sha256": "e6f6a8d143c14a5b86cec06d8010282c83df34e1a95e7aa0714dff8075804194",
+      "size": 11937
+    },
+    {
+      "path": "commands/57-v5-group-credential-secret-redaction-integrity.json",
+      "sha256": "e5495ecd12b8e8f7e7a33a74cd23cab93f4be8ba44e223fe2fe87fe7774811d3",
+      "size": 4285
+    },
+    {
+      "path": "commands/58-v5-group-metrics-statistics.json",
+      "sha256": "235f0302f0be5af9153a6ff6711b792a819925d1a400b47a8d021ef469c6e53f",
+      "size": 1634
+    },
+    {
+      "path": "commands/59-v5-group-call-cap-planning.json",
+      "sha256": "45f828bf67ae9b80c355433989aa7f06145a6bb6865444e7a9bac6e390ce051a",
+      "size": 4657
+    },
+    {
+      "path": "commands/60-v5-sandbox-integration.json",
+      "sha256": "d47c4c8186220ccd04f0db28f6e3e735d08a9d63882b67081d21d70858635229",
+      "size": 824
+    },
+    {
+      "path": "commands/61-browser-integration.json",
+      "sha256": "224dafe62e8ee5f76f9f7592c0d2730da25e2ad386127ef237b6d906c550f7cb",
+      "size": 57746
+    },
+    {
+      "path": "commands/62-create-integration-venv.json",
+      "sha256": "1267c929c52e19f2e9e8db3da9c4bee7eb27d204a46776d44ed03ac0838798ae",
+      "size": 393
+    },
+    {
+      "path": "commands/63-install-integration-dev-osworld.json",
+      "sha256": "2aaf1a8d8d98332a53acf04f100d214047bc1b38ea084c9a9c1c0dac90904b7c",
+      "size": 177487
+    },
+    {
+      "path": "commands/64-integration-package-versions.json",
+      "sha256": "b39ea2c64664e1958c553a3108eb01781d1863b04b737d36b96ee3350aa40aa6",
+      "size": 16750
+    },
+    {
+      "path": "commands/65-integration-pip-check.json",
+      "sha256": "81fb106bcdf47e3d18ea0737078a6493da16dd62b373da13013fbca4b1e1e905",
+      "size": 432
+    },
+    {
+      "path": "commands/66-integration-boundary-inventory.json",
+      "sha256": "d8c6f2783ec6d710c6dfeb8be5bf4adc9a14c7d36cfd537de099a13bddaa5238",
+      "size": 2015
+    },
+    {
+      "path": "commands/67-browser-integration-playwright-1-62-retry.json",
+      "sha256": "e41df104919538b7ac0a1b5660130a3f25c2fd6c853be2f399f9392e03d69d15",
+      "size": 820
+    },
+    {
+      "path": "commands/68-curl-wire-integration.json",
+      "sha256": "77009dd116014db062949177061fd9bd021243ac6db777f85846957979bb3846",
+      "size": 611
+    },
+    {
+      "path": "commands/69-docker-osworld-containers-before.json",
+      "sha256": "59df3c2c480311a53127e4b9e201110dece63e640753d903543db8ffa3825597",
+      "size": 625
+    },
+    {
+      "path": "commands/70-docker-all-containers-before.json",
+      "sha256": "3a794374eeb25847f3bc60ee133dfe528c2636c2fcd2b0a1bf7652e9ac7f2d8e",
+      "size": 1808
+    },
+    {
+      "path": "commands/71-docker-osworld-images.json",
+      "sha256": "7259b0a3db0fe97a49fad6a706cab21d24709c76afa76da51861b3049d80044a",
+      "size": 1127
+    },
+    {
+      "path": "commands/72-osworld-guest-image-in-worktree.json",
+      "sha256": "59450b3a9d95e6a97569fd6b95a35e26bb40f18b9e3b1b70a007faf7262df5c1",
+      "size": 504
+    },
+    {
+      "path": "commands/73-osworld-v5-integration.json",
+      "sha256": "c5c4b90f6ff91a406372bd3c8f6e83b63d7c1c3f98b56cb6b47f3305d824124b",
+      "size": 948
+    },
+    {
+      "path": "commands/74-create-worktree-osworld-cache-dir.json",
+      "sha256": "a7d69eac077203e3cd5e51ce4f5f08e0fe90216241860ce5815c2efbffb0f5b9",
+      "size": 379
+    },
+    {
+      "path": "commands/75-link-local-guest-image.json",
+      "sha256": "08c60caf70bcb371b257270aedd77fdab90a93e41ae880235301f34ee437db52",
+      "size": 570
+    },
+    {
+      "path": "commands/77-linked-guest-image-size.json",
+      "sha256": "e113f29b42de2ef178ea8372f69c17cc0da0133bf5c52b7a2ff3889dc2db3990",
+      "size": 551
+    },
+    {
+      "path": "commands/78-osworld-v5-integration-linked-guest-image.json",
+      "sha256": "66773933de6e8113eb37f15e2f7d12c3304a9083e831d23cfd1a01dab7dd98fc",
+      "size": 2244
+    },
+    {
+      "path": "commands/79-create-in-tree-dev-venv.json",
+      "sha256": "17d8724f6c3461067e2f7e04fe5971e44a025eb0667cde21093ae0e73290c6bd",
+      "size": 388
+    },
+    {
+      "path": "commands/80-install-dev-in-tree-venv.json",
+      "sha256": "27702c33648a4f38d189ddef6e6daad2e72ecc7baa67fff4b349073e4de26725",
+      "size": 20335
+    },
+    {
+      "path": "commands/81-in-tree-venv-package-versions.json",
+      "sha256": "1d12f1321396fac20e6cd92c4330825db5bb9de5cb12ff23a4f95c3460b6340b",
+      "size": 3261
+    },
+    {
+      "path": "commands/82-docker-osworld-containers-after.json",
+      "sha256": "5a693615539bbb91796386223d9b4210d80230d727060953e660c046088531af",
+      "size": 626
+    },
+    {
+      "path": "commands/83-docker-all-containers-after.json",
+      "sha256": "8966e50f38f8542dbc0e40574efa8decdd0a1eb8ffda5cb427c04fd5ff31501b",
+      "size": 1808
+    },
+    {
+      "path": "commands/84-docker-dangling-volumes-after.json",
+      "sha256": "a467e44e0650448608b5bfaeae4094ea62f10371b26695ad2e3ac8695842d476",
+      "size": 3503
+    },
+    {
+      "path": "commands/85-osworld-image-declared-volumes.json",
+      "sha256": "c1261533d92d352e89d2a26e01e8b6dad24402a854a16bbc6e15737494cd25f3",
+      "size": 534
+    },
+    {
+      "path": "commands/86-unlink-local-guest-image.json",
+      "sha256": "b482f226ef4fdc752a2d35f7761350b55ed0475834b3a81934f4d96802621d2a",
+      "size": 424
+    },
+    {
+      "path": "commands/87-fast-suite-ci-invocation-in-tree-venv.json",
+      "sha256": "47eff90a7e3b185546ffb2527e03e248531c6e04dd5b0e6d5d30d59db67af296",
+      "size": 27379
+    },
+    {
+      "path": "commands/88-unit-suite-serial-in-tree-venv.json",
+      "sha256": "19c7925dcf7a7962b4def5ec88aa38e5cc85a4d2464677a087f934164b250e7c",
+      "size": 4167
+    },
+    {
+      "path": "commands/89-worktree-status-after-integration.json",
+      "sha256": "c56b88e5a71622aacd1bb7f30a0390b1f635367ce120396d798cccc4c78ec217",
+      "size": 466
+    },
+    {
+      "path": "commands/90-checklist-source.json",
+      "sha256": "6b830a246af42848186ff8eeeabb0befa89cf6dd171a355d80878ae6f1aab8db",
+      "size": 55769
+    },
+    {
+      "path": "commands/91-public-wording-inventory.json",
+      "sha256": "1a415de67af62f353161fa6fd44cd00454dad49952e4fcf5fe63e0901c81a002",
+      "size": 15076
+    },
+    {
+      "path": "commands/92-worktree-status-before-redaction-scan.json",
+      "sha256": "f9f90e959cfc09fc0e04e1ca9e4c671b2c9f58cffed2203efb5673f18432c858",
+      "size": 577
+    },
+    {
+      "path": "commands/93-redaction-scan-collected-records.json",
+      "sha256": "fe7d0364a99aeec606dcc4350e5e6ae5f4e21029499c97778dc873bdfb4e482e",
+      "size": 1013
+    },
+    {
+      "path": "redaction-scan.json",
+      "sha256": "fe422ae8f900e93aece93746fd80046bcb72c13da00078f252d31262f9daf597",
+      "size": 445
+    }
+  ],
+  "redaction_scan": {
+    "files_scanned": 93,
+    "files_with_findings": {},
+    "finding_counts": {
+      "aws_access_keys": 0,
+      "bearer_tokens": 0,
+      "host_identity_paths_or_emails": 0,
+      "local_absolute_paths": 0,
+      "local_demo_credentials": 0,
+      "private_key_markers": 0,
+      "privileged_json_fields": 0,
+      "provider_api_keys": 0,
+      "system_temp_paths": 0,
+      "unredacted_image_payloads": 0
+    },
+    "schema_version": "pixelgym-d510-redaction-scan-v1"
+  },
+  "referenced_artifacts": [
+    {
+      "path": "artifacts/decisions/d4.12.json",
+      "sha256": "dcf6e4bd83e58d0d051ebb24c0bb385500c6a136e4b7491e376f8080fa3c2a01",
+      "size": 396
+    },
+    {
+      "path": "artifacts/grounding-v5-contracts.md",
+      "sha256": "fddc9be787b4dd80b218fbfdb3289e8f8cb0bdabb43b0bd1a7a2435618c19710",
+      "size": 7862
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-calibration-approval.md",
+      "sha256": "7df1931d51665fff88c7c657f093a0ca761796de89805416517f26c7224aaf0e",
+      "size": 20471
+    },
+    {
+      "path": "artifacts/grounding-v5-d58-final-design/decision.json",
+      "sha256": "b8c5a879b980b8f7835ec141365b5dec625c5d39ef7f91ea8be81436131347f4",
+      "size": 3533
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/admission.json",
+      "sha256": "d96a44c2a0fb7443684f34791e1b7a11ad328394f92c1684d1fa4e0589778799",
+      "size": 461058
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+      "sha256": "648b4be25870302ccb3ca5a3f345d567bf89d8d055d94d3f4813f694621ce721",
+      "size": 5417
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+      "sha256": "1f7b7fbddd03397dbe47395db7e331d27df00d3b66591eac6fa825e7849c4918",
+      "size": 212185
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+      "sha256": "a96858e166207eda2cb0201fae68a3c7a3ac3fa3a91333bcb1af888963df2ea8",
+      "size": 1624576
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+      "sha256": "92551e498a318dc38068374dceb97806673d26c3a4a6212a0d7ca275b221597a",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+      "sha256": "5eddb406dc989a63772d26c02d447b563af3c829db649fbca509bf7cf21459c2",
+      "size": 217529
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+      "sha256": "679eff54c6ee4679050c4cd130db1c75ea629bd950382aa84e26e2d75e329637",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+      "sha256": "d7c3ca2871f776e023ac20a996126ccaa8b883e9f5d5ff19223391967cfc523b",
+      "size": 216624
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+      "sha256": "bc493e3b1677db3763ef567f6a1837308de39eda87c2810a17c08f75d5a81035",
+      "size": 1799
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+      "sha256": "f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "size": 216780
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+      "sha256": "262d897e09de6fcc5cc8e1848255c0794f1fe37f64844a2bc090ae9337d0d5a7",
+      "size": 2374
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+      "sha256": "005396ad18efb4ea647d37c876cd77408cbfa775885de9dee8ab37f6d5797fd8",
+      "size": 16812
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+      "sha256": "2845196924db08d77b8bc613554406b21522123754dce173657d1efdae12f627",
+      "size": 6417
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+      "sha256": "1229cc2671141bc7ec40aac1eae7610dd348a7b5c4240032d40bbccd8ec7ac25",
+      "size": 7188
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "sha256": "cffff25e2e25fdce12df95d7174535594da74605d22a60fa8a344c179ea91fff",
+      "size": 119323
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+      "sha256": "cc80f2a4b1f446b8dc7e14e0f1318b72f1031a38b8cf039d8b8e8506f24e1e20",
+      "size": 1633
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+      "sha256": "689207ef452b22a5fa7fab026d703b5a08c8f651456009181fd05f723915604a",
+      "size": 2376
+    },
+    {
+      "path": "artifacts/grounding-v5-development-admission.json",
+      "sha256": "ecc807be33840cc371118ff5cd10981c96094c3d22840d251a76d315fb7e6a52",
+      "size": 57800
+    },
+    {
+      "path": "artifacts/grounding-v5-development-sample/manifest.json",
+      "sha256": "9cf8ff7426b88189a9b5bcbea6f05e14c6d0345f16eeff2a638ffb37284cc6ed",
+      "size": 5469
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration-d56.json",
+      "sha256": "7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+      "size": 26539
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration.json",
+      "sha256": "6b9fb7832ce560a58da5c2a08576b8f063226fc1fa5d6e88d27bd4a339fff5fd",
+      "size": 29609
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/confirmatory.json",
+      "sha256": "b801fc5617d2df1ad05114f116adb62bbb017ce9dd01c4918a6d0999f0b50f08",
+      "size": 47370
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/development.json",
+      "sha256": "1ddb4f663f4dfd4b59409d744e8218f25ecde94510db2610c5c9ca33051c1496",
+      "size": 12077
+    },
+    {
+      "path": "artifacts/grounding-v5-scripted-call-cap-plan.json",
+      "sha256": "a342cc02b55d2c125eef282dad4d4797d1d33a7bc215b82151b5937921bcf057",
+      "size": 1385
+    },
+    {
+      "path": "docs/evidence-index.md",
+      "sha256": "d72dcefa9cad7e8041d8f6b4bda4a876b40a70f987e8614044415d4659c2adb1",
+      "size": 19935
+    },
+    {
+      "path": "docs/v5-benchmark-design.md",
+      "sha256": "88b3157c85e108f719cdf04eb26c8eeecc224f0f3f71bac993454c3f77943ede",
+      "size": 9851
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+      "sha256": "75ead82e483a4b2b87b4535ca4e444d185fa5087c160e1c103703598684bfc1e",
+      "size": 1115
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+      "sha256": "30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d",
+      "size": 1615
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+      "sha256": "acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+      "size": 1612
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/policy.schema.json",
+      "sha256": "6aa2a24e1f41573f4022814639ef0dba0f32ad858e609364546a93e2c2e5af37",
+      "size": 1983
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/task.schema.json",
+      "sha256": "b10e1bf54d614644a99a4ede1b576e84333f380967f076e6f8445c30d1f63e33",
+      "size": 1301
+    },
+    {
+      "path": "pixelgym/grounding/v5/seeds.py",
+      "sha256": "856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+      "size": 7996
+    }
+  ],
+  "schema_version": "pixelgym-d510-evidence-manifest-v1",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "withdrawn_records": [
+    {
+      "exit_status": 0,
+      "reason": "pip freeze --all printed the editable install's Git remote in its git@host form, which matches the redaction scan's email pattern. Withdrawn before the redaction scan and retained outside the tree.",
+      "record": "commands/09-dev-package-versions.json",
+      "replacement_records": [
+        "commands/10-dev-package-versions.json"
+      ],
+      "sha256": "3329b317e87b5a5f0d9323fb8671e5cfe31813a33ab43f83b4497da1b862a557"
+    },
+    {
+      "exit_status": 0,
+      "reason": "The pytest warning summary printed the scratch dev virtual environment path in a ../-relative form that the recorder does not redact (15 local_absolute_paths matches across records 16 and 17 in an unrecorded pre-check). Withdrawn before the recorded redaction scan and retained outside the tree.",
+      "record": "commands/16-fast-suite-ci-invocation.json",
+      "replacement_records": [
+        "commands/87-fast-suite-ci-invocation-in-tree-venv.json"
+      ],
+      "sha256": "b19752e3115d13f0273857f3f5c63f24083d5a37bebeb2f4e13a4d229864e9d4",
+      "summary_line": "2568 passed, 6 skipped, 12 warnings in 191.32s (0:03:11)"
+    },
+    {
+      "exit_status": 0,
+      "reason": "Same ../-relative scratch path in the pytest warning summary as record 16. Withdrawn before the recorded redaction scan and retained outside the tree.",
+      "record": "commands/17-unit-suite-serial.json",
+      "replacement_records": [
+        "commands/88-unit-suite-serial-in-tree-venv.json"
+      ],
+      "sha256": "cecd6875cbdfee4ab9db09e9ec73cdcbe22d017406def84eb6f5e6aef5a9ea78",
+      "summary_line": "2568 passed, 6 skipped, 1 deselected, 3 warnings in 420.72s (0:07:00)"
+    },
+    {
+      "exit_status": 0,
+      "reason": "ls -lL printed the local account and group names. Withdrawn before the redaction scan and retained outside the tree.",
+      "record": "commands/76-linked-guest-image-listing.json",
+      "replacement_records": [
+        "commands/77-linked-guest-image-size.json"
+      ],
+      "sha256": "7347efb8ca1a8ba868f6ab8d88c529a4198549ab770a5505f47d60f0cd66c235"
+    }
+  ],
+  "worktree_status_observations": {
+    "commands/01-worktree-status.json": "",
+    "commands/54-worktree-status-after-verifiers.json": "",
+    "commands/89-worktree-status-after-integration.json": "",
+    "commands/92-worktree-status-before-redaction-scan.json": " M scripts/README.md\n?? scripts/generate_d510_evidence_report.py\n?? tests/unit/test_d510_evidence_report.py\n"
+  }
+}

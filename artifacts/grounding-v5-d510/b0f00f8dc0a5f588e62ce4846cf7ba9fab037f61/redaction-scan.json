@@ -1,0 +1,17 @@
+{
+  "files_scanned": 93,
+  "files_with_findings": {},
+  "finding_counts": {
+    "aws_access_keys": 0,
+    "bearer_tokens": 0,
+    "host_identity_paths_or_emails": 0,
+    "local_absolute_paths": 0,
+    "local_demo_credentials": 0,
+    "private_key_markers": 0,
+    "privileged_json_fields": 0,
+    "provider_api_keys": 0,
+    "system_temp_paths": 0,
+    "unredacted_image_payloads": 0
+  },
+  "schema_version": "pixelgym-d510-redaction-scan-v1"
+}

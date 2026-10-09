@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-m",
+    "v5_sandbox_integration",
+    "tests/integration/test_grounding_v5_sandbox.py",
+    "tests/integration/test_stateful_serving_sandbox.py"
+  ],
+  "command": "<path-2>/bin/python -m pytest -q -m v5_sandbox_integration tests/integration/test_grounding_v5_sandbox.py tests/integration/test_stateful_serving_sandbox.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 2.047603,
+  "ended_at_utc": "2026-10-06T05:35:32.730028+00:00",
+  "environment": {
+    "PIXELGYM_RUN_V5_SANDBOX_TESTS": "1"
+  },
+  "exit_status": 0,
+  "output": "..                                                                       [100%]\n2 passed in 1.67s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:35:30.678166+00:00"
+}

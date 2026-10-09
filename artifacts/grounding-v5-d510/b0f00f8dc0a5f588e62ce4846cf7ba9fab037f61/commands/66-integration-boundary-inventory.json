@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "<path-3>/bin/python",
+    "<path-1>/probes/boundary_inventory.py"
+  ],
+  "command": "<path-3>/bin/python <path-1>/probes/boundary_inventory.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.039056,
+  "ended_at_utc": "2026-10-06T05:43:23.289081+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "# probe source follows\n# D5.10 probe: print this source, then environment variable NAMES (never values),\n# which provider-credential-shaped names are present, and optional-dependency presence.\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\n\nprint(\"# probe source follows\")\nprint(Path(__file__).read_text(), end=\"\")\nprint(\"# probe output follows\")\nCREDENTIAL_NAMES = (\n    \"ANTHROPIC_API_KEY\",\n    \"ANTHROPIC_BASE_URL\",\n    \"AWS_ACCESS_KEY_ID\",\n    \"AWS_SECRET_ACCESS_KEY\",\n    \"CLAUDE_CODE_MESSAGING_TOKEN\",\n    \"CLAUDE_CODE_OAUTH_TOKEN\",\n    \"GEMINI_API_KEY\",\n    \"GOOGLE_API_KEY\",\n    \"GOOGLE_APPLICATION_CREDENTIALS\",\n    \"MISTRAL_API_KEY\",\n    \"OPENAI_API_KEY\",\n    \"OPENROUTER_API_KEY\",\n)\nprint(\n    json.dumps(\n        {\n            \"environment_variable_names\": sorted(os.environ),\n            \"provider_credential_names_present\": sorted(\n                name for name in CREDENTIAL_NAMES if name in os.environ\n            ),\n            \"osworld_desktop_env_installed\": importlib.util.find_spec(\"desktop_env\") is not None,\n            \"playwright_installed\": importlib.util.find_spec(\"playwright\") is not None,\n        },\n        indent=1,\n        sort_keys=True,\n    )\n)\n# probe output follows\n{\n \"environment_variable_names\": [\n  \"HOME\",\n  \"LANG\",\n  \"LC_ALL\",\n  \"PATH\",\n  \"TMPDIR\",\n  \"__CF_USER_TEXT_ENCODING\"\n ],\n \"osworld_desktop_env_installed\": true,\n \"playwright_installed\": true,\n \"provider_credential_names_present\": []\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:43:23.248252+00:00"
+}

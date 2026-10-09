@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "scripts.verify_d58_at_revision",
+    "grounding-v5-d58-reliable-diagnostic"
+  ],
+  "command": "<path-2>/bin/python -m scripts.verify_d58_at_revision grounding-v5-d58-reliable-diagnostic",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.836504,
+  "ended_at_utc": "2026-10-06T05:24:54.681974+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"executed_revision\": \"acc7833abce5b38a9ce940e8d0d1a2c6c9a097f5\", \"verification\": {\"execution_plan_digest\": \"sha256:a78efe4f8394b9c97ce9e8d32b64e2ec0b5ba7f8ba791c37578208f7f2817b7b\", \"logical_conditions_verified\": 10, \"private_journal_verified\": false, \"provider_calls\": 0, \"schema_version\": \"pixelgym-d58-reliable-diagnostic-verification-v1\", \"summary_digest\": \"sha256:ebe6494e845f3be4990d2a2d4963b2aa07bc7950569af3f1dcae6fea647fc348\"}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-06T05:24:53.842330+00:00"
+}
