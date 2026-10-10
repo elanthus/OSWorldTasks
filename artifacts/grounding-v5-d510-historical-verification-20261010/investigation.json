@@ -1,0 +1,1315 @@
+{
+  "all_verification_attempts": {
+    "27-historical-with-git.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_memory --verify",
+      "cwd": "<scratch>/tree-27",
+      "duration_seconds": 0.58189,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "27",
+      "output": "verified artifact hashes, current source binding, and evidence-only report; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "started_at_utc": "2026-10-10T23:01:13.143065+00:00"
+    },
+    "27-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_memory --verify",
+      "cwd": "<scratch>/tree-27",
+      "duration_seconds": 1.187577,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "27",
+      "output": "verified artifact hashes, current source binding, and evidence-only report; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "13b289cde5f40efc2090e8d132947270c7ec1bcc",
+      "started_at_utc": "2026-10-10T22:58:15.889416+00:00"
+    },
+    "42-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_review_corrections --verify",
+      "cwd": "<scratch>/tree-42",
+      "duration_seconds": 0.506668,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "42",
+      "output": "Verified corrections from stored evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "9446b445d392ed29e7643ec6195d0143ffc70330",
+      "started_at_utc": "2026-10-10T22:58:17.893595+00:00"
+    },
+    "43-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_power_report --verify",
+      "cwd": "<scratch>/tree-43",
+      "duration_seconds": 0.420855,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "43",
+      "output": "Verified corrected report from stored evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+      "started_at_utc": "2026-10-10T22:58:19.290327+00:00"
+    },
+    "44-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d58_haiku_successor --verify",
+      "cwd": "<scratch>/tree-44",
+      "duration_seconds": 0.632088,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "44",
+      "output": "Verified Haiku D5.8 successor power evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "dec1fa9d0f060ebe789919c50a7c2335e00f0347",
+      "started_at_utc": "2026-10-10T22:58:20.786254+00:00"
+    },
+    "46-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_freeze --verify --source-revision f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3",
+      "cwd": "<scratch>/tree-46",
+      "duration_seconds": 410.103141,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "46",
+      "output": "{\"files\": [\"admission.json\", \"execution-plan.json\", \"task-manifest.json\"], \"provider_calls_made\": 0, \"verified\": true}\n",
+      "provider_calls": 0,
+      "source_revision": "f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3",
+      "started_at_utc": "2026-10-10T22:58:20.810592+00:00"
+    },
+    "48-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_freeze --verify --source-revision ca1c98333cffb5f04beef1d4f56ed09f9840f538",
+      "cwd": "<scratch>/tree-48",
+      "duration_seconds": 0.508709,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "48",
+      "output": "{\"files\": [\"execution-plan.json\", \"owner-exception.json\"], \"provider_calls_made\": 0, \"verified\": true}\n",
+      "provider_calls": 0,
+      "source_revision": "ca1c98333cffb5f04beef1d4f56ed09f9840f538",
+      "started_at_utc": "2026-10-10T22:58:22.341631+00:00"
+    },
+    "49-historical-with-git.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_retry_successor --verify --source-revision 1201df8a773add79733d392f876b579752f797c5",
+      "cwd": "<scratch>/tree-49",
+      "duration_seconds": 7.216681,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "49",
+      "output": "{\"execution_enabled\": false, \"execution_plan_digest\": \"sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7\", \"history_policy_id\": \"policy-6788af9cc24b21e0b89f\", \"provider_calls_made\": 0, \"stateless_policy_id\": \"policy-9ce79eec1338f6426873\"}\n",
+      "provider_calls": 0,
+      "source_revision": "1201df8a773add79733d392f876b579752f797c5",
+      "started_at_utc": "2026-10-10T22:58:38.088767+00:00"
+    },
+    "49-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_retry_successor --verify --source-revision 1201df8a773add79733d392f876b579752f797c5",
+      "cwd": "<scratch>/tree-49",
+      "duration_seconds": 0.670678,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 1,
+      "original_record": "49",
+      "output": "Traceback (most recent call last):\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 51, in _git_output\n    return subprocess.run(\n           ^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.15/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', 'cat-file', '-t', '1201df8a773add79733d392f876b579752f797c5']' returned non-zero exit status 128.\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"<scratch>/tree-49/scripts/prepare_grounding_v5_d59_haiku_retry_successor.py\", line 213, in <module>\n    main()\n  File \"<scratch>/tree-49/scripts/prepare_grounding_v5_d59_haiku_retry_successor.py\", line 191, in main\n    outputs = expected_outputs(\n              ^^^^^^^^^^^^^^^^^\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 269, in expected_outputs\n    plan = execution_plan(root, source_revision=source_revision, discarded_run=discarded_run)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 171, in execution_plan\n    _validate_policy_inputs(root, source_revision)\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 76, in _validate_policy_inputs\n    _validate_source_revision(root, revision)\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 65, in _validate_source_revision\n    if _git_output(root, \"cat-file\", \"-t\", revision).strip() != b\"commit\":\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<scratch>/tree-49/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 59, in _git_output\n    raise ValueError(\"source revision or path is unavailable\") from error\nValueError: source revision or path is unavailable\n",
+      "provider_calls": 0,
+      "source_revision": "1201df8a773add79733d392f876b579752f797c5",
+      "started_at_utc": "2026-10-10T22:58:23.843460+00:00"
+    },
+    "50-historical-with-git.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_network_retry --verify --source-revision b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "cwd": "<scratch>/tree-50",
+      "duration_seconds": 6.340972,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "50",
+      "output": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092\n",
+      "provider_calls": 0,
+      "source_revision": "b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "started_at_utc": "2026-10-10T22:58:46.338524+00:00"
+    },
+    "50-historical.json": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_network_retry --verify --source-revision b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "cwd": "<scratch>/tree-50",
+      "duration_seconds": 0.698866,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 1,
+      "original_record": "50",
+      "output": "Traceback (most recent call last):\n  File \"<scratch>/tree-50/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 51, in _git_output\n    return subprocess.run(\n           ^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.12/3.12.15/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', 'cat-file', '-t', 'b3167ff49576aec4001444ba3166d37cfc8dfda4']' returned non-zero exit status 128.\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"<scratch>/tree-50/scripts/prepare_grounding_v5_d59_haiku_network_retry.py\", line 28, in <module>\n    main()\n  File \"<scratch>/tree-50/scripts/prepare_grounding_v5_d59_haiku_network_retry.py\", line 18, in main\n    plan = execution_plan(ROOT, source_revision=args.source_revision)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<scratch>/tree-50/pixelgym/grounding/v5/d59_haiku_network_retry.py\", line 58, in execution_plan\n    _validate_policy_inputs(root, source_revision)\n  File \"<scratch>/tree-50/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 76, in _validate_policy_inputs\n    _validate_source_revision(root, revision)\n  File \"<scratch>/tree-50/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 65, in _validate_source_revision\n    if _git_output(root, \"cat-file\", \"-t\", revision).strip() != b\"commit\":\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<scratch>/tree-50/pixelgym/grounding/v5/d59_haiku_retry_successor.py\", line 59, in _git_output\n    raise ValueError(\"source revision or path is unavailable\") from error\nValueError: source revision or path is unavailable\n",
+      "provider_calls": 0,
+      "source_revision": "b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "started_at_utc": "2026-10-10T22:58:25.513654+00:00"
+    }
+  },
+  "created_at_utc": "2026-10-10T23:05:19.454819+00:00",
+  "environment": {
+    "dependencies": {
+      "Pillow": "11.0.0",
+      "gymnasium": "0.28.1",
+      "jsonschema": "4.25.1",
+      "numpy": "1.26.4",
+      "pydantic": "2.13.4"
+    },
+    "installation": "existing repository .venv; no dependencies installed",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.12.15"
+  },
+  "evidence_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+  "method": [
+    "Archive historical pixelgym, scripts, pyproject.toml, requirements into separate temporary directories; copy tracked artifacts from the original evidence revision with git archive.",
+    "Run each historical verify command in the existing Python 3.12 virtual environment with an allowlisted environment; PYTHONPATH selects the archived source, and bytecode writes are disabled.",
+    "D5.8 record 27 uses the policy code_revision recorded in pilot-plan.json. Records 42, 43, 44 use the latest artifact-writing commits, each independently matched against all stored source-file hashes. D5.9 records use source_binding.source_revision.",
+    "Retry verifiers remove GIT_* variables, so the initial archive-only attempts failed to find git objects. A .git pointer to the original object database enabled their read-only cat-file, show, and ls-tree queries. Both unsuccessful setup attempts are retained.",
+    "The first successful record 27 used its evidence-publication commit, whose source hashes also match. A second successful verification used the policy-recorded code revision; both are retained.",
+    "Record 46 reruns complete admission; --skip-admission was not passed to its historical verification command.",
+    "Separately recompute source-bound projections at the original evidence revision and enumerate every differing JSON leaf. This diagnostic comparison of record 46 reuses stored admission; the full independent historical command verifies admission too.",
+    "Hash all 1174 tracked artifact files before and after every verifier command.",
+    "No benchmark model execution, provider call, private-journal recovery, repository edit, or public-claim approval was performed.",
+    "Local absolute paths in this package are replaced by <repo>, <scratch>, <home> placeholders; full command outputs are otherwise retained."
+  ],
+  "recorded_head_differences": {
+    "27": {
+      "source_differences": [
+        {
+          "path": "/pixelgym/env.py",
+          "recomputed": "sha256:628d253e63472e0e98ad7443fc8c52c909f2f898c8c5358be91d119558e4c41f",
+          "stored": "sha256:36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/admission.py",
+          "recomputed": "sha256:1d3a6bf1fa998ef59309551cedeceaca50242f8363ff30cb3df834c826adc744",
+          "stored": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/backend.py",
+          "recomputed": "sha256:ef331d8a4792ef7b1beb8270f67b94d9383f9d9a9a761c81b473191135a5b5dc",
+          "stored": "sha256:a8916ca84f5617030044fd2c22d0a30dcbd826aeb4fb431cec6085945e005a58"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/contracts.py",
+          "recomputed": "sha256:e1289361e17591102b0f7df6d8e68a07dbcf0736c821bb7ea593adb61ad879c5",
+          "stored": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/generator.py",
+          "recomputed": "sha256:9d08828aaca062dc9ead53c63a5b254b7539ed6b12d4e2a659fabf07f2ca3102",
+          "stored": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/journal.py",
+          "recomputed": "sha256:58b50e49742093cd2a861a0ebc43f310f356ad50578b0f1963a52226eb023501",
+          "stored": "sha256:71a50c9d58e2237cbaacf74dd237a0e1337f3239dd78660d3716a8ecf61e2929"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/memory_backend.py",
+          "recomputed": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+          "stored": "sha256:b0454540ef27368e2fa7aa0b3254f4e8f58cc1890845daa525f4c6e89237f8de"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/memory_generator.py",
+          "recomputed": "sha256:bcc2d58c052a485b6438da55a96a271a2df9a0c4793a6aa299499a9e369da960",
+          "stored": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/memory_plan.py",
+          "recomputed": "sha256:9aabe0612dc053ddfae6e133cf48358eb45be948a7fa4c6bc8719c3ea000f058",
+          "stored": "sha256:f06e2b007911f27e3b794cf594063a6920296a2cf5e505da07e74a81f19eedc6"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/openrouter_policy.py",
+          "recomputed": "sha256:70157a2ff35873d6addbb43e33cc4ae2b6bcce5054d922c77b6e0edfeb9cdfb7",
+          "stored": "sha256:009bf8e5827a55ea314dc3ea75946213f3818b954fdef9af3c41cf86c879c37f"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/panel_policy.py",
+          "recomputed": "sha256:737f8554c31f832a1e52012d20e5a20c9da5aa638c06ebc2d5919c164e7bf810",
+          "stored": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/policies.py",
+          "recomputed": "sha256:74cf34c5b275471be32fe6c11af53c48632e13f2fe61c1de74f1bd2f625d774a",
+          "stored": "sha256:9ceb6583cd8bee0be90d0e4ad425c160f08f436212b21d1f1e37716264fbabb2"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/resume.py",
+          "recomputed": "sha256:07ed12590235b15152d49e6d7d427b5eeaa496a304d6ce28b1420b888f2f715f",
+          "stored": "sha256:1042cdd70708acdc4439b7ac45eee2219c7a2a48dfa7347cb24d14e59d850f6e"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/runner.py",
+          "recomputed": "sha256:944a53cc3a285c9789124e298de9dba360ad6334760fc94abc5f60ddfa2a5f0d",
+          "stored": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/screenshot_memory.py",
+          "recomputed": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8",
+          "stored": "sha256:6ead1700ec16b2876aa21a8045061c5193b992dfe706db78310365270acef772"
+        },
+        {
+          "path": "/pixelgym/grounding/v5/seeds.py",
+          "recomputed": "sha256:856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+          "stored": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d"
+        },
+        {
+          "path": "/pyproject.toml",
+          "recomputed": "sha256:bc1623d7c2dfdc96997ef683501d98ce8f5f9caa8b532fa8205120c06e201a50",
+          "stored": "sha256:e887cc83aa5412d55fdfc967364d7c68a7b870660d3d9850b352374797a7baa0"
+        },
+        {
+          "path": "/scripts/prepare_grounding_v5_memory.py",
+          "recomputed": "sha256:5b7110619b8940c5ef7a3d4be782db50c8e820a07a8432a16f1e0eac817fccc0",
+          "stored": "sha256:47f10261a45836211302e0657caf25a56406da5167db415143c9ea97eaa696b1"
+        }
+      ]
+    },
+    "42": {
+      "admission-summary-v2.json": [],
+      "correction.json": [
+        {
+          "path": "/source_file_digests/scripts/prepare_grounding_v5_review_corrections.py",
+          "recomputed": "sha256:bcb8848aae0fd685a44474a38fed8fd1c57c7729dbd8da4aae4ae2e05a48b4f8",
+          "stored": "sha256:8c03f8dcb1d7d68281ec013755d336948d1d70a0a1b58fb4c6941acf0d41fc1b"
+        }
+      ],
+      "pilot-analysis-v2.json": []
+    },
+    "43": {
+      "binding": [
+        {
+          "path": "/source_file_digests/scripts/prepare_grounding_v5_power_report.py",
+          "recomputed": "sha256:d702f0c06e33e9d03b9ce8bb88701646f5a07ef80f3c850ac911721c4786d63b",
+          "stored": "sha256:d769462b9c5436062b566fcb55220a9ceddd7036a3e022e5d38def82fecb1012"
+        }
+      ],
+      "report_equal": true
+    },
+    "44": {
+      "analysis": [
+        {
+          "path": "/source_file_digests/scripts/prepare_grounding_v5_d58_haiku_successor.py",
+          "recomputed": "sha256:176ece47bb71f6228fdc3719340a7317fecedba64cdbe1b742c5a061861335af",
+          "stored": "sha256:216213a67ceae4ba61007fda150dc57f4b41f8d251ec2e24969e8afb8455441e"
+        }
+      ],
+      "report_equal": true
+    },
+    "46": {
+      "execution-plan.json": [
+        {
+          "path": "/execution_plan_digest",
+          "recomputed": "sha256:2d388d95f9b3ba914ce4a45b8354619b998a9d761984320662709805fa8c12fb",
+          "stored": "sha256:6d957fb9bb607ce3470a1da2b7c13c1fa8d671b0c8277e99d7bf06f2fc93c990"
+        },
+        {
+          "path": "/source_binding/binding_digest",
+          "recomputed": "sha256:e6347a6f93b92686358c1685d45a6929a18ac91acc5f28c58db85effe7043381",
+          "stored": "sha256:fec37be51bad385ba13ea8778eabf8a5f72e2e9e4ec52998e28364ec63860c58"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/admission.py",
+          "recomputed": "sha256:1d3a6bf1fa998ef59309551cedeceaca50242f8363ff30cb3df834c826adc744",
+          "stored": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/contracts.py",
+          "recomputed": "sha256:e1289361e17591102b0f7df6d8e68a07dbcf0736c821bb7ea593adb61ad879c5",
+          "stored": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/generator.py",
+          "recomputed": "sha256:9d08828aaca062dc9ead53c63a5b254b7539ed6b12d4e2a659fabf07f2ca3102",
+          "stored": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/memory_generator.py",
+          "recomputed": "sha256:bcc2d58c052a485b6438da55a96a271a2df9a0c4793a6aa299499a9e369da960",
+          "stored": "sha256:84d11661c3df0684e49b3bceaa3a1d181fa5db9a8e782e45ef3ecbf292714434"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/seeds.py",
+          "recomputed": "sha256:856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+          "stored": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d"
+        },
+        {
+          "path": "/task_manifest_binding/file_sha256",
+          "recomputed": "sha256:3176b4d3f6a4f259d97c1cd4ef4840b5bc9ed6f4bda6a6544ab58e637306cb01",
+          "stored": "sha256:a96858e166207eda2cb0201fae68a3c7a3ac3fa3a91333bcb1af888963df2ea8"
+        },
+        {
+          "path": "/task_manifest_binding/manifest_digest",
+          "recomputed": "sha256:af298eb37cb52475b9059d124b552ea67f53e68ef229c9c7236f61979a4152f7",
+          "stored": "sha256:e73231fead02e86aaad0a40a5fc43c4674e4ee364796577e5c65cae40e3861ed"
+        }
+      ],
+      "task-manifest.json": [
+        {
+          "path": "/manifest_digest",
+          "recomputed": "sha256:af298eb37cb52475b9059d124b552ea67f53e68ef229c9c7236f61979a4152f7",
+          "stored": "sha256:e73231fead02e86aaad0a40a5fc43c4674e4ee364796577e5c65cae40e3861ed"
+        },
+        {
+          "path": "/source_binding/binding_digest",
+          "recomputed": "sha256:e6347a6f93b92686358c1685d45a6929a18ac91acc5f28c58db85effe7043381",
+          "stored": "sha256:fec37be51bad385ba13ea8778eabf8a5f72e2e9e4ec52998e28364ec63860c58"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/admission.py",
+          "recomputed": "sha256:1d3a6bf1fa998ef59309551cedeceaca50242f8363ff30cb3df834c826adc744",
+          "stored": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/contracts.py",
+          "recomputed": "sha256:e1289361e17591102b0f7df6d8e68a07dbcf0736c821bb7ea593adb61ad879c5",
+          "stored": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/generator.py",
+          "recomputed": "sha256:9d08828aaca062dc9ead53c63a5b254b7539ed6b12d4e2a659fabf07f2ca3102",
+          "stored": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/memory_generator.py",
+          "recomputed": "sha256:bcc2d58c052a485b6438da55a96a271a2df9a0c4793a6aa299499a9e369da960",
+          "stored": "sha256:84d11661c3df0684e49b3bceaa3a1d181fa5db9a8e782e45ef3ecbf292714434"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/seeds.py",
+          "recomputed": "sha256:856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+          "stored": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d"
+        }
+      ]
+    },
+    "48": {
+      "execution-plan.json": [
+        {
+          "path": "/execution_plan_digest",
+          "recomputed": "sha256:426203d58f774d67327bf80210242371b25b6599c9ea6cd29c8758bed9c04363",
+          "stored": "sha256:9523674b3cc8b9bca053072103ec885802ce5eec6109ca94fc843fa792c10a52"
+        },
+        {
+          "path": "/source_binding/binding_digest",
+          "recomputed": "sha256:7b47155b37ffbff50a4281efa11c4878fceabc5f91ad320523f0aa4cccdfad39",
+          "stored": "sha256:a0c59e816d5afb15eb57dabb308c5bc6c34eba45e7d136891f4eaf955dd4a601"
+        },
+        {
+          "path": "/source_binding/files/pixelgym/grounding/v5/d59_haiku_freeze.py",
+          "recomputed": "sha256:95041aecd5ac81108ea0a84326e3e3b300de403339ae80ccf1d5fa2626c8830e",
+          "stored": "sha256:be61b45ab5ddc2421e0acbc7f7683e3c95ec0693e26ea5ee306582bc30457e07"
+        },
+        {
+          "path": "/source_binding/files/scripts/prepare_grounding_v5_d59_haiku_freeze.py",
+          "recomputed": "sha256:755caa4b61b8636f4f4522e8a84d1208d7680b913bcfefdbd62aec471fb02900",
+          "stored": "sha256:6f42c53e128d18dbd6a549f7497382d60206e07dec9952998e0806b5c8e49100"
+        }
+      ],
+      "owner-exception.json": []
+    }
+  },
+  "reproduction_helpers": {
+    "compare-current.py": "import ast, hashlib, importlib, json, pathlib, sys\nBASE=pathlib.Path(__file__).parent\nsys.path.insert(0,str(BASE))\nfrom investigate import ROOT, OUT, EVIDENCE, extract\nTREE=OUT/'tree-recorded-head';TREE.mkdir(exist_ok=True)\nextract(EVIDENCE,['pixelgym','scripts','pyproject.toml','requirements','artifacts'],TREE)\nsys.path.insert(0,str(TREE))\ndef read(path):return json.loads((TREE/path).read_text())\ndef diff(a,b,p=''):\n if type(a)!=type(b):return [{'path':p,'stored':a,'recomputed':b}]\n if isinstance(a,dict):\n  return [d for k in sorted(a.keys()|b.keys()) for d in (diff(a[k],b[k],p+'/'+k) if k in a and k in b else [{'path':p+'/'+k,'stored':a.get(k),'recomputed':b.get(k)}])]\n if isinstance(a,list):\n  if len(a)!=len(b):return [{'path':p,'stored_length':len(a),'recomputed_length':len(b)}]\n  return [d for i,(x,y) in enumerate(zip(a,b)) for d in diff(x,y,p+'/'+str(i))]\n return [] if a==b else [{'path':p,'stored':a,'recomputed':b}]\nresults={}\nm=importlib.import_module('scripts.prepare_grounding_v5_memory')\nresults['27']={'source_differences':diff(read('artifacts/grounding-v5-d58-design/memory-repair/sources.json'),m.source_digests())}\nm=importlib.import_module('scripts.prepare_grounding_v5_review_corrections')\nresults['42']={name:diff(read('artifacts/grounding-v5-d58-review-corrections/'+name),val) for name,val in m.payloads().items()}\nm=importlib.import_module('scripts.prepare_grounding_v5_power_report')\nstored=read('artifacts/grounding-v5-d58-review-corrections-v2/power-report-binding.json')\nexpected={'source_file_digests':{str(p.relative_to(TREE)):'sha256:'+hashlib.sha256(p.read_bytes()).hexdigest() for p in (m.SOURCE,pathlib.Path(m.__file__))},'provider_calls':0,'original_artifacts_replaced':False}\nresults['43']={'binding':diff(stored,expected),'report_equal':m.render_report(read('artifacts/grounding-v5-d58-final-design/power.json'))==(TREE/'artifacts/grounding-v5-d58-review-corrections-v2/power-report-v2.md').read_text()}\nm=importlib.import_module('scripts.prepare_grounding_v5_d58_haiku_successor');computed=m.build_analysis()\nresults['44']={'analysis':diff(read('artifacts/grounding-v5-d58-haiku-successor/analysis.json'),computed),'report_equal':m.render_report(computed)==(TREE/'artifacts/grounding-v5-d58-haiku-successor/report.md').read_text()}\nm=importlib.import_module('scripts.prepare_grounding_v5_d59_freeze')\nresults['46']={name:diff(read('artifacts/grounding-v5-d59-freeze/'+name),json.loads(payload)) for name,payload in m.expected(source_revision='f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3',include_admission=False).items()}\nm=importlib.import_module('pixelgym.grounding.v5.d59_haiku_freeze')\nresults['48']={name:diff(read('artifacts/grounding-v5-d59-haiku-freeze/'+name),json.loads(payload)) for name,payload in m.expected_outputs(TREE,source_revision='ca1c98333cffb5f04beef1d4f56ed09f9840f538').items()}\n(OUT/'current-differences.json').write_text(json.dumps(results,indent=2,sort_keys=True)+'\\n')\nfor num,result in results.items():\n print(num,json.dumps({k:(len(v) if isinstance(v,list) else v) for k,v in result.items()}))\n",
+    "investigate-initial.py": "import hashlib, io, json, os, pathlib, shlex, subprocess, tarfile, time\nfrom datetime import datetime, timezone\nROOT=pathlib.Path('<repo>')\nOUT=pathlib.Path('<scratch>')\nPYTHON=str(ROOT/'.venv/bin/python')\nEVIDENCE='b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61'\nCASES=[\n ('27','13b289cde5f40efc2090e8d132947270c7ec1bcc','scripts.prepare_grounding_v5_memory',None),\n ('42','9446b445d392ed29e7643ec6195d0143ffc70330','scripts.prepare_grounding_v5_review_corrections',None),\n ('43','1e5d9c0d19acf51505919deefe0d155c2ab22b26','scripts.prepare_grounding_v5_power_report',None),\n ('44','dec1fa9d0f060ebe789919c50a7c2335e00f0347','scripts.prepare_grounding_v5_d58_haiku_successor',None),\n ('46','f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3','scripts.prepare_grounding_v5_d59_freeze','f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3'),\n ('48','ca1c98333cffb5f04beef1d4f56ed09f9840f538','scripts.prepare_grounding_v5_d59_haiku_freeze','ca1c98333cffb5f04beef1d4f56ed09f9840f538'),\n ('49','1201df8a773add79733d392f876b579752f797c5','scripts.prepare_grounding_v5_d59_haiku_retry_successor','1201df8a773add79733d392f876b579752f797c5'),\n ('50','b3167ff49576aec4001444ba3166d37cfc8dfda4','scripts.prepare_grounding_v5_d59_haiku_network_retry','b3167ff49576aec4001444ba3166d37cfc8dfda4'),\n]\ndef git(*args):return subprocess.check_output(['git',*args],cwd=ROOT)\ndef extract(rev,paths,target):\n data=git('archive',rev,*paths)\n with tarfile.open(fileobj=io.BytesIO(data)) as archive:archive.extractall(target,filter='data')\ndef digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()\ndef inventory(tree):return {str(p.relative_to(tree)):digest(p) for p in (tree/'artifacts').rglob('*') if p.is_file()}\ndef run_case(case):\n num,rev,module,source=case\n tree=OUT/('tree-'+num);tree.mkdir(exist_ok=True)\n extract(rev,['pixelgym','scripts','pyproject.toml','requirements'],tree)\n extract(EVIDENCE,['artifacts'],tree)\n # The two retry verifiers use read-only git object queries; no worktree is registered.\n gitdir=git('rev-parse','--absolute-git-dir').decode().strip()\n env={k:os.environ[k] for k in ('PATH','HOME','TMPDIR','LANG','LC_ALL') if k in os.environ}\n env.update(PYTHONPATH=str(tree),PYTHONDONTWRITEBYTECODE='1',GIT_DIR=gitdir,GIT_WORK_TREE=str(tree))\n command=[PYTHON,'-m',module,'--verify']\n if source:command+=['--source-revision',source]\n before=inventory(tree)\n started=datetime.now(timezone.utc).isoformat();t=time.monotonic()\n result=subprocess.run(command,cwd=tree,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)\n duration=time.monotonic()-t\n after=inventory(tree)\n record={'original_record':num,'source_revision':rev,'artifact_revision':EVIDENCE,'command':shlex.join(command),'cwd':str(tree),'environment_variable_names':sorted(env),'started_at_utc':started,'duration_seconds':round(duration,6),'exit_status':result.returncode,'output':result.stdout,'artifact_file_count':len(before),'artifact_changes':[p for p in before.keys()|after.keys() if before.get(p)!=after.get(p)],'provider_calls':0}\n (OUT/(num+'-historical.json')).write_text(json.dumps(record,indent=2,sort_keys=True)+'\\n')\n print(json.dumps({'record':num,'exit_status':result.returncode,'duration_seconds':round(duration,3),'output':result.stdout,'artifact_changes':record['artifact_changes']}),flush=True)\nif __name__=='__main__':\n import sys\n for case in CASES:\n  if len(sys.argv)==1 or case[0] in sys.argv[1:]:run_case(case)\n",
+    "investigate.py": "import hashlib, io, json, os, pathlib, shlex, subprocess, tarfile, time\nfrom datetime import datetime, timezone\nROOT=pathlib.Path('<repo>')\nOUT=pathlib.Path('<scratch>')\nPYTHON=str(ROOT/'.venv/bin/python')\nEVIDENCE='b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61'\nCASES=[\n ('27','09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5','scripts.prepare_grounding_v5_memory',None),\n ('42','9446b445d392ed29e7643ec6195d0143ffc70330','scripts.prepare_grounding_v5_review_corrections',None),\n ('43','1e5d9c0d19acf51505919deefe0d155c2ab22b26','scripts.prepare_grounding_v5_power_report',None),\n ('44','dec1fa9d0f060ebe789919c50a7c2335e00f0347','scripts.prepare_grounding_v5_d58_haiku_successor',None),\n ('46','f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3','scripts.prepare_grounding_v5_d59_freeze','f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3'),\n ('48','ca1c98333cffb5f04beef1d4f56ed09f9840f538','scripts.prepare_grounding_v5_d59_haiku_freeze','ca1c98333cffb5f04beef1d4f56ed09f9840f538'),\n ('49','1201df8a773add79733d392f876b579752f797c5','scripts.prepare_grounding_v5_d59_haiku_retry_successor','1201df8a773add79733d392f876b579752f797c5'),\n ('50','b3167ff49576aec4001444ba3166d37cfc8dfda4','scripts.prepare_grounding_v5_d59_haiku_network_retry','b3167ff49576aec4001444ba3166d37cfc8dfda4'),\n]\ndef git(*args):return subprocess.check_output(['git',*args],cwd=ROOT)\ndef extract(rev,paths,target):\n data=git('archive',rev,*paths)\n with tarfile.open(fileobj=io.BytesIO(data)) as archive:archive.extractall(target,filter='data')\ndef digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()\ndef inventory(tree):return {str(p.relative_to(tree)):digest(p) for p in (tree/'artifacts').rglob('*') if p.is_file()}\ndef run_case(case):\n num,rev,module,source=case\n tree=OUT/('tree-'+num);tree.mkdir(exist_ok=True)\n extract(rev,['pixelgym','scripts','pyproject.toml','requirements'],tree)\n extract(EVIDENCE,['artifacts'],tree)\n # The two retry verifiers use read-only git object queries; no worktree is registered.\n gitdir=git('rev-parse','--absolute-git-dir').decode().strip()\n (tree/'.git').write_text('gitdir: '+gitdir+'\\n')\n env={k:os.environ[k] for k in ('PATH','HOME','TMPDIR','LANG','LC_ALL') if k in os.environ}\n env.update(PYTHONPATH=str(tree),PYTHONDONTWRITEBYTECODE='1',GIT_DIR=gitdir,GIT_WORK_TREE=str(tree))\n command=[PYTHON,'-m',module,'--verify']\n if source:command+=['--source-revision',source]\n before=inventory(tree)\n started=datetime.now(timezone.utc).isoformat();t=time.monotonic()\n result=subprocess.run(command,cwd=tree,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)\n duration=time.monotonic()-t\n after=inventory(tree)\n record={'original_record':num,'source_revision':rev,'artifact_revision':EVIDENCE,'command':shlex.join(command),'cwd':str(tree),'environment_variable_names':sorted(env),'started_at_utc':started,'duration_seconds':round(duration,6),'exit_status':result.returncode,'output':result.stdout,'artifact_file_count':len(before),'artifact_changes':[p for p in before.keys()|after.keys() if before.get(p)!=after.get(p)],'provider_calls':0}\n (OUT/(num+'-historical-with-git.json')).write_text(json.dumps(record,indent=2,sort_keys=True)+'\\n')\n print(json.dumps({'record':num,'exit_status':result.returncode,'duration_seconds':round(duration,3),'output':result.stdout,'artifact_changes':record['artifact_changes']}),flush=True)\nif __name__=='__main__':\n import sys\n for case in CASES:\n  if len(sys.argv)==1 or case[0] in sys.argv[1:]:run_case(case)\n",
+    "source-audit.py": "import ast, hashlib, json, pathlib, subprocess\nfrom investigate import CASES\nROOT=pathlib.Path('<repo>'); OUT=pathlib.Path(__file__).parent\nCASE_PATHS={\n'27':'artifacts/grounding-v5-d58-design/memory-repair/sources.json',\n'42':'artifacts/grounding-v5-d58-review-corrections/correction.json',\n'43':'artifacts/grounding-v5-d58-review-corrections-v2/power-report-binding.json',\n'44':'artifacts/grounding-v5-d58-haiku-successor/analysis.json',\n'46':'artifacts/grounding-v5-d59-freeze/task-manifest.json',\n'48':'artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json',\n'49':'artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json',\n'50':'artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json'}\ndef git(*args):return subprocess.check_output(['git',*args],cwd=ROOT)\ndef sha(body):return 'sha256:'+hashlib.sha256(body).hexdigest()\ndef normalize(tree):\n for node in ast.walk(tree):\n  if isinstance(node,(ast.Module,ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)) and node.body and isinstance(node.body[0],ast.Expr) and isinstance(node.body[0].value,ast.Constant) and isinstance(node.body[0].value.value,str):node.body.pop(0)\n return ast.dump(tree,include_attributes=False)\nresults={}\nfor num,path in CASE_PATHS.items():\n tree=OUT/('tree-'+num);data=json.loads((tree/path).read_text())\n bindings=data if num=='27' else (data['source_file_digests'] if num in ['42','43','44'] else data['source_binding']['files'])\n rows=[]\n for name,expected in bindings.items():\n  historical=(tree/name).read_bytes(); recorded=(OUT/'tree-recorded-head'/name).read_bytes()\n  row={'path':name,'expected_sha256':expected,'historical_sha256':sha(historical),'recorded_head_sha256':sha(recorded)}\n  if historical!=recorded:\n   if name.endswith('.py'):\n    row['ast_equal_ignoring_docstrings']=normalize(ast.parse(historical))==normalize(ast.parse(recorded))\n   rev=next(c[1] for c in CASES if c[0]==num)\n   row['change_commits']=git('log','--format=%H %s',rev+'..b0f00f8','--',name).decode().splitlines()\n  rows.append(row)\n results[num]={'artifact_path':path,'source_files':rows,'historical_bound_file_count':len(rows),'historical_binding_mismatches':[r['path'] for r in rows if r['historical_sha256']!=r['expected_sha256']]}\nresults['frozen_artifact_changes_since_evidence_revision']=git('diff','--name-only','b0f00f8','HEAD','--',*[CASE_PATHS[n] for n in CASE_PATHS]).decode().splitlines()\n(OUT/'source-audit.json').write_text(json.dumps(results,indent=2,sort_keys=True)+'\\n')\nfor n,d in results.items():\n if isinstance(d,dict):print(n,'bound files',d['historical_bound_file_count'],'mismatches',d['historical_binding_mismatches'], 'changed',[(r['path'],r.get('ast_equal_ignoring_docstrings')) for r in d['source_files'] if r['historical_sha256']!=r['recorded_head_sha256']])\n"
+  },
+  "schema_version": "pixelgym-d510-investigation-v1",
+  "scope": "Read-only investigation of prior command records 27, 42, 43, 44, 46, 48, 49, 50; no milestone verdict.",
+  "selected_verifications": {
+    "27": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_memory --verify",
+      "cwd": "<scratch>/tree-27",
+      "duration_seconds": 0.58189,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "27",
+      "output": "verified artifact hashes, current source binding, and evidence-only report; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "09c5b4a19794842c1cf0c0a8a74b1cc7c8f59fb5",
+      "started_at_utc": "2026-10-10T23:01:13.143065+00:00"
+    },
+    "42": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_review_corrections --verify",
+      "cwd": "<scratch>/tree-42",
+      "duration_seconds": 0.506668,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "42",
+      "output": "Verified corrections from stored evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "9446b445d392ed29e7643ec6195d0143ffc70330",
+      "started_at_utc": "2026-10-10T22:58:17.893595+00:00"
+    },
+    "43": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_power_report --verify",
+      "cwd": "<scratch>/tree-43",
+      "duration_seconds": 0.420855,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "43",
+      "output": "Verified corrected report from stored evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "1e5d9c0d19acf51505919deefe0d155c2ab22b26",
+      "started_at_utc": "2026-10-10T22:58:19.290327+00:00"
+    },
+    "44": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d58_haiku_successor --verify",
+      "cwd": "<scratch>/tree-44",
+      "duration_seconds": 0.632088,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "44",
+      "output": "Verified Haiku D5.8 successor power evidence; provider calls: 0\n",
+      "provider_calls": 0,
+      "source_revision": "dec1fa9d0f060ebe789919c50a7c2335e00f0347",
+      "started_at_utc": "2026-10-10T22:58:20.786254+00:00"
+    },
+    "46": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_freeze --verify --source-revision f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3",
+      "cwd": "<scratch>/tree-46",
+      "duration_seconds": 410.103141,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "46",
+      "output": "{\"files\": [\"admission.json\", \"execution-plan.json\", \"task-manifest.json\"], \"provider_calls_made\": 0, \"verified\": true}\n",
+      "provider_calls": 0,
+      "source_revision": "f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3",
+      "started_at_utc": "2026-10-10T22:58:20.810592+00:00"
+    },
+    "48": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_freeze --verify --source-revision ca1c98333cffb5f04beef1d4f56ed09f9840f538",
+      "cwd": "<scratch>/tree-48",
+      "duration_seconds": 0.508709,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "48",
+      "output": "{\"files\": [\"execution-plan.json\", \"owner-exception.json\"], \"provider_calls_made\": 0, \"verified\": true}\n",
+      "provider_calls": 0,
+      "source_revision": "ca1c98333cffb5f04beef1d4f56ed09f9840f538",
+      "started_at_utc": "2026-10-10T22:58:22.341631+00:00"
+    },
+    "49": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_retry_successor --verify --source-revision 1201df8a773add79733d392f876b579752f797c5",
+      "cwd": "<scratch>/tree-49",
+      "duration_seconds": 7.216681,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "49",
+      "output": "{\"execution_enabled\": false, \"execution_plan_digest\": \"sha256:c123aad69824e2ec352fd1751fafd762e43a0f2697cdd00e4521efe6509d5cf7\", \"history_policy_id\": \"policy-6788af9cc24b21e0b89f\", \"provider_calls_made\": 0, \"stateless_policy_id\": \"policy-9ce79eec1338f6426873\"}\n",
+      "provider_calls": 0,
+      "source_revision": "1201df8a773add79733d392f876b579752f797c5",
+      "started_at_utc": "2026-10-10T22:58:38.088767+00:00"
+    },
+    "50": {
+      "artifact_changes": [],
+      "artifact_file_count": 1174,
+      "artifact_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+      "command": "<repo>/.venv/bin/python -m scripts.prepare_grounding_v5_d59_haiku_network_retry --verify --source-revision b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "cwd": "<scratch>/tree-50",
+      "duration_seconds": 6.340972,
+      "environment_variable_names": [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "TMPDIR"
+      ],
+      "exit_status": 0,
+      "original_record": "50",
+      "output": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092\n",
+      "provider_calls": 0,
+      "source_revision": "b3167ff49576aec4001444ba3166d37cfc8dfda4",
+      "started_at_utc": "2026-10-10T22:58:46.338524+00:00"
+    }
+  },
+  "source_audit": {
+    "27": {
+      "artifact_path": "artifacts/grounding-v5-d58-design/memory-repair/sources.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 23,
+      "source_files": [
+        {
+          "expected_sha256": "sha256:c060674623681123ebbdbf54c52a7e4eca72d3cc9805cd2f0c4519c00ecc9912",
+          "historical_sha256": "sha256:c060674623681123ebbdbf54c52a7e4eca72d3cc9805cd2f0c4519c00ecc9912",
+          "path": "pixelgym/actions.py",
+          "recorded_head_sha256": "sha256:c060674623681123ebbdbf54c52a7e4eca72d3cc9805cd2f0c4519c00ecc9912"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)",
+            "f9e24565c81e2c9e1f198c5fb2be00b610852cc9 WP5 review: drop addendum placeholder; cite docs/environment-contract.md invariant 13",
+            "add38a0775eef272c762cddc759956c649e3da66 WP5: opaque episode ID in info; task_id host-side via PixelGuiEnv.task_id"
+          ],
+          "expected_sha256": "sha256:36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+          "historical_sha256": "sha256:36780e5d2a60061d72ca4ee44b7fffa41e8be5f09d4537c6129a7a5be467a7f9",
+          "path": "pixelgym/env.py",
+          "recorded_head_sha256": "sha256:628d253e63472e0e98ad7443fc8c52c909f2f898c8c5358be91d119558e4c41f"
+        },
+        {
+          "expected_sha256": "sha256:35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+          "historical_sha256": "sha256:35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac",
+          "path": "pixelgym/evaluator.py",
+          "recorded_head_sha256": "sha256:35777e2531e0899233de49cb8d7d72079b7651902df244668d10bc88c5cb88ac"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+          "historical_sha256": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+          "path": "pixelgym/grounding/v5/admission.py",
+          "recorded_head_sha256": "sha256:1d3a6bf1fa998ef59309551cedeceaca50242f8363ff30cb3df834c826adc744"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:a8916ca84f5617030044fd2c22d0a30dcbd826aeb4fb431cec6085945e005a58",
+          "historical_sha256": "sha256:a8916ca84f5617030044fd2c22d0a30dcbd826aeb4fb431cec6085945e005a58",
+          "path": "pixelgym/grounding/v5/backend.py",
+          "recorded_head_sha256": "sha256:ef331d8a4792ef7b1beb8270f67b94d9383f9d9a9a761c81b473191135a5b5dc"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+          "historical_sha256": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+          "path": "pixelgym/grounding/v5/contracts.py",
+          "recorded_head_sha256": "sha256:e1289361e17591102b0f7df6d8e68a07dbcf0736c821bb7ea593adb61ad879c5"
+        },
+        {
+          "expected_sha256": "sha256:4640011e9a93891490be020f5ab6a784ba8080b0a1a92d86a0f88b8d95947540",
+          "historical_sha256": "sha256:4640011e9a93891490be020f5ab6a784ba8080b0a1a92d86a0f88b8d95947540",
+          "path": "pixelgym/grounding/v5/coordinates.py",
+          "recorded_head_sha256": "sha256:4640011e9a93891490be020f5ab6a784ba8080b0a1a92d86a0f88b8d95947540"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+          "historical_sha256": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+          "path": "pixelgym/grounding/v5/generator.py",
+          "recorded_head_sha256": "sha256:9d08828aaca062dc9ead53c63a5b254b7539ed6b12d4e2a659fabf07f2ca3102"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "1e5d9c0d19acf51505919deefe0d155c2ab22b26 Fix second CodeRabbit review: durable results and evidence verification",
+            "d9ef4f86507331c27b779dbda3d88c62eda7279e fix: serialize journal lookups during timeout settlement"
+          ],
+          "expected_sha256": "sha256:71a50c9d58e2237cbaacf74dd237a0e1337f3239dd78660d3716a8ecf61e2929",
+          "historical_sha256": "sha256:71a50c9d58e2237cbaacf74dd237a0e1337f3239dd78660d3716a8ecf61e2929",
+          "path": "pixelgym/grounding/v5/journal.py",
+          "recorded_head_sha256": "sha256:58b50e49742093cd2a861a0ebc43f310f356ad50578b0f1963a52226eb023501"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "9446b445d392ed29e7643ec6195d0143ffc70330 fix: address D5.8 review validation and evidence findings"
+          ],
+          "expected_sha256": "sha256:b0454540ef27368e2fa7aa0b3254f4e8f58cc1890845daa525f4c6e89237f8de",
+          "historical_sha256": "sha256:b0454540ef27368e2fa7aa0b3254f4e8f58cc1890845daa525f4c6e89237f8de",
+          "path": "pixelgym/grounding/v5/memory_backend.py",
+          "recorded_head_sha256": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3 Preserve historical memory task identities",
+            "8a2d9c505bc64e03f00171eb8180a1ab334b3f6c Document the D5.9 no-call freeze boundary",
+            "6af4fe9dd8f9d78c8c93243ee753940818a00351 Freeze D5.9 confirmatory design inputs"
+          ],
+          "expected_sha256": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+          "historical_sha256": "sha256:f6468d7a892722c6cfc627da627ba8c476b87d4fbe4921a8c458fb00d1fb5542",
+          "path": "pixelgym/grounding/v5/memory_generator.py",
+          "recorded_head_sha256": "sha256:bcc2d58c052a485b6438da55a96a271a2df9a0c4793a6aa299499a9e369da960"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)"
+          ],
+          "expected_sha256": "sha256:f06e2b007911f27e3b794cf594063a6920296a2cf5e505da07e74a81f19eedc6",
+          "historical_sha256": "sha256:f06e2b007911f27e3b794cf594063a6920296a2cf5e505da07e74a81f19eedc6",
+          "path": "pixelgym/grounding/v5/memory_plan.py",
+          "recorded_head_sha256": "sha256:9aabe0612dc053ddfae6e133cf48358eb45be948a7fa4c6bc8719c3ea000f058"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:009bf8e5827a55ea314dc3ea75946213f3818b954fdef9af3c41cf86c879c37f",
+          "historical_sha256": "sha256:009bf8e5827a55ea314dc3ea75946213f3818b954fdef9af3c41cf86c879c37f",
+          "path": "pixelgym/grounding/v5/openrouter_policy.py",
+          "recorded_head_sha256": "sha256:70157a2ff35873d6addbb43e33cc4ae2b6bcce5054d922c77b6e0edfeb9cdfb7"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6",
+          "historical_sha256": "sha256:808eaf6b9638d78c5c26e2fcd9f64d381ca16022ddc4fc71fe2b60fff2f511a6",
+          "path": "pixelgym/grounding/v5/panel_policy.py",
+          "recorded_head_sha256": "sha256:737f8554c31f832a1e52012d20e5a20c9da5aa638c06ebc2d5919c164e7bf810"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:9ceb6583cd8bee0be90d0e4ad425c160f08f436212b21d1f1e37716264fbabb2",
+          "historical_sha256": "sha256:9ceb6583cd8bee0be90d0e4ad425c160f08f436212b21d1f1e37716264fbabb2",
+          "path": "pixelgym/grounding/v5/policies.py",
+          "recorded_head_sha256": "sha256:74cf34c5b275471be32fe6c11af53c48632e13f2fe61c1de74f1bd2f625d774a"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:1042cdd70708acdc4439b7ac45eee2219c7a2a48dfa7347cb24d14e59d850f6e",
+          "historical_sha256": "sha256:1042cdd70708acdc4439b7ac45eee2219c7a2a48dfa7347cb24d14e59d850f6e",
+          "path": "pixelgym/grounding/v5/resume.py",
+          "recorded_head_sha256": "sha256:07ed12590235b15152d49e6d7d427b5eeaa496a304d6ce28b1420b888f2f715f"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)",
+            "0d89333a5693ecde3cc2793085fe8e100294891e refactor(serving): compose V5Runner dispatch boundary; type GateReport in control store",
+            "d96cfdab0d18e4b582af7c2e12799e07fe81cac2 Split V5Runner.recover_step and add ResumableBackend protocol",
+            "add38a0775eef272c762cddc759956c649e3da66 WP5: opaque episode ID in info; task_id host-side via PixelGuiEnv.task_id",
+            "5bba00dcabb8b40439354bb52a9d3c4e128dbf5b Retry stopped CLI timeouts once and continue only unfinished calibration episodes"
+          ],
+          "expected_sha256": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+          "historical_sha256": "sha256:3d2bfb5fe799ec2b5f9c307359d14f88f502b5ceece16c1c3ce5e8023b89cb9b",
+          "path": "pixelgym/grounding/v5/runner.py",
+          "recorded_head_sha256": "sha256:944a53cc3a285c9789124e298de9dba360ad6334760fc94abc5f60ddfa2a5f0d"
+        },
+        {
+          "expected_sha256": "sha256:acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+          "historical_sha256": "sha256:acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+          "path": "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+          "recorded_head_sha256": "sha256:acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "9446b445d392ed29e7643ec6195d0143ffc70330 fix: address D5.8 review validation and evidence findings"
+          ],
+          "expected_sha256": "sha256:6ead1700ec16b2876aa21a8045061c5193b992dfe706db78310365270acef772",
+          "historical_sha256": "sha256:6ead1700ec16b2876aa21a8045061c5193b992dfe706db78310365270acef772",
+          "path": "pixelgym/grounding/v5/screenshot_memory.py",
+          "recorded_head_sha256": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+          "historical_sha256": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+          "path": "pixelgym/grounding/v5/seeds.py",
+          "recorded_head_sha256": "sha256:856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277"
+        },
+        {
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "eb35976c45f61a8f0ef1cbef502ac855c1833036 refactor(web): render control-plane pages from autoescaped Jinja2 templates",
+            "0d90860025f1d683292c8f5954b1a9d14ecd8537 chore(platform): type flows under mypy, inject barrier timeout, document locks and volume ownership",
+            "ccbfd7d9bc5096b93c039309f92e00a9e93a304f build: fence anyio/jsonschema behind platform extra; harden Dockerfiles",
+            "efbc7f98deab4790face65de058a410aa8471ab2 Merge branch 'main' into cleanup/wp16-adapter-failure-tests",
+            "78a795f701de8406d7969bada9aca4df2c693f2f test: keep reward-timing validator test fast; move real-render replay behind slow marker",
+            "db4d51a5bc0d3d1779bf4eaee83c2bccf29dff09 Rename session identity helper and move guest programs to package files (WP15)",
+            "518661fe790a8a548a5ca534da0391f0936b5894 docs(reproduction): drop measured runtime figures; plain fail_under",
+            "d9129e1ca5876b01f0000bd96d29f6d67e17c270 chore(wp4): remove unreferenced Haiku OpenRouter driver, move release collector to scripts, scan source for local paths, tidy config and narration",
+            "f7328341faffbb62107e57830c58b0f2b29e5dd8 Preserve frozen diagnostic analyzer bytes during import-order lint",
+            "6dc770a69c8295e54716eb2fcb8228dd30298dcc Clarify portfolio claims and test boundaries (#199)"
+          ],
+          "expected_sha256": "sha256:e887cc83aa5412d55fdfc967364d7c68a7b870660d3d9850b352374797a7baa0",
+          "historical_sha256": "sha256:e887cc83aa5412d55fdfc967364d7c68a7b870660d3d9850b352374797a7baa0",
+          "path": "pyproject.toml",
+          "recorded_head_sha256": "sha256:bc1623d7c2dfdc96997ef683501d98ce8f5f9caa8b532fa8205120c06e201a50"
+        },
+        {
+          "expected_sha256": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+          "historical_sha256": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b",
+          "path": "requirements/platform-py312.lock",
+          "recorded_head_sha256": "sha256:4c5ad54096fb5ce2bc1a2e19c3c8019a36a9b205ce1cd3d90300356a34d9643b"
+        },
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "9446b445d392ed29e7643ec6195d0143ffc70330 fix: address D5.8 review validation and evidence findings"
+          ],
+          "expected_sha256": "sha256:47f10261a45836211302e0657caf25a56406da5167db415143c9ea97eaa696b1",
+          "historical_sha256": "sha256:47f10261a45836211302e0657caf25a56406da5167db415143c9ea97eaa696b1",
+          "path": "scripts/prepare_grounding_v5_memory.py",
+          "recorded_head_sha256": "sha256:5b7110619b8940c5ef7a3d4be782db50c8e820a07a8432a16f1e0eac817fccc0"
+        }
+      ]
+    },
+    "42": {
+      "artifact_path": "artifacts/grounding-v5-d58-review-corrections/correction.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 6,
+      "source_files": [
+        {
+          "expected_sha256": "sha256:59e791a1cd634e1679f065d29391a23bf55f9e222efab83cf680f84e4adcd961",
+          "historical_sha256": "sha256:59e791a1cd634e1679f065d29391a23bf55f9e222efab83cf680f84e4adcd961",
+          "path": "artifacts/grounding-v5-d58-calibration-pilot/analysis.json",
+          "recorded_head_sha256": "sha256:59e791a1cd634e1679f065d29391a23bf55f9e222efab83cf680f84e4adcd961"
+        },
+        {
+          "expected_sha256": "sha256:4455377eb5f3ab0dce4de055ffdd9a6dc51398664d893c081e7b28ece22fee85",
+          "historical_sha256": "sha256:4455377eb5f3ab0dce4de055ffdd9a6dc51398664d893c081e7b28ece22fee85",
+          "path": "artifacts/grounding-v5-d58-calibration-pilot/analyze.py",
+          "recorded_head_sha256": "sha256:4455377eb5f3ab0dce4de055ffdd9a6dc51398664d893c081e7b28ece22fee85"
+        },
+        {
+          "expected_sha256": "sha256:5d8e41bcae8d42165ca2c46ec8a65a830456718f60096c139ae3d2028cbc8672",
+          "historical_sha256": "sha256:5d8e41bcae8d42165ca2c46ec8a65a830456718f60096c139ae3d2028cbc8672",
+          "path": "artifacts/grounding-v5-d58-calibration-pilot/summary.json",
+          "recorded_head_sha256": "sha256:5d8e41bcae8d42165ca2c46ec8a65a830456718f60096c139ae3d2028cbc8672"
+        },
+        {
+          "expected_sha256": "sha256:35f2e10d5e027f9e6227feff8b4d543a30bfd4668d913389709fe707e3e57612",
+          "historical_sha256": "sha256:35f2e10d5e027f9e6227feff8b4d543a30bfd4668d913389709fe707e3e57612",
+          "path": "artifacts/grounding-v5-d58-design/memory-repair/admission.json",
+          "recorded_head_sha256": "sha256:35f2e10d5e027f9e6227feff8b4d543a30bfd4668d913389709fe707e3e57612"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)"
+          ],
+          "expected_sha256": "sha256:8c03f8dcb1d7d68281ec013755d336948d1d70a0a1b58fb4c6941acf0d41fc1b",
+          "historical_sha256": "sha256:8c03f8dcb1d7d68281ec013755d336948d1d70a0a1b58fb4c6941acf0d41fc1b",
+          "path": "scripts/prepare_grounding_v5_review_corrections.py",
+          "recorded_head_sha256": "sha256:bcb8848aae0fd685a44474a38fed8fd1c57c7729dbd8da4aae4ae2e05a48b4f8"
+        },
+        {
+          "expected_sha256": "sha256:84dd8fcf09c8e919d302eaa2efca98be9cd997b121c192412789fd17db9d01ed",
+          "historical_sha256": "sha256:84dd8fcf09c8e919d302eaa2efca98be9cd997b121c192412789fd17db9d01ed",
+          "path": "scripts/verify_grounding_v5_full_calibration.py",
+          "recorded_head_sha256": "sha256:84dd8fcf09c8e919d302eaa2efca98be9cd997b121c192412789fd17db9d01ed"
+        }
+      ]
+    },
+    "43": {
+      "artifact_path": "artifacts/grounding-v5-d58-review-corrections-v2/power-report-binding.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 2,
+      "source_files": [
+        {
+          "expected_sha256": "sha256:35f1292a7791c72841b3894479a1ec3a12ecb7488139ffd62a232dd0c7e638ba",
+          "historical_sha256": "sha256:35f1292a7791c72841b3894479a1ec3a12ecb7488139ffd62a232dd0c7e638ba",
+          "path": "artifacts/grounding-v5-d58-final-design/power.json",
+          "recorded_head_sha256": "sha256:35f1292a7791c72841b3894479a1ec3a12ecb7488139ffd62a232dd0c7e638ba"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)"
+          ],
+          "expected_sha256": "sha256:d769462b9c5436062b566fcb55220a9ceddd7036a3e022e5d38def82fecb1012",
+          "historical_sha256": "sha256:d769462b9c5436062b566fcb55220a9ceddd7036a3e022e5d38def82fecb1012",
+          "path": "scripts/prepare_grounding_v5_power_report.py",
+          "recorded_head_sha256": "sha256:d702f0c06e33e9d03b9ce8bb88701646f5a07ef80f3c850ac911721c4786d63b"
+        }
+      ]
+    },
+    "44": {
+      "artifact_path": "artifacts/grounding-v5-d58-haiku-successor/analysis.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 6,
+      "source_files": [
+        {
+          "expected_sha256": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0",
+          "historical_sha256": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0",
+          "path": "artifacts/grounding-v5-d58-design/audit.py",
+          "recorded_head_sha256": "sha256:42e15e3f6c3d32968467a9b77f9538a67045f5dbacc9e31f75211b3ea5000cb0"
+        },
+        {
+          "expected_sha256": "sha256:f5c6137030e429cac4126925ee5b04a85e677b696819ce0ab559720d73b0208f",
+          "historical_sha256": "sha256:f5c6137030e429cac4126925ee5b04a85e677b696819ce0ab559720d73b0208f",
+          "path": "artifacts/grounding-v5-d58-final-design/power.py",
+          "recorded_head_sha256": "sha256:f5c6137030e429cac4126925ee5b04a85e677b696819ce0ab559720d73b0208f"
+        },
+        {
+          "expected_sha256": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
+          "historical_sha256": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3",
+          "path": "artifacts/grounding-v5-d58-owner-budget-continuation/analysis.json",
+          "recorded_head_sha256": "sha256:e5e3e19aaaa313e7aa36e0509b55ab4cdede755dadf987c332787d587d825dd3"
+        },
+        {
+          "expected_sha256": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450",
+          "historical_sha256": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450",
+          "path": "artifacts/grounding-v5-haiku-cli-replication/snapshot.json",
+          "recorded_head_sha256": "sha256:522a03ac4439c0642813807d4ce933751f4dcef12ed8a4f5862057cf57b2d450"
+        },
+        {
+          "expected_sha256": "sha256:403077953af47cec1001954b4095c2ea898832efc73577725c453b9ee2ab4cca",
+          "historical_sha256": "sha256:403077953af47cec1001954b4095c2ea898832efc73577725c453b9ee2ab4cca",
+          "path": "artifacts/grounding-v5-haiku-cli-replication/sources.json",
+          "recorded_head_sha256": "sha256:403077953af47cec1001954b4095c2ea898832efc73577725c453b9ee2ab4cca"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:216213a67ceae4ba61007fda150dc57f4b41f8d251ec2e24969e8afb8455441e",
+          "historical_sha256": "sha256:216213a67ceae4ba61007fda150dc57f4b41f8d251ec2e24969e8afb8455441e",
+          "path": "scripts/prepare_grounding_v5_d58_haiku_successor.py",
+          "recorded_head_sha256": "sha256:176ece47bb71f6228fdc3719340a7317fecedba64cdbe1b742c5a061861335af"
+        }
+      ]
+    },
+    "46": {
+      "artifact_path": "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 9,
+      "source_files": [
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+          "historical_sha256": "sha256:2294554de5a2b1151f105bd2a6089adcb14b6d1cb8e4ce4c65588294fd52e6a9",
+          "path": "pixelgym/grounding/v5/admission.py",
+          "recorded_head_sha256": "sha256:1d3a6bf1fa998ef59309551cedeceaca50242f8363ff30cb3df834c826adc744"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+          "historical_sha256": "sha256:666577d1a27debdd2e5dde22c9363db0967bb6f622534973e36e948204bb6818",
+          "path": "pixelgym/grounding/v5/contracts.py",
+          "recorded_head_sha256": "sha256:e1289361e17591102b0f7df6d8e68a07dbcf0736c821bb7ea593adb61ad879c5"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+          "historical_sha256": "sha256:5b92a64e0d33f22d92fa34635dc7b22057352234e73d006c869b28d1a55e8624",
+          "path": "pixelgym/grounding/v5/generator.py",
+          "recorded_head_sha256": "sha256:9d08828aaca062dc9ead53c63a5b254b7539ed6b12d4e2a659fabf07f2ca3102"
+        },
+        {
+          "expected_sha256": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+          "historical_sha256": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95",
+          "path": "pixelgym/grounding/v5/memory_backend.py",
+          "recorded_head_sha256": "sha256:cb31b1400d73486f15198e6b7f6bb41cdbc49df8f9bdd48768c584bbbfc1da95"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)"
+          ],
+          "expected_sha256": "sha256:84d11661c3df0684e49b3bceaa3a1d181fa5db9a8e782e45ef3ecbf292714434",
+          "historical_sha256": "sha256:84d11661c3df0684e49b3bceaa3a1d181fa5db9a8e782e45ef3ecbf292714434",
+          "path": "pixelgym/grounding/v5/memory_generator.py",
+          "recorded_head_sha256": "sha256:bcc2d58c052a485b6438da55a96a271a2df9a0c4793a6aa299499a9e369da960"
+        },
+        {
+          "expected_sha256": "sha256:94729c0f64348c24451cc16d7cdf5b2a1979933841abc3366f8ffbe9c9fa6258",
+          "historical_sha256": "sha256:94729c0f64348c24451cc16d7cdf5b2a1979933841abc3366f8ffbe9c9fa6258",
+          "path": "pixelgym/grounding/v5/request_budget.py",
+          "recorded_head_sha256": "sha256:94729c0f64348c24451cc16d7cdf5b2a1979933841abc3366f8ffbe9c9fa6258"
+        },
+        {
+          "expected_sha256": "sha256:30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d",
+          "historical_sha256": "sha256:30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d",
+          "path": "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+          "recorded_head_sha256": "sha256:30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d"
+        },
+        {
+          "expected_sha256": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8",
+          "historical_sha256": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8",
+          "path": "pixelgym/grounding/v5/screenshot_memory.py",
+          "recorded_head_sha256": "sha256:2e32047fdb5d3a04a493c99eddc37848b2712190bae7659735d4cfca5e0ab0f8"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+          "historical_sha256": "sha256:b3e40375a29c877bc85b8476c34384d9cd9dc192496fd841c928d224eb42635d",
+          "path": "pixelgym/grounding/v5/seeds.py",
+          "recorded_head_sha256": "sha256:856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277"
+        }
+      ]
+    },
+    "48": {
+      "artifact_path": "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 2,
+      "source_files": [
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)",
+            "f1f4ae0531385eb66f25d8d33bb118d12832c526 Retire unreferenced v5 Slot C, comparison, and continuation drivers"
+          ],
+          "expected_sha256": "sha256:be61b45ab5ddc2421e0acbc7f7683e3c95ec0693e26ea5ee306582bc30457e07",
+          "historical_sha256": "sha256:be61b45ab5ddc2421e0acbc7f7683e3c95ec0693e26ea5ee306582bc30457e07",
+          "path": "pixelgym/grounding/v5/d59_haiku_freeze.py",
+          "recorded_head_sha256": "sha256:95041aecd5ac81108ea0a84326e3e3b300de403339ae80ccf1d5fa2626c8830e"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:6f42c53e128d18dbd6a549f7497382d60206e07dec9952998e0806b5c8e49100",
+          "historical_sha256": "sha256:6f42c53e128d18dbd6a549f7497382d60206e07dec9952998e0806b5c8e49100",
+          "path": "scripts/prepare_grounding_v5_d59_haiku_freeze.py",
+          "recorded_head_sha256": "sha256:755caa4b61b8636f4f4522e8a84d1208d7680b913bcfefdbd62aec471fb02900"
+        }
+      ]
+    },
+    "49": {
+      "artifact_path": "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 3,
+      "source_files": [
+        {
+          "ast_equal_ignoring_docstrings": false,
+          "change_commits": [
+            "b3167ff49576aec4001444ba3166d37cfc8dfda4 Keep diagnostic reset text from authorizing a retry",
+            "1639f739d4139361dd1a2efafcec089393b3ebe4 Allow counted Haiku retries after transient connection failures"
+          ],
+          "expected_sha256": "sha256:21721010899d11372a1d715274bba951f908f7c9e4c025b39d7318192b8a151b",
+          "historical_sha256": "sha256:21721010899d11372a1d715274bba951f908f7c9e4c025b39d7318192b8a151b",
+          "path": "pixelgym/grounding/v5/claude_code_policy.py",
+          "recorded_head_sha256": "sha256:a8500edd1e713a4c1e0f2d9d9856499a7e2001123da578aa7fc3a76bd83f00e2"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "f1f4ae0531385eb66f25d8d33bb118d12832c526 Retire unreferenced v5 Slot C, comparison, and continuation drivers"
+          ],
+          "expected_sha256": "sha256:b8a5e063b31d85c7ff7531fef4584a7bf8b58b52418a90be4b1a2fca60acdb63",
+          "historical_sha256": "sha256:b8a5e063b31d85c7ff7531fef4584a7bf8b58b52418a90be4b1a2fca60acdb63",
+          "path": "pixelgym/grounding/v5/d59_haiku_retry_successor.py",
+          "recorded_head_sha256": "sha256:1f59f09c24596c0599545077d83398374d24d125457069453a61060271b5e957"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)"
+          ],
+          "expected_sha256": "sha256:9b68af7c2dfef772fa78a59ec751ec24b1a7da10c31dc76a0dff47385c054cf7",
+          "historical_sha256": "sha256:9b68af7c2dfef772fa78a59ec751ec24b1a7da10c31dc76a0dff47385c054cf7",
+          "path": "scripts/prepare_grounding_v5_d59_haiku_retry_successor.py",
+          "recorded_head_sha256": "sha256:bf34bcd3e5457e8ab78cac4956bd5223dc304215dddd001bf4e8085854eb0fe5"
+        }
+      ]
+    },
+    "50": {
+      "artifact_path": "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+      "historical_binding_mismatches": [],
+      "historical_bound_file_count": 4,
+      "source_files": [
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "55b711899809b6b4571d8bcf0f2128ee31ce0a7c lint: enable E501 (line-length 100) and fix violations (WP18b)",
+            "f1f4ae0531385eb66f25d8d33bb118d12832c526 Retire unreferenced v5 Slot C, comparison, and continuation drivers"
+          ],
+          "expected_sha256": "sha256:01cf4ade7dbedb30d7a6f9b4208bcaa10a2fd3644f4552ac62a6200d9276deb5",
+          "historical_sha256": "sha256:01cf4ade7dbedb30d7a6f9b4208bcaa10a2fd3644f4552ac62a6200d9276deb5",
+          "path": "pixelgym/grounding/v5/d59_haiku_network_retry.py",
+          "recorded_head_sha256": "sha256:a58457504db131111de9a890516587a75b2fe68a68152b838ddb5779f6354222"
+        },
+        {
+          "expected_sha256": "sha256:8313bcb3814e180f4ffea36a6004150802be258bc38b5bd3591fec82673c717d",
+          "historical_sha256": "sha256:8313bcb3814e180f4ffea36a6004150802be258bc38b5bd3591fec82673c717d",
+          "path": "scripts/prepare_grounding_v5_d59_haiku_network_retry.py",
+          "recorded_head_sha256": "sha256:8313bcb3814e180f4ffea36a6004150802be258bc38b5bd3591fec82673c717d"
+        },
+        {
+          "ast_equal_ignoring_docstrings": true,
+          "change_commits": [
+            "7939a548865b68540dcf307bcdcf96dd2e0d0376 style: apply ruff format to pixelgym, flows, scripts, tests (WP18a)"
+          ],
+          "expected_sha256": "sha256:beaded36fed98328610430e87d80d77db7d7ce3707dd53ea439c71a4b22ac45a",
+          "historical_sha256": "sha256:beaded36fed98328610430e87d80d77db7d7ce3707dd53ea439c71a4b22ac45a",
+          "path": "scripts/run_grounding_v5_d59_haiku.py",
+          "recorded_head_sha256": "sha256:1c07ec3261541b6797258aac5a785d9a8c30c59b817e718f264e303325de1774"
+        },
+        {
+          "expected_sha256": "sha256:d218d38be6c640833dbe054f11a38dca6238ece5c6e52fbd2dffb8f85bee85fe",
+          "historical_sha256": "sha256:d218d38be6c640833dbe054f11a38dca6238ece5c6e52fbd2dffb8f85bee85fe",
+          "path": "scripts/run_grounding_v5_d59_haiku_network_retry.py",
+          "recorded_head_sha256": "sha256:d218d38be6c640833dbe054f11a38dca6238ece5c6e52fbd2dffb8f85bee85fe"
+        }
+      ]
+    },
+    "frozen_artifact_changes_since_evidence_revision": []
+  },
+  "verdict": null,
+  "verification_counts": {
+    "artifact_mutations": 0,
+    "bound_source_hashes_compared": 55,
+    "exit_status_counts": {
+      "0": 8
+    },
+    "selected_commands": 8,
+    "total_command_runtime_seconds": 426.311004
+  },
+  "workspace_revision": "f5c6dfd6e8d8aba5b23d4c3664f8e753bebd6fc6",
+  "workspace_status_after": ""
+}

@@ -123,3 +123,41 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `report_grounding_v5_d59_haiku.py` | Publish an allowlisted D5.9 result projection without raw responses | `--input` run directory | `--output` projection; `--verify` checks it | none | yes |
 | `analyze_grounding_v5_d59.py` | Generate the D5.9 confirmatory analysis from the public result projection | `artifacts/grounding-v5-d59-haiku-results`, execution plan | confirmatory analysis JSON and Markdown; `--check` verifies them | none | yes |
 | `generate_d510_evidence_report.py` | Index stored D5.10 gate command records against the checklist map without rerunning or judging them | `render --evidence-dir`; `scan --path` | `REPORT.md`, `evidence-manifest.json`, `redaction-scan.json` in the evidence directory; `scan` prints counts only | none | yes |
+| `verify_v5_at_revision.py` | Verify the eight frozen packages identified by D5.10 records 27, 42–44, 46, 48–50 against historical source | one or more original record numbers, or `all`; optional `--output` | raw JSON and exit status; never overwrites an output | local Git history, dev dependencies; no credentials | yes |
+| `report_v5_historical_verification.py` | Render the historical-verification supplement from stored observations and check original package hashes | committed investigation and entry-point run JSON; `--check` verifies generated files | supplement `REPORT.md` and `manifest.json`; never changes different existing bytes | none | yes |
+
+### Verify the frozen D5.10 inputs with historical source
+
+The eight original commands compare source-bound artifacts with the checkout that runs them.
+Later formatting and implementation changes can therefore produce a mismatch even when the frozen
+artifact still reproduces with its original source. Use the historical entry point to check that
+specific snapshot:
+
+```sh
+python -m scripts.verify_v5_at_revision 42 43 44
+python -m scripts.verify_v5_at_revision all --output /tmp/v5-historical-new-run.json
+```
+
+Run from the repository root using its Python 3.12 development environment. The local Git object
+database must contain the source revisions listed in the entry point and evidence revision
+`b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61`. A shallow checkout may lack those objects; the command
+records the missing-object error and never fetches automatically. Choose a new output path for
+each run. `--timeout-seconds` bounds each verifier process (default 1800 seconds).
+
+This command verifies **archived artifacts at that evidence revision**, not modified artifacts in
+the current working tree. It extracts historical source into temporary directories, checks the
+recorded source-file hashes, runs only the fixed `--verify` entry points with an empty home and
+allowlisted environment, and checks the artifact files for mutations. Record 46 includes full
+192-task admission and takes several minutes. No provider CLI, credential probe, model call, or
+private journal is needed. This is an offline reproduction workflow, not an OS sandbox claim.
+
+The JSON preserves child exit statuses and full output. A setup failure or timeout has a null
+child exit status and a `verification_errors` entry. The wrapper exits nonzero if any child fails,
+times out, or changes artifacts; it continues collecting the other selected records. Source hashes
+remain strict: the wrapper does not rewrite old bindings to match newer code.
+
+The [historical-verification supplement](../artifacts/grounding-v5-d510-historical-verification-20261010/REPORT.md)
+retains the investigation and a separate run of this entry point. Regenerate its report from those
+stored records with `python -m scripts.report_v5_historical_verification`; use `--check` to compare
+without writing. Both modes verify every original package-file hash. Neither mode reruns a verifier
+or assigns the human-owned D5.10 verdict.

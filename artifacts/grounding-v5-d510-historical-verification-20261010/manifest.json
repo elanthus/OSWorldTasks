@@ -1,0 +1,12 @@
+{
+  "files": {
+    "REPORT.md": "480d833a3068f39efbdd068813b85b0811e3217129e83f27f23063afc65b254c",
+    "entry-point-run.json": "63098646cf53ac70d85c37f2a75df195ab68908f867eec8bf724f64be7f74780",
+    "investigation.json": "8e565ff5bd5579a4f219a62d184c5c2f48b8155b584129fb5f0e9f5bfbaec37b"
+  },
+  "original_evidence_revision": "b0f00f8dc0a5f588e62ce4846cf7ba9fab037f61",
+  "original_manifest_sha256": "de1c9601666f48fdc0608f3afac5c60ab0c44c6d36158b05e9c4a08286fbe18a",
+  "renderer_sha256": "ce7e4a7cb6abba6c8a7368b0094dcaad1168da68af15b4c818eaaf3d809b77b6",
+  "schema_version": "pixelgym-d510-historical-supplement-v1",
+  "verdict": null
+}
