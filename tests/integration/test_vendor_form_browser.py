@@ -14,6 +14,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import numpy.typing as npt
 import pytest
 from PIL import Image
 
@@ -23,10 +25,12 @@ from pixelgym.tasks.vendor_form.browser_contract import (
     READY_SELECTOR,
     local_vendor_form_server,
 )
+from pixelgym.tasks.vendor_form.render import FORM_PANEL_BG
 from pixelgym.tasks.vendor_form.ui import (
     DESIGN_HEIGHT,
     DESIGN_WIDTH,
     INCOMPLETE_SUBMISSION_MESSAGE,
+    TAB_ORDER,
     TEXT_WIDGETS,
     Layout,
     Rect,
@@ -46,6 +50,24 @@ _READY_ERROR_SELECTOR = "body[data-pixelgym-ready-error]"
 _DETERMINISTIC_FONT = '"PixelGym Sans"'
 _FONT_FILENAMES = {"DejaVuSans.ttf", "DejaVuSans-Bold.ttf"}
 _FONT_FACE_RULE = re.compile(r"@font-face\s*\{[^}]*\}", re.DOTALL)
+# WCAG 2.2 SC 1.4.11: a focus indicator needs at least 3:1 contrast with adjacent colours.
+_MINIMUM_FOCUS_CONTRAST = 3.0
+_FOCUS_TARGET_IDS = {
+    **{widget: widget.value for widget in (*TEXT_WIDGETS, WidgetId.COUNTRY)},
+    WidgetId.PAYMENT_TERMS: "payment_terms_0",
+    WidgetId.EXPEDITED_ONBOARDING: "expedited_onboarding",
+    WidgetId.SUBMIT: "submit-button",
+}
+_FOCUS_STYLE = """() => {
+  const element = document.activeElement;
+  const style = getComputedStyle(element);
+  return {
+    id: element.id,
+    focusVisible: element.matches(":focus-visible"),
+    outlineStyle: style.outlineStyle,
+    outlineColor: style.outlineColor,
+  };
+}"""
 
 pytestmark = [
     pytest.mark.browser_integration,
@@ -304,6 +326,107 @@ def test_country_and_keyboard_focus_contract_matches_browser() -> None:
             page.keyboard.press("Tab")
             assert page.evaluate("document.activeElement.tagName") == "BODY"
             assert page.evaluate("document.activeElement.id") == ""
+        finally:
+            browser.close()
+
+
+def _frame(page: Any) -> npt.NDArray[np.uint8]:
+    png = page.screenshot(type="png", animations="disabled")
+    with Image.open(BytesIO(png)) as image:
+        return np.asarray(image.convert("RGB"))
+
+
+def _parse_opaque_rgb(css_colour: str) -> tuple[int, int, int]:
+    match = re.fullmatch(r"rgb\((\d+), (\d+), (\d+)\)", css_colour)
+    assert match is not None, f"expected an opaque rgb() colour, got {css_colour!r}"
+    red, green, blue = (int(channel) for channel in match.groups())
+    return red, green, blue
+
+
+def _contrast_ratio(first: tuple[int, int, int], second: tuple[int, int, int]) -> float:
+    def luminance(rgb: tuple[int, int, int]) -> float:
+        linear = [
+            value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+            for value in (channel / 255 for channel in rgb)
+        ]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    lighter, darker = sorted((luminance(first), luminance(second)), reverse=True)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _assert_tab_focus_is_visible(page: Any, layout: Layout) -> None:
+    """Tab through the form and require a visible, local, stable focus ring on every control.
+
+    The policy observes pixels only, so keyboard focus exists for it only if the
+    frame changes. style.css has no focus rule; this pins Chromium's default ring,
+    which the fake backend mirrors with its static `FOCUS_BORDER`.
+    """
+    page.evaluate("document.activeElement.blur()")
+    unfocused = _frame(page)
+    for widget in TAB_ORDER:
+        name = widget.value
+        rect = layout.controls[widget]
+        page.keyboard.press("Tab")
+        style = page.evaluate(_FOCUS_STYLE)
+        assert style["id"] == _FOCUS_TARGET_IDS[widget], f"{name}: Tab focused #{style['id']}"
+
+        focused = _frame(page)
+        assert np.array_equal(focused, _frame(page)), f"{name}: focused frame is not stable"
+        rows, columns = np.nonzero((focused != unfocused).any(axis=2))
+        assert columns.size > 0, f"{name}: focusing the control changed no pixels"
+        changed = (columns.min(), rows.min(), columns.max() + 1, rows.max() + 1)
+        assert (
+            rect.x <= changed[0]
+            and rect.y <= changed[1]
+            and changed[2] <= rect.x + rect.width
+            and changed[3] <= rect.y + rect.height
+        ), f"{name}: focus pixels {changed} escape Layout rect {rect}"
+
+        assert style["focusVisible"], f"{name}: focused control does not match :focus-visible"
+        assert style["outlineStyle"] not in {"none", "hidden"}, (
+            f"{name}: outline-style is {style['outlineStyle']}"
+        )
+        contrast = _contrast_ratio(_parse_opaque_rgb(style["outlineColor"]), FORM_PANEL_BG)
+        assert contrast >= _MINIMUM_FOCUS_CONTRAST, (
+            f"{name}: focus ring contrast {contrast:.2f} against the form panel"
+        )
+
+
+def test_keyboard_focus_is_visible_in_pixels_on_every_control() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        task = _json_request(f"{base_url}/api/task")
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            page = browser.new_page(viewport={"width": DESIGN_WIDTH, "height": DESIGN_HEIGHT})
+            page.goto(base_url)
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+
+            _assert_tab_focus_is_visible(page, layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT))
+        finally:
+            browser.close()
+
+
+def test_suppressed_focus_ring_failure_names_the_invisible_widget() -> None:
+    playwright_api = pytest.importorskip("playwright.sync_api")
+
+    with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
+        _json_request(f"{base_url}/api/reset", payload={"seed": 7})
+        task = _json_request(f"{base_url}/api/task")
+        browser = playwright.chromium.launch(headless=True, args=list(BROWSER_ARGS))
+        try:
+            page = browser.new_page(viewport={"width": DESIGN_WIDTH, "height": DESIGN_HEIGHT})
+            page.goto(base_url)
+            page.locator(READY_SELECTOR).wait_for(state="attached")
+            page.add_style_tag(content="#contact_email:focus-visible { outline: none; }")
+
+            with pytest.raises(
+                AssertionError, match="contact_email: focusing the control changed no pixels"
+            ):
+                _assert_tab_focus_is_visible(page, layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT))
         finally:
             browser.close()
 
