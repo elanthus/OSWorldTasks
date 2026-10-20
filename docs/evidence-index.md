@@ -85,6 +85,10 @@ Each entry corrects presentation only; no stored measurement changed.
   under `source_artifacts` and `journal_integrity` were computed from those journals at
   publication and cannot be re-verified against them. D5.9 closes on the published projection.
 
+For new runs, the [retention and restore workflow](evidence-retention.md) captures journals outside
+the checkout and checks both retained copies before issuing a cleanup receipt. It does not recover
+the missing historical journals.
+
 ## Retired planning links in frozen reports
 
 The planning directory was retired after the D5.9 execution. Four frozen reports still contain

@@ -23,6 +23,10 @@ run independent tests in parallel. Serial execution remains supported but is slo
 install is sufficient for the fast suite, lint, and
 strict static type check of the complete `pixelgym` package.
 
+Before removing a run checkout, use the [evidence retention workflow](evidence-retention.md) to
+capture private journals outside Git, restore both retained copies, and obtain a cleanup receipt.
+It also provides a credential-free scripted validation campaign with replay from archived source.
+
 The public, response-free calibration supplement has a canonical verifier that checks its
 snapshot hashes, plan binding, denominators, classifications, spend accounting, and generated
 report without reading private journals or making provider calls:
