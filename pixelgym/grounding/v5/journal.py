@@ -66,10 +66,23 @@ class JournalEvent:
 class V5AttemptJournal:
     """SQLite journal with FULL synchronous commits and unique terminal states."""
 
-    def __init__(self, path: Path) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
+    def __init__(self, path: Path, *, read_only: bool = False) -> None:
         self.path = path
         self._lock = threading.RLock()
+        if read_only:
+            # Quiesced journals without a WAL must not acquire new WAL/SHM sidecars
+            # merely through inspection. Existing WALs still need SQLite's WAL-aware reader.
+            query = (
+                "?mode=ro"
+                if path.with_name(path.name + "-wal").exists()
+                else "?mode=ro&immutable=1"
+            )
+            self._connection = sqlite3.connect(
+                path.resolve().as_uri() + query, uri=True, check_same_thread=False
+            )
+            self._connection.execute("PRAGMA query_only=ON")
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
         self._connection = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self._connection.execute("PRAGMA journal_mode=WAL")
         self._connection.execute("PRAGMA synchronous=FULL")

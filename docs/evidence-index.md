@@ -85,6 +85,20 @@ Each entry corrects presentation only; no stored measurement changed.
   under `source_artifacts` and `journal_integrity` were computed from those journals at
   publication and cannot be re-verified against them. D5.9 closes on the published projection.
 
+For new runs, the [retention and restore workflow](evidence-retention.md) captures journals outside
+the checkout and checks both retained copies before issuing a cleanup receipt. It does not recover
+the missing historical journals.
+The [credential-free retention validation](../artifacts/evidence-retention-20261020-v2/REPORT.md)
+records the new scripted cases and restore observations separately from D5.9.
+The [private Git LFS recovery observations](../artifacts/evidence-retention-20261020-lfs/REPORT.md)
+record fresh-cache remote downloads, archive checks, and retained-source replay for both validation
+bundles. Public receipts bind to the existing manifests and reports; private bytes require owner
+access. The GitHub LFS spending limit remains $0 with stop usage enabled as observed at capture.
+The [review successor bundle](../artifacts/evidence-retention-20261020-v3/REPORT.md) and its
+[private LFS recovery observations](../artifacts/evidence-retention-20261020-v3-lfs/REPORT.md)
+retain a new run after the provenance and read-only inspection fixes. They supplement the earlier
+observations without rewriting them.
+
 ## Retired planning links in frozen reports
 
 The planning directory was retired after the D5.9 execution. Four frozen reports still contain
