@@ -5,9 +5,11 @@ restricted evidence outside Git, verifies a second copy, and restores both copie
 a cleanup receipt. The private Git LFS extension below also downloads and verifies a remote
 copy. Neither workflow deletes the original evidence or calls a model.
 
-The reader is the local evaluation operator. Python 3.12 and the normal `.[dev]` installation
-from the [reproduction guide](reproduction.md) are sufficient. No extra storage service, browser,
-VM, credentials, or provider subscription is required.
+The reader is the local evaluation operator. Local capture, restore, and scripted validation need
+Python 3.12 and the normal `.[dev]` installation from the [reproduction guide](reproduction.md).
+These local operations need no extra storage service, browser, VM, credentials, or provider
+subscription. Remote Git LFS transfers also require the CLI tools and GitHub authentication
+listed in the private-backup section below.
 
 ## Storage and capture
 
