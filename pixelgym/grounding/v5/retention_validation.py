@@ -39,6 +39,10 @@ CASES = (
     "call_cap",
     "resume",
 )
+SOURCE_SUFFIXES = frozenset(
+    {".py", ".json", ".html", ".css", ".js", ".ttf", ".woff", ".woff2", ".svg", ".png"}
+)
+SOURCE_EXTRAS = ("scripts/validate_evidence_retention.py", "pyproject.toml")
 
 
 def _policy(case: str) -> ScriptedStatefulPolicy:
@@ -300,19 +304,25 @@ def replay_campaign(run: Path) -> dict[str, Any]:
     }
 
 
+def source_files(root: Path) -> dict[str, Path]:
+    """Select only executable source and required assets, excluding caches and old evidence."""
+    return {
+        **{
+            "pixelgym/" + name: path
+            for name, path in _files(root / "pixelgym").items()
+            if path.suffix in SOURCE_SUFFIXES
+        },
+        **{name: root / name for name in SOURCE_EXTRAS},
+    }
+
+
 def source_snapshot(root: Path, run: Path) -> dict[str, str]:
     """Retain executable source and required assets, excluding caches and old evidence."""
     source = run / "source"
-    allowed = {".py", ".json", ".html", ".css", ".js", ".ttf", ".woff", ".woff2", ".svg", ".png"}
-    for name, path in _files(root / "pixelgym").items():
-        if path.suffix in allowed:
-            target = source / "pixelgym" / name
-            target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-            shutil.copyfile(path, target)
-    for name in ("scripts/validate_evidence_retention.py", "pyproject.toml"):
+    for name, path in source_files(root).items():
         target = source / name
         target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        shutil.copyfile(root / name, target)
+        shutil.copyfile(path, target)
     return {name: _hash(path) for name, path in _files(source).items()}
 
 

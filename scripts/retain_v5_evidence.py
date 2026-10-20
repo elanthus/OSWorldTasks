@@ -60,6 +60,9 @@ def main() -> None:
     elif args.command == "restore":
         result = restore_archive(args.archive, args.destination, expected_digest=args.digest)
     else:
+        _separate(*map(_no_links, (args.source, args.archive, args.backup, args.receipt)))
+        if args.receipt.exists():
+            raise FileExistsError("receipt already exists")
         result = check_cleanup(args.source, args.archive, args.backup, expected_digest=args.digest)
         write_private(args.receipt, canonical_json_bytes(result))
     print(json.dumps(result, indent=2, sort_keys=True))

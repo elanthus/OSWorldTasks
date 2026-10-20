@@ -4,20 +4,25 @@ from __future__ import annotations
 
 import argparse
 import importlib.metadata
+import io
 import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
-from pixelgym.grounding.v5.contracts import content_digest
+from pixelgym.grounding.v5.contracts import content_digest, sha256_bytes
+from pixelgym.grounding.v5.evidence import validate_credential_free
 from pixelgym.grounding.v5.retention import (
     _checkout,
+    _hash,
     _no_links,
     _separate,
     backup_archive,
@@ -28,10 +33,13 @@ from pixelgym.grounding.v5.retention import (
     write_private,
 )
 from pixelgym.grounding.v5.retention_validation import (
+    SOURCE_EXTRAS,
+    SOURCE_SUFFIXES,
     capture_campaign,
     regenerate_report,
     render_report,
     replay_campaign,
+    source_files,
     source_snapshot,
     verify_source,
 )
@@ -48,6 +56,67 @@ def _environment() -> dict[str, str]:
         "PYTHONHASHSEED": "0",
         "PYTHONDONTWRITEBYTECODE": "1",
     }
+
+
+def _source_provenance(root: Path) -> dict[str, Any]:
+    """Bind a clean checkout's selected source to Git bytes before creating any run."""
+    executable = shutil.which("git")
+    if executable is None:
+        raise ValueError("Git is required to bind validation source to a revision")
+    executable = str(Path(executable).resolve())
+
+    def git(*arguments: str) -> bytes:
+        try:
+            return subprocess.run(
+                [executable, *arguments],
+                cwd=root,
+                env=_environment(),
+                capture_output=True,
+                check=True,
+                timeout=30,
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            raise ValueError("cannot verify the source checkout's Git provenance") from None
+
+    if Path(git("rev-parse", "--show-toplevel").decode().strip()).resolve() != root.resolve():
+        raise ValueError("source root must be the Git checkout root")
+    revision = git("rev-parse", "HEAD").decode().strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("invalid source Git revision")
+    paths = ("pixelgym", *SOURCE_EXTRAS)
+    if git("status", "--porcelain", "--untracked-files=all", "--", *paths).strip():
+        raise ValueError("source worktree must be clean, including untracked source files")
+    expected = {}
+    data = git("archive", "--format=tar", revision, "--", *paths)
+    with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+        for entry in archive:
+            name = entry.name
+            if name in SOURCE_EXTRAS or (
+                name.startswith("pixelgym/") and PurePosixPath(name).suffix in SOURCE_SUFFIXES
+            ):
+                stream = archive.extractfile(entry) if entry.isreg() else None
+                if stream is None:
+                    raise ValueError("Git source contains a non-regular selected file")
+                with stream:
+                    expected[name] = "sha256:" + sha256_bytes(stream.read())
+    actual = {name: _hash(path) for name, path in source_files(root).items()}
+    if actual != expected:
+        raise ValueError("selected source bytes do not match the clean Git revision")
+    return {"git_revision": revision, "files": expected}
+
+
+def _publish_bundle(output: Path, values: dict[str, Any]) -> None:
+    """Screen and serialize every public value before publishing any file."""
+    encoded = {}
+    for name, value in values.items():
+        validate_credential_free(value)
+        encoded[name] = canonical_json_bytes(value)
+    markdown = render_report(values["report.json"])
+    validate_credential_free(markdown)
+    output.mkdir(parents=True, mode=0o700)
+    for name, data in encoded.items():
+        write_private(output / name, data)
+    write_private(output / "REPORT.md", markdown.encode())
 
 
 def _restored_check(restored: Path, logs: Path) -> dict[str, Any]:
@@ -114,22 +183,22 @@ def run_validation(
         store / "archives" / run_id,
         backup_store / run_id,
     )
-    if any(path.exists() for path in (run, archive, backup, public_output)):
-        raise FileExistsError("run, archive, backup, or public output already exists")
+    logs = store / "checks" / run_id
+    receipt_path = store / "receipts" / (run_id + ".json")
+    destinations = (run, archive, backup, public_output, logs, receipt_path)
+    if any(_no_links(path).exists() for path in destinations):
+        raise FileExistsError(
+            "run, archive, backup, public output, checks, or receipt already exists"
+        )
+    provenance = _source_provenance(root)
     run.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     started = time.monotonic()
     capture_campaign(run)
     files = source_snapshot(root, run)
-    revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        env=_environment(),
-        capture_output=True,
-        check=True,
-        text=True,
-    ).stdout.strip()
+    if files != provenance["files"]:
+        raise ValueError("source changed after Git provenance was checked")
     binding = {
-        "git_revision": revision,
+        "git_revision": provenance["git_revision"],
         "files": files,
         "python": platform.python_version(),
         "dependencies": {
@@ -145,12 +214,12 @@ def run_validation(
     digest = capture["manifest_digest"]
     backup_archive(archive, backup, expected_digest=digest)
     checks = []
-    with tempfile.TemporaryDirectory(prefix="pixelgym-independent-restore-") as temporary:
-        for index, retained in enumerate((archive, backup)):
-            restored = Path(temporary).resolve() / str(index)
+    for index, retained in enumerate((archive, backup)):
+        with tempfile.TemporaryDirectory(prefix="pixelgym-independent-restore-") as temporary:
+            restored = Path(temporary).resolve() / "restored"
             restore_archive(retained, restored, expected_digest=digest)
             before = source_fingerprint(restored)
-            checks.append(_restored_check(restored, store / "checks" / run_id / str(index)))
+            checks.append(_restored_check(restored, logs / str(index)))
             if source_fingerprint(restored) != before:
                 raise ValueError("verification mutated restored evidence")
     receipt = check_cleanup(run, archive, backup, expected_digest=digest)
@@ -169,17 +238,17 @@ def run_validation(
         }
     )
     # Keep the receipt outside the captured source, so its fingerprint remains valid.
-    write_private(store / "receipts" / (run_id + ".json"), canonical_json_bytes(receipt))
-    public_output.mkdir(parents=True, mode=0o700)
-    for name, value in (
-        ("observations.json", json.loads((run / "observations.json").read_bytes())),
-        ("report.json", report),
-        ("source-binding.json", binding),
-        ("archive-manifest.json", json.loads((archive / "manifest.json").read_bytes())),
-        ("retention-receipt.json", receipt),
-    ):
-        write_private(public_output / name, canonical_json_bytes(value))
-    write_private(public_output / "REPORT.md", render_report(report).encode())
+    write_private(receipt_path, canonical_json_bytes(receipt))
+    _publish_bundle(
+        public_output,
+        {
+            "observations.json": json.loads((run / "observations.json").read_bytes()),
+            "report.json": report,
+            "source-binding.json": binding,
+            "archive-manifest.json": json.loads((archive / "manifest.json").read_bytes()),
+            "retention-receipt.json": receipt,
+        },
+    )
     return {
         "run_id": run_id,
         "manifest_digest": digest,

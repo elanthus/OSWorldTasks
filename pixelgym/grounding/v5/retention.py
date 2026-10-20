@@ -26,6 +26,8 @@ _DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
 
 
 def _no_links(path: Path) -> Path:
+    if ".." in path.parts:
+        raise ValueError("evidence paths must not contain parent traversal")
     absolute = Path(os.path.abspath(path))
     if any(part.is_symlink() for part in (absolute, *absolute.parents)):
         raise ValueError("evidence paths must not contain symlinks")
@@ -212,6 +214,7 @@ def _manifest(archive: Path) -> dict[str, Any]:
             or "\x00" in name
             or PurePosixPath(name).is_absolute()
             or ".." in PurePosixPath(name).parts
+            or not PurePosixPath(name).parts
             or PurePosixPath(name).as_posix() != name
             or name in names
             or type(entry["size"]) is not int
@@ -297,10 +300,10 @@ def check_cleanup(
         raise ValueError("retained copies must be outside Git checkouts")
     before = source_fingerprint(source)
     restored = []
-    with tempfile.TemporaryDirectory(prefix="pixelgym-restore-check-") as temporary:
-        for index, copy in enumerate((archive, backup)):
+    for copy in (archive, backup):
+        with tempfile.TemporaryDirectory(prefix="pixelgym-restore-check-") as temporary:
             result = restore_archive(
-                copy, Path(temporary).resolve() / str(index), expected_digest=expected_digest
+                copy, Path(temporary).resolve() / "restored", expected_digest=expected_digest
             )
             if result["source_fingerprint"] != before:
                 raise ValueError("source changed since capture; cleanup is refused")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -71,7 +72,7 @@ def test_cleanup_refuses_damaged_copies(tmp_path: Path, copy: str, damage: str) 
     chosen = {"archive": archive, "backup": backup}[copy]
     file = chosen / "files" / "summary.json"
     if damage == "corrupt":
-        file.write_text("corrupt")
+        file.write_bytes(b"x" * file.stat().st_size)
     elif damage == "missing":
         file.unlink()
     elif damage == "extra":
@@ -80,7 +81,13 @@ def test_cleanup_refuses_damaged_copies(tmp_path: Path, copy: str, damage: str) 
         manifest = json.loads((chosen / "manifest.json").read_bytes())
         manifest["source_fingerprint"] = "sha256:" + "0" * 64
         (chosen / "manifest.json").write_bytes(canonical_json_bytes(manifest))
-    with pytest.raises(ValueError):
+    message = {
+        "corrupt": "archive file digest or size mismatch",
+        "missing": "missing or unlisted files",
+        "extra": "missing or unlisted files",
+        "manifest": "archive manifest digest mismatch",
+    }[damage]
+    with pytest.raises(ValueError, match=message):
         retention.check_cleanup(original, archive, backup, expected_digest=digest)
     assert original.is_dir()
 
@@ -96,7 +103,7 @@ def test_cleanup_refuses_changed_source(tmp_path: Path, change: str) -> None:
         (original / "new-shm").write_text("unarchived evidence")
     else:
         (original / "summary.json").unlink()
-    with pytest.raises(ValueError, match="source changed"):
+    with pytest.raises(ValueError, match="source changed since capture"):
         retention.check_cleanup(original, archive, backup, expected_digest=digest)
 
 
@@ -122,7 +129,7 @@ def test_restore_refuses_unsafe_manifest_paths(tmp_path: Path, unsafe: str) -> N
     manifest = json.loads((archive / "manifest.json").read_bytes())
     manifest["files"][0]["path"] = unsafe
     (archive / "manifest.json").write_bytes(canonical_json_bytes(manifest))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid or duplicate archive path"):
         retention.restore_archive(
             archive, tmp_path / "restored", expected_digest=content_digest(manifest)
         )
@@ -243,6 +250,183 @@ def test_read_only_journal_never_creates_or_migrates_evidence(tmp_path: Path) ->
         with pytest.raises(sqlite3.OperationalError, match="readonly"):
             journal.put_object("fixture", b"refused")
     assert path.read_bytes() == before
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["attempts.sqlite"]
     with pytest.raises(sqlite3.OperationalError):
         V5AttemptJournal(tmp_path / "missing" / "attempts.sqlite", read_only=True)
     assert not (tmp_path / "missing").exists()
+
+
+def test_read_only_journal_keeps_committed_wal_visible(tmp_path: Path) -> None:
+    path = tmp_path / "attempts.sqlite"
+    with closing(V5AttemptJournal(path)) as writer:
+        writer._connection.execute("PRAGMA wal_autocheckpoint=0")
+        writer.put_object("fixture", b"committed in WAL")
+        assert path.with_name(path.name + "-wal").stat().st_size > 0
+        with closing(V5AttemptJournal(path, read_only=True)) as reader:
+            assert reader.integrity_report()["object_count"] == 1
+
+
+def test_wrong_expected_manifest_digest_is_refused_directly(tmp_path: Path) -> None:
+    _, archive, _, _ = archive_pair(tmp_path)
+    with pytest.raises(ValueError, match="archive manifest digest mismatch"):
+        retention.verify_archive(archive, expected_digest="sha256:" + "0" * 64)
+
+
+def test_same_size_sqlite_damage_reaches_integrity_check(tmp_path: Path) -> None:
+    original = source(tmp_path)
+    with closing(sqlite3.connect(original / "events.sqlite")) as db:
+        db.execute("CREATE TABLE evidence(value TEXT)")
+        db.execute("INSERT INTO evidence VALUES ('stored')")
+        db.commit()
+    archive = tmp_path / "archive"
+    retention.create_archive(original, archive)
+    file = archive / "files" / "events.sqlite"
+    data = bytearray(file.read_bytes())
+    data[100] = 255  # Invalid first B-tree page type, with the SQLite header and size intact.
+    file.write_bytes(data)
+    manifest = json.loads((archive / "manifest.json").read_bytes())
+    entry = next(e for e in manifest["files"] if e["path"] == "events.sqlite")
+    entry["sha256"] = retention._hash(file)
+    (archive / "manifest.json").write_bytes(canonical_json_bytes(manifest))
+    with pytest.raises((ValueError, sqlite3.DatabaseError)):
+        retention.verify_archive(archive, expected_digest=content_digest(manifest))
+
+
+def test_cleanup_detects_source_change_during_restore_and_releases_each_copy(tmp_path, monkeypatch):
+    original, archive, backup, digest = archive_pair(tmp_path)
+    restore = retention.restore_archive
+    destinations = []
+
+    def mutate(copy, destination, *, expected_digest):
+        if destinations:
+            assert not destinations[-1].exists()
+        result = restore(copy, destination, expected_digest=expected_digest)
+        destinations.append(destination)
+        (original / "summary.json").write_text("changed during cleanup")
+        return result
+
+    monkeypatch.setattr(retention, "restore_archive", mutate)
+    with pytest.raises(ValueError, match="source changed during cleanup check"):
+        retention.check_cleanup(original, archive, backup, expected_digest=digest)
+    assert len(destinations) == 2 and all(not p.exists() for p in destinations)
+
+
+def test_inspection_after_capture_does_not_invalidate_cleanup(tmp_path):
+    original = source(tmp_path)
+    path = original / "attempts.sqlite"
+    with closing(V5AttemptJournal(path)) as journal:
+        journal.put_object("fixture", b"stored")
+    archive, backup = tmp_path / "archive", tmp_path / "backup"
+    digest = retention.create_archive(original, archive)["manifest_digest"]
+    retention.backup_archive(archive, backup, expected_digest=digest)
+    with closing(V5AttemptJournal(path, read_only=True)) as journal:
+        assert journal.integrity_report()["object_count"] == 1
+    assert retention.check_cleanup(original, archive, backup, expected_digest=digest)[
+        "cleanup_precondition_satisfied"
+    ]
+
+
+@pytest.mark.parametrize("operation", ["backup", "cleanup"])
+def test_private_backup_and_cleanup_refuse_a_git_checkout(tmp_path, operation):
+    original, archive, backup, digest = archive_pair(tmp_path)
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    (checkout / ".git").mkdir()
+    with pytest.raises(ValueError, match="outside Git checkouts"):
+        if operation == "backup":
+            retention.backup_archive(archive, checkout / "copy", expected_digest=digest)
+        else:
+            shutil.copytree(archive, checkout / "copy")
+            retention.check_cleanup(original, checkout / "copy", backup, expected_digest=digest)
+
+
+def test_parent_traversal_cannot_hide_a_symlink_prefix(tmp_path):
+    (tmp_path / "target").mkdir()
+    (tmp_path / "linked").symlink_to(tmp_path / "target", target_is_directory=True)
+    with pytest.raises(ValueError, match="parent traversal"):
+        retention._no_links(tmp_path / "linked" / ".." / "source")
+
+
+def test_retention_cli_round_trip_and_existing_backup_preflight(tmp_path, monkeypatch, capsys):
+    from scripts.retain_v5_evidence import main
+
+    original = source(tmp_path)
+    archive, backup = tmp_path / "archive", tmp_path / "backup"
+
+    def command(*arguments):
+        monkeypatch.setattr("sys.argv", ["retain_v5_evidence", *map(str, arguments)])
+        main()
+        return json.loads(capsys.readouterr().out)
+
+    captured = command("capture", "--source", original, "--archive", archive, "--backup", backup)
+    digest = captured["archive"]["manifest_digest"]
+    assert command("verify", "--archive", archive, "--digest", digest)["file_count"] == 1
+    assert (
+        command(
+            "restore",
+            "--archive",
+            archive,
+            "--digest",
+            digest,
+            "--destination",
+            tmp_path / "restored",
+        )["restored_file_count"]
+        == 1
+    )
+    receipt = tmp_path / "receipt.json"
+    assert command(
+        "check-cleanup",
+        "--source",
+        original,
+        "--archive",
+        archive,
+        "--backup",
+        backup,
+        "--digest",
+        digest,
+        "--receipt",
+        receipt,
+    )["cleanup_precondition_satisfied"]
+    with pytest.raises(FileExistsError, match="backup already exists"):
+        command(
+            "capture", "--source", original, "--archive", tmp_path / "unused", "--backup", backup
+        )
+    assert not (tmp_path / "unused").exists()
+
+
+@pytest.mark.parametrize("location", ["source", "archive", "backup", "existing"])
+def test_cleanup_cli_refuses_invalid_receipt_before_restoring(tmp_path, monkeypatch, location):
+    from scripts import retain_v5_evidence as command
+
+    original, archive, backup, digest = archive_pair(tmp_path)
+    receipt = {"source": original, "archive": archive, "backup": backup, "existing": tmp_path}[
+        location
+    ] / "receipt.json"
+    if location == "existing":
+        receipt.write_text("preserve me")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("invalid receipt reached restore checks")
+
+    monkeypatch.setattr(command, "check_cleanup", forbidden)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "retain_v5_evidence",
+            "check-cleanup",
+            "--source",
+            str(original),
+            "--archive",
+            str(archive),
+            "--backup",
+            str(backup),
+            "--digest",
+            digest,
+            "--receipt",
+            str(receipt),
+        ],
+    )
+    with pytest.raises((ValueError, FileExistsError), match="disjoint|receipt already exists"):
+        command.main()
+    if location != "existing":
+        assert not receipt.exists()

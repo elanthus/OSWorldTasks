@@ -70,8 +70,15 @@ class V5AttemptJournal:
         self.path = path
         self._lock = threading.RLock()
         if read_only:
+            # Quiesced journals without a WAL must not acquire new WAL/SHM sidecars
+            # merely through inspection. Existing WALs still need SQLite's WAL-aware reader.
+            query = (
+                "?mode=ro"
+                if path.with_name(path.name + "-wal").exists()
+                else "?mode=ro&immutable=1"
+            )
             self._connection = sqlite3.connect(
-                path.resolve().as_uri() + "?mode=ro", uri=True, check_same_thread=False
+                path.resolve().as_uri() + query, uri=True, check_same_thread=False
             )
             self._connection.execute("PRAGMA query_only=ON")
             return
