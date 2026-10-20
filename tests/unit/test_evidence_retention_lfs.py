@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import shutil
+import signal
 import sqlite3
 import subprocess
 import tarfile
@@ -87,6 +89,17 @@ def test_budget_record_inside_git_is_refused(budget):
     (budget.parent / ".git").mkdir()
     with pytest.raises(ValueError, match="outside Git"):
         lfs.check_budget(budget, REPOSITORY)
+
+
+def test_relative_budget_record_inside_nested_checkout_is_refused(budget, monkeypatch):
+    (budget.parent / ".git").mkdir()
+    nested = budget.parent / "subdirectory"
+    nested.mkdir()
+    record = nested / "budget.json"
+    shutil.copyfile(budget, record)
+    monkeypatch.chdir(nested)
+    with pytest.raises(ValueError, match="outside Git"):
+        lfs.check_budget(Path("budget.json"), REPOSITORY)
 
 
 def test_archive_packaging_is_deterministic_and_self_contained(archive, tmp_path):
@@ -207,6 +220,7 @@ def test_remote_backup_uses_a_fresh_fetch_and_reproduces_stored_data(
     assert receipt["fresh_git_and_lfs_cache"]
     assert receipt["verification_scope"] == "scripted-campaign"
     assert receipt["billing_setting_verified_by_api"] is False
+    assert receipt["transport_source_digest"] == _hash(Path(lfs.__file__))
     assert receipt["restored_archive"]["manifest_digest"] == archive[1]
     # Remove every local source: the stored remote object still permits another restore.
     shutil.rmtree(archive[0])
@@ -271,17 +285,108 @@ def test_credentials_do_not_reach_non_github_children(monkeypatch):
     assert "OPENAI_API_KEY" not in environment
     assert "ANTHROPIC_API_KEY" not in environment
     assert "GIT_CONFIG_COUNT" not in environment
-    assert environment["GIT_CONFIG_GLOBAL"] == __import__("os").devnull
+    assert environment["GIT_CONFIG_GLOBAL"] == os.devnull
 
 
 def test_failed_cli_does_not_publish_credentials(monkeypatch):
-    def fail(*args, **kwargs):
-        return subprocess.CompletedProcess([], 1, b"", b"private-fixture-token")
+    class FailedProcess:
+        returncode = 1
 
-    monkeypatch.setattr(subprocess, "run", fail)
+        def communicate(self, *, timeout):
+            assert timeout == 180
+            return b"", b"private-fixture-token"
+
+    monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: FailedProcess())
     with pytest.raises(ValueError, match="source evidence") as error:
         lfs._run(["gh", "api", "fixture"])
     assert "private-fixture-token" not in str(error.value)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX process-group termination")
+@pytest.mark.parametrize("interruption", ["timeout", "keyboard"])
+def test_command_interruption_kills_and_reaps_the_entire_process_group(monkeypatch, interruption):
+    calls = []
+
+    class InterruptedProcess:
+        pid = 12345
+
+        def communicate(self, *, timeout):
+            calls.append(("communicate", timeout))
+            if len(calls) == 1:
+                if interruption == "timeout":
+                    raise subprocess.TimeoutExpired("fixture", timeout)
+                raise KeyboardInterrupt
+            return b"", b""
+
+    def spawn(arguments, **kwargs):
+        assert kwargs["start_new_session"] is True
+        assert kwargs["env"] == lfs._environment()
+        return InterruptedProcess()
+
+    def kill_group(pid, signum):
+        calls.append(("killpg", pid, signum))
+
+    monkeypatch.setattr(subprocess, "Popen", spawn)
+    monkeypatch.setattr(lfs.os, "killpg", kill_group)
+    expected = ValueError if interruption == "timeout" else KeyboardInterrupt
+    with pytest.raises(expected):
+        lfs._run(["git", "fixture"], timeout_seconds=900)
+    assert calls == [("communicate", 900), ("killpg", 12345, signal.SIGKILL), ("communicate", 5)]
+
+
+def test_missing_cli_maps_to_safe_error_without_creating_a_process(monkeypatch):
+    def missing(*args, **kwargs):
+        raise FileNotFoundError("fixture")
+
+    monkeypatch.setattr(subprocess, "Popen", missing)
+    with pytest.raises(ValueError, match="unavailable or timed out"):
+        lfs._run(["git", "fixture"])
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX process-group termination")
+def test_pipe_cleanup_remains_bounded_after_group_termination(monkeypatch):
+    calls = []
+
+    class PipeFixture:
+        pid = 12345
+        stdout = io.BytesIO()
+        stderr = io.BytesIO()
+
+        def communicate(self, *, timeout):
+            assert timeout == 5
+            raise subprocess.TimeoutExpired("fixture", timeout)
+
+        def wait(self, *, timeout):
+            calls.append(("wait", timeout))
+
+    monkeypatch.setattr(lfs.os, "killpg", lambda pid, sig: calls.append((pid, sig)))
+    process = PipeFixture()
+    lfs._stop_command(process)
+    assert process.stdout.closed and process.stderr.closed
+    assert calls == [(12345, signal.SIGKILL), ("wait", 5)]
+
+
+def test_lfs_fetch_has_a_separate_transfer_deadline(tmp_path):
+    packed = tmp_path / "archive.tar.gz"
+    packed.write_bytes(b"stored object")
+    digest = "sha256:" + "a" * 64
+    entry = {"path": packed.name, "oid": _hash(packed), "size": packed.stat().st_size}
+    calls = []
+
+    class DownloadFixture:
+        root = tmp_path
+
+        def checkout(self, commit):
+            return {"archives": {digest: entry}}
+
+        def git(self, *arguments, timeout_seconds=180):
+            calls.append((arguments, timeout_seconds))
+
+    fetched, _ = lfs._GitStore.download(DownloadFixture(), COMMIT, digest)
+    assert fetched == packed
+    assert calls[0][0][:2] == ("lfs", "fetch")
+    assert calls[0][1] == lfs.TRANSFER_TIMEOUT_SECONDS > 180
+    assert calls[1][1] == 180
 
 
 @pytest.fixture

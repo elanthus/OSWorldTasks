@@ -232,6 +232,9 @@ remote's private status before each transfer. The dedicated remote keeps only a 
 LFS attributes, a catalog, and archives named by their manifest digest. Each new archive adds a
 commit to `main` with a normal push; an existing digest reuses its recorded object. Conflicting
 pushes fail. No force push, automatic deletion, or routine CI download is used.
+Metadata commands have a three-minute deadline. LFS upload and fetch commands have a separate
+fifteen-minute deadline. On POSIX hosts, interruption kills and reaps the command's process group,
+including LFS children, before the temporary clone is removed.
 
 After upload, the command removes its temporary upload checkout. A separate clone with a new
 LFS cache downloads only the requested archive at the recorded full commit. It checks the LFS

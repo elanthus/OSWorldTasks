@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from pixelgym.grounding.v5 import retention_lfs as lfs
 from pixelgym.grounding.v5.retention import create_archive
 from pixelgym.grounding.v5.retention_lfs import _GitStore, pack_archive, unpack_archive
 
@@ -18,7 +19,18 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_real_git_lfs_uses_new_cache_and_can_restore_pinned_previous_version(tmp_path: Path):
+def test_real_git_lfs_uses_new_cache_and_can_restore_pinned_previous_version(
+    tmp_path: Path, monkeypatch
+):
+    run_command = lfs._run
+    transfers = []
+
+    def observe(arguments, **kwargs):
+        if arguments[:2] == ["git", "push"] or arguments[:3] == ["git", "lfs", "fetch"]:
+            transfers.append(kwargs["timeout_seconds"])
+        return run_command(arguments, **kwargs)
+
+    monkeypatch.setattr(lfs, "_run", observe)
     subprocess.run(["git", "lfs", "version"], check=True, capture_output=True)
     remote = tmp_path / "remote.git"
     subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True)
@@ -57,3 +69,5 @@ def test_real_git_lfs_uses_new_cache_and_can_restore_pinned_previous_version(tmp
     old_archive = tmp_path / "old-archive"
     unpack_archive(old_pack, old_archive, expected_digest=digest)
     assert (old_archive / "files" / "evidence.txt").read_text() == "original evidence"
+    assert len(transfers) == 4
+    assert transfers == [lfs.TRANSFER_TIMEOUT_SECONDS] * 4

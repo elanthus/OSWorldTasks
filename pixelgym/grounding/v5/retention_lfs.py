@@ -12,6 +12,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import tarfile
 import tempfile
@@ -35,6 +36,7 @@ from pixelgym.serialization import canonical_json_bytes
 
 MAX_ARCHIVE_BYTES = 512 * 1024**2
 MAX_STORAGE_BYTES = 5 * 1024**3
+TRANSFER_TIMEOUT_SECONDS = 900
 CATALOG_SCHEMA = "pixelgym-lfs-catalog-v1"
 BUDGET_SCHEMA = "pixelgym-lfs-zero-budget-observation-v1"
 RECEIPT_SCHEMA = "pixelgym-lfs-restore-receipt-v1"
@@ -47,7 +49,7 @@ _REPOSITORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+\Z")
 
 def check_budget(record: Path, repository: str, *, now: datetime | None = None) -> dict[str, Any]:
     """Require a recent, repository-bound operator observation; never infer free capacity."""
-    _no_links(record)
+    record = _no_links(record)
     if _checkout(record) is not None:
         raise ValueError("budget observation must stay outside Git checkouts")
     if record.stat().st_size > 16_384:
@@ -94,17 +96,48 @@ def _environment() -> dict[str, str]:
     return result
 
 
-def _run(arguments: list[str], *, cwd: Path | None = None) -> str:
+def _stop_command(process: subprocess.Popen[bytes]) -> None:
     try:
-        result = subprocess.run(
-            arguments, cwd=cwd, env=_environment(), capture_output=True, timeout=180, check=False
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:
+            process.kill()
+    except ProcessLookupError:
+        pass
+    try:
+        process.communicate(timeout=5)
+    except subprocess.TimeoutExpired:
+        # Bound cleanup even if an unrelated detached process holds a pipe open.
+        for stream in (process.stdout, process.stderr):
+            if stream is not None:
+                stream.close()
+        process.wait(timeout=5)
+
+
+def _run(arguments: list[str], *, cwd: Path | None = None, timeout_seconds: float = 180) -> str:
+    process = None
+    try:
+        process = subprocess.Popen(
+            arguments,
+            cwd=cwd,
+            env=_environment(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
         )
+        stdout, _stderr = process.communicate(timeout=timeout_seconds)
     except (OSError, subprocess.TimeoutExpired):
+        if process is not None:
+            _stop_command(process)
         raise ValueError("GitHub/LFS command unavailable or timed out; no receipt issued") from None
-    if result.returncode:
+    except BaseException:
+        if process is not None:
+            _stop_command(process)
+        raise
+    if process.returncode:
         # Credential-helper and remote output must never enter a public receipt or traceback.
         raise ValueError("GitHub/LFS command failed; source evidence is preserved")
-    return result.stdout.decode("utf-8")
+    return stdout.decode("utf-8")
 
 
 def _private_repository(repository: str) -> None:
@@ -275,8 +308,8 @@ class _GitStore:
         self.git("config", "lfs.storage", str(root / ".git" / "lfs"))
         self.git("config", "lfs.url", url + "/info/lfs" if url.startswith("https:") else url)
 
-    def git(self, *arguments: str) -> str:
-        return _run(["git", *arguments], cwd=self.root).strip()
+    def git(self, *arguments: str, timeout_seconds: float = 180) -> str:
+        return _run(["git", *arguments], cwd=self.root, timeout_seconds=timeout_seconds).strip()
 
     def checkout(self, commit: str) -> dict[str, Any]:
         if not _COMMIT.fullmatch(commit):
@@ -318,7 +351,7 @@ class _GitStore:
             "Retain sealed evidence " + digest,
         )
         # The installed LFS pre-push hook uploads objects. No force push or hook bypass.
-        self.git("push", "origin", "HEAD:refs/heads/main")
+        self.git("push", "origin", "HEAD:refs/heads/main", timeout_seconds=TRANSFER_TIMEOUT_SECONDS)
         return self.git("rev-parse", "HEAD")
 
     def download(self, commit: str, digest: str) -> tuple[Path, dict[str, Any]]:
@@ -326,7 +359,15 @@ class _GitStore:
         if digest not in catalog["archives"]:
             raise ValueError("archive is absent from the pinned remote commit")
         entry = catalog["archives"][digest]
-        self.git("lfs", "fetch", "--include=" + entry["path"], "--exclude=", "origin", commit)
+        self.git(
+            "lfs",
+            "fetch",
+            "--include=" + entry["path"],
+            "--exclude=",
+            "origin",
+            commit,
+            timeout_seconds=TRANSFER_TIMEOUT_SECONDS,
+        )
         self.git("lfs", "checkout", entry["path"])
         packed = self.root / entry["path"]
         if packed.stat().st_size != entry["size"] or _hash(packed) != entry["oid"]:
@@ -380,6 +421,7 @@ def restore_remote(
         "restored_source_check": check,
         "budget_observation": budget,
         "billing_setting_verified_by_api": False,
+        "transport_source_digest": _hash(Path(__file__)),
         "restored_at_utc": datetime.now(UTC).isoformat(),
         "real_provider_requests": 0,
     }
