@@ -2,7 +2,8 @@
 
 Use this workflow before removing a checkout or cleaning an evaluation directory. It captures
 restricted evidence outside Git, verifies a second copy, and restores both copies before issuing
-a cleanup receipt. It never deletes the original evidence or calls a model.
+a cleanup receipt. The private Git LFS extension below also downloads and verifies a remote
+copy. Neither workflow deletes the original evidence or calls a model.
 
 The reader is the local evaluation operator. Python 3.12 and the normal `.[dev]` installation
 from the [reproduction guide](reproduction.md) are sufficient. No extra storage service, browser,
@@ -142,6 +143,127 @@ their actions. The [recorded bundle](../artifacts/evidence-retention-20261020-v2
 the scripted observations from the implementation revision named in its source binding.
 The [first bundle](../artifacts/evidence-retention-20261020/REPORT.md) remains unchanged; the v2
 bundle records the successor implementation that refuses unreadable directory scans.
+
+## Private Git LFS backup and remote restore
+
+The approved remote is the separate private repository `elanthus/OSWorldTasks-evidence` on
+GitHub. Raw archives must never enter this public repository or its release assets. Git and
+`git-lfs` plus an authenticated `gh` CLI are required for remote transfers; they are not Python
+dependencies and are not required for the fast suite. Git LFS 3.8.0 was used for the recorded
+transfer. The optional local transport check uses a filesystem remote, without credentials or
+network sockets:
+
+```bash
+PIXELGYM_RUN_LFS_INTEGRATION=1 .venv/bin/pytest -q tests/integration/test_retention_lfs_local.py
+```
+
+Before a transfer, open [GitHub budgets and alerts](https://github.com/settings/billing/budgets).
+Confirm the **Git LFS** budget covers this repository, has amount **$0**, and has **Stop usage
+when budget limit is reached** enabled. Save the setting and reopen it to check that it persisted.
+Do not raise the limit if GitHub refuses a transfer. Preserve the source and local copies.
+GitHub enforces the spending limit; a local size guard does not establish available free quota.
+The owner account's allowance is shared across its repositories, and Actions downloads consume
+that allowance too. See [GitHub's billing rules](https://docs.github.com/en/billing/concepts/product-billing/git-lfs).
+
+GitHub's public budget API covers organizations and enterprises, not personal-account budget
+settings. The command therefore requires a separate operator observation made within the last
+24 hours. This observation records the UI check; it cannot configure the remote setting or
+prove the setting remained unchanged. Keep it outside Git and make a new observation after any
+budget change. After checking the UI, create a new record:
+
+```bash
+env EVIDENCE_STATE="$EVIDENCE_STATE" .venv/bin/python - <<'PY'
+import os
+from datetime import UTC, datetime
+from pathlib import Path
+from pixelgym.grounding.v5.retention import write_private
+from pixelgym.serialization import canonical_json_bytes
+
+record = {
+    "schema_version": "pixelgym-lfs-zero-budget-observation-v1",
+    "repository": "elanthus/OSWorldTasks-evidence",
+    "product": "git_lfs",
+    "budget_usd": 0,
+    "stop_usage": True,
+    "scope": "account",
+    "observed_via": "github-billing-ui",
+    "observed_at_utc": datetime.now(UTC).isoformat(),
+}
+write_private(Path(os.environ["EVIDENCE_STATE"]) / "lfs-budget-001.json",
+              canonical_json_bytes(record))
+PY
+```
+
+For the fixed seven-case validation archive, back up and verify a remote restore:
+
+```bash
+.venv/bin/python -m scripts.backup_evidence_lfs backup \
+  --repository elanthus/OSWorldTasks-evidence \
+  --archive "$EVIDENCE_STATE/evidence/archives/run-001" \
+  --digest "$ARCHIVE_DIGEST" \
+  --budget-record "$EVIDENCE_STATE/lfs-budget-001.json" \
+  --destination "$EVIDENCE_STATE/restored-lfs/run-001" \
+  --receipt "$EVIDENCE_STATE/receipts/run-001-lfs.json" \
+  --logs "$EVIDENCE_STATE/checks/run-001-lfs" \
+  --validation-campaign
+```
+
+The command verifies the source archive and packs it with fixed file metadata. It checks the
+remote's private status before each transfer. The dedicated remote keeps only a fixed README,
+LFS attributes, a catalog, and archives named by their manifest digest. Each new archive adds a
+commit to `main` with a normal push; an existing digest reuses its recorded object. Conflicting
+pushes fail. No force push, automatic deletion, or routine CI download is used.
+
+After upload, the command removes its temporary upload checkout. A separate clone with a new
+LFS cache downloads only the requested archive at the recorded full commit. It checks the LFS
+object's size and SHA-256, unpacks only safe regular files, checks the archive manifest and SQLite
+integrity, and restores to the new destination. `--validation-campaign` then runs the trusted
+retained verifier in an isolated Python process with credentials removed. Stored actions and
+the report must reproduce without changing restored evidence. A receipt is written only after
+all checks succeed. A transfer or verification failure leaves the original evidence intact;
+a successful upload followed by a failed check can leave an unverified remote copy.
+
+The local guards allow at most 512 MiB per archive and 5 GiB in the current catalog. They reduce
+accidental use, but do not account for other repositories or removed historical objects. Keep
+the actual GitHub $0 limit enabled. Keep VM images, container images, and model weights in their
+appropriate stores. This remote is for evidence and small policy/source records.
+
+To repeat recovery later, use the receipt's full `commit` and the separately retained expected
+manifest digest. A new destination and a current budget observation are required:
+
+```bash
+.venv/bin/python -m scripts.backup_evidence_lfs restore \
+  --repository elanthus/OSWorldTasks-evidence \
+  --commit "$REMOTE_COMMIT" --digest "$ARCHIVE_DIGEST" \
+  --budget-record "$EVIDENCE_STATE/lfs-budget-001.json" \
+  --destination "$EVIDENCE_STATE/restored-lfs/run-001-repeat" \
+  --receipt "$EVIDENCE_STATE/receipts/run-001-repeat-lfs.json" \
+  --logs "$EVIDENCE_STATE/checks/run-001-repeat-lfs" \
+  --validation-campaign
+```
+
+Use `--validation-campaign` only with a trusted fixed validation archive: it executes that
+archive's retained source. Omit it for other sealed evidence; the resulting receipt explicitly
+covers archive bytes and SQLite integrity only. Run that experiment's own semantic checks
+separately. A remote receipt is evidence of one recovery, not continuous availability, permanent
+privacy, or a milestone verdict. Before cleanup, retain the remote receipt and also run the
+local `check-cleanup` command against the still-present source. Neither command deletes evidence.
+
+The [recorded remote-recovery observations](../artifacts/evidence-retention-20261020-lfs/REPORT.md)
+bind the two original validation bundles to their private remote commits and repeated recovery.
+Regenerate that report from stored receipts without network access or replay:
+
+```bash
+.venv/bin/python -m scripts.backup_evidence_lfs report \
+  --bundle artifacts/evidence-retention-20261020 \
+  --bundle artifacts/evidence-retention-20261020-v2 \
+  --receipt artifacts/evidence-retention-20261020-lfs/v1-receipt.json \
+  --receipt artifacts/evidence-retention-20261020-lfs/v2-receipt.json \
+  --receipt artifacts/evidence-retention-20261020-lfs/v2-repeat-receipt.json
+```
+
+The offline report command checks receipt bindings to the original public manifests, case counts,
+and stored report/replay digests. It cannot download or verify the private remote bytes.
 
 ## Historical limits
 

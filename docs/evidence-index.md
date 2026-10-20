@@ -90,6 +90,10 @@ the checkout and checks both retained copies before issuing a cleanup receipt. I
 the missing historical journals.
 The [credential-free retention validation](../artifacts/evidence-retention-20261020-v2/REPORT.md)
 records the new scripted cases and restore observations separately from D5.9.
+The [private Git LFS recovery observations](../artifacts/evidence-retention-20261020-lfs/REPORT.md)
+record fresh-cache remote downloads, archive checks, and retained-source replay for both validation
+bundles. Public receipts bind to the existing manifests and reports; private bytes require owner
+access. The GitHub LFS spending limit remains $0 with stop usage enabled as observed at capture.
 
 ## Retired planning links in frozen reports
 
