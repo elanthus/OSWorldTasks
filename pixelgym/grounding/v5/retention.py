@@ -47,8 +47,12 @@ def _files(root: Path) -> dict[str, Path]:
     _no_links(root)
     if not root.is_dir():
         raise ValueError("evidence directory is missing")
+
+    def scan_error(error: OSError) -> None:
+        raise error
+
     result = {}
-    for directory, directories, names in os.walk(root, followlinks=False):
+    for directory, directories, names in os.walk(root, followlinks=False, onerror=scan_error):
         for name in directories + names:
             path = Path(directory) / name
             mode = path.lstat().st_mode

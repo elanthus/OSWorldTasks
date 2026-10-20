@@ -214,6 +214,25 @@ def test_non_sqlite_sidecars_cannot_be_silently_discarded(tmp_path: Path) -> Non
         retention.create_archive(original, tmp_path / "archive")
 
 
+def test_unreadable_directory_cannot_be_silently_omitted(tmp_path, monkeypatch) -> None:
+    original = source(tmp_path)
+    restricted = original / "restricted"
+    restricted.mkdir()
+    (restricted / "journal.json").write_text("must retain")
+    scandir = os.scandir
+
+    def deny_directory(path):
+        if Path(path) == restricted:
+            raise PermissionError("fixture: evidence directory is unreadable")
+        return scandir(path)
+
+    monkeypatch.setattr(os, "scandir", deny_directory)
+    with pytest.raises(PermissionError, match="unreadable"):
+        retention.create_archive(original, tmp_path / "archive")
+    assert not (tmp_path / "archive").exists()
+    assert (restricted / "journal.json").read_text() == "must retain"
+
+
 def test_read_only_journal_never_creates_or_migrates_evidence(tmp_path: Path) -> None:
     path = tmp_path / "attempts.sqlite"
     with closing(V5AttemptJournal(path)) as journal:
