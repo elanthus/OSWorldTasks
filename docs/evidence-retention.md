@@ -133,13 +133,15 @@ Check the published bundle without access to private storage:
 
 ```bash
 .venv/bin/python -m scripts.verify_retention_bundle \
-  --bundle artifacts/evidence-retention-20261020
+  --bundle artifacts/evidence-retention-20261020-v2
 ```
 
 This verifies the published hash relations, case allocation, restore observations, source
 bindings, and generated Markdown. It cannot verify the absent private archive bytes or replay
-their actions. The [recorded bundle](../artifacts/evidence-retention-20261020/REPORT.md) retains
+their actions. The [recorded bundle](../artifacts/evidence-retention-20261020-v2/REPORT.md) retains
 the scripted observations from the implementation revision named in its source binding.
+The [first bundle](../artifacts/evidence-retention-20261020/REPORT.md) remains unchanged; the v2
+bundle records the successor implementation that refuses unreadable directory scans.
 
 ## Historical limits
 

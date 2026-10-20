@@ -88,7 +88,7 @@ Each entry corrects presentation only; no stored measurement changed.
 For new runs, the [retention and restore workflow](evidence-retention.md) captures journals outside
 the checkout and checks both retained copies before issuing a cleanup receipt. It does not recover
 the missing historical journals.
-The [credential-free retention validation](../artifacts/evidence-retention-20261020/REPORT.md)
+The [credential-free retention validation](../artifacts/evidence-retention-20261020-v2/REPORT.md)
 records the new scripted cases and restore observations separately from D5.9.
 
 ## Retired planning links in frozen reports
