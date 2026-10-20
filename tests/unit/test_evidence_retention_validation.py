@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import socket
 import subprocess
 from pathlib import Path
@@ -13,6 +14,7 @@ from pixelgym.grounding.v5 import retention_validation as validation
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.retention import check_cleanup, verify_archive
 from scripts.validate_evidence_retention import _environment, _restored_check, run_validation
+from scripts.verify_retention_bundle import verify_bundle
 
 
 @pytest.fixture(scope="module")
@@ -51,6 +53,7 @@ def test_complete_campaign_restores_and_replays_both_copies(bundle) -> None:
     assert not list(public.rglob("*.sqlite"))
     assert content_digest(report) == result["report_digest"]
     assert "not D5.9" in (public / "REPORT.md").read_text()
+    assert verify_bundle(public)["checked_files"] == 6
 
 
 def test_report_renderer_never_replays_or_calls_a_policy(bundle, monkeypatch) -> None:
@@ -140,3 +143,38 @@ def test_failed_restore_checks_preserve_private_output(tmp_path, monkeypatch, fa
     assert (logs / "stdout.txt").read_bytes() == b"partial"
     assert (logs / "stderr.txt").read_bytes() == b"diagnostic"
     assert json.loads((logs / "process.json").read_bytes())["timeout"] is (failure == "timeout")
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "report.json",
+        "observations.json",
+        "source-binding.json",
+        "archive-manifest.json",
+        "retention-receipt.json",
+        "REPORT.md",
+    ],
+)
+def test_public_verifier_detects_changed_bundle_files(bundle, tmp_path, filename) -> None:
+    _store, _backup, public, _result = bundle
+    copy = tmp_path / "public"
+    shutil.copytree(public, copy)
+    path = copy / filename
+    if filename == "REPORT.md":
+        path.write_text("changed report")
+    else:
+        value = json.loads(path.read_bytes())
+        if filename == "source-binding.json":
+            value["git_revision"] = "changed"
+        elif filename == "observations.json":
+            value["cases"][0]["scripted_sends"] = 999
+        elif filename == "archive-manifest.json":
+            value["files"][0]["size"] = 999
+        elif filename == "retention-receipt.json":
+            value["restored_source_checks"][0]["exit_status"] = 1
+        else:
+            value["case_count"] = 999
+        path.write_text(json.dumps(value))
+    with pytest.raises(ValueError):
+        verify_bundle(copy)

@@ -28,6 +28,7 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `generate_validation_report.py` | Render Markdown from stored validation JSON without rerunning checks | `artifacts/validation-report.json` | `artifacts/validation-report.md` | none | yes |
 | `retain_v5_evidence.py` | Capture stopped evidence outside Git, verify a backup, restore, and check cleanup preconditions | `capture`, `verify`, `restore`, `check-cleanup`; explicit source/archive/backup paths and expected digest | private archive directories and cleanup receipt; never deletes source | none | no |
 | `validate_evidence_retention.py` | Run seven fixed scripted cases and verify both restored copies using retained source; render reports from stored observations | `run --store --backup-store --run-id --public-output`; `verify` or `report --run` | private run, archives, receipt, and safe public projection | none (runs local Python and `git`) | no |
+| `verify_retention_bundle.py` | Verify public projection/receipt/source bindings and reproduce Markdown without private journals or replay | `--bundle` | stdout JSON; never changes files | none | yes |
 
 ## Grounding v1 and v2
 

@@ -129,6 +129,18 @@ checks use the archived implementation and include the interpreter/dependency ve
 source binding in the bundle. A reviewer can regenerate this fixed campaign locally to inspect
 all private scripted evidence. The checked-in projections alone do not contain that evidence.
 
+Check the published bundle without access to private storage:
+
+```bash
+.venv/bin/python -m scripts.verify_retention_bundle \
+  --bundle artifacts/evidence-retention-20261020
+```
+
+This verifies the published hash relations, case allocation, restore observations, source
+bindings, and generated Markdown. It cannot verify the absent private archive bytes or replay
+their actions. The [recorded bundle](../artifacts/evidence-retention-20261020/REPORT.md) retains
+the scripted observations from the implementation revision named in its source binding.
+
 ## Historical limits
 
 The D5.9 attempt and invocation journals were untracked in a temporary checkout that was removed.
