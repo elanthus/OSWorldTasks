@@ -94,6 +94,10 @@ The [private Git LFS recovery observations](../artifacts/evidence-retention-2026
 record fresh-cache remote downloads, archive checks, and retained-source replay for both validation
 bundles. Public receipts bind to the existing manifests and reports; private bytes require owner
 access. The GitHub LFS spending limit remains $0 with stop usage enabled as observed at capture.
+The [review successor bundle](../artifacts/evidence-retention-20261020-v3/REPORT.md) and its
+[private LFS recovery observations](../artifacts/evidence-retention-20261020-v3-lfs/REPORT.md)
+retain a new run after the provenance and read-only inspection fixes. They supplement the earlier
+observations without rewriting them.
 
 ## Retired planning links in frozen reports
 

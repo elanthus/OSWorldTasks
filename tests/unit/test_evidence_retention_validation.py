@@ -438,7 +438,14 @@ def test_public_verifier_rejects_duplicate_member_even_with_updated_digest(bundl
         verify_bundle(copy)
 
 
-@pytest.mark.parametrize("name", ["evidence-retention-20261020", "evidence-retention-20261020-v2"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "evidence-retention-20261020",
+        "evidence-retention-20261020-v2",
+        "evidence-retention-20261020-v3",
+    ],
+)
 def test_committed_retention_bundle_verifies(name):
     root = Path(__file__).resolve().parents[2]
     assert verify_bundle(root / "artifacts" / name)["checked_files"] == 6

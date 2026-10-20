@@ -155,6 +155,10 @@ their actions. The [recorded bundle](../artifacts/evidence-retention-20261020-v2
 the scripted observations from the implementation revision named in its source binding.
 The [first bundle](../artifacts/evidence-retention-20261020/REPORT.md) remains unchanged; the v2
 bundle records the successor implementation that refuses unreadable directory scans.
+The [review successor](../artifacts/evidence-retention-20261020-v3/REPORT.md) records the source
+provenance and read-only journal repairs. Its [private LFS restore receipt](../artifacts/evidence-retention-20261020-v3-lfs/REPORT.md)
+records a separate fresh remote download and retained-source verification. Earlier bundles and
+remote receipts remain unchanged.
 
 New publications screen every JSON value and the generated Markdown for credential-shaped
 content before creating the public-output directory. The private journals remain outside Git.

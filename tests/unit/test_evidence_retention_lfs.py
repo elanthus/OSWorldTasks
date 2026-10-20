@@ -430,3 +430,21 @@ def test_public_receipt_disagreement_is_detected(tmp_path, field):
     receipt.write_bytes(canonical_json_bytes(value))
     with pytest.raises(ValueError, match="differs|disagrees"):
         report_receipts([receipt], [root / "evidence-retention-20261020-v2"])
+
+
+def test_review_successor_remote_receipt_report_is_reproducible(monkeypatch):
+    from scripts import backup_evidence_lfs as command
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("stored receipt report attempted a remote operation")
+
+    monkeypatch.setattr(lfs, "_run", forbidden)
+    monkeypatch.setattr(command, "_restored_check", forbidden)
+    root = Path(__file__).resolve().parents[2] / "artifacts"
+    public = root / "evidence-retention-20261020-v3-lfs"
+    assert (
+        command.report_receipts(
+            [public / "receipt.json"], [root / "evidence-retention-20261020-v3"]
+        )
+        == (public / "REPORT.md").read_text()
+    )
