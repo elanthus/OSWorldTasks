@@ -553,3 +553,31 @@ def test_review_successor_remote_receipt_report_is_reproducible(monkeypatch):
         )
         == (public / "REPORT.md").read_text()
     )
+
+
+def test_transport_recovery_publication_binds_source_and_reuses_object(monkeypatch):
+    from scripts import backup_evidence_lfs as command
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("stored receipt report attempted a remote operation")
+
+    monkeypatch.setattr(lfs, "_run", forbidden)
+    monkeypatch.setattr(command, "_restored_check", forbidden)
+    root = Path(__file__).resolve().parents[2] / "artifacts"
+    public = root / "evidence-retention-20261020-v3-lfs"
+    receipt = json.loads((public / "transport-receipt.json").read_bytes())
+    original = json.loads((public / "receipt.json").read_bytes())
+    binding = json.loads((public / "transport-source-binding.json").read_bytes())
+    assert binding["schema_version"] == "pixelgym-lfs-transport-source-binding-v1"
+    assert binding["files"] == {
+        "pixelgym/grounding/v5/retention_lfs.py": receipt["transport_source_digest"]
+    }
+    assert len(binding["git_revision"]) == 40
+    assert receipt["commit"] == original["commit"]
+    assert receipt["lfs_object"] == original["lfs_object"]
+    assert (
+        command.report_receipts(
+            [public / "transport-receipt.json"], [root / "evidence-retention-20261020-v3"]
+        )
+        == (public / "TRANSPORT-REPORT.md").read_text()
+    )

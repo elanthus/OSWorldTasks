@@ -159,6 +159,10 @@ The [review successor](../artifacts/evidence-retention-20261020-v3/REPORT.md) re
 provenance and read-only journal repairs. Its [private LFS restore receipt](../artifacts/evidence-retention-20261020-v3-lfs/REPORT.md)
 records a separate fresh remote download and retained-source verification. Earlier bundles and
 remote receipts remain unchanged.
+The [transport follow-up](../artifacts/evidence-retention-20261020-v3-lfs/TRANSPORT-REPORT.md)
+records another recovery with the budget-path and process-lifetime repairs. Its separate source
+binding identifies the transport module revision; the validation archive and remote object are
+unchanged.
 
 New publications screen every JSON value and the generated Markdown for credential-shaped
 content before creating the public-output directory. The private journals remain outside Git.
