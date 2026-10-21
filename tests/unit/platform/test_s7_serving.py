@@ -301,6 +301,7 @@ def test_report_does_not_execute_policy_replay_or_transport(
     package, summary = candidate()
     run = tmp_path / "run"
     run.mkdir()
+    write_json(run / "plan.json", {"cumulative_accounting": None})
     for role in ("A", "B"):
         package, summary = candidate(role)
         write_json(run / f"packages/{role}/package.json", package.to_dict())
@@ -395,6 +396,63 @@ def test_stopped_report_retains_partial_observations_without_generating_packages
     (tmp_path / "packages").mkdir()
     with pytest.raises(ValueError, match="conflicting completion"):
         stored_report(tmp_path)
+
+
+def stopped_archive(root: Path, count: int) -> Path:
+    """Explicit unit predecessor with durable reservations and no transport invocation."""
+    from pixelgym.platform.s7_source import content_digest_bytes
+
+    run = root / "stopped"
+    write_json(run / "source/fixture.json", {"fixture": "retained source"})
+    write_json(
+        run / "source-binding.json",
+        {
+            "files": {
+                "fixture.json": content_digest_bytes((run / "source/fixture.json").read_bytes())
+            }
+        },
+    )
+    write_json(run / "plan.json", {"fixture": str(count)})
+    write_json(
+        run / "failure.json",
+        {
+            "qualification_complete": False,
+            "activation_performed": False,
+            "publication_performed": False,
+            "real_provider_requests": 0,
+            "monetary_spend_usd": 0,
+            "fake_send_reservations": count,
+        },
+    )
+    budget = S7SendBudget(run / "send-budget.sqlite")
+    for index in range(count):
+        budget.reserve("qualification", str(index))
+    seal(run)
+    archive = root / "archive"
+    create_archive(run, archive)
+    return archive
+
+
+def test_predecessors_preserve_consumed_allowance_and_refuse_duplicates_or_changed_counts(
+    tmp_path: Path,
+) -> None:
+    from pixelgym.platform.s7_predecessors import freeze_predecessors, verify_predecessors
+
+    archive = stopped_archive(tmp_path / "first", 73)
+    run = tmp_path / "replacement"
+    accounting = freeze_predecessors(run, (archive,))
+    assert verify_predecessors(run, accounting) == 73
+    assert accounting["qualification_allowance"] == 150
+    assert accounting["campaign_allowance"] == 184
+    original = inventory(run)
+    changed = json.loads(json.dumps(accounting))
+    changed["records"][0]["qualification_sends"] = 0
+    with pytest.raises(ValueError, match="count changed"):
+        verify_predecessors(run, changed)
+    duplicate_run = tmp_path / "duplicate"
+    with pytest.raises(ValueError, match="identity"):
+        freeze_predecessors(duplicate_run, (archive, archive))
+    assert inventory(run) == original
 
 
 def test_git_source_refuses_modified_untracked_ignored_and_wrong_root(tmp_path: Path) -> None:
@@ -531,7 +589,13 @@ def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
         "pixelgym.platform.s7_qualification.SandboxedPolicyProcess", UnenforcedFixtureWorker
     )
     run = tmp_path / "run"
-    prepare(root, run, run_id="unit-fixture", approval="unit fixture only")
+    prepare(
+        root,
+        run,
+        run_id="unit-fixture",
+        approval="unit fixture only",
+        predecessor_archives=(stopped_archive(tmp_path / "predecessor", 73),),
+    )
     with no_network():
         result = qualify(root, run)
         replay = replay_campaign(run / "shared")
@@ -558,6 +622,7 @@ def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
         )
     (run / "results.json").write_bytes(canonical_json_bytes(result))
     verification = inspect_qualification(run)
+    assert verification["cumulative_qualification_sends"] == 150
     packages = build_packages(run, verification)
     assert all(p["gate_overall_passed"] for p in packages.values())
     store_artifacts(run)

@@ -60,6 +60,7 @@ def main() -> None:
     preparation.add_argument("--run", type=Path, required=True)
     preparation.add_argument("--run-id", required=True)
     preparation.add_argument("--approval", required=True)
+    preparation.add_argument("--predecessor-archive", type=Path, action="append", default=[])
     preparation.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[1])
     execution = commands.add_parser("qualify")
     execution.add_argument("--run", type=Path, required=True)
@@ -75,6 +76,7 @@ def main() -> None:
                 args.run.resolve(),
                 run_id=args.run_id,
                 approval=args.approval,
+                predecessor_archives=tuple(path.resolve() for path in args.predecessor_archive),
             )
             output = {"plan_sha256": content_digest(plan), "fake_sends": 0}
         elif args.command == "qualify":

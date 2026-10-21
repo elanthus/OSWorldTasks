@@ -59,8 +59,14 @@ complete qualification; the earlier 73 sends cannot qualify that revision. A rep
 therefore requires **separate approval for 77 additional fake sends**, raising cumulative
 qualification consumption/allowance to at most **150** and the overall campaign ceiling to
 **184** (150 + A 4 + B 24 + smokes 6). Both stopped runs remain immutable predecessor evidence.
-This proposed increase is not active. No new freeze or qualification is authorized by the
-existing approval. Activation, publication, real-provider requests, and spending remain blocked.
+The owner explicitly approved those 77 additional fake sends on 2026-10-20. Freeze both stopped
+archives with `prepare --predecessor-archive` before running the replacement. The replacement's
+durable guard still limits it to 77 qualification sends and 111 across its phases; the retained
+predecessor ledgers contribute 73 immutable sends, giving aggregate ceilings of 150 and 184.
+Preparation and verification check the predecessor seals, source bytes, archive identities,
+durable counts, and cumulative arithmetic; a duplicate predecessor is refused. Its approval
+record must state the additional allowance. No automatic retry is authorized. Activation,
+publication, real-provider requests, and spending remain blocked.
 
 ## Decisions requested
 

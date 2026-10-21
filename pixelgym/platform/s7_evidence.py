@@ -132,7 +132,10 @@ def replay_case(run: Path, record: dict[str, Any]) -> dict[str, Any]:
 
 
 def inspect_qualification(run: Path) -> dict[str, Any]:
+    from pixelgym.platform.s7_predecessors import verify_predecessors
+
     plan, results = read_json(run / "plan.json"), read_json(run / "results.json")
+    previous = verify_predecessors(run, plan["cumulative_accounting"])
     source, lock = read_json(run / "source-binding.json"), read_json(run / "runtime-lock.json")
     verify_snapshot(run / "source", source)
     if results["plan_sha256"] != content_digest(plan) or (
@@ -208,6 +211,8 @@ def inspect_qualification(run: Path) -> dict[str, Any]:
         "source_binding_sha256": content_digest(source),
         "shared": shared,
         "replays": replays,
+        "cumulative_qualification_sends": previous + 77,
+        "cumulative_accounting": plan["cumulative_accounting"],
     }
 
 
@@ -483,6 +488,7 @@ def stored_report(run: Path) -> dict[str, Any]:
         "activation_performed": results["activation_performed"],
         "publication_performed": results["publication_performed"],
         "milestone_verdict": None,
+        "cumulative_accounting": read_json(run / "plan.json").get("cumulative_accounting"),
     }
 
 
@@ -551,6 +557,20 @@ def render_report(report: dict[str, Any]) -> str:
                 f"{observation['comparator']} | {observation['threshold']} |"
             )
         lines.append("")
+    accounting = report.get("cumulative_accounting")
+    if accounting:
+        previous = accounting["previous_qualification_sends"]
+        lines.extend(
+            [
+                (
+                    f"Earlier stopped qualifications: {previous} fake sends. "
+                    f"Cumulative qualification sends: {previous + 77} "
+                    f"of {accounting['qualification_allowance']}. "
+                    f"Overall campaign ceiling: {accounting['campaign_allowance']}."
+                ),
+                "",
+            ]
+        )
     lines.extend(
         [
             (

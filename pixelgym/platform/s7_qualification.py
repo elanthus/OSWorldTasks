@@ -27,6 +27,7 @@ from pixelgym.grounding.v5.runner import InjectedInterruption, V5Runner
 from pixelgym.platform.policy_subprocess import SandboxedPolicyProcess
 from pixelgym.platform.s7_budget import BudgetedScriptedTransport, S7SendBudget
 from pixelgym.platform.s7_policy import EVIDENCE_LABEL, POLICY_SHA256, policy_document
+from pixelgym.platform.s7_predecessors import freeze_predecessors, verify_predecessors
 from pixelgym.platform.s7_source import (
     ENDPOINT,
     runtime_lock,
@@ -80,7 +81,14 @@ def manifest(
     return PolicyManifest.build(**fields)
 
 
-def prepare(root: Path, run: Path, *, run_id: str, approval: str) -> dict[str, Any]:
+def prepare(
+    root: Path,
+    run: Path,
+    *,
+    run_id: str,
+    approval: str,
+    predecessor_archives: tuple[Path, ...] = (),
+) -> dict[str, Any]:
     """Freeze clean source, actions, runtime constraints, and plan before any fake send."""
     if run.exists() or _checkout(run) is not None or not run_id or not approval.strip():
         raise ValueError("new private run outside Git and explicit qualification approval required")
@@ -90,6 +98,7 @@ def prepare(root: Path, run: Path, *, run_id: str, approval: str) -> dict[str, A
     write_json(run / "source-binding.json", source)
     write_json(run / "runtime-lock.json", lock)
     write_json(run / "gate-policy.json", policy_document())
+    cumulative = freeze_predecessors(run, predecessor_archives)
     task = generate_task(SEED)
     with closing(V5FakeBackend()) as backend:
         backend.reset(SEED)
@@ -130,6 +139,7 @@ def prepare(root: Path, run: Path, *, run_id: str, approval: str) -> dict[str, A
         "expected_case_sends": [20, 26, 26, 1, 1, 1, 1],
         "qualification_cap": 77,
         "campaign_cap": 111,
+        "cumulative_accounting": cumulative,
     }
     write_json(run / "plan.json", plan)
     return plan
@@ -160,6 +170,7 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
         raise ValueError("S7 frozen plan bindings or approval boundary changed")
     verify_snapshot(run / "source", source)
     verify_runtime(lock)
+    verify_predecessors(run, plan["cumulative_accounting"])
     budget = S7SendBudget(run / "send-budget.sqlite")
     records, workers = [], []
     for case in (*CASES, "baseline"):
