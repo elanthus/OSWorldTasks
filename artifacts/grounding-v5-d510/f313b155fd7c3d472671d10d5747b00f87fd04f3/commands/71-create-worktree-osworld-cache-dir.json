@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "mkdir",
+    "-p",
+    ".cache/osworld"
+  ],
+  "command": "mkdir -p .cache/osworld",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.004664,
+  "ended_at_utc": "2026-10-21T07:26:44.938760+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-21T07:26:44.932215+00:00"
+}
