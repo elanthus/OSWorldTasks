@@ -328,14 +328,33 @@ def test_executed_policies_are_recorded_beside_preregistered_ones() -> None:
     )
 
 
-def test_missing_executed_policy_manifest_fails_closed() -> None:
+@pytest.mark.parametrize("mode", ("history", "stateless"))
+def test_missing_executed_policy_manifest_fails_closed(mode: str) -> None:
     plan = _plan()
-    del plan["policy_manifests"]["stateless"]
-    with pytest.raises(analysis.AnalysisError, match="policy manifest"):
+    del plan["policy_manifests"][mode]
+    with pytest.raises(analysis.AnalysisError, match=f"no {mode} policy manifest"):
         _analyze(plan=plan)
     plan = _plan()
-    del plan["policy_manifests"]["history"]["policy_id"]
-    with pytest.raises(analysis.AnalysisError, match="policy manifest"):
+    del plan["policy_manifests"]
+    with pytest.raises(analysis.AnalysisError, match="no policy manifests"):
+        _analyze(plan=plan)
+
+
+@pytest.mark.parametrize("mode", ("history", "stateless"))
+@pytest.mark.parametrize("field", analysis.EXECUTED_POLICY_FIELDS)
+@pytest.mark.parametrize("defect", ("missing", "blank", "non_string"))
+def test_missing_or_blank_executed_policy_field_fails_closed(
+    mode: str, field: str, defect: str
+) -> None:
+    plan = _plan()
+    manifest = plan["policy_manifests"][mode]
+    if defect == "missing":
+        del manifest[field]
+    elif defect == "blank":
+        manifest[field] = ""
+    else:
+        manifest[field] = 7
+    with pytest.raises(analysis.AnalysisError, match=f"{mode} policy manifest lacks {field}"):
         _analyze(plan=plan)
 
 
