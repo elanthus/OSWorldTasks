@@ -197,11 +197,10 @@
         "commands/45-verify-d59-haiku-freeze.json",
         "commands/46-verify-d59-haiku-retry-successor.json",
         "commands/47-verify-d59-haiku-network-retry.json",
-        "commands/48-verify-v5-at-historical-revisions.json",
         "commands/48-verify-v5-at-historical-revisions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:803",
-      "stored_raw_observation": "`57-v5-group-call-cap-planning`: exit 0; pytest {\"passed\": 27, \"runtime\": 15.01}<br>`42-d59-recorded-source-revisions`: exit 0<br>`43-verify-d59-freeze`: exit 1<br>`45-verify-d59-haiku-freeze`: exit 1<br>`46-verify-d59-haiku-retry-successor`: exit 1<br>`47-verify-d59-haiku-network-retry`: exit 1<br>`48-verify-v5-at-historical-revisions`: exit 0<br>`48-verify-v5-at-historical-revisions`: exit 0"
+      "stored_raw_observation": "`57-v5-group-call-cap-planning`: exit 0; pytest {\"passed\": 27, \"runtime\": 15.01}<br>`42-d59-recorded-source-revisions`: exit 0<br>`43-verify-d59-freeze`: exit 1<br>`45-verify-d59-haiku-freeze`: exit 1<br>`46-verify-d59-haiku-retry-successor`: exit 1<br>`47-verify-d59-haiku-network-retry`: exit 1<br>`48-verify-v5-at-historical-revisions`: exit 0"
     },
     {
       "artifacts": [
@@ -1273,13 +1272,13 @@
   "package_files": [
     {
       "path": "REPORT.md",
-      "sha256": "d66ce3fcaf6e8cabb676cacb9d02d8d1fda382f79926a51502a5cbb3a8546875",
-      "size": 49913
+      "sha256": "45d7456481423cfb532975bebee3cf5ee5d2ad1d7af64aaa02f89f477ac4d4be",
+      "size": 49809
     },
     {
       "path": "checklist-map.json",
-      "sha256": "dea6f7899b38174fed40a8fad87a14d5485cf5ec7abf41cfaefe69fc7220709b",
-      "size": 29421
+      "sha256": "63f7f9551b08f445b6a62f2c6f550b1303f81231b468df2dc969191be10b7f33",
+      "size": 29359
     },
     {
       "path": "commands/00-git-revision.json",

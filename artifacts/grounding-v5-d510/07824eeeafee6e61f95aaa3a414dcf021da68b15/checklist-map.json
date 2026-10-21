@@ -250,7 +250,6 @@
         "commands/45-verify-d59-haiku-freeze.json",
         "commands/46-verify-d59-haiku-retry-successor.json",
         "commands/47-verify-d59-haiku-network-retry.json",
-        "commands/48-verify-v5-at-historical-revisions.json",
         "commands/48-verify-v5-at-historical-revisions.json"
       ],
       "artifacts": [
