@@ -188,40 +188,40 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
         policy = SandboxedPolicyProcess(
             spec=worker_spec(root, run, actual_worker), require_os_sandbox=True
         )
-        workers.append(
-            {
-                "case": case,
-                "worker": actual_worker,
-                "manifest": execution.to_dict(),
-                "os_sandbox_applied": policy.os_sandbox_applied,
-                "mechanism": policy.sandbox_mechanism,
-                "profile_sha256": policy.sandbox_profile_digest,
-            }
-        )
-        write_json(directory / "worker.json", workers[-1])
-        outcomes = None
-        if case in {"malformed", "invalid_action"}:
-            outcomes = [
-                TransportOutcome(
-                    "response",
-                    {
-                        "response_id": "fixture",
-                        "model": "no-cost-scripted-policy",
-                        "content": "not-json"
-                        if case == "malformed"
-                        else '{"action_type":1,"x":-1,"y":0,"key":0}',
-                        "finish_reason": "stop",
-                        "usage": {"prompt_tokens": 1, "completion_tokens": 1},
-                    },
-                )
-            ]
-        transport = BudgetedScriptedTransport(budget, phase="qualification", outcomes=outcomes)
-        attempts = 1 if case in {"baseline", "call_cap", "malformed", "invalid_action"} else 26
-        caps = CallCaps(26, attempts, 0, attempts)
-        trial = "retention-" + case
-        record: dict[str, Any] = {"case": case, "seed": SEED, "trial_id": trial}
-        path = directory / "attempts.sqlite"
         try:
+            workers.append(
+                {
+                    "case": case,
+                    "worker": actual_worker,
+                    "manifest": execution.to_dict(),
+                    "os_sandbox_applied": policy.os_sandbox_applied,
+                    "mechanism": policy.sandbox_mechanism,
+                    "profile_sha256": policy.sandbox_profile_digest,
+                }
+            )
+            write_json(directory / "worker.json", workers[-1])
+            outcomes = None
+            if case in {"malformed", "invalid_action"}:
+                outcomes = [
+                    TransportOutcome(
+                        "response",
+                        {
+                            "response_id": "fixture",
+                            "model": "no-cost-scripted-policy",
+                            "content": "not-json"
+                            if case == "malformed"
+                            else '{"action_type":1,"x":-1,"y":0,"key":0}',
+                            "finish_reason": "stop",
+                            "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+                        },
+                    )
+                ]
+            transport = BudgetedScriptedTransport(budget, phase="qualification", outcomes=outcomes)
+            attempts = 1 if case in {"baseline", "call_cap", "malformed", "invalid_action"} else 26
+            caps = CallCaps(26, attempts, 0, attempts)
+            trial = "retention-" + case
+            record: dict[str, Any] = {"case": case, "seed": SEED, "trial_id": trial}
+            path = directory / "attempts.sqlite"
             with closing(V5AttemptJournal(path)) as journal:
                 runner = V5Runner(
                     journal=journal,
@@ -256,18 +256,18 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
                 recovered_policy = SandboxedPolicyProcess(
                     spec=worker_spec(root, run, actual_worker), require_os_sandbox=True
                 )
-                workers.append(
-                    {
-                        "case": "resume_recovery",
-                        "worker": actual_worker,
-                        "manifest": execution.to_dict(),
-                        "os_sandbox_applied": recovered_policy.os_sandbox_applied,
-                        "mechanism": recovered_policy.sandbox_mechanism,
-                        "profile_sha256": recovered_policy.sandbox_profile_digest,
-                    }
-                )
-                write_json(directory / "recovery-worker.json", workers[-1])
                 try:
+                    workers.append(
+                        {
+                            "case": "resume_recovery",
+                            "worker": actual_worker,
+                            "manifest": execution.to_dict(),
+                            "os_sandbox_applied": recovered_policy.os_sandbox_applied,
+                            "mechanism": recovered_policy.sandbox_mechanism,
+                            "profile_sha256": recovered_policy.sandbox_profile_digest,
+                        }
+                    )
+                    write_json(directory / "recovery-worker.json", workers[-1])
                     runner = V5Runner(
                         journal=journal,
                         manifest=execution,

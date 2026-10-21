@@ -537,14 +537,7 @@ def test_review_wait_preserves_caps_and_does_not_allow_sends(
         budget.reserve("qualification", "extra")
 
 
-def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
-    tmp_path: Path, monkeypatch: Any
-) -> None:
-    from pixelgym.grounding.v5.retention_validation import replay_campaign
-    from pixelgym.grounding.v5.runner import ScriptedStatefulPolicy
-    from pixelgym.platform.s7_evidence import inspect_qualification
-    from pixelgym.platform.s7_qualification import prepare, qualify
-
+def qualification_checkout(tmp_path: Path) -> Path:
     root = tmp_path / "checkout"
     root.mkdir()
     for name in (
@@ -573,6 +566,66 @@ def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
         ),
     ):
         subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+    return root
+
+
+@pytest.mark.parametrize("proof_name", ["worker.json", "recovery-worker.json"])
+def test_worker_proof_write_failure_closes_every_worker_without_sending(
+    tmp_path: Path, monkeypatch: Any, proof_name: str
+) -> None:
+    from types import SimpleNamespace
+
+    from pixelgym.grounding.v5.runner import InjectedInterruption, ScriptedStatefulPolicy
+    from pixelgym.platform.s7_qualification import prepare, qualify
+
+    root, run = qualification_checkout(tmp_path), tmp_path / "failed-proof"
+    prepare(root, run, run_id="cleanup-unit-fixture", approval="unit fixture only")
+    workers = []
+
+    class FixtureWorker(ScriptedStatefulPolicy):
+        os_sandbox_applied = False
+        sandbox_mechanism = "unit_fixture_unenforced"
+        sandbox_profile_digest = None
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(())
+            workers.append(self)
+
+    class NoSendRunner:
+        """Reach the proof-write boundaries without executing any policy or transport."""
+
+        def __init__(self, **kwargs: Any) -> None:
+            self.interruption = kwargs.get("interrupt_after")
+
+        def run(self, **kwargs: Any) -> Any:
+            if self.interruption:
+                raise InjectedInterruption(self.interruption)
+            return SimpleNamespace(to_dict=lambda: {})
+
+    def write_or_fail(path: Path, value: Any) -> None:
+        if path.name == proof_name:
+            raise OSError("fixture proof storage unavailable")
+        write_json(path, value)
+
+    monkeypatch.setattr("pixelgym.platform.s7_qualification.SandboxedPolicyProcess", FixtureWorker)
+    monkeypatch.setattr("pixelgym.platform.s7_qualification.V5Runner", NoSendRunner)
+    monkeypatch.setattr("pixelgym.platform.s7_qualification.write_json", write_or_fail)
+    with no_network(), pytest.raises(OSError, match="proof storage unavailable"):
+        qualify(root, run)
+    assert len(workers) == (1 if proof_name == "worker.json" else 8)
+    assert all(worker.closed for worker in workers)
+    assert S7SendBudget(run / "send-budget.sqlite").counts() == {}
+
+
+def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    from pixelgym.grounding.v5.retention_validation import replay_campaign
+    from pixelgym.grounding.v5.runner import ScriptedStatefulPolicy
+    from pixelgym.platform.s7_evidence import inspect_qualification
+    from pixelgym.platform.s7_qualification import prepare, qualify
+
+    root = qualification_checkout(tmp_path)
     workers = []
 
     class UnenforcedFixtureWorker(ScriptedStatefulPolicy):
