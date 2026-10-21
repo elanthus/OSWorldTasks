@@ -134,6 +134,14 @@ Control-plane wiring (S6) keeps one ledger and one active pointer for both kinds
 - A control plane without a configured stateful preparer refuses stateful candidates before any
   load. The default bootstrap configures none, so no package loader or provider transport ships.
 
+The bounded [S7 scripted specification](s7-serving-demo-proposal.md) adds a fixed gate policy,
+source-bound packages, durable fake-send reservations, and the `scripts.s7_serving`
+`prepare`/`qualify`/`verify`/`report` commands. It exposes no activation command. S7 registration
+also requires its stored-evidence verifier in `StatefulServingConfig.gate_verifiers`; configuring
+only an approved policy digest is insufficient. The optional S7 preparer verifies the exact
+qualified package, source bytes, and runtime binding before starting a worker. Candidate approval,
+demo serving terms, and the full serving rehearsal remain separate owner decisions.
+
 ## Analysis and evidence
 
 Platform evidence comes from the deterministic `scripted-demo` provider. It validates controls and
@@ -160,13 +168,15 @@ latency, cost, and redaction, and a second approval before any full run.
 | S4: `/api/v2` HTTP adapter and operational records | Delivered (`pixelgym/platform/stateful_service.py`) |
 | S5: credential-free policy subprocess with local egress-denial proof | Delivered (`pixelgym/platform/policy_subprocess.py`) |
 | S6: control-plane wiring and kind-aware runtime | Delivered (`pixelgym/platform/stateful_control.py`, `pixelgym/platform/stateful_runtime.py`) |
-| S7–S8: v5 gate policy, first package, rehearsal, and gate | Not delivered; human-owned |
+| S7: scripted gate policy, package qualification, and evidence tooling | Implemented; exact-package activation remains owner-gated |
+| S8: full serving rehearsal and human gate | Not executed; human-owned |
 
 Known limitations: single-user local control plane; provider aliases can drift; write-once
 retention protects versions but not availability; one synthetic form cannot establish general
 grounding performance; approval is only as strong as the deployment's identity and access control;
 local Compose does not demonstrate cloud availability or recovery. Stateful packages have
 no UI surface yet and are registered, approved, and deployed through the Python control-store
-and coordinator API; the package source digest is bound to an operator-registered worker spec
-rather than recomputed from worker code; MLflow aliases are not mirrored for stateful packages. The control plane has no caller
+and coordinator API. Generic package loading binds the source digest to an operator-registered
+worker spec; S7 additionally requires source verification before worker launch. MLflow aliases
+are not mirrored for stateful packages. The control plane has no caller
 authentication and must stay on loopback ([deployment guide](../deploy/README.md)).
