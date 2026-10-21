@@ -79,6 +79,13 @@ approval.
    open question for the maintainer applies. The Claude review job runs on `opened` and
    `ready_for_review`, skips drafts, has read-only repository access, and cannot block a merge
    because its step sets `continue-on-error`.
+   For an explicitly authorized publication with a no-model-call constraint, include
+   `<!-- pixelgym:no-model-review -->` in the initial PR body to skip the Claude job before it
+   starts, and include `@coderabbitai ignore` to disable CodeRabbit automatic reviews for that PR
+   ([CodeRabbit command reference](https://docs.coderabbit.ai/reference/review-commands)).
+   Add both controls when creating the PR; adding them afterward can race the opening event.
+   This opt-out preserves deterministic CI and does not grant merge, activation, or milestone
+   approval.
 3. **Deterministic checks run separately from model review.** Pull-request
    [CI](../.github/workflows/ci.yml) installs the documented Python 3.12 environment and runs Ruff,
    mypy, and the fast unit suite as separate jobs. Local preflight repeats the configured lint and
