@@ -8,15 +8,21 @@ import os
 import platform
 import threading
 import urllib.request
+from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Literal
 
 import pytest
 
-from pixelgym.grounding.v5.contracts import TransportOutcome, sha256_bytes
+from pixelgym.grounding.v5.contracts import TransportOutcome, canonical_json_bytes, sha256_bytes
 from pixelgym.grounding.v5.journal import V5AttemptJournal
-from pixelgym.platform.policy_subprocess import PolicyWorkerSpec, SandboxedPolicyProcess
+from pixelgym.grounding.v5.runner import PolicyVisibleResult
+from pixelgym.platform.policy_subprocess import (
+    PolicySubprocessParseError,
+    PolicyWorkerSpec,
+    SandboxedPolicyProcess,
+)
 from pixelgym.platform.serving_episode import ServingEpisodeHost, SQLiteServingSessionStore
 from pixelgym.platform.stateful_contracts import (
     EvidenceClass,
@@ -35,6 +41,38 @@ pytestmark = [
 
 EPISODE_ID = "ep-" + "5" * 32
 NOOP = {"action_type": 0, "x": 0, "y": 0, "key": 0}
+
+
+def test_real_scripted_factory_initializes_without_host_sqlite_library(tmp_path: Path) -> None:
+    """Zero-send startup regression: retain the existing deny-by-default profile."""
+    import sysconfig
+
+    spec = PolicyWorkerSpec.build(
+        factory_module="pixelgym.scripted_policy",
+        factory_name="ScriptedStatefulPolicy",
+        factory_kwargs={"actions": [NOOP]},
+        import_roots=(Path(__file__).resolve().parents[2], Path(sysconfig.get_paths()["purelib"])),
+        provider_endpoint="http://127.0.0.1:9",
+        protected_paths=(tmp_path,),
+    )
+    with closing(SandboxedPolicyProcess(spec=spec)) as policy:
+        assert policy.os_sandbox_applied
+        assert policy.sandbox_mechanism == "darwin_sandbox_exec"
+        state = policy.reset("startup fixture")
+        assert json.loads(state)["action_index"] == 0
+        assert policy.build_request(state, b"fixture")["scripted_action"] == NOOP
+        response = canonical_json_bytes({"content": json.dumps(NOOP)})
+        assert policy.retryable_response_code(response) is None
+        reduced = policy.reduce_state(state, response)
+        assert policy.parse(response, reduced) == NOOP
+        parsed = policy.post_parse_state(reduced, NOOP)
+        dispatched = policy.post_dispatch_state(
+            parsed, NOOP, PolicyVisibleResult("sha256:" + "0" * 64, 0.0, False, False, 0)
+        )
+        assert json.loads(dispatched)["action_index"] == 1
+        assert json.loads(policy.failure_state(state, "fixture_failure"))["history"]
+        with pytest.raises(PolicySubprocessParseError):
+            policy.parse(canonical_json_bytes({"content": "not-json"}), state)
 
 
 class _ReachableListener(http.server.BaseHTTPRequestHandler):

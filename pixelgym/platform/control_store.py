@@ -7,7 +7,7 @@ import json
 import os
 import sqlite3
 import threading
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -39,6 +39,10 @@ from pixelgym.platform.stateful_control import (
     stored_policy_kind,
     tier_permits_evidence,
 )
+
+StatefulGateVerifier = Callable[
+    [StatefulPolicyPackage, StatefulGateReport, tuple[ArtifactRef, ...]], None
+]
 
 
 class ConflictError(RuntimeError):
@@ -524,6 +528,7 @@ class ControlStore:
         now: Callable[[], str] | None = None,
         busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
         approved_stateful_gate_policy_sha256s: Iterable[str] = (),
+        stateful_gate_verifiers: Mapping[str, StatefulGateVerifier] | None = None,
     ) -> None:
         if reviewer_identity == "":
             raise ValueError("reviewer identity cannot be empty")
@@ -546,6 +551,7 @@ class ControlStore:
         # until a person freezes a v5 gate policy (v5 serving stage S7) and the operator
         # configures its digest here.
         self.approved_stateful_gate_policy_sha256s = approved_gate_policies
+        self.stateful_gate_verifiers = dict(stateful_gate_verifiers or {})
         self._now = now or (lambda: datetime.now(UTC).isoformat())
         self._lock = threading.RLock()
         self.schemas = PlatformSchemas()
@@ -1331,6 +1337,21 @@ class ControlStore:
                 "stateful gate report was not evaluated under an approved v5 gate policy"
             )
 
+    def _verify_stateful_gate_derivation(
+        self,
+        package: StatefulPolicyPackage,
+        report: StatefulGateReport,
+        artifacts: tuple[ArtifactRef, ...],
+    ) -> None:
+        from pixelgym.platform.s7_policy import POLICY_SHA256, VERSION, validate_report_rules
+
+        if report.gate_policy_version == VERSION or report.gate_policy_sha256 == POLICY_SHA256:
+            validate_report_rules(report)
+            verifier = self.stateful_gate_verifiers.get(POLICY_SHA256)
+            if verifier is None:
+                raise TransitionError("S7 requires a configured stored-evidence gate verifier")
+            verifier(package, report, artifacts)
+
     def register_stateful_candidate(
         self,
         *,
@@ -1368,6 +1389,7 @@ class ControlStore:
             raise ValueError(
                 "candidate artifacts must include the evidence plan and summary the package binds"
             )
+        self._verify_stateful_gate_derivation(package, gate_report, tuple(artifacts))
         report_bytes = canonical_json_bytes(report_value)
         report_sha = sha256_bytes(report_bytes)
         candidate_id = "candidate-" + package.policy_id.removeprefix("sha256:")[:24]
@@ -1510,6 +1532,7 @@ class ControlStore:
         } <= {artifact_digest(reference) for reference in artifacts}:
             raise ContractValidationError("stored candidate artifacts omit bound evidence")
         self._require_approved_gate_policy(report)
+        self._verify_stateful_gate_derivation(package, report, artifacts)
 
     def _verified_serving_terms(
         self, connection: sqlite3.Connection, candidate: sqlite3.Row
@@ -1531,7 +1554,21 @@ class ControlStore:
         package = stateful_package_from_dict(json.loads(candidate["policy_json"]))
         if not tier_permits_evidence(terms.deployment_tier, package.evidence_class):
             raise TransitionError("calibration-class evidence permits only a demo deployment")
+        self._verify_s7_serving_cap(candidate, package, terms.deployment_attempt_cap)
         return terms
+
+    @staticmethod
+    def _verify_s7_serving_cap(
+        candidate: sqlite3.Row, package: StatefulPolicyPackage, cap: int
+    ) -> None:
+        from pixelgym.platform.s7_policy import POLICY_SHA256, policy_document
+
+        report = json.loads(candidate["gate_report_json"])
+        if report.get("gate_policy_sha256") == POLICY_SHA256:
+            caps = policy_document()["deployment_attempt_caps"]
+            expected = {1: caps["A"], 26: caps["B"]}.get(package.max_steps)
+            if expected is None or cap != expected:
+                raise TransitionError("S7 serving cap differs from the approved exact-version cap")
 
     def verify_stateful_candidate_approval(
         self, candidate_id: str
@@ -1598,6 +1635,7 @@ class ControlStore:
             package = stateful_package_from_dict(json.loads(candidate["policy_json"]))
             if not tier_permits_evidence(tier, package.evidence_class):
                 raise TransitionError("calibration-class evidence permits only a demo deployment")
+            self._verify_s7_serving_cap(candidate, package, deployment_attempt_cap)
             existing = connection.execute(
                 "SELECT * FROM stateful_serving_terms WHERE candidate_id = ?", (candidate_id,)
             ).fetchone()

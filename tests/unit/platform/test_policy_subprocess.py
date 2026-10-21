@@ -11,6 +11,7 @@ import subprocess
 import sys
 import sysconfig
 import time
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,8 @@ from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.policy_subprocess import (
     DARWIN_SERVING_PROFILE_VERSION,
     LaunchedPolicyWorker,
+    PolicySubprocessError,
+    PolicySubprocessParseError,
     PolicySubprocessUnavailableError,
     PolicyWorkerSpec,
     SandboxedPolicyProcess,
@@ -278,6 +281,48 @@ def test_policy_protocol_round_trips_only_canonical_values() -> None:
     assert launcher.process.poll() is not None
 
 
+@pytest.mark.parametrize("content", ["not-json", "[]", "null"])
+def test_worker_parser_rejection_preserves_runner_invalid_output_boundary(content: str) -> None:
+    """No transport: replay canned provider bytes across the actual worker RPC."""
+    launcher = LocalWorkerLauncher()
+    with closing(
+        SandboxedPolicyProcess(spec=_scripted_spec(), launcher=launcher, require_os_sandbox=False)
+    ) as policy:
+        state = policy.reset("parser fixture")
+        with pytest.raises(PolicySubprocessParseError) as captured:
+            policy.parse(canonical_json_bytes({"content": content}), state)
+        assert isinstance(captured.value, (ValueError, TypeError, KeyError))
+        assert "not-json" not in str(captured.value)
+    assert launcher.process is not None and launcher.process.poll() is not None
+
+
+def test_unexpected_worker_parser_fault_remains_infrastructure_failure(tmp_path: Path) -> None:
+    source = tmp_path / "faulty_parser"
+    source.mkdir()
+    (source / "faulty_policy.py").write_text(
+        "class Policy:\n"
+        "    def parse(self, response, state): raise RuntimeError('private diagnostic')\n",
+        encoding="utf-8",
+    )
+    spec = PolicyWorkerSpec.build(
+        factory_module="faulty_policy",
+        factory_name="Policy",
+        factory_kwargs={},
+        import_roots=(source,),
+        provider_endpoint="http://127.0.0.1:9",
+    )
+    policy = SandboxedPolicyProcess(
+        spec=spec, launcher=LocalWorkerLauncher(), require_os_sandbox=False
+    )
+    try:
+        with pytest.raises(PolicySubprocessError) as captured:
+            policy.parse(b"{}", b"{}")
+        assert not isinstance(captured.value, ValueError)
+        assert "private diagnostic" not in str(captured.value)
+    finally:
+        policy.close()
+
+
 def test_worker_environment_does_not_inherit_parent_credentials(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -338,3 +383,56 @@ def test_policy_request_cannot_carry_transport_credentials(tmp_path: Path) -> No
             policy.build_request(state, b"screenshot")
     finally:
         policy.close()
+
+
+@pytest.mark.parametrize("returned", ["[]", "None"])
+def test_worker_non_object_parse_return_is_a_parse_failure(tmp_path: Path, returned: str) -> None:
+    source = tmp_path / "non_object_parser"
+    source.mkdir()
+    (source / "non_object.py").write_text(
+        "class Policy:\n    def parse(self, response, state): return " + returned + "\n"
+    )
+    spec = PolicyWorkerSpec.build(
+        factory_module="non_object",
+        factory_name="Policy",
+        factory_kwargs={},
+        import_roots=(source,),
+        provider_endpoint="http://127.0.0.1:9",
+    )
+    with (
+        closing(
+            SandboxedPolicyProcess(
+                spec=spec, launcher=LocalWorkerLauncher(), require_os_sandbox=False
+            )
+        ) as policy,
+        pytest.raises(PolicySubprocessParseError),
+    ):
+        policy.parse(b"{}", b"{}")
+
+
+def test_parse_failure_code_for_reset_is_a_protocol_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pixelgym.platform.policy_subprocess import (
+        POLICY_WORKER_PROTOCOL_VERSION,
+        PolicySubprocessProtocolError,
+    )
+
+    with closing(
+        SandboxedPolicyProcess(
+            spec=_scripted_spec(), launcher=LocalWorkerLauncher(), require_os_sandbox=False
+        )
+    ) as policy:
+        # Initialize over the real RPC, then inject a canonical but method-invalid response.
+        response = canonical_json_bytes(
+            {
+                "protocol_version": POLICY_WORKER_PROTOCOL_VERSION,
+                "request_id": 1,
+                "ok": False,
+                "error_code": "parse_failure",
+            }
+        )
+        monkeypatch.setattr(
+            "pixelgym.platform.policy_subprocess._read_response_line",
+            lambda *args, **kwargs: response,
+        )
+        with pytest.raises(PolicySubprocessProtocolError, match="failure fields"):
+            policy.reset("unit fixture")

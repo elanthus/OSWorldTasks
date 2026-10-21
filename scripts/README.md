@@ -63,6 +63,7 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | --- | --- | --- | --- | --- | --- |
 | `platform_compose.py` | Run the local platform stack with derived, build-bound source provenance | repository checkout | running local stack | Docker | no |
 | `platform_migrate.py` | Run the control-plane migration exactly once before serving | `--database` | migrated database | none | no |
+| `s7_serving.py` | Freeze and qualify the approved capped scripted packages; verify retained evidence or render stored reports; exposes no activation or publication command | `prepare --run --run-id --approval [--source] (--no-predecessors or --expected-predecessor-sends N --predecessor-archive PATH=sha256:DIGEST ...)`, `qualify --run [--source]`, `verify --run`, `report --run` | private plans, journals, package/gate digests, verification JSON, or stdout report | local Git; qualification requires Darwin OS sandbox; no network or model | no |
 | `platform_demo.py` | Prepare the two demo candidates plus a no-cost rollback seed | `--database`, `--fixture` | control-plane records | none | no |
 | `capture_platform_api.py` | Append a redacted lifecycle API exchange to the platform transcript | `--base-url`, `--candidate-id`, `--image`, `--target` | `artifacts/platform/demo-api-transcript.jsonl` | none (needs the running local stack) | no |
 | `capture_d412_metaflow_resume.py` | Capture structured Metaflow resume ledgers from the real local runtime | `--repository-root` | resume ledgers | none (runs local Metaflow) | no |

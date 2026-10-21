@@ -10,7 +10,7 @@ import os
 import subprocess
 import sys
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,6 +21,7 @@ from pixelgym.platform.contracts import PolicyManifest
 from pixelgym.platform.control_store import (
     ControlStore,
     DeploymentRecord,
+    StatefulGateVerifier,
     configured_busy_timeout_ms,
 )
 from pixelgym.platform.deployment import DeploymentCoordinator
@@ -65,6 +66,7 @@ class StatefulServingConfig:
 
     approved_gate_policy_sha256s: frozenset[str] = field(default_factory=frozenset)
     preparer: Callable[[StatefulCandidateRecord, ServingTerms], object] | None = None
+    gate_verifiers: Mapping[str, StatefulGateVerifier] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,7 +176,10 @@ def _repository_root() -> Path:
 
 
 def _build_control(
-    repository_root: Path, *, approved_stateful_gate_policy_sha256s: frozenset[str] = frozenset()
+    repository_root: Path,
+    *,
+    approved_stateful_gate_policy_sha256s: frozenset[str] = frozenset(),
+    stateful_gate_verifiers: Mapping[str, StatefulGateVerifier] | None = None,
 ) -> ControlStore:
     database = os.environ.get(
         "PIXELGYM_CONTROL_DB", str(repository_root / ".cache/platform/control.db")
@@ -185,6 +190,7 @@ def _build_control(
         database,
         busy_timeout_ms=configured_busy_timeout_ms(),
         approved_stateful_gate_policy_sha256s=approved_stateful_gate_policy_sha256s,
+        stateful_gate_verifiers=stateful_gate_verifiers,
     )
     control.require_migrated()
     return control
@@ -330,6 +336,7 @@ def create_app(
     control = _build_control(
         repository_root,
         approved_stateful_gate_policy_sha256s=stateful_config.approved_gate_policy_sha256s,
+        stateful_gate_verifiers=stateful_config.gate_verifiers,
     )
     immutable_store = _build_immutable_store(repository_root)
     tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")

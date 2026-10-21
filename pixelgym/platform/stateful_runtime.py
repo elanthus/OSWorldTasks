@@ -116,12 +116,14 @@ class WorkerSpecPolicyLoader:
         launcher: PolicyWorkerLauncher | None = None,
         require_os_sandbox: bool = True,
         request_timeout_seconds: float = 10.0,
+        source_verifier: Callable[[StatefulPolicyPackage, PolicyWorkerSpec], None] | None = None,
     ) -> None:
         self.worker_specs = dict(worker_specs)
         self.transport_factory = transport_factory
         self.launcher = launcher
         self.require_os_sandbox = require_os_sandbox
         self.request_timeout_seconds = request_timeout_seconds
+        self.source_verifier = source_verifier
 
     def load(self, package: StatefulPolicyPackage) -> LoadedStatefulPolicy:
         spec = self.worker_specs.get(package.package_source_sha256)
@@ -131,6 +133,12 @@ class WorkerSpecPolicyLoader:
             raise StatefulLoadError(
                 "policy worker egress authority does not match the frozen sandbox manifest"
             )
+        if self.source_verifier is not None:
+            self.source_verifier(package, spec)
+        elif (
+            package.provider == "in-process-fake" and package.model == "no-cost-scripted-policy-v1"
+        ):
+            raise StatefulLoadError("S7 scripted packages require a verified worker source binding")
         try:
             policy = SandboxedPolicyProcess(
                 spec=spec,
@@ -209,7 +217,9 @@ def _identity_headers_match(response: Any, identity: ServingIdentity) -> bool:
     )
 
 
-def run_contract_smoke(candidate: StatefulCandidateRecord) -> None:
+def run_contract_smoke(
+    candidate: StatefulCandidateRecord, *, transport: ProviderTransport | None = None
+) -> None:
     """Serve one no-cost fake-policy episode through an isolated ``/api/v2`` app.
 
     The episode is bound to the candidate's exact package (screen, step limit, attempt limits,
@@ -235,7 +245,7 @@ def run_contract_smoke(candidate: StatefulCandidateRecord) -> None:
                 package=package,
                 identity=identity,
                 policy=ScriptedStatefulPolicy((_SMOKE_ACTION,)),
-                transport=ScriptedTransport(),
+                transport=transport if transport is not None else ScriptedTransport(),
                 deployment_attempt_cap=1,
             )
             records = MemoryEpisodeOperationalLog()
@@ -333,10 +343,12 @@ class StatefulCandidatePreparer:
         loader: StatefulPolicyLoader,
         state_root: Path,
         require_os_sandbox: bool = True,
+        contract_smoke: Callable[[StatefulCandidateRecord], None] = run_contract_smoke,
     ) -> None:
         self.loader = loader
         self.state_root = state_root
         self.require_os_sandbox = require_os_sandbox
+        self.contract_smoke = contract_smoke
 
     def __call__(
         self, candidate: StatefulCandidateRecord, terms: ServingTerms
@@ -345,7 +357,7 @@ class StatefulCandidatePreparer:
             raise CandidateKindMismatchError("stateful preparation received a non-stateful policy")
         if terms.candidate_id != candidate.candidate_id or terms.policy_id != candidate.policy_id:
             raise TransitionError("serving terms do not belong to the prepared candidate")
-        run_contract_smoke(candidate)
+        self.contract_smoke(candidate)
         loaded = self.loader.load(candidate.package)
         session_store: SQLiteServingSessionStore | None = None
         journal: V5AttemptJournal | None = None
