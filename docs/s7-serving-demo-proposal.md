@@ -10,7 +10,7 @@
   no model-quality result or D5.10 verdict.
 
 Owner clarification: retain one local archive copy and one private LFS copy, preserving the
-original run. This supersedes the proposed second-volume/two-local-copy prerequisite below.
+original run. This supersedes the original second-volume/two-local-copy prerequisite.
 The local archive and original share one disk; independent recovery depends on the verified
 private remote copy. The GitHub account budget remains $0 with stop usage enabled, and each
 transfer still requires a fresh observation.
@@ -24,8 +24,9 @@ The local dependency constraint is generated from the already installed Python r
 distribution versions, and installed RECORD digests before any send. The lock binds interpreter
 bytes and distribution metadata; it does not verify installed module bytes against RECORD.
 Host replay dependencies therefore retain an operator-controlled installed-file integrity limit.
-Qualification consumes and checks that exact runtime lock; it does not claim to have installed an unrelated platform
-lock or downloaded packages. A's qualification uses the shared runner's one-action caller limit
+Qualification consumes and checks that exact runtime lock; it does not claim to have installed
+an unrelated platform lock or downloaded packages. A's qualification uses the shared runner's
+one-action caller limit
 (`pilot_action_limit`) followed by explicit environment cleanup; `/api/v2` close behavior is
 reserved for the later serving rehearsal.
 
@@ -56,7 +57,8 @@ still exits on error, and sandbox authority is unchanged. Worker proofs are now 
 before any send so a stopped run retains them. A zero-send real-sandbox test exercises all policy
 methods and the malformed parser boundary.
 
-The current approval leaves four qualification sends. A repaired source revision requires a new
+After that stopped freeze, the then-current approval left four qualification sends.
+A repaired source revision requires a new
 complete qualification; the earlier 73 sends cannot qualify that revision. A replacement run
 therefore requires **separate approval for 77 additional fake sends**, raising cumulative
 qualification consumption/allowance to at most **150** and the overall campaign ceiling to
@@ -125,7 +127,11 @@ Reuse these components rather than introduce a second serving system:
 | HTTP records and final screenshots | [`stateful_service.py`](../pixelgym/platform/stateful_service.py), [`test_stateful_service.py`](../tests/unit/platform/test_stateful_service.py) |
 | Capture, backup, and restore | [Merged retention workflow](evidence-retention.md), [`retention.py`](../pixelgym/grounding/v5/retention.py), [`retention_lfs.py`](../pixelgym/grounding/v5/retention_lfs.py) |
 
-The following gaps affect the rehearsal:
+The following list records gaps at the inspected PR #249 base. The S7 implementation now supplies
+the gate evaluator, source-bound package builder, and guarded loader described here; see
+[current implementation status](platform-design.md#current-status). The full serving rehearsal,
+its recovery checks, and exact-package owner gates remain pending. References to absent tooling
+or the "current loader" within this initial list describe the inspected base.
 
 1. **S7 gate evaluation is absent.** S6 checks report consistency, identity bindings, and an
    approved policy digest; it does not define the required observations or derive them from
@@ -349,7 +355,8 @@ milestone verdict and change no public portfolio wording.
 
 After quiescence, use the merged generic `capture`, `restore`, and `check-cleanup` operations to
 retain one local archive copy under a new name and verify a fresh local restore. On each fresh
-restored copy, run the retained serving verifier in an isolated credential-free interpreter: verify all hashes/SQLite integrity,
+restored copy, run the retained serving verifier in an isolated credential-free interpreter:
+verify all hashes/SQLite integrity,
 replay stored caller actions, inspect recovery/cap/rollback evidence without invoking policy or
 transport, and regenerate the report solely from stored results. Compare replay/report digests
 with the originals and verify that inspection leaves the restored directory unchanged.
