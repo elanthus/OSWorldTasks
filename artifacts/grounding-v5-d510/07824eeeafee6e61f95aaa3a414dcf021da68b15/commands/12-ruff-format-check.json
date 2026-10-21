@@ -1,0 +1,20 @@
+{
+  "argv": [
+    ".venv/bin/ruff",
+    "format",
+    "--check",
+    "pixelgym",
+    "flows",
+    "scripts",
+    "tests"
+  ],
+  "command": ".venv/bin/ruff format --check pixelgym flows scripts tests",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.036643,
+  "ended_at_utc": "2026-10-21T21:21:26.432314+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "422 files already formatted\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-21T21:21:26.392955+00:00"
+}
