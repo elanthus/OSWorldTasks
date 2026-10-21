@@ -23,6 +23,17 @@ Quoted from the [pre-registration record](../grounding-v5-d59-freeze/analysis-pl
   episode makes the run incomplete.
 ```
 
+## Executed policies
+
+The bound execution plan (digest `sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092`) records the policies that ran, read from its `policy_manifests`:
+
+| Condition | Executed policy ID | Pre-registered policy ID | Code revision | Transport retry rule |
+|---|---|---|---|---|
+| history | `policy-ebadd1b6c8462c939495` | `policy-79441db33362e00a1ac6` | `b3167ff49576aec4001444ba3166d37cfc8dfda4` | `claude-one-stopped-timeout-or-connection-retry-v1` |
+| stateless | `policy-392778a54a9f0d242a93` | `policy-e1d746cd6a83ffb12a20` | `b3167ff49576aec4001444ba3166d37cfc8dfda4` | `claude-one-stopped-timeout-or-connection-retry-v1` |
+
+The executed policy IDs differ from the pre-registered policy IDs. The pre-registration record names the frozen Haiku pair; the plan that ran is a later versioned successor. The field-level differences are recorded in the successor execution plans, not in this analysis.
+
 The primary comparison is history minus stateless, primary phase only, paired on identical seed, phase primary, repeat 0, two-sided exact McNemar at alpha 0.05. Every assigned episode stays in the denominator.
 
 ## Primary comparison (pre-registered)

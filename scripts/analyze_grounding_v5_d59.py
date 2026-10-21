@@ -2,8 +2,8 @@
 
 Reads only committed evidence: the per-assignment projection in
 ``artifacts/grounding-v5-d59-haiku-results/report.json``, the execution plan that
-projection is bound to (for the seed-to-family and robustness-pair mapping and the
-declared primary comparison), and the pre-registration record in
+projection is bound to (for the seed-to-family and robustness-pair mapping, the
+declared primary comparison, and the executed policy manifests), and the pre-registration record in
 ``artifacts/grounding-v5-d59-freeze/analysis-plan.md``. No private journal is read
 and no model call is made. The Markdown report is rendered only from the JSON.
 
@@ -35,7 +35,14 @@ EXECUTION_REPORT = RESULTS_DIR / "report.md"
 OUTPUT_JSON = RESULTS_DIR / "confirmatory-analysis.json"
 OUTPUT_MD = RESULTS_DIR / "confirmatory-analysis.md"
 
-SCHEMA_VERSION = "pixelgym-d59-confirmatory-analysis-v1"
+SCHEMA_VERSION = "pixelgym-d59-confirmatory-analysis-v2"
+# Policy IDs named in the pre-registration record. The executed IDs come from the bound
+# execution plan and are recorded beside these; they are never assumed equal.
+PREREGISTERED_POLICIES = {
+    "history": "policy-79441db33362e00a1ac6",
+    "stateless": "policy-e1d746cd6a83ffb12a20",
+}
+EXECUTED_POLICY_FIELDS = ("policy_id", "code_revision", "transport_retry_rule")
 CLASSIFICATIONS = (
     "success_termination",
     "invalid_output",
@@ -177,6 +184,26 @@ def _rate(successes: int, total: int) -> dict[str, Any]:
         "estimate": successes / total,
         "wilson_95": [low, high],
     }
+
+
+def executed_policies(plan: Mapping[str, Any]) -> dict[str, dict[str, str]]:
+    """Read the executed policy identity for each condition from the bound plan."""
+    manifests = plan.get("policy_manifests")
+    if not isinstance(manifests, Mapping):
+        raise AnalysisError("execution plan has no policy manifests")
+    executed: dict[str, dict[str, str]] = {}
+    for mode in ("history", "stateless"):
+        manifest = manifests.get(mode)
+        if not isinstance(manifest, Mapping):
+            raise AnalysisError(f"execution plan has no {mode} policy manifest")
+        entry: dict[str, str] = {}
+        for field in EXECUTED_POLICY_FIELDS:
+            value = manifest.get(field)
+            if not isinstance(value, str) or not value:
+                raise AnalysisError(f"{mode} policy manifest lacks {field}")
+            entry[field] = value
+        executed[mode] = entry
+    return executed
 
 
 def seed_mapping(plan: Mapping[str, Any]) -> dict[int, dict[str, str]]:
@@ -327,6 +354,7 @@ def analyze(
     comparison = plan["primary_comparison"]
     if list(comparison["conditions"]) != ["history", "stateless"]:
         raise AnalysisError("unexpected primary-comparison conditions")
+    executed = executed_policies(plan)
     rows = join_rows(projection["results"], plan)
     primary = [row for row in rows if row["phase"] == "primary"]
     alpha = float(comparison["alpha"])
@@ -416,8 +444,13 @@ def analyze(
             "pre_registration_quotes": quotes,
             "primary_comparison": {
                 "policies": {
-                    "history": "policy-79441db33362e00a1ac6",
-                    "stateless": "policy-e1d746cd6a83ffb12a20",
+                    "pre_registered": dict(PREREGISTERED_POLICIES),
+                    "executed": executed,
+                    "executed_source": "execution plan policy_manifests",
+                    "executed_match_pre_registered": all(
+                        executed[mode]["policy_id"] == PREREGISTERED_POLICIES[mode]
+                        for mode in PREREGISTERED_POLICIES
+                    ),
                 },
                 "phase": "primary",
                 "difference_direction": "history minus stateless",
@@ -528,6 +561,42 @@ def _table_md(table: Mapping[str, Any]) -> list[str]:
     ]
 
 
+def _executed_policies_md(policies: Mapping[str, Any], plan_input: Mapping[str, Any]) -> list[str]:
+    executed = policies["executed"]
+    pre = policies["pre_registered"]
+    lines = [
+        (
+            f"The bound execution plan (digest `{plan_input['execution_plan_digest']}`) "
+            f"records the policies that ran, read from its `policy_manifests`:"
+        ),
+        "",
+        (
+            "| Condition | Executed policy ID | Pre-registered policy ID | Code revision | "
+            "Transport retry rule |"
+        ),
+        "|---|---|---|---|---|",
+    ]
+    for mode in ("history", "stateless"):
+        entry = executed[mode]
+        lines.append(
+            f"| {mode} | `{entry['policy_id']}` | `{pre[mode]}` | `{entry['code_revision']}` | "
+            f"`{entry['transport_retry_rule']}` |"
+        )
+    if policies["executed_match_pre_registered"]:
+        lines += ["", "The executed policy IDs equal the pre-registered policy IDs."]
+    else:
+        lines += [
+            "",
+            (
+                "The executed policy IDs differ from the pre-registered policy IDs. The "
+                "pre-registration record names the frozen Haiku pair; the plan that ran is a "
+                "later versioned successor. The field-level differences are recorded in the "
+                "successor execution plans, not in this analysis."
+            ),
+        ]
+    return lines
+
+
 def render(analysis: Mapping[str, Any]) -> str:
     method = analysis["method"]
     comparison = method["primary_comparison"]
@@ -557,6 +626,10 @@ def render(analysis: Mapping[str, Any]) -> str:
         "```text",
         *[quote["line"] for quote in method["pre_registration_quotes"]],
         "```",
+        "",
+        "## Executed policies",
+        "",
+        *_executed_policies_md(comparison["policies"], analysis["inputs"]["execution_plan"]),
         "",
         (
             f"The primary comparison is {comparison['difference_direction']}, primary phase only, "

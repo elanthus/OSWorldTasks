@@ -145,8 +145,24 @@
       "paired_sample": "all paired_task_seeds in the execution plan's primary_comparison (every assigned primary episode)",
       "phase": "primary",
       "policies": {
-        "history": "policy-79441db33362e00a1ac6",
-        "stateless": "policy-e1d746cd6a83ffb12a20"
+        "executed": {
+          "history": {
+            "code_revision": "b3167ff49576aec4001444ba3166d37cfc8dfda4",
+            "policy_id": "policy-ebadd1b6c8462c939495",
+            "transport_retry_rule": "claude-one-stopped-timeout-or-connection-retry-v1"
+          },
+          "stateless": {
+            "code_revision": "b3167ff49576aec4001444ba3166d37cfc8dfda4",
+            "policy_id": "policy-392778a54a9f0d242a93",
+            "transport_retry_rule": "claude-one-stopped-timeout-or-connection-retry-v1"
+          }
+        },
+        "executed_match_pre_registered": false,
+        "executed_source": "execution plan policy_manifests",
+        "pre_registered": {
+          "history": "policy-79441db33362e00a1ac6",
+          "stateless": "policy-e1d746cd6a83ffb12a20"
+        }
       },
       "target_power": 0.8,
       "test": "two-sided exact McNemar"
@@ -208,7 +224,7 @@
       6082
     ]
   },
-  "schema_version": "pixelgym-d59-confirmatory-analysis-v1",
+  "schema_version": "pixelgym-d59-confirmatory-analysis-v2",
   "secondary": {
     "label": "exploratory",
     "not_computable_from_public_projection": [
