@@ -600,7 +600,7 @@ def test_worker_proof_write_failure_closes_every_worker_without_sending(
         def run(self, **kwargs: Any) -> Any:
             if self.interruption:
                 raise InjectedInterruption(self.interruption)
-            return SimpleNamespace(to_dict=lambda: {})
+            return SimpleNamespace(to_dict=dict)
 
     def write_or_fail(path: Path, value: Any) -> None:
         if path.name == proof_name:
