@@ -32,6 +32,7 @@ from pixelgym.platform.s7_source import (
     ENDPOINT,
     runtime_lock,
     snapshot,
+    verify_host_source,
     verify_runtime,
     verify_snapshot,
     verify_worker_binding,
@@ -87,18 +88,22 @@ def prepare(
     *,
     run_id: str,
     approval: str,
-    predecessor_archives: tuple[Path, ...] = (),
+    expected_predecessor_sends: int,
+    predecessor_archives: tuple[tuple[Path, str], ...] = (),
 ) -> dict[str, Any]:
     """Freeze clean source, actions, runtime constraints, and plan before any fake send."""
     if run.exists() or _checkout(run) is not None or not run_id or not approval.strip():
         raise ValueError("new private run outside Git and explicit qualification approval required")
+    verify_host_source(root)
     run.mkdir(mode=0o700, parents=True)
     source = snapshot(root, run / "source")
     lock = runtime_lock()
     write_json(run / "source-binding.json", source)
     write_json(run / "runtime-lock.json", lock)
     write_json(run / "gate-policy.json", policy_document())
-    cumulative = freeze_predecessors(run, predecessor_archives)
+    cumulative = freeze_predecessors(
+        run, predecessor_archives, expected_sends=expected_predecessor_sends
+    )
     task = generate_task(SEED)
     with closing(V5FakeBackend()) as backend:
         backend.reset(SEED)
@@ -119,7 +124,7 @@ def prepare(
             "worker": worker,
             "manifest": execution.to_dict(),
             "max_steps": 1 if role == "A" else 26,
-            "deployment_attempt_cap": 4 if role == "A" else 24,
+            "deployment_attempt_cap": policy_document()["deployment_attempt_caps"][role],
         }
     plan = {
         "schema_version": "pixelgym-s7-qualification-plan-v1",
@@ -137,8 +142,8 @@ def prepare(
         "actions": actions,
         "shared_cases": list(CASES),
         "expected_case_sends": [20, 26, 26, 1, 1, 1, 1],
-        "qualification_cap": 77,
-        "campaign_cap": 111,
+        "qualification_cap": policy_document()["phase_caps"]["qualification"],
+        "campaign_cap": policy_document()["campaign_cap"],
         "cumulative_accounting": cumulative,
     }
     write_json(run / "plan.json", plan)
@@ -160,6 +165,7 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
     source, lock = read_json(run / "source-binding.json"), read_json(run / "runtime-lock.json")
     if (run / "send-budget.sqlite").exists() or (run / "results.json").exists():
         raise ValueError("S7 qualification already started; do not rerun or reset its cap")
+    verify_host_source(root)
     if (
         content_digest(source) != plan["source_binding_sha256"]
         or content_digest(lock) != plan["runtime_lock_sha256"]
@@ -172,6 +178,21 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
     verify_runtime(lock)
     verify_predecessors(run, plan["cumulative_accounting"])
     budget = S7SendBudget(run / "send-budget.sqlite")
+    try:
+        return _qualify(root, run, plan, source, lock, budget)
+    except BaseException as exc:
+        record_failure(run, stage="qualification", cause=exc)
+        raise
+
+
+def _qualify(
+    root: Path,
+    run: Path,
+    plan: dict[str, Any],
+    source: dict[str, Any],
+    lock: dict[str, Any],
+    budget: S7SendBudget,
+) -> dict[str, Any]:
     records, workers = [], []
     for case in (*CASES, "baseline"):
         role = "A" if case == "baseline" else "B"
@@ -322,3 +343,27 @@ def seal(run: Path) -> dict[str, Any]:
     value = inventory(run)
     write_json(run / "seal.json", value)
     return value
+
+
+def record_failure(run: Path, *, stage: str, cause: BaseException) -> None:
+    """Retain a terminal failure after writers stop; never resume or reset its ledger."""
+    if stage not in {"qualification", "finalization"} or (run / "seal.json").exists():
+        raise ValueError("only unsealed S7 execution can acquire a terminal failure record")
+    counts = S7SendBudget(run / "send-budget.sqlite").counts()
+    write_json(
+        run / "failure.json",
+        {
+            "schema_version": "pixelgym-s7-failure-v1",
+            "qualification_complete": False,
+            "activation_performed": False,
+            "publication_performed": False,
+            "source_revision": read_json(run / "source-binding.json")["revision"],
+            "stage": stage,
+            # Exception text may contain provider content or private paths. Retain a type only.
+            "cause": type(cause).__name__,
+            "fake_send_reservations": counts.get("qualification", 0),
+            "real_provider_requests": 0,
+            "monetary_spend_usd": 0,
+        },
+    )
+    seal(run)

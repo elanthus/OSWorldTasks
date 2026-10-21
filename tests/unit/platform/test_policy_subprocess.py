@@ -383,3 +383,56 @@ def test_policy_request_cannot_carry_transport_credentials(tmp_path: Path) -> No
             policy.build_request(state, b"screenshot")
     finally:
         policy.close()
+
+
+@pytest.mark.parametrize("returned", ["[]", "None"])
+def test_worker_non_object_parse_return_is_a_parse_failure(tmp_path: Path, returned: str) -> None:
+    source = tmp_path / "non_object_parser"
+    source.mkdir()
+    (source / "non_object.py").write_text(
+        "class Policy:\n    def parse(self, response, state): return " + returned + "\n"
+    )
+    spec = PolicyWorkerSpec.build(
+        factory_module="non_object",
+        factory_name="Policy",
+        factory_kwargs={},
+        import_roots=(source,),
+        provider_endpoint="http://127.0.0.1:9",
+    )
+    with (
+        closing(
+            SandboxedPolicyProcess(
+                spec=spec, launcher=LocalWorkerLauncher(), require_os_sandbox=False
+            )
+        ) as policy,
+        pytest.raises(PolicySubprocessParseError),
+    ):
+        policy.parse(b"{}", b"{}")
+
+
+def test_parse_failure_code_for_reset_is_a_protocol_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pixelgym.platform.policy_subprocess import (
+        POLICY_WORKER_PROTOCOL_VERSION,
+        PolicySubprocessProtocolError,
+    )
+
+    with closing(
+        SandboxedPolicyProcess(
+            spec=_scripted_spec(), launcher=LocalWorkerLauncher(), require_os_sandbox=False
+        )
+    ) as policy:
+        # Initialize over the real RPC, then inject a canonical but method-invalid response.
+        response = canonical_json_bytes(
+            {
+                "protocol_version": POLICY_WORKER_PROTOCOL_VERSION,
+                "request_id": 1,
+                "ok": False,
+                "error_code": "parse_failure",
+            }
+        )
+        monkeypatch.setattr(
+            "pixelgym.platform.policy_subprocess._read_response_line",
+            lambda *args, **kwargs: response,
+        )
+        with pytest.raises(PolicySubprocessProtocolError, match="failure fields"):
+            policy.reset("unit fixture")

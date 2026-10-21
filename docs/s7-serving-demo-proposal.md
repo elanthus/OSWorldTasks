@@ -21,8 +21,10 @@ generation. It exposes only `prepare`, `qualify`, `verify`, and `report` command
 command. The full serving rehearsal below remains the next owner-controlled phase.
 
 The local dependency constraint is generated from the already installed Python runtime,
-distribution versions, and installed RECORD digests before any send. Qualification consumes
-and checks that exact runtime lock; it does not claim to have installed an unrelated platform
+distribution versions, and installed RECORD digests before any send. The lock binds interpreter
+bytes and distribution metadata; it does not verify installed module bytes against RECORD.
+Host replay dependencies therefore retain an operator-controlled installed-file integrity limit.
+Qualification consumes and checks that exact runtime lock; it does not claim to have installed an unrelated platform
 lock or downloaded packages. A's qualification uses the shared runner's one-action caller limit
 (`pilot_action_limit`) followed by explicit environment cleanup; `/api/v2` close behavior is
 reserved for the later serving rehearsal.
@@ -60,13 +62,27 @@ therefore requires **separate approval for 77 additional fake sends**, raising c
 qualification consumption/allowance to at most **150** and the overall campaign ceiling to
 **184** (150 + A 4 + B 24 + smokes 6). Both stopped runs remain immutable predecessor evidence.
 The owner explicitly approved those 77 additional fake sends on 2026-10-20. Freeze both stopped
-archives with `prepare --predecessor-archive` before running the replacement. The replacement's
+archives with `prepare --predecessor-archive PATH=sha256:<approved-manifest-digest>` and
+`--expected-predecessor-sends 73` before running the replacement. A first freeze instead requires
+`--no-predecessors`. These explicit declarations prevent accidental omission; they cannot detect
+a dishonest operator declaration independently of the owner approval record. The replacement's
 durable guard still limits it to 77 qualification sends and 111 across its phases; the retained
 predecessor ledgers contribute 73 immutable sends, giving aggregate ceilings of 150 and 184.
 Preparation and verification check the predecessor seals, source bytes, archive identities,
 durable counts, and cumulative arithmetic; a duplicate predecessor is refused. Its approval
 record must state the additional allowance. No automatic retry is authorized. Activation,
 publication, real-provider requests, and spending remain blocked.
+
+## Activation compatibility after review repairs
+
+The retained completed qualification and exact package/report digests bind revision
+`e6d61aea96a3b78fb0df9db65805cdc2cc8e3d03`. The current PR includes later worker-cleanup,
+review fixes, and main-branch changes. `verify_worker_binding` requires the exact bound Git
+revision and refuses those retained packages from this head or any later main checkout. It also
+requires host `pixelgym` imports to resolve under the declared source checkout. No rebinding or
+new qualification is authorized here. The owner must resolve the source/version mismatch before
+activation; the old checkout lacks these later repairs. Keep frozen evidence unchanged and use
+separately approved successor evidence if qualifying repaired source becomes necessary.
 
 ## Decisions requested
 
@@ -80,9 +96,9 @@ gate-policy digest. The proposed choices are:
 | Evidence class | Existing `calibration` class and required `d56-calibration` run-kind label, with a new S7 run reference and an explicit scripted-validation disclosure |
 | Gate policy | `s7-scripted-serving-controls-v1`, with the exact rules below; no model accuracy, cost-performance, or latency-performance threshold |
 | Serving terms | `demo` tier only; A: 4 fake attempts per exact version; B: 24; one active episode at a time |
-| Bound | One qualification campaign and one rehearsal; no automatic rerun, cap increase, package revision, or threshold adjustment |
+| Bound | 77 qualification sends and 111 total per freeze; the owner-approved stopped predecessors plus final freeze have cumulative ceilings of 150/184. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
 | Infrastructure | Existing local Python environment, filesystem put-once store, SQLite ledger, and Darwin policy sandbox; HTTP listeners on `127.0.0.1` only |
-| Recovery | Two local archive copies plus one private LFS upload/fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting |
+| Recovery | Original run, one local archive copy and one private LFS copy with fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting |
 
 The evidence-class choice is a compatibility convention imposed by the existing schema, not an
 assertion that this is historical D5.6 evidence. Every plan, summary, and report must identify it
@@ -141,9 +157,11 @@ The following gaps affect the rehearsal:
 8. **Publication can call models.** The checked-in Claude workflow runs on ready PR opening;
    the development record also describes CodeRabbit. All 29 locally inspected desktop
    automations were paused, but this does not establish GitHub App settings or future state.
-   Publication remains blocked until current repository workflows and installed review apps
-   have a verified no-model path. Recheck immediately before publication. No automation was
-   changed by preparing this proposal.
+   This implementation adds the `pixelgym:no-model-review` PR-body guard for Claude and
+   documents the CodeRabbit `@coderabbitai ignore` marker in
+   [the publication procedure](development-process.md). The owner authorized PR publication;
+   verify both controls and the current automation state before each push. Activation and
+   publication of qualification artifacts remain separate owner decisions.
 
 These are bounded implementation prerequisites or disclosed limits. None requires reconstructing
 the missing D5.9 journals, changing the environment contract, or starting a model experiment.
@@ -158,7 +176,7 @@ Use two exact `stateful-v5` packages, each with its own content-addressed identi
 | Factory | `pixelgym.scripted_policy.ScriptedStatefulPolicy` (the existing class, re-exported by the v5 runner; startup repair approved for a fresh qualification freeze) | Same existing factory |
 | Actions | One literal `{action_type: 0, x: 0, y: 0, key: 0}` | Literal action stream generated once by `golden_actions` for task seed 5000, stored and hashed before qualification |
 | Provider/model labels | `in-process-fake` / `no-cost-scripted-policy-v1` | Same labels; no model exists behind them |
-| Expected task reward | 0; caller closes after one NOOP | Reward 1 exactly once on completion; all preceding rewards 0 |
+| Expected task reward | 0; qualification stops after one NOOP with `pilot_action_limit`; explicit API close belongs to the rehearsal | Reward 1 exactly once on completion; all preceding rewards 0 |
 | Qualification episode denominator | 1 assigned, 1 attempted, 0 exact successes | 1 assigned, 1 attempted, 1 exact success |
 | Maximum steps | 1 | 26, the seed-5000 task horizon in the retained reference |
 | Deployment attempt cap | 4 | 24, shared across restarts, redeploys, and rollback attempts for this exact version |
@@ -208,23 +226,35 @@ unchanged; no historical journal or outcome is represented as new S7 evidence.
 
 The pure evaluator reads the frozen plan and retained structured qualification results. It does
 not execute policies, dispatch actions, retry a response, or run a restore. Every observation is
-required, all must pass, comparisons use stored values, and equality passes. Malformed evidence,
-an unapproved policy version, a binding mismatch, or unverifiable/dirty code produces a failed
-report with reasons, never an inferred value.
+required, all must pass, comparisons use stored values, and equality passes. Structural errors
+(malformed evidence, substituted policy rules, binding mismatches, and failed replay or artifact
+verification) raise and stop before an approvable report exists. After sends begin, the driver
+retains a sealed terminal failure with its durable count, including partial finalization outputs;
+those outputs cannot be used for approval. A process kill or failed storage write can still
+require manual recovery; never reset its ledger or hide its consumed sends. Missing observations
+produce a failed gate report; supplied invalid numbers raise. A structurally valid package with
+unverified/dirty provenance produces a failed report with stored reasons.
 
 | Required observation | Comparator and threshold | Meaning |
 | --- | --- | --- |
 | `assigned_episode_coverage` | at least 1.0 | Exactly the one assigned package episode is present; duplicate, missing, or extra assignments are structural errors |
-| `package_outcome_matches_plan` | at least 1 | A: exactly one NOOP, zero reward, explicit caller close. B: 20 valid dispatches, one terminal reward of 1, earlier rewards 0, no truncation |
+| `package_outcome_matches_plan` | at least 1 | A: exactly one NOOP, zero reward, `pilot_action_limit` followed by environment cleanup. B: 20 valid dispatches, one terminal reward of 1, earlier rewards 0, no truncation |
 | `shared_control_cases_matched` | at least 7 | All seven retained case outcomes and counters match the frozen engineering plan, including expected failures |
 | `invalid_backend_dispatches` | at most 0 | Invalid and unparseable actions never reach the backend |
 | `duplicate_attempts_or_dispatches` | at most 0 | Recovery adds no duplicate send, action, or result application |
 | `replay_mismatches` | at most 0 | Every replayed dispatch matches checkpoint, reward, terminal flags, and screenshot bytes; retain raw differing-pixel count and maximum channel delta before any tolerance |
 | `unresolved_attempt_outcomes` | at most 0 | No unknown reservation is treated as a completed request; the unknown-outcome failure path is also tested separately |
 | `artifact_verification_failures` | at most 0 | All plan, summary, source, action, journal, checkpoint, and immutable-object references resolve and verify |
-| `real_provider_requests` | at most 0 | Only the allowlisted scripted transport executes; retained transport counters and isolation checks substantiate this |
+| `real_provider_requests` | at most 0 | Declared constant of the fixture-only transport boundary, supported by retained fake-send counters and isolation checks; not an independent network measurement |
 | `provider_control_requests` | at most 0 | No cancellation or reconciliation request in either proposed package |
-| `monetary_spend_usd` | at most 0 | No paid service or real-provider route is configured; fake usage is disclosed, never priced as model telemetry |
+| `monetary_spend_usd` | at most 0 | Declared zero-spend constant of the fixture-only boundary; no billing measurement or paid route is configured, and fake usage is never priced as model telemetry |
+
+The detailed replay and artifact inspectors enforce `replay_mismatches`,
+`artifact_verification_failures`, `invalid_backend_dispatches`, and
+`shared_control_cases_matched` as exception-enforced preconditions. Completed reports contain
+only the satisfied values for those checks; a discrepancy produces sealed failure evidence
+before an approvable report exists. The stored report renders observation flags, provenance
+flags, and reasons without making a milestone decision.
 
 Additionally require `code_revision_passed=True`, correct package/report/plan/summary bindings,
 the approved policy digest, an exact observation-name set, and no blocking reasons. Preserve
@@ -318,8 +348,8 @@ The human S8 review receives raw evidence and unmarked acceptance criteria; agen
 milestone verdict and change no public portfolio wording.
 
 After quiescence, use the merged generic `capture`, `restore`, and `check-cleanup` operations to
-create two verified local copies under new names. On each fresh restored copy, run the retained
-serving verifier in an isolated credential-free interpreter: verify all hashes/SQLite integrity,
+retain one local archive copy under a new name and verify a fresh local restore. On each fresh
+restored copy, run the retained serving verifier in an isolated credential-free interpreter: verify all hashes/SQLite integrity,
 replay stored caller actions, inspect recovery/cap/rollback evidence without invoking policy or
 transport, and regenerate the report solely from stored results. Compare replay/report digests
 with the originals and verify that inspection leaves the restored directory unchanged.
@@ -342,8 +372,9 @@ and stored-report comparison. Verify binding to the frozen source before executi
 A successful upload or generic receipt alone does not complete the rehearsal's recovery check.
 Retain local evidence if remote recovery cannot complete; report that check as incomplete.
 
-Choose an explicit durable second-volume destination before qualification; two directories on one
-disk alone do not protect against disk loss. Archive locations and approval records still need
+The owner approved one local archive and one private LFS copy because no writable second volume
+was mounted. The local archive and original run share one disk; the verified private remote
+copy provides the independent recovery path. Archive locations and approval records still need
 operator access controls. Neither the rehearsal nor a cleanup receipt authorizes deleting the
 source, archives, historical evidence, or a checkout.
 
@@ -361,7 +392,7 @@ The following are proposed requirements, not completed checks:
 | Environment and API boundaries | Valid actions only, evaluator-owned reward timeline, caller dispatch evidence independently replayed, final result acknowledged once, stale-deployment requests refused |
 | Caps and rollback | Exactly 24 B attempts, no send after exhaustion, count survives restart/redeploy, rollback to approved A succeeds, exhausted B cannot return, failed transition preserves pointer and appends audit evidence |
 | Isolation and cleanup | Existing real Darwin sandbox check plus recorded rehearsal enforcement; credential-free worker; loopback listeners only; all providers/workers stopped on success, failure, or interruption |
-| Report and restore | Reports read stored results only; two local and one fresh-cache remote restore reproduce evidence/report digests; corruption, missing objects, unsafe paths, stale budget observation, privacy mismatch, and changed source are refused |
+| Report and restore | Reports read stored results only; one local archive restore and one fresh-cache private LFS restore reproduce evidence/report digests; corruption, missing objects, unsafe paths, stale budget observation, privacy mismatch, and changed source are refused |
 | Evidence honesty | Raw negative outcomes retained, golden privilege and client trust disclosed, no model quality or availability claim, no historical reconstruction, no S8/D5.10 decision |
 
 Expected implementation is a narrow S7 policy/evaluator plus a versioned package builder and

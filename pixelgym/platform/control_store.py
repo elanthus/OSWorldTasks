@@ -1376,7 +1376,6 @@ class ControlStore:
         if errors:
             raise ValueError("; ".join(errors))
         self._require_approved_gate_policy(gate_report)
-        self._verify_stateful_gate_derivation(package, gate_report, tuple(artifacts))
         if gate_report.code_revision_passed and not package.source_provenance_verified:
             raise ValueError("gate report passed code provenance the package does not verify")
         bound_digests = {artifact_digest(reference) for reference in artifacts}
@@ -1390,6 +1389,7 @@ class ControlStore:
             raise ValueError(
                 "candidate artifacts must include the evidence plan and summary the package binds"
             )
+        self._verify_stateful_gate_derivation(package, gate_report, tuple(artifacts))
         report_bytes = canonical_json_bytes(report_value)
         report_sha = sha256_bytes(report_bytes)
         candidate_id = "candidate-" + package.policy_id.removeprefix("sha256:")[:24]
@@ -1561,13 +1561,14 @@ class ControlStore:
     def _verify_s7_serving_cap(
         candidate: sqlite3.Row, package: StatefulPolicyPackage, cap: int
     ) -> None:
-        from pixelgym.platform.s7_policy import POLICY_SHA256
+        from pixelgym.platform.s7_policy import POLICY_SHA256, policy_document
 
         report = json.loads(candidate["gate_report_json"])
-        if report.get("gate_policy_sha256") == POLICY_SHA256 and cap != (
-            4 if package.max_steps == 1 else 24
-        ):
-            raise TransitionError("S7 serving cap differs from the approved exact-version cap")
+        if report.get("gate_policy_sha256") == POLICY_SHA256:
+            caps = policy_document()["deployment_attempt_caps"]
+            expected = {1: caps["A"], 26: caps["B"]}.get(package.max_steps)
+            if expected is None or cap != expected:
+                raise TransitionError("S7 serving cap differs from the approved exact-version cap")
 
     def verify_stateful_candidate_approval(
         self, candidate_id: str

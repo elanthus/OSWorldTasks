@@ -10,6 +10,7 @@ from typing import Any
 
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.retention import restore_archive, verify_archive
+from pixelgym.platform.s7_policy import EVIDENCE_LABEL, POLICY_SHA256, policy_document
 from pixelgym.platform.s7_source import verify_snapshot, write_json
 
 
@@ -25,6 +26,13 @@ def stopped_count(run: Path) -> int:
 
     verify_seal(run)
     failure, source = _read(run / "failure.json"), _read(run / "source-binding.json")
+    plan = _read(run / "plan.json")
+    if (
+        plan.get("schema_version") != "pixelgym-s7-qualification-plan-v1"
+        or plan.get("evidence_label") != EVIDENCE_LABEL
+        or plan.get("gate_policy_sha256") != POLICY_SHA256
+    ):
+        raise ValueError("S7 predecessor plan is not under the approved gate policy")
     verify_snapshot(run / "source", source)
     if (
         failure["qualification_complete"] is not False
@@ -32,9 +40,15 @@ def stopped_count(run: Path) -> int:
         or failure["publication_performed"] is not False
         or failure["real_provider_requests"] != 0
         or failure["monetary_spend_usd"] != 0
-        or (run / "results.json").exists()
     ):
         raise ValueError("S7 predecessor is not a stopped zero-spend qualification")
+    recorded_failure = failure.get("schema_version") == "pixelgym-s7-failure-v1" and failure.get(
+        "stage"
+    ) in {"qualification", "finalization"}
+    if ((run / "results.json").exists() or (run / "packages").exists()) and not recorded_failure:
+        raise ValueError("stopped qualification contains conflicting completion evidence")
+    if "source_revision" in failure and failure["source_revision"] != source["revision"]:
+        raise ValueError("S7 stopped source revision differs from its binding")
     with closing(
         sqlite3.connect(
             (run / "send-budget.sqlite").resolve().as_uri() + "?mode=ro&immutable=1", uri=True
@@ -46,15 +60,22 @@ def stopped_count(run: Path) -> int:
     count = counts.get("qualification", 0)
     if set(counts) - {"qualification"} or count != failure["fake_send_reservations"]:
         raise ValueError("S7 predecessor accounting differs from its durable ledger")
+    if recorded_failure and failure["stage"] == "finalization":
+        results = _read(run / "results.json")
+        if results["fake_sends"] != counts or results["plan_sha256"] != content_digest(plan):
+            raise ValueError("S7 partial finalization differs from its durable accounting")
     return count
 
 
-def freeze_predecessors(run: Path, archives: tuple[Path, ...]) -> dict[str, Any]:
+def freeze_predecessors(
+    run: Path, archives: tuple[tuple[Path, str], ...], *, expected_sends: int
+) -> dict[str, Any]:
+    if type(expected_sends) is not int or expected_sends < 0:
+        raise ValueError("explicit nonnegative expected predecessor send count is required")
     records = []
     previous = 0
-    for index, archive in enumerate(archives):
+    for index, (archive, digest) in enumerate(archives):
         manifest = json.loads((archive / "manifest.json").read_bytes())
-        digest = content_digest(manifest)
         receipt = verify_archive(archive, expected_digest=digest)
         relative = f"predecessors/{index}/run"
         restore_archive(archive, run / relative, expected_digest=digest)
@@ -71,11 +92,15 @@ def freeze_predecessors(run: Path, archives: tuple[Path, ...]) -> dict[str, Any]
             }
         )
         previous += count
+    if previous != expected_sends:
+        raise ValueError("S7 predecessor sends differ from the explicit approved count")
+    policy = policy_document()
     accounting = {
         "records": records,
         "previous_qualification_sends": previous,
-        "qualification_allowance": previous + 77,
-        "campaign_allowance": previous + 111,
+        "expected_previous_qualification_sends": expected_sends,
+        "qualification_allowance": previous + policy["phase_caps"]["qualification"],
+        "campaign_allowance": previous + policy["campaign_cap"],
     }
     verify_predecessors(run, accounting)
     return accounting
@@ -104,10 +129,12 @@ def verify_predecessors(run: Path, accounting: dict[str, Any]) -> int:
         if count != record["qualification_sends"]:
             raise ValueError("S7 predecessor count changed")
         previous += count
+    policy = policy_document()
     if (
         previous != accounting["previous_qualification_sends"]
-        or accounting["qualification_allowance"] != previous + 77
-        or accounting["campaign_allowance"] != previous + 111
+        or previous != accounting.get("expected_previous_qualification_sends", previous)
+        or accounting["qualification_allowance"] != previous + policy["phase_caps"]["qualification"]
+        or accounting["campaign_allowance"] != previous + policy["campaign_cap"]
     ):
         raise ValueError("S7 cumulative allowance differs from immutable predecessors")
     return previous

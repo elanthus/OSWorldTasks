@@ -44,6 +44,7 @@ def policy_document() -> dict[str, Any]:
 
 
 POLICY_SHA256 = content_digest(policy_document()).removeprefix("sha256:")
+QUALIFICATION_CAP = policy_document()["phase_caps"]["qualification"]
 
 
 def validate_report_rules(report: StatefulGateReport) -> None:

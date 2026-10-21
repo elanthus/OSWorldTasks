@@ -54,7 +54,9 @@ def preparer(
             raise StatefulLoadError("S7 worker specification differs from its source binding")
 
     def smoke(candidate: StatefulCandidateRecord) -> None:
-        role_for(candidate.package)
+        role = role_for(candidate.package)
+        binding = plan["packages"][role]["worker"]
+        verify_source(candidate.package, worker_spec(root, state_root, binding))
         run_contract_smoke(candidate, transport=BudgetedScriptedTransport(budget, phase="smoke"))
 
     loader = WorkerSpecPolicyLoader(

@@ -23,6 +23,7 @@ from pixelgym.platform.immutable_store import ImmutableStore
 from pixelgym.platform.s7_policy import (
     EVIDENCE_LABEL,
     POLICY_SHA256,
+    QUALIFICATION_CAP,
     evaluate,
     policy_document,
     validate_report_rules,
@@ -150,7 +151,7 @@ def inspect_qualification(run: Path) -> dict[str, Any]:
         raise ValueError("S7 assigned cases are missing, duplicate, extra, or reordered")
     if (
         [r["scripted_sends"] for r in records] != [20, 26, 26, 1, 1, 1, 1, 1]
-        or results["fake_sends"] != {"qualification": 77}
+        or results["fake_sends"] != {"qualification": QUALIFICATION_CAP}
         or results["transport"] != "BudgetedScriptedTransport"
         or results["real_provider_requests"] != 0
         or results["monetary_spend_usd"] != 0
@@ -165,7 +166,7 @@ def inspect_qualification(run: Path) -> dict[str, Any]:
         )
     ) as db:
         if dict(db.execute("SELECT phase, count(*) FROM sends GROUP BY phase")) != {
-            "qualification": 77
+            "qualification": QUALIFICATION_CAP
         }:
             raise ValueError("S7 durable fake-send ledger differs from observations")
         reserved_keys = {row[0] for row in db.execute("SELECT request_key FROM sends")}
@@ -211,7 +212,7 @@ def inspect_qualification(run: Path) -> dict[str, Any]:
         "source_binding_sha256": content_digest(source),
         "shared": shared,
         "replays": replays,
-        "cumulative_qualification_sends": previous + 77,
+        "cumulative_qualification_sends": previous + QUALIFICATION_CAP,
         "cumulative_accounting": plan["cumulative_accounting"],
     }
 
@@ -336,7 +337,7 @@ def validate_recorded_execution(plan: dict[str, Any], results: dict[str, Any]) -
     if (
         results["plan_sha256"] != content_digest(plan)
         or results["transport"] != "BudgetedScriptedTransport"
-        or results["fake_sends"] != {"qualification": 77}
+        or results["fake_sends"] != {"qualification": QUALIFICATION_CAP}
         or results["real_provider_requests"] != 0
         or results["provider_control_requests"] != 0
         or results["monetary_spend_usd"] != 0
@@ -365,52 +366,89 @@ def gate_verifier(
         artifacts: tuple[ArtifactRef, ...],
     ) -> None:
         verify_seal(qualification_root)
-        validate_report_rules(report)
-        values = {}
-        for reference in artifacts:
-            data = store.get_verified(reference)
-            value = json.loads(data)
-            if canonical_json_bytes(value) != data:
-                raise ValueError("S7 evidence must be canonical JSON")
-            values[content_digest(value)] = value
-        summary = values[package.evidence.summary_sha256]
-        plan = values[package.evidence.plan_sha256]
-        inputs = summary["inputs"]
-        results, verification = (
-            values[inputs["results_sha256"]],
-            values[inputs["verification_sha256"]],
-        )
-        validate_recorded_execution(plan, results)
-        if results != read_json(qualification_root / "results.json") or verification != read_json(
-            qualification_root / "verification.json"
-        ):
-            raise ValueError("S7 immutable receipt differs from the sealed private evidence")
-        role = summary["role"]
-        if (
-            plan["gate_policy_sha256"] != POLICY_SHA256
-            or summary["metrics"] != derive_metrics(role, results, verification)
-            or evaluate(package, summary).to_dict() != report.to_dict()
-            or content_digest(plan["packages"][role]["worker"])[7:] != package.package_source_sha256
-            or values[inputs["source_binding_sha256"]]["revision"] != package.code_revision
-            or content_digest(values[inputs["runtime_lock_sha256"]])[7:]
-            != package.dependency_lock_sha256
-        ):
-            raise ValueError("S7 stored report does not follow its bound evidence")
+        _verify_bound_evidence(store, qualification_root, package, report, artifacts)
 
     return verify
 
 
-def verify_packages(run: Path) -> None:
-    """Check stored report derivations without rerunning a worker or transport."""
+def _verify_bound_evidence(
+    store: ImmutableStore,
+    run: Path,
+    package: StatefulPolicyPackage,
+    report: StatefulGateReport,
+    artifacts: tuple[ArtifactRef, ...],
+) -> None:
+    if (run / "failure.json").exists():
+        raise ValueError("S7 stopped qualification cannot supply approval evidence")
+    validate_report_rules(report)
+    values: dict[str, dict[str, Any]] = {}
+    for reference in artifacts:
+        data = store.get_verified(reference)
+        value = json.loads(data)
+        if not isinstance(value, dict) or canonical_json_bytes(value) != data:
+            raise ValueError("S7 evidence must be canonical JSON")
+        values[content_digest(value)] = value
+
+    def required(digest: str) -> dict[str, Any]:
+        if digest not in values:
+            raise ValueError("S7 candidate artifacts omit bound evidence: " + digest)
+        return values[digest]
+
+    summary = required(package.evidence.summary_sha256)
+    plan = required(package.evidence.plan_sha256)
+    inputs = summary["inputs"]
+    results = required(inputs["results_sha256"])
+    verification = required(inputs["verification_sha256"])
+    source = required(inputs["source_binding_sha256"])
+    lock = required(inputs["runtime_lock_sha256"])
+    validate_recorded_execution(plan, results)
+    if any(
+        value != read_json(run / name)
+        for name, value in (
+            ("plan.json", plan),
+            ("results.json", results),
+            ("verification.json", verification),
+            ("source-binding.json", source),
+            ("runtime-lock.json", lock),
+        )
+    ):
+        raise ValueError("S7 immutable receipt differs from the sealed private evidence")
+    role = summary["role"]
+    if role not in {"A", "B"}:
+        raise ValueError("S7 stored report has an unsupported package role")
+    spec = plan["packages"][role]
+    if (
+        summary["metrics"] != derive_metrics(role, results, verification)
+        or evaluate(package, summary).to_dict() != report.to_dict()
+        or content_digest(spec["worker"])[7:] != package.package_source_sha256
+        or spec["manifest"] != package.v5_manifest().to_dict()
+        or spec["max_steps"] != package.max_steps
+        or source["revision"] != package.code_revision
+        or content_digest(source["files"])[7:] != package.source_tree_sha256
+        or content_digest(source) != plan["source_binding_sha256"]
+        or content_digest(source) != verification["source_binding_sha256"]
+        or content_digest(lock) != plan["runtime_lock_sha256"]
+        or content_digest(lock)[7:] != package.dependency_lock_sha256
+    ):
+        raise ValueError("S7 stored report does not follow its bound evidence")
+
+
+def _verify_packages(run: Path) -> None:
+    """Validate artifacts before the finalizer seals; never use for control mutations."""
     from pixelgym.platform.immutable_store import LocalImmutableStore
 
-    # Artifact verification uses the retained immutable JSON documents, not mutable aliases.
     store = LocalImmutableStore(run / "immutable")
-    refs = [ArtifactRef(**v) for v in read_json(run / "artifact-references.json")["artifacts"]]
+    refs = tuple(ArtifactRef(**v) for v in read_json(run / "artifact-references.json")["artifacts"])
     for role in ("A", "B"):
         package = stateful_package_from_dict(read_json(run / f"packages/{role}/package.json"))
         report = StatefulGateReport.from_dict(read_json(run / f"packages/{role}/gate-report.json"))
-        gate_verifier(store, qualification_root=run)(package, report, tuple(refs))
+        _verify_bound_evidence(store, run, package, report, refs)
+
+
+def verify_packages(run: Path) -> None:
+    """Check sealed report derivations without rerunning a worker or transport."""
+    verify_seal(run)
+    _verify_packages(run)
 
 
 def store_artifacts(run: Path) -> None:
@@ -439,15 +477,10 @@ def stored_report(run: Path) -> dict[str, Any]:
     """Read stored results and reports only; never replay actions or recompute gates."""
     verify_seal(run)
     if (run / "failure.json").exists():
+        from pixelgym.platform.s7_predecessors import stopped_count
+
         failure = read_json(run / "failure.json")
-        if (
-            (run / "results.json").exists()
-            or (run / "packages").exists()
-            or failure["qualification_complete"] is not False
-            or failure["activation_performed"] is not False
-            or failure["publication_performed"] is not False
-        ):
-            raise ValueError("stopped qualification contains conflicting completion evidence")
+        count = stopped_count(run)
         completed = [
             read_json(path) for path in sorted((run / "shared/cases").glob("*/observation.json"))
         ]
@@ -458,7 +491,7 @@ def stored_report(run: Path) -> dict[str, Any]:
             "plan_sha256": content_digest(read_json(run / "plan.json")),
             "failure": failure,
             "completed_cases": completed,
-            "fake_sends": {"qualification": failure["fake_send_reservations"]},
+            "fake_sends": {"qualification": count},
             "real_provider_requests": failure["real_provider_requests"],
             "activation_performed": False,
             "publication_performed": False,
@@ -506,7 +539,7 @@ def render_report(report: dict[str, Any]) -> str:
         failure = report["failure"]
         lines.extend(
             [
-                "Qualification stopped; no package or gate report was generated.",
+                "Qualification stopped; no package or gate report is usable for approval.",
                 "",
                 f"Frozen plan: `{report['plan_sha256']}`",
                 "",
@@ -547,14 +580,21 @@ def render_report(report: dict[str, Any]) -> str:
                 "",
                 f"Gate report digest: `{entry['gate_report_sha256']}`",
                 "",
-                "| Observation | Stored value | Comparator | Threshold |",
-                "| --- | ---: | --- | ---: |",
+                f"Code revision passed: {entry['gate']['code_revision_passed']}.",
+                "",
+                f"Stored gate overall_passed: {entry['gate']['overall_passed']}.",
+                "",
+                "Stored reasons: " + ("; ".join(entry["gate"]["reasons"]) or "none"),
+                "",
+                "| Observation | Stored value | Comparator | Threshold | Passed |",
+                "| --- | ---: | --- | ---: | --- |",
             ]
         )
         for observation in entry["gate"]["observations"]:
             lines.append(
                 f"| {observation['name']} | {observation['observed']} | "
-                f"{observation['comparator']} | {observation['threshold']} |"
+                f"{observation['comparator']} | {observation['threshold']} | "
+                f"{observation['passed']} |"
             )
         lines.append("")
     accounting = report.get("cumulative_accounting")
@@ -564,7 +604,7 @@ def render_report(report: dict[str, Any]) -> str:
             [
                 (
                     f"Earlier stopped qualifications: {previous} fake sends. "
-                    f"Cumulative qualification sends: {previous + 77} "
+                    f"Cumulative qualification sends: {previous + QUALIFICATION_CAP} "
                     f"of {accounting['qualification_allowance']}. "
                     f"Overall campaign ceiling: {accounting['campaign_allowance']}."
                 ),
@@ -575,7 +615,9 @@ def render_report(report: dict[str, Any]) -> str:
         [
             (
                 f"Fake sends: {report['fake_sends']}. Real-provider requests: "
-                f"{report['real_provider_requests']}."
+                f"{report['real_provider_requests']}. "
+                "Real-provider requests and spending are declared constants of the "
+                "fixture-only boundary, not independent network or billing measurements."
             ),
             "",
             (

@@ -52,7 +52,8 @@ class S7SendBudget:
             db.close()
 
     def reserve(self, phase: str, request_key: str) -> None:
-        caps = policy_document()["phase_caps"]
+        policy = policy_document()
+        caps = policy["phase_caps"]
         if phase not in caps or not request_key:
             raise ValueError("unknown S7 phase or missing request identity")
         with self._open() as db:
@@ -68,7 +69,7 @@ class S7SendBudget:
             phase_count = db.execute(
                 "SELECT count(*) FROM sends WHERE phase = ?", (phase,)
             ).fetchone()[0]
-            if count >= 111 or phase_count >= caps[phase]:
+            if count >= policy["campaign_cap"] or phase_count >= caps[phase]:
                 raise S7CapReached("S7 approved fake-send cap reached")
             try:
                 db.execute("INSERT INTO sends VALUES (?, ?, ?)", (request_key, phase, time.time()))
@@ -86,7 +87,9 @@ class S7SendBudget:
             started, elapsed, paused = db.execute(
                 "SELECT started, active_seconds, paused FROM campaign"
             ).fetchone()
-            if paused or self.counts() != {"qualification": 77}:
+            if paused or self.counts() != {
+                "qualification": policy_document()["phase_caps"]["qualification"]
+            }:
                 raise ValueError("S7 can pause only after its one complete qualification")
             db.execute(
                 "UPDATE campaign SET active_seconds = ?, paused = 1",

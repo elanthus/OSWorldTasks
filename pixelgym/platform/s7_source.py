@@ -97,7 +97,7 @@ def verify_snapshot(source: Path, binding: dict[str, Any]) -> None:
 
 
 def runtime_lock() -> dict[str, Any]:
-    """Freeze the already installed runtime; qualification consumes this exact constraint."""
+    """Bind interpreter bytes and distribution metadata, not installed module file bytes."""
     distributions: dict[str, dict[str, str]] = {}
     for dist in importlib.metadata.distributions():
         name = dist.metadata["Name"].lower().replace("_", "-")
@@ -166,6 +166,7 @@ def worker_spec(root: Path, evidence_root: Path, binding: dict[str, Any]) -> Pol
 def verify_worker_binding(
     root: Path, source: dict[str, Any], lock: dict[str, Any], binding: dict[str, Any]
 ) -> None:
+    verify_host_source(root)
     revision, files = git_source(root)
     actual = {
         "schema_version": "pixelgym-s7-source-v1",
@@ -177,6 +178,16 @@ def verify_worker_binding(
     ):
         raise ValueError("S7 worker factory/source/runtime binding does not verify")
     verify_runtime(lock)
+
+
+def verify_host_source(root: Path) -> None:
+    """The host imports must use the same checkout whose Git bytes we bind."""
+    import pixelgym
+
+    if pixelgym.__file__ is None or not Path(pixelgym.__file__).resolve().is_relative_to(
+        root.resolve() / "pixelgym"
+    ):
+        raise ValueError("imported host pixelgym does not resolve under the bound source root")
 
 
 def write_json(path: Path, value: Any) -> None:

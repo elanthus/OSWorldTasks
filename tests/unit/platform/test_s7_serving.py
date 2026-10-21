@@ -33,6 +33,33 @@ from scripts.s7_serving import no_network
 from tests.unit.platform.stateful_fixtures import v5_manifest
 
 
+def bound_refs(package: StatefulPolicyPackage) -> list[Any]:
+    from pixelgym.platform.contracts import ArtifactRef
+
+    return [
+        ArtifactRef(
+            "fixture/" + str(i),
+            "local://fixture/" + str(i),
+            "1",
+            digest[7:],
+            0,
+            "application/json",
+            "retained",
+        )
+        for i, digest in enumerate((package.evidence.plan_sha256, package.evidence.summary_sha256))
+    ]
+
+
+def approved_archive(archive: Path) -> tuple[Path, str]:
+    return archive, content_digest(json.loads((archive / "manifest.json").read_bytes()))
+
+
+def fixture_host_source(monkeypatch: Any) -> None:
+    """Synthetic checkout tests do not claim host import provenance."""
+    monkeypatch.setattr("pixelgym.platform.s7_source.verify_host_source", lambda root: None)
+    monkeypatch.setattr("pixelgym.platform.s7_qualification.verify_host_source", lambda root: None)
+
+
 def candidate(
     role: str = "B", **metric_changes: Any
 ) -> tuple[StatefulPolicyPackage, dict[str, Any]]:
@@ -128,9 +155,15 @@ def test_every_missing_quantity_fails_closed(name: str) -> None:
 
 
 @pytest.mark.parametrize("value", [True, "0", float("nan"), float("inf"), -1])
-def test_invalid_quantities_are_not_validated_as_zero(value: Any) -> None:
+def test_invalid_quantities_are_not_validated_as_zero(value: Any, monkeypatch: Any) -> None:
+    package, summary = candidate()
+    summary["metrics"]["real_provider_requests"] = value
+    # Nonfinite input cannot have a canonical JSON digest. Isolate numeric validation
+    # after the identity check so the evaluator itself must reject it.
+    monkeypatch.setattr(
+        "pixelgym.platform.s7_policy.content_digest", lambda _: package.evidence.summary_sha256
+    )
     with pytest.raises((ValueError, TypeError)):
-        package, summary = candidate(real_provider_requests=value)
         evaluate(package, summary)
 
 
@@ -178,14 +211,16 @@ def test_unconfigured_s7_verifier_blocks_registration_even_with_policy_digest(
         control.migrate()
         with pytest.raises(TransitionError, match="stored-evidence gate verifier"):
             control.register_stateful_candidate(
-                package=package, gate_report=evaluate(package, summary), artifacts=[]
+                package=package,
+                gate_report=evaluate(package, summary),
+                artifacts=bound_refs(package),
             )
         assert control.active()[0] is None
     finally:
         control.connection.close()
 
 
-def test_budget_survives_reopen_and_counts_duplicate_reservations(tmp_path: Path) -> None:
+def test_budget_survives_reopen_and_refuses_duplicate_reservations(tmp_path: Path) -> None:
     path = tmp_path / "budget.sqlite"
     budget = S7SendBudget(path)
     for index in range(24):
@@ -330,6 +365,16 @@ def test_report_does_not_execute_policy_replay_or_transport(
         monkeypatch.setattr("pixelgym.platform.s7_evidence." + name, forbidden)
     monkeypatch.setattr("pixelgym.platform.s7_qualification.SandboxedPolicyProcess", forbidden)
     monkeypatch.setattr("pixelgym.platform.s7_qualification.BudgetedScriptedTransport", forbidden)
+    for target in (
+        "pixelgym.platform.policy_subprocess.SandboxedPolicyProcess",
+        "pixelgym.platform.s7_budget.BudgetedScriptedTransport",
+        "pixelgym.grounding.v5.runner.ScriptedTransport",
+        "pixelgym.scripted_policy.ScriptedStatefulPolicy",
+        "pixelgym.platform.stateful_runtime.create_serving_app",
+        "pixelgym.platform.stateful_service.create_episode_router",
+        "pixelgym.platform.serving_episode.ServingEpisodeHost",
+    ):
+        monkeypatch.setattr(target, forbidden)
     before = inventory(run)
     with no_network():
         report = stored_report(run)
@@ -352,8 +397,31 @@ def test_stopped_report_retains_partial_observations_without_generating_packages
     tmp_path: Path, monkeypatch: Any
 ) -> None:
     from pixelgym.platform.s7_evidence import render_report
+    from pixelgym.platform.s7_source import content_digest_bytes
 
-    write_json(tmp_path / "plan.json", {"fixture": "stopped"})
+    write_json(tmp_path / "source/fixture.json", {})
+    write_json(
+        tmp_path / "source-binding.json",
+        {
+            "revision": "3" * 40,
+            "files": {
+                "fixture.json": content_digest_bytes(
+                    (tmp_path / "source/fixture.json").read_bytes()
+                )
+            },
+        },
+    )
+    write_json(
+        tmp_path / "plan.json",
+        {
+            "schema_version": "pixelgym-s7-qualification-plan-v1",
+            "evidence_label": EVIDENCE_LABEL,
+            "gate_policy_sha256": POLICY_SHA256,
+        },
+    )
+    budget = S7SendBudget(tmp_path / "send-budget.sqlite")
+    for i in range(73):
+        budget.reserve("qualification", str(i))
     write_json(
         tmp_path / "failure.json",
         {
@@ -407,12 +475,21 @@ def stopped_archive(root: Path, count: int) -> Path:
     write_json(
         run / "source-binding.json",
         {
+            "revision": "3" * 40,
             "files": {
                 "fixture.json": content_digest_bytes((run / "source/fixture.json").read_bytes())
-            }
+            },
         },
     )
-    write_json(run / "plan.json", {"fixture": str(count)})
+    write_json(
+        run / "plan.json",
+        {
+            "fixture": str(count),
+            "schema_version": "pixelgym-s7-qualification-plan-v1",
+            "evidence_label": EVIDENCE_LABEL,
+            "gate_policy_sha256": POLICY_SHA256,
+        },
+    )
     write_json(
         run / "failure.json",
         {
@@ -440,7 +517,7 @@ def test_predecessors_preserve_consumed_allowance_and_refuse_duplicates_or_chang
 
     archive = stopped_archive(tmp_path / "first", 73)
     run = tmp_path / "replacement"
-    accounting = freeze_predecessors(run, (archive,))
+    accounting = freeze_predecessors(run, (approved_archive(archive),), expected_sends=73)
     assert verify_predecessors(run, accounting) == 73
     assert accounting["qualification_allowance"] == 150
     assert accounting["campaign_allowance"] == 184
@@ -451,7 +528,11 @@ def test_predecessors_preserve_consumed_allowance_and_refuse_duplicates_or_chang
         verify_predecessors(run, changed)
     duplicate_run = tmp_path / "duplicate"
     with pytest.raises(ValueError, match="identity"):
-        freeze_predecessors(duplicate_run, (archive, archive))
+        freeze_predecessors(
+            duplicate_run,
+            (approved_archive(archive), approved_archive(archive)),
+            expected_sends=146,
+        )
     assert inventory(run) == original
 
 
@@ -579,7 +660,14 @@ def test_worker_proof_write_failure_closes_every_worker_without_sending(
     from pixelgym.platform.s7_qualification import prepare, qualify
 
     root, run = qualification_checkout(tmp_path), tmp_path / "failed-proof"
-    prepare(root, run, run_id="cleanup-unit-fixture", approval="unit fixture only")
+    fixture_host_source(monkeypatch)
+    prepare(
+        root,
+        run,
+        run_id="cleanup-unit-fixture",
+        approval="unit fixture only",
+        expected_predecessor_sends=0,
+    )
     workers = []
 
     class FixtureWorker(ScriptedStatefulPolicy):
@@ -596,8 +684,16 @@ def test_worker_proof_write_failure_closes_every_worker_without_sending(
 
         def __init__(self, **kwargs: Any) -> None:
             self.interruption = kwargs.get("interrupt_after")
+            self.directory = kwargs["journal"].path.parent
+            if (
+                proof_name == "recovery-worker.json"
+                and self.directory.name == "resume"
+                and not self.interruption
+            ):
+                assert (self.directory / "recovery-worker.json").exists()
 
         def run(self, **kwargs: Any) -> Any:
+            assert (self.directory / "worker.json").exists(), "proof must precede execution"
             if self.interruption:
                 raise InjectedInterruption(self.interruption)
             return SimpleNamespace(to_dict=dict)
@@ -626,6 +722,7 @@ def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
     from pixelgym.platform.s7_qualification import prepare, qualify
 
     root = qualification_checkout(tmp_path)
+    fixture_host_source(monkeypatch)
     workers = []
 
     class UnenforcedFixtureWorker(ScriptedStatefulPolicy):
@@ -647,7 +744,8 @@ def test_full_scripted_driver_counts_and_cleanup_but_refuses_unenforced_proof(
         run,
         run_id="unit-fixture",
         approval="unit fixture only",
-        predecessor_archives=(stopped_archive(tmp_path / "predecessor", 73),),
+        predecessor_archives=(approved_archive(stopped_archive(tmp_path / "predecessor", 73)),),
+        expected_predecessor_sends=73,
     )
     with no_network():
         result = qualify(root, run)
