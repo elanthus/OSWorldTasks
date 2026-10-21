@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "<path-2>/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rs",
+    "-m",
+    "osworld_integration",
+    "tests/integration/test_grounding_v5_osworld.py"
+  ],
+  "command": "<path-2>/bin/python -m pytest -q -rs -m osworld_integration tests/integration/test_grounding_v5_osworld.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 211.501131,
+  "ended_at_utc": "2026-10-21T07:30:16.618671+00:00",
+  "environment": {
+    "PIXELGYM_RUN_OSWORLD_TESTS": "1"
+  },
+  "exit_status": 0,
+  "output": ".                                                                        [100%]\n=============================== warnings summary ===============================\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\n  <path-2>/lib/python3.12/site-packages/fitz/__init__.py:17: FutureWarning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.\n    warnings.warn(\n\ntests/integration/test_grounding_v5_osworld.py::test_v5_osworld_live_reconnect_verifies_exact_state_and_rejects_stale_state\n  <path-2>/lib/python3.12/site-packages/PyPDF2/__init__.py:21: DeprecationWarning: PyPDF2 is deprecated. Please move to the pypdf library instead.\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 passed, 9 warnings in 210.72s (0:03:30)\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-21T07:26:45.113404+00:00"
+}

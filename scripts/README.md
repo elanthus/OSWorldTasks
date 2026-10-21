@@ -127,8 +127,7 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `report_grounding_v5_d59_haiku.py` | Publish an allowlisted D5.9 result projection without raw responses | `--input` run directory | `--output` projection; `--verify` checks it | none | yes |
 | `analyze_grounding_v5_d59.py` | Generate the D5.9 confirmatory analysis from the public result projection | `artifacts/grounding-v5-d59-haiku-results`, execution plan | confirmatory analysis JSON and Markdown; `--check` verifies them | none | yes |
 | `generate_d510_evidence_report.py` | Index stored D5.10 gate command records against the checklist map without rerunning or judging them | `render --evidence-dir`; `scan --path` | `REPORT.md`, `evidence-manifest.json`, `redaction-scan.json` in the evidence directory; `scan` prints counts only | none | yes |
-| `verify_v5_at_revision.py` | Verify the eight frozen packages identified by D5.10 records 27, 42–44, 46, 48–50 against historical source | one or more original record numbers, or `all`; optional `--output` | raw JSON and exit status; never overwrites an output | local Git history, dev dependencies; no credentials | yes |
-| `report_v5_historical_verification.py` | Render the historical-verification supplement from stored observations and check original package hashes | committed investigation and entry-point run JSON; `--check` verifies generated files | supplement `REPORT.md` and `manifest.json`; never changes different existing bytes | none | yes |
+| `verify_v5_at_revision.py` | Verify the eight frozen packages identified by records 27, 42–44, 46, 48–50 of the superseded b0f00f8d D5.10 package (retained in Git history) against historical source | one or more original record numbers, or `all`; optional `--output` | raw JSON and exit status; never overwrites an output | local Git history, dev dependencies; no credentials | yes |
 
 ### Verify the frozen D5.10 inputs with historical source
 
@@ -159,9 +158,3 @@ The JSON preserves child exit statuses and full output. A setup failure or timeo
 child exit status and a `verification_errors` entry. The wrapper exits nonzero if any child fails,
 times out, or changes artifacts; it continues collecting the other selected records. Source hashes
 remain strict: the wrapper does not rewrite old bindings to match newer code.
-
-The [historical-verification supplement](../artifacts/grounding-v5-d510-historical-verification-20261010/REPORT.md)
-retains the investigation and a separate run of this entry point. Regenerate its report from those
-stored records with `python -m scripts.report_v5_historical_verification`; use `--check` to compare
-without writing. Both modes verify every original package-file hash. Neither mode reruns a verifier
-or assigns the human-owned D5.10 verdict.
