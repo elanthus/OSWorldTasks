@@ -535,3 +535,27 @@ def test_s7_loader_refuses_an_unverified_source_before_worker_start() -> None:
     )  # type: ignore[arg-type]
     with pytest.raises(StatefulLoadError, match="verified worker source binding"):
         loader.load(package)
+
+
+def test_scripted_worker_reuses_runner_policy_without_importing_host_journal() -> None:
+    import sys
+
+    from pixelgym.grounding.v5.runner import ScriptedStatefulPolicy as runner_policy
+    from pixelgym.scripted_policy import ScriptedStatefulPolicy
+
+    assert runner_policy is ScriptedStatefulPolicy
+    program = (
+        "import sys; sys.path.insert(0, sys.argv[1]); "
+        "from pixelgym.scripted_policy import ScriptedStatefulPolicy; "
+        "assert 'sqlite3' not in sys.modules; assert 'numpy' not in sys.modules; "
+        "assert 'pixelgym.grounding.v5.runner' not in sys.modules; "
+        "p=ScriptedStatefulPolicy(()); p.reset('import-only fixture'); p.close()"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-B", "-c", program, str(Path.cwd())],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=5,
+    )
+    assert result.returncode == 0, result.stderr

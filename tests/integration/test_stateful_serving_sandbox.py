@@ -8,6 +8,7 @@ import os
 import platform
 import threading
 import urllib.request
+from contextlib import closing
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Literal
@@ -35,6 +36,24 @@ pytestmark = [
 
 EPISODE_ID = "ep-" + "5" * 32
 NOOP = {"action_type": 0, "x": 0, "y": 0, "key": 0}
+
+
+def test_real_scripted_factory_initializes_without_host_sqlite_library(tmp_path: Path) -> None:
+    """Zero-send startup regression: retain the existing deny-by-default profile."""
+    import sysconfig
+
+    spec = PolicyWorkerSpec.build(
+        factory_module="pixelgym.scripted_policy",
+        factory_name="ScriptedStatefulPolicy",
+        factory_kwargs={"actions": [NOOP]},
+        import_roots=(Path(__file__).resolve().parents[2], Path(sysconfig.get_paths()["purelib"])),
+        provider_endpoint="http://127.0.0.1:9",
+        protected_paths=(tmp_path,),
+    )
+    with closing(SandboxedPolicyProcess(spec=spec)) as policy:
+        assert policy.os_sandbox_applied
+        assert policy.sandbox_mechanism == "darwin_sandbox_exec"
+        assert json.loads(policy.reset("startup fixture"))["action_index"] == 0
 
 
 class _ReachableListener(http.server.BaseHTTPRequestHandler):

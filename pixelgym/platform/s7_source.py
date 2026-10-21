@@ -133,7 +133,7 @@ def worker_binding(
 ) -> dict[str, Any]:
     return {
         "schema_version": "pixelgym-s7-worker-binding-v1",
-        "factory_module": "pixelgym.grounding.v5.runner",
+        "factory_module": "pixelgym.scripted_policy",
         "factory_name": "ScriptedStatefulPolicy",
         "factory_kwargs": {"actions": actions},
         "source_sha256": content_digest(source),
@@ -147,7 +147,7 @@ def worker_binding(
 
 
 def worker_spec(root: Path, evidence_root: Path, binding: dict[str, Any]) -> PolicyWorkerSpec:
-    if binding["factory_module"] != "pixelgym.grounding.v5.runner" or (
+    if binding["factory_module"] != "pixelgym.scripted_policy" or (
         binding["factory_name"] != "ScriptedStatefulPolicy"
         or binding["provider_endpoint"] != ENDPOINT
         or binding["require_os_sandbox"] is not True

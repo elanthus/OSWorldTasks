@@ -33,6 +33,17 @@ the exact activation-approval digest before resuming its remaining time; counts 
 Human review wait is excluded. Keep the sealed qualification ledger immutable and use its
 verified SQLite backup in the later rehearsal state directory rather than modify the archive.
 
+Startup repair prepared after the initial qualification attempt: at revision `73eebbb`, worker
+initialization imported the host journal through the runner and failed because the existing
+Darwin sandbox blocked Homebrew's SQLite dylib. No fake send was reserved. The stopped plan and
+source are preserved. The same scripted class now lives in the stdlib-only
+`pixelgym.scripted_policy` module and is re-exported from the v5 runner. This avoids importing
+host journal code in the worker and changes no sandbox authority. A zero-send real-sandbox
+startup regression passed. The owner explicitly approved a fresh frozen qualification plan for
+this import-path repair on 2026-10-20, preserving the stopped attempt and the same caps. The total
+qualification allowance remains 77, with zero consumed by the stopped attempt. Activation and
+publication remain blocked.
+
 ## Decisions requested
 
 Approve this specification before generating qualification outputs or configuring an approved
@@ -120,7 +131,7 @@ Use two exact `stateful-v5` packages, each with its own content-addressed identi
 | Field | A: rollback baseline | B: golden script |
 | --- | --- | --- |
 | Proposed descriptive name | `s7-scripted-noop-v1` | `s7-scripted-seed5000-v1` |
-| Factory | `pixelgym.grounding.v5.runner.ScriptedStatefulPolicy` | Same existing factory |
+| Factory | `pixelgym.scripted_policy.ScriptedStatefulPolicy` (the existing class, re-exported by the v5 runner; startup repair approved for a fresh qualification freeze) | Same existing factory |
 | Actions | One literal `{action_type: 0, x: 0, y: 0, key: 0}` | Literal action stream generated once by `golden_actions` for task seed 5000, stored and hashed before qualification |
 | Provider/model labels | `in-process-fake` / `no-cost-scripted-policy-v1` | Same labels; no model exists behind them |
 | Expected task reward | 0; caller closes after one NOOP | Reward 1 exactly once on completion; all preceding rewards 0 |
