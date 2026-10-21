@@ -44,6 +44,24 @@ this import-path repair on 2026-10-20, preserving the stopped attempt and the sa
 qualification allowance remains 77, with zero consumed by the stopped attempt. Activation and
 publication remain blocked.
 
+The replacement freeze at `d3d439056759131d99e622950b950da38223e4a3` stopped after
+73 qualification sends: golden 20, premature commit 26, step limit 26, and malformed response 1.
+The malformed response was retained, but its parser rejection crossed the worker RPC as a generic
+process error rather than the runner's expected invalid-output exception. No additional send was
+made. The repair adds a closed `parse_failure` response code only for documented parser errors;
+unexpected parser faults, malformed RPC, and timeouts remain infrastructure failures. The worker
+still exits on error, and sandbox authority is unchanged. Worker proofs are now written per case
+before any send so a stopped run retains them. A zero-send real-sandbox test exercises all policy
+methods and the malformed parser boundary.
+
+The current approval leaves four qualification sends. A repaired source revision requires a new
+complete qualification; the earlier 73 sends cannot qualify that revision. A replacement run
+therefore requires **separate approval for 77 additional fake sends**, raising cumulative
+qualification consumption/allowance to at most **150** and the overall campaign ceiling to
+**184** (150 + A 4 + B 24 + smokes 6). Both stopped runs remain immutable predecessor evidence.
+This proposed increase is not active. No new freeze or qualification is authorized by the
+existing approval. Activation, publication, real-provider requests, and spending remain blocked.
+
 ## Decisions requested
 
 Approve this specification before generating qualification outputs or configuring an approved

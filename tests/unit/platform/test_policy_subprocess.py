@@ -11,6 +11,7 @@ import subprocess
 import sys
 import sysconfig
 import time
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,8 @@ from pixelgym.platform.fingerprints import canonical_json_bytes
 from pixelgym.platform.policy_subprocess import (
     DARWIN_SERVING_PROFILE_VERSION,
     LaunchedPolicyWorker,
+    PolicySubprocessError,
+    PolicySubprocessParseError,
     PolicySubprocessUnavailableError,
     PolicyWorkerSpec,
     SandboxedPolicyProcess,
@@ -276,6 +279,48 @@ def test_policy_protocol_round_trips_only_canonical_values() -> None:
 
     assert launcher.process is not None
     assert launcher.process.poll() is not None
+
+
+@pytest.mark.parametrize("content", ["not-json", "[]", "null"])
+def test_worker_parser_rejection_preserves_runner_invalid_output_boundary(content: str) -> None:
+    """No transport: replay canned provider bytes across the actual worker RPC."""
+    launcher = LocalWorkerLauncher()
+    with closing(
+        SandboxedPolicyProcess(spec=_scripted_spec(), launcher=launcher, require_os_sandbox=False)
+    ) as policy:
+        state = policy.reset("parser fixture")
+        with pytest.raises(PolicySubprocessParseError) as captured:
+            policy.parse(canonical_json_bytes({"content": content}), state)
+        assert isinstance(captured.value, (ValueError, TypeError, KeyError))
+        assert "not-json" not in str(captured.value)
+    assert launcher.process is not None and launcher.process.poll() is not None
+
+
+def test_unexpected_worker_parser_fault_remains_infrastructure_failure(tmp_path: Path) -> None:
+    source = tmp_path / "faulty_parser"
+    source.mkdir()
+    (source / "faulty_policy.py").write_text(
+        "class Policy:\n"
+        "    def parse(self, response, state): raise RuntimeError('private diagnostic')\n",
+        encoding="utf-8",
+    )
+    spec = PolicyWorkerSpec.build(
+        factory_module="faulty_policy",
+        factory_name="Policy",
+        factory_kwargs={},
+        import_roots=(source,),
+        provider_endpoint="http://127.0.0.1:9",
+    )
+    policy = SandboxedPolicyProcess(
+        spec=spec, launcher=LocalWorkerLauncher(), require_os_sandbox=False
+    )
+    try:
+        with pytest.raises(PolicySubprocessError) as captured:
+            policy.parse(b"{}", b"{}")
+        assert not isinstance(captured.value, ValueError)
+        assert "private diagnostic" not in str(captured.value)
+    finally:
+        policy.close()
 
 
 def test_worker_environment_does_not_inherit_parent_credentials(

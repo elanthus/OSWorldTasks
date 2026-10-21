@@ -187,6 +187,7 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
                 "profile_sha256": policy.sandbox_profile_digest,
             }
         )
+        write_json(directory / "worker.json", workers[-1])
         outcomes = None
         if case in {"malformed", "invalid_action"}:
             outcomes = [
@@ -254,6 +255,7 @@ def qualify(root: Path, run: Path) -> dict[str, Any]:
                         "profile_sha256": recovered_policy.sandbox_profile_digest,
                     }
                 )
+                write_json(directory / "recovery-worker.json", workers[-1])
                 try:
                     runner = V5Runner(
                         journal=journal,

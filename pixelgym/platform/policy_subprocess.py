@@ -57,6 +57,10 @@ class PolicySubprocessProtocolError(PolicySubprocessError):
     pass
 
 
+class PolicySubprocessParseError(PolicySubprocessError, ValueError):
+    """Preserve the runner's invalid-output classification across the RPC boundary."""
+
+
 @dataclass(frozen=True)
 class PolicyWorkerSpec:
     """Exact worker factory and filesystem/network authority for one deployment."""
@@ -518,13 +522,16 @@ class SandboxedPolicyProcess:
                     return response["result"]
                 if (
                     set(response) != required | {"error_code"}
-                    or response.get("error_code") != "policy_error"
+                    or response.get("error_code") not in {"policy_error", "parse_failure"}
+                    or (response.get("error_code") == "parse_failure" and method != "parse")
                 ):
                     raise PolicySubprocessProtocolError("policy RPC failure fields are invalid")
             except PolicySubprocessProtocolError:
                 _stop_process(process)
                 raise
             _stop_process(process)
+            if response["error_code"] == "parse_failure":
+                raise PolicySubprocessParseError("policy parser rejected provider content")
             raise PolicySubprocessError("policy subprocess rejected the request")
 
     def close(self) -> None:

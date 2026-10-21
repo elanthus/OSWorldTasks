@@ -24,6 +24,10 @@ class WorkerProtocolError(RuntimeError):
     pass
 
 
+class PolicyParseFailure(ValueError):
+    """A policy rejected provider content through its documented parser boundary."""
+
+
 @dataclass(frozen=True, slots=True)
 class PolicyVisibleResult:
     screenshot_digest: str
@@ -186,12 +190,16 @@ def _invoke(policy: Any, method: str, payload: object) -> tuple[Any, bool]:
         return result, False
     if method == "parse":
         values = _payload(payload, {"canonical_response", "state"})
-        result = policy.parse(
+        response, state = (
             _decode_bytes(values["canonical_response"]),
             _decode_bytes(values["state"]),
         )
+        try:
+            result = policy.parse(response, state)
+        except (ValueError, TypeError, KeyError) as exc:
+            raise PolicyParseFailure("policy rejected provider content") from exc
         if not isinstance(result, dict):
-            raise TypeError("parsed action must be an object")
+            raise PolicyParseFailure("parsed action must be an object")
         return result, False
     if method == "post_parse_state":
         values = _payload(payload, {"state", "candidate"})
@@ -224,12 +232,12 @@ def _invoke(policy: Any, method: str, payload: object) -> tuple[Any, bool]:
     raise ValueError("unsupported policy RPC method")
 
 
-def _response(request_id: int, *, result: Any = None, error: bool = False) -> bytes:
+def _response(request_id: int, *, result: Any = None, error_code: str | None = None) -> bytes:
     value = {
         "protocol_version": POLICY_WORKER_PROTOCOL_VERSION,
         "request_id": request_id,
-        "ok": not error,
-        **({"error_code": "policy_error"} if error else {"result": result}),
+        "ok": error_code is None,
+        **({"error_code": error_code} if error_code is not None else {"result": result}),
     }
     return _canonical_json_bytes(value) + b"\n"
 
@@ -289,9 +297,12 @@ def main() -> int:
                 if policy is None:
                     raise WorkerProtocolError("policy worker is not initialized")
                 result, should_close = _invoke(policy, method, request["payload"])
-        except Exception:  # noqa: BLE001 - the worker returns only a stable error code.
+        except Exception as exc:  # noqa: BLE001 - return only closed, stable error codes.
             if request_id is not None:
-                sys.stdout.buffer.write(_response(request_id, error=True))
+                error_code = (
+                    "parse_failure" if isinstance(exc, PolicyParseFailure) else "policy_error"
+                )
+                sys.stdout.buffer.write(_response(request_id, error_code=error_code))
                 sys.stdout.buffer.flush()
             return 1
         sys.stdout.buffer.write(_response(request_id, result=result))

@@ -433,6 +433,32 @@ def store_artifacts(run: Path) -> None:
 def stored_report(run: Path) -> dict[str, Any]:
     """Read stored results and reports only; never replay actions or recompute gates."""
     verify_seal(run)
+    if (run / "failure.json").exists():
+        failure = read_json(run / "failure.json")
+        if (
+            (run / "results.json").exists()
+            or (run / "packages").exists()
+            or failure["qualification_complete"] is not False
+            or failure["activation_performed"] is not False
+            or failure["publication_performed"] is not False
+        ):
+            raise ValueError("stopped qualification contains conflicting completion evidence")
+        completed = [
+            read_json(path) for path in sorted((run / "shared/cases").glob("*/observation.json"))
+        ]
+        return {
+            "schema_version": "pixelgym-s7-stopped-review-report-v1",
+            "evidence_label": EVIDENCE_LABEL,
+            "qualification_complete": False,
+            "plan_sha256": content_digest(read_json(run / "plan.json")),
+            "failure": failure,
+            "completed_cases": completed,
+            "fake_sends": {"qualification": failure["fake_send_reservations"]},
+            "real_provider_requests": failure["real_provider_requests"],
+            "activation_performed": False,
+            "publication_performed": False,
+            "milestone_verdict": None,
+        }
     packages = {}
     for role in ("A", "B"):
         package = stateful_package_from_dict(read_json(run / f"packages/{role}/package.json"))
@@ -470,6 +496,40 @@ def render_report(report: dict[str, Any]) -> str:
         ),
         "",
     ]
+    if report.get("qualification_complete") is False:
+        failure = report["failure"]
+        lines.extend(
+            [
+                "Qualification stopped; no package or gate report was generated.",
+                "",
+                f"Frozen plan: `{report['plan_sha256']}`",
+                "",
+                f"Source revision: `{failure['source_revision']}`",
+                "",
+                f"Stopped at: `{failure['stage']}`. Cause: {failure['cause']}.",
+                "",
+                f"Fake-send reservations: {failure['fake_send_reservations']}.",
+                "",
+                "| Completed case | Stored classification | Fake sends |",
+                "| --- | --- | ---: |",
+            ]
+        )
+        for case in report["completed_cases"]:
+            classification = case.get(
+                "classification", case.get("episode", {}).get("classification")
+            )
+            lines.append(f"| {case['case']} | {classification} | {case['scripted_sends']} |")
+        lines.extend(
+            [
+                "",
+                (
+                    f"Real-provider requests: {failure['real_provider_requests']}. "
+                    f"Recorded spending (USD): {failure['monetary_spend_usd']}."
+                ),
+                "",
+            ]
+        )
+        return "\n".join(lines)
     for role, entry in report["packages"].items():
         lines.extend(
             [

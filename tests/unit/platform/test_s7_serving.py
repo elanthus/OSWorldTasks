@@ -347,6 +347,56 @@ def test_unsealed_or_extra_evidence_is_refused(tmp_path: Path) -> None:
         stored_report(tmp_path)
 
 
+def test_stopped_report_retains_partial_observations_without_generating_packages(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    from pixelgym.platform.s7_evidence import render_report
+
+    write_json(tmp_path / "plan.json", {"fixture": "stopped"})
+    write_json(
+        tmp_path / "failure.json",
+        {
+            "qualification_complete": False,
+            "activation_performed": False,
+            "publication_performed": False,
+            "source_revision": "3" * 40,
+            "stage": "malformed_parse",
+            "cause": "parser RPC rejection",
+            "fake_send_reservations": 73,
+            "real_provider_requests": 0,
+            "monetary_spend_usd": 0,
+        },
+    )
+    write_json(
+        tmp_path / "shared/cases/golden/observation.json",
+        {
+            "case": "golden",
+            "episode": {"classification": "success_termination"},
+            "scripted_sends": 20,
+        },
+    )
+    seal(tmp_path)
+
+    def forbidden(*args: Any, **kwargs: Any) -> Any:
+        raise AssertionError("stopped report attempted execution")
+
+    for name in ("inspect_qualification", "evaluate", "build_packages"):
+        monkeypatch.setattr("pixelgym.platform.s7_evidence." + name, forbidden)
+    before = inventory(tmp_path)
+    with no_network():
+        report = stored_report(tmp_path)
+        rendered = render_report(report)
+    assert report["qualification_complete"] is False
+    assert report["fake_sends"] == {"qualification": 73}
+    assert "golden | success_termination | 20" in rendered
+    assert "no package or gate report" in rendered
+    assert inventory(tmp_path) == before
+
+    (tmp_path / "packages").mkdir()
+    with pytest.raises(ValueError, match="conflicting completion"):
+        stored_report(tmp_path)
+
+
 def test_git_source_refuses_modified_untracked_ignored_and_wrong_root(tmp_path: Path) -> None:
     from pixelgym.platform.s7_source import git_source, snapshot
 
