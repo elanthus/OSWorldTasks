@@ -381,7 +381,7 @@
     },
     {
       "item": "scripts/report_grounding_v5_d59_haiku.py --verify",
-      "reason": "--verify requires --input, the private D5.9 run directory. Record 53 shows the ignored D5.9 run directories absent from the worktree. --help is recorded. No input was substituted.",
+      "reason": "--verify requires --input, the private D5.9 run directory. Record 51 shows the ignored D5.9 run directories absent from the worktree. --help is recorded. No input was substituted.",
       "records": [
         "commands/49-report-d59-haiku-help.json",
         "commands/51-d59-private-run-directories-present.json"
@@ -396,11 +396,11 @@
     },
     {
       "item": "D5.9 plan-only commands: scripts/run_grounding_v5_d59_haiku.py prepare, scripts/run_grounding_v5_d59_haiku_retry_successor.py prepare, scripts/run_grounding_v5_d59_haiku_network_retry.py prepare",
-      "reason": "All three call the shared runner's prepare, which calls probe_claude_runtime (claude --version, claude auth status --json, claude --help) and therefore needs a logged-in Claude Code credential, reads an owner approval file (the network-retry approval path is ignored and absent), and writes an output directory. Not run. The D5.9 --verify commands that recompute the execution plans are recorded as 46 and 48-50."
+      "reason": "All three call the shared runner's prepare, which calls probe_claude_runtime (claude --version, claude auth status --json, claude --help) and therefore needs a logged-in Claude Code credential, reads an owner approval file (the network-retry approval path is ignored and absent), and writes an output directory. Not run. The D5.9 --verify commands that recompute the execution plans are recorded as 43 and 45-47; record 48 verifies the same packages against their historical source revisions."
     },
     {
       "item": "D5.8 runner prepare subcommands (run_grounding_v5_memory_calibration.py, run_grounding_v5_gemini38_calibration.py, run_grounding_v5_focus_calibration.py, run_grounding_v5_focus_continuation.py, run_grounding_v5_focus_diagnostic.py, run_grounding_v5_reliable_diagnostic.py, run_grounding_v5_reliable_continuation.py, run_grounding_v5_reliable_extension.py, run_grounding_v5_owner_budget_continuation.py, run_grounding_v5_memory_pilot.py)",
-      "reason": "Each prepare subcommand writes an execution plan into a tracked artifact directory; none is a no-write plan-only or validate-only mode. Not run. The D5.8 evidence verifiers are recorded as 27-44."
+      "reason": "Each prepare subcommand writes an execution plan into a tracked artifact directory; none is a no-write plan-only or validate-only mode. Not run. The D5.8 evidence verifiers are recorded as 24-41. Records 24, 27-29, and 39-41 are current-source verifiers that exit 1 on stale bindings; records 30-36 verify their packages at the executed revision, and record 48 verifies the packages behind records 24 and 39-41 against their historical source revisions."
     },
     {
       "item": "D5.6-era plan-only and validate-only modes (run_grounding_v5_calibration.py --validate-only, run_grounding_v5_provider_smoke.py, run_grounding_v5_calibration_pilot.py, run_grounding_v5_expanded_calibration.py, run_grounding_v5_panel_smoke.py --plan-only)",
