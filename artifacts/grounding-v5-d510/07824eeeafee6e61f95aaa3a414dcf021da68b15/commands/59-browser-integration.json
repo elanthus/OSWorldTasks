@@ -1,0 +1,23 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-m",
+    "browser_integration",
+    "tests/integration/test_grounding_v5_browser.py",
+    "tests/integration/test_vendor_form_browser.py"
+  ],
+  "command": ".venv/bin/python -m pytest -q -m browser_integration tests/integration/test_grounding_v5_browser.py tests/integration/test_vendor_form_browser.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 156.623887,
+  "ended_at_utc": "2026-10-21T21:32:28.383742+00:00",
+  "environment": {
+    "PIXELGYM_RUN_BROWSER_TESTS": "1"
+  },
+  "exit_status": 0,
+  "output": "..................                                                       [100%]\n18 passed in 156.23s (0:02:36)\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-21T21:29:51.755823+00:00"
+}

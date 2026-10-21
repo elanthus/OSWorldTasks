@@ -1,0 +1,19 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.prepare_grounding_v5_d59_freeze",
+    "--source-revision",
+    "f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3",
+    "--verify"
+  ],
+  "command": ".venv/bin/python -m scripts.prepare_grounding_v5_d59_freeze --source-revision f40157d7f2fc70b5b3d3b659f5cd3168be8e19b3 --verify",
+  "cwd": "<path-0>",
+  "duration_seconds": 211.823527,
+  "ended_at_utc": "2026-10-21T21:25:20.564633+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "stored D5.9 artifact differs: <path-0>/artifacts/grounding-v5-d59-freeze/task-manifest.json\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-21T21:21:48.736889+00:00"
+}
