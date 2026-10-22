@@ -30,16 +30,17 @@ Three parts, each with its own evidence.
 
 ### 1. Kernel boundary around each launch
 
-Every CLI launch runs under `/usr/bin/sandbox-exec` with a profile rendered from a frozen
-template (`pixelgym.grounding.v5.os_sandbox.darwin_cli_profile`). The profile is deny-by-default
+Every launch that opts into this mechanism (`ClaudeCodeTransport(sandbox_launch=...)`) runs
+under `/usr/bin/sandbox-exec` with a profile rendered from a frozen template (`pixelgym.grounding.v5.os_sandbox.darwin_cli_profile`). The profile is deny-by-default
 and allows only:
 
 - executing the pinned CLI binary, and reading its install directory and system libraries;
 - reading and writing one per-launch policy workspace, which the launch also uses as `HOME`,
   `CLAUDE_CONFIG_DIR`, and `TMPDIR`;
 - listing and entry metadata of the CLI's shared scratch root `/private/tmp/claude-<uid>`, and
-  read and write access to the one subdirectory the CLI derives from the launch working
-  directory (slashes become dashes), so other sessions' scratch contents stay unreadable;
+  the right to create and use exactly one entry there: the project directory the CLI derives
+  from the launch working directory (every character other than a letter or digit becomes a
+  dash). Other sessions' scratch contents stay unreadable;
 - outbound TCP to one loopback port, the egress proxy below.
 
 Everything else is denied: the real home directory and therefore the Keychain, runner storage,
@@ -120,8 +121,8 @@ is a new policy ID. The D5.9 Haiku pair is unchanged; its manifests keep
 - The CLI's scratch root `/private/tmp/claude-<uid>` is shared with the owner's own Claude Code
   sessions and holds their live state, so the runner never empties it. The CLI opens that root
   itself, so a launch can list the root and read entry metadata, which exposes other sessions'
-  entry names; it can read and write only its own per-working-directory subdirectory, which the
-  runner creates before the launch.
+  entry names; it can create, read, and write only its own project directory there. In
+  `--print` mode with session persistence off the CLI was observed to create nothing.
 - The hostname allowlist is enforced by runner code at the proxy. The kernel enforces only that
   the loopback port is the sole destination.
 - `claude --version` fails inside the profile for a reason not yet traced. The runtime identity

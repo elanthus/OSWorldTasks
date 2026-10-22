@@ -61,7 +61,6 @@ from pixelgym.grounding.v5.os_sandbox import (
     cli_profile_template_digest,
     cli_scratch_root,
     darwin_cli_profile,
-    prepare_cli_scratch_subdirectory,
     sandboxed_command,
 )
 from pixelgym.grounding.v5.runner import PolicyVisibleResult
@@ -1078,12 +1077,9 @@ class ClaudeCodeTransport:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
             raise ValueError("Claude process timeout must be positive")
-        self.sandbox_launch = sandbox_launch
-        self._proxy: EgressProxy | None = (
-            None if sandbox_launch is None else EgressProxy(sandbox_launch.egress_targets).start()
-        )
         if allow_connection_retry and api_retry_limit != 0:
             raise ValueError("counted connection retries require zero internal CLI retries")
+        self.sandbox_launch = sandbox_launch
         self.allow_connection_retry = allow_connection_retry
         self.ledger = ledger
         self.invocation_journal = invocation_journal
@@ -1102,6 +1098,10 @@ class ClaudeCodeTransport:
             kill_grace_seconds=KILL_GRACE_SECONDS,
         )
         self._closed = False
+        # Last, after every validation: a failed constructor must not leave a bound socket.
+        self._proxy: EgressProxy | None = (
+            None if sandbox_launch is None else EgressProxy(sandbox_launch.egress_targets).start()
+        )
 
     @property
     def subprocesses_closed(self) -> bool:
@@ -1326,7 +1326,7 @@ class ClaudeCodeTransport:
                 "event_counts": parsed.event_counts,
                 "exit_code": execution.return_code,
                 "runtime_enforcement": enforcement_record,
-                "egress_attempts": self._egress_summary(launch),
+                "egress_attempts": egress,
                 "resolved_model": parsed.resolved_model,
                 "policy_violation": violation_value,
                 "stream_violations": violations,
@@ -1381,7 +1381,7 @@ class ClaudeCodeTransport:
             "event_counts": parsed.event_counts,
             "exit_code": execution.return_code,
             "runtime_enforcement": enforcement_record,
-            "egress_attempts": self._egress_summary(launch),
+            "egress_attempts": egress,
             "resolved_model": parsed.resolved_model,
             "policy_violation": violation_value,
             "experiment_charge_usd": "0.00",
@@ -1446,7 +1446,6 @@ class ClaudeCodeTransport:
         if proxy is None:
             raise RuntimeError("sandboxed transport has no egress proxy")
         layout = CliLaunchLayout(temporary).create()
-        prepare_cli_scratch_subdirectory(launch.scratch_root, layout.cwd)
         profile = darwin_cli_profile(
             layout,
             cli_executable=launch.cli_executable,

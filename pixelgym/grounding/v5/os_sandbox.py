@@ -248,6 +248,8 @@ def run_darwin_probe(
 # per-working-directory scratch subdirectory, and the real home directory (and with it the
 # Keychain) is unreachable. The CLI opens the shared scratch root itself, so the profile
 # allows listing that root and reading entry metadata; other entries' contents stay denied.
+# The CLI may create and use exactly one entry there, the project directory it derives from
+# the launch working directory; the runner never creates or removes anything in that root.
 
 SBPL_CLI_PROFILE_VERSION = "pixelgym-agent-v5-cli-sandbox-v1"
 CLI_SCRATCH_ROOT_TEMPLATE = "/private/tmp/claude-{uid}"
@@ -271,6 +273,7 @@ CLI_PROFILE_TEMPLATE = "\n".join(
         '(allow file-read* file-write* (subpath "{workspace}"))',
         '(allow file-read* (literal "{scratch_root}") (literal "{scratch_root_alias}"))',
         '(allow file-read-metadata (subpath "{scratch_root}") (subpath "{scratch_root_alias}"))',
+        '(allow file-write-create (literal "{scratch}") (literal "{scratch_alias}"))',
         '(allow file-read* file-write* (subpath "{scratch}") (subpath "{scratch_alias}"))',
         "(deny network*)",
         '(allow network-outbound (remote ip "localhost:{proxy_port}"))',
@@ -298,26 +301,20 @@ def cli_scratch_root(uid: int) -> Path:
     return Path(CLI_SCRATCH_ROOT_TEMPLATE.format(uid=uid))
 
 
-def cli_scratch_subdirectory(root: Path, cwd: Path) -> Path:
-    """The CLI keys its scratch by the working directory with slashes as dashes."""
+def cli_project_key(cwd: Path) -> str:
+    """The CLI's project key: every character of the resolved path that is not a letter or
+    digit becomes a dash, as the Claude Code directory documentation states."""
 
     resolved = str(cwd.resolve())
     if not resolved.startswith("/"):
         raise ValueError("CLI working directory must be absolute")
-    return root / resolved.replace("/", "-")
+    return "".join(ch if ch.isascii() and ch.isalnum() else "-" for ch in resolved)
 
 
-def prepare_cli_scratch_subdirectory(root: Path, cwd: Path) -> Path:
-    """Create the launch's own scratch subdirectory from outside the sandbox.
+def cli_scratch_subdirectory(root: Path, cwd: Path) -> Path:
+    """The one entry under the shared scratch root a launch may create and use."""
 
-    The profile grants the child no write access to the shared root, so the runner creates
-    the one subdirectory the CLI will use. The root itself is never created or emptied.
-    """
-
-    subdirectory = cli_scratch_subdirectory(root, cwd)
-    if root.is_dir():
-        subdirectory.mkdir(mode=0o700, exist_ok=True)
-    return subdirectory
+    return root / cli_project_key(cwd)
 
 
 @dataclass(frozen=True)

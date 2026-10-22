@@ -886,10 +886,12 @@ def _sandbox_launch(tmp_path: Path) -> policy.ClaudeSandboxLaunch:
     cli_root.mkdir(parents=True)
     executable = cli_root / "claude"
     executable.write_text("")
+    scratch_root = tmp_path / "scratch-root"
+    scratch_root.mkdir()
     return policy.ClaudeSandboxLaunch(
         cli_executable=executable,
         cli_root=cli_root,
-        scratch_root=Path("/private/tmp/claude-501"),
+        scratch_root=scratch_root,
         oauth_token_source=_synthetic_oauth_token,
         egress_targets=("api.anthropic.com:443",),
         denied_paths=(tmp_path / "runner-storage",),

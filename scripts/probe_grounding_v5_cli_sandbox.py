@@ -4,7 +4,8 @@
 Three sandboxed launches of the installed Claude Code CLI with a synthetic placeholder
 token: ``auth status``, a ``--print`` through a proxy that refuses every target, and a
 ``--print`` with no proxy. No request can reach a provider. Exit 0 when every expected
-observation holds, 1 otherwise. Design record: docs/v5-policy-sandbox.md.
+observation holds, 1 when an observation failed, and 2 when the probe could not run
+(no ``claude``, not Darwin, or a launch timed out). Design record: docs/v5-policy-sandbox.md.
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,11 +37,18 @@ def main(argv: list[str] | None = None) -> int:
             print("claude is not installed", file=sys.stderr)
             return 2
         executable = Path(located)
-    result = run_cli_sandbox_probe(
-        cli_executable=executable.resolve(),
-        placeholder_token=_placeholder_token(),
-        timeout_seconds=args.timeout_seconds,
-    )
+    try:
+        result = run_cli_sandbox_probe(
+            cli_executable=executable.resolve(),
+            placeholder_token=_placeholder_token(),
+            timeout_seconds=args.timeout_seconds,
+        )
+    except RuntimeError as exc:
+        print(f"probe could not run: {exc}", file=sys.stderr)
+        return 2
+    except subprocess.TimeoutExpired as exc:
+        print(f"probe launch timed out after {exc.timeout} seconds", file=sys.stderr)
+        return 2
     print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
     return 0 if result.passed else 1
 

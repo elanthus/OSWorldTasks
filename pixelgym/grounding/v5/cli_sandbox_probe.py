@@ -31,7 +31,6 @@ from pixelgym.grounding.v5.os_sandbox import (
     cli_profile_template_digest,
     cli_scratch_root,
     darwin_cli_profile,
-    prepare_cli_scratch_subdirectory,
     sandboxed_command,
 )
 from pixelgym.grounding.v5.sandbox import OS_SANDBOX_CLI_LAUNCH_MECHANISM, ProbeResult
@@ -203,7 +202,6 @@ def run_cli_sandbox_probe(
     try:
         with tempfile.TemporaryDirectory(prefix="pixelgym-cli-sandbox-probe-") as temporary:
             layout = CliLaunchLayout(Path(temporary)).create()
-            prepare_cli_scratch_subdirectory(scratch_root, layout.cwd)
             profile = darwin_cli_profile(
                 layout,
                 cli_executable=executable,

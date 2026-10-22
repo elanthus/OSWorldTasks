@@ -101,6 +101,7 @@ def test_cli_profile_is_deny_by_default_and_scoped_to_one_launch(tmp_path: Path)
         CliLaunchLayout,
         cli_profile_digest,
         cli_profile_template_digest,
+        cli_project_key,
         cli_scratch_subdirectory,
         darwin_cli_profile,
         sandboxed_command,
@@ -131,8 +132,11 @@ def test_cli_profile_is_deny_by_default_and_scoped_to_one_launch(tmp_path: Path)
     assert "(deny network*)" in lines and "(deny network-bind)" in lines
     scratch = cli_scratch_subdirectory(scratch_root, layout.cwd)
     assert str(scratch).startswith("/private/tmp/claude-501/-")
-    assert "/" not in scratch.name
+    # The CLI's documented project key: only ASCII letters and digits survive.
+    assert all(ch.isascii() and (ch.isalnum() or ch == "-") for ch in scratch.name)
+    assert cli_project_key(Path("/Users/you/my_project.v1")) == "-Users-you-my-project-v1"
     assert f'(subpath "{scratch}")' in profile
+    assert f'(allow file-write-create (literal "{scratch}")' in profile
     assert f'(subpath "{str(scratch).removeprefix("/private")}")' in profile
     assert (
         '(allow file-read* (literal "/private/tmp/claude-501") (literal "/tmp/claude-501"))'
