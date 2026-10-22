@@ -1,9 +1,11 @@
 # D5.9 subscription identity verification
 
-Status: implementation and successor candidate prepared for owner review. The active
-`execution-plan.json` and its pilot approval remain bound to
-`sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233`.
-No model calls or pilot execution were performed. The replacement is not approved or activated.
+Status: PR #258 is merged; the owner authorized the OAuth-recovery replacement freeze and
+starting its pilot, followed conditionally by the full campaign. The original investigation
+and its earlier digests below are retained as history. The active freeze is now
+`sha256:42098dd1f382e8ee898c4e6a8104a094a3c4bd811497438e3133702c67d825ed`.
+No experiment call occurred while preparing this replacement; the separate owner-authorized
+Fable code-verification call is recorded outside experiment accounting.
 
 ## Cause and observations
 
@@ -106,3 +108,9 @@ retention, without a guard stop. Task failures do not defeat that operational ga
 [pre-registration addendum](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) records the
 owner's instructions and the exact phase limits. Model calls remain prohibited until the new
 freeze and its separate machine-readable approvals are recorded.
+
+The active OAuth-recovery freeze binds source `3ddafbe8c923029258825f410b42ec0d85b62430`,
+history policy `policy-c7b9665cab498774c815`, and stateless policy
+`policy-65cdd028783799994429`. The machine-readable pilot approval and conditional owner
+direction are stored beside `execution-plan.json`. Its disabled flags and zero approved-cap
+placeholders remain intact; separate phase approvals supply the execution limits.
