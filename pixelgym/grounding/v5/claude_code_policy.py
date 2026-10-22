@@ -582,6 +582,11 @@ def _decode_action_content(content: str) -> Any:
 
 
 class ClaudeCodePolicy:
+    def __init__(self, *, runtime_identity: ClaudeRuntimeIdentity | None = None) -> None:
+        self.expected_route = FROZEN_ROUTE if runtime_identity is None else runtime_identity.route
+        if self.expected_route not in APPROVED_ROUTES:
+            raise ValueError("unsupported Claude runtime route")
+
     def reset(self, task_instruction: str) -> bytes:
         return canonical_json_bytes({"instruction": task_instruction})
 
@@ -647,7 +652,7 @@ class ClaudeCodePolicy:
             str(usage.get("auth_method", "")),
             str(usage.get("subscription_type", "")),
         )
-        if route not in APPROVED_ROUTES:
+        if route != self.expected_route:
             raise ValueError("Claude identity, accounting, or policy boundary is invalid")
         candidate = _decode_action_content(response.get("content", ""))
         if not isinstance(candidate, dict) or set(candidate) != {

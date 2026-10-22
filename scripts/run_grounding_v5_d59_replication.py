@@ -14,7 +14,6 @@ import json
 import os
 import queue
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
@@ -34,14 +33,14 @@ from pixelgym.grounding.v5.d59_replication import (
     MAX_WORKERS,
     OUTPUT_DIRECTORY,
     SOURCE_FILES,
-    STOP_RULE_VERSION,
     execution_plan,
     live_manifests,
     phase_jobs,
     run_campaign,
+    stop_rule_options_for_plan,
     validate_approval,
 )
-from pixelgym.grounding.v5.journal import V5AttemptJournal
+from pixelgym.grounding.v5.journal import CallCapExceededError, V5AttemptJournal
 from pixelgym.grounding.v5.memory_calibration import episode_measurements
 from pixelgym.grounding.v5.memory_focus_backend import FocusMemoryBackend
 from pixelgym.grounding.v5.memory_generator import generate_memory_task
@@ -129,6 +128,7 @@ def prepared_inputs(
         ROOT,
         source_revision=plan["source_binding"]["source_revision"],
         runtime_identity=frozen_identity,
+        stop_rule_options=stop_rule_options_for_plan(plan),
     )
     if plan != expected:
         raise ValueError("replication plan differs from the committed candidate")
@@ -166,7 +166,7 @@ def prepared_inputs(
             mode: content_digest(manifest.to_dict()) for mode, manifest in manifests.items()
         },
         "approved_caps": caps.to_dict(),
-        "stop_rule_version": STOP_RULE_VERSION,
+        "stop_rule_version": plan["stop_rule"]["version"],
         "provider_calls_made_during_binding": 0,
     }
     del output
@@ -230,6 +230,22 @@ def assignment_call_usage(journal: V5AttemptJournal, trial_id: str) -> dict[str,
     }
 
 
+def assignment_rate_limit_metadata(journal: V5AttemptJournal, trial_id: str) -> dict[str, Any]:
+    """Use recorded fault facts rather than inferring a rate limit from a score label."""
+
+    rate_limits = [
+        event
+        for event in journal.events(trial_id)
+        if event.payload.get("cli_fault", {}).get("kind") == "subscription_rate_limit"
+    ]
+    hints = [
+        event.payload["retry_after_seconds"]
+        for event in rate_limits
+        if isinstance(event.payload.get("retry_after_seconds"), (int, float))
+    ]
+    return {"rate_limited": bool(rate_limits), "retry_after_seconds": max(hints, default=None)}
+
+
 def execute(
     phase: str,
     approval_path: Path,
@@ -240,6 +256,7 @@ def execute(
     workers: int,
 ) -> None:
     plan, approval, jobs, identity, binding = prepared_inputs(phase, approval_path, output)
+    stop_options = stop_rule_options_for_plan(plan)
     if read_object(output / "execution-plan.json") != plan:
         raise ValueError("prepared execution plan differs from the approved plan")
     if read_object(output / "owner-approval.json") != approval:
@@ -264,6 +281,7 @@ def execute(
     journal_path = output / "attempts.sqlite"
     journal = V5AttemptJournal(journal_path)
     journals = [journal] + [V5AttemptJournal(journal_path) for _ in range(workers - 1)]
+    summary_journal = V5AttemptJournal(journal_path, read_only=True)
     invocations = [
         claude.ClaudeInvocationJournal(output / f"invocations-{index}.sqlite")
         for index in range(workers)
@@ -286,6 +304,9 @@ def execute(
         free.put(index)
     rows: list[dict[str, Any]] = []
     rows_lock = threading.Lock()
+    assignments_started = 0
+    assignments_lock = threading.Lock()
+    source_revision = str(plan["source_binding"]["source_revision"])
     started = time.monotonic()
     maximum_elapsed_seconds = int(approval["approved_runtime_window_hours"]) * 3600
     stop_reason = "running"
@@ -294,7 +315,8 @@ def execute(
     execution_failed = False
 
     def attempted_assignments() -> int:
-        return sum(event.kind == "d59_replication_assignment_started" for event in journal.events())
+        with assignments_lock:
+            return assignments_started
 
     def phase_usage(selected_phase: str) -> dict[str, int]:
         selected = [row for row in rows if row["phase"] == selected_phase]
@@ -322,23 +344,22 @@ def execute(
     def summary() -> dict[str, Any]:
         with rows_lock:
             snapshot = list(rows)
+        attempted = attempted_assignments()
         return {
             "schema_version": "pixelgym-agent-v5-d59-replication-summary-v1",
             "phase": phase,
             "execution_plan_digest": plan["execution_plan_digest"],
             "execution_binding_digest": content_digest(binding),
-            "source_revision": subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-            ).strip(),
+            "source_revision": source_revision,
             "model": claude.MODEL,
             "provider": claude.PROVIDER_IDENTITY,
             "route": identity.to_dict(),
-            "stop_rule_version": STOP_RULE_VERSION,
+            "stop_rule_version": plan["stop_rule"]["version"],
             "workers": workers,
             "assigned": len(jobs),
-            "attempted": attempted_assignments(),
+            "attempted": attempted,
             "completed": len(snapshot),
-            "unrun": len(jobs) - attempted_assignments(),
+            "unrun": len(jobs) - attempted,
             "stop_reason": stop_reason,
             "error": error,
             "elapsed_seconds": round(time.monotonic() - started, 3),
@@ -362,7 +383,7 @@ def execute(
             "provider_processes_started": ledger.processes_started,
             "incremental_experiment_charge_usd": str(ledger.incremental_experiment_charge_usd),
             "unresolved_invocations": len(ledger.unresolved),
-            "journal_integrity": journal.integrity_report(),
+            "journal_integrity": summary_journal.integrity_report(),
             "invocation_integrity": [invocation.integrity_report() for invocation in invocations],
             "subprocesses_closed": all(t.subprocesses_closed for t in transports),
             "retention": retention,
@@ -370,6 +391,7 @@ def execute(
         }
 
     def run_assignment(job: dict[str, Any]) -> dict[str, Any]:
+        nonlocal assignments_started
         worker = free.get()
         try:
             mode = str(job["mode"])
@@ -378,7 +400,8 @@ def execute(
                 journal=worker_journal,
                 manifest=manifests[mode],
                 policy=CliMemoryPolicy(
-                    claude.ClaudeCodePolicy(), retain_screenshots=mode == "history"
+                    claude.ClaudeCodePolicy(runtime_identity=identity),
+                    retain_screenshots=mode == "history",
                 ),
                 transport=transports[worker],
                 approved_caps=approved_caps,
@@ -398,16 +421,40 @@ def execute(
                     "execution_plan_digest": plan["execution_plan_digest"],
                 },
             )
-            result = runner.run(
-                trial_id=str(job["trial_id"]),
-                task=generate_memory_task(int(job["seed"])),
-                backend=FocusMemoryBackend(),
-            ).to_dict()
+            with assignments_lock:
+                assignments_started += 1
+            task = generate_memory_task(int(job["seed"]))
+            try:
+                result = runner.run(
+                    trial_id=str(job["trial_id"]),
+                    task=task,
+                    backend=FocusMemoryBackend(),
+                ).to_dict()
+            except CallCapExceededError:
+                # A partial assignment remains in the denominator and retains its
+                # actual dispatch/usage history. No checkpoint is fabricated.
+                result = {
+                    "trial_id": str(job["trial_id"]),
+                    "task_id": task.task_id,
+                    "success": False,
+                    "classification": "approved_cap_reached",
+                    "incomplete_assignment": True,
+                    "environment_actions": sum(
+                        event.kind == "dispatch_committed"
+                        for event in worker_journal.events(str(job["trial_id"]))
+                    ),
+                    "final_policy_checkpoint_digest": None,
+                }
             row = {
                 **job,
                 **result,
                 **episode_measurements(worker_journal, str(job["trial_id"]), int(job["seed"])),
                 **assignment_call_usage(worker_journal, str(job["trial_id"])),
+                **(
+                    assignment_rate_limit_metadata(worker_journal, str(job["trial_id"]))
+                    if stop_options is not None
+                    else {}
+                ),
                 "worker": worker,
             }
             worker_journal.append_event(
@@ -444,6 +491,19 @@ def execute(
             flush=True,
         )
 
+    def on_backoff(receipt: dict[str, Any]) -> None:
+        journal.append_event(
+            event_key=f"{receipt['trial_id']}/rate_limit_backoff/{receipt['stage']}",
+            kind="d59_replication_rate_limit_backoff",
+            trial_id=str(receipt["trial_id"]),
+            step_index=0,
+            payload=receipt,
+        )
+
+    def wait_for_backoff(seconds: float) -> None:
+        remaining = max(0.0, maximum_elapsed_seconds - (time.monotonic() - started))
+        threading.Event().wait(timeout=min(seconds, remaining))
+
     try:
         campaign = run_campaign(
             jobs,
@@ -452,6 +512,10 @@ def execute(
             window_exhausted=window_exhausted,
             ledger_blocked=lambda: ledger.blocked,
             on_result=on_result,
+            stop_rule_version=plan["stop_rule"]["version"],
+            stop_rule_options=stop_options,
+            on_backoff=on_backoff,
+            wait_for_backoff=wait_for_backoff,
         )
         stop_reason = campaign.stop_reason
     except BaseException as exc:
@@ -474,6 +538,7 @@ def execute(
         except BaseException as exc:  # noqa: BLE001 - retained, re-raised below
             finalization_error = exc
         for closer in (
+            summary_journal.close,
             *(invocation.close for invocation in invocations),
             *(extra.close for extra in journals[1:]),
             journal.close,

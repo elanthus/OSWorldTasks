@@ -362,7 +362,9 @@ def main():
                 stop = "phase_time_stop"
                 break
             policy = CliMemoryPolicy(
-                codex.CodexCliPolicy(codex.LUNA_MEDIUM) if is_codex else claude.ClaudeCodePolicy(),
+                codex.CodexCliPolicy(codex.LUNA_MEDIUM)
+                if is_codex
+                else claude.ClaudeCodePolicy(runtime_identity=identity),
                 retain_screenshots=job["mode"] == "history",
             )
             runner = CliMemoryRunner(

@@ -242,3 +242,49 @@ not rerun, replayed, or reclassified.
 - **Human boundary:** the owner creates the route login, approves the exact plan digest with
   the pilot caps and window, then approves the full caps and window after the pilot. D5.10 and
   public wording remain human-owned.
+
+## Addendum (2026-10-22): unapproved replication stop-rule v2 proposal
+
+**This is a proposal for owner review, not an amendment to the frozen candidate.**
+The preceding records and
+`artifacts/grounding-v5-d59-replication/execution-plan.json` remain unchanged. The
+PR #256 candidate digest remains
+`sha256:bf08e0cbf2a69407e04e4eeed78675e4592d11f714238542bc1520490761444e`.
+Code prepared afterward intentionally fails that candidate's source-binding check;
+it is not runnable until a separate successor freeze and execution approval.
+
+The [proposal report](../../docs/d59-replication-stop-rule-proposal.md) describes
+`pixelgym-agent-v5-d59-replication-stop-rule-v2` and the implementation boundaries.
+It prepares these choices without selecting them:
+
+- Continue `request_failure` as a failed assignment in the denominator, with a separate
+  proposed consecutive-request-failure limit of 3. A reported rate limit delays new
+  dispatch with journaled backoff, proposed at 30 seconds and bounded at 60 seconds.
+  This adds no intra-action retry or assignment replay.
+- Select `policy_violation_action` explicitly as `stop` or `continue`. A continuing
+  violation remains a failed assignment and does not relax response, egress, model,
+  or credential checks.
+- Select `failure_streak_scope` explicitly as `per_worker` or `non_overlapping` for
+  the infrastructure and request-failure streaks. The former counts independently
+  within each worker; the latter greedily selects pairwise non-overlapping completed
+  failure intervals. A failure increments only if it starts at or after the last
+  selected interval ends; overlapping completions neither increment nor extend that
+  end. This does not infer distinct outages: a late bridging interval does not merge
+  previously selected intervals. A nonmatching result resets the relevant streak.
+  The infrastructure limit remains 3.
+
+The shared subscription ledger remains a campaign-wide priority stop. A post-send
+CLI fault without a parsed envelope retains an unresolved invocation and blocks the
+ledger, except the enabled confirmed-stopped timeout/connection-reset retry case.
+One worker's block stops new dispatch for every worker, and in-flight assignments
+are drained and recorded. Neither proposed continuing disposition bypasses this
+registered `invocation_ledger_blocked` stop.
+
+A future approved re-freeze updates `source_binding`, `policy_manifests`, and
+`execution_plan_digest`. Choosing v2 additionally changes exactly
+`stop_rule.version`, `stop_rule.episode_outcomes_that_continue`,
+`stop_rule.campaign_stops_on`, `stop_rule.amendment_options`, `stop_rule.origin`, and
+`concurrency.stop_rule_evaluation`. The tasks, statistical analysis, reliability
+schedule, caps, and runtime proposal are unchanged. No provider calls or re-freeze
+are authorized by this addendum; the owner must choose the rule and approve the
+exact successor digest, then the pilot caps and window, before execution.
