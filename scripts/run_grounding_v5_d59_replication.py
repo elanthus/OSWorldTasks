@@ -15,6 +15,7 @@ import os
 import queue
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -461,8 +462,17 @@ def execute(
                 write_object(output / "summary.json", {**final_summary, "retention": retention})
         except BaseException as exc:  # noqa: BLE001 - retained, re-raised below
             finalization_error = finalization_error or exc
-        if not execution_failed and finalization_error is not None:
-            raise finalization_error
+        if finalization_error is not None:
+            if not execution_failed:
+                raise finalization_error
+            # The execution exception is already propagating; report the retained
+            # finalization error so a failed close, write, archive, or backup is visible.
+            print(
+                "finalization error during failed execution: "
+                f"{type(finalization_error).__name__}: {finalization_error}",
+                file=sys.stderr,
+                flush=True,
+            )
 
 
 def main() -> None:
