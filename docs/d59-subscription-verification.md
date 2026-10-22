@@ -40,7 +40,9 @@ errors stop preparation. There are no retries or cached proofs. Requests use a 1
 timeout, a 64-KiB response limit, default certificate/hostname verification, and no environment
 proxy. Diagnostics contain neither response bodies nor request headers. The execution binding
 records the verification version, endpoint, organization type, and one non-model auth read.
-Model and campaign control-request caps remain unchanged.
+Model and campaign control-request caps remain unchanged. The verifier source is mandatory
+in token-route manifests; historical Keychain-route evidence retains its prior runtime-input
+schema and reproduces without a file that did not exist at its recorded revision.
 
 The current credential still cannot verify Max through this endpoint. Before a no-call
 preparation can succeed, the owner must provision a profile-readable OAuth credential and load
@@ -50,9 +52,9 @@ account metadata. No model call may be used to work around missing profile acces
 
 ## Candidate re-freeze and approval
 
-The proposed source revision is `1cec5031597b1ed55f6d769464d9cbc060d5b5cb`. Its candidate plan digest is
-`sha256:d8bb0c24c3d415c96cb6f3c537652630302c6143260dc2bec84237374706fe2c`, with history policy `policy-51247a1463cba56dbde6` and stateless policy
-`policy-ed6f5bb11f346cd4c25a`. The candidate is
+The proposed source revision is `39e3bca4c1549868bf23274d08ae6e7410b6324e`. Its candidate plan digest is
+`sha256:b20558c056bf0596d8faecffd692e9b16dc724fb3a59dc2de26f8ac904fecc53`, with history policy `policy-937dd894fc9badcdc29a` and stateless policy
+`policy-fb8747c41ec03f11896d`. The candidate is
 `artifacts/grounding-v5-d59-replication/subscription-verification-candidate.json`.
 
 Exactly these top-level plan fields change: `source_binding`, `policy_manifests`, `route`,
