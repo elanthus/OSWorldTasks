@@ -264,6 +264,52 @@ def test_driver_refuses_an_identity_without_its_mandatory_verification_receipt(
         driver.confirmed_live_identity({"runtime_identity": identity.to_dict()})
 
 
+@pytest.mark.parametrize("route", [policy.FROZEN_ROUTE, policy.REPLICATION_ROUTE])
+def test_manifest_verifier_binding_is_mandatory_for_the_token_route(tmp_path, route):
+    # Historical Keychain-route trees predate the verifier. Token-route trees
+    # must bind its bytes and must fail closed when that source is absent.
+    root = Path(__file__).parents[2]
+    for name in (
+        "pixelgym/grounding/v5/claude_code_policy.py",
+        "pixelgym/grounding/v5/cli_transport.py",
+        "pixelgym/grounding/v5/runner.py",
+        "pyproject.toml",
+        "requirements/platform-py312.lock",
+    ):
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((root / name).read_bytes())
+    identity = policy.ClaudeRuntimeIdentity(
+        cli_version=route.cli_version,
+        auth_method=route.auth_method,
+        subscription_type=route.subscription_type,
+        requested_model=policy.MODEL,
+        reasoning_effort=policy.MODEL_REASONING_EFFORT,
+        help_sha256="sha256:fixture-help",
+    )
+
+    def manifest():
+        return policy.build_claude_policy_manifest(
+            tmp_path,
+            code_revision="fixture-revision",
+            runtime_identity=identity,
+            resolved_model=policy.MODEL,
+        )
+
+    verifier = tmp_path / "pixelgym/grounding/v5/claude_subscription.py"
+    if route == policy.REPLICATION_ROUTE:
+        with pytest.raises(FileNotFoundError):
+            manifest()
+        verifier.write_bytes(b"first verifier version")
+        original = manifest()
+        verifier.write_bytes(b"changed verifier version")
+        assert manifest().policy_id != original.policy_id
+    else:
+        historical = manifest()
+        verifier.write_bytes(b"unused by the historical route")
+        assert manifest() == historical
+
+
 def test_successor_preserves_max_and_scientific_rules_but_requires_a_new_exact_approval(
     monkeypatch,
 ):

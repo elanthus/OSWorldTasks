@@ -1707,23 +1707,25 @@ def build_claude_policy_manifest(
     sandboxed_launch: bool = False,
 ) -> PolicyManifest:
     ClaudeRuntimeIdentity(**runtime_identity.__dict__)
-    runtime_digest = content_digest(
-        {
-            "provider_module": _file_digest(
-                repository_root / "pixelgym/grounding/v5/claude_code_policy.py"
-            ),
-            "subscription_verifier_module": _file_digest(
-                repository_root / "pixelgym/grounding/v5/claude_subscription.py"
-            ),
-            "cli_transport_module": _file_digest(
-                repository_root / "pixelgym/grounding/v5/cli_transport.py"
-            ),
-            "runner_module": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-            "pyproject": _file_digest(repository_root / "pyproject.toml"),
-            "lock": _file_digest(repository_root / "requirements/platform-py312.lock"),
-            "runtime_identity": runtime_identity.to_dict(),
-        }
-    )
+    runtime_inputs = {
+        "provider_module": _file_digest(
+            repository_root / "pixelgym/grounding/v5/claude_code_policy.py"
+        ),
+        "cli_transport_module": _file_digest(
+            repository_root / "pixelgym/grounding/v5/cli_transport.py"
+        ),
+        "runner_module": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
+        "pyproject": _file_digest(repository_root / "pyproject.toml"),
+        "lock": _file_digest(repository_root / "requirements/platform-py312.lock"),
+        "runtime_identity": runtime_identity.to_dict(),
+    }
+    # The environment-token route requires this verifier. Older Keychain-route
+    # evidence predates it and must retain its recorded runtime-input schema.
+    if runtime_identity.auth_method == "oauth_token":
+        runtime_inputs["subscription_verifier_module"] = _file_digest(
+            repository_root / "pixelgym/grounding/v5/claude_subscription.py"
+        )
+    runtime_digest = content_digest(runtime_inputs)
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
