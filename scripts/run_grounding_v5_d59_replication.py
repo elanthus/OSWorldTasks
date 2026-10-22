@@ -205,6 +205,31 @@ def retain(output: Path, archive: Path, backup: Path) -> dict[str, Any]:
     return {"archive": created, "backup": backed, "manifest_digest": digest}
 
 
+def assignment_call_usage(journal: V5AttemptJournal, trial_id: str) -> dict[str, int]:
+    """Count this assignment's durable reservations, including retries and unknowns.
+
+    Runner result counters subtract run-wide snapshots, which overlap when workers
+    share a journal. Trial-scoped events retain the actual attribution.
+    """
+
+    events = journal.events(trial_id)
+    model = sum(
+        int(event.payload["model_attempt_reservation"])
+        for event in events
+        if event.kind == "attempt_started"
+    )
+    control = sum(
+        int(event.payload["control_request_reservation"])
+        for event in events
+        if event.kind == "provider_control_request_reserved"
+    )
+    return {
+        "model_attempts": model,
+        "provider_control_requests": control,
+        "provider_wire_requests": model + control,
+    }
+
+
 def execute(
     phase: str,
     approval_path: Path,
@@ -382,6 +407,7 @@ def execute(
                 **job,
                 **result,
                 **episode_measurements(worker_journal, str(job["trial_id"]), int(job["seed"])),
+                **assignment_call_usage(worker_journal, str(job["trial_id"])),
                 "worker": worker,
             }
             worker_journal.append_event(

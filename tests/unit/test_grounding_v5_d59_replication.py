@@ -4,16 +4,20 @@ from __future__ import annotations
 
 import json
 import subprocess
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
 from pixelgym.grounding.v5 import d59_replication as replication
-from pixelgym.grounding.v5.contracts import content_digest
+from pixelgym.grounding.v5.contracts import AttemptIdentity, CallCaps, content_digest
 from pixelgym.grounding.v5.d59_haiku_execution import validate_assignments
 from pixelgym.grounding.v5.evidence import validate_credential_free
+from pixelgym.grounding.v5.journal import V5AttemptJournal
 from pixelgym.grounding.v5.os_sandbox import cli_profile_template_digest
+from scripts.run_grounding_v5_d59_replication import assignment_call_usage
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -213,19 +217,17 @@ def _jobs(n: int) -> list[dict]:
 
 
 def test_campaign_runs_every_assignment_across_workers_and_restores_plan_order() -> None:
-    import threading
-    import time
-
     active = 0
     peak = 0
     lock = threading.Lock()
+    wave = threading.Barrier(3)
 
     def run(job: dict) -> dict:
         nonlocal active, peak
         with lock:
             active += 1
             peak = max(peak, active)
-        time.sleep(0.01)
+        wave.wait(timeout=5)
         with lock:
             active -= 1
         return {**job, "classification": "success_termination"}
@@ -240,7 +242,7 @@ def test_campaign_runs_every_assignment_across_workers_and_restores_plan_order()
     assert outcome.stop_reason == "completed_all_assignments"
     assert outcome.dispatched == 12
     assert len(outcome.rows) == 12
-    assert peak <= 3
+    assert peak == 3
     assert sorted(r["plan_index"] for r in outcome.rows) == list(range(12))
     assert [r["completion_index"] for r in outcome.rows] == list(range(12))
     assert {r["trial_id"] for r in outcome.rows} == {f"t-{i}" for i in range(12)}
@@ -377,6 +379,148 @@ def test_campaign_drains_in_flight_results_when_a_worker_raises() -> None:
         )
     # t-0 was in flight when t-1 raised: it is still recorded; t-2 and t-3 never dispatch.
     assert {r["trial_id"] for r in recorded} == {"t-0"}
+
+
+@pytest.mark.parametrize("third_is_failure", [False, True])
+def test_campaign_preserves_completions_accumulated_during_reporting(
+    monkeypatch: pytest.MonkeyPatch, third_is_failure: bool
+) -> None:
+    gates = [threading.Event() for _ in range(4)]
+    finished = [threading.Event() for _ in range(4)]
+    started = threading.Barrier(4)
+    gates[0].set()
+
+    class ObservedPool(ThreadPoolExecutor):
+        """Observe actual task completion, without sleeping or replacing scheduling."""
+
+        submitted = 0
+
+        def submit(self, fn, /, *args, **kwargs):
+            index = self.submitted
+            self.submitted += 1
+            future = super().submit(fn, *args, **kwargs)
+            if index < 4:
+                future.add_done_callback(lambda _future: finished[index].set())
+            return future
+
+    monkeypatch.setattr(replication, "ThreadPoolExecutor", ObservedPool)
+
+    def run(job: dict) -> dict:
+        index = int(job["trial_id"].split("-")[1])
+        if index < 4:
+            started.wait(timeout=5)
+            assert gates[index].wait(timeout=5)
+        failure = index < 2 or (index == 2 if third_is_failure else index == 3)
+        return {
+            **job,
+            "classification": "infrastructure_failure" if failure else "success_termination",
+        }
+
+    def report(row: dict) -> None:
+        if row["plan_index"] == 0:
+            # All three completions accumulate before reporting returns. Their
+            # order must survive batching, including a success that resets the streak.
+            for index in range(1, 4):
+                gates[index].set()
+                assert finished[index].wait(timeout=5)
+
+    outcome = replication.run_campaign(
+        _jobs(5),
+        workers=4,
+        run_assignment=run,
+        window_exhausted=lambda: False,
+        ledger_blocked=lambda: False,
+        on_result=report,
+    )
+    expected_count = 4 if third_is_failure else 5
+    assert [row["plan_index"] for row in outcome.rows] == list(range(expected_count))
+    assert [row["completion_index"] for row in outcome.rows] == list(range(expected_count))
+    assert outcome.dispatched == expected_count
+    assert outcome.stop_reason == (
+        "consecutive_infrastructure_failures" if third_is_failure else "completed_all_assignments"
+    )
+
+
+@pytest.mark.parametrize("fail_again", [False, True])
+def test_campaign_drains_after_result_callback_failure(fail_again: bool) -> None:
+    started = threading.Barrier(2)
+    release = threading.Event()
+    recorded: list[dict] = []
+    first_error = OSError("summary write failed")
+
+    def run(job: dict) -> dict:
+        started.wait(timeout=5)
+        if job["trial_id"] == "t-1":
+            assert release.wait(timeout=5)
+        return {**job, "classification": "success_termination"}
+
+    def report(row: dict) -> None:
+        recorded.append(row)
+        if row["trial_id"] == "t-0":
+            release.set()
+            raise first_error
+        if fail_again:
+            raise ValueError("later reporting failure")
+
+    with pytest.raises(OSError, match="summary write failed") as caught:
+        replication.run_campaign(
+            _jobs(4),
+            workers=2,
+            run_assignment=run,
+            window_exhausted=lambda: False,
+            ledger_blocked=lambda: False,
+            on_result=report,
+        )
+    assert caught.value is first_error
+    assert [row["trial_id"] for row in recorded] == ["t-0", "t-1"]
+    assert [row["completion_index"] for row in recorded] == [0, 1]
+
+
+def test_assignment_usage_attributes_overlapping_reservations_and_retries(tmp_path: Path) -> None:
+    journals = [V5AttemptJournal(tmp_path / "attempts.sqlite") for _ in range(2)]
+    reserved = threading.Barrier(2)
+    caps = CallCaps(2, 3, 1, 4)
+
+    def reserve(index: int) -> dict[str, int]:
+        journal = journals[index]
+        trial = f"trial-{index}"
+        for attempt in range(index + 1):
+            identity = AttemptIdentity(trial, 0, attempt)
+            journal.reserve_attempt_started(
+                identity,
+                provider_endpoint_identity="scripted",
+                request_digest=content_digest({"trial": trial, "attempt": attempt}),
+                idempotency_key=identity.key,
+                model_attempt_reservation=1,
+                control_request_reservation=0,
+                pre_call_checkpoint=b"{}",
+                approved_caps=caps,
+            )
+        if index == 1:
+            journal.reserve_control_request(identity, request_kind="cancel", approved_caps=caps)
+        reserved.wait(timeout=5)
+        # Both trials now overlap in the same database; unknown/unsettled attempts
+        # still count and the second attempt stays attributed to its own trial.
+        return assignment_call_usage(journal, trial)
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(reserve, range(2)))
+        assert results == [
+            {"model_attempts": 1, "provider_control_requests": 0, "provider_wire_requests": 1},
+            {"model_attempts": 2, "provider_control_requests": 1, "provider_wire_requests": 3},
+        ]
+        model, control = journals[0].call_counts()
+        assert sum(row["model_attempts"] for row in results) == model == 3
+        assert sum(row["provider_wire_requests"] for row in results) == model + control == 4
+        assert assignment_call_usage(journals[0], "unrun") == {
+            "model_attempts": 0,
+            "provider_control_requests": 0,
+            "provider_wire_requests": 0,
+        }
+    finally:
+        for journal in journals:
+            journal.close()
 
 
 def test_probe_runner_is_time_bounded() -> None:
