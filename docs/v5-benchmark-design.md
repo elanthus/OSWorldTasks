@@ -45,7 +45,9 @@ A policy exposes `reset(task_instruction)`, `act(current_screenshot) -> action m
   environment supplies no step number, history, checkpoint, partial score, or answer.
 - `act` returns one PixelGym action mapping, validated before backend execution. A missing,
   malformed, or invalid action ends the episode unsuccessfully without a second request.
-- Provider access is the only outbound network use allowed from the policy sandbox.
+- Provider access is the only outbound network use allowed from the policy sandbox. The
+  kernel-enforced launch sandbox and its egress proxy are described in the
+  [policy sandbox design](v5-policy-sandbox.md); the D5.9 Haiku pair ran without it.
 
 ### Provider-call journal and resume
 

@@ -129,6 +129,7 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `analyze_grounding_v5_d59.py` | Generate the D5.9 confirmatory analysis from the public result projection | `artifacts/grounding-v5-d59-haiku-results`, execution plan | confirmatory analysis JSON and Markdown; `--check` verifies them | none | yes |
 | `generate_d510_evidence_report.py` | Index stored D5.10 gate command records against the checklist map without rerunning or judging them | `render --evidence-dir`; `scan --path` | `REPORT.md`, `evidence-manifest.json`, `redaction-scan.json` in the evidence directory; `scan` prints counts only | none | yes |
 | `verify_v5_at_revision.py` | Verify the eight frozen packages identified by records 27, 42–44, 46, 48–50 of the superseded b0f00f8d D5.10 package (retained in Git history) against historical source | one or more original record numbers, or `all`; optional `--output` | raw JSON and exit status; never overwrites an output | local Git history, dev dependencies; no credentials | yes |
+| `probe_grounding_v5_cli_sandbox.py` | Launch the installed Claude Code CLI three times under the v5 kernel sandbox with a synthetic token and a refusing egress proxy, and print what it could reach | optional `--cli-executable`, `--timeout-seconds` | JSON probe result on stdout; exit 0 only when every expected observation holds | Darwin `sandbox-exec`, installed `claude`; no credentials, no provider call | no |
 
 ### Verify the frozen D5.10 inputs with historical source
 

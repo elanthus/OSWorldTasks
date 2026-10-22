@@ -83,6 +83,7 @@ markers = [
     "browser_integration: requires an installed Playwright Chromium browser and explicit opt-in",
     "osworld_integration: requires the pinned local OSWorld Docker runtime and guest image",
     "v5_sandbox_integration: requires Darwin sandbox-exec outside a parent process sandbox",
+    "v5_cli_sandbox_integration: requires Darwin sandbox-exec, an installed claude CLI, and explicit opt-in; no provider call",
     "slow: long-running fast-path replay; deselected by default, run with -m slow",
 ]
 
