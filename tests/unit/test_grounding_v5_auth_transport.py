@@ -182,8 +182,16 @@ class Harness:
         self.journal.close()
 
 
-def test_expired_credential_retries_same_state_once_with_both_attempts_retained(tmp_path: Path):
-    harness = Harness(tmp_path, [rejection(), SuccessfulProcess()])
+@pytest.mark.parametrize("ui_preamble", [False, True])
+def test_expired_credential_retries_same_state_once_with_both_attempts_retained(
+    tmp_path: Path, ui_preamble: bool
+):
+    events = expired_events()
+    if ui_preamble:
+        events.insert(0, {"type": "system", "subtype": "ui_invalidate", "event": "ui.render"})
+        for index, event in enumerate(events):
+            event.update(session_id="auth-ui-session", uuid=f"auth-ui-{index}")
+    harness = Harness(tmp_path, [rejection(events), SuccessfulProcess()])
     try:
         result = harness.run()
         assert result.classification == "pilot_action_limit"
@@ -210,6 +218,37 @@ def test_expired_credential_retries_same_state_once_with_both_attempts_retained(
         assert not any(event.kind == "sealed_unsuccessful_result" for event in events)
     finally:
         harness.close()
+
+
+@pytest.mark.parametrize("kind", ["authentication", "connection"])
+@pytest.mark.parametrize("fault", [None, "extra_ui", "session", "usage", "model"])
+def test_ui_preamble_does_not_weaken_synthetic_fault_recognition(kind, fault):
+    events = expired_events()
+    if kind == "connection":
+        text = "API Error: Connection dropped (ECONNRESET)"
+        events[1]["error"] = "server_error"
+        events[1]["message"]["content"][0]["text"] = text
+        events[2]["result"] = text
+    events.insert(0, {"type": "system", "subtype": "ui_invalidate", "event": "ui.render"})
+    for index, event in enumerate(events):
+        event.update(session_id="fault-ui-session", uuid=f"fault-ui-{index}")
+    if fault == "extra_ui":
+        events[0]["tools"] = ["Read"]
+    elif fault == "session":
+        events[0]["session_id"] = "other-session"
+    elif fault == "usage":
+        events[-1]["usage"]["input_tokens"] = 1
+    elif fault == "model":
+        events[2]["message"]["model"] = claude.MODEL
+    raw = "\n".join(map(json.dumps, events))
+    parsed = claude._parse_stream(raw)
+    detector = (
+        claude._synthetic_authentication_fault
+        if kind == "authentication"
+        else claude._synthetic_connection_fault
+    )
+    detected = detector(raw, parsed, 1)
+    assert (detected is not None) == (fault is None)
 
 
 def test_repeated_expiry_exhausts_the_existing_one_retry_budget(tmp_path: Path):

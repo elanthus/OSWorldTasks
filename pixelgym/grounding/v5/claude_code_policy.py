@@ -119,7 +119,7 @@ CLI_API_RETRY_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_MAX_RETRIES"
 MAXIMUM_AGGREGATE_SPEND_USD = Decimal("10.00")
 PRIOR_BUDGET_ACCOUNTED_SPEND_USD = Decimal("4.778164718")
 CONTEXT_LIMIT_TOKENS = 200_000
-PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v3-json-envelope"
+PARSER_VERSION = "pixelgym-agent-v5-claude-stream-json-action-parser-v4-ui-render-preamble"
 RESPONSE_SCHEMA_VERSION = "pixelgym-agent-v5-claude-stream-json-response-v1"
 STATE_REDUCER_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-reducer-v1"
 MEMORY_POLICY_VERSION = "pixelgym-agent-v5-stateless-current-screenshot-only-v1"
@@ -157,6 +157,7 @@ _MALFORMED_STREAM_VIOLATIONS = frozenset(
         "invalid_assistant_message",
         "invalid_assistant_content",
         "invalid_thinking_telemetry",
+        "invalid_ui_invalidation",
         "invalid_extended_stream_identity",
         "invalid_extended_stream_order",
         "assistant_text_count_mismatch",
@@ -941,11 +942,23 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
         for event in events
         if event["type"] == "system" and event.get("subtype") == "thinking_tokens"
     ]
+    ui_events = [
+        event
+        for event in events
+        if event["type"] == "system" and event.get("subtype") == "ui_invalidate"
+    ]
+    if ui_events and (
+        len(ui_events) != 1
+        or events[0] is not ui_events[0]
+        or set(ui_events[0]) != {"type", "subtype", "event", "uuid", "session_id"}
+        or ui_events[0].get("event") != "ui.render"
+    ):
+        violations.append("invalid_ui_invalidation")
     if len(assistant_events) not in (1, 2):
         violations.append("assistant_event_count_mismatch")
     if event_counts["result"] != 1:
         violations.append("result_event_count_mismatch")
-    extended_stream = bool(telemetry_events) or len(assistant_events) == 2
+    extended_stream = bool(telemetry_events or ui_events) or len(assistant_events) == 2
     if extended_stream:
         sessions = [event.get("session_id") for event in events]
         uuids = [event.get("uuid") for event in events]
@@ -955,7 +968,12 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             or len(set(uuids)) != len(uuids)
         ):
             violations.append("invalid_extended_stream_identity")
-        if not events or events[0] not in initial_events or events[-1]["type"] != "result":
+        semantic_events = [event for event in events if event not in ui_events]
+        if (
+            not semantic_events
+            or semantic_events[0] not in initial_events
+            or semantic_events[-1]["type"] != "result"
+        ):
             violations.append("invalid_extended_stream_order")
         previous_estimate = 0
         for telemetry in telemetry_events:
@@ -1025,7 +1043,7 @@ def _parse_stream(raw_stdout: str) -> ParsedClaudeStream:
             if rate_limit.get("isUsingOverage") not in (None, False):
                 violations.append("subscription_overage_active")
         elif event_type == "system":
-            if event.get("subtype") == "thinking_tokens":
+            if event.get("subtype") in {"thinking_tokens", "ui_invalidate"}:
                 continue
             if event.get("subtype") != "init":
                 violations.append(f"unauthorized_system_event:{event.get('subtype')}")
@@ -1156,6 +1174,9 @@ def _synthetic_connection_fault(
     }:
         return None
     events = [json.loads(line) for line in raw_stdout.splitlines() if line.strip()]
+    # The parser has already validated any UI preamble, including its identity.
+    if events and events[0].get("subtype") == "ui_invalidate":
+        events = events[1:]
     if [event.get("type") for event in events] != ["system", "assistant", "result"]:
         return None
     assistant, result = events[1:]
@@ -1194,6 +1215,8 @@ def _synthetic_authentication_fault(
         return None
     if not all(isinstance(event, dict) for event in events):
         return None
+    if events and events[0].get("subtype") == "ui_invalidate":
+        events = events[1:]
     if [event.get("type") for event in events] != ["system", "assistant", "result"]:
         return None
     assistant, result = events[1:]
