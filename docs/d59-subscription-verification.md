@@ -1,13 +1,14 @@
 # D5.9 subscription identity verification
 
-Status: PR #258 is merged; the owner-authorized pilot completed with four infrastructure
-failures caused by an unrecognized CLI stream event. Full execution is stopped. The original investigation
+Status: PR #258 is merged. After the first pilot stream failures, the owner authorized the
+strict parser compatibility fix, replacement freeze, a new four-assignment pilot, and full
+execution only after operational checks pass. The original investigation
 and its earlier digests below are retained as history. The active freeze is now
-`sha256:1defd54c98aeab9a7103f6816f1f7ee88d984b955977ffb9c07d0d5f5c907243`.
+`sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159`.
 No experiment call occurred while preparing this replacement; the separate owner-authorized
 Fable code-verification call is recorded outside experiment accounting.
 
-The pilot consumed four model attempts and dispatched zero environment actions. All four
+The previous pilot consumed four model attempts and dispatched zero environment actions. All four
 responses reported the frozen Haiku model and available usage, but the strict parser rejected
 `system/ui_invalidate` before `system/init`. The campaign's raw stop reason was
 `completed_all_assignments`; infrastructure failures do not satisfy the owner's operational
@@ -16,8 +17,8 @@ full dispatch, and now explicitly rejects infrastructure/request-failure rows. T
 offline gate checks passed in 0.56 seconds. No full-phase model attempt occurred; every
 experiment process is closed. Both private retention copies verify. The generated
 [pilot launch report](../artifacts/grounding-v5-d59-replication/pilot-launch-report.json)
-records the raw counts, classifications, stream violations, and retention digest. A strict
-parser successor and new pilot authorization are needed before additional experiment calls;
+records the raw counts, classifications, stream violations, and retention digest. The owner subsequently authorized a strict
+parser successor and a new pilot;
 the frozen results are preserved without replay or post-result reinterpretation.
 
 ## Cause and observations
@@ -122,9 +123,9 @@ retention, without a guard stop. Task failures do not defeat that operational ga
 owner's instructions and the exact phase limits. Model calls remain prohibited until the new
 freeze and its separate machine-readable approvals are recorded.
 
-The active OAuth-recovery freeze binds source `2711d55b9d61e075255a0d9694491888f7b02257`,
-history policy `policy-7dd3b00d31286392effe`, and stateless policy
-`policy-1502dc29b963e87150e5`. The machine-readable pilot approval and conditional owner
+The active OAuth-recovery freeze binds source `0c7836ff995575ec889a44841b542dff7377e1cc`,
+history policy `policy-bf07cf314a4cc448f498`, and stateless policy
+`policy-adda157ee17a0833a036`. The machine-readable pilot approval and conditional owner
 direction are stored beside `execution-plan.json`. Its disabled flags and zero approved-cap
 placeholders remain intact; separate phase approvals supply the execution limits.
 
@@ -137,3 +138,12 @@ raw receipts are retained (`execution-binding.json` and `execution-live-binding.
 and the final summary binds the execution receipt. The replacement freeze changes only
 source/policy provenance and the digest; phase limits and the approved recovery protocol
 remain the same. `prelaunch-binding-stop.json` records the zero-attempt launch stop.
+
+The parser successor accepts exactly one `system/ui_invalidate` preamble with `event: ui.render`
+before init. Its envelope contains exactly the five observed fields; the session must match
+every record and its UUID must be unique. Unknown, duplicate, misplaced, or expanded UI
+events still fail closed. Model, route, tool/MCP, overage, retry, and sandbox checks remain
+strict. The same validated preamble is recognized for confirmed zero-usage OAuth-expiry and
+connection-reset envelopes under the existing bounded retry. The new parser version is
+`pixelgym-agent-v5-claude-stream-json-action-parser-v4-ui-render-preamble`. Four retained streams were checked offline; the
+previous pilot evidence is unchanged and remains separate from the newly approved pilot.
