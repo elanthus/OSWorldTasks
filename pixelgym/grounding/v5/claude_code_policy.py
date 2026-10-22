@@ -194,14 +194,23 @@ class ClaudeRuntimeIdentity:
         }
 
 
+PROBE_TIMEOUT_SECONDS = 60.0
+
+
 def _run_probe(
-    command: Sequence[str], environment: Mapping[str, str] | None = None
+    command: Sequence[str],
+    environment: Mapping[str, str] | None = None,
+    *,
+    timeout_seconds: float = PROBE_TIMEOUT_SECONDS,
 ) -> subprocess.CompletedProcess[str]:
+    """Run one CLI probe with a bound; a hung CLI fails the probe instead of blocking."""
+
     return subprocess.run(
         command,
         text=True,
         capture_output=True,
         check=True,
+        timeout=timeout_seconds,
         env=None if environment is None else dict(environment),
     )
 

@@ -265,6 +265,7 @@ def execute(
     stop_reason = "running"
     error: dict[str, str] | None = None
     retention: dict[str, Any] | None = None
+    execution_failed = False
 
     def attempted_assignments() -> int:
         return sum(event.kind == "d59_replication_assignment_started" for event in journal.events())
@@ -429,22 +430,39 @@ def execute(
     except BaseException as exc:
         stop_reason = "execution_error"
         error = {"type": type(exc).__name__, "message": str(exc)}
+        execution_failed = True
         raise
     finally:
+        # Snapshot the summary while the journals are open, close everything, then
+        # archive. The archive holds the snapshot with retention null; the source
+        # summary.json gets the receipt merged in. A finalization error never masks an
+        # execution error and never hides a completed campaign's results.
+        final_summary: dict[str, Any] | None = None
+        finalization_error: BaseException | None = None
         try:
             for transport in transports:
                 transport.close()
-            write_object(output / "summary.json", summary())
-        finally:
+            final_summary = summary()
+            write_object(output / "summary.json", final_summary)
+        except BaseException as exc:  # noqa: BLE001 - retained, re-raised below
+            finalization_error = exc
+        for closer in (
+            *(invocation.close for invocation in invocations),
+            *(extra.close for extra in journals[1:]),
+            journal.close,
+        ):
             try:
-                for invocation in invocations:
-                    invocation.close()
-            finally:
-                for extra in journals[1:]:
-                    extra.close()
-                journal.close()
-        retention = retain(output, retention_archive, retention_backup)
-        write_object(output / "summary.json", summary())
+                closer()
+            except BaseException as exc:  # noqa: BLE001 - retained, re-raised below
+                finalization_error = finalization_error or exc
+        try:
+            retention = retain(output, retention_archive, retention_backup)
+            if final_summary is not None:
+                write_object(output / "summary.json", {**final_summary, "retention": retention})
+        except BaseException as exc:  # noqa: BLE001 - retained, re-raised below
+            finalization_error = finalization_error or exc
+        if not execution_failed and finalization_error is not None:
+            raise finalization_error
 
 
 def main() -> None:

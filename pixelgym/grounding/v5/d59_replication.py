@@ -414,6 +414,7 @@ def run_campaign(
         return reason
 
     pending: dict[Future[dict[str, Any]], int] = {}
+    first_error: BaseException | None = None
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="d59-rep") as pool:
         next_index = 0
         while next_index < len(jobs) or pending:
@@ -433,11 +434,23 @@ def run_campaign(
             done, _ = wait(pending, return_when=FIRST_COMPLETED)
             for future in done:
                 index = pending.pop(future)
-                reason = record(index, future.result())
+                try:
+                    row = future.result()
+                except BaseException as exc:  # noqa: BLE001 - every worker error is retained
+                    # One failed worker must not lose the other in-flight results: stop
+                    # dispatching, keep draining, and re-raise the first error afterwards.
+                    if first_error is None:
+                        first_error = exc
+                    if outcome.stop_reason == "running":
+                        outcome.stop_reason = "execution_error"
+                    continue
+                reason = record(index, row)
                 if reason is not None and outcome.stop_reason == "running":
                     outcome.stop_reason = reason
             if outcome.stop_reason != "running" and not pending:
                 break
+    if first_error is not None:
+        raise first_error
     if outcome.stop_reason == "running":
         outcome.stop_reason = "completed_all_assignments"
     return outcome
@@ -456,6 +469,9 @@ def campaign_stop_reason(
 
     if ledger_blocked:
         return "invocation_ledger_blocked"
+    if classification == "phase_time_stop":
+        # The runner refused to start an attempt inside the window's final request deadline.
+        return "runtime_window_exhausted"
     if classification not in EPISODE_OUTCOMES_THAT_CONTINUE:
         return f"unexpected_classification:{classification}"
     if consecutive_infrastructure_failures >= CONSECUTIVE_INFRASTRUCTURE_FAILURE_LIMIT:

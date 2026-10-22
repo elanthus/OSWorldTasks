@@ -333,3 +333,54 @@ def test_plan_pre_registers_concurrency(plan: dict) -> None:
     assert concurrency["max_workers"] == replication.MAX_WORKERS == 4
     assert "egress proxy" in concurrency["per_worker"]
     assert "subscription ledger" in concurrency["shared"]
+
+
+def test_stop_rule_maps_the_runner_time_stop_to_the_window_reason() -> None:
+    assert (
+        replication.campaign_stop_reason(
+            "phase_time_stop", ledger_blocked=False, consecutive_infrastructure_failures=0
+        )
+        == "runtime_window_exhausted"
+    )
+    # A blocked ledger still takes priority.
+    assert (
+        replication.campaign_stop_reason(
+            "phase_time_stop", ledger_blocked=True, consecutive_infrastructure_failures=0
+        )
+        == "invocation_ledger_blocked"
+    )
+
+
+def test_campaign_drains_in_flight_results_when_a_worker_raises() -> None:
+    import threading
+
+    release = threading.Event()
+
+    def run(job: dict) -> dict:
+        if job["trial_id"] == "t-0":
+            release.wait(timeout=5)
+            return {**job, "classification": "success_termination"}
+        if job["trial_id"] == "t-1":
+            release.set()
+            raise RuntimeError("worker failed")
+        return {**job, "classification": "success_termination"}
+
+    recorded: list[dict] = []
+    with pytest.raises(RuntimeError, match="worker failed"):
+        replication.run_campaign(
+            _jobs(4),
+            workers=2,
+            run_assignment=run,
+            window_exhausted=lambda: False,
+            ledger_blocked=lambda: False,
+            on_result=recorded.append,
+        )
+    # t-0 was in flight when t-1 raised: it is still recorded; t-2 and t-3 never dispatch.
+    assert {r["trial_id"] for r in recorded} == {"t-0"}
+
+
+def test_probe_runner_is_time_bounded() -> None:
+    import subprocess
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        claude._run_probe(["/bin/sleep", "5"], timeout_seconds=0.2)
