@@ -102,14 +102,22 @@ def route_probe_environment(temporary: Path) -> dict[str, str]:
     }
 
 
-def confirmed_live_identity(plan: dict[str, Any]) -> claude.ClaudeRuntimeIdentity:
+def confirmed_live_identity(
+    plan: dict[str, Any],
+) -> tuple[claude.ClaudeRuntimeIdentity, dict[str, Any]]:
     """The route the plan declares must be the route the installed CLI reports now."""
 
+    proofs: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="pixelgym-d59-replication-route-") as temporary:
-        identity = claude.probe_claude_runtime(environment=route_probe_environment(Path(temporary)))
+        identity = claude.probe_claude_runtime(
+            environment=route_probe_environment(Path(temporary)),
+            on_subscription_verified=proofs.append,
+        )
     if identity.to_dict() != plan["runtime_identity"]:
         raise ValueError("live Claude Code identity differs from the frozen replication route")
-    return identity
+    if len(proofs) != 1:
+        raise ValueError("the token route requires fresh same-credential Max verification")
+    return identity, proofs[0]
 
 
 def sandbox_launch(output: Path) -> claude.ClaudeSandboxLaunch:
@@ -134,7 +142,7 @@ def prepared_inputs(
         raise ValueError("replication plan differs from the committed candidate")
     approval = read_object(approval_path)
     validate_approval(plan, approval, phase=phase)
-    identity = confirmed_live_identity(plan)
+    identity, subscription_verification = confirmed_live_identity(plan)
     manifests = live_manifests(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
     )
@@ -159,6 +167,7 @@ def prepared_inputs(
         "execution_plan_digest": content_digest(plan),
         "owner_approval_digest": content_digest(approval),
         "runtime_identity": identity.to_dict(),
+        "subscription_verification": subscription_verification,
         "cli_executable_sha256": sha256_file(executable),
         "sandbox_probe": probe.to_dict(),
         "source_files": {path: sha256_file(ROOT / path) for path in SOURCE_FILES},
