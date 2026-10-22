@@ -1,11 +1,24 @@
 # D5.9 subscription identity verification
 
-Status: PR #258 is merged; the owner authorized the OAuth-recovery replacement freeze and
-starting its pilot, followed conditionally by the full campaign. The original investigation
+Status: PR #258 is merged; the owner-authorized pilot completed with four infrastructure
+failures caused by an unrecognized CLI stream event. Full execution is stopped. The original investigation
 and its earlier digests below are retained as history. The active freeze is now
 `sha256:1defd54c98aeab9a7103f6816f1f7ee88d984b955977ffb9c07d0d5f5c907243`.
 No experiment call occurred while preparing this replacement; the separate owner-authorized
 Fable code-verification call is recorded outside experiment accounting.
+
+The pilot consumed four model attempts and dispatched zero environment actions. All four
+responses reported the frozen Haiku model and available usage, but the strict parser rejected
+`system/ui_invalidate` before `system/init`. The campaign's raw stop reason was
+`completed_all_assignments`; infrastructure failures do not satisfy the owner's operational
+pilot condition. The local controller initially accepted those rows, was stopped before
+full dispatch, and now explicitly rejects infrastructure/request-failure rows. Thirteen local
+offline gate checks passed in 0.56 seconds. No full-phase model attempt occurred; every
+experiment process is closed. Both private retention copies verify. The generated
+[pilot launch report](../artifacts/grounding-v5-d59-replication/pilot-launch-report.json)
+records the raw counts, classifications, stream violations, and retention digest. A strict
+parser successor and new pilot authorization are needed before additional experiment calls;
+the frozen results are preserved without replay or post-result reinterpretation.
 
 ## Cause and observations
 
