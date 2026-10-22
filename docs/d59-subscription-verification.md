@@ -1,9 +1,25 @@
 # D5.9 subscription identity verification
 
-Status: implementation and successor candidate prepared for owner review. The active
-`execution-plan.json` and its pilot approval remain bound to
-`sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233`.
-No model calls or pilot execution were performed. The replacement is not approved or activated.
+Status: PR #258 is merged. After the first pilot stream failures, the owner authorized the
+strict parser compatibility fix, replacement freeze, a new four-assignment pilot, and full
+execution only after operational checks pass. The original investigation
+and its earlier digests below are retained as history. The active freeze is now
+`sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159`.
+No experiment call occurred while preparing this replacement; the separate owner-authorized
+Fable code-verification call is recorded outside experiment accounting.
+
+The previous pilot consumed four model attempts and dispatched zero environment actions. All four
+responses reported the frozen Haiku model and available usage, but the strict parser rejected
+`system/ui_invalidate` before `system/init`. The campaign's raw stop reason was
+`completed_all_assignments`; infrastructure failures do not satisfy the owner's operational
+pilot condition. The local controller initially accepted those rows, was stopped before
+full dispatch, and now explicitly rejects infrastructure/request-failure rows. Thirteen local
+offline gate checks passed in 0.56 seconds. No full-phase model attempt occurred; every
+experiment process is closed. Both private retention copies verify. The generated
+[pilot launch report](../artifacts/grounding-v5-d59-replication/pilot-launch-report.json)
+records the raw counts, classifications, stream violations, and retention digest. The owner subsequently authorized a strict
+parser successor and a new pilot;
+the frozen results are preserved without replay or post-result reinterpretation.
 
 ## Cause and observations
 
@@ -83,3 +99,51 @@ and oversized responses; safe errors; mandatory verification receipts; and fresh
 on every probe. These cases make no network, browser, OSWorld, CLI, or wall-clock sleep calls.
 The PR validation record states actual counts and runtimes, including omitted existing
 loopback/socket and sleep-based tests.
+
+## Owner-approved recovery amendment (2026-10-22)
+
+The owner subsequently provisioned a full browser OAuth login through the ignored local helper.
+Fresh same-credential profile verification returned HTTP 200 with `claude_max`; the token-route
+CLI identity matched the freeze, and the auth-status-only kernel-sandbox check passed with no
+allowed proxy connections. The earlier 403 observations above remain historical evidence.
+
+The owner now authorizes a replacement freeze with shared OAuth-expiry recovery. Workers pause
+before a new attempt reservation or request deadline, drain existing sends, and wait for the
+owner to run `.venv/bin/python .cache/d59-replication-pilot/configure-token.py --login` in their
+own Terminal. The same-credential Max/CLI/model/help check remains mandatory. Runtime excludes
+owner-login waiting only after all in-flight attempts settle. The six-hour pilot and 168-hour
+full-run windows are active time; request deadlines and counted attempt/wire caps are unchanged.
+A known zero-usage synthetic expiry rejection can use the remaining existing retry; no assignment
+or committed action is replayed, and unknown-invocation stops are never cleared by login.
+
+After the new freeze, the owner authorizes pilot model calls and conditionally authorizes the
+full campaign when every pilot assignment completes with valid operational evidence and verified
+retention, without a guard stop. Task failures do not defeat that operational gate. The dated
+[pre-registration addendum](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) records the
+owner's instructions and the exact phase limits. Model calls remain prohibited until the new
+freeze and its separate machine-readable approvals are recorded.
+
+The active OAuth-recovery freeze binds source `0c7836ff995575ec889a44841b542dff7377e1cc`,
+history policy `policy-bf07cf314a4cc448f498`, and stateless policy
+`policy-adda157ee17a0833a036`. The machine-readable pilot approval and conditional owner
+direction are stored beside `execution-plan.json`. Its disabled flags and zero approved-cap
+placeholders remain intact; separate phase approvals supply the execution limits.
+
+The first launch stopped during preparation/execution binding comparison, before creating
+an attempt journal or dispatching an assignment. The rendered sandbox profile includes a
+fresh temporary path and proxy port, so its digest changes on each probe. Execution now
+compares all identity, source, template, allowlist, and probe outcome fields exactly while
+allowing the rendered-profile digest and positive refused-connection count to vary. Both
+raw receipts are retained (`execution-binding.json` and `execution-live-binding.json`),
+and the final summary binds the execution receipt. The replacement freeze changes only
+source/policy provenance and the digest; phase limits and the approved recovery protocol
+remain the same. `prelaunch-binding-stop.json` records the zero-attempt launch stop.
+
+The parser successor accepts exactly one `system/ui_invalidate` preamble with `event: ui.render`
+before init. Its envelope contains exactly the five observed fields; the session must match
+every record and its UUID must be unique. Unknown, duplicate, misplaced, or expanded UI
+events still fail closed. Model, route, tool/MCP, overage, retry, and sandbox checks remain
+strict. The same validated preamble is recognized for confirmed zero-usage OAuth-expiry and
+connection-reset envelopes under the existing bounded retry. The new parser version is
+`pixelgym-agent-v5-claude-stream-json-action-parser-v4-ui-render-preamble`. Four retained streams were checked offline; the
+previous pilot evidence is unchanged and remains separate from the newly approved pilot.

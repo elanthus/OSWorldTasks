@@ -1,9 +1,10 @@
 # D5.9 replication stop-rule proposal
 
-**Status: owner-selected protocol and review corrections frozen. Execution remains
-unauthorized.** This follow-up implements
+**Status: historical v2 stop-rule record.** The owner subsequently approved the
+[OAuth-recovery replacement freeze](d59-subscription-verification.md), pilot execution,
+and conditional full execution after the pilot operational gate. This follow-up implements
 `pixelgym-agent-v5-d59-replication-stop-rule-v2` with the owner-selected options. The
-final [replication candidate](../artifacts/grounding-v5-d59-replication/execution-plan.json)
+historical [replication candidate](../artifacts/grounding-v5-d59-replication/execution-plan.json)
 binds source revision `7c2834f5ac91e628b7681c6b501044c7da546bc8` with digest `sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233`.
 The owner authorized fixing the Claude review findings and merging both PRs; the
 replacement freeze must include all fixes from PRs #256 and #257.

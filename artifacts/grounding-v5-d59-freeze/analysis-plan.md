@@ -356,3 +356,41 @@ Execution remains disabled, subscription execution remains unauthorized, and app
 model-attempt and provider-wire-request caps remain zero. No provider calls are
 authorized here. Pilot/full execution and the D5.10 verdict retain their separate
 human boundaries.
+
+## Owner amendment (2026-10-22): verified login recovery and active runtime
+
+The owner requested: “Make sure the frozen experiment allows for retries after the token
+expires, and waits for me to login again before continuing.” When asked how login waiting
+should affect the six-hour pilot window, the owner selected: “Pause the clock while awaiting
+login.” This amendment applies the same active-runtime rule to the pilot and full campaign.
+
+Before each model-attempt reservation, the shared authentication gate requires enough access
+validity for the frozen request deadline plus five seconds. On expiry or a confirmed stopped,
+zero-usage synthetic OAuth-expiry rejection, new sends pause. Existing sends settle first;
+only then is owner-login waiting excluded from active elapsed time. The owner renews through
+the local hidden-input helper. A replacement is published to all workers only after fresh
+same-credential Max verification and exact CLI/model/help identity comparison. Each newly
+supplied value receives at most one runtime profile verification, recorded separately as
+non-model authentication traffic. Unchanged invalid values receive no repeated profile calls.
+
+A confirmed rejection and any retry remain durably recorded and consume the existing
+reservations. The existing maximum of two attempts per action, one bounded retry shared with
+timeout/connection-reset recovery, and phase/aggregate caps do not increase. Recovery continues
+with the same policy state and screenshot; assignments and committed actions are never replayed.
+Ambiguous outcomes retain the registered unresolved-invocation ledger stop. Login never clears
+that stop, changes the provider/model/route, or overrides a policy violation.
+
+The owner then authorized: “I need to go to sleep, but I need this experiment started. I believe
+the parameters are correct after this last request that I made, so please proceed with model
+calls once the new freeze is in place.” This authorizes starting the four-assignment pilot
+against the generated replacement digest with 104 environment actions, 208 model-attempt/wire
+reservations, zero control requests, six active hours, and USD 0.00 incremental experiment charge.
+
+The owner added: “if the four assignment pilot succeds, I authorize the full campaign.” The
+owner selected “Operational checks pass; task failures allowed” for the condition: all four
+pilot assignments finish with valid accounting, sandbox/identity checks, and verified retention,
+without a campaign guard stop, regardless of task correctness. Only after that condition is
+checked may the separately reported full campaign start: 432 assignments, 12,134 environment
+actions, 24,268 model-attempt/wire reservations, zero control requests, 168 active hours, and
+USD 0.00 incremental experiment charge. The plan and phase approval files bind the exact new
+digest. D5.9 historical outcomes and the D5.10 human verdict are unchanged.

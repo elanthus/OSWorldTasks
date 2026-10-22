@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
+from pixelgym.grounding.v5.auth_recovery import AUTHENTICATION_RECOVERY_VERSION
 from pixelgym.grounding.v5.claude_subscription import PROFILE_URL, VERIFICATION_VERSION
 from pixelgym.grounding.v5.cli_memory_calibration import build_memory_manifest
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, content_digest
@@ -61,6 +62,7 @@ SOURCE_FILES = (
     "pixelgym/grounding/v5/journal.py",
     "pixelgym/grounding/v5/claude_code_policy.py",
     "pixelgym/grounding/v5/claude_subscription.py",
+    "pixelgym/grounding/v5/auth_recovery.py",
     "pixelgym/grounding/v5/os_sandbox.py",
     "pixelgym/grounding/v5/egress_proxy.py",
     "pixelgym/grounding/v5/sandbox.py",
@@ -127,7 +129,11 @@ def live_manifests(
     )
     return {
         mode: build_memory_manifest(
-            root, base, retain_screenshots=mode == "history", allow_connection_retry=True
+            root,
+            base,
+            retain_screenshots=mode == "history",
+            allow_connection_retry=True,
+            allow_authentication_retry=True,
         )
         for mode in ("history", "stateless")
     }
@@ -338,6 +344,38 @@ def execution_plan(
             "phase_caps": _caps(pilot),
             "proposed_window_hours": PILOT_WINDOW_HOURS,
         },
+        authentication_recovery={
+            "version": AUTHENTICATION_RECOVERY_VERSION,
+            "authentication_source": (
+                "owner-only environment file, atomically replaced by hidden-input helper"
+            ),
+            "verification": "fresh same-credential Max profile and exact CLI/model/help identity",
+            "before_each_attempt": (
+                "pause before reservation when access validity is "
+                "below request deadline plus margin"
+            ),
+            "post_send_retry": (
+                "one confirmed stopped, zero-usage synthetic "
+                "OAuth-expiry rejection; same state/frame"
+            ),
+            "attempt_limit": (
+                "shared existing two-attempt action budget; all "
+                "reservations count toward approved caps"
+            ),
+            "clock": (
+                "exclude owner-login wait only after all in-flight "
+                "requests drain; six/168 active hours"
+            ),
+            "on_expiry": (
+                "pause all new sends; wait for owner helper; no automatic scope change or refresh"
+            ),
+            "authentication_reads": (
+                "one profile GET per newly supplied credential, separately "
+                "journaled; no repeated check of unchanged invalid value"
+            ),
+            "unknown_invocations": "ledger stop remains sticky; login never clears it",
+            "restart_or_assignment_replay": False,
+        },
         primary_jobs=primary,
         reliability_jobs=reliability,
         remaining_human_boundary={
@@ -469,6 +507,21 @@ class CampaignOutcome:
     dispatched: int = 0
 
 
+class CampaignDispatchStopped(RuntimeError):
+    """An explicit registered guard stopped dispatch while existing work drains."""
+
+    def __init__(self, reason: str) -> None:
+        if reason not in {
+            "invocation_ledger_blocked",
+            "approved_cap_reached",
+            "runtime_window_exhausted",
+            "execution_error",
+        }:
+            raise ValueError("invalid dispatch guard stop")
+        super().__init__(reason)
+        self.reason = reason
+
+
 def run_campaign(
     jobs: list[dict[str, Any]],
     *,
@@ -482,6 +535,7 @@ def run_campaign(
     on_backoff: Callable[[dict[str, Any]], None] | None = None,
     wait_for_backoff: Callable[[float], None] | None = None,
     monotonic: Callable[[], float] = time.monotonic,
+    before_dispatch: Callable[[], None] | None = None,
 ) -> CampaignOutcome:
     """Dispatch assignments to ``workers`` threads under the pre-registered stop rule.
 
@@ -601,6 +655,18 @@ def run_campaign(
                 if window_exhausted():
                     outcome.stop_reason = "runtime_window_exhausted"
                     break
+                if before_dispatch is not None:
+                    try:
+                        before_dispatch()
+                    except CampaignDispatchStopped as stopped:
+                        outcome.stop_reason = stopped.reason
+                        break
+                    except BaseException as exc:  # noqa: BLE001 - drain in-flight assignments
+                        first_error = exc
+                        outcome.stop_reason = "execution_error"
+                        break
+                    if ledger_blocked() or window_exhausted():
+                        continue
                 remaining = backoff.remaining(monotonic())
                 if remaining:
                     assert wait_for_backoff is not None and on_backoff is not None

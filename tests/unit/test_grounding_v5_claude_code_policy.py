@@ -465,6 +465,115 @@ def test_haiku_single_turn_thinking_telemetry_and_split_response_are_valid() -> 
     assert parsed.event_counts == {"assistant": 2, "result": 1, "system": 3}
 
 
+def ui_render_stream() -> list[dict[str, Any]]:
+    # The four retained pilot streams all begin with this exact UI envelope,
+    # before init, followed by thinking telemetry and one split assistant message.
+    return [
+        {
+            "type": "system",
+            "subtype": "ui_invalidate",
+            "event": "ui.render",
+            "uuid": "ui-event-test",
+            "session_id": "session-test",
+        },
+        *extended_thinking_stream(),
+    ]
+
+
+def test_ui_render_preamble_preserves_response_usage_identity_and_event_count() -> None:
+    events = ui_render_stream()
+    parsed = parse_events(events)
+    previous = parse_events(events[1:])
+    assert parsed.policy_violations == ()
+    assert parsed.content == previous.content
+    assert parsed.usage == previous.usage
+    assert parsed.resolved_model == previous.resolved_model == policy.MODEL
+    assert parsed.informational_cost_usd == previous.informational_cost_usd
+    assert parsed.event_counts == {"assistant": 2, "result": 1, "system": 4}
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "event",
+        "extra_field",
+        "missing_uuid",
+        "empty_uuid",
+        "duplicate_uuid",
+        "session",
+        "empty_session",
+        "duplicate_ui",
+        "after_init",
+        "after_result",
+        "unknown_system",
+        "model",
+        "tools",
+        "mcp",
+        "retry",
+        "tool_use",
+        "result",
+    ],
+)
+def test_ui_render_preamble_does_not_relax_stream_security(fault: str) -> None:
+    events = ui_render_stream()
+    if fault == "event":
+        events[0]["event"] = "ui.other"
+    elif fault == "extra_field":
+        events[0]["tools"] = ["Read"]
+    elif fault == "missing_uuid":
+        del events[0]["uuid"]
+    elif fault == "empty_uuid":
+        events[0]["uuid"] = ""
+    elif fault == "duplicate_uuid":
+        events[0]["uuid"] = events[1]["uuid"]
+    elif fault == "session":
+        events[0]["session_id"] = "another-session"
+    elif fault == "empty_session":
+        events[0]["session_id"] = ""
+    elif fault == "duplicate_ui":
+        events.insert(1, dict(events[0], uuid="second-ui"))
+    elif fault == "after_init":
+        events.insert(1, events.pop(0))
+    elif fault == "after_result":
+        events.append(events.pop(0))
+    elif fault == "unknown_system":
+        events[0]["subtype"] = "unknown"
+    elif fault == "model":
+        events[4]["message"]["model"] = "another-model"
+    elif fault == "tools":
+        events[1]["tools"] = ["Read"]
+    elif fault == "mcp":
+        events[1]["mcp_servers"] = ["server"]
+    elif fault == "retry":
+        events[0]["subtype"] = "api_retry"
+    elif fault == "tool_use":
+        events[4]["message"]["content"] = [{"type": "tool_use"}]
+    else:
+        events[-1]["result"] = "changed"
+    assert parse_events(events).policy_violations
+
+
+def test_ui_render_preamble_is_accepted_by_the_journaled_transport(tmp_path: Path) -> None:
+    class Process(SuccessfulProcess):
+        def communicate(self, input=None, timeout=None):
+            return "\n".join(json.dumps(event) for event in ui_render_stream()), ""
+
+    transport, journal = make_transport(tmp_path, lambda *_a, **_kw: Process())
+    try:
+        outcome = transport.send(
+            request(), idempotency_key="sha256:ui-render", deadline_seconds=125
+        )
+        assert outcome.status == "response"
+        record = journal.record("sha256:ui-render")
+        assert record is not None
+        assert record["outcome"]["policy_violation"] == "none"
+        assert record["outcome"]["usage_telemetry_status"] == "available"
+        assert transport.subprocesses_closed
+    finally:
+        transport.close()
+        journal.close()
+
+
 @pytest.mark.parametrize(
     "fault",
     [

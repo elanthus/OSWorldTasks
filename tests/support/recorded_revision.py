@@ -7,6 +7,7 @@ source revision rather than from the live checkout, so later edits to
 
 from __future__ import annotations
 
+import ast
 import io
 import os
 import subprocess
@@ -63,3 +64,30 @@ def artifact_revision(path: str | Path) -> str:
     if len(revision) != 40:
         raise ValueError(f"{path} has no recorded revision in the local history")
     return revision
+
+
+def bind_recorded_claude_parser(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Bind a historical manifest rebuild to its archived parser declaration.
+
+    The builder is imported from today's checkout, while its policy bytes come
+    from the archive. Read the constant from those same bytes, independently of
+    the expected artifact, so a new live parser cannot rewrite old evidence.
+    """
+    from pixelgym.grounding.v5 import claude_code_policy
+
+    source = ast.parse((root / "pixelgym/grounding/v5/claude_code_policy.py").read_text())
+    declarations = [
+        node.value
+        for node in source.body
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "PARSER_VERSION"
+            for target in node.targets
+        )
+    ]
+    if len(declarations) != 1:
+        raise ValueError("recorded policy must declare exactly one parser version")
+    version = ast.literal_eval(declarations[0])
+    if not isinstance(version, str) or not version:
+        raise ValueError("recorded parser version must be a nonempty string")
+    monkeypatch.setattr(claude_code_policy, "PARSER_VERSION", version)

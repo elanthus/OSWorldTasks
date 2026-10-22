@@ -16,7 +16,7 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
     execution_plan,
     expected_outputs,
 )
-from tests.support.recorded_revision import archive_recorded_root
+from tests.support.recorded_revision import archive_recorded_root, bind_recorded_claude_parser
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORDED_SOURCE_REVISION = "1201df8a773add79733d392f876b579752f797c5"
@@ -32,7 +32,7 @@ def recorded_root(tmp_path, monkeypatch):
     """Reproduce old evidence using the frozen source bytes, not today's adapter."""
     from pixelgym.grounding.v5 import d59_haiku_retry_successor as successor
 
-    return archive_recorded_root(
+    root = archive_recorded_root(
         tmp_path,
         monkeypatch,
         RECORDED_SOURCE_REVISION,
@@ -44,6 +44,8 @@ def recorded_root(tmp_path, monkeypatch):
             successor.CALIBRATION_PATH,
         ),
     )
+    bind_recorded_claude_parser(root, monkeypatch)
+    return root
 
 
 def test_discarded_run_receipt_is_response_free_and_preserves_failure() -> None:
