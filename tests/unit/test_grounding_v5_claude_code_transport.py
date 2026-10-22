@@ -1064,17 +1064,73 @@ def test_sandboxed_launch_requires_a_token_value_and_absolute_paths(tmp_path: Pa
             scratch_root=Path("/private/tmp/claude-501"),
             oauth_token_source=_synthetic_oauth_token,
         )
+
+
+def test_sandboxed_launch_without_a_token_fails_closed_and_releases_reservations(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(policy.platform, "system", lambda: "Darwin")
     launch = _sandbox_launch(tmp_path)
     empty = policy.ClaudeSandboxLaunch(**{**launch.__dict__, "oauth_token_source": lambda: ""})
+    launched: list[object] = []
+    ledger = policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00"))
+    journal = policy.ClaudeInvocationJournal(tmp_path / "empty.sqlite")
     transport = policy.ClaudeCodeTransport(
-        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
-        invocation_journal=policy.ClaudeInvocationJournal(tmp_path / "empty.sqlite"),
+        ledger=ledger,
+        invocation_journal=journal,
         runtime_identity=runtime_identity(),
-        process_factory=lambda *_a, **_k: SuccessfulProcess(),
+        process_factory=lambda *_a, **_k: launched.append(1) or SuccessfulProcess(),
         sandbox_launch=empty,
     )
     try:
-        with pytest.raises(ValueError, match="non-empty OAuth token value"):
-            _send(transport, "sha256:claude-empty-token")
+        outcome = _send(transport, "sha256:claude-empty-token")
+        assert outcome.status == "pre_send_failure"
+        assert outcome.failure_code == "oauth_token_unavailable"
+        assert launched == []
+        # The reservation is released and the journal row is finished, so the key is
+        # neither charged nor stranded.
+        assert ledger.experiment_charges == {}
+        assert ledger.budget_accounted_usd == Decimal("0.00")
+        stored = journal.record("sha256:claude-empty-token")
+        assert stored is not None and stored["status"] == "pre_send_failure"
+        [record] = transport.records
+        names = record["runtime_enforcement"]["environment_variable_names"]
+        assert policy.OAUTH_TOKEN_ENVIRONMENT_VARIABLE not in names
+        assert record["runtime_enforcement"]["environment_allowlist_applied"] is True
     finally:
         transport.close()
+        journal.close()
+
+
+def test_sandboxed_launch_preparation_error_is_a_pre_send_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(policy.platform, "system", lambda: "Darwin")
+    launch = _sandbox_launch(tmp_path)
+    elsewhere = tmp_path / "elsewhere" / "claude"
+    elsewhere.parent.mkdir()
+    elsewhere.write_text("")
+    # The executable is outside the declared CLI root, so profile rendering refuses it.
+    broken = policy.ClaudeSandboxLaunch(**{**launch.__dict__, "cli_executable": elsewhere})
+    ledger = policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00"))
+    journal = policy.ClaudeInvocationJournal(tmp_path / "broken.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=ledger,
+        invocation_journal=journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda *_a, **_k: SuccessfulProcess(),
+        sandbox_launch=broken,
+    )
+    try:
+        outcome = _send(transport, "sha256:claude-broken-launch")
+        assert outcome.status == "pre_send_failure"
+        assert outcome.failure_code == "launch_preparation_failure"
+        assert ledger.experiment_charges == {}
+        stored = journal.record("sha256:claude-broken-launch")
+        assert stored is not None and stored["status"] == "pre_send_failure"
+        [record] = transport.records
+        assert record["type"] == "ValueError"
+        assert record["runtime_enforcement"]["mechanism_name"] == "not_bound_to_cli_launch"
+    finally:
+        transport.close()
+        journal.close()

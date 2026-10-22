@@ -402,8 +402,8 @@ def _sandboxed_environment(
     oauth_token: str,
     api_retry_limit: int | None,
 ) -> dict[str, str]:
-    if not oauth_token:
-        raise ValueError("sandboxed launch requires a non-empty OAuth token value")
+    """Child environment for one launch; an empty token is omitted, never sent as empty."""
+
     result = {
         "PATH": _SANDBOXED_PATH,
         "HOME": str(layout.home),
@@ -418,7 +418,8 @@ def _sandboxed_environment(
     result.update(dict(_SANDBOXED_FIXED_ENVIRONMENT))
     if api_retry_limit is not None:
         result[CLI_API_RETRY_ENVIRONMENT_VARIABLE] = str(api_retry_limit)
-    result[OAUTH_TOKEN_ENVIRONMENT_VARIABLE] = oauth_token
+    if oauth_token:
+        result[OAUTH_TOKEN_ENVIRONMENT_VARIABLE] = oauth_token
     return result
 
 
@@ -447,6 +448,7 @@ class _PreparedLaunch:
     enforcement: RuntimeEnforcement
     egress_marker: int | None
     pre_send_failure: str | None
+    error_type: str | None = None
 
 
 def action_prompt(task_instruction: str) -> str:
@@ -1123,7 +1125,20 @@ class ClaudeCodeTransport:
             return cli_fault_outcome(cli_pre_send_fault("duplicate_invocation"))
         outcome: dict[str, Any]
         with tempfile.TemporaryDirectory(prefix="pixelgym-claude-cli-") as temporary:
-            launch = self._prepare_launch(Path(temporary))
+            try:
+                launch = self._prepare_launch(Path(temporary))
+            except (ValueError, OSError) as exc:
+                # A launch that cannot be prepared costs nothing and must not strand the
+                # ledger reservation or the journal row.
+                launch = _PreparedLaunch(
+                    command=tuple(_runtime_command()),
+                    environment={},
+                    cwd=Path(temporary),
+                    enforcement=unbound_runtime_enforcement(),
+                    egress_marker=None,
+                    pre_send_failure="launch_preparation_failure",
+                    error_type=type(exc).__name__,
+                )
             command = launch.command
             launch_enforcement = launch.enforcement
             enforcement_record = launch_enforcement.to_dict()
@@ -1143,6 +1158,7 @@ class ClaudeCodeTransport:
                     "failure_code": failure_code,
                     "cli_fault": fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
+                    **({} if launch.error_type is None else {"type": launch.error_type}),
                 }
                 transport_outcome = cli_fault_outcome(fault)
                 outcome["transport_outcome"] = transport_outcome.to_dict()
@@ -1439,11 +1455,12 @@ class ClaudeCodeTransport:
             scratch_root=launch.scratch_root,
             denied_paths=launch.denied_paths,
         )
+        oauth_token = launch.oauth_token_source()
         environment = _sandboxed_environment(
             self.environment,
             layout=layout,
             proxy_url=proxy.url,
-            oauth_token=launch.oauth_token_source(),
+            oauth_token=oauth_token,
             api_retry_limit=self.api_retry_limit,
         )
         contract = sanitized_command_contract()
@@ -1465,7 +1482,11 @@ class ClaudeCodeTransport:
             enforcement=enforcement,
             egress_marker=proxy.sequence,
             pre_send_failure=(
-                None if platform.system() == "Darwin" else "os_sandbox_unsupported_platform"
+                "os_sandbox_unsupported_platform"
+                if platform.system() != "Darwin"
+                else "oauth_token_unavailable"
+                if not oauth_token
+                else None
             ),
         )
 
