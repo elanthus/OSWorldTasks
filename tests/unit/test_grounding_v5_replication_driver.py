@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import threading
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,55 @@ from pixelgym.grounding.v5.provider_adapters import ClaudeCliAdapter
 from scripts import run_grounding_v5_d59_replication as driver
 
 ROOT = Path(__file__).parents[2]
+
+
+def sandbox_binding():
+    return {
+        "runtime_identity": {"model": "frozen-model", "subscription_type": "max"},
+        "source_files": {"runner": "sha256:source"},
+        "sandbox_probe": {
+            "passed": True,
+            "profile_digest": "sha256:" + "a" * 64,
+            "proxied_refused_count": 13,
+            "profile_template_digest": "sha256:template",
+            "egress_allowlist_digest": "sha256:allowlist",
+            "proxied_targets": ["api.anthropic.com:443"],
+            "direct_targets_seen": 0,
+        },
+    }
+
+
+def test_runtime_binding_accepts_new_rendered_profile_and_retains_observations():
+    prepared = sandbox_binding()
+    live = deepcopy(prepared)
+    live["sandbox_probe"].update(profile_digest="sha256:" + "b" * 64, proxied_refused_count=14)
+    driver.validate_runtime_binding(prepared, live)
+    assert prepared["sandbox_probe"]["profile_digest"] != live["sandbox_probe"]["profile_digest"]
+    assert prepared["sandbox_probe"]["proxied_refused_count"] == 13
+
+
+@pytest.mark.parametrize(
+    "section,key,value",
+    [
+        ("runtime_identity", "model", "different-model"),
+        ("runtime_identity", "subscription_type", "unknown"),
+        ("source_files", "runner", "changed"),
+        ("sandbox_probe", "profile_template_digest", "changed"),
+        ("sandbox_probe", "egress_allowlist_digest", "changed"),
+        ("sandbox_probe", "proxied_targets", ["other.invalid:443"]),
+        ("sandbox_probe", "direct_targets_seen", 1),
+        ("sandbox_probe", "passed", False),
+        ("sandbox_probe", "profile_digest", "malformed"),
+        ("sandbox_probe", "proxied_refused_count", 0),
+        ("sandbox_probe", "proxied_refused_count", True),
+    ],
+)
+def test_runtime_binding_keeps_identity_and_security_checks_strict(section, key, value):
+    prepared = sandbox_binding()
+    live = deepcopy(prepared)
+    live[section][key] = value
+    with pytest.raises(ValueError, match="binding"):
+        driver.validate_runtime_binding(prepared, live)
 
 
 @pytest.mark.parametrize("expected_route", claude.APPROVED_ROUTES)
@@ -97,7 +147,7 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
         "approved_caps": CallCaps(52, 1 if cap_hit else 4, 0, 1 if cap_hit else 4).to_dict(),
         "approved_runtime_window_hours": 6,
     }
-    binding = {"fixture": "offline"}
+    binding = sandbox_binding()
     output = tmp_path / "output"
     output.mkdir()
     for name, value in [
@@ -165,6 +215,7 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
         retention_backup=tmp_path / "backup",
     )
     summary = driver.read_object(output / "summary.json")
+    assert driver.read_object(output / "execution-live-binding.json") == binding
     assert summary["source_revision"] == plan["source_binding"]["source_revision"]
     count = 2 if scenario == "invalid" else 1
     assert summary["attempted"] == summary["completed"] == count

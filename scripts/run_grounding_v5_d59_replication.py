@@ -288,6 +288,42 @@ def assignment_rate_limit_metadata(journal: V5AttemptJournal, trial_id: str) -> 
     }
 
 
+def validate_runtime_binding(prepared: dict[str, Any], live: dict[str, Any]) -> None:
+    """Compare identities exactly while retaining independent sandbox observations.
+
+    A rendered sandbox profile contains a fresh temporary directory and proxy port.
+    Its digest must differ between probes; refused connection counts can differ too.
+    The template, allowlist, every probe outcome, and all identity/source fields must
+    still agree. Both raw receipts are retained alongside the execution evidence.
+    """
+
+    def stable(binding: dict[str, Any]) -> dict[str, Any]:
+        probe = binding.get("sandbox_probe", {})
+        digest = probe.get("profile_digest", "")
+        count = probe.get("proxied_refused_count")
+        if not (
+            probe.get("passed") is True
+            and isinstance(digest, str)
+            and digest.startswith("sha256:")
+            and len(digest) == 71
+            and all(character in "0123456789abcdef" for character in digest[7:])
+            and type(count) is int
+            and count >= 1
+        ):
+            raise ValueError("runtime binding requires successful sandbox probe receipts")
+        return {
+            **binding,
+            "sandbox_probe": {
+                key: value
+                for key, value in probe.items()
+                if key not in {"profile_digest", "proxied_refused_count"}
+            },
+        }
+
+    if stable(prepared) != stable(live):
+        raise ValueError("prepared runtime binding differs from the live runtime")
+
+
 def execute(
     phase: str,
     approval_path: Path,
@@ -309,14 +345,14 @@ def execute(
         raise ValueError("prepared execution plan differs from the approved plan")
     if read_object(output / "owner-approval.json") != approval:
         raise ValueError("prepared owner approval differs from the approved record")
-    if read_object(output / "execution-binding.json") != binding:
-        raise ValueError("prepared runtime binding differs from the live runtime")
+    validate_runtime_binding(read_object(output / "execution-binding.json"), binding)
     if (output / "attempts.sqlite").exists() or list(output.glob("invocations-*.sqlite")):
         raise FileExistsError("never restart or overwrite an existing replication campaign")
     if retention_archive.exists() or retention_backup.exists():
         raise FileExistsError("retention destinations must not exist before the run")
     if not 1 <= workers <= int(plan["concurrency"]["max_workers"]):
         raise ValueError("workers exceeds the pre-registered maximum")
+    write_object(output / "execution-live-binding.json", binding)
 
     manifests = live_manifests(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
