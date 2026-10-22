@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
@@ -502,20 +500,9 @@ def test_proposed_plan_fields_without_mutating_frozen_candidate(candidate_plan, 
     root = Path(__file__).parents[2]
     path = root / rep.OUTPUT_DIRECTORY / "execution-plan.json"
     before = path.read_bytes()
-    # Compare every option to the recorded v1 baseline, even after the owner
-    # chooses a v2 successor. Keep the checked-in candidate immutable in this test.
-    frozen = json.loads(
-        subprocess.check_output(
-            [
-                "git",
-                "show",
-                "8fd5d2b7caa04fee0a918cb3059be84cf8af84e0:"
-                + rep.OUTPUT_DIRECTORY
-                + "/execution-plan.json",
-            ],
-            cwd=root,
-        )
-    )
+    # Compare v1 and v2 at one source revision, independently of which version
+    # the owner selected in the checked-in candidate or retained branch history.
+    frozen = candidate_plan
     identity = claude.ClaudeRuntimeIdentity(**frozen["runtime_identity"])
     proposal = rep.execution_plan(
         root,
@@ -525,8 +512,6 @@ def test_proposed_plan_fields_without_mutating_frozen_candidate(candidate_plan, 
     )
     changed = {k for k, v in proposal.items() if frozen[k] != v}
     assert changed == {
-        "source_binding",
-        "policy_manifests",
         "stop_rule",
         "concurrency",
         "execution_plan_digest",
