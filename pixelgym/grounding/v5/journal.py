@@ -42,6 +42,7 @@ TERMINAL_ATTEMPT_KINDS = frozenset(
 )
 
 _DIGEST_VERSION_METADATA_KEY = "event_chain_digest_version"
+WRITER_BUSY_TIMEOUT_SECONDS = 60.0
 
 
 class JournalConflictError(RuntimeError):
@@ -83,7 +84,9 @@ class V5AttemptJournal:
             self._connection.execute("PRAGMA query_only=ON")
             return
         path.parent.mkdir(parents=True, exist_ok=True)
-        self._connection = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
+        self._connection = sqlite3.connect(
+            path, timeout=WRITER_BUSY_TIMEOUT_SECONDS, isolation_level=None, check_same_thread=False
+        )
         self._connection.execute("PRAGMA journal_mode=WAL")
         self._connection.execute("PRAGMA synchronous=FULL")
         try:

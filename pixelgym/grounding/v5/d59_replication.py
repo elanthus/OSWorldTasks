@@ -6,9 +6,9 @@ digest, and changes four things, each pre-registered here before any provider ca
 1. The policy pair runs under the kernel sandbox with the egress proxy
    (docs/v5-policy-sandbox.md), so every launch record carries ``os_sandbox_applied: true``.
 2. The route is the installed CLI with token authentication (``REPLICATION_ROUTE``).
-3. The stop rule is the amended D5.9 rule, frozen up front: per-episode failures count and
-   the campaign continues; only caps, the runtime window, a blocked ledger, or repeated
-   infrastructure failures stop it.
+3. The stop rule is frozen up front: episode failures stay in the denominator. The
+   selected version binds the stop dispositions and failure streak scope; caps, the
+   runtime window, a blocked ledger, and execution errors always stop dispatch.
 4. The reporting rule is fixed before the run: the replication is the headline because its
    journals are retained, D5.9 remains the pre-registered primary reported unchanged, and a
    disagreement larger than the 20-point minimum relevant difference is a finding.
@@ -20,10 +20,11 @@ from __future__ import annotations
 
 import hashlib
 import queue
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -37,7 +38,14 @@ from pixelgym.grounding.v5.d59_haiku_retry_successor import (
     _validate_policy_inputs,
 )
 from pixelgym.grounding.v5.egress_proxy import egress_allowlist_digest
+from pixelgym.grounding.v5.journal import CallCapExceededError
 from pixelgym.grounding.v5.os_sandbox import cli_profile_template_digest
+from pixelgym.grounding.v5.replication_stop_rules import (
+    PROPOSED_STOP_RULE_VERSION,
+    FailureStreak,
+    ProposedStopRule,
+    RateLimitBackoff,
+)
 from pixelgym.grounding.v5.sandbox import OS_SANDBOX_CLI_LAUNCH_MECHANISM
 
 PREDECESSOR_PATH = "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json"
@@ -48,6 +56,8 @@ PRE_REGISTRATION_PATH = "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
 OUTPUT_DIRECTORY = "artifacts/grounding-v5-d59-replication"
 SOURCE_FILES = (
     "pixelgym/grounding/v5/d59_replication.py",
+    "pixelgym/grounding/v5/replication_stop_rules.py",
+    "pixelgym/grounding/v5/journal.py",
     "pixelgym/grounding/v5/claude_code_policy.py",
     "pixelgym/grounding/v5/os_sandbox.py",
     "pixelgym/grounding/v5/egress_proxy.py",
@@ -149,7 +159,11 @@ def pilot_jobs(
 
 
 def execution_plan(
-    root: Path, *, source_revision: str, runtime_identity: claude.ClaudeRuntimeIdentity
+    root: Path,
+    *,
+    source_revision: str,
+    runtime_identity: claude.ClaudeRuntimeIdentity,
+    stop_rule_options: ProposedStopRule | None = None,
 ) -> dict[str, Any]:
     predecessor = _read(root, PREDECESSOR_PATH)
     body = {k: v for k, v in predecessor.items() if k != "execution_plan_digest"}
@@ -324,7 +338,77 @@ def execution_plan(
     )
     value.pop("change_control", None)
     value.pop("owner_exception", None)
+    if stop_rule_options is not None:
+        value["stop_rule"].update(
+            version=PROPOSED_STOP_RULE_VERSION,
+            episode_outcomes_that_continue=[
+                *EPISODE_OUTCOMES_THAT_CONTINUE,
+                "request_failure",
+                *(
+                    ["policy_violation"]
+                    if stop_rule_options.policy_violation_action == "continue"
+                    else []
+                ),
+            ],
+            campaign_stops_on=[
+                *CAMPAIGN_STOPS_ON,
+                "consecutive_request_failures",
+                *(
+                    ["policy_violation"]
+                    if stop_rule_options.policy_violation_action == "stop"
+                    else []
+                ),
+            ],
+            amendment_options=asdict(stop_rule_options),
+            request_failure_disposition={
+                "pre_send": "execution_error; retain the failed assignment and stop dispatch",
+                "post_send": "retain in denominator; apply the selected request-failure streak",
+            },
+            origin=(
+                "v2 options selected by the owner on 2026-10-22; corrected candidate includes "
+                "the authorized review fixes; execution requires separate exact approval"
+                if stop_rule_options == ProposedStopRule("per_worker", "stop")
+                else "unapproved v2 options; requires a successor freeze and exact owner approval"
+            ),
+        )
+        value["owner_direction"]["statements"].extend(
+            [
+                {
+                    "recorded_at": "2026-10-22",
+                    "statement": statement,
+                }
+                for statement in (
+                    (
+                        "Approve the request-failure disposition, streak limit, and backoff "
+                        "parameters., Select `policy_violation_action`: `stop`. Select "
+                        "`failure_streak_scope`: `per_worker`"
+                    ),
+                    "Re-freeze this candidate; no execution",
+                    (
+                        "make sure the refreeze includes all fixes in the 2 PRs we've been working "
+                        "on in this thread"
+                    ),
+                    "After addressing the issues that claude found, merge both prs",
+                )
+            ]
+        )
+        value["concurrency"]["stop_rule_evaluation"] = (
+            "completion order; failure streaks: "
+            + stop_rule_options.failure_streak_scope
+            + "; no new dispatch after a stop; drain in-flight results; bounded journaled "
+            "rate-limit backoff before new dispatch, using one shared deadline equal to "
+            "max(rejection completion time + bounded delay)"
+        )
     return {**value, "execution_plan_digest": content_digest(value)}
+
+
+def stop_rule_options_for_plan(plan: dict[str, Any]) -> ProposedStopRule | None:
+    rule = plan["stop_rule"]
+    if rule["version"] == STOP_RULE_VERSION and "amendment_options" not in rule:
+        return None
+    if rule["version"] == PROPOSED_STOP_RULE_VERSION:
+        return ProposedStopRule(**rule["amendment_options"])
+    raise ValueError("unsupported stop-rule version or options")
 
 
 def expected_approval(plan: dict[str, Any], phase: str) -> dict[str, Any]:
@@ -381,6 +465,11 @@ def run_campaign(
     window_exhausted: Callable[[], bool],
     ledger_blocked: Callable[[], bool],
     on_result: Callable[[dict[str, Any]], None] = lambda row: None,
+    stop_rule_version: str = STOP_RULE_VERSION,
+    stop_rule_options: ProposedStopRule | None = None,
+    on_backoff: Callable[[dict[str, Any]], None] | None = None,
+    wait_for_backoff: Callable[[float], None] | None = None,
+    monotonic: Callable[[], float] = time.monotonic,
 ) -> CampaignOutcome:
     """Dispatch assignments to ``workers`` threads under the pre-registered stop rule.
 
@@ -392,8 +481,18 @@ def run_campaign(
 
     if workers < 1 or workers > MAX_WORKERS:
         raise ValueError(f"workers must be in [1, {MAX_WORKERS}]")
+    _validate_stop_rule(stop_rule_version, stop_rule_options)
+    if stop_rule_options is not None and (on_backoff is None or wait_for_backoff is None):
+        raise ValueError("v2 requires journaled backoff and a bounded wait implementation")
     outcome = CampaignOutcome()
     consecutive_infrastructure_failures = 0
+    infrastructure = (
+        FailureStreak(stop_rule_options.failure_streak_scope) if stop_rule_options else None
+    )
+    requests = FailureStreak(stop_rule_options.failure_streak_scope) if stop_rule_options else None
+    backoff = RateLimitBackoff()
+    backoff_receipt: dict[str, Any] = {}
+    backoff_wait_index = 0
     completions: queue.SimpleQueue[tuple[int, dict[str, Any] | None, BaseException | None]] = (
         queue.SimpleQueue()
     )
@@ -402,15 +501,41 @@ def run_campaign(
         # Enqueue at the worker boundary. A set of finished futures cannot retain
         # completion order when several finish during a slow result callback.
         try:
+            started = monotonic()
             row = run_assignment(jobs[index])
+            if stop_rule_options is not None:
+                row = {
+                    **row,
+                    "campaign_started_monotonic": started,
+                    "campaign_completed_monotonic": monotonic(),
+                }
         except BaseException as exc:  # noqa: BLE001 - drain before re-raising
             completions.put((index, None, exc))
         else:
             completions.put((index, row, None))
 
     def record(index: int, row: dict[str, Any]) -> str | None:
-        nonlocal consecutive_infrastructure_failures
-        if row["classification"] == "infrastructure_failure":
+        nonlocal consecutive_infrastructure_failures, backoff_receipt
+        consecutive_request_failures = 0
+        if row["classification"] == "approved_cap_reached":
+            pass  # Retain the cap-hit assignment without extending any failure streak.
+        elif infrastructure is not None and requests is not None:
+            worker = int(row["worker"])
+            started = float(row["campaign_started_monotonic"])
+            ended = float(row["campaign_completed_monotonic"])
+            consecutive_infrastructure_failures = infrastructure.record(
+                row["classification"] == "infrastructure_failure",
+                worker=worker,
+                started=started,
+                ended=ended,
+            )
+            consecutive_request_failures = requests.record(
+                row["classification"] == "request_failure",
+                worker=worker,
+                started=started,
+                ended=ended,
+            )
+        elif row["classification"] == "infrastructure_failure":
             consecutive_infrastructure_failures += 1
         else:
             consecutive_infrastructure_failures = 0
@@ -420,8 +545,31 @@ def run_campaign(
             str(row["classification"]),
             ledger_blocked=ledger_blocked(),
             consecutive_infrastructure_failures=consecutive_infrastructure_failures,
+            consecutive_request_failures=consecutive_request_failures,
+            request_failure_phase=row.get("request_failure_phase"),
+            stop_rule_version=stop_rule_version,
+            stop_rule_options=stop_rule_options,
         )
         on_result(row)
+        if (
+            reason is None
+            and outcome.stop_reason == "running"
+            and outcome.dispatched < len(jobs)
+            and stop_rule_options is not None
+            and row["classification"] == "request_failure"
+            and row.get("rate_limited") is True
+        ):
+            assert on_backoff is not None
+            seconds = stop_rule_options.backoff_seconds(row.get("retry_after_seconds"))
+            completed_at = float(row["campaign_completed_monotonic"])
+            backoff_receipt = {
+                "trial_id": row["trial_id"],
+                "seconds": seconds,
+                "stop_rule_version": stop_rule_version,
+                "completed_monotonic": completed_at,
+                "dispatch_not_before": backoff.schedule(completed_at, seconds),
+            }
+            on_backoff({**backoff_receipt, "stage": "scheduled"})
         return reason
 
     pending = 0
@@ -435,9 +583,34 @@ def run_campaign(
                 and pending < workers
                 and completions.empty()
             ):
+                if ledger_blocked():
+                    outcome.stop_reason = "invocation_ledger_blocked"
+                    break
                 if window_exhausted():
                     outcome.stop_reason = "runtime_window_exhausted"
                     break
+                remaining = backoff.remaining(monotonic())
+                if remaining:
+                    assert wait_for_backoff is not None and on_backoff is not None
+                    backoff_started = monotonic()
+                    try:
+                        wait_for_backoff(remaining)
+                        on_backoff(
+                            {
+                                **backoff_receipt,
+                                "stage": "completed",
+                                "wait_index": backoff_wait_index,
+                                "seconds": remaining,
+                                "elapsed_seconds": max(0.0, monotonic() - backoff_started),
+                            }
+                        )
+                        backoff_wait_index += 1
+                    except BaseException as exc:  # noqa: BLE001 - drain before re-raising
+                        first_error = exc
+                        outcome.stop_reason = "execution_error"
+                        break
+                    # Recheck the window, ledger, and queued completions before dispatch.
+                    continue
                 pool.submit(complete_assignment, next_index)
                 pending += 1
                 outcome.dispatched += 1
@@ -446,6 +619,14 @@ def run_campaign(
                 break
             index, row, error = completions.get()
             pending -= 1
+            if isinstance(error, CallCapExceededError):
+                row = {
+                    **jobs[index],
+                    "classification": "approved_cap_reached",
+                    "success": False,
+                    "incomplete_assignment": True,
+                }
+                error = None
             try:
                 if error is not None:
                     raise error
@@ -474,19 +655,50 @@ def campaign_stop_reason(
     *,
     ledger_blocked: bool,
     consecutive_infrastructure_failures: int,
+    consecutive_request_failures: int = 0,
+    request_failure_phase: str | None = None,
+    stop_rule_version: str = STOP_RULE_VERSION,
+    stop_rule_options: ProposedStopRule | None = None,
 ) -> str | None:
     """The pre-registered stop rule, applied after each assignment's result.
 
     Returns the stop reason, or None when the campaign continues.
     """
 
+    _validate_stop_rule(stop_rule_version, stop_rule_options)
     if ledger_blocked:
         return "invocation_ledger_blocked"
+    if classification == "approved_cap_reached":
+        return "approved_cap_reached"
     if classification == "phase_time_stop":
         # The runner refused to start an attempt inside the window's final request deadline.
         return "runtime_window_exhausted"
+    if stop_rule_options is not None:
+        if classification == "policy_violation":
+            return (
+                "policy_violation" if stop_rule_options.policy_violation_action == "stop" else None
+            )
+        if classification == "request_failure":
+            if request_failure_phase == "pre_send":
+                # Local launch/configuration faults are execution errors, rather
+                # than provider rejections eligible for the bounded continuation.
+                return "execution_error"
+            return (
+                "consecutive_request_failures"
+                if consecutive_request_failures
+                >= stop_rule_options.consecutive_request_failure_limit
+                else None
+            )
     if classification not in EPISODE_OUTCOMES_THAT_CONTINUE:
         return f"unexpected_classification:{classification}"
     if consecutive_infrastructure_failures >= CONSECUTIVE_INFRASTRUCTURE_FAILURE_LIMIT:
         return "consecutive_infrastructure_failures"
     return None
+
+
+def _validate_stop_rule(version: str, options: ProposedStopRule | None) -> None:
+    if not (
+        (version == STOP_RULE_VERSION and options is None)
+        or (version == PROPOSED_STOP_RULE_VERSION and options is not None)
+    ):
+        raise ValueError("stop-rule version must match explicit proposal options")

@@ -434,7 +434,7 @@ class ClaudeCliAdapter(_BaseAdapter):
 
     def _policy(self, slot: str) -> ClaudeCodePolicy:
         del slot
-        return ClaudeCodePolicy()
+        return ClaudeCodePolicy(runtime_identity=self.runtime_identity)
 
     def spend_snapshot(self) -> SpendSnapshot:
         return SpendSnapshot(

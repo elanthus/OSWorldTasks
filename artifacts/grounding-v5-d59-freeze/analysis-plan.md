@@ -242,3 +242,117 @@ not rerun, replayed, or reclassified.
 - **Human boundary:** the owner creates the route login, approves the exact plan digest with
   the pilot caps and window, then approves the full caps and window after the pilot. D5.10 and
   public wording remain human-owned.
+
+## Addendum (2026-10-22): unapproved replication stop-rule v2 proposal
+
+**This is a proposal for owner review, not an amendment to the frozen candidate.**
+The preceding records and
+`artifacts/grounding-v5-d59-replication/execution-plan.json` remain unchanged. The
+PR #256 candidate digest remains
+`sha256:bf08e0cbf2a69407e04e4eeed78675e4592d11f714238542bc1520490761444e`.
+Code prepared afterward intentionally fails that candidate's source-binding check;
+it is not runnable until a separate successor freeze and execution approval.
+
+The [proposal report](../../docs/d59-replication-stop-rule-proposal.md) describes
+`pixelgym-agent-v5-d59-replication-stop-rule-v2` and the implementation boundaries.
+It prepares these choices without selecting them:
+
+- Continue `request_failure` as a failed assignment in the denominator, with a separate
+  proposed consecutive-request-failure limit of 3. A reported rate limit delays new
+  dispatch with journaled backoff, proposed at 30 seconds and bounded at 60 seconds.
+  This adds no intra-action retry or assignment replay.
+- Select `policy_violation_action` explicitly as `stop` or `continue`. A continuing
+  violation remains a failed assignment and does not relax response, egress, model,
+  or credential checks.
+- Select `failure_streak_scope` explicitly as `per_worker` or `non_overlapping` for
+  the infrastructure and request-failure streaks. The former counts independently
+  within each worker; the latter greedily selects pairwise non-overlapping completed
+  failure intervals. A failure increments only if it starts at or after the last
+  selected interval ends; overlapping completions neither increment nor extend that
+  end. This does not infer distinct outages: a late bridging interval does not merge
+  previously selected intervals. A nonmatching result resets the relevant streak.
+  The infrastructure limit remains 3.
+
+The shared subscription ledger remains a campaign-wide priority stop. A post-send
+CLI fault without a parsed envelope retains an unresolved invocation and blocks the
+ledger, except the enabled confirmed-stopped timeout/connection-reset retry case.
+One worker's block stops new dispatch for every worker, and in-flight assignments
+are drained and recorded. Neither proposed continuing disposition bypasses this
+registered `invocation_ledger_blocked` stop.
+
+A future approved re-freeze updates `source_binding`, `policy_manifests`, and
+`execution_plan_digest`. Choosing v2 additionally changes exactly
+`stop_rule.version`, `stop_rule.episode_outcomes_that_continue`,
+`stop_rule.campaign_stops_on`, `stop_rule.amendment_options`, `stop_rule.origin`, and
+`concurrency.stop_rule_evaluation`. The tasks, statistical analysis, reliability
+schedule, caps, and runtime proposal are unchanged. No provider calls or re-freeze
+are authorized by this addendum; the owner must choose the rule and approve the
+exact successor digest, then the pilot caps and window, before execution.
+
+
+## Owner decision (2026-10-22): replication stop-rule v2 choices
+
+After reviewing the preceding proposal, the owner stated:
+
+> Approve the request-failure disposition, streak limit, and backoff parameters., Select `policy_violation_action`: `stop`. Select `failure_streak_scope`: `per_worker`
+
+This selects request-failure continuation as failed assignments, a separate limit of
+3 consecutive request failures per worker, a 30-second rate-limit backoff capped at
+60 seconds, an explicit stop on policy violations, and per-worker infrastructure
+failure streaks with the unchanged limit of 3. The shared ledger remains a
+campaign-wide priority stop. The non-overlapping alternative is not selected.
+
+This records protocol choices only. The frozen execution plan is unchanged. No
+provider calls, replacement freeze, pilot execution, full execution, or D5.10 verdict
+are authorized by this decision; those retain their separate boundaries.
+
+
+## Owner authorization (2026-10-22): non-executable successor freeze
+
+The owner then authorized: “Re-freeze this candidate; no execution,” referring to
+`sha256:5c749d996e551b12c2c851628a6c54594a3ab895543c4d696d3f2a0c1234fe99`,
+and required the re-freeze to include all fixes in PRs #256 and #257. That historical
+successor bound source revision `dfde3c39a5a37520e61e85eec46fc370dda74ab8`, which
+contained both fix sets at that point. All eight changed production Python files were
+checked byte for byte against that revision before the replacement was written.
+
+The selected rule is v2 with per-worker infrastructure and request-failure streaks,
+a request-failure limit of 3, explicit stop on policy violations, and a minimum
+30-second rate-limit backoff capped at 60 seconds. The source binding and all policy
+manifests were regenerated. Execution remains disabled, subscription execution is
+unauthorized, and approved model-attempt and provider-wire-request caps remain zero.
+This freeze is not pilot/full execution approval or a D5.10 verdict.
+
+## Review corrections (2026-10-22): final successor binding
+
+The owner subsequently authorized fixing the Claude review findings and merging
+both PRs. The prior requirement that the replacement freeze include all fixes from
+PRs #256 and #257 remains in force. The final successor source revision is
+`7c2834f5ac91e628b7681c6b501044c7da546bc8` and its digest is `sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233`. The regenerated candidate was verified byte for byte. The exact `5c749d99…` approval above remains
+a historical authorization, not the identity of the final candidate.
+
+The reviewed v2 disposition distinguishes the CLI fault phase. A pre-send setup
+fault classified as `request_failure` immediately stops dispatch as the existing
+`execution_error`, retaining the original result classification and fault phase.
+Only post-send request failures continue under the approved per-worker streak
+limit of 3. This correction adds no stop name or new limit.
+
+Rate-limit backoff uses one global deadline equal to the maximum of each rejection's
+completion time plus its bounded delay. Queued simultaneous rejections cannot stack
+separate waits. Schedules and actual waits are journaled, with the approved
+30-second minimum and 60-second maximum. Backoff grants no extra cap, runtime, or
+retry and does not delay draining after a stop.
+
+The final replacement updates `source_binding`, `policy_manifests`, and
+`execution_plan_digest`; `owner_direction.statements` records the owner's selected
+protocol choices. Relative to v1, v2 changes `stop_rule.version`,
+`stop_rule.episode_outcomes_that_continue`, `stop_rule.campaign_stops_on`,
+`stop_rule.amendment_options`, `stop_rule.request_failure_disposition`,
+`stop_rule.origin`, and `concurrency.stop_rule_evaluation`.
+`stop_rule.request_failure_disposition` records pre-send `execution_error` and
+post-send bounded-streak handling; `stop_rule.origin` records the protocol approval.
+
+Execution remains disabled, subscription execution remains unauthorized, and approved
+model-attempt and provider-wire-request caps remain zero. No provider calls are
+authorized here. Pilot/full execution and the D5.10 verdict retain their separate
+human boundaries.
