@@ -1,0 +1,1 @@
+{"approved_caps":{"environment_action_cap":104,"model_attempt_cap":208,"provider_control_request_cap":0,"provider_wire_request_cap":208},"approved_runtime_window_hours":6,"execution_plan_digest":"sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233","incremental_experiment_charge_cap_usd":"0.00","phase":"pilot","subscription_execution_authorized":true}

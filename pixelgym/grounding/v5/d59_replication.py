@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
+from pixelgym.grounding.v5.claude_subscription import PROFILE_URL, VERIFICATION_VERSION
 from pixelgym.grounding.v5.cli_memory_calibration import build_memory_manifest
 from pixelgym.grounding.v5.contracts import CallCaps, PolicyManifest, content_digest
 from pixelgym.grounding.v5.d59_haiku_retry_successor import (
@@ -59,6 +60,7 @@ SOURCE_FILES = (
     "pixelgym/grounding/v5/replication_stop_rules.py",
     "pixelgym/grounding/v5/journal.py",
     "pixelgym/grounding/v5/claude_code_policy.py",
+    "pixelgym/grounding/v5/claude_subscription.py",
     "pixelgym/grounding/v5/os_sandbox.py",
     "pixelgym/grounding/v5/egress_proxy.py",
     "pixelgym/grounding/v5/sandbox.py",
@@ -244,12 +246,22 @@ def execution_plan(
             "subscription_type": runtime_identity.subscription_type,
             "login_source": (
                 f"{claude.OAUTH_TOKEN_ENVIRONMENT_VARIABLE} in the runner environment, created "
-                "by `claude setup-token`; never journaled"
+                "with profile-read permission for same-credential Max verification; never journaled"
             ),
             "confirmed_before_execution": (
                 "`claude auth status --json` under the launch environment must report "
-                "loggedIn and the declared authMethod before any provider call"
+                "loggedIn and the declared authMethod; a fresh authenticated profile read "
+                "with the same credential must verify the Max organization before any model call"
             ),
+            "subscription_verification": {
+                "version": VERIFICATION_VERSION,
+                "endpoint": PROFILE_URL,
+                "method": "GET",
+                "required_organization_type": "claude_max",
+                "same_authentication_as_cli": True,
+                "non_model_preparation_requests": 1,
+                "local_hints_or_unknown_tiers_accepted": False,
+            },
         },
         policy_manifests=policies,
         security_boundary={

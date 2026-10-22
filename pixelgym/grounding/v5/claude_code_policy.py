@@ -23,6 +23,7 @@ from PIL import Image
 
 from pixelgym.actions import KEY_ALLOWLIST
 from pixelgym.grounding.v5 import cli_transport
+from pixelgym.grounding.v5.claude_subscription import verify_max_subscription
 from pixelgym.grounding.v5.cli_transport import (
     CliProcessInterrupted,
     CliSubprocessTransport,
@@ -279,7 +280,11 @@ def probe_claude_route(
 
 
 def probe_claude_runtime(
-    *, run: ProbeRunner = _run_probe, environment: Mapping[str, str] | None = None
+    *,
+    run: ProbeRunner = _run_probe,
+    environment: Mapping[str, str] | None = None,
+    subscription_probe: Callable[[str], dict[str, Any]] = verify_max_subscription,
+    on_subscription_verified: Callable[[dict[str, Any]], None] | None = None,
 ) -> ClaudeRuntimeIdentity:
     version = _probe(run, ("claude", "--version"), environment).stdout.strip()
     auth = json.loads(_probe(run, ("claude", "auth", "status", "--json"), environment).stdout)
@@ -289,14 +294,35 @@ def probe_claude_runtime(
         raise ValueError("Claude Code is not logged in")
     help_text = _probe(run, ("claude", "--help"), environment).stdout
     _required_help_flags(help_text)
-    return ClaudeRuntimeIdentity(
+    method = auth.get("authMethod")
+    tier = auth.get("subscriptionType")
+    proof = None
+    if method == "oauth_token":
+        if version != REPLICATION_CLI_VERSION or tier not in (None, SUBSCRIPTION_TYPE):
+            raise ValueError("Claude token route differs from the approved Max identity")
+        active_environment = os.environ if environment is None else environment
+        access_value = active_environment.get(OAUTH_TOKEN_ENVIRONMENT_VARIABLE, "")
+        if not access_value:
+            raise ValueError("Claude token route requires the active runner credential")
+        proof = subscription_probe(access_value)
+        # The verifier authenticates with exactly the value supplied to the CLI.
+        # Missing CLI metadata is filled only by its fresh Max organization proof.
+        if proof.get("organization_type") != "claude_max":
+            raise ValueError("OAuth profile does not verify the Max organization")
+        tier = SUBSCRIPTION_TYPE
+    identity = ClaudeRuntimeIdentity(
         cli_version=version,
-        auth_method=str(auth.get("authMethod", "")),
-        subscription_type=str(auth.get("subscriptionType", "")),
+        auth_method=str(method),
+        subscription_type=str(tier),
         requested_model=MODEL,
         reasoning_effort=MODEL_REASONING_EFFORT,
         help_sha256="sha256:" + sha256_bytes(help_text.encode("utf-8")),
     )
+    if proof is not None and on_subscription_verified is not None:
+        on_subscription_verified(
+            {**proof, "cli_reported_subscription_type": auth.get("subscriptionType")}
+        )
+    return identity
 
 
 def sanitized_command_contract() -> tuple[str, ...]:
@@ -1681,20 +1707,25 @@ def build_claude_policy_manifest(
     sandboxed_launch: bool = False,
 ) -> PolicyManifest:
     ClaudeRuntimeIdentity(**runtime_identity.__dict__)
-    runtime_digest = content_digest(
-        {
-            "provider_module": _file_digest(
-                repository_root / "pixelgym/grounding/v5/claude_code_policy.py"
-            ),
-            "cli_transport_module": _file_digest(
-                repository_root / "pixelgym/grounding/v5/cli_transport.py"
-            ),
-            "runner_module": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
-            "pyproject": _file_digest(repository_root / "pyproject.toml"),
-            "lock": _file_digest(repository_root / "requirements/platform-py312.lock"),
-            "runtime_identity": runtime_identity.to_dict(),
-        }
-    )
+    runtime_inputs = {
+        "provider_module": _file_digest(
+            repository_root / "pixelgym/grounding/v5/claude_code_policy.py"
+        ),
+        "cli_transport_module": _file_digest(
+            repository_root / "pixelgym/grounding/v5/cli_transport.py"
+        ),
+        "runner_module": _file_digest(repository_root / "pixelgym/grounding/v5/runner.py"),
+        "pyproject": _file_digest(repository_root / "pyproject.toml"),
+        "lock": _file_digest(repository_root / "requirements/platform-py312.lock"),
+        "runtime_identity": runtime_identity.to_dict(),
+    }
+    # The environment-token route requires this verifier. Older Keychain-route
+    # evidence predates it and must retain its recorded runtime-input schema.
+    if runtime_identity.auth_method == "oauth_token":
+        runtime_inputs["subscription_verifier_module"] = _file_digest(
+            repository_root / "pixelgym/grounding/v5/claude_subscription.py"
+        )
+    runtime_digest = content_digest(runtime_inputs)
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,

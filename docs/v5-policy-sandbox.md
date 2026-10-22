@@ -49,13 +49,29 @@ digest and the rendered profile digest are both recorded per launch.
 
 ### 2. Token authentication without the Keychain
 
-The owner creates a long-lived token once with `claude setup-token`. The runner holds it in its
-own process environment and passes it to the sandboxed child as `CLAUDE_CODE_OAUTH_TOKEN`. The
+The runner holds the owner's OAuth credential in its own process environment and passes it to
+the sandboxed child as `CLAUDE_CODE_OAUTH_TOKEN`. For the replication, that credential must also
+be authorized to read its own OAuth profile, so its Max organization can be verified before
+execution. Standard `claude setup-token` credentials are documented as model-request-only;
+they can report `subscriptionType: null` and refuse profile access with HTTP 403. The
 value never appears in argv, journals, records, or reports; the launch record keeps the
 environment variable names only, and `validate_credential_free` rejects any journal payload that
 carries a credential-shaped value. Verified without a model call: with the home directory hidden
 and an isolated config directory, `claude auth status --json` inside the profile reports
 `loggedIn: true` and `authMethod: oauth_token`, and the CLI populates the config directory itself.
+That observation establishes the selected auth route, not the account's subscription tier.
+
+The prepared subscription-verification fix requires a fresh HTTPS GET to
+`https://api.anthropic.com/api/oauth/profile` using exactly the credential supplied to the CLI.
+Only the authenticated organization's `organization_type: claude_max` is accepted. A null CLI
+tier is filled from that proof; an explicit conflicting CLI tier is rejected. Environment tier
+hints, cached profiles, other account logins, unknown tiers, unavailable profile access, and
+redirects cannot substitute for proof. Each preparation and execution preflight verifies again.
+The one read-only auth request is outside campaign model/control-request accounting and makes
+no model request. The check uses a 10-second socket timeout and a 64-KiB response limit, retains
+no raw profile or account identifiers, and records sanitized verification evidence in the binding.
+The [identity investigation and proposed re-freeze](d59-subscription-verification.md) records
+the remaining credential prerequisite and the separate approval boundary.
 
 ### 3. Egress through a runner-owned CONNECT proxy
 
