@@ -18,7 +18,7 @@ from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.d59_haiku_execution import validate_assignments
 from pixelgym.grounding.v5.d59_haiku_retry_successor import CALIBRATION_PATH, POLICY_INPUT_ROOTS
 from scripts import run_grounding_v5_d59_haiku_network_retry as execution
-from tests.support.recorded_revision import archive_recorded_root
+from tests.support.recorded_revision import archive_recorded_root, bind_recorded_claude_parser
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / successor.OUTPUT_DIRECTORY / "execution-plan.json"
@@ -46,6 +46,7 @@ def recorded_root(tmp_path, monkeypatch):
             CALIBRATION_PATH,
         ),
     )
+    bind_recorded_claude_parser(root, monkeypatch)
     monkeypatch.setattr(execution, "ROOT", root)
     return root
 
