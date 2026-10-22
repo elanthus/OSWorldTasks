@@ -19,9 +19,9 @@ D5.9 itself is not rerun, replayed, or reclassified.
 from __future__ import annotations
 
 import hashlib
-import threading
+import queue
 from collections.abc import Callable
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -393,27 +393,38 @@ def run_campaign(
     if workers < 1 or workers > MAX_WORKERS:
         raise ValueError(f"workers must be in [1, {MAX_WORKERS}]")
     outcome = CampaignOutcome()
-    lock = threading.Lock()
     consecutive_infrastructure_failures = 0
+    completions: queue.SimpleQueue[tuple[int, dict[str, Any] | None, BaseException | None]] = (
+        queue.SimpleQueue()
+    )
+
+    def complete_assignment(index: int) -> None:
+        # Enqueue at the worker boundary. A set of finished futures cannot retain
+        # completion order when several finish during a slow result callback.
+        try:
+            row = run_assignment(jobs[index])
+        except BaseException as exc:  # noqa: BLE001 - drain before re-raising
+            completions.put((index, None, exc))
+        else:
+            completions.put((index, row, None))
 
     def record(index: int, row: dict[str, Any]) -> str | None:
         nonlocal consecutive_infrastructure_failures
-        with lock:
-            if row["classification"] == "infrastructure_failure":
-                consecutive_infrastructure_failures += 1
-            else:
-                consecutive_infrastructure_failures = 0
-            row = {**row, "plan_index": index, "completion_index": len(outcome.rows)}
-            outcome.rows.append(row)
-            reason = campaign_stop_reason(
-                str(row["classification"]),
-                ledger_blocked=ledger_blocked(),
-                consecutive_infrastructure_failures=consecutive_infrastructure_failures,
-            )
+        if row["classification"] == "infrastructure_failure":
+            consecutive_infrastructure_failures += 1
+        else:
+            consecutive_infrastructure_failures = 0
+        row = {**row, "plan_index": index, "completion_index": len(outcome.rows)}
+        outcome.rows.append(row)
+        reason = campaign_stop_reason(
+            str(row["classification"]),
+            ledger_blocked=ledger_blocked(),
+            consecutive_infrastructure_failures=consecutive_infrastructure_failures,
+        )
         on_result(row)
         return reason
 
-    pending: dict[Future[dict[str, Any]], int] = {}
+    pending = 0
     first_error: BaseException | None = None
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="d59-rep") as pool:
         next_index = 0
@@ -421,32 +432,34 @@ def run_campaign(
             while (
                 outcome.stop_reason == "running"
                 and next_index < len(jobs)
-                and len(pending) < workers
+                and pending < workers
+                and completions.empty()
             ):
                 if window_exhausted():
                     outcome.stop_reason = "runtime_window_exhausted"
                     break
-                pending[pool.submit(run_assignment, jobs[next_index])] = next_index
+                pool.submit(complete_assignment, next_index)
+                pending += 1
                 outcome.dispatched += 1
                 next_index += 1
             if not pending:
                 break
-            done, _ = wait(pending, return_when=FIRST_COMPLETED)
-            for future in done:
-                index = pending.pop(future)
-                try:
-                    row = future.result()
-                except BaseException as exc:  # noqa: BLE001 - every worker error is retained
-                    # One failed worker must not lose the other in-flight results: stop
-                    # dispatching, keep draining, and re-raise the first error afterwards.
-                    if first_error is None:
-                        first_error = exc
-                    if outcome.stop_reason == "running":
-                        outcome.stop_reason = "execution_error"
-                    continue
+            index, row, error = completions.get()
+            pending -= 1
+            try:
+                if error is not None:
+                    raise error
+                assert row is not None
                 reason = record(index, row)
                 if reason is not None and outcome.stop_reason == "running":
                     outcome.stop_reason = reason
+            except BaseException as exc:  # noqa: BLE001 - includes result callback failures
+                # Stop dispatch on either worker or reporting failure, but continue
+                # delivering every in-flight result before re-raising the first error.
+                if first_error is None:
+                    first_error = exc
+                if outcome.stop_reason == "running":
+                    outcome.stop_reason = "execution_error"
             if outcome.stop_reason != "running" and not pending:
                 break
     if first_error is not None:
