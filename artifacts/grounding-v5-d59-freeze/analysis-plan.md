@@ -311,10 +311,10 @@ are authorized by this decision; those retain their separate boundaries.
 
 The owner then authorized: “Re-freeze this candidate; no execution,” referring to
 `sha256:5c749d996e551b12c2c851628a6c54594a3ab895543c4d696d3f2a0c1234fe99`,
-and required the re-freeze to include all fixes in PRs #256 and #257. The successor
-binds source revision `dfde3c39a5a37520e61e85eec46fc370dda74ab8`, which contains
-both fix sets. All eight changed production Python files were checked byte for byte
-against that revision before the replacement was written.
+and required the re-freeze to include all fixes in PRs #256 and #257. That historical
+successor bound source revision `dfde3c39a5a37520e61e85eec46fc370dda74ab8`, which
+contained both fix sets at that point. All eight changed production Python files were
+checked byte for byte against that revision before the replacement was written.
 
 The selected rule is v2 with per-worker infrastructure and request-failure streaks,
 a request-failure limit of 3, explicit stop on policy violations, and a minimum
@@ -322,3 +322,37 @@ a request-failure limit of 3, explicit stop on policy violations, and a minimum
 manifests were regenerated. Execution remains disabled, subscription execution is
 unauthorized, and approved model-attempt and provider-wire-request caps remain zero.
 This freeze is not pilot/full execution approval or a D5.10 verdict.
+
+## Review corrections (2026-10-22): final successor binding
+
+The owner subsequently authorized fixing the Claude review findings and merging
+both PRs. The prior requirement that the replacement freeze include all fixes from
+PRs #256 and #257 remains in force. The final successor source revision is
+`7c2834f5ac91e628b7681c6b501044c7da546bc8` and its digest is `sha256:d47fa2b18588d0e29534a1dea0ef3c0f2679bd2f063dfb7b14540140a6cbb233`. The regenerated candidate was verified byte for byte. The exact `5c749d99…` approval above remains
+a historical authorization, not the identity of the final candidate.
+
+The reviewed v2 disposition distinguishes the CLI fault phase. A pre-send setup
+fault classified as `request_failure` immediately stops dispatch as the existing
+`execution_error`, retaining the original result classification and fault phase.
+Only post-send request failures continue under the approved per-worker streak
+limit of 3. This correction adds no stop name or new limit.
+
+Rate-limit backoff uses one global deadline equal to the maximum of each rejection's
+completion time plus its bounded delay. Queued simultaneous rejections cannot stack
+separate waits. Schedules and actual waits are journaled, with the approved
+30-second minimum and 60-second maximum. Backoff grants no extra cap, runtime, or
+retry and does not delay draining after a stop.
+
+The final replacement updates `source_binding`, `policy_manifests`, and
+`execution_plan_digest`; `owner_direction.statements` records the owner's selected
+protocol choices. Relative to v1, v2 changes `stop_rule.version`,
+`stop_rule.episode_outcomes_that_continue`, `stop_rule.campaign_stops_on`,
+`stop_rule.amendment_options`, `stop_rule.request_failure_disposition`,
+`stop_rule.origin`, and `concurrency.stop_rule_evaluation`.
+`stop_rule.request_failure_disposition` records pre-send `execution_error` and
+post-send bounded-streak handling; `stop_rule.origin` records the protocol approval.
+
+Execution remains disabled, subscription execution remains unauthorized, and approved
+model-attempt and provider-wire-request caps remain zero. No provider calls are
+authorized here. Pilot/full execution and the D5.10 verdict retain their separate
+human boundaries.
