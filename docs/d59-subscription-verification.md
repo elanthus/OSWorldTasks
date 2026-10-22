@@ -3,7 +3,7 @@
 Status: PR #258 is merged; the owner authorized the OAuth-recovery replacement freeze and
 starting its pilot, followed conditionally by the full campaign. The original investigation
 and its earlier digests below are retained as history. The active freeze is now
-`sha256:42098dd1f382e8ee898c4e6a8104a094a3c4bd811497438e3133702c67d825ed`.
+`sha256:1defd54c98aeab9a7103f6816f1f7ee88d984b955977ffb9c07d0d5f5c907243`.
 No experiment call occurred while preparing this replacement; the separate owner-authorized
 Fable code-verification call is recorded outside experiment accounting.
 
@@ -109,8 +109,18 @@ retention, without a guard stop. Task failures do not defeat that operational ga
 owner's instructions and the exact phase limits. Model calls remain prohibited until the new
 freeze and its separate machine-readable approvals are recorded.
 
-The active OAuth-recovery freeze binds source `3ddafbe8c923029258825f410b42ec0d85b62430`,
-history policy `policy-c7b9665cab498774c815`, and stateless policy
-`policy-65cdd028783799994429`. The machine-readable pilot approval and conditional owner
+The active OAuth-recovery freeze binds source `2711d55b9d61e075255a0d9694491888f7b02257`,
+history policy `policy-7dd3b00d31286392effe`, and stateless policy
+`policy-1502dc29b963e87150e5`. The machine-readable pilot approval and conditional owner
 direction are stored beside `execution-plan.json`. Its disabled flags and zero approved-cap
 placeholders remain intact; separate phase approvals supply the execution limits.
+
+The first launch stopped during preparation/execution binding comparison, before creating
+an attempt journal or dispatching an assignment. The rendered sandbox profile includes a
+fresh temporary path and proxy port, so its digest changes on each probe. Execution now
+compares all identity, source, template, allowlist, and probe outcome fields exactly while
+allowing the rendered-profile digest and positive refused-connection count to vary. Both
+raw receipts are retained (`execution-binding.json` and `execution-live-binding.json`),
+and the final summary binds the execution receipt. The replacement freeze changes only
+source/policy provenance and the digest; phase limits and the approved recovery protocol
+remain the same. `prelaunch-binding-stop.json` records the zero-attempt launch stop.
