@@ -288,3 +288,37 @@ A future approved re-freeze updates `source_binding`, `policy_manifests`, and
 schedule, caps, and runtime proposal are unchanged. No provider calls or re-freeze
 are authorized by this addendum; the owner must choose the rule and approve the
 exact successor digest, then the pilot caps and window, before execution.
+
+
+## Owner decision (2026-10-22): replication stop-rule v2 choices
+
+After reviewing the preceding proposal, the owner stated:
+
+> Approve the request-failure disposition, streak limit, and backoff parameters., Select `policy_violation_action`: `stop`. Select `failure_streak_scope`: `per_worker`
+
+This selects request-failure continuation as failed assignments, a separate limit of
+3 consecutive request failures per worker, a 30-second rate-limit backoff capped at
+60 seconds, an explicit stop on policy violations, and per-worker infrastructure
+failure streaks with the unchanged limit of 3. The shared ledger remains a
+campaign-wide priority stop. The non-overlapping alternative is not selected.
+
+This records protocol choices only. The frozen execution plan is unchanged. No
+provider calls, replacement freeze, pilot execution, full execution, or D5.10 verdict
+are authorized by this decision; those retain their separate boundaries.
+
+
+## Owner authorization (2026-10-22): non-executable successor freeze
+
+The owner then authorized: “Re-freeze this candidate; no execution,” referring to
+`sha256:5c749d996e551b12c2c851628a6c54594a3ab895543c4d696d3f2a0c1234fe99`,
+and required the re-freeze to include all fixes in PRs #256 and #257. The successor
+binds source revision `dfde3c39a5a37520e61e85eec46fc370dda74ab8`, which contains
+both fix sets. All eight changed production Python files were checked byte for byte
+against that revision before the replacement was written.
+
+The selected rule is v2 with per-worker infrastructure and request-failure streaks,
+a request-failure limit of 3, explicit stop on policy violations, and a minimum
+30-second rate-limit backoff capped at 60 seconds. The source binding and all policy
+manifests were regenerated. Execution remains disabled, subscription execution is
+unauthorized, and approved model-attempt and provider-wire-request caps remain zero.
+This freeze is not pilot/full execution approval or a D5.10 verdict.

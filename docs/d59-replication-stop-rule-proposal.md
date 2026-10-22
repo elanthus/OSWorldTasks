@@ -1,26 +1,31 @@
 # D5.9 replication stop-rule proposal
 
-**Status: unapproved; no execution or re-freeze authorized.** This follow-up prepares
-`pixelgym-agent-v5-d59-replication-stop-rule-v2` for an owner decision. The existing
+**Status: protocol choices and a non-executable successor freeze approved on
+2026-10-22; execution remains unauthorized.** This follow-up implements
+`pixelgym-agent-v5-d59-replication-stop-rule-v2` with the owner-selected options. The existing
 [replication candidate](../artifacts/grounding-v5-d59-replication/execution-plan.json)
-remains the PR #256 candidate, with digest
-`sha256:bf08e0cbf2a69407e04e4eeed78675e4592d11f714238542bc1520490761444e`.
-Its v1 stop rule remains recorded unchanged. The source changes deliberately invalidate
-that candidate's source binding; this follow-up cannot run against it. No provider call
-is part of this work.
+now binds all production fixes from PRs #256 and #257 at source revision
+`dfde3c39a5a37520e61e85eec46fc370dda74ab8`, with digest
+`sha256:5c749d996e551b12c2c851628a6c54594a3ab895543c4d696d3f2a0c1234fe99`.
+The owner separately authorized this exact replacement freeze with no execution.
+The candidate keeps execution disabled and approved model/wire caps at zero.
+The earlier v1 candidate remains reproducible in PR #256 history.
 
-## Prepared amendment and required decisions
+## Approved protocol choices and remaining boundaries
 
 The implementation is opt-in through `PROPOSED_STOP_RULE_VERSION` and
 `ProposedStopRule` in `pixelgym/grounding/v5/replication_stop_rules.py`.
-Constructing options or generating a proposal does not approve execution. The owner must
-choose both `failure_streak_scope` and `policy_violation_action`; neither has a default.
+Constructing options or generating a proposal does not approve execution. On 2026-10-22,
+the owner approved continuing request failures with a streak limit of 3, a 30-second
+backoff capped at 60 seconds, `policy_violation_action: stop`, and
+`failure_streak_scope: per_worker`. The alternative options remain implemented but
+unselected. Neither selector has an implicit default.
 
-| Risk in v1 | Prepared v2 behavior | Owner decision still required |
+| Risk in v1 | Prepared v2 behavior | Recorded owner decision (2026-10-22) |
 | --- | --- | --- |
-| A subscription rate-limit rejection becomes `request_failure`, which v1 treats as an unexpected classification and stops immediately. | Record the failed assignment in the denominator and continue until a separate consecutive-request-failure limit, proposed as 3, is reached. A reported rate limit schedules and journals backoff before new dispatch: proposed minimum 30 seconds, bounded at 60 seconds, including any usable retry-after hint. | Approve the request-failure disposition, streak limit, and backoff parameters. |
-| A refused egress connection, resolved-model mismatch, or credential-shaped output can become `policy_violation`, also unexpected under v1. | Explicitly select `stop`, yielding a named campaign stop, or `continue`, retaining the failed assignment in the denominator. Transport and parser security checks still reject the response. A blocked ledger always takes priority. | Select `policy_violation_action`: `stop` or `continue`. |
-| Three overlapping assignments affected by one outage can satisfy the global infrastructure streak of 3. | Apply the unchanged infrastructure limit of 3 under the selected scope, also used for the separate request-failure streak. `per_worker` counts consecutive matching results independently for each worker. `non_overlapping` greedily selects pairwise non-overlapping completed failure intervals: a failure increments only if it starts at or after the last selected interval ends. Overlapping completions neither increment nor extend that end. This does not infer distinct outages; a late bridging interval does not merge previously selected intervals. A nonmatching result resets the relevant streak. | Select `failure_streak_scope`: `per_worker` or `non_overlapping`. |
+| A subscription rate-limit rejection becomes `request_failure`, which v1 treats as an unexpected classification and stops immediately. | Record the failed assignment in the denominator and continue until a separate consecutive-request-failure limit, proposed as 3, is reached. A reported rate limit schedules and journals backoff before new dispatch: proposed minimum 30 seconds, bounded at 60 seconds, including any usable retry-after hint. | Approved: continue failed assignments; limit 3; minimum 30 seconds, maximum 60 seconds. |
+| A refused egress connection, resolved-model mismatch, or credential-shaped output can become `policy_violation`, also unexpected under v1. | Explicitly select `stop`, yielding a named campaign stop, or `continue`, retaining the failed assignment in the denominator. Transport and parser security checks still reject the response. A blocked ledger always takes priority. | Selected: `policy_violation_action: stop`. |
+| Three overlapping assignments affected by one outage can satisfy the global infrastructure streak of 3. | Apply the unchanged infrastructure limit of 3 under the selected scope, also used for the separate request-failure streak. `per_worker` counts consecutive matching results independently for each worker. `non_overlapping` greedily selects pairwise non-overlapping completed failure intervals: a failure increments only if it starts at or after the last selected interval ends. Overlapping completions neither increment nor extend that end. This does not infer distinct outages; a late bridging interval does not merge previously selected intervals. A nonmatching result resets the relevant streak. | Selected: `failure_streak_scope: per_worker`. |
 
 The backoff delays new dispatch only while the campaign is running and assignments
 remain to dispatch; it does not delay draining after a stop. Scheduled and actual wait
@@ -59,10 +64,10 @@ and the Claude policy tests under `tests/unit/`. These use local fixtures and
 synchronization rather than provider calls, OSWorld, network, or wall-clock sleeps.
 Executed test counts and runtimes belong in the PR validation record.
 
-## Exact plan changes on a future approved re-freeze
+## Exact fields changed by the approved successor freeze
 
-Any successor for these source changes updates `source_binding`, `policy_manifests`,
-and `execution_plan_digest`. Selecting v2 additionally changes exactly:
+The successor for these source changes updates `source_binding`, `policy_manifests`,
+and `execution_plan_digest`. The selected v2 additionally changes exactly:
 
 - `stop_rule.version`;
 - `stop_rule.episode_outcomes_that_continue` (adds `request_failure`, and
@@ -75,8 +80,8 @@ and `execution_plan_digest`. Selecting v2 additionally changes exactly:
 - `concurrency.stop_rule_evaluation`.
 
 Tasks, arms, analysis, reliability schedule, action limits, caps, runtime proposal,
-retention, and remaining human boundaries do not change. The source and manifest
-changes require a fresh versioned freeze even if v1 is retained. After choosing the
-protocol, the owner must separately approve the exact successor digest, pilot caps,
-and window before any pilot; the full campaign needs its own approval afterward.
+retention, and remaining human boundaries do not change. The owner has approved the
+protocol choices and exact replacement freeze, but must separately approve pilot
+execution, caps, and window before any pilot; the full campaign needs its own approval
+afterward.
 The D5.10 verdict and public claims remain human-owned.

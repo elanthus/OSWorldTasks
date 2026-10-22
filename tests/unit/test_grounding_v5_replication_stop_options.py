@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
@@ -396,7 +397,20 @@ def test_proposed_plan_fields_without_mutating_frozen_candidate(candidate_plan, 
     root = Path(__file__).parents[2]
     path = root / rep.OUTPUT_DIRECTORY / "execution-plan.json"
     before = path.read_bytes()
-    frozen = json.loads(before)
+    # Compare every option to the recorded v1 baseline, even after the owner
+    # chooses a v2 successor. Keep the checked-in candidate immutable in this test.
+    frozen = json.loads(
+        subprocess.check_output(
+            [
+                "git",
+                "show",
+                "8fd5d2b7caa04fee0a918cb3059be84cf8af84e0:"
+                + rep.OUTPUT_DIRECTORY
+                + "/execution-plan.json",
+            ],
+            cwd=root,
+        )
+    )
     identity = claude.ClaudeRuntimeIdentity(**frozen["runtime_identity"])
     proposal = rep.execution_plan(
         root,
