@@ -203,3 +203,133 @@ def test_stop_rule_continues_on_episode_failures_and_stops_on_systemic_ones(
         )
         == expected
     )
+
+
+# --- Concurrent campaign ----------------------------------------------------------------
+
+
+def _jobs(n: int) -> list[dict]:
+    return [{"trial_id": f"t-{i}", "seed": 6000 + i, "mode": "history"} for i in range(n)]
+
+
+def test_campaign_runs_every_assignment_across_workers_and_restores_plan_order() -> None:
+    import threading
+    import time
+
+    active = 0
+    peak = 0
+    lock = threading.Lock()
+
+    def run(job: dict) -> dict:
+        nonlocal active, peak
+        with lock:
+            active += 1
+            peak = max(peak, active)
+        time.sleep(0.01)
+        with lock:
+            active -= 1
+        return {**job, "classification": "success_termination"}
+
+    outcome = replication.run_campaign(
+        _jobs(12),
+        workers=3,
+        run_assignment=run,
+        window_exhausted=lambda: False,
+        ledger_blocked=lambda: False,
+    )
+    assert outcome.stop_reason == "completed_all_assignments"
+    assert outcome.dispatched == 12
+    assert len(outcome.rows) == 12
+    assert peak <= 3
+    assert sorted(r["plan_index"] for r in outcome.rows) == list(range(12))
+    assert [r["completion_index"] for r in outcome.rows] == list(range(12))
+    assert {r["trial_id"] for r in outcome.rows} == {f"t-{i}" for i in range(12)}
+
+
+def test_campaign_stops_dispatch_after_three_consecutive_infrastructure_failures() -> None:
+    sequence = iter(
+        [
+            "success_termination",
+            "infrastructure_failure",
+            "infrastructure_failure",
+            "infrastructure_failure",
+            "success_termination",
+            "success_termination",
+        ]
+    )
+
+    def run(job: dict) -> dict:
+        return {**job, "classification": next(sequence)}
+
+    outcome = replication.run_campaign(
+        _jobs(6),
+        workers=1,
+        run_assignment=run,
+        window_exhausted=lambda: False,
+        ledger_blocked=lambda: False,
+    )
+    assert outcome.stop_reason == "consecutive_infrastructure_failures"
+    assert outcome.dispatched == 4
+    assert [r["classification"] for r in outcome.rows] == [
+        "success_termination",
+        "infrastructure_failure",
+        "infrastructure_failure",
+        "infrastructure_failure",
+    ]
+
+
+def test_campaign_records_in_flight_assignments_after_a_stop_and_honours_the_window() -> None:
+    import threading
+
+    release = threading.Event()
+    started = threading.Event()
+
+    def run(job: dict) -> dict:
+        if job["trial_id"] == "t-0":
+            started.set()
+            release.wait(timeout=5)
+            return {**job, "classification": "success_termination"}
+        return {**job, "classification": "policy_violation"}  # not a continuing outcome
+
+    def late_release(outcome_holder: list) -> None:
+        started.wait(timeout=5)
+        release.set()
+
+    holder: list = []
+    threading.Thread(target=late_release, args=(holder,), daemon=True).start()
+    outcome = replication.run_campaign(
+        _jobs(3),
+        workers=2,
+        run_assignment=run,
+        window_exhausted=lambda: False,
+        ledger_blocked=lambda: False,
+    )
+    # t-1 stops the campaign while t-0 is in flight; t-0 is still recorded, t-2 never runs.
+    assert outcome.stop_reason == "unexpected_classification:policy_violation"
+    assert outcome.dispatched == 2
+    assert {r["trial_id"] for r in outcome.rows} == {"t-0", "t-1"}
+
+    windowed = replication.run_campaign(
+        _jobs(3),
+        workers=2,
+        run_assignment=lambda job: {**job, "classification": "success_termination"},
+        window_exhausted=lambda: True,
+        ledger_blocked=lambda: False,
+    )
+    assert windowed.stop_reason == "runtime_window_exhausted"
+    assert windowed.dispatched == 0 and windowed.rows == []
+    with pytest.raises(ValueError, match="workers must be"):
+        replication.run_campaign(
+            _jobs(1),
+            workers=replication.MAX_WORKERS + 1,
+            run_assignment=run,
+            window_exhausted=lambda: False,
+            ledger_blocked=lambda: False,
+        )
+
+
+def test_plan_pre_registers_concurrency(plan: dict) -> None:
+    concurrency = plan["concurrency"]
+    assert concurrency["max_workers"] == replication.MAX_WORKERS == 4
+    assert "egress proxy" in concurrency["per_worker"]
+    assert "subscription ledger" in concurrency["shared"]

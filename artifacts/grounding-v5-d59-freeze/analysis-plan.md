@@ -233,6 +233,12 @@ not rerun, replayed, or reclassified.
   campaign, and reported separately.
 - **Retention:** the run directory is captured into a retention archive and a verified backup
   before any cleanup, so the secondary diagnostics that D5.9 could not compute are computable.
+- **Concurrency:** up to four assignments run at once. Assignments are dispatched in plan order
+  to the first free worker; each worker owns its transport, egress proxy, and invocation
+  journal, while the attempt journal, ledger, caps, and window are shared. The stop rule is
+  evaluated in completion order; after a stop reason nothing new is dispatched and in-flight
+  assignments finish and are recorded. Rate-limit rejections remain request failures in the
+  denominator. Concurrency changes timing and rate-limit exposure, not the statistic.
 - **Human boundary:** the owner creates the route login, approves the exact plan digest with
   the pilot caps and window, then approves the full caps and window after the pilot. D5.10 and
   public wording remain human-owned.

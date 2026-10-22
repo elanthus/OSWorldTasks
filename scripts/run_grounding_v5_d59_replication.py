@@ -12,9 +12,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 from collections import Counter
 from decimal import Decimal
@@ -28,13 +30,14 @@ from pixelgym.grounding.v5.codex_cli_policy import SubscriptionExemptLedger
 from pixelgym.grounding.v5.contracts import CallCaps, content_digest
 from pixelgym.grounding.v5.d59_haiku_execution import sha256_file
 from pixelgym.grounding.v5.d59_replication import (
+    MAX_WORKERS,
     OUTPUT_DIRECTORY,
     SOURCE_FILES,
     STOP_RULE_VERSION,
-    campaign_stop_reason,
     execution_plan,
     live_manifests,
     phase_jobs,
+    run_campaign,
     validate_approval,
 )
 from pixelgym.grounding.v5.journal import V5AttemptJournal
@@ -208,6 +211,7 @@ def execute(
     *,
     retention_archive: Path,
     retention_backup: Path,
+    workers: int,
 ) -> None:
     plan, approval, jobs, identity, binding = prepared_inputs(phase, approval_path, output)
     if read_object(output / "execution-plan.json") != plan:
@@ -216,34 +220,50 @@ def execute(
         raise ValueError("prepared owner approval differs from the approved record")
     if read_object(output / "execution-binding.json") != binding:
         raise ValueError("prepared runtime binding differs from the live runtime")
-    if (output / "attempts.sqlite").exists() or (output / "invocations.sqlite").exists():
+    if (output / "attempts.sqlite").exists() or list(output.glob("invocations-*.sqlite")):
         raise FileExistsError("never restart or overwrite an existing replication campaign")
     if retention_archive.exists() or retention_backup.exists():
         raise FileExistsError("retention destinations must not exist before the run")
+    if not 1 <= workers <= int(plan["concurrency"]["max_workers"]):
+        raise ValueError("workers exceeds the pre-registered maximum")
 
     manifests = live_manifests(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
     )
     approved_caps = CallCaps(**approval["approved_caps"])
     ledger = SubscriptionExemptLedger(Decimal("1.00"), Decimal("0.00"))
-    invocations = claude.ClaudeInvocationJournal(output / "invocations.sqlite")
-    transport = claude.ClaudeCodeTransport(
-        ledger=ledger,
-        invocation_journal=invocations,
-        runtime_identity=identity,
-        expected_resolved_model=claude.MODEL,
-        allow_timeout_retry=True,
-        api_retry_limit=0,
-        allow_connection_retry=True,
-        sandbox_launch=sandbox_launch(output),
-    )
-    journal = V5AttemptJournal(output / "attempts.sqlite")
+    launch = sandbox_launch(output)
+    # One transport per worker: its own egress proxy and invocation journal. The attempt
+    # journal file is shared through one connection per worker.
+    journal_path = output / "attempts.sqlite"
+    journal = V5AttemptJournal(journal_path)
+    journals = [journal] + [V5AttemptJournal(journal_path) for _ in range(workers - 1)]
+    invocations = [
+        claude.ClaudeInvocationJournal(output / f"invocations-{index}.sqlite")
+        for index in range(workers)
+    ]
+    transports = [
+        claude.ClaudeCodeTransport(
+            ledger=ledger,
+            invocation_journal=invocations[index],
+            runtime_identity=identity,
+            expected_resolved_model=claude.MODEL,
+            allow_timeout_retry=True,
+            api_retry_limit=0,
+            allow_connection_retry=True,
+            sandbox_launch=launch,
+        )
+        for index in range(workers)
+    ]
+    free: queue.Queue[int] = queue.Queue()
+    for index in range(workers):
+        free.put(index)
     rows: list[dict[str, Any]] = []
+    rows_lock = threading.Lock()
     started = time.monotonic()
     maximum_elapsed_seconds = int(approval["approved_runtime_window_hours"]) * 3600
     stop_reason = "running"
     error: dict[str, str] | None = None
-    consecutive_infrastructure_failures = 0
     retention: dict[str, Any] | None = None
 
     def attempted_assignments() -> int:
@@ -262,13 +282,19 @@ def execute(
 
     def egress_totals() -> dict[str, int]:
         allowed = refused = 0
-        for record in transport.records:
-            attempts = record.get("egress_attempts") or {}
-            allowed += int(attempts.get("allowed_count", 0))
-            refused += int(attempts.get("refused_count", 0))
+        for transport in transports:
+            for record in list(transport.records):
+                attempts = record.get("egress_attempts") or {}
+                allowed += int(attempts.get("allowed_count", 0))
+                refused += int(attempts.get("refused_count", 0))
         return {"allowed_connects": allowed, "refused_connects": refused}
 
+    def window_exhausted() -> bool:
+        return time.monotonic() - started >= maximum_elapsed_seconds
+
     def summary() -> dict[str, Any]:
+        with rows_lock:
+            snapshot = list(rows)
         return {
             "schema_version": "pixelgym-agent-v5-d59-replication-summary-v1",
             "phase": phase,
@@ -281,21 +307,22 @@ def execute(
             "provider": claude.PROVIDER_IDENTITY,
             "route": identity.to_dict(),
             "stop_rule_version": STOP_RULE_VERSION,
+            "workers": workers,
             "assigned": len(jobs),
             "attempted": attempted_assignments(),
-            "completed": len(rows),
+            "completed": len(snapshot),
             "unrun": len(jobs) - attempted_assignments(),
             "stop_reason": stop_reason,
             "error": error,
             "elapsed_seconds": round(time.monotonic() - started, 3),
             "approved_runtime_seconds": maximum_elapsed_seconds,
-            "results": rows,
+            "results": sorted(snapshot, key=lambda row: int(row["plan_index"])),
             "counts": {
                 selected_phase: {
                     mode: dict(
                         Counter(
                             row["classification"]
-                            for row in rows
+                            for row in snapshot
                             if row["phase"] == selected_phase and row["mode"] == mode
                         )
                     )
@@ -309,37 +336,40 @@ def execute(
             "incremental_experiment_charge_usd": str(ledger.incremental_experiment_charge_usd),
             "unresolved_invocations": len(ledger.unresolved),
             "journal_integrity": journal.integrity_report(),
-            "invocation_integrity": invocations.integrity_report(),
-            "subprocesses_closed": transport.subprocesses_closed,
+            "invocation_integrity": [invocation.integrity_report() for invocation in invocations],
+            "subprocesses_closed": all(t.subprocesses_closed for t in transports),
             "retention": retention,
             "human_gate": "D5.10_not_evaluated_human_owned",
         }
 
-    try:
-        for job in jobs:
-            if time.monotonic() - started >= maximum_elapsed_seconds:
-                stop_reason = "runtime_window_exhausted"
-                break
+    def run_assignment(job: dict[str, Any]) -> dict[str, Any]:
+        worker = free.get()
+        try:
             mode = str(job["mode"])
+            worker_journal = journals[worker]
             runner = CliMemoryRunner(
-                journal=journal,
+                journal=worker_journal,
                 manifest=manifests[mode],
                 policy=CliMemoryPolicy(
                     claude.ClaudeCodePolicy(), retain_screenshots=mode == "history"
                 ),
-                transport=transport,
+                transport=transports[worker],
                 approved_caps=approved_caps,
                 time_exhausted=lambda mode=mode: (
                     time.monotonic() - started
                     >= maximum_elapsed_seconds - manifests[mode].request_deadline_seconds
                 ),
             )
-            journal.append_event(
+            worker_journal.append_event(
                 event_key=str(job["trial_id"]) + "/assignment_started",
                 kind="d59_replication_assignment_started",
                 trial_id=str(job["trial_id"]),
                 step_index=0,
-                payload={"job": job, "execution_plan_digest": plan["execution_plan_digest"]},
+                payload={
+                    "job": job,
+                    "worker": worker,
+                    "execution_plan_digest": plan["execution_plan_digest"],
+                },
             )
             result = runner.run(
                 trial_id=str(job["trial_id"]),
@@ -349,60 +379,69 @@ def execute(
             row = {
                 **job,
                 **result,
-                **episode_measurements(journal, str(job["trial_id"]), int(job["seed"])),
+                **episode_measurements(worker_journal, str(job["trial_id"]), int(job["seed"])),
+                "worker": worker,
             }
-            journal.append_event(
+            worker_journal.append_event(
                 event_key=str(job["trial_id"]) + "/assignment_completed",
                 kind="d59_replication_assignment_completed",
                 trial_id=str(job["trial_id"]),
                 step_index=int(result["environment_actions"]),
                 payload=row,
             )
+            return row
+        finally:
+            free.put(worker)
+
+    def on_result(row: dict[str, Any]) -> None:
+        with rows_lock:
             rows.append(row)
-            if row["classification"] == "infrastructure_failure":
-                consecutive_infrastructure_failures += 1
-            else:
-                consecutive_infrastructure_failures = 0
-            write_object(output / "summary.json", summary())
-            print(
-                json.dumps(
-                    {
-                        "completed": len(rows),
-                        "assigned": len(jobs),
-                        "phase": job["phase"],
-                        "seed": job["seed"],
-                        "mode": mode,
-                        "repeat": job["repeat"],
-                        "classification": row["classification"],
-                        "environment_actions": result["environment_actions"],
-                        "model_attempts": result["model_attempts"],
-                    },
-                    sort_keys=True,
-                ),
-                flush=True,
-            )
-            reason = campaign_stop_reason(
-                str(row["classification"]),
-                ledger_blocked=ledger.blocked,
-                consecutive_infrastructure_failures=consecutive_infrastructure_failures,
-            )
-            if reason is not None:
-                stop_reason = reason
-                break
-        else:
-            stop_reason = "completed_all_assignments"
+        write_object(output / "summary.json", summary())
+        print(
+            json.dumps(
+                {
+                    "completed": int(row["completion_index"]) + 1,
+                    "assigned": len(jobs),
+                    "phase": row["phase"],
+                    "seed": row["seed"],
+                    "mode": row["mode"],
+                    "repeat": row["repeat"],
+                    "worker": row["worker"],
+                    "classification": row["classification"],
+                    "environment_actions": row["environment_actions"],
+                    "model_attempts": row["model_attempts"],
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+
+    try:
+        campaign = run_campaign(
+            jobs,
+            workers=workers,
+            run_assignment=run_assignment,
+            window_exhausted=window_exhausted,
+            ledger_blocked=lambda: ledger.blocked,
+            on_result=on_result,
+        )
+        stop_reason = campaign.stop_reason
     except BaseException as exc:
         stop_reason = "execution_error"
         error = {"type": type(exc).__name__, "message": str(exc)}
         raise
     finally:
         try:
-            transport.close()
+            for transport in transports:
+                transport.close()
             write_object(output / "summary.json", summary())
         finally:
             try:
-                invocations.close()
+                for invocation in invocations:
+                    invocation.close()
             finally:
+                for extra in journals[1:]:
+                    extra.close()
                 journal.close()
         retention = retain(output, retention_archive, retention_backup)
         write_object(output / "summary.json", summary())
@@ -416,6 +455,12 @@ def main() -> None:
     parser.add_argument("--approval", type=Path, required=True)
     parser.add_argument("--retention-archive", type=Path)
     parser.add_argument("--retention-backup", type=Path)
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=MAX_WORKERS,
+        help=f"concurrent assignments, 1 to the pre-registered maximum ({MAX_WORKERS})",
+    )
     args = parser.parse_args()
     output = args.output.resolve()
     if args.mode == "prepare":
@@ -429,6 +474,7 @@ def main() -> None:
         output,
         retention_archive=args.retention_archive.resolve(),
         retention_backup=args.retention_backup.resolve(),
+        workers=args.workers,
     )
 
 

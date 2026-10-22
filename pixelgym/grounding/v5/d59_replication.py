@@ -19,7 +19,11 @@ D5.9 itself is not rerun, replayed, or reclassified.
 from __future__ import annotations
 
 import hashlib
+import threading
+from collections.abc import Callable
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from copy import deepcopy
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +75,10 @@ CAMPAIGN_STOPS_ON = (
     "execution_error",
 )
 DISAGREEMENT_THRESHOLD_POINTS = 20
+# Concurrency is pre-registered: it changes timing and rate-limit exposure, never the
+# denominator. Each worker owns a transport (its own egress proxy and invocation journal);
+# the attempt journal file, the ledger, the caps, and the window are shared.
+MAX_WORKERS = 4
 OWNER_STATEMENTS = (
     ("2026-10-21", "Replication sounds good."),
     (
@@ -280,6 +288,22 @@ def execution_plan(
             "workflow": "docs/evidence-retention.md",
             "capture_after_run": True,
         },
+        concurrency={
+            "max_workers": MAX_WORKERS,
+            "dispatch": "plan order to the first free worker; completion order is recorded",
+            "stop_rule_evaluation": (
+                "in completion order; no new dispatch after a stop reason; in-flight "
+                "assignments complete and are recorded"
+            ),
+            "per_worker": ["egress proxy", "invocation journal", "transport"],
+            "shared": [
+                "attempt journal file with one connection per worker",
+                "subscription ledger",
+                "approved caps",
+                "runtime window",
+            ],
+            "rate_limit_rejections": "request failures that stay in the denominator",
+        },
         pilot={
             "requires_separate_approval": True,
             "pooling": "never pooled with the full campaign; reported separately",
@@ -338,6 +362,85 @@ def phase_jobs(plan: dict[str, Any], phase: str) -> list[dict[str, Any]]:
     if phase == "full":
         return [dict(job) for job in plan["primary_jobs"] + plan["reliability_jobs"]]
     raise ValueError("phase must be pilot or full")
+
+
+@dataclass
+class CampaignOutcome:
+    """What a campaign recorded, in completion order, and why it stopped."""
+
+    rows: list[dict[str, Any]] = field(default_factory=list)
+    stop_reason: str = "running"
+    dispatched: int = 0
+
+
+def run_campaign(
+    jobs: list[dict[str, Any]],
+    *,
+    workers: int,
+    run_assignment: Callable[[dict[str, Any]], dict[str, Any]],
+    window_exhausted: Callable[[], bool],
+    ledger_blocked: Callable[[], bool],
+    on_result: Callable[[dict[str, Any]], None] = lambda row: None,
+) -> CampaignOutcome:
+    """Dispatch assignments to ``workers`` threads under the pre-registered stop rule.
+
+    ``run_assignment`` must be safe to call from several threads at once; the caller gives
+    each thread its own transport. Rows are appended in completion order with their plan
+    index, so the plan order can be restored. A stop reason ends dispatch; assignments
+    already in flight finish and are recorded.
+    """
+
+    if workers < 1 or workers > MAX_WORKERS:
+        raise ValueError(f"workers must be in [1, {MAX_WORKERS}]")
+    outcome = CampaignOutcome()
+    lock = threading.Lock()
+    consecutive_infrastructure_failures = 0
+
+    def record(index: int, row: dict[str, Any]) -> str | None:
+        nonlocal consecutive_infrastructure_failures
+        with lock:
+            if row["classification"] == "infrastructure_failure":
+                consecutive_infrastructure_failures += 1
+            else:
+                consecutive_infrastructure_failures = 0
+            row = {**row, "plan_index": index, "completion_index": len(outcome.rows)}
+            outcome.rows.append(row)
+            reason = campaign_stop_reason(
+                str(row["classification"]),
+                ledger_blocked=ledger_blocked(),
+                consecutive_infrastructure_failures=consecutive_infrastructure_failures,
+            )
+        on_result(row)
+        return reason
+
+    pending: dict[Future[dict[str, Any]], int] = {}
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="d59-rep") as pool:
+        next_index = 0
+        while next_index < len(jobs) or pending:
+            while (
+                outcome.stop_reason == "running"
+                and next_index < len(jobs)
+                and len(pending) < workers
+            ):
+                if window_exhausted():
+                    outcome.stop_reason = "runtime_window_exhausted"
+                    break
+                pending[pool.submit(run_assignment, jobs[next_index])] = next_index
+                outcome.dispatched += 1
+                next_index += 1
+            if not pending:
+                break
+            done, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in done:
+                index = pending.pop(future)
+                reason = record(index, future.result())
+                if reason is not None and outcome.stop_reason == "running":
+                    outcome.stop_reason = reason
+            if outcome.stop_reason != "running" and not pending:
+                break
+    if outcome.stop_reason == "running":
+        outcome.stop_reason = "completed_all_assignments"
+    return outcome
 
 
 def campaign_stop_reason(
