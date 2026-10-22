@@ -19,11 +19,17 @@ import tempfile
 import threading
 import time
 from collections import Counter
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
+from pixelgym.grounding.v5.auth_recovery import (
+    AuthRecoveryStopped,
+    OAuthRecoveryGate,
+    load_oauth_snapshot,
+)
 from pixelgym.grounding.v5.cli_memory_calibration import CliMemoryPolicy, CliMemoryRunner
 from pixelgym.grounding.v5.cli_sandbox_probe import run_cli_sandbox_probe
 from pixelgym.grounding.v5.codex_cli_policy import SubscriptionExemptLedger
@@ -33,6 +39,7 @@ from pixelgym.grounding.v5.d59_replication import (
     MAX_WORKERS,
     OUTPUT_DIRECTORY,
     SOURCE_FILES,
+    CampaignDispatchStopped,
     execution_plan,
     live_manifests,
     phase_jobs,
@@ -78,10 +85,14 @@ def cli_executable() -> Path:
     return Path(located).resolve()
 
 
-def route_probe_environment(temporary: Path) -> dict[str, str]:
+def route_probe_environment(temporary: Path, credential_value: str | None = None) -> dict[str, str]:
     """An isolated home and config so `auth status` reports the token route, not the Keychain."""
 
-    token = os.environ.get(claude.OAUTH_TOKEN_ENVIRONMENT_VARIABLE, "")
+    token = (
+        os.environ.get(claude.OAUTH_TOKEN_ENVIRONMENT_VARIABLE, "")
+        if credential_value is None
+        else credential_value
+    )
     if not token:
         raise RuntimeError(
             f"{claude.OAUTH_TOKEN_ENVIRONMENT_VARIABLE} is not set in the runner environment"
@@ -104,13 +115,14 @@ def route_probe_environment(temporary: Path) -> dict[str, str]:
 
 def confirmed_live_identity(
     plan: dict[str, Any],
+    credential_value: str | None = None,
 ) -> tuple[claude.ClaudeRuntimeIdentity, dict[str, Any]]:
     """The route the plan declares must be the route the installed CLI reports now."""
 
     proofs: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="pixelgym-d59-replication-route-") as temporary:
         identity = claude.probe_claude_runtime(
-            environment=route_probe_environment(Path(temporary)),
+            environment=route_probe_environment(Path(temporary), credential_value),
             on_subscription_verified=proofs.append,
         )
     if identity.to_dict() != plan["runtime_identity"]:
@@ -127,7 +139,7 @@ def sandbox_launch(output: Path) -> claude.ClaudeSandboxLaunch:
 
 
 def prepared_inputs(
-    phase: str, approval_path: Path, output: Path
+    phase: str, approval_path: Path, output: Path, *, credential_value: str | None = None
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], Any, dict[str, Any]]:
     require_clean_tracked_worktree(ROOT)
     plan = read_object(ROOT / PLAN_PATH)
@@ -142,7 +154,13 @@ def prepared_inputs(
         raise ValueError("replication plan differs from the committed candidate")
     approval = read_object(approval_path)
     validate_approval(plan, approval, phase=phase)
-    identity, subscription_verification = confirmed_live_identity(plan)
+    if "authentication_recovery" in plan and credential_value is None:
+        raise ValueError("authentication recovery requires the owner-only OAuth environment file")
+    identity, subscription_verification = (
+        confirmed_live_identity(plan)
+        if credential_value is None
+        else confirmed_live_identity(plan, credential_value)
+    )
     manifests = live_manifests(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
     )
@@ -182,8 +200,15 @@ def prepared_inputs(
     return plan, approval, jobs, identity, binding
 
 
-def prepare(phase: str, approval_path: Path, output: Path) -> None:
-    plan, approval, jobs, _identity, binding = prepared_inputs(phase, approval_path, output)
+def prepare(
+    phase: str, approval_path: Path, output: Path, *, oauth_environment_file: Path | None = None
+) -> None:
+    snapshot = load_oauth_snapshot(oauth_environment_file) if oauth_environment_file else None
+    plan, approval, jobs, _identity, binding = (
+        prepared_inputs(phase, approval_path, output)
+        if snapshot is None
+        else prepared_inputs(phase, approval_path, output, credential_value=snapshot.value)
+    )
     output.mkdir(parents=True, exist_ok=False)
     write_object(output / "execution-plan.json", plan)
     write_object(output / "owner-approval.json", approval)
@@ -271,8 +296,14 @@ def execute(
     retention_archive: Path,
     retention_backup: Path,
     workers: int,
+    oauth_environment_file: Path | None = None,
 ) -> None:
-    plan, approval, jobs, identity, binding = prepared_inputs(phase, approval_path, output)
+    snapshot = load_oauth_snapshot(oauth_environment_file) if oauth_environment_file else None
+    plan, approval, jobs, identity, binding = (
+        prepared_inputs(phase, approval_path, output)
+        if snapshot is None
+        else prepared_inputs(phase, approval_path, output, credential_value=snapshot.value)
+    )
     stop_options = stop_rule_options_for_plan(plan)
     if read_object(output / "execution-plan.json") != plan:
         raise ValueError("prepared execution plan differs from the approved plan")
@@ -303,6 +334,77 @@ def execute(
         claude.ClaudeInvocationJournal(output / f"invocations-{index}.sqlite")
         for index in range(workers)
     ]
+    started = time.monotonic()
+    maximum_elapsed_seconds = int(approval["approved_runtime_window_hours"]) * 3600
+    transports: list[claude.ClaudeCodeTransport] = []
+    auth_events: list[dict[str, Any]] = []
+    auth_events_lock = threading.Lock()
+
+    def cap_exhausted() -> bool:
+        model, control = summary_journal.call_counts()
+        return (
+            model >= approved_caps.model_attempt_cap
+            or model + control >= approved_caps.provider_wire_request_cap
+        )
+
+    def on_authentication_event(event: dict[str, Any]) -> None:
+        with auth_events_lock:
+            index = len(auth_events)
+            auth_events.append(dict(event))
+        journal.append_event(
+            event_key=f"campaign/authentication/{index}",
+            kind="d59_replication_authentication_recovery",
+            trial_id="campaign-authentication",
+            step_index=0,
+            payload=event,
+        )
+        write_object(output / "authentication-status.json", event)
+        print(json.dumps({"authentication": event}, sort_keys=True), flush=True)
+        if event["event"] == "auth_pause_started":
+            print(
+                "Waiting for owner login: run .venv/bin/python "
+                ".cache/d59-replication-pilot/configure-token.py --login in your own Terminal.",
+                flush=True,
+            )
+
+    def verify_replacement(value: str) -> dict[str, Any]:
+        observed, proof = confirmed_live_identity(plan, value)
+        if observed != identity:
+            raise ValueError("replacement authentication differs from frozen identity")
+        return proof
+
+    def subprocesses_settled() -> bool:
+        settled = all(t.subprocesses_closed for t in transports)
+        if not settled:
+            # Called only after every runner lease drained. A still-live child is
+            # an unresolved send, never permission to rotate credentials or pause.
+            ledger.retain_unresolved_and_block("authentication_recovery_unsettled")
+        return settled
+
+    recovery: OAuthRecoveryGate | None = None
+    if "authentication_recovery" in plan:
+        if snapshot is None or oauth_environment_file is None or launch is None:
+            raise ValueError("the frozen recovery protocol requires an OAuth file and sandbox")
+        recovery = OAuthRecoveryGate(
+            initial=snapshot,
+            load=lambda: load_oauth_snapshot(oauth_environment_file),
+            verify=verify_replacement,
+            on_event=on_authentication_event,
+            stop_requested=lambda: (
+                ledger.blocked
+                or cap_exhausted()
+                or (
+                    recovery is not None
+                    and recovery.elapsed_seconds()
+                    >= maximum_elapsed_seconds
+                    - max(m.request_deadline_seconds for m in manifests.values())
+                )
+            ),
+            subprocesses_closed=subprocesses_settled,
+            minimum_validity_seconds=max(m.request_deadline_seconds for m in manifests.values())
+            + 5,
+        )
+        launch = replace(launch, oauth_token_source=recovery.credential)
     transports = [
         claude.ClaudeCodeTransport(
             ledger=ledger,
@@ -313,6 +415,7 @@ def execute(
             api_retry_limit=0,
             allow_connection_retry=True,
             sandbox_launch=launch,
+            authentication_recovery=recovery,
         )
         for index in range(workers)
     ]
@@ -324,12 +427,24 @@ def execute(
     assignments_started = 0
     assignments_lock = threading.Lock()
     source_revision = str(plan["source_binding"]["source_revision"])
-    started = time.monotonic()
-    maximum_elapsed_seconds = int(approval["approved_runtime_window_hours"]) * 3600
     stop_reason = "running"
     error: dict[str, str] | None = None
     retention: dict[str, Any] | None = None
     execution_failed = False
+
+    def elapsed_seconds() -> float:
+        return recovery.elapsed_seconds() if recovery is not None else time.monotonic() - started
+
+    def recovery_stop_reason() -> str:
+        if ledger.blocked:
+            return "invocation_ledger_blocked"
+        if cap_exhausted():
+            return "approved_cap_reached"
+        if elapsed_seconds() >= maximum_elapsed_seconds - max(
+            m.request_deadline_seconds for m in manifests.values()
+        ):
+            return "runtime_window_exhausted"
+        return "execution_error"
 
     def attempted_assignments() -> int:
         with assignments_lock:
@@ -356,7 +471,7 @@ def execute(
         return {"allowed_connects": allowed, "refused_connects": refused}
 
     def window_exhausted() -> bool:
-        return time.monotonic() - started >= maximum_elapsed_seconds
+        return elapsed_seconds() >= maximum_elapsed_seconds
 
     def summary() -> dict[str, Any]:
         with rows_lock:
@@ -379,7 +494,14 @@ def execute(
             "unrun": len(jobs) - attempted,
             "stop_reason": stop_reason,
             "error": error,
-            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "elapsed_seconds": round(elapsed_seconds(), 3),
+            "wall_elapsed_seconds": round(time.monotonic() - started, 3),
+            "authentication_wait_excluded_seconds": round(
+                max(0.0, time.monotonic() - started - elapsed_seconds()), 3
+            ),
+            "authentication_reads_during_execution": sum(
+                int(event.get("authentication_reads_attempted", 0)) for event in list(auth_events)
+            ),
             "approved_runtime_seconds": maximum_elapsed_seconds,
             "results": sorted(snapshot, key=lambda row: int(row["plan_index"])),
             "counts": {
@@ -423,7 +545,7 @@ def execute(
                 transport=transports[worker],
                 approved_caps=approved_caps,
                 time_exhausted=lambda mode=mode: (
-                    time.monotonic() - started
+                    elapsed_seconds()
                     >= maximum_elapsed_seconds - manifests[mode].request_deadline_seconds
                 ),
             )
@@ -447,14 +569,22 @@ def execute(
                     task=task,
                     backend=FocusMemoryBackend(),
                 ).to_dict()
-            except CallCapExceededError:
+            except (CallCapExceededError, AuthRecoveryStopped) as stopped:
                 # A partial assignment remains in the denominator and retains its
                 # actual dispatch/usage history. No checkpoint is fabricated.
                 result = {
                     "trial_id": str(job["trial_id"]),
                     "task_id": task.task_id,
                     "success": False,
-                    "classification": "approved_cap_reached",
+                    "classification": (
+                        "approved_cap_reached"
+                        if isinstance(stopped, CallCapExceededError) or cap_exhausted()
+                        else "infrastructure_failure"
+                        if ledger.blocked
+                        else "phase_time_stop"
+                        if recovery_stop_reason() == "runtime_window_exhausted"
+                        else "infrastructure_failure"
+                    ),
                     "incomplete_assignment": True,
                     "environment_actions": sum(
                         event.kind == "dispatch_committed"
@@ -521,8 +651,16 @@ def execute(
         )
 
     def wait_for_backoff(seconds: float) -> None:
-        remaining = max(0.0, maximum_elapsed_seconds - (time.monotonic() - started))
+        remaining = max(0.0, maximum_elapsed_seconds - elapsed_seconds())
         threading.Event().wait(timeout=min(seconds, remaining))
+
+    def before_dispatch() -> None:
+        if recovery is not None:
+            try:
+                recovery.begin_attempt()
+            except AuthRecoveryStopped:
+                raise CampaignDispatchStopped(recovery_stop_reason()) from None
+            recovery.end_attempt()
 
     try:
         campaign = run_campaign(
@@ -536,8 +674,11 @@ def execute(
             stop_rule_options=stop_options,
             on_backoff=on_backoff,
             wait_for_backoff=wait_for_backoff,
+            before_dispatch=before_dispatch,
         )
         stop_reason = campaign.stop_reason
+    except AuthRecoveryStopped:
+        stop_reason = recovery_stop_reason()
     except BaseException as exc:
         stop_reason = "execution_error"
         error = {"type": type(exc).__name__, "message": str(exc)}
@@ -594,6 +735,7 @@ def main() -> None:
     parser.add_argument("--approval", type=Path, required=True)
     parser.add_argument("--retention-archive", type=Path)
     parser.add_argument("--retention-backup", type=Path)
+    parser.add_argument("--oauth-environment-file", type=Path)
     parser.add_argument(
         "--workers",
         type=int,
@@ -603,7 +745,12 @@ def main() -> None:
     args = parser.parse_args()
     output = args.output.resolve()
     if args.mode == "prepare":
-        prepare(args.phase, args.approval.resolve(), output)
+        prepare(
+            args.phase,
+            args.approval.resolve(),
+            output,
+            oauth_environment_file=args.oauth_environment_file,
+        )
         return
     if args.retention_archive is None or args.retention_backup is None:
         parser.error("execute requires --retention-archive and --retention-backup")
@@ -614,6 +761,7 @@ def main() -> None:
         retention_archive=args.retention_archive.resolve(),
         retention_backup=args.retention_backup.resolve(),
         workers=args.workers,
+        oauth_environment_file=args.oauth_environment_file,
     )
 
 

@@ -83,7 +83,8 @@ def test_replication_plan_preserves_the_d59_design_and_changes_the_policy_pair(p
         assert parameters["auth_method"] == "oauth_token"
         assert parameters["cli_api_retry_limit"] == "0"
         assert (
-            manifest["transport_retry_rule"] == "claude-one-stopped-timeout-or-connection-retry-v1"
+            manifest["transport_retry_rule"]
+            == "claude-one-stopped-timeout-connection-or-auth-retry-v1"
         )
     assert plan["relationship"]["kind"] == "replication_beside_d59"
     assert plan["relationship"]["d59_results"]["path"] == replication.D59_RESULTS_PATH

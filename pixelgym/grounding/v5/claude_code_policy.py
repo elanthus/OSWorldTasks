@@ -13,17 +13,21 @@ import subprocess
 import tempfile
 import threading
 from collections import Counter
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from PIL import Image
 
 from pixelgym.actions import KEY_ALLOWLIST
 from pixelgym.grounding.v5 import cli_transport
 from pixelgym.grounding.v5.claude_subscription import verify_max_subscription
+
+if TYPE_CHECKING:
+    from pixelgym.grounding.v5.auth_recovery import OAuthRecoveryGate
 from pixelgym.grounding.v5.cli_transport import (
     CliProcessInterrupted,
     CliSubprocessTransport,
@@ -1175,6 +1179,72 @@ def _synthetic_connection_fault(
     )
 
 
+def _synthetic_authentication_fault(
+    raw_stdout: str, parsed: ParsedClaudeStream, return_code: int | None
+) -> CliFault | None:
+    """Only a stopped, zero-usage synthetic OAuth-expiry rejection is retryable."""
+    if return_code != 1 or set(parsed.policy_violations) != {
+        "claude_result_error",
+        "resolved_model_mismatch",
+    }:
+        return None
+    try:
+        events = [json.loads(line) for line in raw_stdout.splitlines() if line.strip()]
+    except (ValueError, TypeError):
+        return None
+    if not all(isinstance(event, dict) for event in events):
+        return None
+    if [event.get("type") for event in events] != ["system", "assistant", "result"]:
+        return None
+    assistant, result = events[1:]
+    message = assistant.get("message", {})
+    text = result.get("result")
+    if not isinstance(message, dict):
+        return None
+    if (
+        assistant.get("error") != "authentication_failed"
+        or message.get("model") != "<synthetic>"
+        or result.get("is_error") is not True
+        or result.get("modelUsage") != {}
+        or not isinstance(text, str)
+        or not text.startswith("API Error: 401 ")
+        or message.get("content") != [{"type": "text", "text": text}]
+        or parsed.usage is None
+        or any(parsed.usage.values())
+        or parsed.informational_cost_usd != 0
+    ):
+        return None
+    try:
+        body = json.loads(text[len("API Error: 401 ") :])
+        error = body["error"]
+        expired = (
+            body.get("type") == "error"
+            and error.get("type") == "authentication_error"
+            and error.get("message", "").lower()
+            in {
+                (
+                    "oauth token has expired. please obtain a new token "
+                    "or refresh your existing token."
+                ),
+                "oauth token has expired. please run /login.",
+            }
+        )
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return None
+    if not expired:
+        return None
+    from pixelgym.grounding.v5.contracts import CostKnowledge, ModelAttemptConsumption
+
+    return CliFault(
+        kind=CliFaultKind.AUTHENTICATION_EXPIRED,
+        code="cli_oauth_expired",
+        phase="post_send",
+        classification="request_failure",
+        model_attempt_consumption=ModelAttemptConsumption.NOT_CONSUMED,
+        cost_knowledge=CostKnowledge.ZERO,
+    )
+
+
 class ClaudeCodeTransport:
     def __init__(
         self,
@@ -1190,6 +1260,7 @@ class ClaudeCodeTransport:
         allow_connection_retry: bool = False,
         api_retry_limit: int | None = None,
         sandbox_launch: ClaudeSandboxLaunch | None = None,
+        authentication_recovery: OAuthRecoveryGate | None = None,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
@@ -1197,6 +1268,12 @@ class ClaudeCodeTransport:
         if allow_connection_retry and api_retry_limit != 0:
             raise ValueError("counted connection retries require zero internal CLI retries")
         self.sandbox_launch = sandbox_launch
+        if authentication_recovery is not None and (
+            runtime_identity.route != REPLICATION_ROUTE or api_retry_limit != 0
+        ):
+            raise ValueError("authentication recovery requires the zero-internal-retry token route")
+        self.authentication_recovery = authentication_recovery
+        self.allow_authentication_retry = authentication_recovery is not None
         self.allow_connection_retry = allow_connection_retry
         self.ledger = ledger
         self.invocation_journal = invocation_journal
@@ -1223,6 +1300,17 @@ class ClaudeCodeTransport:
     @property
     def subprocesses_closed(self) -> bool:
         return self._lifecycle.subprocesses_closed
+
+    @contextmanager
+    def attempt_guard(self) -> Iterator[None]:
+        recovery = self.authentication_recovery
+        if recovery is not None:
+            recovery.begin_attempt()
+        try:
+            yield
+        finally:
+            if recovery is not None:
+                recovery.end_attempt()
 
     def send(
         self, request: dict[str, Any], *, idempotency_key: str, deadline_seconds: float
@@ -1423,6 +1511,19 @@ class ClaudeCodeTransport:
         egress = self._egress_summary(launch)
         if egress is not None and egress["refused_count"]:
             violations.append("unauthorized_egress_attempt")
+        if (
+            self.authentication_recovery is not None
+            and execution.process_confirmed_stopped
+            and not execution.stdout.credential_redacted
+            and not execution.stderr.credential_redacted
+            and not (egress and egress["refused_count"])
+        ):
+            auth_fault = _synthetic_authentication_fault(
+                execution.stdout.value, parsed, execution.return_code
+            )
+            if auth_fault is not None:
+                completed_fault = auth_fault
+                violations = []  # The verified envelope is a rejection, not a model response.
         content = parsed.content
         try:
             validate_credential_free(content)
@@ -1466,6 +1567,11 @@ class ClaudeCodeTransport:
                 outcome=outcome,
             )
             self.records.append(self._record(idempotency_key, fault.classification, outcome))
+            if (
+                fault.kind is CliFaultKind.AUTHENTICATION_EXPIRED
+                and self.authentication_recovery is not None
+            ):
+                self.authentication_recovery.require_login()
             return transport_outcome
         usage_record = {
             **(parsed.usage or {}),
@@ -1619,6 +1725,10 @@ class ClaudeCodeTransport:
                 or (
                     self.allow_connection_retry
                     and outcome.fault.kind is CliFaultKind.CONNECTION_RESET
+                )
+                or (
+                    self.allow_authentication_retry
+                    and outcome.fault.kind is CliFaultKind.AUTHENTICATION_EXPIRED
                 )
             )
             and self.subprocesses_closed

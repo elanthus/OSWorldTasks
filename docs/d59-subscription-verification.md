@@ -83,3 +83,26 @@ and oversized responses; safe errors; mandatory verification receipts; and fresh
 on every probe. These cases make no network, browser, OSWorld, CLI, or wall-clock sleep calls.
 The PR validation record states actual counts and runtimes, including omitted existing
 loopback/socket and sleep-based tests.
+
+## Owner-approved recovery amendment (2026-10-22)
+
+The owner subsequently provisioned a full browser OAuth login through the ignored local helper.
+Fresh same-credential profile verification returned HTTP 200 with `claude_max`; the token-route
+CLI identity matched the freeze, and the auth-status-only kernel-sandbox check passed with no
+allowed proxy connections. The earlier 403 observations above remain historical evidence.
+
+The owner now authorizes a replacement freeze with shared OAuth-expiry recovery. Workers pause
+before a new attempt reservation or request deadline, drain existing sends, and wait for the
+owner to run `.venv/bin/python .cache/d59-replication-pilot/configure-token.py --login` in their
+own Terminal. The same-credential Max/CLI/model/help check remains mandatory. Runtime excludes
+owner-login waiting only after all in-flight attempts settle. The six-hour pilot and 168-hour
+full-run windows are active time; request deadlines and counted attempt/wire caps are unchanged.
+A known zero-usage synthetic expiry rejection can use the remaining existing retry; no assignment
+or committed action is replayed, and unknown-invocation stops are never cleared by login.
+
+After the new freeze, the owner authorizes pilot model calls and conditionally authorizes the
+full campaign when every pilot assignment completes with valid operational evidence and verified
+retention, without a guard stop. Task failures do not defeat that operational gate. The dated
+[pre-registration addendum](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) records the
+owner's instructions and the exact phase limits. Model calls remain prohibited until the new
+freeze and its separate machine-readable approvals are recorded.

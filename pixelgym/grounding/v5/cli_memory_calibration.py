@@ -92,7 +92,10 @@ def build_memory_manifest(
     *,
     retain_screenshots: bool,
     allow_connection_retry: bool = False,
+    allow_authentication_retry: bool = False,
 ) -> PolicyManifest:
+    if allow_authentication_retry and not allow_connection_retry:
+        raise ValueError("authentication recovery requires the counted connection-retry policy")
     if allow_connection_retry and (
         base.provider != "claude-code-cli/claude-ai-max-subscription"
         or dict(base.inference_parameters).get("cli_api_retry_limit") != "0"
@@ -108,6 +111,10 @@ def build_memory_manifest(
             "memory_focus_backend.py",
         )
     }
+    if allow_authentication_retry:
+        sources["auth_recovery.py"] = "sha256:" + sha256_bytes(
+            (root / "pixelgym/grounding/v5/auth_recovery.py").read_bytes()
+        )
     mode = "history" if retain_screenshots else "stateless"
     fields = {k: v for k, v in vars(base).items() if k != "policy_id"}
     fields.update(
@@ -126,7 +133,9 @@ def build_memory_manifest(
         state_reducer_version=f"pixelgym-agent-v5-observed-screenshots-v1-{mode}",
         max_model_attempts_per_action=2,
         transport_retry_rule=(
-            "claude-one-stopped-timeout-or-connection-retry-v1"
+            "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+            if allow_authentication_retry
+            else "claude-one-stopped-timeout-or-connection-retry-v1"
             if allow_connection_retry
             else "cli-one-confirmed-stopped-timeout-retry-v1"
         ),
@@ -135,7 +144,9 @@ def build_memory_manifest(
             (
                 "runner_retries",
                 (
-                    "1-confirmed-stopped-timeout-or-connection-reset"
+                    "1-confirmed-stopped-timeout-connection-reset-or-oauth-expiry"
+                    if allow_authentication_retry
+                    else "1-confirmed-stopped-timeout-or-connection-reset"
                     if allow_connection_retry
                     else "1-confirmed-stopped-timeout-only"
                 ),
@@ -153,12 +164,21 @@ class CliMemoryRunner(V5Runner):
     ) -> None:
         super().__init__(**kwargs)
         self.time_exhausted = time_exhausted
-        connection_retry = (
-            self.manifest.transport_retry_rule
-            == "claude-one-stopped-timeout-or-connection-retry-v1"
-        )
+        connection_retry = self.manifest.transport_retry_rule in {
+            "claude-one-stopped-timeout-or-connection-retry-v1",
+            "claude-one-stopped-timeout-connection-or-auth-retry-v1",
+        }
         if bool(getattr(self.transport, "allow_connection_retry", False)) != connection_retry:
             raise ValueError("connection retry transport differs from frozen manifest")
+        authentication_retry = (
+            self.manifest.transport_retry_rule
+            == "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+        )
+        if (
+            bool(getattr(self.transport, "allow_authentication_retry", False))
+            != authentication_retry
+        ):
+            raise ValueError("authentication retry transport differs from frozen manifest")
         mode = "history" if cast(CliMemoryPolicy, self.policy).retain_screenshots else "stateless"
         if self.manifest.memory_policy_version != f"pixelgym-cli-screenshot-{mode}-v1":
             raise ValueError("manifest memory mode differs from executable policy")

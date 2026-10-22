@@ -67,6 +67,7 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
 ):
     cap_hit = scenario == "cap"
     plan = json.loads((ROOT / driver.PLAN_PATH).read_text())
+    plan.pop("authentication_recovery", None)  # This fixture exercises the legacy summary path.
     identity = claude.ClaudeRuntimeIdentity(**plan["runtime_identity"])
     base = claude.build_claude_policy_manifest(
         ROOT,

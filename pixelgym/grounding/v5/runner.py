@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import threading
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Literal, Protocol
@@ -131,6 +132,14 @@ class RetryableSendRule:
 
 
 RETRYABLE_SEND_STATUSES: dict[str, RetryableSendRule] = {
+    "authentication_required": RetryableSendRule(
+        terminal_kind="confirmed_no_response_timeout",
+        event_kind="retryable_authentication",
+        default_failure_code="cli_oauth_expired",
+        exhausted_event_key="sealed_authentication_retry_exhausted",
+        exhausted_failure_code="authentication_retry_exhausted",
+        exhausted_classification="request_failure",
+    ),
     "rate_limited": RetryableSendRule(
         terminal_kind="confirmed_no_response_timeout",
         event_kind="retryable_rate_limit",
@@ -547,32 +556,34 @@ class V5Runner:
             idempotency_key = content_digest(
                 {"attempt": identity.key, "policy": self.manifest.policy_id}
             )
-            _reservation, created = self.journal.reserve_attempt_started(
-                identity,
-                provider_endpoint_identity=self.manifest.sandbox.provider_endpoint,
-                request_digest=request_digest,
-                idempotency_key=idempotency_key,
-                model_attempt_reservation=1,
-                control_request_reservation=(
-                    self.manifest.max_cancellation_requests_per_attempt
-                    + self.manifest.max_reconciliation_requests_per_attempt
-                ),
-                pre_call_checkpoint=state,
-                approved_caps=self.approved_caps,
-            )
-            if not created:
-                raise RuntimeError("model attempt is already durably reserved")
-            self._boundary("attempt_started")
-            send_request = partial(
-                self.transport.send,
-                request,
-                idempotency_key=idempotency_key,
-                deadline_seconds=self.manifest.request_deadline_seconds,
-            )
-            bounded_send = self.deadline_executor.execute(
-                send_request,
-                timeout_seconds=self.manifest.request_deadline_seconds,
-            )
+            # Owner authentication waits happen outside the request deadline and reservation.
+            with getattr(self.transport, "attempt_guard", nullcontext)():
+                _reservation, created = self.journal.reserve_attempt_started(
+                    identity,
+                    provider_endpoint_identity=self.manifest.sandbox.provider_endpoint,
+                    request_digest=request_digest,
+                    idempotency_key=idempotency_key,
+                    model_attempt_reservation=1,
+                    control_request_reservation=(
+                        self.manifest.max_cancellation_requests_per_attempt
+                        + self.manifest.max_reconciliation_requests_per_attempt
+                    ),
+                    pre_call_checkpoint=state,
+                    approved_caps=self.approved_caps,
+                )
+                if not created:
+                    raise RuntimeError("model attempt is already durably reserved")
+                self._boundary("attempt_started")
+                send_request = partial(
+                    self.transport.send,
+                    request,
+                    idempotency_key=idempotency_key,
+                    deadline_seconds=self.manifest.request_deadline_seconds,
+                )
+                bounded_send = self.deadline_executor.execute(
+                    send_request,
+                    timeout_seconds=self.manifest.request_deadline_seconds,
+                )
             transport_outcome = (
                 TransportOutcome("deadline", failure_code="runner_request_deadline")
                 if bounded_send.timed_out
@@ -590,10 +601,14 @@ class V5Runner:
                 retry_status = "transport_fault"
             if retry_status in RETRYABLE_SEND_STATUSES:
                 rule = RETRYABLE_SEND_STATUSES[retry_status]
-                if transport_outcome.status == "rate_limited":
+                if transport_outcome.status in {"rate_limited", "authentication_required"}:
                     self._settle_zero_charge_spend(
                         idempotency_key,
-                        reason="confirmed_zero_charge_rate_limit",
+                        reason=(
+                            "confirmed_zero_charge_authentication_rejection"
+                            if transport_outcome.status == "authentication_required"
+                            else "confirmed_zero_charge_rate_limit"
+                        ),
                     )
                 else:
                     self._settle_unknown_spend(idempotency_key)

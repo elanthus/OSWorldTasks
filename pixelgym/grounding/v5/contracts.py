@@ -67,6 +67,7 @@ class CliFaultKind(StrEnum):
     CONNECTION_RESET = "connection_reset"
     TLS_FAILURE = "tls_failure"
     SUBSCRIPTION_RATE_LIMIT = "subscription_rate_limit"
+    AUTHENTICATION_EXPIRED = "authentication_expired"
     MALFORMED_EVENT_STREAM = "malformed_event_stream"
     NONZERO_EXIT = "nonzero_exit"
     POST_SEND = "post_send"
@@ -107,13 +108,17 @@ class CliFault:
     @property
     def transport_status(
         self,
-    ) -> Literal["pre_send_failure", "deadline", "rate_limited", "transport_fault"]:
+    ) -> Literal[
+        "pre_send_failure", "deadline", "rate_limited", "authentication_required", "transport_fault"
+    ]:
         if self.phase == "pre_send":
             return "pre_send_failure"
         if self.kind is CliFaultKind.PROCESS_TIMEOUT:
             return "deadline"
         if self.kind is CliFaultKind.SUBSCRIPTION_RATE_LIMIT:
             return "rate_limited"
+        if self.kind is CliFaultKind.AUTHENTICATION_EXPIRED:
+            return "authentication_required"
         return "transport_fault"
 
     def to_dict(self) -> dict[str, str]:
@@ -146,6 +151,7 @@ class TransportOutcome:
         "pre_send_failure",
         "deadline",
         "rate_limited",
+        "authentication_required",
         "transport_fault",
         "unknown",
     ]

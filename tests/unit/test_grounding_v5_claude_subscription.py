@@ -317,17 +317,32 @@ def test_successor_preserves_max_and_scientific_rules_but_requires_a_new_exact_a
     root = Path(__file__).parents[2]
     path = root / replication.OUTPUT_DIRECTORY / "execution-plan.json"
     before = path.read_bytes()
-    frozen = json.loads(before)
+    frozen = json.loads(
+        subprocess.run(
+            [
+                "git",
+                "show",
+                "f90a10a83459ce4dc10656fffa36dfdf392d3569:"
+                + replication.OUTPUT_DIRECTORY
+                + "/execution-plan.json",
+            ],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    )
     candidate = replication.execution_plan(
         root,
         source_revision=bound["source_binding"]["source_revision"],
         runtime_identity=policy.ClaudeRuntimeIdentity(**frozen["runtime_identity"]),
         stop_rule_options=replication.stop_rule_options_for_plan(frozen),
     )
-    assert {key for key in candidate if candidate[key] != frozen[key]} == {
+    assert {key for key in candidate if candidate[key] != frozen.get(key)} == {
         "source_binding",
         "policy_manifests",
         "route",
+        "authentication_recovery",
         "execution_plan_digest",
     }
     assert candidate["runtime_identity"] == frozen["runtime_identity"]
