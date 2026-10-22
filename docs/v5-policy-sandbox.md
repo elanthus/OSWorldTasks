@@ -61,7 +61,7 @@ and an isolated config directory, `claude auth status --json` inside the profile
 `loggedIn: true` and `authMethod: oauth_token`, and the CLI populates the config directory itself.
 That observation establishes the selected auth route, not the account's subscription tier.
 
-The prepared subscription-verification fix requires a fresh HTTPS GET to
+The frozen subscription-verification protocol requires a fresh HTTPS GET to
 `https://api.anthropic.com/api/oauth/profile` using exactly the credential supplied to the CLI.
 Only the authenticated organization's `organization_type: claude_max` is accepted. A null CLI
 tier is filled from that proof; an explicit conflicting CLI tier is rejected. Environment tier
@@ -70,8 +70,13 @@ redirects cannot substitute for proof. Each preparation and execution preflight 
 The one read-only auth request is outside campaign model/control-request accounting and makes
 no model request. The check uses a 10-second socket timeout and a 64-KiB response limit, retains
 no raw profile or account identifiers, and records sanitized verification evidence in the binding.
-The [identity investigation and proposed re-freeze](d59-subscription-verification.md) records
-the remaining credential prerequisite and the separate approval boundary.
+The [identity investigation and owner-approved re-freeze](d59-subscription-verification.md)
+records the successful login and phase-approval boundaries. Before a new attempt, the shared
+gate pauses sends when the access token is near expiry. Existing requests settle before owner
+waiting is excluded from active runtime. Run the local hidden-input helper with `--login` to
+renew; one fresh same-credential profile check per new value is journaled separately from
+model/control calls. The gate never replays committed actions, replenishes caps, or clears an
+unresolved-invocation stop.
 
 ### 3. Egress through a runner-owned CONNECT proxy
 
