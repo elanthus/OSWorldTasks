@@ -396,7 +396,8 @@ def execution_plan(
             "completion order; failure streaks: "
             + stop_rule_options.failure_streak_scope
             + "; no new dispatch after a stop; drain in-flight results; bounded journaled "
-            "rate-limit backoff before new dispatch"
+            "rate-limit backoff before new dispatch, using one shared deadline equal to "
+            "max(rejection completion time + bounded delay)"
         )
     return {**value, "execution_plan_digest": content_digest(value)}
 
