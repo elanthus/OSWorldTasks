@@ -6,6 +6,7 @@ import base64
 import io
 import json
 import os
+import platform
 import re
 import sqlite3
 import subprocess
@@ -43,19 +44,35 @@ from pixelgym.grounding.v5.contracts import (
     sha256_bytes,
 )
 from pixelgym.grounding.v5.coordinates import IDENTITY_ADAPTER
+from pixelgym.grounding.v5.egress_proxy import (
+    EgressProxy,
+    egress_allowlist_digest,
+    summarize_attempts,
+)
 from pixelgym.grounding.v5.evidence import (
     CredentialValidationError,
     RedactedRawStdio,
     redact_raw_stdio,
     validate_credential_free,
 )
+from pixelgym.grounding.v5.os_sandbox import (
+    CliLaunchLayout,
+    cli_profile_digest,
+    cli_profile_template_digest,
+    cli_scratch_root,
+    darwin_cli_profile,
+    prepare_cli_scratch_subdirectory,
+    sandboxed_command,
+)
 from pixelgym.grounding.v5.runner import PolicyVisibleResult
 from pixelgym.grounding.v5.sandbox import (
     DECLARED_UNAVAILABLE_CAPABILITIES,
+    OS_SANDBOX_CLI_LAUNCH_MECHANISM,
     PolicyClaim,
     RuntimeEnforcement,
     build_sandbox_manifest,
     runtime_enforcement,
+    sandboxed_launch_enforcement,
     unbound_runtime_enforcement,
     validate_runtime_enforcement,
 )
@@ -291,6 +308,145 @@ def _claude_launch_enforcement(
         cli_restrictions_applied=controls_match,
         environment_allowlist_applied=environment_is_allowlisted,
     )
+
+
+# --- Sandboxed launch (design record: docs/v5-policy-sandbox.md) ----------------------
+#
+# Under the kernel sandbox the CLI sees one per-launch workspace as HOME, config, and
+# TMPDIR, reaches the network only through the runner's loopback CONNECT proxy, and
+# authenticates with a token the runner injects into the child environment. Journals and
+# records keep environment variable *names* only; `validate_credential_free` rejects any
+# payload carrying a credential-shaped value.
+
+DEFAULT_EGRESS_TARGETS = ("api.anthropic.com:443",)
+OAUTH_TOKEN_ENVIRONMENT_VARIABLE = "CLAUDE_CODE_OAUTH_TOKEN"
+_SANDBOXED_PATH = "/usr/bin:/bin"
+_SANDBOXED_FIXED_ENVIRONMENT = (
+    ("DISABLE_TELEMETRY", "1"),
+    ("DISABLE_ERROR_REPORTING", "1"),
+    ("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "1"),
+)
+_SANDBOXED_PASSTHROUGH_VARIABLES = ("LANG", "LC_ALL")
+_SANDBOXED_RUNNER_VARIABLES = (
+    "PATH",
+    "HOME",
+    "TMPDIR",
+    "CLAUDE_CONFIG_DIR",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+)
+
+
+@dataclass(frozen=True)
+class ClaudeSandboxLaunch:
+    """Runner-owned facts for launching the CLI under the kernel sandbox.
+
+    The token source is called at each launch and its value goes only into the child
+    environment. Nothing here is journaled directly; the launch record derives from it.
+    """
+
+    cli_executable: Path
+    cli_root: Path
+    scratch_root: Path
+    oauth_token_source: Callable[[], str]
+    egress_targets: tuple[str, ...] = DEFAULT_EGRESS_TARGETS
+    denied_paths: tuple[Path, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.cli_executable.is_absolute() or not self.cli_root.is_absolute():
+            raise ValueError("sandboxed CLI paths must be absolute")
+        if not self.egress_targets:
+            raise ValueError("sandboxed launch requires at least one egress target")
+
+    @classmethod
+    def from_environment(
+        cls,
+        *,
+        cli_executable: Path,
+        denied_paths: Sequence[Path] = (),
+        environment: Mapping[str, str] = os.environ,
+        egress_targets: Sequence[str] = DEFAULT_EGRESS_TARGETS,
+    ) -> ClaudeSandboxLaunch:
+        """Read the token from the runner's environment at each launch; never store it."""
+
+        executable = cli_executable.resolve()
+        return cls(
+            cli_executable=executable,
+            cli_root=executable.parent,
+            scratch_root=cli_scratch_root(os.getuid()),
+            oauth_token_source=lambda: environment.get(OAUTH_TOKEN_ENVIRONMENT_VARIABLE, ""),
+            egress_targets=tuple(egress_targets),
+            denied_paths=tuple(denied_paths),
+        )
+
+
+def sandboxed_environment_variable_names(api_retry_limit: int | None = None) -> tuple[str, ...]:
+    """Every variable name a sandboxed launch may carry, sorted; values are never recorded."""
+
+    names = {
+        *_SANDBOXED_RUNNER_VARIABLES,
+        *_SANDBOXED_PASSTHROUGH_VARIABLES,
+        *(name for name, _ in _SANDBOXED_FIXED_ENVIRONMENT),
+        OAUTH_TOKEN_ENVIRONMENT_VARIABLE,
+    }
+    if api_retry_limit is not None:
+        names.add(CLI_API_RETRY_ENVIRONMENT_VARIABLE)
+    return tuple(sorted(names))
+
+
+def _sandboxed_environment(
+    environment: Mapping[str, str],
+    *,
+    layout: CliLaunchLayout,
+    proxy_url: str,
+    oauth_token: str,
+    api_retry_limit: int | None,
+) -> dict[str, str]:
+    if not oauth_token:
+        raise ValueError("sandboxed launch requires a non-empty OAuth token value")
+    result = {
+        "PATH": _SANDBOXED_PATH,
+        "HOME": str(layout.home),
+        "TMPDIR": str(layout.tmp),
+        "CLAUDE_CONFIG_DIR": str(layout.config),
+        "HTTPS_PROXY": proxy_url,
+        "HTTP_PROXY": proxy_url,
+    }
+    for name in _SANDBOXED_PASSTHROUGH_VARIABLES:
+        if environment.get(name):
+            result[name] = environment[name]
+    result.update(dict(_SANDBOXED_FIXED_ENVIRONMENT))
+    if api_retry_limit is not None:
+        result[CLI_API_RETRY_ENVIRONMENT_VARIABLE] = str(api_retry_limit)
+    result[OAUTH_TOKEN_ENVIRONMENT_VARIABLE] = oauth_token
+    return result
+
+
+def declared_sandboxed_launch_enforcement(
+    *,
+    api_retry_limit: int | None = None,
+    egress_targets: Sequence[str] = DEFAULT_EGRESS_TARGETS,
+) -> RuntimeEnforcement:
+    """Plan-time declaration that every launch under a manifest runs sandboxed."""
+
+    return sandboxed_launch_enforcement(
+        argv=sanitized_command_contract(),
+        environment_variable_names=sandboxed_environment_variable_names(api_retry_limit),
+        cli_restrictions_applied=True,
+        environment_allowlist_applied=True,
+        profile_template_digest=cli_profile_template_digest(),
+        egress_allowlist_digest=egress_allowlist_digest(egress_targets),
+    )
+
+
+@dataclass(frozen=True)
+class _PreparedLaunch:
+    command: tuple[str, ...]
+    environment: dict[str, str]
+    cwd: Path
+    enforcement: RuntimeEnforcement
+    egress_marker: int | None
+    pre_send_failure: str | None
 
 
 def action_prompt(task_instruction: str) -> str:
@@ -915,10 +1071,15 @@ class ClaudeCodeTransport:
         allow_timeout_retry: bool = False,
         allow_connection_retry: bool = False,
         api_retry_limit: int | None = None,
+        sandbox_launch: ClaudeSandboxLaunch | None = None,
     ) -> None:
         ClaudeRuntimeIdentity(**runtime_identity.__dict__)
         if process_timeout_seconds <= 0:
             raise ValueError("Claude process timeout must be positive")
+        self.sandbox_launch = sandbox_launch
+        self._proxy: EgressProxy | None = (
+            None if sandbox_launch is None else EgressProxy(sandbox_launch.egress_targets).start()
+        )
         if allow_connection_retry and api_retry_limit != 0:
             raise ValueError("counted connection retries require zero internal CLI retries")
         self.allow_connection_retry = allow_connection_retry
@@ -962,23 +1123,24 @@ class ClaudeCodeTransport:
             return cli_fault_outcome(cli_pre_send_fault("duplicate_invocation"))
         outcome: dict[str, Any]
         with tempfile.TemporaryDirectory(prefix="pixelgym-claude-cli-") as temporary:
-            command = _runtime_command()
-            launch_enforcement = _claude_launch_enforcement(
-                command,
-                self.environment,
-                api_retry_limit=self.api_retry_limit,
-            )
+            launch = self._prepare_launch(Path(temporary))
+            command = launch.command
+            launch_enforcement = launch.enforcement
             enforcement_record = launch_enforcement.to_dict()
-            try:
-                validate_runtime_enforcement(
-                    PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES),
-                    launch_enforcement,
-                )
-            except ValueError:
+            failure_code = launch.pre_send_failure
+            if failure_code is None:
+                try:
+                    validate_runtime_enforcement(
+                        PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES),
+                        launch_enforcement,
+                    )
+                except ValueError:
+                    failure_code = "runtime_enforcement_mismatch"
+            if failure_code is not None:
                 self.ledger.release_pre_send(idempotency_key)
-                fault = cli_pre_send_fault("runtime_enforcement_mismatch")
+                fault = cli_pre_send_fault(failure_code)
                 outcome = {
-                    "failure_code": "runtime_enforcement_mismatch",
+                    "failure_code": failure_code,
                     "cli_fault": fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
                 }
@@ -1022,8 +1184,8 @@ class ClaudeCodeTransport:
                     invocation_id=idempotency_key,
                     command=command,
                     input_text=json.dumps(input_event, separators=(",", ":")) + "\n",
-                    cwd=temporary,
-                    environment=self.environment,
+                    cwd=launch.cwd,
+                    environment=launch.environment,
                     timeout_seconds=min(self.process_timeout_seconds, deadline_seconds),
                     timeout_failure_code="claude_process_timeout",
                     on_started=mark_started,
@@ -1038,6 +1200,7 @@ class ClaudeCodeTransport:
                     "type": type(interrupted.cause).__name__,
                     "cli_fault": fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
+                    "egress_attempts": self._egress_summary(launch),
                 }
                 outcome["transport_outcome"] = cli_fault_outcome(fault).to_dict()
                 self.invocation_journal.finish(
@@ -1082,6 +1245,7 @@ class ClaudeCodeTransport:
                     "process_confirmed_stopped": execution.process_confirmed_stopped,
                     "cli_fault": execution_fault.to_dict(),
                     "runtime_enforcement": enforcement_record,
+                    "egress_attempts": self._egress_summary(launch),
                     "transport_outcome": transport_outcome.to_dict(),
                 }
                 self.invocation_journal.finish(
@@ -1123,6 +1287,9 @@ class ClaudeCodeTransport:
             and parsed.resolved_model != self.expected_resolved_model
         ):
             violations.append("resolved_model_differs_from_smoke")
+        egress = self._egress_summary(launch)
+        if egress is not None and egress["refused_count"]:
+            violations.append("unauthorized_egress_attempt")
         content = parsed.content
         try:
             validate_credential_free(content)
@@ -1143,6 +1310,7 @@ class ClaudeCodeTransport:
                 "event_counts": parsed.event_counts,
                 "exit_code": execution.return_code,
                 "runtime_enforcement": enforcement_record,
+                "egress_attempts": self._egress_summary(launch),
                 "resolved_model": parsed.resolved_model,
                 "policy_violation": violation_value,
                 "stream_violations": violations,
@@ -1183,6 +1351,9 @@ class ClaudeCodeTransport:
             "policy_violation": violation_value,
             "usage_telemetry_status": usage_status,
         }
+        if egress is not None:
+            usage_record["egress_connect_allowed"] = egress["allowed_count"]
+            usage_record["egress_connect_refused"] = egress["refused_count"]
         canonical = {
             "response_id": execution.stdout.original_sha256,
             "model": MODEL,
@@ -1194,6 +1365,7 @@ class ClaudeCodeTransport:
             "event_counts": parsed.event_counts,
             "exit_code": execution.return_code,
             "runtime_enforcement": enforcement_record,
+            "egress_attempts": self._egress_summary(launch),
             "resolved_model": parsed.resolved_model,
             "policy_violation": violation_value,
             "experiment_charge_usd": "0.00",
@@ -1235,7 +1407,72 @@ class ClaudeCodeTransport:
 
     def close(self) -> None:
         self._lifecycle.close()
+        if self._proxy is not None:
+            self._proxy.close()
+            self._proxy = None
         self._closed = True
+
+    def _prepare_launch(self, temporary: Path) -> _PreparedLaunch:
+        command = _runtime_command()
+        if self.sandbox_launch is None:
+            return _PreparedLaunch(
+                command=tuple(command),
+                environment=dict(self.environment),
+                cwd=temporary,
+                enforcement=_claude_launch_enforcement(
+                    command, self.environment, api_retry_limit=self.api_retry_limit
+                ),
+                egress_marker=None,
+                pre_send_failure=None,
+            )
+        launch = self.sandbox_launch
+        proxy = self._proxy
+        if proxy is None:
+            raise RuntimeError("sandboxed transport has no egress proxy")
+        layout = CliLaunchLayout(temporary).create()
+        prepare_cli_scratch_subdirectory(launch.scratch_root, layout.cwd)
+        profile = darwin_cli_profile(
+            layout,
+            cli_executable=launch.cli_executable,
+            cli_root=launch.cli_root,
+            proxy_port=proxy.port,
+            scratch_root=launch.scratch_root,
+            denied_paths=launch.denied_paths,
+        )
+        environment = _sandboxed_environment(
+            self.environment,
+            layout=layout,
+            proxy_url=proxy.url,
+            oauth_token=launch.oauth_token_source(),
+            api_retry_limit=self.api_retry_limit,
+        )
+        contract = sanitized_command_contract()
+        allowed_names = set(sandboxed_environment_variable_names(self.api_retry_limit))
+        enforcement = sandboxed_launch_enforcement(
+            argv=contract,
+            environment_variable_names=tuple(environment),
+            cli_restrictions_applied=tuple(command) == contract,
+            environment_allowlist_applied=set(environment) <= allowed_names,
+            profile_template_digest=cli_profile_template_digest(),
+            egress_allowlist_digest=proxy.allowlist_digest,
+            profile_digest=cli_profile_digest(profile),
+        )
+        executable_command = (str(launch.cli_executable.resolve()), *command[1:])
+        return _PreparedLaunch(
+            command=sandboxed_command(profile, executable_command),
+            environment=environment,
+            cwd=layout.cwd,
+            enforcement=enforcement,
+            egress_marker=proxy.sequence,
+            pre_send_failure=(
+                None if platform.system() == "Darwin" else "os_sandbox_unsupported_platform"
+            ),
+        )
+
+    def _egress_summary(self, launch: _PreparedLaunch) -> dict[str, Any] | None:
+        if launch.egress_marker is None or self._proxy is None:
+            return None
+        return summarize_attempts(self._proxy.attempts_since(launch.egress_marker))
 
     def retry_allowed(self, outcome: TransportOutcome) -> bool:
         return (
@@ -1308,6 +1545,7 @@ class ClaudeCodeTransport:
             "subscription_type": SUBSCRIPTION_TYPE,
             "command_contract_digest": command_contract_digest(),
             "runtime_enforcement": outcome.get("runtime_enforcement"),
+            "egress_attempts": outcome.get("egress_attempts"),
             "resolved_model": outcome.get("resolved_model"),
             "experiment_charge_usd": outcome.get("experiment_charge_usd", "0.00"),
             "informational_cost_telemetry_usd": outcome.get("informational_cost_telemetry_usd"),
@@ -1329,6 +1567,7 @@ def build_claude_policy_manifest(
     runtime_identity: ClaudeRuntimeIdentity,
     resolved_model: str | None,
     api_retry_limit: int | None = None,
+    sandboxed_launch: bool = False,
 ) -> PolicyManifest:
     ClaudeRuntimeIdentity(**runtime_identity.__dict__)
     runtime_digest = content_digest(
@@ -1348,7 +1587,11 @@ def build_claude_policy_manifest(
     sandbox = build_sandbox_manifest(
         runtime_digest=runtime_digest,
         provider_endpoint=PROVIDER_ORIGIN,
-        launch_enforcement=unbound_runtime_enforcement(),
+        launch_enforcement=(
+            declared_sandboxed_launch_enforcement(api_retry_limit=api_retry_limit)
+            if sandboxed_launch
+            else unbound_runtime_enforcement()
+        ),
         policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
@@ -1363,6 +1606,15 @@ def build_claude_policy_manifest(
         ("claude_max_turns", "1"),
         ("structured_output_auto_retry", "disabled_no_json_schema_flag"),
         ("runner_retries", "0"),
+        *(
+            (
+                ("os_sandbox_mechanism", OS_SANDBOX_CLI_LAUNCH_MECHANISM),
+                ("egress_targets", ",".join(DEFAULT_EGRESS_TARGETS)),
+                ("auth_route", "oauth_token_environment"),
+            )
+            if sandboxed_launch
+            else ()
+        ),
         *(
             ()
             if api_retry_limit is None

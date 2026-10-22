@@ -20,6 +20,7 @@ Design records and reference:
 - [README.md](README.md) — project claim and current status
 - [docs/environment-contract.md](docs/environment-contract.md) — the fifteen environment invariants and where they are enforced
 - [docs/platform-design.md](docs/platform-design.md) — Milestone 4 evaluation, governance, serving, and rollback platform, and v5 stateful serving
+- [docs/v5-policy-sandbox.md](docs/v5-policy-sandbox.md) — kernel sandbox and egress proxy around each v5 CLI policy launch
 - [docs/v5-benchmark-design.md](docs/v5-benchmark-design.md) — v5 agent benchmark contract, analysis plan, and status
 - [docs/development-process.md](docs/development-process.md) — branch, review, and human-gate process
 - [docs/glossary.md](docs/glossary.md) — D-numbers, grounding versions, and codenames

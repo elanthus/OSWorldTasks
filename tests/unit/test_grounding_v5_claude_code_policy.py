@@ -562,3 +562,47 @@ def test_action_envelope_accepts_only_complete_json(wrapper: str) -> None:
 def test_action_envelope_rejects_prose_multiple_objects_and_duplicate_fields(content: str) -> None:
     with pytest.raises(ValueError):
         policy._decode_action_content(content)
+
+
+def test_claude_policy_manifest_declares_v4_sandboxed_launch_and_changes_identity() -> None:
+    from pixelgym.grounding.v5.egress_proxy import egress_allowlist_digest
+    from pixelgym.grounding.v5.os_sandbox import cli_profile_template_digest
+
+    plain = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+        resolved_model="claude-haiku-4-5-20251001",
+        api_retry_limit=0,
+    )
+    sandboxed = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=runtime_identity(),
+        resolved_model="claude-haiku-4-5-20251001",
+        api_retry_limit=0,
+        sandboxed_launch=True,
+    )
+    sandbox = sandboxed.to_dict()["sandbox"]
+    enforcement = sandbox["runtime_enforcement"]
+    assert sandbox["schema_version"] == "pixelgym-agent-v5-sandbox-v4"
+    assert enforcement["mechanism_name"] == "darwin_sandbox_exec_cli_launch"
+    assert enforcement["os_sandbox_applied"] is True
+    assert enforcement["cli_restrictions_applied"] is True
+    assert enforcement["environment_allowlist_applied"] is True
+    assert enforcement["profile_template_digest"] == cli_profile_template_digest()
+    assert enforcement["profile_digest"] is None  # bound per launch, not at plan time
+    assert enforcement["egress_allowlist_digest"] == egress_allowlist_digest(
+        policy.DEFAULT_EGRESS_TARGETS
+    )
+    assert enforcement["environment_variable_names"] == list(
+        policy.sandboxed_environment_variable_names(0)
+    )
+    assert "CLAUDE_CODE_OAUTH_TOKEN" in enforcement["environment_variable_names"]
+    assert "USER" not in enforcement["environment_variable_names"]
+    parameters = dict(sandboxed.inference_parameters)
+    assert parameters["os_sandbox_mechanism"] == "darwin_sandbox_exec_cli_launch"
+    assert parameters["egress_targets"] == "api.anthropic.com:443"
+    assert parameters["auth_route"] == "oauth_token_environment"
+    assert sandboxed.policy_id != plain.policy_id
+    assert plain.to_dict()["sandbox"]["schema_version"] == "pixelgym-agent-v5-sandbox-v3"

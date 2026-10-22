@@ -114,6 +114,10 @@ LOCAL_PATH_ALLOWLIST: dict[tuple[str, str], str] = {
         '_LOCAL_PATH = re.compile(r"(?:/Users/|/home/|[A-Za-z]:\\\\\\\\Users\\\\\\\\)")',
     ): "local-path detector regex; hash-bound by published D5.6 evidence",
     (
+        "pixelgym/grounding/v5/os_sandbox.py",
+        'CLI_SCRATCH_ROOT_TEMPLATE = "/private/tmp/claude-{uid}"',
+    ): "the Claude Code CLI's fixed macOS scratch root; a platform path, not a checkout path",
+    (
         "scripts/publish_pr196_calibration.py",
         '"/Users/" not in text and "/private/" not in text and "data:image/" not in text,',
     ): "private-surface check on the published snapshot",

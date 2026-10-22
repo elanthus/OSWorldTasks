@@ -93,3 +93,91 @@ def test_os_sandbox_probe_surfaces_execution_stderr(
             runner_storage_path=tmp_path / "runner",
             python_executable=tmp_path / "python",
         )
+
+
+def test_cli_profile_is_deny_by_default_and_scoped_to_one_launch(tmp_path: Path) -> None:
+    from pixelgym.grounding.v5.os_sandbox import (
+        SBPL_CLI_PROFILE_VERSION,
+        CliLaunchLayout,
+        cli_profile_digest,
+        cli_profile_template_digest,
+        cli_scratch_subdirectory,
+        darwin_cli_profile,
+        sandboxed_command,
+    )
+
+    cli_root = tmp_path / "cask" / "2.1.292"
+    cli_root.mkdir(parents=True)
+    executable = cli_root / "claude"
+    executable.write_text("")
+    layout = CliLaunchLayout(tmp_path / "workspace").create()
+    scratch_root = Path("/private/tmp/claude-501")
+    peer = tmp_path / "peer-workspace"
+    runner = tmp_path / "runner-storage"
+    profile = darwin_cli_profile(
+        layout,
+        cli_executable=executable,
+        cli_root=cli_root,
+        proxy_port=4321,
+        scratch_root=scratch_root,
+        denied_paths=(runner, peer),
+    )
+    lines = profile.splitlines()
+    assert lines[0] == f";; {SBPL_CLI_PROFILE_VERSION}"
+    assert "(deny default)" in lines
+    assert "(allow default)" not in profile
+    assert f'(allow process-exec (literal "{executable.resolve()}"))' in lines
+    assert '(allow network-outbound (remote ip "localhost:4321"))' in lines
+    assert "(deny network*)" in lines and "(deny network-bind)" in lines
+    scratch = cli_scratch_subdirectory(scratch_root, layout.cwd)
+    assert str(scratch).startswith("/private/tmp/claude-501/-")
+    assert "/" not in scratch.name
+    assert f'(subpath "{scratch}")' in profile
+    assert f'(subpath "{str(scratch).removeprefix("/private")}")' in profile
+    assert (
+        '(allow file-read* (literal "/private/tmp/claude-501") (literal "/tmp/claude-501"))'
+        in lines
+    )
+    assert (
+        '(allow file-read-metadata (subpath "/private/tmp/claude-501") (subpath "/tmp/claude-501"))'
+        in lines
+    )
+    # No rule grants data access to the root's other entries.
+    assert '(allow file-read* file-write* (subpath "/private/tmp/claude-501")' not in profile
+    # Denials are sorted and the real home is never allowed.
+    assert lines.index(f'(deny file-read* file-write* (subpath "{peer.resolve()}"))') < lines.index(
+        f'(deny file-read* file-write* (subpath "{runner.resolve()}"))'
+    )
+    assert str(Path.home()) not in profile
+    # Digests: the template digest is launch independent; the rendered digest is not.
+    other = darwin_cli_profile(
+        layout,
+        cli_executable=executable,
+        cli_root=cli_root,
+        proxy_port=4322,
+        scratch_root=scratch_root,
+    )
+    assert cli_profile_template_digest().startswith("sha256:")
+    assert cli_profile_digest(profile) != cli_profile_digest(other)
+    assert cli_profile_template_digest() == cli_profile_template_digest()
+    wrapped = sandboxed_command(profile, ("claude", "--print"))
+    assert wrapped[:2] == ("/usr/bin/sandbox-exec", "-p")
+    assert wrapped[2] == profile and wrapped[3:] == ("claude", "--print")
+    with pytest.raises(ValueError, match="frozen CLI template"):
+        sandboxed_command("(version 1)", ("claude",))
+    with pytest.raises(ValueError, match="inside the CLI root"):
+        darwin_cli_profile(
+            layout,
+            cli_executable=tmp_path / "elsewhere",
+            cli_root=cli_root,
+            proxy_port=1,
+            scratch_root=scratch_root,
+        )
+    with pytest.raises(ValueError, match="proxy port"):
+        darwin_cli_profile(
+            layout,
+            cli_executable=executable,
+            cli_root=cli_root,
+            proxy_port=0,
+            scratch_root=scratch_root,
+        )

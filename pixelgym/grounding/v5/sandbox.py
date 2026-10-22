@@ -16,6 +16,12 @@ from pixelgym.grounding.v5.contracts import (
 
 LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION = "pixelgym-agent-v5-sandbox-v2"
 SANDBOX_MANIFEST_SCHEMA_VERSION = "pixelgym-agent-v5-sandbox-v3"
+# v4 adds one mechanism: a kernel sandbox around each CLI launch whose only network path is
+# the runner-owned egress proxy. v3 manifests keep their exact bytes.
+SANDBOX_MANIFEST_SCHEMA_VERSION_V4 = "pixelgym-agent-v5-sandbox-v4"
+OS_SANDBOX_CLI_LAUNCH_MECHANISM: Literal["darwin_sandbox_exec_cli_launch"] = (
+    "darwin_sandbox_exec_cli_launch"
+)
 # Compatibility name for callers which still construct the immutable v2 contract.
 SANDBOX_POLICY_VERSION = LEGACY_SANDBOX_MANIFEST_SCHEMA_VERSION
 DECLARED_UNAVAILABLE_CAPABILITIES = tuple(sorted(LegacySandboxManifest.REQUIRED_DENIALS))
@@ -25,7 +31,12 @@ DENIED_CAPABILITIES = DECLARED_UNAVAILABLE_CAPABILITIES
 RuntimeMechanismName = Literal[
     "cli_flags_and_environment_allowlist",
     "not_bound_to_cli_launch",
+    "darwin_sandbox_exec_cli_launch",
 ]
+_V3_RUNTIME_MECHANISMS = frozenset(
+    {"cli_flags_and_environment_allowlist", "not_bound_to_cli_launch"}
+)
+_PROBE_MECHANISMS = frozenset({"darwin_sandbox_exec_probe_only", OS_SANDBOX_CLI_LAUNCH_MECHANISM})
 
 
 @dataclass(frozen=True)
@@ -35,17 +46,26 @@ class ProbeResult:
     status: Literal["not_run", "passed", "failed", "unsupported"]
     mechanism_name: str = "darwin_sandbox_exec_probe_only"
     profile_digest: str | None = None
-    applied_to_cli_launch: Literal[False] = False
+    applied_to_cli_launch: bool = False
 
     def __post_init__(self) -> None:
         if self.status not in {"not_run", "passed", "failed", "unsupported"}:
             raise ValueError("unsupported sandbox probe status")
-        if self.mechanism_name != "darwin_sandbox_exec_probe_only":
+        if self.mechanism_name not in _PROBE_MECHANISMS:
             raise ValueError("unsupported sandbox probe mechanism")
-        if self.applied_to_cli_launch is not False:
+        if type(self.applied_to_cli_launch) is not bool:
+            raise TypeError("probe application marker must be boolean")
+        if self.mechanism_name == "darwin_sandbox_exec_probe_only" and self.applied_to_cli_launch:
             raise ValueError("the probe sandbox must not claim application to a CLI launch")
+        if (
+            self.mechanism_name == OS_SANDBOX_CLI_LAUNCH_MECHANISM
+            and not self.applied_to_cli_launch
+        ):
+            raise ValueError("a CLI launch probe must record that it applied to the launch")
         if self.profile_digest is not None and not self.profile_digest.startswith("sha256:"):
             raise ValueError("sandbox probe profile digest must be content addressed")
+        if self.mechanism_name == OS_SANDBOX_CLI_LAUNCH_MECHANISM and self.profile_digest is None:
+            raise ValueError("a CLI launch probe must bind the profile it ran under")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -66,16 +86,38 @@ class RuntimeEnforcement:
     environment_variable_names: tuple[str, ...]
     cli_restrictions_applied: bool
     environment_allowlist_applied: bool
-    os_sandbox_applied: Literal[False] = False
+    os_sandbox_applied: bool = False
+    # v4 only: bound by the sandboxed-launch mechanism, absent from v3 records.
+    profile_template_digest: str | None = None
+    profile_digest: str | None = None
+    egress_allowlist_digest: str | None = None
 
     def __post_init__(self) -> None:
-        if self.mechanism_name not in {
-            "cli_flags_and_environment_allowlist",
-            "not_bound_to_cli_launch",
-        }:
+        if self.mechanism_name not in _V3_RUNTIME_MECHANISMS | {OS_SANDBOX_CLI_LAUNCH_MECHANISM}:
             raise ValueError("unsupported runtime enforcement mechanism")
-        if self.os_sandbox_applied is not False:
-            raise ValueError("v3 CLI launches are declared, not OS-sandbox enforced")
+        if type(self.os_sandbox_applied) is not bool:
+            raise TypeError("OS sandbox applied marker must be boolean")
+        sandboxed = self.mechanism_name == OS_SANDBOX_CLI_LAUNCH_MECHANISM
+        if not sandboxed:
+            if self.os_sandbox_applied:
+                raise ValueError("v3 CLI launches are declared, not OS-sandbox enforced")
+            if (
+                self.profile_template_digest is not None
+                or self.profile_digest is not None
+                or self.egress_allowlist_digest is not None
+            ):
+                raise ValueError("only a sandboxed launch binds profile or egress digests")
+        else:
+            if not self.os_sandbox_applied:
+                raise ValueError("a sandboxed launch must record that the OS sandbox applied")
+            for name, digest in (
+                ("profile template", self.profile_template_digest),
+                ("egress allowlist", self.egress_allowlist_digest),
+            ):
+                if digest is None or not digest.startswith("sha256:"):
+                    raise ValueError(f"sandboxed launch {name} digest must be content addressed")
+            if self.profile_digest is not None and not self.profile_digest.startswith("sha256:"):
+                raise ValueError("sandboxed launch profile digest must be content addressed")
         if not self.argv_digest.startswith("sha256:"):
             raise ValueError("runtime argv digest must be content addressed")
         if not self.environment_allowlist_digest.startswith("sha256:"):
@@ -92,8 +134,12 @@ class RuntimeEnforcement:
         if type(self.environment_allowlist_applied) is not bool:
             raise TypeError("environment allowlist applied marker must be boolean")
 
+    @property
+    def sandboxed(self) -> bool:
+        return self.mechanism_name == OS_SANDBOX_CLI_LAUNCH_MECHANISM
+
     def to_dict(self) -> dict[str, object]:
-        return {
+        value: dict[str, object] = {
             "mechanism_name": self.mechanism_name,
             "argv_digest": self.argv_digest,
             "environment_allowlist_digest": self.environment_allowlist_digest,
@@ -102,6 +148,11 @@ class RuntimeEnforcement:
             "environment_allowlist_applied": self.environment_allowlist_applied,
             "os_sandbox_applied": self.os_sandbox_applied,
         }
+        if self.sandboxed:
+            value["profile_template_digest"] = self.profile_template_digest
+            value["profile_digest"] = self.profile_digest
+            value["egress_allowlist_digest"] = self.egress_allowlist_digest
+        return value
 
 
 @dataclass(frozen=True)
@@ -135,8 +186,15 @@ class DeclaredSandboxManifest:
     REQUIRED_DENIALS: ClassVar[frozenset[str]] = LegacySandboxManifest.REQUIRED_DENIALS
 
     def __post_init__(self) -> None:
-        if self.schema_version != SANDBOX_MANIFEST_SCHEMA_VERSION:
+        if self.schema_version not in {
+            SANDBOX_MANIFEST_SCHEMA_VERSION,
+            SANDBOX_MANIFEST_SCHEMA_VERSION_V4,
+        }:
             raise ValueError("unsupported declared sandbox manifest schema version")
+        if self.runtime_enforcement.sandboxed != (
+            self.schema_version == SANDBOX_MANIFEST_SCHEMA_VERSION_V4
+        ):
+            raise ValueError("a sandboxed launch mechanism requires the v4 manifest schema")
         if not self.runtime_digest.startswith("sha256:"):
             raise ValueError("sandbox runtime must be content addressed")
         expected = sandbox_endpoint_allowlist_digest(
@@ -193,6 +251,36 @@ def runtime_enforcement(
     )
 
 
+def sandboxed_launch_enforcement(
+    *,
+    argv: Sequence[str],
+    environment_variable_names: Sequence[str],
+    cli_restrictions_applied: bool,
+    environment_allowlist_applied: bool,
+    profile_template_digest: str,
+    egress_allowlist_digest: str,
+    profile_digest: str | None = None,
+) -> RuntimeEnforcement:
+    """A launch under the kernel sandbox; variable names only, never values.
+
+    ``profile_digest`` is None in a plan-time declaration and set per launch.
+    """
+
+    names = tuple(sorted(set(environment_variable_names)))
+    return RuntimeEnforcement(
+        mechanism_name=OS_SANDBOX_CLI_LAUNCH_MECHANISM,
+        argv_digest=content_digest(list(argv)),
+        environment_allowlist_digest=content_digest({"environment_variable_names": list(names)}),
+        environment_variable_names=names,
+        cli_restrictions_applied=cli_restrictions_applied,
+        environment_allowlist_applied=environment_allowlist_applied,
+        os_sandbox_applied=True,
+        profile_template_digest=profile_template_digest,
+        profile_digest=profile_digest,
+        egress_allowlist_digest=egress_allowlist_digest,
+    )
+
+
 def unbound_runtime_enforcement() -> RuntimeEnforcement:
     return runtime_enforcement(
         argv=(),
@@ -228,11 +316,18 @@ def build_sandbox_manifest(
         )
     effective_claim = policy_claim or PolicyClaim(DECLARED_UNAVAILABLE_CAPABILITIES)
     validate_runtime_enforcement(effective_claim, launch_enforcement)
+    schema_version = (
+        SANDBOX_MANIFEST_SCHEMA_VERSION_V4
+        if launch_enforcement.sandboxed
+        else SANDBOX_MANIFEST_SCHEMA_VERSION
+    )
     return DeclaredSandboxManifest(
-        schema_version=SANDBOX_MANIFEST_SCHEMA_VERSION,
+        schema_version=schema_version,
         runtime_digest=runtime_digest,
         provider_endpoint=provider_endpoint,
-        provider_endpoint_allowlist_digest=endpoint_allowlist_digest(provider_endpoint),
+        provider_endpoint_allowlist_digest=sandbox_endpoint_allowlist_digest(
+            provider_endpoint, policy_version=schema_version
+        ),
         probe_result=probe_result or ProbeResult(status="not_run"),
         runtime_enforcement=launch_enforcement,
         policy_claim=effective_claim,
@@ -244,7 +339,8 @@ def validate_runtime_enforcement(
     launch_enforcement: RuntimeEnforcement,
 ) -> None:
     if policy_claim.declared_unavailable_capabilities and not (
-        launch_enforcement.mechanism_name == "cli_flags_and_environment_allowlist"
+        launch_enforcement.mechanism_name
+        in {"cli_flags_and_environment_allowlist", OS_SANDBOX_CLI_LAUNCH_MECHANISM}
         and launch_enforcement.cli_restrictions_applied
         and launch_enforcement.environment_allowlist_applied
     ):
@@ -254,7 +350,7 @@ def validate_runtime_enforcement(
 
 
 def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
-    """Load immutable v2 evidence or the corrected declared-contract v3 schema."""
+    """Load immutable v2 evidence, the declared v3 schema, or the sandboxed-launch v4 schema."""
 
     schema_version = value.get("schema_version")
     if schema_version is None:
@@ -263,8 +359,9 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
         if isinstance(denied, list):
             legacy["denied_capabilities"] = tuple(denied)
         return LegacySandboxManifest(**legacy)
-    if schema_version != SANDBOX_MANIFEST_SCHEMA_VERSION:
+    if schema_version not in {SANDBOX_MANIFEST_SCHEMA_VERSION, SANDBOX_MANIFEST_SCHEMA_VERSION_V4}:
         raise ValueError(f"unsupported sandbox manifest schema version: {schema_version!r}")
+    sandboxed_schema = schema_version == SANDBOX_MANIFEST_SCHEMA_VERSION_V4
     expected_fields = {
         "schema_version",
         "runtime_digest",
@@ -292,7 +389,7 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
         "applied_to_cli_launch",
     }:
         raise ValueError("sandbox probe result fields differ from the v3 schema")
-    if set(enforcement) != {
+    enforcement_fields = {
         "mechanism_name",
         "argv_digest",
         "environment_allowlist_digest",
@@ -300,8 +397,18 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
         "cli_restrictions_applied",
         "environment_allowlist_applied",
         "os_sandbox_applied",
-    }:
-        raise ValueError("runtime enforcement fields differ from the v3 schema")
+    }
+    if sandboxed_schema:
+        enforcement_fields |= {
+            "profile_template_digest",
+            "profile_digest",
+            "egress_allowlist_digest",
+        }
+    if set(enforcement) != enforcement_fields:
+        raise ValueError(
+            "runtime enforcement fields differ from the "
+            f"{'v4' if sandboxed_schema else 'v3'} schema"
+        )
     if set(claim) != {"declared_unavailable_capabilities"}:
         raise ValueError("sandbox policy claim fields differ from the v3 schema")
     manifest = DeclaredSandboxManifest(
@@ -329,11 +436,18 @@ def load_sandbox_manifest(value: Mapping[str, Any]) -> SandboxManifestVersion:
                 "environment_allowlist_applied"
             ),
             os_sandbox_applied=enforcement.get("os_sandbox_applied"),  # type: ignore[arg-type]
+            profile_template_digest=_optional_digest(enforcement.get("profile_template_digest")),
+            profile_digest=_optional_digest(enforcement.get("profile_digest")),
+            egress_allowlist_digest=_optional_digest(enforcement.get("egress_allowlist_digest")),
         ),
         policy_claim=PolicyClaim(tuple(claim.get("declared_unavailable_capabilities", ()))),
     )
     validate_runtime_enforcement(manifest.policy_claim, manifest.runtime_enforcement)
     return manifest
+
+
+def _optional_digest(value: object) -> str | None:
+    return None if value is None else str(value)
 
 
 def validate_capability_handles(handles: dict[str, object]) -> None:

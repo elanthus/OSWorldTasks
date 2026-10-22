@@ -870,3 +870,211 @@ def test_claude_invocation_journal_integrity_report_summarizes_every_record(
     assert record["raw_stdout_original_sha256"] == record["raw_stdout_sha256"]
     assert record["credential_redacted"] is False
     invocation_journal.close()
+
+
+# --- Sandboxed launches ------------------------------------------------------------------
+
+
+def _synthetic_oauth_token() -> str:
+    """Credential-shaped but synthetic; never a real token."""
+
+    return "".join(("s", "k", "-ant-oat01-synthetic-", "0" * 24))
+
+
+def _sandbox_launch(tmp_path: Path) -> policy.ClaudeSandboxLaunch:
+    cli_root = tmp_path / "cask" / "2.1.292"
+    cli_root.mkdir(parents=True)
+    executable = cli_root / "claude"
+    executable.write_text("")
+    return policy.ClaudeSandboxLaunch(
+        cli_executable=executable,
+        cli_root=cli_root,
+        scratch_root=Path("/private/tmp/claude-501"),
+        oauth_token_source=_synthetic_oauth_token,
+        egress_targets=("api.anthropic.com:443",),
+        denied_paths=(tmp_path / "runner-storage",),
+    )
+
+
+def _send(transport: policy.ClaudeCodeTransport, key: str):
+    claude_policy = policy.ClaudeCodePolicy()
+    screenshot = bytes(policy.SCREEN_WIDTH * policy.SCREEN_HEIGHT * 3)
+    request = claude_policy.build_request(
+        claude_policy.reset("Complete the visible task."), screenshot
+    )
+    return transport.send(
+        request, idempotency_key=key, deadline_seconds=policy.RUNNER_REQUEST_DEADLINE_SECONDS
+    )
+
+
+def test_sandboxed_launch_wraps_the_command_and_keeps_the_token_out_of_every_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(policy.platform, "system", lambda: "Darwin")
+    launches: list[dict[str, Any]] = []
+
+    def factory(command: list[str], **kwargs: Any) -> SuccessfulProcess:
+        launches.append({"command": list(command), **kwargs})
+        return SuccessfulProcess()
+
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "sandboxed.sqlite")
+    launch = _sandbox_launch(tmp_path)
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=factory,
+        sandbox_launch=launch,
+    )
+    try:
+        outcome = _send(transport, "sha256:claude-sandboxed")
+        assert outcome.status == "response"
+        [started] = launches
+        command = started["command"]
+        assert command[:2] == ["/usr/bin/sandbox-exec", "-p"]
+        profile = command[2]
+        assert profile.startswith(";; pixelgym-agent-v5-cli-sandbox-v1\n")
+        assert "(deny default)" in profile
+        assert command[3] == str(launch.cli_executable.resolve())
+        assert tuple(command[4:]) == policy.sanitized_command_contract()[1:]
+        env = started["env"]
+        assert env[policy.OAUTH_TOKEN_ENVIRONMENT_VARIABLE] == _synthetic_oauth_token()
+        assert env["HTTPS_PROXY"].startswith("http://127.0.0.1:")
+        assert env["CLAUDE_CONFIG_DIR"].endswith("/config") and env["HOME"].endswith("/home")
+        assert str(Path.home()) not in env["HOME"]
+        assert set(env) <= set(policy.sandboxed_environment_variable_names())
+        assert Path(started["cwd"]).name == "cwd"
+        [record] = transport.records
+        enforcement = record["runtime_enforcement"]
+        assert enforcement["mechanism_name"] == "darwin_sandbox_exec_cli_launch"
+        assert enforcement["os_sandbox_applied"] is True
+        assert enforcement["cli_restrictions_applied"] is True
+        assert enforcement["environment_allowlist_applied"] is True
+        assert enforcement["profile_template_digest"] == policy.cli_profile_template_digest()
+        assert enforcement["profile_digest"] == policy.cli_profile_digest(profile)
+        assert enforcement["egress_allowlist_digest"] == policy.egress_allowlist_digest(
+            ["api.anthropic.com:443"]
+        )
+        assert policy.OAUTH_TOKEN_ENVIRONMENT_VARIABLE in enforcement["environment_variable_names"]
+        assert record["egress_attempts"] == {
+            "proxy_version": "pixelgym-agent-v5-egress-proxy-v1",
+            "attempts": [],
+            "allowed_count": 0,
+            "refused_count": 0,
+            "refused_targets": [],
+        }
+        assert outcome.response is not None
+        assert outcome.response["usage"]["egress_connect_allowed"] == 0
+        assert outcome.response["usage"]["egress_connect_refused"] == 0
+        stored = invocation_journal.record("sha256:claude-sandboxed")
+        assert stored is not None
+        for text in (json.dumps(transport.records), json.dumps(stored, default=str)):
+            assert _synthetic_oauth_token() not in text
+            assert "oat01" not in text
+        policy.validate_credential_free(record)
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+class _EgressProbingProcess(SuccessfulProcess):
+    """Behaves like the CLI asking the proxy for a target that is not allowlisted."""
+
+    def __init__(self, env: dict[str, str]) -> None:
+        super().__init__()
+        import socket
+        from urllib.parse import urlsplit
+
+        proxy = urlsplit(env["HTTPS_PROXY"])
+        assert proxy.hostname is not None and proxy.port is not None
+        with socket.create_connection((proxy.hostname, proxy.port), timeout=3) as client:
+            client.sendall(
+                b"CONNECT telemetry.invalid:443 HTTP/1.1\r\nHost: telemetry.invalid\r\n\r\n"
+            )
+            client.settimeout(3)
+            self.proxy_reply = client.recv(4096)
+
+
+def test_sandboxed_launch_refused_egress_is_a_policy_violation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(policy.platform, "system", lambda: "Darwin")
+    processes: list[_EgressProbingProcess] = []
+
+    def factory(_command: list[str], **kwargs: Any) -> _EgressProbingProcess:
+        process = _EgressProbingProcess(kwargs["env"])
+        processes.append(process)
+        return process
+
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "egress.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=factory,
+        sandbox_launch=_sandbox_launch(tmp_path),
+    )
+    try:
+        outcome = _send(transport, "sha256:claude-egress")
+        assert processes[0].proxy_reply.startswith(b"HTTP/1.1 403")
+        assert outcome.status == "policy_violation"
+        [record] = transport.records
+        assert record["policy_violation"] == "unauthorized_egress_attempt"
+        egress = record["egress_attempts"]
+        assert egress["refused_count"] == 1 and egress["allowed_count"] == 0
+        assert egress["refused_targets"] == ["telemetry.invalid:443"]
+        assert egress["attempts"][0]["reason"] == "target_not_allowlisted"
+        assert outcome.response is not None
+        assert outcome.response["usage"]["egress_connect_refused"] == 1
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_sandboxed_launch_off_darwin_fails_closed_before_sending(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(policy.platform, "system", lambda: "Linux")
+    launched: list[object] = []
+    invocation_journal = policy.ClaudeInvocationJournal(tmp_path / "linux.sqlite")
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=invocation_journal,
+        runtime_identity=runtime_identity(),
+        process_factory=lambda *_args, **_kwargs: launched.append(1) or SuccessfulProcess(),
+        sandbox_launch=_sandbox_launch(tmp_path),
+    )
+    try:
+        outcome = _send(transport, "sha256:claude-linux")
+        assert outcome.status == "pre_send_failure"
+        assert outcome.failure_code == "os_sandbox_unsupported_platform"
+        assert outcome.fault is not None and outcome.fault.phase == "pre_send"
+        assert launched == []
+        assert transport.records[0]["runtime_enforcement"]["os_sandbox_applied"] is True
+    finally:
+        transport.close()
+        invocation_journal.close()
+
+
+def test_sandboxed_launch_requires_a_token_value_and_absolute_paths(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="must be absolute"):
+        policy.ClaudeSandboxLaunch(
+            cli_executable=Path("claude"),
+            cli_root=Path("."),
+            scratch_root=Path("/private/tmp/claude-501"),
+            oauth_token_source=_synthetic_oauth_token,
+        )
+    launch = _sandbox_launch(tmp_path)
+    empty = policy.ClaudeSandboxLaunch(**{**launch.__dict__, "oauth_token_source": lambda: ""})
+    transport = policy.ClaudeCodeTransport(
+        ledger=policy.SubscriptionExemptLedger(Decimal("10.00"), Decimal("0.00")),
+        invocation_journal=policy.ClaudeInvocationJournal(tmp_path / "empty.sqlite"),
+        runtime_identity=runtime_identity(),
+        process_factory=lambda *_a, **_k: SuccessfulProcess(),
+        sandbox_launch=empty,
+    )
+    try:
+        with pytest.raises(ValueError, match="non-empty OAuth token value"):
+            _send(transport, "sha256:claude-empty-token")
+    finally:
+        transport.close()
