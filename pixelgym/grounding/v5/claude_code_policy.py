@@ -86,6 +86,23 @@ MODEL_REASONING_EFFORT = "default"
 AUTH_METHOD = "claude.ai"
 SUBSCRIPTION_TYPE = "max"
 PROVIDER_IDENTITY = "claude-code-cli/claude-ai-max-subscription"
+
+
+@dataclass(frozen=True)
+class ClaudeRoute:
+    """One approved CLI version and authentication route; part of policy identity."""
+
+    cli_version: str
+    auth_method: str
+    subscription_type: str
+
+
+FROZEN_ROUTE = ClaudeRoute(CLAUDE_CLI_VERSION, AUTH_METHOD, SUBSCRIPTION_TYPE)
+# The D5.9 replication binds the installed CLI and the token route that the kernel
+# sandbox can host (design record: docs/v5-policy-sandbox.md). Nothing else is approved.
+REPLICATION_CLI_VERSION = "2.1.292 (Claude Code)"
+REPLICATION_ROUTE = ClaudeRoute(REPLICATION_CLI_VERSION, "oauth_token", SUBSCRIPTION_TYPE)
+APPROVED_ROUTES = (FROZEN_ROUTE, REPLICATION_ROUTE)
 PROVIDER_ORIGIN = "https://api.anthropic.com"
 EMPTY_MCP_CONFIG = '{"mcpServers":{}}'
 PROCESS_TIMEOUT_SECONDS = 120.0
@@ -153,14 +170,18 @@ class ClaudeRuntimeIdentity:
     help_sha256: str
 
     def __post_init__(self) -> None:
-        if self.cli_version != CLAUDE_CLI_VERSION:
+        if self.cli_version not in {route.cli_version for route in APPROVED_ROUTES}:
             raise ValueError("Claude Code version differs from the frozen adapter")
-        if self.auth_method != AUTH_METHOD or self.subscription_type != SUBSCRIPTION_TYPE:
+        if self.route not in APPROVED_ROUTES:
             raise ValueError("Claude Code must use the approved Max subscription authentication")
         if self.requested_model != MODEL or self.reasoning_effort != MODEL_REASONING_EFFORT:
             raise ValueError("Claude model or reasoning effort differs from the frozen policy")
         if not self.help_sha256.startswith("sha256:"):
             raise ValueError("Claude help digest is invalid")
+
+    @property
+    def route(self) -> ClaudeRoute:
+        return ClaudeRoute(self.cli_version, self.auth_method, self.subscription_type)
 
     def to_dict(self) -> dict[str, str]:
         return {
@@ -173,20 +194,29 @@ class ClaudeRuntimeIdentity:
         }
 
 
-def _run_probe(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, text=True, capture_output=True, check=True)
+def _run_probe(
+    command: Sequence[str], environment: Mapping[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        text=True,
+        capture_output=True,
+        check=True,
+        env=None if environment is None else dict(environment),
+    )
 
 
-def probe_claude_runtime(
-    *, run: Callable[[Sequence[str]], subprocess.CompletedProcess[str]] = _run_probe
-) -> ClaudeRuntimeIdentity:
-    version = run(("claude", "--version")).stdout.strip()
-    auth = json.loads(run(("claude", "auth", "status", "--json")).stdout)
-    if not isinstance(auth, dict):
-        raise TypeError("Claude authentication status is invalid")
-    if auth.get("loggedIn") is not True:
-        raise ValueError("Claude Code is not logged in")
-    help_text = run(("claude", "--help")).stdout
+ProbeRunner = Callable[..., subprocess.CompletedProcess[str]]
+
+
+def _probe(
+    run: ProbeRunner, command: tuple[str, ...], environment: Mapping[str, str] | None
+) -> subprocess.CompletedProcess[str]:
+    # Single-argument runners (the frozen D5.9 probe contract) stay valid.
+    return run(command) if environment is None else run(command, environment)
+
+
+def _required_help_flags(help_text: str) -> None:
     required_flags = (
         "--print",
         "--model",
@@ -207,6 +237,49 @@ def probe_claude_runtime(
     )
     if any(flag not in help_text for flag in required_flags):
         raise ValueError("Claude help omits an approved isolation or structured-output flag")
+
+
+def probe_claude_route(
+    route: ClaudeRoute,
+    *,
+    run: ProbeRunner = _run_probe,
+    environment: Mapping[str, str] | None = None,
+) -> ClaudeRuntimeIdentity:
+    """Bind the installed CLI to a declared route without a login or a provider call.
+
+    Used to freeze a candidate before the owner has created the route's credential.
+    The route's authentication fields are declared here and must be confirmed by
+    ``probe_claude_runtime`` before any execution.
+    """
+
+    if route not in APPROVED_ROUTES:
+        raise ValueError("route is not approved")
+    version = _probe(run, ("claude", "--version"), environment).stdout.strip()
+    if version != route.cli_version:
+        raise ValueError("installed Claude Code version differs from the declared route")
+    help_text = _probe(run, ("claude", "--help"), environment).stdout
+    _required_help_flags(help_text)
+    return ClaudeRuntimeIdentity(
+        cli_version=version,
+        auth_method=route.auth_method,
+        subscription_type=route.subscription_type,
+        requested_model=MODEL,
+        reasoning_effort=MODEL_REASONING_EFFORT,
+        help_sha256="sha256:" + sha256_bytes(help_text.encode("utf-8")),
+    )
+
+
+def probe_claude_runtime(
+    *, run: ProbeRunner = _run_probe, environment: Mapping[str, str] | None = None
+) -> ClaudeRuntimeIdentity:
+    version = _probe(run, ("claude", "--version"), environment).stdout.strip()
+    auth = json.loads(_probe(run, ("claude", "auth", "status", "--json"), environment).stdout)
+    if not isinstance(auth, dict):
+        raise TypeError("Claude authentication status is invalid")
+    if auth.get("loggedIn") is not True:
+        raise ValueError("Claude Code is not logged in")
+    help_text = _probe(run, ("claude", "--help"), environment).stdout
+    _required_help_flags(help_text)
     return ClaudeRuntimeIdentity(
         cli_version=version,
         auth_method=str(auth.get("authMethod", "")),
@@ -551,9 +624,6 @@ class ClaudeCodePolicy:
             raise ValueError("Claude response model differs from the policy")
         usage = response.get("usage")
         expected = {
-            "auth_method": AUTH_METHOD,
-            "subscription_type": SUBSCRIPTION_TYPE,
-            "cli_version": CLAUDE_CLI_VERSION,
             "command_contract_digest": command_contract_digest(),
             "experiment_charge_usd": "0.00",
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
@@ -562,6 +632,13 @@ class ClaudeCodePolicy:
         if not isinstance(usage, dict) or any(
             usage.get(key) != expected_value for key, expected_value in expected.items()
         ):
+            raise ValueError("Claude identity, accounting, or policy boundary is invalid")
+        route = ClaudeRoute(
+            str(usage.get("cli_version", "")),
+            str(usage.get("auth_method", "")),
+            str(usage.get("subscription_type", "")),
+        )
+        if route not in APPROVED_ROUTES:
             raise ValueError("Claude identity, accounting, or policy boundary is invalid")
         candidate = _decode_action_content(response.get("content", ""))
         if not isinstance(candidate, dict) or set(candidate) != {
@@ -1352,9 +1429,9 @@ class ClaudeCodeTransport:
             return transport_outcome
         usage_record = {
             **(parsed.usage or {}),
-            "auth_method": AUTH_METHOD,
-            "subscription_type": SUBSCRIPTION_TYPE,
-            "cli_version": CLAUDE_CLI_VERSION,
+            "auth_method": self.runtime_identity.auth_method,
+            "subscription_type": self.runtime_identity.subscription_type,
+            "cli_version": self.runtime_identity.cli_version,
             "command_contract_digest": command_contract_digest(),
             "experiment_charge_usd": "0.00",
             "informational_cost_telemetry_usd": (
@@ -1558,11 +1635,11 @@ class ClaudeCodeTransport:
         return {
             "idempotency_key_digest": content_digest(idempotency_key),
             "status": status,
-            "cli_version": CLAUDE_CLI_VERSION,
+            "cli_version": self.runtime_identity.cli_version,
             "model": MODEL,
             "model_reasoning_effort": MODEL_REASONING_EFFORT,
-            "auth_method": AUTH_METHOD,
-            "subscription_type": SUBSCRIPTION_TYPE,
+            "auth_method": self.runtime_identity.auth_method,
+            "subscription_type": self.runtime_identity.subscription_type,
             "command_contract_digest": command_contract_digest(),
             "runtime_enforcement": outcome.get("runtime_enforcement"),
             "egress_attempts": outcome.get("egress_attempts"),
@@ -1615,9 +1692,9 @@ def build_claude_policy_manifest(
         policy_claim=PolicyClaim(()),
     )
     inference_parameters = (
-        ("auth_method", AUTH_METHOD),
-        ("subscription_type", SUBSCRIPTION_TYPE),
-        ("cli_version", CLAUDE_CLI_VERSION),
+        ("auth_method", runtime_identity.auth_method),
+        ("subscription_type", runtime_identity.subscription_type),
+        ("cli_version", runtime_identity.cli_version),
         ("command_contract_digest", command_contract_digest()),
         ("model_reasoning_effort", MODEL_REASONING_EFFORT),
         ("resolved_model", resolved_model or "to_be_bound_by_successful_smoke"),

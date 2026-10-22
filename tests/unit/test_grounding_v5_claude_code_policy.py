@@ -606,3 +606,101 @@ def test_claude_policy_manifest_declares_v4_sandboxed_launch_and_changes_identit
     assert parameters["auth_route"] == "oauth_token_environment"
     assert sandboxed.policy_id != plain.policy_id
     assert plain.to_dict()["sandbox"]["schema_version"] == "pixelgym-agent-v5-sandbox-v3"
+
+
+# --- Approved routes ------------------------------------------------------------------
+
+
+def _identity(**overrides: str) -> policy.ClaudeRuntimeIdentity:
+    fields = {
+        "cli_version": policy.CLAUDE_CLI_VERSION,
+        "auth_method": policy.AUTH_METHOD,
+        "subscription_type": policy.SUBSCRIPTION_TYPE,
+        "requested_model": policy.MODEL,
+        "reasoning_effort": policy.MODEL_REASONING_EFFORT,
+        "help_sha256": "sha256:help",
+    }
+    fields.update(overrides)
+    return policy.ClaudeRuntimeIdentity(**fields)
+
+
+def test_identity_accepts_only_the_two_approved_routes() -> None:
+    frozen = _identity()
+    assert frozen.route == policy.FROZEN_ROUTE
+    replication = _identity(cli_version=policy.REPLICATION_CLI_VERSION, auth_method="oauth_token")
+    assert replication.route == policy.REPLICATION_ROUTE
+    with pytest.raises(ValueError, match="version differs"):
+        _identity(cli_version="9.9.9 (Claude Code)")
+    # The frozen CLI with the token route, and the new CLI with the Keychain route, are
+    # not approved combinations.
+    with pytest.raises(ValueError, match="approved Max subscription authentication"):
+        _identity(auth_method="oauth_token")
+    with pytest.raises(ValueError, match="approved Max subscription authentication"):
+        _identity(cli_version=policy.REPLICATION_CLI_VERSION)
+    with pytest.raises(ValueError, match="approved Max subscription authentication"):
+        _identity(
+            cli_version=policy.REPLICATION_CLI_VERSION,
+            auth_method="oauth_token",
+            subscription_type="pro",
+        )
+
+
+def test_route_probe_binds_the_installed_cli_without_a_login() -> None:
+    import subprocess
+
+    help_text = (
+        "--print --model --output-format --input-format --tools --disallowedTools "
+        "--permission-mode --setting-sources --safe-mode --disable-slash-commands "
+        "--strict-mcp-config --mcp-config --no-chrome --no-session-persistence "
+        "--system-prompt --exclude-dynamic-system-prompt-sections"
+    )
+    calls: list[tuple[str, ...]] = []
+
+    def run(
+        command: tuple[str, ...], environment: object = None
+    ) -> subprocess.CompletedProcess[str]:
+        calls.append(tuple(command))
+        if command[1] == "--version":
+            return subprocess.CompletedProcess(
+                command, 0, policy.REPLICATION_CLI_VERSION + "\n", ""
+            )
+        if command[1] == "--help":
+            return subprocess.CompletedProcess(command, 0, help_text, "")
+        raise AssertionError(f"unexpected probe command {command}")
+
+    identity = policy.probe_claude_route(policy.REPLICATION_ROUTE, run=run)
+    assert identity.route == policy.REPLICATION_ROUTE
+    assert identity.help_sha256.startswith("sha256:")
+    # No auth status call: the route is declared, to be confirmed before execution.
+    assert [c[1] for c in calls] == ["--version", "--help"]
+    with pytest.raises(ValueError, match="differs from the declared route"):
+        policy.probe_claude_route(policy.FROZEN_ROUTE, run=run)
+    with pytest.raises(ValueError, match="route is not approved"):
+        policy.probe_claude_route(
+            policy.ClaudeRoute("9.9.9 (Claude Code)", "oauth_token", "max"), run=run
+        )
+
+
+def test_replication_route_manifest_changes_identity_and_records_the_route() -> None:
+    frozen = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=_identity(),
+        resolved_model="claude-haiku-4-5-20251001",
+        api_retry_limit=0,
+    )
+    replication = policy.build_claude_policy_manifest(
+        ROOT,
+        code_revision="revision-test",
+        runtime_identity=_identity(
+            cli_version=policy.REPLICATION_CLI_VERSION, auth_method="oauth_token"
+        ),
+        resolved_model="claude-haiku-4-5-20251001",
+        api_retry_limit=0,
+        sandboxed_launch=True,
+    )
+    parameters = dict(replication.inference_parameters)
+    assert parameters["cli_version"] == policy.REPLICATION_CLI_VERSION
+    assert parameters["auth_method"] == "oauth_token"
+    assert dict(frozen.inference_parameters)["cli_version"] == policy.CLAUDE_CLI_VERSION
+    assert replication.policy_id != frozen.policy_id
