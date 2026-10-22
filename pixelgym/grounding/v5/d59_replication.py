@@ -6,9 +6,9 @@ digest, and changes four things, each pre-registered here before any provider ca
 1. The policy pair runs under the kernel sandbox with the egress proxy
    (docs/v5-policy-sandbox.md), so every launch record carries ``os_sandbox_applied: true``.
 2. The route is the installed CLI with token authentication (``REPLICATION_ROUTE``).
-3. The stop rule is the amended D5.9 rule, frozen up front: per-episode failures count and
-   the campaign continues; only caps, the runtime window, a blocked ledger, or repeated
-   infrastructure failures stop it.
+3. The stop rule is frozen up front: episode failures stay in the denominator. The
+   selected version binds the stop dispositions and failure streak scope; caps, the
+   runtime window, a blocked ledger, and execution errors always stop dispatch.
 4. The reporting rule is fixed before the run: the replication is the headline because its
    journals are retained, D5.9 remains the pre-registered primary reported unchanged, and a
    disagreement larger than the 20-point minimum relevant difference is a finding.
@@ -44,6 +44,7 @@ from pixelgym.grounding.v5.replication_stop_rules import (
     PROPOSED_STOP_RULE_VERSION,
     FailureStreak,
     ProposedStopRule,
+    RateLimitBackoff,
 )
 from pixelgym.grounding.v5.sandbox import OS_SANDBOX_CLI_LAUNCH_MECHANISM
 
@@ -359,7 +360,37 @@ def execution_plan(
                 ),
             ],
             amendment_options=asdict(stop_rule_options),
-            origin="unapproved v2 proposal; requires a successor freeze and exact owner approval",
+            request_failure_disposition={
+                "pre_send": "execution_error; retain the failed assignment and stop dispatch",
+                "post_send": "retain in denominator; apply the selected request-failure streak",
+            },
+            origin=(
+                "v2 options selected by the owner on 2026-10-22; corrected candidate includes "
+                "the authorized review fixes; execution requires separate exact approval"
+                if stop_rule_options == ProposedStopRule("per_worker", "stop")
+                else "unapproved v2 options; requires a successor freeze and exact owner approval"
+            ),
+        )
+        value["owner_direction"]["statements"].extend(
+            [
+                {
+                    "recorded_at": "2026-10-22",
+                    "statement": statement,
+                }
+                for statement in (
+                    (
+                        "Approve the request-failure disposition, streak limit, and backoff "
+                        "parameters., Select `policy_violation_action`: `stop`. Select "
+                        "`failure_streak_scope`: `per_worker`"
+                    ),
+                    "Re-freeze this candidate; no execution",
+                    (
+                        "make sure the refreeze includes all fixes in the 2 PRs we've been working "
+                        "on in this thread"
+                    ),
+                    "After addressing the issues that claude found, merge both prs",
+                )
+            ]
         )
         value["concurrency"]["stop_rule_evaluation"] = (
             "completion order; failure streaks: "
@@ -458,6 +489,9 @@ def run_campaign(
         FailureStreak(stop_rule_options.failure_streak_scope) if stop_rule_options else None
     )
     requests = FailureStreak(stop_rule_options.failure_streak_scope) if stop_rule_options else None
+    backoff = RateLimitBackoff()
+    backoff_receipt: dict[str, Any] = {}
+    backoff_wait_index = 0
     completions: queue.SimpleQueue[tuple[int, dict[str, Any] | None, BaseException | None]] = (
         queue.SimpleQueue()
     )
@@ -480,7 +514,7 @@ def run_campaign(
             completions.put((index, row, None))
 
     def record(index: int, row: dict[str, Any]) -> str | None:
-        nonlocal consecutive_infrastructure_failures
+        nonlocal consecutive_infrastructure_failures, backoff_receipt
         consecutive_request_failures = 0
         if row["classification"] == "approved_cap_reached":
             pass  # Retain the cap-hit assignment without extending any failure streak.
@@ -511,6 +545,7 @@ def run_campaign(
             ledger_blocked=ledger_blocked(),
             consecutive_infrastructure_failures=consecutive_infrastructure_failures,
             consecutive_request_failures=consecutive_request_failures,
+            request_failure_phase=row.get("request_failure_phase"),
             stop_rule_version=stop_rule_version,
             stop_rule_options=stop_rule_options,
         )
@@ -523,23 +558,17 @@ def run_campaign(
             and row["classification"] == "request_failure"
             and row.get("rate_limited") is True
         ):
-            assert on_backoff is not None and wait_for_backoff is not None
+            assert on_backoff is not None
             seconds = stop_rule_options.backoff_seconds(row.get("retry_after_seconds"))
-            receipt = {
+            completed_at = float(row["campaign_completed_monotonic"])
+            backoff_receipt = {
                 "trial_id": row["trial_id"],
                 "seconds": seconds,
                 "stop_rule_version": stop_rule_version,
+                "completed_monotonic": completed_at,
+                "dispatch_not_before": backoff.schedule(completed_at, seconds),
             }
-            on_backoff({**receipt, "stage": "scheduled"})
-            backoff_started = monotonic()
-            wait_for_backoff(seconds)
-            on_backoff(
-                {
-                    **receipt,
-                    "stage": "completed",
-                    "elapsed_seconds": max(0.0, monotonic() - backoff_started),
-                }
-            )
+            on_backoff({**backoff_receipt, "stage": "scheduled"})
         return reason
 
     pending = 0
@@ -559,6 +588,28 @@ def run_campaign(
                 if window_exhausted():
                     outcome.stop_reason = "runtime_window_exhausted"
                     break
+                remaining = backoff.remaining(monotonic())
+                if remaining:
+                    assert wait_for_backoff is not None and on_backoff is not None
+                    backoff_started = monotonic()
+                    try:
+                        wait_for_backoff(remaining)
+                        on_backoff(
+                            {
+                                **backoff_receipt,
+                                "stage": "completed",
+                                "wait_index": backoff_wait_index,
+                                "seconds": remaining,
+                                "elapsed_seconds": max(0.0, monotonic() - backoff_started),
+                            }
+                        )
+                        backoff_wait_index += 1
+                    except BaseException as exc:  # noqa: BLE001 - drain before re-raising
+                        first_error = exc
+                        outcome.stop_reason = "execution_error"
+                        break
+                    # Recheck the window, ledger, and queued completions before dispatch.
+                    continue
                 pool.submit(complete_assignment, next_index)
                 pending += 1
                 outcome.dispatched += 1
@@ -604,6 +655,7 @@ def campaign_stop_reason(
     ledger_blocked: bool,
     consecutive_infrastructure_failures: int,
     consecutive_request_failures: int = 0,
+    request_failure_phase: str | None = None,
     stop_rule_version: str = STOP_RULE_VERSION,
     stop_rule_options: ProposedStopRule | None = None,
 ) -> str | None:
@@ -626,6 +678,10 @@ def campaign_stop_reason(
                 "policy_violation" if stop_rule_options.policy_violation_action == "stop" else None
             )
         if classification == "request_failure":
+            if request_failure_phase == "pre_send":
+                # Local launch/configuration faults are execution errors, rather
+                # than provider rejections eligible for the bounded continuation.
+                return "execution_error"
             return (
                 "consecutive_request_failures"
                 if consecutive_request_failures

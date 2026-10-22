@@ -1,4 +1,4 @@
-"""Unapproved D5.9 stop-rule options; constructing them never authorizes execution."""
+"""Explicit D5.9 stop-rule options; constructing them never authorizes execution."""
 
 from __future__ import annotations
 
@@ -46,6 +46,42 @@ class ProposedStopRule:
         return min(
             self.maximum_rate_limit_backoff_seconds, max(self.rate_limit_backoff_seconds, hinted)
         )
+
+
+@dataclass
+class RateLimitBackoff:
+    """One campaign dispatch deadline, measured from rejection completion times.
+
+    Scheduling concurrent or queued rejections extends the deadline with ``max``;
+    it never adds a new full wait to the time at which a result is processed.
+    The caller journals the schedule and waits only before dispatching more work.
+    """
+
+    dispatch_not_before: float | None = field(default=None, init=False)
+
+    def schedule(self, completed_at: float, seconds: float) -> float:
+        """Return the shared deadline after one already-bounded rejection delay."""
+
+        if not math.isfinite(completed_at):
+            raise ValueError("rate-limit completion time must be finite")
+        if not math.isfinite(seconds) or not 0 < seconds <= 60:
+            raise ValueError("rate-limit backoff must be positive and bounded by 60 seconds")
+        candidate = completed_at + seconds
+        if not math.isfinite(candidate):
+            raise ValueError("rate-limit dispatch deadline must be finite")
+        self.dispatch_not_before = (
+            candidate
+            if self.dispatch_not_before is None
+            else max(self.dispatch_not_before, candidate)
+        )
+        return self.dispatch_not_before
+
+    def remaining(self, now: float) -> float:
+        """Return the remaining shared wait without sleeping or extending it."""
+
+        if not math.isfinite(now):
+            raise ValueError("rate-limit current time must be finite")
+        return 0.0 if self.dispatch_not_before is None else max(0.0, self.dispatch_not_before - now)
 
 
 @dataclass

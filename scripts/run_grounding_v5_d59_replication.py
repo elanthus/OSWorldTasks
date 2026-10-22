@@ -233,9 +233,11 @@ def assignment_call_usage(journal: V5AttemptJournal, trial_id: str) -> dict[str,
 def assignment_rate_limit_metadata(journal: V5AttemptJournal, trial_id: str) -> dict[str, Any]:
     """Use recorded fault facts rather than inferring a rate limit from a score label."""
 
+    events = journal.events(trial_id)
+    faults = [event.payload["cli_fault"] for event in events if event.payload.get("cli_fault")]
     rate_limits = [
         event
-        for event in journal.events(trial_id)
+        for event in events
         if event.payload.get("cli_fault", {}).get("kind") == "subscription_rate_limit"
     ]
     hints = [
@@ -243,7 +245,13 @@ def assignment_rate_limit_metadata(journal: V5AttemptJournal, trial_id: str) -> 
         for event in rate_limits
         if isinstance(event.payload.get("retry_after_seconds"), (int, float))
     ]
-    return {"rate_limited": bool(rate_limits), "retry_after_seconds": max(hints, default=None)}
+    terminal_fault = faults[-1] if faults else {}
+    return {
+        "rate_limited": bool(rate_limits),
+        "retry_after_seconds": max(hints, default=None),
+        "request_failure_phase": terminal_fault.get("phase"),
+        "request_failure_kind": terminal_fault.get("kind"),
+    }
 
 
 def execute(
@@ -493,7 +501,10 @@ def execute(
 
     def on_backoff(receipt: dict[str, Any]) -> None:
         journal.append_event(
-            event_key=f"{receipt['trial_id']}/rate_limit_backoff/{receipt['stage']}",
+            event_key=(
+                f"{receipt['trial_id']}/rate_limit_backoff/{receipt['stage']}"
+                + (f"/{receipt['wait_index']}" if "wait_index" in receipt else "")
+            ),
             kind="d59_replication_rate_limit_backoff",
             trial_id=str(receipt["trial_id"]),
             step_index=0,

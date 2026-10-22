@@ -61,10 +61,11 @@ def test_parser_binds_to_its_runtime_route(expected_route, response_route):
             parser.parse(json.dumps(response).encode(), b"{}")
 
 
-@pytest.mark.parametrize("cap_hit", [False, True])
+@pytest.mark.parametrize("scenario", ["invalid", "cap", "pre_send"])
 def test_driver_summaries_use_independent_reader_counter_and_bound_source(
-    tmp_path, monkeypatch, cap_hit
+    tmp_path, monkeypatch, scenario
 ):
+    cap_hit = scenario == "cap"
     plan = json.loads((ROOT / driver.PLAN_PATH).read_text())
     identity = claude.ClaudeRuntimeIdentity(**plan["runtime_identity"])
     base = claude.build_claude_policy_manifest(
@@ -125,11 +126,16 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
 
     real_transport = claude.ClaudeCodeTransport
 
+    def process_factory(*args, **kwargs):
+        if scenario == "pre_send":
+            raise FileNotFoundError("offline launch fixture")
+        return Process()
+
     def transport(**kwargs):
         return real_transport(
             **kwargs,
             environment={"PATH": "/bin", "HOME": str(tmp_path)},
-            process_factory=lambda *a, **kw: Process(),
+            process_factory=process_factory,
         )
 
     monkeypatch.setattr(claude, "ClaudeCodeTransport", transport)
@@ -153,17 +159,21 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
         "pilot",
         tmp_path / "approval.json",
         output,
-        workers=1 if cap_hit else 2,
+        workers=2 if scenario == "invalid" else 1,
         retention_archive=tmp_path / "archive",
         retention_backup=tmp_path / "backup",
     )
     summary = driver.read_object(output / "summary.json")
     assert summary["source_revision"] == plan["source_binding"]["source_revision"]
-    count = 1 if cap_hit else 2
+    count = 2 if scenario == "invalid" else 1
     assert summary["attempted"] == summary["completed"] == count
-    assert summary["unrun"] == (1 if cap_hit else 0)
+    assert summary["unrun"] == 2 - count
     assert summary["stop_reason"] == (
-        "approved_cap_reached" if cap_hit else "completed_all_assignments"
+        "approved_cap_reached"
+        if cap_hit
+        else "execution_error"
+        if scenario == "pre_send"
+        else "completed_all_assignments"
     )
     assert summary["phase_usage"]["primary"]["provider_wire_requests"] == count
     assert all(
@@ -175,3 +185,9 @@ def test_driver_summaries_use_independent_reader_counter_and_bound_source(
         assert row["incomplete_assignment"] is True and row["success"] is False
         assert row["environment_actions"] == row["environment_actions_dispatched"] == 1
         assert row["final_policy_checkpoint_digest"] is None
+    if scenario == "pre_send":
+        row = summary["results"][0]
+        assert row["classification"] == "request_failure"
+        assert row["request_failure_phase"] == "pre_send"
+        assert row["success"] is False
+        assert row["environment_actions_dispatched"] == 0

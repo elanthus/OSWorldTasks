@@ -76,6 +76,22 @@ def test_v1_does_not_silently_adopt_the_proposal(classification):
         )
 
 
+@pytest.mark.parametrize("phase,expected", [("pre_send", "execution_error"), ("post_send", None)])
+def test_pre_send_faults_stop_as_execution_errors(phase, expected):
+    assert (
+        rep.campaign_stop_reason(
+            "request_failure",
+            ledger_blocked=False,
+            consecutive_infrastructure_failures=0,
+            consecutive_request_failures=1,
+            request_failure_phase=phase,
+            stop_rule_version=PROPOSED_STOP_RULE_VERSION,
+            stop_rule_options=ProposedStopRule("per_worker", "stop"),
+        )
+        == expected
+    )
+
+
 def test_per_worker_streak_does_not_combine_one_shared_outage():
     streak = FailureStreak("per_worker")
     assert [streak.record(True, worker=i, started=0, ended=1) for i in range(4)] == [1] * 4
@@ -164,6 +180,12 @@ def test_invalid_backoff_is_rejected_before_dispatch(seconds):
 def test_rate_limit_backoff_is_reported_before_next_dispatch_and_no_retry():
     events = []
     rows = []
+    now = 0.0
+
+    def wait(seconds):
+        nonlocal now
+        events.append(("wait", seconds))
+        now += seconds
 
     def run(job):
         events.append(("dispatch", job["trial_id"]))
@@ -185,7 +207,8 @@ def test_rate_limit_backoff_is_reported_before_next_dispatch_and_no_retry():
         stop_rule_version=PROPOSED_STOP_RULE_VERSION,
         stop_rule_options=ProposedStopRule("per_worker", "continue"),
         on_backoff=lambda row: events.append((row["stage"], row["trial_id"])),
-        wait_for_backoff=lambda seconds: events.append(("wait", seconds)),
+        wait_for_backoff=wait,
+        monotonic=lambda: now,
     )
     assert outcome.stop_reason == "consecutive_request_failures"
     assert outcome.dispatched == len(rows) == 3
@@ -228,6 +251,74 @@ def test_backoff_requires_a_journal_and_wait_and_honours_the_window():
         rep.run_campaign(**kwargs)
     outcome = rep.run_campaign(**kwargs, on_backoff=lambda receipt: None, wait_for_backoff=wait)
     assert outcome.dispatched == 1 and outcome.stop_reason == "runtime_window_exhausted"
+
+
+@pytest.mark.parametrize("summary_delay,expected_waits", [(0, [60]), (120, [])])
+def test_concurrent_rejections_share_one_completion_based_dispatch_deadline(
+    monkeypatch, summary_delay, expected_waits
+):
+    started = threading.Barrier(4)
+    all_completed = threading.Event()
+    lock = threading.Lock()
+    completed = 0
+    now = 0.0
+    waits, receipts = [], []
+
+    class Pool(ThreadPoolExecutor):
+        def submit(self, fn, /, *args, **kwargs):
+            def tracked():
+                nonlocal completed
+                fn(*args, **kwargs)
+                with lock:
+                    completed += 1
+                    if completed == 4:
+                        all_completed.set()
+
+            return super().submit(tracked)
+
+    monkeypatch.setattr(rep, "ThreadPoolExecutor", Pool)
+
+    def run(job):
+        if job["index"] < 4:
+            started.wait(timeout=5)
+        return {
+            **job,
+            "classification": "request_failure" if job["index"] < 4 else "success_termination",
+            "rate_limited": job["index"] < 4,
+            "retry_after_seconds": 9999,
+        }
+
+    def record(row):
+        nonlocal now
+        if row["completion_index"] == 0:
+            assert all_completed.wait(timeout=5)
+            now += summary_delay
+
+    def wait(seconds):
+        nonlocal now
+        waits.append(seconds)
+        now += seconds
+
+    outcome = rep.run_campaign(
+        [{"trial_id": str(i), "index": i, "worker": i % 4} for i in range(5)],
+        workers=4,
+        run_assignment=run,
+        window_exhausted=lambda: False,
+        ledger_blocked=lambda: False,
+        on_result=record,
+        stop_rule_version=PROPOSED_STOP_RULE_VERSION,
+        stop_rule_options=ProposedStopRule("per_worker", "stop"),
+        on_backoff=receipts.append,
+        wait_for_backoff=wait,
+        monotonic=lambda: now,
+    )
+    assert outcome.stop_reason == "completed_all_assignments"
+    assert outcome.dispatched == len(outcome.rows) == 5
+    assert waits == expected_waits
+    scheduled = [receipt for receipt in receipts if receipt["stage"] == "scheduled"]
+    assert len(scheduled) == 4
+    assert {receipt["dispatch_not_before"] for receipt in scheduled} == {60}
+    assert len(receipts) == 4 + len(expected_waits)
 
 
 def test_cap_exhaustion_is_a_registered_stop_and_drains(tmp_path, monkeypatch):
@@ -331,11 +422,25 @@ def test_rate_limit_metadata_uses_fault_facts_and_is_trial_scoped(tmp_path):
         assert assignment_rate_limit_metadata(journal, "limited") == {
             "rate_limited": True,
             "retry_after_seconds": 45,
+            "request_failure_phase": None,
+            "request_failure_kind": "subscription_rate_limit",
         }
         assert assignment_rate_limit_metadata(journal, "other") == {
             "rate_limited": False,
             "retry_after_seconds": None,
+            "request_failure_phase": None,
+            "request_failure_kind": None,
         }
+        journal.append_event(
+            event_key="pre-send",
+            kind="sealed_unsuccessful_result",
+            trial_id="limited",
+            step_index=1,
+            payload={"cli_fault": {"kind": "pre_send", "phase": "pre_send"}},
+        )
+        assert assignment_rate_limit_metadata(journal, "limited")["request_failure_phase"] == (
+            "pre_send"
+        )
     finally:
         journal.close()
 
@@ -425,7 +530,14 @@ def test_proposed_plan_fields_without_mutating_frozen_candidate(candidate_plan, 
         "stop_rule",
         "concurrency",
         "execution_plan_digest",
+        "owner_direction",
     }
+    assert proposal["stop_rule"]["request_failure_disposition"]["pre_send"].startswith(
+        "execution_error"
+    )
+    assert ("unapproved" not in proposal["stop_rule"]["origin"]) == (
+        scope == "per_worker" and disposition == "stop"
+    )
     assert rep.stop_rule_options_for_plan(proposal) == ProposedStopRule(scope, disposition)
     assert not proposal["execution_enabled"] and proposal["approved_model_attempt_cap"] == 0
     assert path.read_bytes() == before
