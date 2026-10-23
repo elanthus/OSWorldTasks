@@ -22,6 +22,8 @@ MD_NAME = "prose-signature-diagnostic.md"
 PHASES = ("primary", "reliability")
 MODES = ("history", "stateless")
 TYPING_EVENTS = ("text_input_focused", "invalid_text_value", "text_value_accepted")
+ACTION_FIELDS = {"action_type", "x", "y", "key"}
+PROSE_SHAPES = ("prose_then_fence_last", "fence_first_then_prose", "fence_inside_prose")
 FENCE = re.compile(r"```(?:json)?[ \t]*\r?\n(.*?)\r?\n```", re.DOTALL)
 KEYWORDS = {
     "mentions_code": re.compile(r"\bcode\b", re.IGNORECASE),
@@ -57,7 +59,9 @@ def fence_position(content: str) -> str:
     fences = FENCE.findall(text)
     if not fences:
         return "no_fence"
-    if text.startswith("```") and text.endswith("```") and len(fences) == 1:
+    if len(fences) > 1:
+        return "multiple_fences"
+    if text.startswith("```") and text.endswith("```"):
         return "fence_only"
     if text.startswith("```"):
         return "fence_first_then_prose"
@@ -66,9 +70,32 @@ def fence_position(content: str) -> str:
     return "fence_inside_prose"
 
 
+def action_body(content: str) -> dict[str, Any]:
+    """Measure the action text the parser would see: does it parse, and is it exact?"""
+    text = content.strip()
+    fences = FENCE.findall(text)
+    body = fences[0] if len(fences) == 1 else text
+    try:
+        value = json.loads(body)
+    except ValueError:
+        return {"json_parses": False, "exact_action_object": False}
+    exact = (
+        isinstance(value, dict)
+        and set(value) == ACTION_FIELDS
+        and all(type(v) is int for v in value.values())
+    )
+    return {"json_parses": True, "exact_action_object": exact}
+
+
 def split_trial(trial_id: str) -> tuple[str, str]:
     parts = trial_id.split("-")
-    require(len(parts) >= 6 and parts[0:3] == ["d59", "rep", parts[2]], "unexpected trial id")
+    require(
+        len(parts) >= 6
+        and parts[0:2] == ["d59", "rep"]
+        and parts[2] in PHASES
+        and parts[4] in MODES,
+        f"unexpected trial id {trial_id}",
+    )
     return parts[2], parts[4]
 
 
@@ -133,6 +160,7 @@ def analyze(conn: sqlite3.Connection, projection: dict[str, Any]) -> dict[str, A
                 "finish_reason": response.get("finish_reason"),
                 "shape": fence_position(content),
                 "action_objects_in_text": len(re.findall(r'"action_type"', content)),
+                **action_body(content),
                 "single_rejected_attempt": row["model_attempts"] - row["environment_actions"] == 1,
                 "last_event": diagnostics[-1]["event"] if diagnostics else None,
                 "stage": row["final_stage_index"],
@@ -174,6 +202,9 @@ def analyze(conn: sqlite3.Connection, projection: dict[str, Any]) -> dict[str, A
             "finish_reason": dict(Counter(str(r["finish_reason"]) for r in rows)),
             "response_shape": dict(Counter(r["shape"] for r in rows)),
             "exactly_one_action_object": sum(r["action_objects_in_text"] == 1 for r in rows),
+            "prose_outside_fence": sum(r["shape"] in PROSE_SHAPES for r in rows),
+            "action_json_parses": sum(r["json_parses"] for r in rows),
+            "exact_action_object": sum(r["exact_action_object"] for r in rows),
             "keywords": {name: sum(r[name] for r in rows) for name in KEYWORDS},
             "last_committed_event": dict(Counter(str(r["last_event"]) for r in rows)),
             "failures_after_typing_event": sum(r["last_event"] in TYPING_EVENTS for r in rows),
@@ -220,16 +251,17 @@ def render(result: dict[str, Any]) -> str:
         "",
         (
             "| Phase | Arm | Episodes | One rejected attempt | Reasons | Response shape "
-            "| Exactly one action object | finish_reason |"
+            "| Prose outside fence | Action JSON parses | Exact action object | finish_reason |"
         ),
-        "|---|---|---:|---:|---|---|---:|---|",
+        "|---|---|---:|---:|---|---|---:|---:|---:|---|",
     ]
     for phase, arms in result["by_phase_and_mode"].items():
         for mode, s in arms.items():
             lines.append(
                 f"| {phase} | {mode} | {s['invalid_output_episodes']} | "
                 f"{s['single_rejected_attempt']} | {fmt(s['failure_reason'])} | "
-                f"{fmt(s['response_shape'])} | {s['exactly_one_action_object']} | "
+                f"{fmt(s['response_shape'])} | {s['prose_outside_fence']} | "
+                f"{s['action_json_parses']} | {s['exact_action_object']} | "
                 f"{fmt(s['finish_reason'])} |"
             )
     lines += [
@@ -259,21 +291,34 @@ def render(result: dict[str, Any]) -> str:
     lines += ["", "Typing diagnostics over all primary episodes:", ""]
     for mode, events in result["typing_diagnostics_primary"].items():
         lines.append(f"- {mode}: {fmt(events)}")
-    lines += [
-        "",
-        "## Reading",
-        "",
-        (
-            "Every rejected response is a stop-terminated reply carrying one well-formed action "
-            "object; what the parser rejects is prose around it. The parser rule is unchanged "
-            "from the historical D5.9 code revision, so stricter parsing does not explain the "
-            "difference between campaigns. Why the same pinned model emitted prose more often "
-            "under the history prompt is not established here; the historical raw journals do "
-            "not exist, so the same breakdown cannot be produced for the historical campaign."
-        ),
-        "",
-    ]
+    lines += ["", "## Reading", "", reading(result), ""]
     return "\n".join(lines)
+
+
+def reading(result: dict[str, Any]) -> str:
+    """State only what the counts above measure, computed from them."""
+    groups = [s for arms in result["by_phase_and_mode"].values() for s in arms.values()]
+    total = sum(s["invalid_output_episodes"] for s in groups)
+    single = sum(s["single_rejected_attempt"] for s in groups)
+    prose = sum(s["prose_outside_fence"] for s in groups)
+    parses = sum(s["action_json_parses"] for s in groups)
+    exact = sum(s["exact_action_object"] for s in groups)
+    stop = sum(s["finish_reason"].get("stop", 0) for s in groups)
+    lone = sum(s["response_shape"].get("fence_only", 0) for s in groups)
+    return (
+        f"Across all phases and arms, {total} episodes ended on a parse failure; {single} of "
+        f"them ended on their first and only rejected response, and {stop} rejected responses "
+        f"have finish reason `stop`. {prose} of the {total} rejected responses place prose "
+        f"outside a single JSON fence, which the parser rule rejects before reading the action; "
+        f"{lone} are a lone fence with nothing outside it. Reading the fenced or bare body "
+        f"directly, {parses} parse as JSON and {exact} are an exact four-field integer action "
+        f"object, so the remaining {total - exact} would fail the exact-shape check even "
+        "without surrounding prose. The parser rule is unchanged from the historical D5.9 "
+        "code revision, so stricter parsing does not explain the difference between campaigns. "
+        "Why the same pinned model emitted prose more often under the history prompt is not "
+        "established here; the historical raw journals do not exist, so the same breakdown "
+        "cannot be produced for the historical campaign."
+    )
 
 
 def main() -> None:

@@ -2,6 +2,8 @@
   "by_phase_and_mode": {
     "primary": {
       "history": {
+        "action_json_parses": 127,
+        "exact_action_object": 127,
         "exactly_one_action_object": 127,
         "failure_reason": {
           "parse_failure:JSONDecodeError": 121,
@@ -50,6 +52,7 @@
           "wrong_irreversible_commit": 1
         },
         "prior_invalid_text_value": 23,
+        "prose_outside_fence": 127,
         "response_shape": {
           "fence_first_then_prose": 6,
           "fence_inside_prose": 1,
@@ -63,6 +66,8 @@
         }
       },
       "stateless": {
+        "action_json_parses": 36,
+        "exact_action_object": 35,
         "exactly_one_action_object": 36,
         "failure_reason": {
           "parse_failure:JSONDecodeError": 34,
@@ -104,6 +109,7 @@
           "wrong_irreversible_commit": 2
         },
         "prior_invalid_text_value": 4,
+        "prose_outside_fence": 35,
         "response_shape": {
           "fence_first_then_prose": 1,
           "fence_only": 1,
@@ -119,6 +125,8 @@
     },
     "reliability": {
       "history": {
+        "action_json_parses": 21,
+        "exact_action_object": 21,
         "exactly_one_action_object": 21,
         "failure_reason": {
           "parse_failure:JSONDecodeError": 20,
@@ -155,6 +163,7 @@
           "text_input_focused": 16
         },
         "prior_invalid_text_value": 1,
+        "prose_outside_fence": 21,
         "response_shape": {
           "fence_first_then_prose": 1,
           "prose_then_fence_last": 20
@@ -167,6 +176,8 @@
         }
       },
       "stateless": {
+        "action_json_parses": 3,
+        "exact_action_object": 3,
         "exactly_one_action_object": 3,
         "failure_reason": {
           "parse_failure:JSONDecodeError": 3
@@ -194,6 +205,7 @@
           "text_input_focused": 3
         },
         "prior_invalid_text_value": 0,
+        "prose_outside_fence": 3,
         "response_shape": {
           "prose_then_fence_last": 3
         },

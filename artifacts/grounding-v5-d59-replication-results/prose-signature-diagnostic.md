@@ -6,12 +6,12 @@ Exploratory diagnostic generated read-only from the retained attempt journal. It
 
 ## Terminal parse failures by phase and arm
 
-| Phase | Arm | Episodes | One rejected attempt | Reasons | Response shape | Exactly one action object | finish_reason |
-|---|---|---:|---:|---|---|---:|---|
-| primary | history | 127 | 127 | parse_failure:JSONDecodeError 121, parse_failure:ValueError 6 | prose_then_fence_last 120, fence_first_then_prose 6, fence_inside_prose 1 | 127 | stop 127 |
-| primary | stateless | 36 | 36 | parse_failure:JSONDecodeError 34, parse_failure:ValueError 2 | prose_then_fence_last 34, fence_only 1, fence_first_then_prose 1 | 36 | stop 36 |
-| reliability | history | 21 | 21 | parse_failure:JSONDecodeError 20, parse_failure:ValueError 1 | prose_then_fence_last 20, fence_first_then_prose 1 | 21 | stop 21 |
-| reliability | stateless | 3 | 3 | parse_failure:JSONDecodeError 3 | prose_then_fence_last 3 | 3 | stop 3 |
+| Phase | Arm | Episodes | One rejected attempt | Reasons | Response shape | Prose outside fence | Action JSON parses | Exact action object | finish_reason |
+|---|---|---:|---:|---|---|---:|---:|---:|---|
+| primary | history | 127 | 127 | parse_failure:JSONDecodeError 121, parse_failure:ValueError 6 | prose_then_fence_last 120, fence_first_then_prose 6, fence_inside_prose 1 | 127 | 127 | 127 | stop 127 |
+| primary | stateless | 36 | 36 | parse_failure:JSONDecodeError 34, parse_failure:ValueError 2 | prose_then_fence_last 34, fence_only 1, fence_first_then_prose 1 | 35 | 36 | 35 | stop 36 |
+| reliability | history | 21 | 21 | parse_failure:JSONDecodeError 20, parse_failure:ValueError 1 | prose_then_fence_last 20, fence_first_then_prose 1 | 21 | 21 | 21 | stop 21 |
+| reliability | stateless | 3 | 3 | parse_failure:JSONDecodeError 3 | prose_then_fence_last 3 | 3 | 3 | 3 | stop 3 |
 
 ## Context of the primary-phase failures
 
@@ -37,4 +37,4 @@ Typing diagnostics over all primary episodes:
 
 ## Reading
 
-Every rejected response is a stop-terminated reply carrying one well-formed action object; what the parser rejects is prose around it. The parser rule is unchanged from the historical D5.9 code revision, so stricter parsing does not explain the difference between campaigns. Why the same pinned model emitted prose more often under the history prompt is not established here; the historical raw journals do not exist, so the same breakdown cannot be produced for the historical campaign.
+Across all phases and arms, 187 episodes ended on a parse failure; 187 of them ended on their first and only rejected response, and 187 rejected responses have finish reason `stop`. 186 of the 187 rejected responses place prose outside a single JSON fence, which the parser rule rejects before reading the action; 1 are a lone fence with nothing outside it. Reading the fenced or bare body directly, 187 parse as JSON and 186 are an exact four-field integer action object, so the remaining 1 would fail the exact-shape check even without surrounding prose. The parser rule is unchanged from the historical D5.9 code revision, so stricter parsing does not explain the difference between campaigns. Why the same pinned model emitted prose more often under the history prompt is not established here; the historical raw journals do not exist, so the same breakdown cannot be produced for the historical campaign.

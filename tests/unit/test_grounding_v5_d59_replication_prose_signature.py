@@ -120,11 +120,18 @@ TRIALS = {
         "events": ["correct_transition"] * 3,
         "content": None,
     },
+    "d59-rep-primary-6032-stateless-r0": {
+        "family": "deferred_join",
+        "events": ["text_input_focused"],
+        "content": '```json\n{"action_type": 2, "x": 0, "y": 0, "key": 51, "comment": "P"}\n```',
+        "reason": "ValueError",
+    },
 }
 ROWS = [
     ("d59-rep-primary-6001-history-r0", "invalid_output", 3, 2),
     ("d59-rep-primary-6003-history-r0", "invalid_output", 2, 1),
     ("d59-rep-primary-6000-stateless-r0", "success_termination", 3, 3),
+    ("d59-rep-primary-6032-stateless-r0", "invalid_output", 2, 1),
 ]
 
 
@@ -148,7 +155,19 @@ def test_signature_counts_without_leaking_text(tmp_path):
         "mentions_case_backspace_or_error": 2,
         "references_history_frames": 1,
     }
-    assert result["by_phase_and_mode"]["primary"]["stateless"]["invalid_output_episodes"] == 0
+    assert history["prose_outside_fence"] == 2
+    assert history["action_json_parses"] == 2  # fixture fences parse but are partial
+    assert history["exact_action_object"] == 0
+    stateless = result["by_phase_and_mode"]["primary"]["stateless"]
+    assert stateless["invalid_output_episodes"] == 1
+    assert stateless["response_shape"] == {"fence_only": 1}
+    assert stateless["prose_outside_fence"] == 0
+    assert stateless["action_json_parses"] == 1
+    assert stateless["exact_action_object"] == 0
+    text = prose.reading(result)
+    assert "3 episodes ended on a parse failure" in text
+    assert "2 of the 3 rejected responses place prose" in text
+    assert "1 are a lone fence" in text
     assert result["typing_diagnostics_primary"]["history"] == {
         "invalid_text_value": 1,
         "text_input_focused": 1,
@@ -181,7 +200,27 @@ def test_projection_binding_failures_raise(tmp_path, break_projection, message):
         ('{"action_type": 1}', "no_fence"),
         ('```json\n{"action_type": 1}\n```', "fence_only"),
         ('note\n```json\n{"a": 1}\n```\nmore', "fence_inside_prose"),
+        ('```json\n{"a": 1}\n```\n```json\n{"a": 2}\n```', "multiple_fences"),
     ],
 )
 def test_fence_position(content, shape):
     assert prose.fence_position(content) == shape
+
+
+@pytest.mark.parametrize(
+    "content, parses, exact",
+    [
+        ('{"action_type": 1, "x": 5, "y": 6, "key": 0}', True, True),
+        ('```json\n{"action_type": 1, "x": 5, "y": 6, "key": 0}\n```', True, True),
+        ('```json\n{"action_type": 1, "x": 5, "y": 6, "key": 0, "note": "x"}\n```', True, False),
+        ('```json\n{"action_type": 1.0, "x": 5, "y": 6, "key": 0}\n```', True, False),
+        ("prose\n```json\n{\n```", False, False),
+    ],
+)
+def test_action_body(content, parses, exact):
+    assert prose.action_body(content) == {"json_parses": parses, "exact_action_object": exact}
+
+
+def test_unexpected_phase_token_is_rejected():
+    with pytest.raises(Exception, match="unexpected trial id"):
+        prose.split_trial("d59-rep-garbage-6000-history-r0")

@@ -32,10 +32,13 @@ pairing, cluster mapping, reliability schedule, and denominator rule.
   exclude that unknown quantity rather than treating it as zero. Local process closure
   and subscription charge accounting do not establish provider settlement or billing.
 - An exploratory read-only pass over the retained journal shows every invalid-output
-  episode ended on one rejected response that carried a well-formed action object wrapped
-  in prose, under a parser rule unchanged from the historical revision. Most history-arm
-  failures followed a text-entry action. The pass attributes no cause to the historical
-  difference and is reported apart from the primary result.
+  episode ended on its first and only rejected response. In 186 of 187 the response placed
+  prose outside a single JSON fence; the one exception is a lone fence whose object carries
+  an extra field. Read directly, all 187 fenced bodies parse as JSON and 186 are an exact
+  four-field action object. The parser rule is unchanged from the historical revision.
+  In the primary phase, 103 of 127 history failures and 19 of 36 stateless failures followed
+  a text-entry action. The pass attributes no cause to the historical difference and is
+  reported apart from the primary result.
 - Named secondary diagnostics without frozen operational estimators are explicitly left
   unestimated. Retained traces exist; inventing estimators after observing outcomes would
   require separately labelled exploratory work. The conditional first-attempt diagnostic
