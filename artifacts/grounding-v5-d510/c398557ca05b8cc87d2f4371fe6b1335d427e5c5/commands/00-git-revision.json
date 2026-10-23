@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "git",
+    "rev-parse",
+    "HEAD"
+  ],
+  "command": "git rev-parse HEAD",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.020682,
+  "ended_at_utc": "2026-10-23T04:37:08.223147+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "c398557ca05b8cc87d2f4371fe6b1335d427e5c5\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T04:37:08.201136+00:00"
+}

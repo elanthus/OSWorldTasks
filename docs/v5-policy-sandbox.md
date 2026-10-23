@@ -3,8 +3,10 @@
 - **Scope:** OS-level enforcement around each Claude Code CLI policy launch in the v5 agent
   benchmark, the runner-owned egress proxy that is its only network path, and the evidence that
   binds both to a policy manifest
-- **Status:** mechanism implemented with no-cost verification; not yet bound into any frozen
-  policy pair or execution plan, and no provider call has been made under it
+- **Status:** bound into the frozen D5.9 replication; the completed pilot and full campaign's
+  retained invocation evidence records OS sandbox enforcement. The [replication review
+  package](../artifacts/grounding-v5-d59-replication-results/review-guide.md) discloses the
+  unresolved timeout and evidence limits; D5.10 remains the owner's decision.
 - **Terms:** see the [glossary](glossary.md) and the [v5 benchmark design](v5-benchmark-design.md)
 
 ## Why the D5.9 launches ran without OS enforcement

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.analyze_grounding_v5_d59_replication",
+    "--check"
+  ],
+  "command": ".venv/bin/python -m scripts.analyze_grounding_v5_d59_replication --check",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.764145,
+  "ended_at_utc": "2026-10-23T04:37:09.390927+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"D5.10\": null, \"confirmatory\": {\"p_value_below_alpha\": true, \"paired_absolute_difference\": {\"clusters\": 168, \"estimate\": 0.21875, \"interval\": [0.13846153846153847, 0.3], \"level\": 0.95, \"method\": \"family-stratified-logical-cluster-bootstrap-pooled-difference-v1\", \"percentile\": \"linear-interpolation-(n-1)q-v1\", \"resamples\": 10000, \"rows\": 192, \"seed\": 20260911, \"strata\": 6}, \"paired_success_table\": {\"both_failure\": 115, \"both_success\": 5, \"exact_mcnemar_two_sided_p\": 6.539968221733264e-07, \"history_only_success\": 57, \"pairs\": 192, \"stateless_only_success\": 15}, \"preregistered\": true}, \"historical_comparison\": {\"absolute_difference_between_estimates\": 0.2552083333333333, \"exceeds_threshold\": true, \"frozen_disagreement_threshold\": 0.2, \"historical_paired_absolute_difference\": 0.4739583333333333, \"historical_primary_rates\": {\"history\": {\"overall\": {\"denominator\": 192, \"estimate\": 0.5520833333333334, \"successes\": 106, \"wilson_95\": [0.48140813449710274, 0.6207152877876104]}}, \"stateless\": {\"overall\": {\"denominator\": 192, \"estimate\": 0.078125, \"successes\": 15, \"wilson_95\": [0.04791391008238129, 0.12488636941144249]}}}, \"not_a_test_of_difference_between_campaigns\": true, \"replication_paired_absolute_difference\": 0.21875, \"rule\": \"publish both results and the difference; no post-result selection\", \"sha256\": \"sha256:70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3\", \"source\": \"artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json\"}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T04:37:08.625324+00:00"
+}

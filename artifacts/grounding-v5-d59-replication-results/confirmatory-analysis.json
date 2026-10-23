@@ -1,0 +1,660 @@
+{
+  "confirmatory": {
+    "p_value_below_alpha": true,
+    "paired_absolute_difference": {
+      "clusters": 168,
+      "estimate": 0.21875,
+      "interval": [
+        0.13846153846153847,
+        0.3
+      ],
+      "level": 0.95,
+      "method": "family-stratified-logical-cluster-bootstrap-pooled-difference-v1",
+      "percentile": "linear-interpolation-(n-1)q-v1",
+      "resamples": 10000,
+      "rows": 192,
+      "seed": 20260911,
+      "strata": 6
+    },
+    "paired_success_table": {
+      "both_failure": 115,
+      "both_success": 5,
+      "exact_mcnemar_two_sided_p": 6.539968221733264e-07,
+      "history_only_success": 57,
+      "pairs": 192,
+      "stateless_only_success": 15
+    },
+    "preregistered": true
+  },
+  "disclosure": {
+    "assigned": 432,
+    "completed": 432,
+    "full_campaign_stop_rule_changed_after_results": false,
+    "stop_reason": "completed_all_assignments",
+    "text": "The replication used the owner-approved v2 stop rule, strict OAuth-token/Max identity, kernel sandbox, bounded transport retry, and paused active clock during owner login. These were frozen before this campaign. The separate four-assignment pilot is excluded from every full-campaign denominator. All 432 full assignments are retained. One post-send timeout retains unknown provider completion and usage. Its local process was confirmed stopped; the frozen rule allowed one counted retry on the same request. Both attempts are retained. Login did not clear this unknown outcome. All local subprocesses closed. Subscription charge accounting is not a provider billing audit. The two verified archives are on the same local disk, not independent disaster backups. No new model call, auth check, task execution, or response rescoring occurred in analysis. D5.10 and public model-quality wording remain the owner's decisions.",
+    "unresolved_invocations": 1,
+    "unresolved_timeouts": [
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:9f9d43da6c65418f5ab50c3681b23961fbe35b30383cc03e170d23ad5dae130a",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 21,
+        "trial_id": "d59-rep-primary-6180-history-r0"
+      }
+    ]
+  },
+  "historical_comparison": {
+    "absolute_difference_between_estimates": 0.2552083333333333,
+    "exceeds_threshold": true,
+    "frozen_disagreement_threshold": 0.2,
+    "historical_paired_absolute_difference": 0.4739583333333333,
+    "historical_primary_rates": {
+      "history": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.5520833333333334,
+          "successes": 106,
+          "wilson_95": [
+            0.48140813449710274,
+            0.6207152877876104
+          ]
+        }
+      },
+      "stateless": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.078125,
+          "successes": 15,
+          "wilson_95": [
+            0.04791391008238129,
+            0.12488636941144249
+          ]
+        }
+      }
+    },
+    "not_a_test_of_difference_between_campaigns": true,
+    "replication_paired_absolute_difference": 0.21875,
+    "rule": "publish both results and the difference; no post-result selection",
+    "sha256": "sha256:70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3",
+    "source": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json"
+  },
+  "human_gate": {
+    "D5.10": null,
+    "owner": "project owner"
+  },
+  "independent_representative_subset": {
+    "label": "exploratory",
+    "note": "The same test restricted to singletons and twin_a, the frozen independent representative rule. The pre-registration does not name this subset as a test.",
+    "paired_success_table": {
+      "both_failure": 102,
+      "both_success": 3,
+      "exact_mcnemar_two_sided_p": 3.015952084642337e-06,
+      "history_only_success": 50,
+      "pairs": 168,
+      "stateless_only_success": 13
+    },
+    "preregistered": false
+  },
+  "inputs": {
+    "execution_plan": {
+      "execution_plan_digest": "sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159",
+      "path": "artifacts/grounding-v5-d59-replication/execution-plan.json",
+      "sha256": "sha256:69daf3221686db44c2deeea1dc418f607d0479259f8b66033ab411bff0799f0f"
+    },
+    "pre_registration": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+    "projection": {
+      "path": "artifacts/grounding-v5-d59-replication-results/report.json",
+      "sha256": "sha256:ec96890af793dee40d582040dba8e53ad28facf1659189fa4d0db038b43e20d8"
+    }
+  },
+  "method": {
+    "bootstrap": {
+      "estimator": "pixelgym.grounding.v5.confirmatory_analysis.stratified_cluster_bootstrap",
+      "interpretation_choices_accepted_by_owner": [
+        "Stratum: the workflow family of the task.",
+        "Logical cluster: the frozen logical_id; a robustness pair (twin_a, twin_b) is one cluster, a singleton is its own cluster. A cluster must lie within one family.",
+        "Resampling within strata: each family independently draws as many clusters, with replacement, as it contains; all rows of a drawn cluster enter the resample.",
+        "Estimate: the pooled all-episode absolute difference mean(history) - mean(stateless) over every row in the resample, not an average of per-family differences.",
+        "Percentile convention: the frozen v1 linear-interpolation percentile at position (n - 1) * q.",
+        "Draw order: one random.Random(seed); per resample, families in ascending key order; within a family, rng.choice over ascending cluster keys once per original cluster.",
+        "Row shape: one row per paired seed with boolean history and stateless outcomes."
+      ],
+      "level": 0.95,
+      "resamples": 10000,
+      "seed": 20260911
+    },
+    "denominator_rule": "every assigned primary episode, including invalid output, step-limit truncation, and infrastructure failure",
+    "interval_estimator": "pixelgym.grounding.stats.wilson_interval",
+    "mcnemar_estimator": "pixelgym.grounding.stats.exact_mcnemar_p_value",
+    "pre_registration_quotes": [
+      {
+        "line": "- The single primary hypothesis remains a two-sided exact McNemar comparison at alpha 0.05, with",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  a 20-point minimum relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- The family-stratified logical-cluster bootstrap keeps seed 20260911, 10,000 resamples, and 95%",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  intervals.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Screenshot-history policy: `policy-79441db33362e00a1ac6`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Current-frame-only policy: `policy-e1d746cd6a83ffb12a20`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Primary test: two-sided exact McNemar at alpha 0.05, with the unchanged 20-point minimum",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Reliability schedule: two additional trials per arm on the first two independent",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  representatives in each workflow family.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  Every singleton and each pair's `twin_a` is a primary representative.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- **Primary metric:** exact episode success over all assigned confirmatory episodes. Invalid",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  episode makes the run incomplete.",
+        "source": "docs/v5-benchmark-design.md"
+      }
+    ],
+    "primary_comparison": {
+      "alpha": 0.05,
+      "difference_direction": "history minus stateless",
+      "minimum_relevant_absolute_difference": 0.2,
+      "paired_on": "identical seed, phase primary, repeat 0",
+      "paired_sample": "all paired_task_seeds in the execution plan's primary_comparison (every assigned primary episode)",
+      "phase": "primary",
+      "policies": {
+        "executed": {
+          "history": {
+            "code_revision": "0c7836ff995575ec889a44841b542dff7377e1cc",
+            "policy_id": "policy-bf07cf314a4cc448f498",
+            "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+          },
+          "stateless": {
+            "code_revision": "0c7836ff995575ec889a44841b542dff7377e1cc",
+            "policy_id": "policy-adda157ee17a0833a036",
+            "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+          }
+        },
+        "executed_match_pre_registered": true,
+        "executed_source": "execution plan policy_manifests",
+        "historical_pre_registration": {
+          "history": "policy-79441db33362e00a1ac6",
+          "stateless": "policy-e1d746cd6a83ffb12a20"
+        },
+        "note": "The original quoted Haiku IDs are historical. Replication IDs are bound in the replication plan frozen before its calls, not substituted into the historical result.",
+        "pre_registered": {
+          "history": "policy-bf07cf314a4cc448f498",
+          "stateless": "policy-adda157ee17a0833a036"
+        }
+      },
+      "target_power": 0.8,
+      "test": "two-sided exact McNemar"
+    }
+  },
+  "reliability": {
+    "note": "Reported separately; never pooled with the primary comparison.",
+    "policies": {
+      "history": {
+        "all_three_failure": 4,
+        "all_three_success": 0,
+        "consistent_tasks": 4,
+        "one_of_three_success": 6,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.125,
+          "successes": 3,
+          "wilson_95": [
+            0.04344334080123444,
+            0.31003881270500067
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 2
+      },
+      "stateless": {
+        "all_three_failure": 9,
+        "all_three_success": 0,
+        "consistent_tasks": 9,
+        "one_of_three_success": 3,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.125,
+          "successes": 3,
+          "wilson_95": [
+            0.04344334080123444,
+            0.31003881270500067
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 0
+      }
+    },
+    "preregistered": true,
+    "seeds": [
+      6000,
+      6002,
+      6016,
+      6018,
+      6032,
+      6034,
+      6048,
+      6050,
+      6064,
+      6066,
+      6080,
+      6082
+    ]
+  },
+  "schema_version": "pixelgym-d59-replication-confirmatory-analysis-v1",
+  "secondary": {
+    "label": "exploratory",
+    "not_computable_from_public_projection": [
+      {
+        "diagnostic": "dependency retention, recovery, irreversible errors, path overhead, loops",
+        "reason": "not estimated: named in the design, but no estimator/denominator was frozen; retained traces permit a separately specified exploratory follow-up"
+      },
+      {
+        "diagnostic": "per-request latency",
+        "reason": "no request timing field in the audited canonical projection; campaign active and wall runtime are reported separately"
+      },
+      {
+        "diagnostic": "complete provider token use",
+        "reason": "one timeout has unknown provider usage; reported token totals cover only the other attempts"
+      }
+    ],
+    "note": "Termination profiles use every assigned episode. Request failures are not relabeled as infrastructure failures; there were no terminal request failures in this full run.",
+    "preregistered": false,
+    "resource_use": {
+      "primary": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 14.552083333333334,
+            "total": 2794
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 15.21875,
+            "total": 2922
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 15.21875,
+            "total": 2922
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 25.6875,
+            "total": 4932
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 25.875,
+            "total": 4968
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 25.875,
+            "total": 4968
+          }
+        }
+      },
+      "reliability": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 10.75,
+            "total": 258
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 11.625,
+            "total": 279
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 11.625,
+            "total": 279
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 24.5,
+            "total": 588
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 24.625,
+            "total": 591
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 24.625,
+            "total": 591
+          }
+        }
+      }
+    },
+    "retained_journal_diagnostics": {
+      "primary": {
+        "history": {
+          "attempts_with_reported_usage": 2921,
+          "attempts_without_reported_usage": 1,
+          "episodes": 192,
+          "first_attempt_critical_decisions": {
+            "correct": 149,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 155,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 150
+          },
+          "reached_both_consumers": 77,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 33432288,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 1095364,
+            "output_tokens": 3830937
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        },
+        "stateless": {
+          "attempts_with_reported_usage": 4968,
+          "attempts_without_reported_usage": 0,
+          "episodes": 192,
+          "first_attempt_critical_decisions": {
+            "correct": 121,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 334,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 333
+          },
+          "reached_both_consumers": 168,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 11184642,
+            "output_tokens": 6142441
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        }
+      },
+      "reliability": {
+        "history": {
+          "attempts_with_reported_usage": 279,
+          "attempts_without_reported_usage": 0,
+          "episodes": 24,
+          "first_attempt_critical_decisions": {
+            "correct": 7,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 8,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 7
+          },
+          "reached_both_consumers": 4,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 2603917,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 136055,
+            "output_tokens": 301666
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        },
+        "stateless": {
+          "attempts_with_reported_usage": 591,
+          "attempts_without_reported_usage": 0,
+          "episodes": 24,
+          "first_attempt_critical_decisions": {
+            "correct": 12,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 42,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 42
+          },
+          "reached_both_consumers": 21,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 1330246,
+            "output_tokens": 743502
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        }
+      }
+    },
+    "robustness_consistency": {
+      "history": {
+        "different_outcome": 6,
+        "pairs": 24,
+        "same_outcome": 18
+      },
+      "stateless": {
+        "different_outcome": 5,
+        "pairs": 24,
+        "same_outcome": 19
+      }
+    },
+    "termination_profile": {
+      "primary": {
+        "history": {
+          "denominator": 192,
+          "infrastructure_failure": 0,
+          "invalid_output": 127,
+          "step_limit_truncation": 3,
+          "success_termination": 62
+        },
+        "stateless": {
+          "denominator": 192,
+          "infrastructure_failure": 0,
+          "invalid_output": 36,
+          "step_limit_truncation": 136,
+          "success_termination": 20
+        }
+      },
+      "reliability": {
+        "history": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 21,
+          "step_limit_truncation": 0,
+          "success_termination": 3
+        },
+        "stateless": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 3,
+          "step_limit_truncation": 18,
+          "success_termination": 3
+        }
+      }
+    }
+  },
+  "success_rates": {
+    "label": "exploratory",
+    "note": "Wilson intervals are listed in the v5 design analysis plan but not in the pre-registration record.",
+    "phase": "primary",
+    "policies": {
+      "history": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.3229166666666667,
+          "successes": 62,
+          "wilson_95": [
+            0.26081007741864376,
+            0.39197028681333174
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.40625,
+            "successes": 13,
+            "wilson_95": [
+              0.2551963484266544,
+              0.5773997512461713
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.34375,
+            "successes": 11,
+            "wilson_95": [
+              0.20410437924433172,
+              0.5168891202103778
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.34375,
+            "successes": 11,
+            "wilson_95": [
+              0.20410437924433172,
+              0.5168891202103778
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.09375,
+            "successes": 3,
+            "wilson_95": [
+              0.032401551298366194,
+              0.24218154728387864
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.3125,
+            "successes": 10,
+            "wilson_95": [
+              0.17952541633609734,
+              0.4856667830095541
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.4375,
+            "successes": 14,
+            "wilson_95": [
+              0.2816533111504036,
+              0.6067440886314801
+            ]
+          }
+        }
+      },
+      "stateless": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.10416666666666667,
+          "successes": 20,
+          "wilson_95": [
+            0.0684489159645522,
+            0.15541307467162818
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.03125,
+            "successes": 1,
+            "wilson_95": [
+              0.005537860164003122,
+              0.15744263820012558
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.1875,
+            "successes": 6,
+            "wilson_95": [
+              0.08889544689565954,
+              0.3530915520137596
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.0625,
+            "successes": 2,
+            "wilson_95": [
+              0.017310567031640967,
+              0.2014712314415458
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.125,
+            "successes": 4,
+            "wilson_95": [
+              0.04970134387480073,
+              0.2806830548165022
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.15625,
+            "successes": 5,
+            "wilson_95": [
+              0.0686442028250571,
+              0.3175414959753039
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.0625,
+            "successes": 2,
+            "wilson_95": [
+              0.017310567031640967,
+              0.2014712314415458
+            ]
+          }
+        }
+      }
+    },
+    "preregistered": false
+  }
+}

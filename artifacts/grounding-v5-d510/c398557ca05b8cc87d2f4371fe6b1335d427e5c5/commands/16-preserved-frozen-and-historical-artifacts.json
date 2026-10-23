@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "git",
+    "diff",
+    "--exit-code",
+    "origin/main",
+    "--",
+    "artifacts/grounding-v5-d59-replication",
+    "artifacts/grounding-v5-d59-haiku-results",
+    "artifacts/grounding-v5-d59-freeze"
+  ],
+  "command": "git diff --exit-code origin/main -- artifacts/grounding-v5-d59-replication artifacts/grounding-v5-d59-haiku-results artifacts/grounding-v5-d59-freeze",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.022091,
+  "ended_at_utc": "2026-10-23T04:37:41.127137+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T04:37:41.103297+00:00"
+}
