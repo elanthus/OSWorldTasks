@@ -22,7 +22,8 @@
     "<path-1>": "Private archive root (pilot and full); local paths removed.",
     "<path-2>": "Private backup root (pilot and full); same local disk, local paths removed.",
     "<home>": "Recording account home directory.",
-    "<system-temp>": "System temporary directory."
+    "<system-temp>": "System temporary directory.",
+    "<path-3>": "Hosted CI runner home prefix redacted from retrieved log output (record 19)."
   },
   "recording_notes": [
     "This is a replication supplement for owner D5.10 review, not a replacement full-gate run. The older 07824eee package remains unchanged at its recorded revision. All inherited observations below are linked as historical artifacts, not relabelled as new command observations.",
@@ -34,7 +35,8 @@
     "Two archives on the same local disk were verified; no independent off-host copy or fresh restore drill is claimed. Named secondary metrics lacking a frozen operational estimator remain unestimated. Complete provider token use and per-request latency are not inferred.",
     "The gate verdict remains null. No checklist state or public model-quality wording is approved by this package.",
     "Records 00-16 observe the analysis-code commit during collection. Records 17-18 additionally capture the final documentation inventory and visible packaging edits before the evidence-package commit. They are not represented as a clean checkout of a later commit. Every preceding successful observation remains stored.",
-    "Documentation review subsequently corrected the sandbox status and labelled the parser-incompatible pilot history; the final artifact manifest hashes those documentation updates. Earlier command snapshots are preserved at their collection times."
+    "Documentation review subsequently corrected the sandbox status and labelled the parser-incompatible pilot history; the final artifact manifest hashes those documentation updates. Earlier command snapshots are preserved at their collection times.",
+    "Record 19 retrieves the complete failed-step logs from hosted run 39901889781 at c9ef795. The retrieval command exits 0, while the stored source log explicitly records the unit command exit 1: 1 failed, 3187 passed, 6 skipped, 12 warnings in 556.80 s. The failure is the missing scripts/README.md inventory rows for the two new scripts. Those rows were added without changing analysis or experiment inputs; record 20 is the corresponding offline regression observation. The earlier successful and failed observations are both retained."
   ],
   "items": [
     {
@@ -61,7 +63,8 @@
         "artifacts/grounding-v5-d59-replication-results/review-guide.md",
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
         "docs/v5-policy-sandbox.md",
-        "docs/d59-subscription-verification.md"
+        "docs/d59-subscription-verification.md",
+        "scripts/README.md"
       ],
       "linked_records": [
         {
@@ -355,7 +358,9 @@
         "commands/13-frozen-candidate-unchanged.json",
         "commands/14-lint.json",
         "commands/15-offline-regression-tests.json",
-        "commands/16-preserved-frozen-and-historical-artifacts.json"
+        "commands/16-preserved-frozen-and-historical-artifacts.json",
+        "commands/19-first-hosted-unit-failure.json",
+        "commands/20-script-inventory-regression.json"
       ],
       "artifacts": [],
       "source_end_line": 810

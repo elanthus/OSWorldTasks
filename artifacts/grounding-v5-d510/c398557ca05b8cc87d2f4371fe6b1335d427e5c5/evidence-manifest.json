@@ -13,7 +13,8 @@
         "artifacts/grounding-v5-d59-replication-results/review-guide.md",
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
         "docs/v5-policy-sandbox.md",
-        "docs/d59-subscription-verification.md"
+        "docs/d59-subscription-verification.md",
+        "scripts/README.md"
       ],
       "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
       "id": "d5.10-delivery-row",
@@ -281,10 +282,12 @@
         "commands/13-frozen-candidate-unchanged.json",
         "commands/14-lint.json",
         "commands/15-offline-regression-tests.json",
-        "commands/16-preserved-frozen-and-historical-artifacts.json"
+        "commands/16-preserved-frozen-and-historical-artifacts.json",
+        "commands/19-first-hosted-unit-failure.json",
+        "commands/20-script-inventory-regression.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
-      "stored_raw_observation": "`10-retained-replication-audit`: exit 0<br>`11-frozen-replication-analysis`: exit 0<br>`12-historical-analysis-unchanged`: exit 0<br>`13-frozen-candidate-unchanged`: exit 0<br>`14-lint`: exit 0<br>`15-offline-regression-tests`: exit 0; pytest {\"passed\": 166, \"runtime\": 21.5}<br>`16-preserved-frozen-and-historical-artifacts`: exit 0"
+      "stored_raw_observation": "`10-retained-replication-audit`: exit 0<br>`11-frozen-replication-analysis`: exit 0<br>`12-historical-analysis-unchanged`: exit 0<br>`13-frozen-candidate-unchanged`: exit 0<br>`14-lint`: exit 0<br>`15-offline-regression-tests`: exit 0; pytest {\"passed\": 166, \"runtime\": 21.5}<br>`16-preserved-frozen-and-historical-artifacts`: exit 0<br>`19-first-hosted-unit-failure`: exit 0<br>`20-script-inventory-regression`: exit 0; pytest {\"passed\": 1, \"runtime\": 0.02}"
     }
   ],
   "checklist_source": {
@@ -436,6 +439,30 @@
       "sha256": "d3e3ffc2baaacb746843e66e554e980a83f6c07f2e0b8e81ed2ec7f2d9600051",
       "size": 656,
       "started_at_utc": "2026-10-23T04:39:53.987526+00:00"
+    },
+    {
+      "command": "gh run view 39901889781 --repo elanthus/OSWorldTasks --log-failed",
+      "duration_seconds": 0.964128,
+      "ended_at_utc": "2026-10-23T04:56:32.791576+00:00",
+      "exit_status": 0,
+      "path": "commands/19-first-hosted-unit-failure.json",
+      "sha256": "8197ac2d09f0433e8d264ba969178138dbfa6b18ed20fdbfb6c12da57e0acd6d",
+      "size": 80868,
+      "started_at_utc": "2026-10-23T04:56:31.633014+00:00"
+    },
+    {
+      "command": ".venv/bin/pytest -q tests/unit/test_scripts_readme_inventory.py",
+      "duration_seconds": 0.943564,
+      "ended_at_utc": "2026-10-23T04:56:28.412107+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 1,
+        "runtime": 0.02
+      },
+      "path": "commands/20-script-inventory-regression.json",
+      "sha256": "4eb9086db7c149437f2ad408fbabce54582325f5bc95a52f5a72b84cc809f176",
+      "size": 559,
+      "started_at_utc": "2026-10-23T04:56:27.467548+00:00"
     }
   ],
   "evidence_branch": "evidence/d59-replication-analysis",
@@ -458,13 +485,13 @@
   "package_files": [
     {
       "path": "REPORT.md",
-      "sha256": "e7d3a15f9cd1f6276262df727f2fb79970812a76b1ba57807961ebdeb051083c",
-      "size": 33227
+      "sha256": "828e0549147a06ac40ce4e3d2c8efb8ffe295f095e2000eff027b0361c4280a5",
+      "size": 34273
     },
     {
       "path": "checklist-map.json",
-      "sha256": "ff3218ee9192aada3d8e2028b15b34d250aedca08392309c7f36c357c5e2eac3",
-      "size": 27491
+      "sha256": "54aa07169603b54e00eddaccf7888bcccbb774753587a3c30e038ecbd76e0f5b",
+      "size": 28269
     },
     {
       "path": "commands/00-git-revision.json",
@@ -537,13 +564,23 @@
       "size": 656
     },
     {
+      "path": "commands/19-first-hosted-unit-failure.json",
+      "sha256": "8197ac2d09f0433e8d264ba969178138dbfa6b18ed20fdbfb6c12da57e0acd6d",
+      "size": 80868
+    },
+    {
+      "path": "commands/20-script-inventory-regression.json",
+      "sha256": "4eb9086db7c149437f2ad408fbabce54582325f5bc95a52f5a72b84cc809f176",
+      "size": 559
+    },
+    {
       "path": "redaction-scan.json",
-      "sha256": "05fea3c89d6ab830ee1c120b3e70b3491df6b28ef66bfc55eded38cb918d5127",
+      "sha256": "582376ddf5c2c7248093c9f68b9e15a53ca78fa1cd209d204e1a1abb074006e1",
       "size": 445
     }
   ],
   "redaction_scan": {
-    "files_scanned": 17,
+    "files_scanned": 19,
     "files_with_findings": {},
     "finding_counts": {
       "aws_access_keys": 0,
@@ -934,6 +971,11 @@
       "path": "pixelgym/grounding/v5/seeds.py",
       "sha256": "856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
       "size": 7996
+    },
+    {
+      "path": "scripts/README.md",
+      "sha256": "517f85a7cfa12bf577f38702609eef2686f5b86c202d57aba67de98f7be04706",
+      "size": 23575
     }
   ],
   "schema_version": "pixelgym-d510-evidence-manifest-v1",
