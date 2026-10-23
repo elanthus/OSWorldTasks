@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.v5 import claude_code_policy as claude
+from pixelgym.grounding.v5 import d59_extraction_successor as extraction
+from pixelgym.grounding.v5.action_extraction import ExtractionMemoryRunner, SingleFencedActionPolicy
 from pixelgym.grounding.v5.auth_recovery import (
     AuthRecoveryStopped,
     OAuthRecoveryGate,
@@ -139,16 +141,30 @@ def sandbox_launch(output: Path) -> claude.ClaudeSandboxLaunch:
 
 
 def prepared_inputs(
-    phase: str, approval_path: Path, output: Path, *, credential_value: str | None = None
+    phase: str,
+    approval_path: Path,
+    output: Path,
+    *,
+    credential_value: str | None = None,
+    plan_path: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], Any, dict[str, Any]]:
     require_clean_tracked_worktree(ROOT)
-    plan = read_object(ROOT / PLAN_PATH)
+    plan = read_object(ROOT / PLAN_PATH if plan_path is None else plan_path)
+    successor = plan.get("schema_version") == extraction.SCHEMA_VERSION
     frozen_identity = claude.ClaudeRuntimeIdentity(**plan["runtime_identity"])
-    expected = execution_plan(
-        ROOT,
-        source_revision=plan["source_binding"]["source_revision"],
-        runtime_identity=frozen_identity,
-        stop_rule_options=stop_rule_options_for_plan(plan),
+    expected = (
+        extraction.execution_plan(
+            ROOT,
+            source_revision=plan["source_binding"]["source_revision"],
+            runtime_identity=frozen_identity,
+        )
+        if successor
+        else execution_plan(
+            ROOT,
+            source_revision=plan["source_binding"]["source_revision"],
+            runtime_identity=frozen_identity,
+            stop_rule_options=stop_rule_options_for_plan(plan),
+        )
     )
     if plan != expected:
         raise ValueError("replication plan differs from the committed candidate")
@@ -161,7 +177,7 @@ def prepared_inputs(
         if credential_value is None
         else confirmed_live_identity(plan, credential_value)
     )
-    manifests = live_manifests(
+    manifests = (extraction.live_manifests if successor else live_manifests)(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
     )
     if {k: v.to_dict() for k, v in manifests.items()} != plan["policy_manifests"]:
@@ -188,7 +204,10 @@ def prepared_inputs(
         "subscription_verification": subscription_verification,
         "cli_executable_sha256": sha256_file(executable),
         "sandbox_probe": probe.to_dict(),
-        "source_files": {path: sha256_file(ROOT / path) for path in SOURCE_FILES},
+        "source_files": {
+            path: sha256_file(ROOT / path)
+            for path in (extraction.SOURCE_FILES if successor else SOURCE_FILES)
+        },
         "policy_manifest_digests": {
             mode: content_digest(manifest.to_dict()) for mode, manifest in manifests.items()
         },
@@ -201,13 +220,26 @@ def prepared_inputs(
 
 
 def prepare(
-    phase: str, approval_path: Path, output: Path, *, oauth_environment_file: Path | None = None
+    phase: str,
+    approval_path: Path,
+    output: Path,
+    *,
+    oauth_environment_file: Path | None = None,
+    plan_path: Path | None = None,
 ) -> None:
     snapshot = load_oauth_snapshot(oauth_environment_file) if oauth_environment_file else None
     plan, approval, jobs, _identity, binding = (
-        prepared_inputs(phase, approval_path, output)
+        prepared_inputs(
+            phase, approval_path, output, **({"plan_path": plan_path} if plan_path else {})
+        )
         if snapshot is None
-        else prepared_inputs(phase, approval_path, output, credential_value=snapshot.value)
+        else prepared_inputs(
+            phase,
+            approval_path,
+            output,
+            credential_value=snapshot.value,
+            **({"plan_path": plan_path} if plan_path else {}),
+        )
     )
     output.mkdir(parents=True, exist_ok=False)
     write_object(output / "execution-plan.json", plan)
@@ -333,14 +365,24 @@ def execute(
     retention_backup: Path,
     workers: int,
     oauth_environment_file: Path | None = None,
+    plan_path: Path | None = None,
 ) -> None:
     snapshot = load_oauth_snapshot(oauth_environment_file) if oauth_environment_file else None
     plan, approval, jobs, identity, binding = (
-        prepared_inputs(phase, approval_path, output)
+        prepared_inputs(
+            phase, approval_path, output, **({"plan_path": plan_path} if plan_path else {})
+        )
         if snapshot is None
-        else prepared_inputs(phase, approval_path, output, credential_value=snapshot.value)
+        else prepared_inputs(
+            phase,
+            approval_path,
+            output,
+            credential_value=snapshot.value,
+            **({"plan_path": plan_path} if plan_path else {}),
+        )
     )
     stop_options = stop_rule_options_for_plan(plan)
+    successor = plan.get("schema_version") == extraction.SCHEMA_VERSION
     if read_object(output / "execution-plan.json") != plan:
         raise ValueError("prepared execution plan differs from the approved plan")
     if read_object(output / "owner-approval.json") != approval:
@@ -354,7 +396,7 @@ def execute(
         raise ValueError("workers exceeds the pre-registered maximum")
     write_object(output / "execution-live-binding.json", binding)
 
-    manifests = live_manifests(
+    manifests = (extraction.live_manifests if successor else live_manifests)(
         ROOT, source_revision=plan["source_binding"]["source_revision"], identity=identity
     )
     approved_caps = CallCaps(**approval["approved_caps"])
@@ -571,11 +613,13 @@ def execute(
         try:
             mode = str(job["mode"])
             worker_journal = journals[worker]
-            runner = CliMemoryRunner(
+            runner_type = ExtractionMemoryRunner if successor else CliMemoryRunner
+            policy_type = SingleFencedActionPolicy if successor else claude.ClaudeCodePolicy
+            runner = runner_type(
                 journal=worker_journal,
                 manifest=manifests[mode],
                 policy=CliMemoryPolicy(
-                    claude.ClaudeCodePolicy(runtime_identity=identity),
+                    policy_type(runtime_identity=identity),
                     retain_screenshots=mode == "history",
                 ),
                 transport=transports[worker],
@@ -769,6 +813,11 @@ def main() -> None:
     parser.add_argument("--phase", choices=("pilot", "full"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--approval", type=Path, required=True)
+    parser.add_argument(
+        "--plan",
+        type=Path,
+        help="explicit separate successor candidate; defaults to original freeze",
+    )
     parser.add_argument("--retention-archive", type=Path)
     parser.add_argument("--retention-backup", type=Path)
     parser.add_argument("--oauth-environment-file", type=Path)
@@ -786,6 +835,7 @@ def main() -> None:
             args.approval.resolve(),
             output,
             oauth_environment_file=args.oauth_environment_file,
+            plan_path=args.plan,
         )
         return
     if args.retention_archive is None or args.retention_backup is None:
@@ -798,6 +848,7 @@ def main() -> None:
         retention_backup=args.retention_backup.resolve(),
         workers=args.workers,
         oauth_environment_file=args.oauth_environment_file,
+        plan_path=args.plan,
     )
 
 

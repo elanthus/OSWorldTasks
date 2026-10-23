@@ -685,7 +685,7 @@ class ClaudeCodePolicy:
         )
         if route != self.expected_route:
             raise ValueError("Claude identity, accounting, or policy boundary is invalid")
-        candidate = _decode_action_content(response.get("content", ""))
+        candidate = self._decode_action_content(response.get("content", ""))
         if not isinstance(candidate, dict) or set(candidate) != {
             "action_type",
             "x",
@@ -696,6 +696,9 @@ class ClaudeCodePolicy:
         if any(type(candidate[field]) is not int for field in candidate):
             raise TypeError("Claude action fields must be plain integers")
         return candidate
+
+    def _decode_action_content(self, content: str) -> Any:
+        return _decode_action_content(content)
 
     def post_parse_state(self, state: bytes, candidate: dict[str, Any]) -> bytes:
         del candidate
