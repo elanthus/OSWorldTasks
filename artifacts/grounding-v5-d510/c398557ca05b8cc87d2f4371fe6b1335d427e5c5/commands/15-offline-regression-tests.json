@@ -1,0 +1,22 @@
+{
+  "argv": [
+    ".venv/bin/pytest",
+    "-q",
+    "tests/unit/test_grounding_v5_d59_replication_report.py",
+    "tests/unit/test_grounding_v5_d59_confirmatory_analysis.py",
+    "tests/unit/test_grounding_v5_d59_haiku_report.py",
+    "tests/unit/test_grounding_v5_confirmatory_subset_stratification.py",
+    "tests/unit/test_d510_evidence_report.py",
+    "tests/unit/test_evidence_retention.py",
+    "tests/unit/test_evidence_retention_validation.py"
+  ],
+  "command": ".venv/bin/pytest -q tests/unit/test_grounding_v5_d59_replication_report.py tests/unit/test_grounding_v5_d59_confirmatory_analysis.py tests/unit/test_grounding_v5_d59_haiku_report.py tests/unit/test_grounding_v5_confirmatory_subset_stratification.py tests/unit/test_d510_evidence_report.py tests/unit/test_evidence_retention.py tests/unit/test_evidence_retention_validation.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 22.348242,
+  "ended_at_utc": "2026-10-23T04:37:41.041519+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "........................................................................ [ 43%]\n........................................................................ [ 86%]\n......................                                                   [100%]\n166 passed in 21.50s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T04:37:18.691244+00:00"
+}

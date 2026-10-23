@@ -1,0 +1,17 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.analyze_grounding_v5_d59",
+    "--check"
+  ],
+  "command": ".venv/bin/python -m scripts.analyze_grounding_v5_d59 --check",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.654705,
+  "ended_at_utc": "2026-10-23T04:37:10.102672+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T04:37:09.445996+00:00"
+}
