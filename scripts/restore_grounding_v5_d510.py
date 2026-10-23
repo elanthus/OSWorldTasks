@@ -109,6 +109,12 @@ def main() -> None:
         parser.add_argument("--" + option, type=Path, required=True)
     args = parser.parse_args()
     os.umask(0o077)
+    _separate(
+        *(
+            _no_links(getattr(args, name))
+            for name in ("run", "archive", "backup", "destination", "output")
+        )
+    )
     if args.output.exists():
         raise FileExistsError("restore receipt already exists")
     result = drill(args.run, args.archive, args.backup, args.destination)

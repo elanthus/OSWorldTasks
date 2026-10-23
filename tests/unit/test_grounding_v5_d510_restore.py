@@ -5,7 +5,7 @@ import json
 import pytest
 
 from pixelgym.grounding.v5.contracts import sha256_bytes
-from scripts.restore_grounding_v5_d510 import drill, final_summary_bytes
+from scripts.restore_grounding_v5_d510 import drill, final_summary_bytes, main
 
 
 def fixture():
@@ -60,3 +60,17 @@ def test_restore_rejects_unsafe_destination_before_writing(tmp_path, nested):
     with pytest.raises(ValueError):
         drill(run, archive, backup, destination)
     assert not (archive / "restore").exists()
+
+
+@pytest.mark.parametrize("protected", ["run", "archive", "backup", "destination"])
+def test_receipt_cannot_modify_evidence_roots(tmp_path, monkeypatch, protected):
+    roots = {name: tmp_path / name for name in ("run", "archive", "backup", "destination")}
+    output = roots[protected] / "receipt.json"
+    argv = ["restore"]
+    for name, path in {**roots, "output": output}.items():
+        argv.extend(("--" + name, str(path)))
+    monkeypatch.setattr("sys.argv", argv)
+    with pytest.raises(ValueError, match="disjoint"):
+        main()
+    assert not output.exists()
+    assert not roots["destination"].exists()
