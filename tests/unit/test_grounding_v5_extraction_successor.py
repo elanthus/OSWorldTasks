@@ -278,3 +278,55 @@ def test_diagnostic_binds_original_audit_lineage(evidence):
         diagnostic.diagnose(
             path, plan, expected_integrity={**lineage, "event_chain_digest": "changed"}
         )
+
+
+def test_prepared_successor_artifacts_are_bound_and_original_results_preserved():
+    public = ROOT / successor.OUTPUT_DIRECTORY
+    plan = json.loads((public / "execution-plan.json").read_text())
+    original = json.loads((ROOT / successor.ORIGINAL_PLAN_PATH).read_text())
+    changes = json.loads((public / "plan-field-changes.json").read_text())
+    assert (
+        content_digest({k: v for k, v in plan.items() if k != "execution_plan_digest"})
+        == plan["execution_plan_digest"]
+    )
+    assert original["execution_plan_digest"] == successor.ORIGINAL_PLAN_DIGEST
+    assert changes["changed_fields"] == successor.changed_fields(original, plan)
+    assert changes["successor_plan_digest"] == plan["execution_plan_digest"]
+    assert changes["owner_approval_recorded"] is False
+    for path, expected in plan["source_binding"]["files"].items():
+        assert "sha256:" + hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected
+    from pixelgym.grounding.v5.claude_code_policy import ClaudeRuntimeIdentity
+
+    assert {
+        mode: manifest.to_dict()
+        for mode, manifest in successor.live_manifests(
+            ROOT,
+            source_revision=plan["source_binding"]["source_revision"],
+            identity=ClaudeRuntimeIdentity(**plan["runtime_identity"]),
+        ).items()
+    } == plan["policy_manifests"]
+
+
+def test_checked_in_diagnostic_is_response_free_and_keeps_syntax_separate_from_task_success():
+    report = json.loads((ROOT / successor.OUTPUT_DIRECTORY / "offline-diagnostic.json").read_text())
+    original = json.loads(
+        (ROOT / "artifacts/grounding-v5-d59-replication-results/report.json").read_text()
+    )
+    assert report["original_report_digest"] == content_digest(original)
+    assert report["lineage_matches_original_audit"] is True
+    assert all(
+        original["journal_integrity"][key] == value
+        for key, value in report["journal_lineage"].items()
+    )
+    assert report["counts"] == {
+        "previously_valid_unchanged": 8572,
+        "newly_recoverable_action": 185,
+        "still_rejected": 2,
+    }
+    assert report["canonical_responses_examined"] == 8759
+    assert report["terminal_parser_failures_examined"] == 187
+    assert report["terminal_failures_with_valid_fenced_body"] == 186
+    assert len(report["terminal_failures"]) == 187
+    assert report["provider_calls"] == report["environment_actions_replayed"] == 0
+    assert report["original_results_changed"] is report["successor_task_success_inferred"] is False
+    assert all("content" not in row["receipt"] for row in report["terminal_failures"])
