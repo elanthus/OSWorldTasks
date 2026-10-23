@@ -204,6 +204,7 @@ def test_response_free_export_and_usage_do_not_impute_the_timeout():
         ("route", "runtime identity mismatch"),
         ("caps", "bound cap mismatch"),
         ("source", "bound source mismatch"),
+        ("source-bytes", "source file hash mismatch"),
         ("profile", "same-credential Max proof mismatch"),
     ],
 )
@@ -211,6 +212,23 @@ def test_audit_rejects_identity_or_binding_changes_before_reading_journals(
     tmp_path, tamper, message
 ):
     plan = report.read(report.PLAN)
+    # Give this negative-test fixture its own consistent public source snapshot.
+    # A later successor's checkout must not fail an earlier source check before
+    # the intended profile-proof assertion. No production check is stubbed.
+    root = tmp_path / "fixture-source-root"
+    root.mkdir()
+    source = root / "fixture.py"
+    source.write_bytes(b"# explicit offline audit source fixture\n")
+    plan["source_binding"] = {
+        "source_revision": "offline-audit-fixture",
+        "files": {"fixture.py": report.sha256_file(source)},
+    }
+    plan["execution_plan_digest"] = content_digest(
+        {key: value for key, value in plan.items() if key != "execution_plan_digest"}
+    )
+    public_plan = root / report.PLAN.relative_to(report.ROOT)
+    public_plan.parent.mkdir(parents=True)
+    public_plan.write_text(json.dumps(plan))
     # A public, credential-free binding fixture. The altered binding is rehashed so
     # a superficial digest check cannot substitute for checking its frozen semantics.
     from pixelgym.grounding.v5.d59_replication import expected_approval
@@ -236,6 +254,8 @@ def test_audit_rejects_identity_or_binding_changes_before_reading_journals(
         binding["approved_caps"]["model_attempt_cap"] += 1
     elif tamper == "source":
         binding["source_files"] = {}
+    elif tamper == "source-bytes":
+        source.write_bytes(b"# altered source fixture\n")
     elif tamper == "profile":
         binding["subscription_verification"]["same_authentication_as_cli"] = False
     summary = {
@@ -253,4 +273,4 @@ def test_audit_rejects_identity_or_binding_changes_before_reading_journals(
     ):
         (tmp_path / name).write_text(json.dumps(value))
     with pytest.raises(ValueError, match=message):
-        report.audit(tmp_path, tmp_path / "absent-archive", tmp_path / "absent-backup")
+        report.audit(tmp_path, tmp_path / "absent-archive", tmp_path / "absent-backup", root=root)

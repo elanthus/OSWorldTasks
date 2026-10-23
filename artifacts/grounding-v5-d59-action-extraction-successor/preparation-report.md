@@ -36,7 +36,8 @@ exact rejection rules, trial identities of the two retained failures, and limits
 
 ## Validation actually run
 
-Final targeted validation, exit 0: **278 passed in 12.78 seconds**. This command loads
+Final targeted validation after the CI fixture repair, exit 0: **303 passed in 13.25 seconds**.
+An earlier guarded run reported 278 passed in 12.78 seconds. This command loads
 a guard that rejects socket bind/connect/DNS operations and `time.sleep`:
 
 ```sh
@@ -49,7 +50,8 @@ a guard that rejects socket bind/connect/DNS operations and `time.sleep`:
   tests/unit/test_grounding_v5_cli_memory_retry.py \
   tests/unit/test_grounding_v5_replication_stop_options.py \
   tests/unit/test_grounding_v5_auth_transport.py \
-  tests/unit/test_scripts_readme_inventory.py
+  tests/unit/test_scripts_readme_inventory.py \
+  tests/unit/test_grounding_v5_d59_replication_report.py
 ```
 
 Also executed successfully:
@@ -69,6 +71,23 @@ excluded from final guarded validation. No provider request was sent. That run a
 exposed a scheduling race in an existing drain test. Its fixture now releases the
 in-flight assignment only after observing the stopping result; production campaign
 scheduling is unchanged. Early new-test failures were corrected before the final run.
+
+## Hosted CI fixture repair
+
+The first hosted unit run on `76fbd64be703c3d081e11050de2b6c937c9ca7d6`
+reported **1 failed, 3,253 passed, 6 skipped, 12 warnings in 282.68 seconds**;
+coverage was 83.65%. Its [raw job log](https://github.com/elanthus/OSWorldTasks/actions/runs/39913324750/job/120281090904)
+shows the original report's negative profile-proof fixture was rejected earlier by
+`source file hash mismatch`, because it compared original freeze hashes to successor
+source bytes. The production guard correctly refused that inconsistent snapshot.
+
+The test now provides an explicit, self-consistent public fixture source tree and
+binds its bytes before tampering with each intended field. A fifth case verifies
+that altered source bytes are still rejected. No production audit, identity or
+sandbox check was changed. The repaired report tests passed 25 cases in 0.48 seconds,
+then the combined guarded run passed the 303 cases above. Candidate regeneration
+still reproduces the exact same digest; the repair changes tests and this report only.
+Hosted CI is rerun for the repaired PR head; its current status is on PR #262.
 
 ## Files and remaining work
 
