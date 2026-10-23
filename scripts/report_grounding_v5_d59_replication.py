@@ -137,13 +137,15 @@ def audit_timeout(status: str, outcome: dict, event: Any, events: list[Any]) -> 
     }
 
 
-def audit(directory: Path, archive: Path, backup: Path, *, root: Path = ROOT) -> dict:
+def audit(
+    directory: Path, archive: Path, backup: Path, *, root: Path = ROOT, plan_path: Path = PLAN
+) -> dict:
     plan, summary = read(directory / "execution-plan.json"), read(directory / "summary.json")
     binding = read(directory / "execution-live-binding.json")
     approval = read(directory / "owner-approval.json")
     phase = summary["phase"]
     validate_approval(plan, approval, phase=phase)
-    require(plan == read(root / PLAN.relative_to(ROOT)), "private/public plan mismatch")
+    require(plan == read(root / plan_path.relative_to(ROOT)), "private/public plan mismatch")
     require(
         summary["execution_plan_digest"] == plan["execution_plan_digest"], "summary plan mismatch"
     )

@@ -133,3 +133,12 @@ and backup. Task failures, including invalid outputs, remain in the denominator.
 An expired OAuth credential pauses dispatch for the owner to renew it through the
 hidden-input helper. Renewal never clears an unresolved-ledger block or resets caps.
 Original replication evidence and the D5.10 human decision remain separate.
+
+## Completed sensitivity campaign
+
+The approved pilot and all 432 full assignments completed. The
+[separate D5.10 review package](../artifacts/grounding-v5-d59-action-extraction-results/review-guide.md)
+contains the frozen statistical calculations, read-only evidence audit and five
+individually disclosed unresolved timeout attempts. Original results and this
+candidate remain unchanged. This is post-hoc sensitivity on inspected tasks;
+the D5.10 verdict and any public wording remain human-owned.

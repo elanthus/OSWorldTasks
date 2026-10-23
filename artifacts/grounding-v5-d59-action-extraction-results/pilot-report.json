@@ -1,0 +1,321 @@
+{
+  "approved_caps": {
+    "environment_action_cap": 104,
+    "model_attempt_cap": 208,
+    "provider_control_request_cap": 0,
+    "provider_wire_request_cap": 208
+  },
+  "approved_runtime_window_hours": 6,
+  "assigned": 4,
+  "audit": {
+    "checks": [
+      "exact plan and approval",
+      "source hashes",
+      "same-credential Max proof",
+      "sandbox on every invocation",
+      "journal objects and event chain",
+      "invocation integrity",
+      "every planned assignment",
+      "host success and stored measurements",
+      "caps and runtime",
+      "counted timeout retry",
+      "both archive hashes and SQLite integrity_check"
+    ],
+    "copies_on_same_local_disk": true,
+    "model_calls": 0,
+    "read_only": true,
+    "restore_drill_performed": false
+  },
+  "authentication_reads_during_execution": 0,
+  "authentication_wait_excluded_seconds": 0.0,
+  "completed": 4,
+  "counts": {
+    "primary": {
+      "history": {
+        "success_termination": 1
+      },
+      "stateless": {
+        "step_limit_truncation": 1
+      }
+    },
+    "reliability": {
+      "history": {
+        "success_termination": 1
+      },
+      "stateless": {
+        "step_limit_truncation": 1
+      }
+    }
+  },
+  "elapsed_seconds": 405.726,
+  "execution_plan_digest": "sha256:c24d121809409217f11009308956eef4d0b41f2d4666f468066893409386f4d6",
+  "extraction_audit": {
+    "actions_reparsed_or_rescored": 0,
+    "decisions": {
+      "accepted": 97
+    },
+    "dispatched": 97,
+    "envelopes": {
+      "single_json_fence": 97
+    },
+    "extraction_applied": 3,
+    "parse_receipts": 97,
+    "response_hashes_and_selected_spans_verified": true
+  },
+  "human_gate": {
+    "D5.10": null
+  },
+  "incremental_experiment_charge_usd": "0.00",
+  "independent_confirmation": false,
+  "invocation_integrity_digest": "sha256:5c4fd69a498ea0cbd7c0079608c6b923211085b0067debd6557ce3f0f85b5083",
+  "invocation_statuses_by_worker": [
+    {
+      "response": 20
+    },
+    {
+      "response": 26
+    },
+    {
+      "response": 25
+    },
+    {
+      "response": 26
+    }
+  ],
+  "journal_integrity": {
+    "digest_version": "v2",
+    "event_chain_digest": "sha256:3014c2a5f8948b76a475c4b996f485785da33c5429d9b3898728b87cf0997268",
+    "event_count": 885,
+    "object_count": 362,
+    "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+  },
+  "original_results_reclassified": 0,
+  "phase": "pilot",
+  "phase_usage": {
+    "primary": {
+      "environment_actions": 46,
+      "model_attempts": 46,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 46
+    },
+    "reliability": {
+      "environment_actions": 51,
+      "model_attempts": 51,
+      "provider_control_requests": 0,
+      "provider_wire_requests": 51
+    }
+  },
+  "policy_ids": {
+    "history": "policy-9f3e13279cacb221eb47",
+    "stateless": "policy-20215e0a99ac9dfd59f8"
+  },
+  "provider_processes_started": 97,
+  "result_kind": "post_hoc_same_task_parser_sensitivity",
+  "results": [
+    {
+      "attempts_with_reported_usage": 20,
+      "classification": "success_termination",
+      "environment_actions": 20,
+      "environment_actions_dispatched": 20,
+      "environment_dispatch_reservations": 20,
+      "final_stage_index": 10,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 15,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 17,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 20,
+      "phase": "primary",
+      "provider_control_requests": 0,
+      "provider_wire_requests": 20,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "repeat": 0,
+      "reported_tokens": {
+        "cache_creation_input_tokens": 242703,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 5745,
+        "output_tokens": 27910
+      },
+      "seed": 6000,
+      "success": true,
+      "trial_id": "d59-extract-pilot-primary-6000-history-r0"
+    },
+    {
+      "attempts_with_reported_usage": 26,
+      "classification": "step_limit_truncation",
+      "environment_actions": 26,
+      "environment_actions_dispatched": 26,
+      "environment_dispatch_reservations": 26,
+      "final_stage_index": 9,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 17,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 26,
+      "phase": "primary",
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "repeat": 0,
+      "reported_tokens": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 58437,
+        "output_tokens": 42445
+      },
+      "seed": 6000,
+      "success": false,
+      "trial_id": "d59-extract-pilot-primary-6000-stateless-r0"
+    },
+    {
+      "attempts_with_reported_usage": 25,
+      "classification": "success_termination",
+      "environment_actions": 25,
+      "environment_actions_dispatched": 25,
+      "environment_dispatch_reservations": 25,
+      "final_stage_index": 10,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": true,
+          "step_index": 20,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": true,
+          "step_index": 22,
+          "valid_choice": true
+        }
+      ],
+      "mode": "history",
+      "model_attempts": 25,
+      "phase": "reliability",
+      "provider_control_requests": 0,
+      "provider_wire_requests": 25,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "repeat": 1,
+      "reported_tokens": {
+        "cache_creation_input_tokens": 371695,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 5799,
+        "output_tokens": 40366
+      },
+      "seed": 6000,
+      "success": true,
+      "trial_id": "d59-extract-pilot-reliability-6000-history-r1"
+    },
+    {
+      "attempts_with_reported_usage": 26,
+      "classification": "step_limit_truncation",
+      "environment_actions": 26,
+      "environment_actions_dispatched": 26,
+      "environment_dispatch_reservations": 26,
+      "final_stage_index": 9,
+      "first_attempts": [
+        {
+          "consumer_index": 5,
+          "correct": false,
+          "step_index": 19,
+          "valid_choice": true
+        },
+        {
+          "consumer_index": 7,
+          "correct": false,
+          "step_index": 21,
+          "valid_choice": true
+        }
+      ],
+      "mode": "stateless",
+      "model_attempts": 26,
+      "phase": "reliability",
+      "provider_control_requests": 0,
+      "provider_wire_requests": 26,
+      "reached_both_consumers": true,
+      "reached_consumers": [
+        5,
+        7
+      ],
+      "repeat": 1,
+      "reported_tokens": {
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "input_tokens": 58447,
+        "output_tokens": 29738
+      },
+      "seed": 6000,
+      "success": false,
+      "trial_id": "d59-extract-pilot-reliability-6000-stateless-r1"
+    }
+  ],
+  "retention": {
+    "archive": {
+      "bytes": 112061945,
+      "file_count": 10,
+      "manifest_digest": "sha256:7c843a3cf30af04c2bcc159ea55b7ca1dacf4d3b85041a38db66779e39a2a9b4",
+      "source_fingerprint": "sha256:139138068c3a6509e29e1da6c1194e3bebe5f417a38addf9dca4fa10a88cad22"
+    },
+    "backup": {
+      "bytes": 112061945,
+      "file_count": 10,
+      "manifest_digest": "sha256:7c843a3cf30af04c2bcc159ea55b7ca1dacf4d3b85041a38db66779e39a2a9b4",
+      "source_fingerprint": "sha256:139138068c3a6509e29e1da6c1194e3bebe5f417a38addf9dca4fa10a88cad22"
+    }
+  },
+  "runtime_identity": {
+    "auth_method": "oauth_token",
+    "cli_version": "2.1.292 (Claude Code)",
+    "help_sha256": "sha256:550db4f88ae1d97bf7244ca96dc89554aabd3978241ceb69f79001e816c35f09",
+    "reasoning_effort": "default",
+    "requested_model": "claude-haiku-4-5-20251001",
+    "subscription_type": "max"
+  },
+  "schema_version": "pixelgym-d59-extraction-public-results-v1",
+  "source_artifacts": {
+    "execution-binding.json": "sha256:0bca67bdc15a85ec21c72bb424c7f79b07ca70ca2b997e459243cd4e11736057",
+    "execution-live-binding.json": "sha256:13302eff440cc93087b7813088890cab6dd55073c83c412b0ecd24373a85188e",
+    "execution-plan.json": "sha256:7415ea7544cdb9fba7cfbcbde5345e82dadb84c5815f1d7d55fd3e3a821ebfc6",
+    "owner-approval.json": "sha256:4f41426442e885c7e849e63fbbec71e0ca6334353c71b5f534c2ae532a0065bb",
+    "summary.json": "sha256:e84103fe1996795fddda88ff0ce2182b0507af69ca1b608cdf6f5fa3f81b6581"
+  },
+  "source_revision": "67b28a4073a8e26e4bd873f748929ccba11ded54",
+  "stop_reason": "completed_all_assignments",
+  "subprocesses_closed": true,
+  "unresolved_invocations": 0,
+  "unresolved_timeouts": [],
+  "unrun": 0,
+  "wall_elapsed_seconds": 405.726
+}
